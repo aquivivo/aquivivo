@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polaco – Panel Educativo</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Signika:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Signika', sans-serif;
+    }
+    .level-card {
+      background: #faf7f2;
+      border-radius: 24px;
+      padding: 28px 32px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+    }
+    .level-card:hover {
+      box-shadow: 0 14px 35px rgba(0,0,0,0.1);
+    }
+    .badge-a1 {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+    }
+    .badge-a2 {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+    .badge-b1 {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+    }
+    .badge-b2 {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    .section-content {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.3s ease;
+    }
+    .section-content.open {
+      max-height: 2000px;
+      opacity: 1;
+    }
+    .section-arrow {
+      transition: transform 0.3s ease;
+    }
+    .section-arrow.open {
+      transform: rotate(180deg);
+    }
+    .topic-card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .topic-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+    }
+    .topic-card.grammar::before {
+      background: linear-gradient(180deg, #3b82f6, #2563eb);
+    }
+    .topic-card.vocabulary::before {
+      background: linear-gradient(180deg, #22c55e, #16a34a);
+    }
+    .topic-card:hover {
+      transform: translateX(6px);
+      background: #f8fafc;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+    .modal-overlay {
+      background: rgba(0,0,0,0.55);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-box {
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      transform: scale(0.9) translateY(20px);
+      transition: all 0.3s ease;
+      background: white;
+      max-height: 85%;
+      overflow-y: auto;
+    }
+    .modal-overlay.active .modal-box {
+      transform: scale(1) translateY(0);
+    }
+    .search-input:focus {
+      border-color: #004aad;
+      box-shadow: 0 0 0 4px rgba(0,74,173,0.12);
+    }
+    .toast {
+      animation: slideUp 0.3s ease;
+    }
+    .toast.hiding {
+      animation: slideDown 0.3s ease forwards;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes slideDown {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(100px); opacity: 0; }
+    }
+    .btn-green {
+      background: #10b981;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-green:hover {
+      background: #059669;
+    }
+    .btn-gray {
+      background: #6b7280;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-gray:hover {
+      background: #4b5563;
+    }
+    .btn-close {
+      background: #e5e7eb;
+      color: #374151;
+      padding: 12px 32px;
+      border-radius: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-close:hover {
+      background: #d1d5db;
+    }
+    .admin-link {
+      font-size: 11px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    .admin-link:hover {
+      opacity: 0.8;
+    }
+    .modal-input {
+      border: 3px solid #004aad;
+      border-radius: 14px;
+      padding: 12px 16px;
+      width: 100%;
+      outline: none;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .modal-input:focus {
+      box-shadow: 0 0 0 3px rgba(0,74,173,0.1);
+    }
+    .info-box {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .social-link {
+      color: #94a3b8;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+      text-decoration: none;
+    }
+    .social-link:hover {
+      color: #64748b;
+    }
+    .modal-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #e0f2ff, #bfdbfe);
+    }
+    .link-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 8px 0;
+      transition: all 0.2s;
+    }
+    .link-card:hover {
+      border-color: #004aad;
+      box-shadow: 0 4px 12px rgba(0,74,173,0.1);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full" style="background: #e5d9bf;">
+  <div id="app" class="h-full overflow-auto">
+   <div class="max-w-4xl mx-auto px-4 py-8"><!-- Header -->
+    <header class="text-center mb-8">
+     <h1 id="main-title" class="text-[42px] font-[800]" style="color: #004aad;">Polaco</h1>
+     <p id="subtitle" class="text-[18px] mt-2" style="color: #004aad; opacity: 0.7;">Curso interactivo para extranjeros</p>
+    </header><!-- Search -->
+    <div class="relative mb-8 max-w-md mx-auto">
+     <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style="color: #004aad;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+     </svg><input type="text" id="search-input" class="search-input w-full bg-white border-2 rounded-2xl py-3.5 pr-5 pl-12 outline-none transition-all" style="border-color: #e5e0d8;" placeholder="Buscar tema…">
+    </div><!-- Admin Toggle -->
+    <div class="text-center mb-6"><button id="admin-toggle" class="text-sm px-4 py-2 rounded-lg transition-all" style="color: #004aad; opacity: 0.6;"> 🔐 Modo Admin </button>
+    </div><!-- Level Cards -->
+    <div id="levels-container" class="space-y-6"><!-- A1 -->
+     <div class="level-card" data-level="a1">
+      <div class="flex items-center justify-between cursor-pointer section-header" data-target="a1-content">
+       <div class="flex items-center gap-4">
+        <div class="badge-a1 w-16 h-16 rounded-[18px] flex items-center justify-center"><span class="text-white text-[22px] font-[800]">A1</span>
+        </div>
+        <div>
+         <h2 class="text-xl font-[700]" style="color: #004aad;">Nivel A1 – Principiante</h2>
+         <p class="text-sm" style="color: #004aad; opacity: 0.6;">Fundamentos del idioma polaco</p>
+        </div>
+       </div>
+       <svg class="section-arrow w-6 h-6" style="color: #004aad;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+       </svg>
+      </div>
+      <div id="a1-content" class="section-content mt-4 space-y-3">
+       <div class="text-[15px] font-[700] mt-2 mb-1" style="color: #004aad;">
+        📘 Gramática
+       </div>
+       <div class="topic-card grammar" data-search="alfabeto pronunciación a1" data-level="A1" data-type="Gramática" data-topic="Alfabeto y pronunciación" data-desc="Los sonidos especiales del polaco: ą, ę, ł, ć, ń, ś, ź, ż. Base fonética para comunicación correcta.">
+        <h3 class="font-[600]" style="color: #004aad;">Alfabeto y pronunciación</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Sonidos especiales del polaco</p>
+       </div>
+       <div class="topic-card grammar" data-search="pronombres personales a1" data-level="A1" data-type="Gramática" data-topic="Pronombres personales" data-desc="Sistema básico de pronombres: ja, ty, on, ona, ono, my, wy, oni/one. Fundamento de la conjugación verbal.">
+        <h3 class="font-[600]" style="color: #004aad;">Pronombres personales</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Ja, ty, on, ona, ono...</p>
+       </div>
+       <div class="topic-card grammar" data-search="verbo ser być a1" data-level="A1" data-type="Gramática" data-topic="Verbo BYĆ (ser/estar)" data-desc="El verbo más importante del polaco: jestem, jesteś, jest, jesteśmy, jesteście, są. Base para toda comunicación.">
+        <h3 class="font-[600]" style="color: #004aad;">Verbo BYĆ (ser/estar)</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Conjugación básica</p>
+       </div>
+       <div class="text-[15px] font-[700] mt-4 mb-1" style="color: #004aad;">
+        📗 Vocabulario
+       </div>
+       <div class="topic-card vocabulary" data-search="saludos presentaciones a1" data-level="A1" data-type="Vocabulario" data-topic="Saludos y presentaciones" data-desc="Expresiones esenciales: Cześć, Dzień dobry, Jak się masz?, Miło mi cię poznać. Primera interacción social.">
+        <h3 class="font-[600]" style="color: #004aad;">Saludos y presentaciones</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Cześć, Dzień dobry, Jak się masz?</p>
+       </div>
+       <div class="topic-card vocabulary" data-search="números colores a1" data-level="A1" data-type="Vocabulario" data-topic="Números y colores" data-desc="Números del 1 al 100 y colores básicos: czerwony, niebieski, zielony, żółty, czarny, biały.">
+        <h3 class="font-[600]" style="color: #004aad;">Números y colores</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">1-100, podstawowe kolory</p>
+       </div>
+      </div>
+     </div><!-- A2 -->
+     <div class="level-card" data-level="a2">
+      <div class="flex items-center justify-between cursor-pointer section-header" data-target="a2-content">
+       <div class="flex items-center gap-4">
+        <div class="badge-a2 w-16 h-16 rounded-[18px] flex items-center justify-center"><span class="text-white text-[22px] font-[800]">A2</span>
+        </div>
+        <div>
+         <h2 class="text-xl font-[700]" style="color: #004aad;">Nivel A2 – Elemental</h2>
+         <p class="text-sm" style="color: #004aad; opacity: 0.6;">Comunicación básica cotidiana</p>
+        </div>
+       </div>
+       <svg class="section-arrow w-6 h-6" style="color: #004aad;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+       </svg>
+      </div>
+      <div id="a2-content" class="section-content mt-4 space-y-3">
+       <div class="text-[15px] font-[700] mt-2 mb-1" style="color: #004aad;">
+        📘 Gramática
+       </div>
+       <div class="topic-card grammar" data-search="casos nominativo acusativo a2" data-level="A2" data-type="Gramática" data-topic="Casos: Nominativo y Acusativo" data-desc="Introducción al sistema de casos polacos. Mianownik (sujeto) y Biernik (objeto directo). Casos fundamentales.">
+        <h3 class="font-[600]" style="color: #004aad;">Casos: Nominativo y Acusativo</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Mianownik i Biernik</p>
+       </div>
+       <div class="topic-card grammar" data-search="verbos presente a2" data-level="A2" data-type="Gramática" data-topic="Verbos en presente" data-desc="Conjugación regular de verbos en tiempo presente. Terminaciones -am/-asz, -ę/-esz, -uję/-ujesz.">
+        <h3 class="font-[600]" style="color: #004aad;">Verbos en presente</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Conjugaciones regulares</p>
+       </div>
+       <div class="topic-card grammar" data-search="adjetivos género a2" data-level="A2" data-type="Gramática" data-topic="Adjetivos y género" data-desc="Sistema de tres géneros en polaco: masculino, femenino, neutro. Concordancia de adjetivos con sustantivos.">
+        <h3 class="font-[600]" style="color: #004aad;">Adjetivos y género</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Concordancia masculino/femenino/neutro</p>
+       </div>
+       <div class="text-[15px] font-[700] mt-4 mb-1" style="color: #004aad;">
+        📗 Vocabulario
+       </div>
+       <div class="topic-card vocabulary" data-search="familia relaciones a2" data-level="A2" data-type="Vocabulario" data-topic="Familia y relaciones" data-desc="Vocabulario familiar: rodzina, rodzice, mama, tata, brat, siostra, dziadkowie, przyjaciele.">
+        <h3 class="font-[600]" style="color: #004aad;">Familia y relaciones</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Rodzina, przyjaciele</p>
+       </div>
+       <div class="topic-card vocabulary" data-search="comida restaurante a2" data-level="A2" data-type="Vocabulario" data-topic="Comida y restaurante" data-desc="Vocabulario gastronómico: jedzenie, picie, restauracja, zamawianie. Expresiones útiles en restaurantes.">
+        <h3 class="font-[600]" style="color: #004aad;">Comida y restaurante</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Jedzenie, zamawianie</p>
+       </div>
+      </div>
+     </div><!-- B1 -->
+     <div class="level-card" data-level="b1">
+      <div class="flex items-center justify-between cursor-pointer section-header" data-target="b1-content">
+       <div class="flex items-center gap-4">
+        <div class="badge-b1 w-16 h-16 rounded-[18px] flex items-center justify-center"><span class="text-white text-[22px] font-[800]">B1</span>
+        </div>
+        <div>
+         <h2 class="text-xl font-[700]" style="color: #004aad;">Nivel B1 – Intermedio</h2>
+         <p class="text-sm" style="color: #004aad; opacity: 0.6;">Expresión de opiniones y experiencias</p>
+        </div>
+       </div>
+       <svg class="section-arrow w-6 h-6" style="color: #004aad;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+       </svg>
+      </div>
+      <div id="b1-content" class="section-content mt-4 space-y-3">
+       <div class="text-[15px] font-[700] mt-2 mb-1" style="color: #004aad;">
+        📘 Gramática
+       </div>
+       <div class="topic-card grammar" data-search="casos dativo instrumental b1" data-level="B1" data-type="Gramática" data-topic="Casos: Dativo e Instrumental" data-desc="Casos intermedios: Celownik (objeto indirecto) y Narzędnik (instrumento, compañía). Usos y terminaciones.">
+        <h3 class="font-[600]" style="color: #004aad;">Casos: Dativo e Instrumental</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Celownik i Narzędnik</p>
+       </div>
+       <div class="topic-card grammar" data-search="pasado aspecto b1" data-level="B1" data-type="Gramática" data-topic="Tiempo pasado y aspecto" data-desc="Sistema aspectual polaco: aspecto perfectivo (dokonany) vs imperfectivo (niedokonany). Uso del pasado.">
+        <h3 class="font-[600]" style="color: #004aad;">Tiempo pasado y aspecto</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Dokonany vs niedokonany</p>
+       </div>
+       <div class="topic-card grammar" data-search="condicional b1" data-level="B1" data-type="Gramática" data-topic="Modo condicional" data-desc="Construcción del condicional: tryb warunkowy. Expresión de hipótesis, deseos y situaciones irreales.">
+        <h3 class="font-[600]" style="color: #004aad;">Modo condicional</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Tryb warunkowy</p>
+       </div>
+       <div class="text-[15px] font-[700] mt-4 mb-1" style="color: #004aad;">
+        📗 Vocabulario
+       </div>
+       <div class="topic-card vocabulary" data-search="trabajo profesiones b1" data-level="B1" data-type="Vocabulario" data-topic="Trabajo y profesiones" data-desc="Vocabulario profesional: praca, zawód, kariera, biuro, spotkanie. Expresiones del mundo laboral.">
+        <h3 class="font-[600]" style="color: #004aad;">Trabajo y profesiones</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Praca, zawody, kariera</p>
+       </div>
+       <div class="topic-card vocabulary" data-search="viajes transporte b1" data-level="B1" data-type="Vocabulario" data-topic="Viajes y transporte" data-desc="Vocabulario de viajes: podróż, transport, samolot, pociąg, autobus, hotel, rezerwacja.">
+        <h3 class="font-[600]" style="color: #004aad;">Viajes y transporte</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Podróże, środki transportu</p>
+       </div>
+      </div>
+     </div><!-- B2 -->
+     <div class="level-card" data-level="b2">
+      <div class="flex items-center justify-between cursor-pointer section-header" data-target="b2-content">
+       <div class="flex items-center gap-4">
+        <div class="badge-b2 w-16 h-16 rounded-[18px] flex items-center justify-center"><span class="text-white text-[22px] font-[800]">B2</span>
+        </div>
+        <div>
+         <h2 class="text-xl font-[700]" style="color: #004aad;">Nivel B2 – Intermedio Alto</h2>
+         <p class="text-sm" style="color: #004aad; opacity: 0.6;">Fluidez y expresión compleja</p>
+        </div>
+       </div>
+       <svg class="section-arrow w-6 h-6" style="color: #004aad;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+       </svg>
+      </div>
+      <div id="b2-content" class="section-content mt-4 space-y-3">
+       <div class="text-[15px] font-[700] mt-2 mb-1" style="color: #004aad;">
+        📘 Gramática
+       </div>
+       <div class="topic-card grammar" data-search="casos genitivo locativo b2" data-level="B2" data-type="Gramática" data-topic="Casos: Genitivo y Locativo" data-desc="Casos avanzados: Dopełniacz (posesión, negación) y Miejscownik (ubicación). Dominio completo del sistema.">
+        <h3 class="font-[600]" style="color: #004aad;">Casos: Genitivo y Locativo</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Dopełniacz i Miejscownik</p>
+       </div>
+       <div class="topic-card grammar" data-search="participios gerundios b2" data-level="B2" data-type="Gramática" data-topic="Participios y gerundios" data-desc="Formas no personales del verbo: imiesłowy. Participios activos, pasivos, adverbiales. Uso literario.">
+        <h3 class="font-[600]" style="color: #004aad;">Participios y gerundios</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Imiesłowy</p>
+       </div>
+       <div class="topic-card grammar" data-search="oraciones complejas b2" data-level="B2" data-type="Gramática" data-topic="Oraciones complejas" data-desc="Sintaxis avanzada: zdania złożone. Oraciones subordinadas, coordinadas, correlativas. Estilo elaborado.">
+        <h3 class="font-[600]" style="color: #004aad;">Oraciones complejas</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Zdania złożone</p>
+       </div>
+       <div class="text-[15px] font-[700] mt-4 mb-1" style="color: #004aad;">
+        📗 Vocabulario
+       </div>
+       <div class="topic-card vocabulary" data-search="política sociedad b2" data-level="B2" data-type="Vocabulario" data-topic="Política y sociedad" data-desc="Vocabulario avanzado: polityka, społeczeństwo, wybory, parlament, demokracja. Temas sociales actuales.">
+        <h3 class="font-[600]" style="color: #004aad;">Política y sociedad</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Polityka, społeczeństwo</p>
+       </div>
+       <div class="topic-card vocabulary" data-search="expresiones idiomáticas b2" data-level="B2" data-type="Vocabulario" data-topic="Expresiones idiomáticas" data-desc="Idiomas y expresiones coloquiales: idiomy i związki frazeologiczne. Lenguaje natural y fluido.">
+        <h3 class="font-[600]" style="color: #004aad;">Expresiones idiomáticas</h3>
+        <p class="text-sm mt-1" style="color: #004aad; opacity: 0.6;">Idiomy i związki frazeologiczne</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal 1: Ejercicios -->
+  <div id="ejercicios-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+   <div class="modal-box w-full max-w-[520px]">
+    <div class="p-8"><!-- Header -->
+     <div class="flex items-start gap-4 mb-5">
+      <div class="modal-icon flex-shrink-0">
+       <svg class="w-7 h-7" style="color: #004aad;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+       </svg>
+      </div>
+      <div class="flex-1">
+       <h2 class="text-[26px] font-[700] mb-1" style="color: #004aad;">Ejercicios</h2>
+       <p id="modal-topic-name" class="text-[15px] font-[500]" style="color: #004aad; opacity: 0.7;">Nombre del tema</p>
+       <p id="modal-meta" class="text-[13px] mt-1" style="color: #004aad; opacity: 0.5;">Nivel: A1 | Tipo: Gramática</p>
+      </div>
+     </div><!-- Description Box -->
+     <div class="info-box">
+      <p id="modal-description" class="text-[14px] leading-relaxed" style="color: #004aad;">Descripción del tema educativo.</p>
+     </div><!-- Links Container -->
+     <div id="links-container" class="mb-5">
+      <p id="no-links-msg" class="text-[13px] italic text-center py-3" style="color: #9ca3af;">No hay links guardados aún.</p>
+     </div><!-- Admin Links -->
+     <div id="admin-links" class="hidden flex gap-4 justify-center mb-5"><button id="add-link-btn" class="admin-link" style="color: #3b82f6;">+ Añadir link</button> <button id="delete-links-btn" class="admin-link" style="color: #ef4444;">× Eliminar link</button>
+     </div><!-- Close Button -->
+     <div class="flex justify-center mb-5"><button id="close-ejercicios" class="btn-close">Cerrar</button>
+     </div><!-- Footer Branding -->
+     <div class="border-t pt-5 flex items-center justify-between" style="border-color: #e5e7eb;"><a href="https://instagram.com/sacariooo" target="_blank" rel="noopener noreferrer" class="social-link">
+       <svg class="w-[16px] h-[16px]" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+       </svg> @sacariooo </a> <a href="https://www.tiktok.com/@latip0l" target="_blank" rel="noopener noreferrer" class="social-link">
+       <svg class="w-[16px] h-[16px]" fill="currentColor" viewbox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+       </svg> @latip0l </a>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal 2: Password -->
+  <div id="password-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+   <div class="modal-box w-full max-w-[420px]">
+    <div class="p-8"><!-- Header -->
+     <div class="flex flex-col items-center mb-6">
+      <div class="modal-icon mb-4">
+       <svg class="w-7 h-7" style="color: #004aad;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+       </svg>
+      </div>
+      <h2 class="text-[24px] font-[700]" style="color: #004aad;">Contraseña requerida</h2>
+     </div><!-- Input --> <input type="password" id="password-input" class="modal-input mb-5" placeholder="Introduce contraseña"> <!-- Buttons -->
+     <div class="flex gap-3 mb-6"><button id="confirm-password" class="btn-green flex-1">Confirmar</button> <button id="cancel-password" class="btn-gray flex-1">Cancelar</button>
+     </div><!-- Footer Branding -->
+     <div class="border-t pt-5 flex items-center justify-between" style="border-color: #e5e7eb;"><a href="https://instagram.com/sacariooo" target="_blank" rel="noopener noreferrer" class="social-link">
+       <svg class="w-[16px] h-[16px]" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+       </svg> @sacariooo </a> <a href="https://www.tiktok.com/@latip0l" target="_blank" rel="noopener noreferrer" class="social-link">
+       <svg class="w-[16px] h-[16px]" fill="currentColor" viewbox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+       </svg> @latip0l </a>
+     </div>
+    </div>
+   </div>
+  </div><!-- Modal 3: Add Link -->
+  <div id="addlink-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+   <div class="modal-box w-full max-w-[500px]">
+    <div class="p-8"><!-- Header -->
+     <div class="flex flex-col items-center mb-6">
+      <div class="modal-icon mb-4">
+       <svg class="w-7 h-7" style="color: #004aad;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+       </svg>
+      </div>
+      <h2 class="text-[24px] font-[700] mb-1" style="color: #004aad;">Añadir nuevo link</h2>
+      <p id="addlink-topic-name" class="text-[14px]" style="color: #004aad; opacity: 0.6;">Nombre del tema</p>
+     </div><!-- Form Fields -->
+     <div class="space-y-4 mb-6">
+      <div><label class="block text-[13px] font-[600] mb-2" style="color: #004aad;">Descripción del ejercicio:</label> <input type="text" id="link-description" class="modal-input" placeholder="Ej: Quiz interactivo de verbos">
+      </div>
+      <div><label class="block text-[13px] font-[600] mb-2" style="color: #004aad;">URL del ejercicio:</label> <input type="url" id="link-url" class="modal-input" placeholder="https://ejemplo.com/ejercicios">
+      </div>
+      <div><label class="block text-[13px] font-[600] mb-2" style="color: #004aad;">Notas (opcional):</label> <input type="text" id="link-notes" class="modal-input" placeholder="Ej: Completado, Revisar...">
+      </div>
+     </div><!-- Buttons -->
+     <div class="flex gap-3 mb-6"><button id="save-link" class="btn-green flex-1">Guardar</button> <button id="cancel-addlink" class="btn-gray flex-1">Cancelar</button>
+     </div><!-- Footer Branding -->
+     <div class="border-t pt-5 flex items-center justify-between" style="border-color: #e5e7eb;"><a href="https://instagram.com/sacariooo" target="_blank" rel="noopener noreferrer" class="social-link">
+       <svg class="w-[16px] h-[16px]" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+       </svg> @sacariooo </a> <a href="https://www.tiktok.com/@latip0l" target="_blank" rel="noopener noreferrer" class="social-link">
+       <svg class="w-[16px] h-[16px]" fill="currentColor" viewbox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+       </svg> @latip0l </a>
+     </div>
+    </div>
+   </div>
+  </div><!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[100] space-y-2"></div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      main_title: 'Polaco',
+      subtitle: 'Curso interactivo para extranjeros',
+      search_placeholder: 'Buscar tema…'
+    };
+
+    // State
+    let isAdminMode = localStorage.getItem('isAdminMode') === 'true';
+    let currentTopic = null;
+    let linksData = JSON.parse(localStorage.getItem('polaco_links') || '{}');
+
+    // Initialize Element SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          document.getElementById('main-title').textContent = config.main_title || defaultConfig.main_title;
+          document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
+          document.getElementById('search-input').placeholder = config.search_placeholder || defaultConfig.search_placeholder;
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['main_title', config.main_title || defaultConfig.main_title],
+          ['subtitle', config.subtitle || defaultConfig.subtitle],
+          ['search_placeholder', config.search_placeholder || defaultConfig.search_placeholder]
+        ])
+      });
+    }
+
+    // Toast function
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let gradient;
+      switch(type) {
+        case 'success': gradient = 'linear-gradient(135deg, #10b981, #059669)'; break;
+        case 'error': gradient = 'linear-gradient(135deg, #ef4444, #dc2626)'; break;
+        case 'warning': gradient = 'linear-gradient(135deg, #f97316, #ea580c)'; break;
+        default: gradient = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+      }
+      
+      toast.className = 'toast px-6 py-3 rounded-xl text-white font-[600] shadow-lg';
+      toast.style.background = gradient;
+      toast.textContent = message;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    // Modal functions
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    // Section toggle
+    document.querySelectorAll('.section-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const targetId = header.dataset.target;
+        const content = document.getElementById(targetId);
+        const arrow = header.querySelector('.section-arrow');
+        
+        content.classList.toggle('open');
+        arrow.classList.toggle('open');
+      });
+    });
+
+    // Topic click
+    document.querySelectorAll('.topic-card').forEach(card => {
+      card.addEventListener('click', () => {
+        currentTopic = {
+          level: card.dataset.level,
+          type: card.dataset.type,
+          topic: card.dataset.topic,
+          description: card.dataset.desc,
+          key: `${card.dataset.level}_${card.dataset.topic}`.replace(/\s+/g, '_')
+        };
+        
+        document.getElementById('modal-topic-name').textContent = currentTopic.topic;
+        document.getElementById('modal-meta').textContent = `Nivel: ${currentTopic.level} | Tipo: ${currentTopic.type}`;
+        document.getElementById('modal-description').textContent = currentTopic.description;
+        
+        renderLinks();
+        updateAdminVisibility();
+        openModal('ejercicios-modal');
+      });
+    });
+
+    // Render links
+    function renderLinks() {
+      const container = document.getElementById('links-container');
+      const topicLinks = linksData[currentTopic?.key] || [];
+      
+      container.innerHTML = '';
+      
+      if (topicLinks.length === 0) {
+        container.innerHTML = '<p id="no-links-msg" class="text-[13px] italic text-center py-3" style="color: #9ca3af;">No hay links guardados aún.</p>';
+      } else {
+        topicLinks.forEach((link, index) => {
+          const linkEl = document.createElement('a');
+          linkEl.href = link.url;
+          linkEl.target = '_blank';
+          linkEl.rel = 'noopener noreferrer';
+          linkEl.className = 'link-card block';
+          linkEl.innerHTML = `
+            <div class="font-[600] text-[14px] mb-1" style="color: #004aad;">${link.description}</div>
+            ${link.notes ? `<div class="text-[12px] mb-2" style="color: #6b7280;">${link.notes}</div>` : ''}
+            <div class="text-[11px] truncate" style="color: #004aad;">${link.url}</div>
+          `;
+          container.appendChild(linkEl);
+        });
+      }
+    }
+
+    // Update admin visibility
+    function updateAdminVisibility() {
+      const adminLinks = document.getElementById('admin-links');
+      if (isAdminMode) {
+        adminLinks.classList.remove('hidden');
+      } else {
+        adminLinks.classList.add('hidden');
+      }
+    }
+
+    // Search functionality
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      
+      document.querySelectorAll('.topic-card').forEach(card => {
+        const searchText = card.dataset.search.toLowerCase();
+        const matches = query === '' || searchText.includes(query);
+        card.style.display = matches ? 'block' : 'none';
+        
+        if (matches && query !== '') {
+          const section = card.closest('.level-card').querySelector('.section-content');
+          const arrow = card.closest('.level-card').querySelector('.section-arrow');
+          section.classList.add('open');
+          arrow.classList.add('open');
+        }
+      });
+    });
+
+    // Admin toggle
+    document.getElementById('admin-toggle').addEventListener('click', () => {
+      if (isAdminMode) {
+        isAdminMode = false;
+        localStorage.setItem('isAdminMode', 'false');
+        showToast('Modo admin desactivado', 'info');
+        updateAdminVisibility();
+      } else {
+        openModal('password-modal');
+        document.getElementById('password-input').value = '';
+        setTimeout(() => document.getElementById('password-input').focus(), 100);
+      }
+    });
+
+    // Password modal
+    document.getElementById('confirm-password').addEventListener('click', () => {
+      const password = document.getElementById('password-input').value;
+      if (password === 'ADMIN123') {
+        isAdminMode = true;
+        localStorage.setItem('isAdminMode', 'true');
+        closeModal('password-modal');
+        showToast('Modo admin activado', 'success');
+        updateAdminVisibility();
+      } else {
+        showToast('Contraseña incorrecta', 'error');
+      }
+    });
+
+    document.getElementById('password-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('confirm-password').click();
+      }
+    });
+
+    document.getElementById('cancel-password').addEventListener('click', () => {
+      closeModal('password-modal');
+    });
+
+    // Close ejercicios modal
+    document.getElementById('close-ejercicios').addEventListener('click', () => {
+      closeModal('ejercicios-modal');
+    });
+
+    // Add link button
+    document.getElementById('add-link-btn').addEventListener('click', () => {
+      document.getElementById('link-description').value = '';
+      document.getElementById('link-url').value = '';
+      document.getElementById('link-notes').value = '';
+      document.getElementById('addlink-topic-name').textContent = currentTopic.topic;
+      openModal('addlink-modal');
+    });
+
+    // Save link
+    document.getElementById('save-link').addEventListener('click', () => {
+      const description = document.getElementById('link-description').value.trim();
+      const url = document.getElementById('link-url').value.trim();
+      const notes = document.getElementById('link-notes').value.trim();
+      
+      if (!description || !url) {
+        showToast('Completa los campos requeridos', 'warning');
+        return;
+      }
+      
+      if (!linksData[currentTopic.key]) {
+        linksData[currentTopic.key] = [];
+      }
+      
+      linksData[currentTopic.key].push({ description, url, notes });
+      localStorage.setItem('polaco_links', JSON.stringify(linksData));
+      
+      closeModal('addlink-modal');
+      renderLinks();
+      showToast('Link añadido correctamente', 'success');
+    });
+
+    document.getElementById('cancel-addlink').addEventListener('click', () => {
+      closeModal('addlink-modal');
+    });
+
+    // Delete links
+    document.getElementById('delete-links-btn').addEventListener('click', () => {
+      if (currentTopic && linksData[currentTopic.key] && linksData[currentTopic.key].length > 0) {
+        linksData[currentTopic.key] = [];
+        localStorage.setItem('polaco_links', JSON.stringify(linksData));
+        renderLinks();
+        showToast('Links eliminados', 'success');
+      } else {
+        showToast('No hay links para eliminar', 'warning');
+      }
+    });
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+          document.body.style.overflow = 'auto';
+        }
+      });
+    });
+
+    // ESC key to close modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+          modal.classList.remove('active');
+          document.body.style.overflow = 'auto';
+        });
+      }
+    });
+
+    // Initialize admin state on load
+    updateAdminVisibility();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c0f31e1e5da3954',t:'MTc2ODkxODY0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
