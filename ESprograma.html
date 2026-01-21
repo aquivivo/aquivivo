@@ -3,65 +3,28 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Polaco - Dashboard</title>
+  <title>Profesora de Español y Polaco</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/_sdk/element_sdk.js"></script>
-  <script src="/_sdk/data_sdk.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;family=Playfair+Display:wght@700;800;900&amp;display=swap" rel="stylesheet">
   <style>
-    /* =========================
-       AQUI VIVO – DESIGN SYSTEM
-       ========================= */
-    
-    /* ---------- KOLORY ---------- */
-    :root {
-      --yellow-main: #FCD116;
-      --yellow-light: #FFD700;
-      --blue-main: #003893;
-      --blue-dark: #001a4d;
-      --blue-light: #0055CC;
-      --red-main: #CE1126;
-      --red-light: #FF1E3C;
-      --red-dark: #A00E1E;
-      --white: #ffffff;
-      --gray-text: #6b7280;
-      --gray-light: #f3f4f6;
-    }
-    
     body {
       box-sizing: border-box;
-      font-family: 'Montserrat', sans-serif;
+    }
+    .font-display { font-family: 'Playfair Display', serif; }
+    .font-body { font-family: 'Montserrat', sans-serif; }
+    
+    .gradient-colombia {
+      background: linear-gradient(135deg, #FCD116 0%, #FCD116 33%, #003893 33%, #003893 66%, #CE1126 66%, #CE1126 100%);
     }
     
-    * {
-      box-sizing: border-box;
+    .bg-blue-main {
+      background: linear-gradient(180deg, #001a4d 0%, #003893 50%, #001a4d 100%);
     }
     
-    .font-display {
-      font-family: 'Playfair Display', serif;
-    }
-    
-    .glow-text {
-      text-shadow: 0 0 20px rgba(252, 209, 22, 0.5);
-    }
-    
-    /* ---------- GRADIENTY ---------- */
-    .gradient-yellow {
-      background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
-    }
-    
-    .gradient-red {
-      background: linear-gradient(135deg, var(--red-main) 0%, var(--red-light) 100%);
-    }
-    
-    .gradient-blue {
-      background: linear-gradient(135deg, var(--blue-main) 0%, var(--blue-light) 100%);
-    }
-    
-    /* ---------- KARTY ---------- */
-    .card {
+    .card-white {
       background: white;
       border-radius: 20px;
       padding: 20px;
@@ -69,49 +32,58 @@
       transition: all 0.4s ease;
     }
     
-    .card:hover {
+    .card-white:hover {
       transform: translateY(-8px);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
     }
     
     .card-yellow {
-      background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
+      border-radius: 20px;
+      padding: 20px;
       box-shadow: 0 10px 40px rgba(252, 209, 22, 0.3);
+      transition: all 0.4s ease;
     }
     
     .card-yellow:hover {
+      transform: translateY(-8px);
       box-shadow: 0 20px 60px rgba(252, 209, 22, 0.4);
     }
     
     .card-red {
-      background: linear-gradient(135deg, var(--red-main) 0%, var(--red-light) 100%);
+      background: linear-gradient(135deg, #CE1126 0%, #FF1E3C 100%);
+      border-radius: 20px;
+      padding: 20px;
       box-shadow: 0 10px 40px rgba(206, 17, 38, 0.3);
+      transition: all 0.4s ease;
     }
     
     .card-red:hover {
+      transform: translateY(-8px);
       box-shadow: 0 20px 60px rgba(206, 17, 38, 0.4);
     }
     
     .card-blue {
-      background: linear-gradient(135deg, var(--blue-main) 0%, var(--blue-light) 100%);
+      background: linear-gradient(135deg, #003893 0%, #0055CC 100%);
+      border-radius: 20px;
+      padding: 20px;
       box-shadow: 0 10px 40px rgba(0, 56, 147, 0.3);
+      transition: all 0.4s ease;
     }
     
     .card-blue:hover {
+      transform: translateY(-8px);
       box-shadow: 0 20px 60px rgba(0, 56, 147, 0.4);
     }
     
-    /* ---------- PRZYCISKI ---------- */
     .btn-yellow {
-      background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
-      color: var(--blue-main);
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
+      color: #003893;
       font-weight: 700;
       padding: 14px 28px;
       border-radius: 14px;
       box-shadow: 0 8px 24px rgba(252, 209, 22, 0.4);
       transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
       display: inline-block;
       text-align: center;
     }
@@ -122,15 +94,13 @@
     }
     
     .btn-red {
-      background: linear-gradient(135deg, var(--red-main) 0%, var(--red-dark) 100%);
+      background: linear-gradient(135deg, #CE1126 0%, #A00E1E 100%);
       color: white;
       font-weight: 700;
       padding: 14px 28px;
       border-radius: 14px;
       box-shadow: 0 8px 24px rgba(206, 17, 38, 0.4);
       transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
       display: inline-block;
       text-align: center;
     }
@@ -146,16 +116,16 @@
       font-weight: 700;
       padding: 16px 32px;
       border-radius: 16px;
-      background: transparent;
       transition: all 0.3s ease;
+      display: inline-block;
+      text-align: center;
     }
     
     .btn-white-outline:hover {
       background: white;
-      color: var(--blue-main);
+      color: #003893;
     }
     
-    /* ---------- PASKI AKCENTOWE ---------- */
     .accent-yellow {
       position: relative;
       padding-left: 24px;
@@ -168,7 +138,7 @@
       top: 0;
       bottom: 0;
       width: 6px;
-      background: var(--yellow-main);
+      background: #FCD116;
       border-radius: 3px;
     }
     
@@ -184,22 +154,21 @@
       top: 0;
       bottom: 0;
       width: 6px;
-      background: var(--red-main);
+      background: #CE1126;
       border-radius: 3px;
     }
     
-    /* ---------- PRICE TAG ---------- */
-    .price-tag {
-      background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
-      color: var(--blue-main);
-      padding: 10px 20px;
-      border-radius: 12px;
-      font-weight: 800;
+    .section-badge {
+      background: rgba(252, 209, 22, 0.2);
+      color: #FCD116;
+      padding: 8px 20px;
+      border-radius: 24px;
+      font-weight: 700;
+      font-size: 0.875rem;
       display: inline-block;
-      box-shadow: 0 4px 16px rgba(252, 209, 22, 0.4);
+      border: 2px solid #FCD116;
     }
     
-    /* ---------- IKONY W KÓŁKACH ---------- */
     .icon-circle {
       width: 80px;
       height: 80px;
@@ -209,11 +178,52 @@
       justify-content: center;
       font-size: 2.5rem;
       margin: 0 auto;
-      background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
       box-shadow: 0 8px 24px rgba(252, 209, 22, 0.4);
     }
     
-    /* ---------- ANIMACJA FLOAT ---------- */
+    .icon-circle-red {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #CE1126 0%, #FF1E3C 100%);
+      box-shadow: 0 8px 24px rgba(206, 17, 38, 0.4);
+    }
+    
+    .nav-glass {
+      background: rgba(0, 26, 77, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid rgba(252, 209, 22, 0.3);
+    }
+    
+    .price-tag {
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
+      color: #003893;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 800;
+      display: inline-block;
+      box-shadow: 0 4px 16px rgba(252, 209, 22, 0.4);
+    }
+    
+    .testimonial-card {
+      background: white;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      border-top: 6px solid #FCD116;
+    }
+    
+    .stars {
+      color: #FCD116;
+      font-size: 1.5rem;
+    }
+    
     .floating {
       animation: floating 3s ease-in-out infinite;
     }
@@ -223,1382 +233,607 @@
       50% { transform: translateY(-15px); }
     }
     
-    .search-input:focus {
-      outline: none;
-      border-color: var(--yellow-main);
-      box-shadow: 0 0 0 3px rgba(252, 209, 22, 0.15);
-    }
-    
-    .level-card {
-      transition: all 0.4s ease;
-    }
-    
-    .topic-tile {
-      transition: all 0.4s ease;
-    }
-    
-    .topic-tile:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-    }
-    
-    .popup-overlay {
-      background: rgba(0, 26, 77, 0.85);
-      backdrop-filter: blur(12px);
-    }
-    
-    .accordion-arrow {
-      transition: transform 0.2s ease;
-    }
-    
-    .accordion-arrow.open {
-      transform: rotate(180deg);
-    }
-    
-    .admin-link {
-      font-size: 11px;
-    }
-    
-    .filter-pill {
-      cursor: pointer;
-    }
-    
-    .filter-pill.active {
-      background-color: var(--yellow-main) !important;
-      border-color: var(--yellow-main) !important;
-      color: var(--blue-main) !important;
+    .glow-text {
+      text-shadow: 0 0 20px rgba(252, 209, 22, 0.5);
     }
   </style>
   <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full" style="background: linear-gradient(180deg, #001a4d 0%, #003893 50%, #001a4d 100%);">
-  <div id="app" class="h-full overflow-auto">
-   <div class="max-w-4xl mx-auto px-4 py-8"><!-- Header -->
-    <header class="text-center mb-8 mt-8">
-     <h1 id="main-title" class="font-display text-5xl font-bold mb-2 glow-text" style="color: var(--yellow-main);">Polaco</h1>
-     <p id="main-subtitle" class="text-lg" style="color: rgba(255, 255, 255, 0.8);">Curso interactivo para extranjeros</p>
-    </header><!-- Search Bar -->
-    <div class="mb-6">
-     <div class="relative">
-      <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style="color: var(--yellow-main);" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg><input type="text" id="search-input" placeholder="Buscar tema…" class="search-input w-full py-4 pl-12 pr-4 text-base rounded-2xl border-2" style="background-color: rgba(255, 255, 255, 0.95); border-color: var(--yellow-main); color: var(--blue-main);">
-     </div>
-    </div><!-- Exercise Finder -->
-    <div class="mb-6">
-     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <div><label class="block text-xs font-medium mb-1.5 ml-1" style="color: var(--yellow-main);">Tipo de ejercicio</label> <select id="exercise-type-filter" onchange="applyFilters()" class="w-full py-3 px-4 rounded-xl border-2 text-sm font-medium cursor-pointer" style="background-color: rgba(255, 255, 255, 0.95); border-color: var(--yellow-main); color: var(--blue-main);"> <option value="">📚 Todos los tipos de ejercicios</option> <option value="Rellenar los espacios">✏️ Rellenar los espacios</option> <option value="Relacionar palabra con imagen">🖼️ Relacionar palabra con imagen</option> <option value="Relacionar palabra con traducción">🔄 Relacionar palabra con traducción</option> <option value="Elegir la palabra correcta">☑️ Elegir la palabra correcta</option> <option value="Tarjetas interactivas">🃏 Tarjetas interactivas</option> <option value="Agrupar palabras">📦 Agrupar palabras</option> <option value="Verdadero o falso">✅ Verdadero o falso</option> <option value="Completar la frase con una imagen">🖼️ Completar la frase con una imagen</option> <option value="Juego de memoria (pares)">🧠 Juego de memoria (pares)</option> <option value="Opción múltiple">🔘 Opción múltiple</option> <option value="Completar la forma correcta">📝 Completar la forma correcta</option> <option value="Elegir la forma correcta">✔️ Elegir la forma correcta</option> <option value="Transformaciones">🔀 Transformaciones</option> <option value="Relacionar pregunta con respuesta">❓ Relacionar pregunta con respuesta</option> <option value="Ordenar palabras para formar una frase">🔤 Ordenar palabras para formar una frase</option> <option value="Corregir errores">🔍 Corregir errores</option> <option value="Unir dos partes de la frase">🧩 Unir dos partes de la frase</option> <option value="Completar con preposición o terminación">➕ Completar con preposición o terminación</option> <option value="Opción única">1️⃣ Opción única</option> <option value="Escribir tu propia respuesta">✍️ Escribir tu propia respuesta</option> <option value="Repetir después del narrador">🗣️ Repetir después del narrador</option> <option value="Completar la frase con tu voz">🎤 Completar la frase con tu voz</option> <option value="Responder a una pregunta">💬 Responder a una pregunta</option> <option value="Describir una imagen">🎨 Describir una imagen</option> <option value="Juego de roles">🎭 Juego de roles</option> <option value="Mini-monólogo">📣 Mini-monólogo</option> <option value="Diálogo semiabierto">💭 Diálogo semiabierto</option> <option value="Decirlo de otra manera">🔁 Decirlo de otra manera</option> <option value="Escuchar y elegir la respuesta">👂 Escuchar y elegir la respuesta</option> <option value="Escuchar y completar los espacios">🎧 Escuchar y completar los espacios</option> <option value="Escuchar y marcar verdadero o falso">👂 Escuchar y marcar verdadero o falso</option> <option value="Escuchar y relacionar personas">👥 Escuchar y relacionar personas</option> <option value="Escuchar y ordenar la secuencia">🔢 Escuchar y ordenar la secuencia</option> <option value="Dictado con audio">📻 Dictado con audio</option> <option value="Escuchar y repetir">🔊 Escuchar y repetir</option> <option value="Diálogo interactivo">💬 Diálogo interactivo</option> <option value="Misión del día">🎯 Misión del día</option> <option value="Quiz situacional">🎲 Quiz situacional</option> <option value="Video con preguntas">🎬 Video con preguntas</option> </select>
+ <body class="h-full font-body bg-blue-main text-white">
+  <div class="w-full h-full overflow-auto"><!-- Navigation -->
+   <nav class="fixed top-0 left-0 right-0 z-50 nav-glass">
+    <div class="max-w-7xl mx-auto px-6 py-5">
+     <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+       <svg class="w-14 h-14 drop-shadow-xl" viewbox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs>
+         <lineargradient id="colombiaFlag" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#FCD116;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#FCD116;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#003893;stop-opacity:1" />
+          <stop offset="75%" style="stop-color:#003893;stop-opacity:1" />
+          <stop offset="75%" style="stop-color:#CE1126;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
+         </lineargradient>
+        </defs> <!-- Poland map - very detailed accurate shape --> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlag)" stroke="#FCD116" stroke-width="2.5" />
+       </svg><span class="font-display text-2xl font-bold text-white">Aqui Vivo</span>
       </div>
-      <div><label class="block text-xs font-medium mb-1.5 ml-1" style="color: var(--yellow-main);">Nivel</label> <select id="level-filter" onchange="applyFilters()" class="w-full py-3 px-4 rounded-xl border-2 text-sm font-medium cursor-pointer" style="background-color: rgba(255, 255, 255, 0.95); border-color: var(--yellow-main); color: var(--blue-main);"> <option value="">🌍 Todos los niveles</option> <option value="A1">🌱 Nivel A1</option> <option value="A2">🌿 Nivel A2</option> <option value="B1">🌳 Nivel B1</option> <option value="B2">🏆 Nivel B2</option> </select>
+      <div class="hidden md:flex items-center gap-8"><a href="#inicio" class="text-white hover:text-yellow-400 font-semibold transition-colors">Inicio</a> <a href="#programa" class="text-white hover:text-yellow-400 font-semibold transition-colors">Programa</a> <a href="#servicios" class="text-white hover:text-yellow-400 font-semibold transition-colors">Servicios</a> <a href="#ebooks" class="text-white hover:text-yellow-400 font-semibold transition-colors">E-books</a> <a href="#contacto" class="text-white hover:text-yellow-400 font-semibold transition-colors">Contacto</a>
       </div>
      </div>
-     <div class="mt-3 text-center"><span id="filter-count" class="text-sm font-medium" style="color: var(--yellow-main);"></span>
-     </div>
-    </div><!-- Admin Button and Social Links -->
-    <div class="flex justify-between items-center mb-6">
-     <div class="flex-1"></div>
-     <div class="flex items-center gap-3"><a href="https://instagram.com/sacariooo" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity" style="background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af);" title="@sacariooo">
-       <svg class="w-5 h-5" style="color: white;" viewbox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-       </svg></a> <a href="https://tiktok.com/@latip0l" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity" style="background-color: #000000;" title="@latip0l">
-       <svg class="w-5 h-5" style="color: white;" viewbox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
-       </svg></a> <a href="mailto:aquivivo.pl@gmail.com?subject=Consulta sobre el curso de polaco&amp;body=¡Hola!%0D%0A%0D%0AMe gustaría recibir más información sobre tus clases de polaco. Estoy interesado/a en aprender el idioma y me encantaría conocer las opciones disponibles.%0D%0A%0D%0A¿Podrías contarme sobre los horarios, metodología y tarifas?%0D%0A%0D%0AQuedo atento/a a tu respuesta.%0D%0A%0D%0A¡Saludos!" class="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity" style="background-color: #ea4335;" title="aquivivo.pl@gmail.com">
-       <svg class="w-5 h-5" style="color: white;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-       </svg></a>
-     </div>
-     <div class="flex-1 flex justify-end"><button id="admin-btn" class="px-4 py-2 text-sm rounded-lg font-medium transition-opacity hover:opacity-80" style="color: var(--yellow-main); opacity: 0.6; background: transparent;"> 🔐 Modo Admin </button>
-     </div>
-    </div><!-- Level Cards Container -->
-    <div id="levels-container" class="space-y-4"><!-- Level cards will be rendered here -->
     </div>
-   </div>
-  </div><!-- Popup Container -->
-  <div id="popup-container" class="hidden fixed inset-0 z-50 flex items-center justify-center popup-overlay">
-   <div id="popup-content" class="w-full max-w-md mx-4"><!-- Popup content will be rendered here -->
-   </div>
+   </nav><!-- Hero Section -->
+   <section id="inicio" class="min-h-screen flex items-center pt-24 pb-12 px-6 relative overflow-hidden">
+    <div class="absolute top-20 right-10 w-96 h-96 bg-yellow-400 rounded-full opacity-10 blur-3xl"></div>
+    <div class="absolute bottom-20 left-10 w-80 h-80 bg-red-600 rounded-full opacity-10 blur-3xl"></div>
+    <div class="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-16 items-center relative z-10">
+     <div class="space-y-8">
+      <div class="inline-flex items-center gap-3 bg-yellow-400 text-blue-900 px-6 py-3 rounded-full font-bold shadow-xl"><span class="text-2xl">🇨🇴</span> <span>Para latinos en Polonia</span> <span class="text-2xl">🇵🇱</span>
+      </div>
+      <h1 class="font-display text-6xl lg:text-7xl font-black text-white leading-tight glow-text">Aprende Polaco<br><span class="text-yellow-400">con Alma Latina</span></h1>
+      <p class="text-xl text-blue-100 leading-relaxed">Profesora certificada de español y polaco. Te ayudo a dominar el idioma y adaptarte a la vida en Polonia con un método diseñado especialmente para hispanohablantes.</p>
+      <div class="flex flex-col sm:flex-row gap-5 pt-4"><a href="https://aquivivo.github.io/aquivivo/Reserva.html" class="btn-yellow text-lg"> Reserva tu Clase Gratis </a> <a href="#programa" class="btn-white-outline text-lg"> Ver Programa </a>
+      </div>
+     </div>
+     <div class="text-center space-y-10">
+      <div class="floating mx-auto">
+       <svg class="w-72 h-72 mx-auto drop-shadow-2xl" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><!-- Colombian Coffee Cup with steam --> <defs>
+         <lineargradient id="cupGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+         </lineargradient>
+         <lineargradient id="coffeeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#6F4E37;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#3E2723;stop-opacity:1" />
+         </lineargradient>
+        </defs> <!-- Sombrero Vueltiao (Colombian hat) in background --> <ellipse cx="100" cy="55" rx="70" ry="15" fill="#FCD116" opacity="0.3" /> <ellipse cx="100" cy="55" rx="60" ry="12" fill="#003893" opacity="0.3" /> <ellipse cx="100" cy="55" rx="50" ry="10" fill="#FCD116" opacity="0.3" /> <rect x="85" y="55" width="30" height="25" rx="5" fill="#FCD116" opacity="0.3" /> <!-- Coffee cup --> <path d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z" fill="url(#cupGradient)" stroke="#654321" stroke-width="2" /> <!-- Coffee liquid --> <ellipse cx="100" cy="120" rx="35" ry="8" fill="url(#coffeeGradient)" /> <!-- Cup handle --> <path d="M 140 130 Q 155 130 155 145 Q 155 160 140 160" fill="none" stroke="url(#cupGradient)" stroke-width="8" stroke-linecap="round" /> <!-- Colombian flag colors on cup --> <rect x="70" y="135" width="60" height="8" fill="#FCD116" opacity="0.6" rx="2" /> <rect x="70" y="145" width="60" height="5" fill="#003893" opacity="0.6" rx="1" /> <rect x="70" y="152" width="60" height="5" fill="#CE1126" opacity="0.6" rx="1" /> <!-- Steam rising (animated) --> <path d="M 85 110 Q 80 95 85 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
+         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85" dur="2s" repeatcount="indefinite" />
+        </path> <path d="M 100 108 Q 100 90 105 80" fill="none" stroke="#FCD116" stroke-width="4" stroke-linecap="round" opacity="0.8">
+         <animate attributename="opacity" values="0.8;0.4;0.8" dur="2.5s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80" dur="2.5s" repeatcount="indefinite" />
+        </path> <path d="M 115 110 Q 120 95 115 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
+         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2.2s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85" dur="2.2s" repeatcount="indefinite" />
+        </path> <!-- Coffee beans decoration --> <ellipse cx="50" cy="140" rx="8" ry="10" fill="#3E2723" transform="rotate(-20 50 140)">
+         <animate attributename="opacity" values="1;0.7;1" dur="3s" repeatcount="indefinite" />
+        </ellipse> <path d="M 50 135 Q 50 140 50 145" stroke="#654321" stroke-width="1.5" /> <ellipse cx="150" cy="135" rx="8" ry="10" fill="#3E2723" transform="rotate(20 150 135)">
+         <animate attributename="opacity" values="0.7;1;0.7" dur="3s" repeatcount="indefinite" />
+        </ellipse> <path d="M 150 130 Q 150 135 150 140" stroke="#654321" stroke-width="1.5" /> <!-- Book pages representing learning --> <rect x="70" y="175" width="60" height="8" fill="#FCD116" rx="1" opacity="0.9" /> <rect x="75" y="178" width="50" height="8" fill="#FFFFFF" rx="1" opacity="0.8" /> <rect x="80" y="181" width="40" height="8" fill="#FCD116" rx="1" opacity="0.7" /> <!-- Small heart connecting cultures --> <path d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z" fill="#CE1126" opacity="0.8">
+         <animate attributename="transform" values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)" dur="1.5s" repeatcount="indefinite" />
+        </path>
+       </svg>
+      </div><!-- Stats -->
+      <div class="grid grid-cols-3 gap-6">
+       <div class="card-white transform hover:scale-105 transition-transform">
+        <div class="text-5xl font-black text-yellow-500 mb-2">
+         500+
+        </div>
+        <div class="text-sm font-bold text-blue-900">
+         Estudiantes
+        </div>
+       </div>
+       <div class="card-white transform hover:scale-105 transition-transform">
+        <div class="text-5xl font-black text-blue-900 mb-2">
+         5 años
+        </div>
+        <div class="text-sm font-bold text-blue-900">
+         Experiencia
+        </div>
+       </div>
+       <div class="card-white transform hover:scale-105 transition-transform">
+        <div class="text-5xl font-black text-red-600 mb-2">
+         4.9 ★
+        </div>
+        <div class="text-sm font-bold text-blue-900">
+         Valoración
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Features Section -->
+   <section class="py-12 bg-gradient-to-b from-blue-900 to-blue-800">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="card-yellow text-center space-y-5">
+       <div class="icon-circle">
+        🎓
+       </div>
+       <h3 class="font-display text-xl font-bold text-blue-900">Certificada</h3>
+       <p class="text-blue-900">Títulos oficiales en enseñanza de idiomas</p>
+      </div>
+      <div class="card-white text-center space-y-5">
+       <div class="icon-circle">
+        🌎
+       </div>
+       <h3 class="font-display text-xl font-bold text-blue-900">Bicultural</h3>
+       <p class="text-gray-700">Entiendo ambas culturas perfectamente</p>
+      </div>
+      <div class="card-red text-center space-y-5">
+       <div class="icon-circle" style="background: white; color: #CE1126;">
+        💡
+       </div>
+       <h3 class="font-display text-xl font-bold text-white">Método Propio</h3>
+       <p class="text-white">Programa diseñado para latinos</p>
+      </div>
+      <div class="card-blue text-center space-y-5">
+       <div class="icon-circle" style="background: white;">
+        📄
+       </div>
+       <h3 class="font-display text-xl font-bold text-white">Apoyo Integral</h3>
+       <p class="text-white">Te ayudo con trámites y documentos</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- About Section -->
+   <section class="py-16 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-blue-800 to-blue-900"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+     <div class="grid lg:grid-cols-2 gap-20 items-center">
+      <div class="space-y-8">
+       <div class="section-badge">
+        Sobre Mí
+       </div>
+       <h2 class="font-display text-5xl lg:text-6xl font-black text-white leading-tight">¿Por qué aprender<br><span class="text-yellow-400">conmigo?</span></h2>
+       <p class="text-xl text-blue-100 leading-relaxed">Como latina viviendo en Polonia, sé exactamente los desafíos que enfrentas. Mi método combina gramática práctica, situaciones reales de la vida cotidiana y el contexto cultural que necesitas para integrarte exitosamente.</p>
+       <div class="flex items-center gap-6 pt-6">
+        <div class="flex -space-x-4">
+         <div class="w-16 h-16 rounded-full bg-yellow-400 flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
+          👩
+         </div>
+         <div class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
+          👨‍♂️
+         </div>
+         <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
+          🙋‍♀️
+         </div>
+        </div>
+        <div class="text-white">
+         Únete a <span class="font-black text-yellow-400 text-xl">500+ estudiantes</span> que ya dominan el polaco
+        </div>
+       </div>
+      </div>
+      <div class="grid grid-cols-2 gap-6">
+       <div class="space-y-6">
+        <div class="card-yellow accent-yellow">
+         <div class="text-5xl mb-4">
+          🗣️
+         </div>
+         <h4 class="font-bold text-lg text-blue-900 mb-3">Conversación Natural</h4>
+         <p class="text-blue-900">Aprende a hablar como un nativo desde el primer día</p>
+        </div>
+        <div class="card-white accent-yellow">
+         <div class="text-5xl mb-4">
+          📚
+         </div>
+         <h4 class="font-bold text-lg text-blue-900 mb-3">Material Exclusivo</h4>
+         <p class="text-gray-700">E-books y recursos creados por mí para ti</p>
+        </div>
+       </div>
+       <div class="space-y-6 mt-12">
+        <div class="card-red accent-red">
+         <div class="text-5xl mb-4">
+          ⚡
+         </div>
+         <h4 class="font-bold text-lg text-white mb-3">Resultados Rápidos</h4>
+         <p class="text-white">Ve tu progreso semana tras semana</p>
+        </div>
+        <div class="card-blue accent-red" style="background: linear-gradient(135deg, #003893 0%, #0055CC 100%);">
+         <div class="text-5xl mb-4">
+          🤝
+         </div>
+         <h4 class="font-bold text-lg text-white mb-3">Apoyo Total</h4>
+         <p class="text-white">Estoy aquí para ayudarte en cada paso</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Program Section -->
+   <section id="programa" class="pt-32 pb-20 bg-gradient-to-b from-blue-900 to-blue-800">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-8">
+      <div class="section-badge mx-auto mb-3">
+       Mi Programa
+      </div>
+      <h2 class="font-display text-5xl font-black text-white mb-3 glow-text">Método Diseñado para Ti</h2>
+      <p class="text-xs text-blue-100">Un programa estructurado que te lleva desde cero hasta la fluidez, con materiales creados específicamente para hispanohablantes.</p>
+     </div>
+     <div class="grid md:grid-cols-3 gap-5">
+      <div class="card-yellow">
+       <div class="w-16 h-16 rounded-3xl bg-blue-900 flex items-center justify-center mb-4 shadow-xl mx-auto"><span class="text-3xl">📚</span>
+       </div>
+       <div class="text-center space-y-3">
+        <div class="text-xs font-black text-blue-900 uppercase tracking-wider">
+         Nivel A1-A2
+        </div>
+        <h3 class="font-display text-lg font-black text-blue-900">Fundamentos</h3>
+        <ul class="space-y-2 text-blue-900 text-left text-sm">
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Pronunciación desde el español</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Gramática básica explicada</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Vocabulario esencial cotidiano</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Situaciones: tiendas, transporte</span></li>
+        </ul>
+        <div class="price-tag text-lg py-2">
+         150 PLN<span class="text-xs font-semibold">/hora</span>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-red w-full text-sm"> Ver Más Detalles </a>
+       </div>
+      </div>
+      <div class="card-white relative border-4 border-yellow-400">
+       <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-blue-900 px-4 py-1 rounded-full text-xs font-black shadow-xl">
+        Más Popular
+       </div>
+       <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center mb-4 shadow-xl mx-auto"><span class="text-3xl">🚀</span>
+       </div>
+       <div class="text-center space-y-3">
+        <div class="text-xs font-black text-blue-900 uppercase tracking-wider">
+         Nivel B1-B2
+        </div>
+        <h3 class="font-display text-lg font-black text-blue-900">Intermedio</h3>
+        <ul class="space-y-2 text-gray-700 text-left text-sm">
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold">✓</span> <span>Conversación fluida</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold">✓</span> <span>Gramática avanzada</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold">✓</span> <span>Polaco laboral y profesional</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold">✓</span> <span>Preparación para exámenes</span></li>
+        </ul>
+        <div class="price-tag text-lg py-2">
+         180 PLN<span class="text-xs font-semibold">/hora</span>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-sm"> Ver Más Detalles </a>
+       </div>
+      </div>
+      <div class="card-red">
+       <div class="w-16 h-16 rounded-3xl bg-white flex items-center justify-center mb-4 shadow-xl mx-auto"><span class="text-3xl">👑</span>
+       </div>
+       <div class="text-center space-y-3">
+        <div class="text-xs font-black text-white uppercase tracking-wider">
+         Nivel C1-C2
+        </div>
+        <h3 class="font-display text-lg font-black text-white">Avanzado</h3>
+        <ul class="space-y-2 text-white text-left text-sm">
+         <li class="flex items-start gap-2"><span class="text-white font-bold">✓</span> <span>Perfeccionamiento del idioma</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold">✓</span> <span>Polaco académico especializado</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold">✓</span> <span>Expresiones idiomáticas</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold">✓</span> <span>Preparación ciudadanía</span></li>
+        </ul>
+        <div class="price-tag text-lg py-2">
+         200 PLN<span class="text-xs font-semibold">/hora</span>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-sm"> Ver Más Detalles </a>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Services Section -->
+   <section id="servicios" class="pt-32 pb-20 bg-gradient-to-b from-blue-800 to-blue-900">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-8">
+      <div class="section-badge mx-auto mb-3">
+       Servicios Adicionales
+      </div>
+      <h2 class="font-display text-5xl font-black text-white mb-3 glow-text">Más que Clases de Idioma</h2>
+      <p class="text-xs text-blue-100">Te acompaño en todo tu proceso de adaptación a Polonia con servicios diseñados para facilitar tu vida.</p>
+     </div>
+     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-7">
+      <div class="card-yellow text-center space-y-4">
+       <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-3xl mx-auto shadow-lg">
+        📋
+       </div>
+       <h3 class="font-bold text-lg text-blue-900">Ayuda con Trámites</h3>
+       <p class="text-blue-900 text-sm leading-tight">Acompañamiento en oficinas, traducción de documentos oficiales.</p>
+       <div class="price-tag text-base py-2">
+        Desde 100 PLN
+       </div><a href="https://aquivivo.github.io/aquivivo/Ayuda.html" class="btn-red w-full text-sm"> Saber Más </a>
+      </div>
+      <div class="card-red text-center space-y-4">
+       <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl mx-auto shadow-lg" style="color: #CE1126;">
+        📝
+       </div>
+       <h3 class="font-bold text-lg text-white">Traducciones</h3>
+       <p class="text-white text-sm leading-tight">Traducciones español-polaco de documentos, contratos, certificados.</p>
+       <div class="price-tag text-base py-2">
+        Desde 50 PLN/pág
+       </div><a href="https://aquivivo.github.io/aquivivo/Traducciones.html" class="btn-yellow w-full text-sm"> Saber Más </a>
+      </div>
+      <div class="card-white text-center space-y-4">
+       <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-3xl mx-auto shadow-lg">
+        👥
+       </div>
+       <h3 class="font-bold text-lg text-blue-900">Clases Grupales</h3>
+       <p class="text-gray-700 text-sm leading-tight">Grupos pequeños de máximo 5 personas. Aprende con otros latinos.</p>
+       <div class="price-tag text-base py-2">
+        80 PLN/persona
+       </div><a href="https://aquivivo.github.io/aquivivo/Clases.html" class="btn-red w-full text-sm"> Saber Más </a>
+      </div>
+      <div class="card-blue text-center space-y-4">
+       <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl mx-auto shadow-lg">
+        💼
+       </div>
+       <h3 class="font-bold text-lg text-white">Polaco Empresarial</h3>
+       <p class="text-white text-sm leading-tight">Clases para empresas con empleados hispanohablantes.</p>
+       <div class="price-tag text-base py-2">
+        A consultar
+       </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-sm"> Saber Más </a>
+      </div>
+     </div>
+    </div>
+   </section><!-- E-books Section -->
+   <section id="ebooks" class="pt-32 pb-20 bg-gradient-to-b from-blue-900 to-blue-800">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-8">
+      <div class="section-badge mx-auto mb-3">
+       Recursos Digitales
+      </div>
+      <h2 class="font-display text-5xl font-black text-white mb-3 glow-text">Mis E-books</h2>
+      <p class="text-xs text-blue-100">Material exclusivo creado para hispanohablantes. Aprende a tu ritmo con guías prácticas y ejercicios.</p>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6">
+      <div class="card-yellow text-center space-y-3">
+       <div class="w-16 h-20 rounded-2xl bg-blue-900 flex items-center justify-center mx-auto shadow-xl"><span class="text-3xl">📖</span>
+       </div>
+       <h3 class="font-display text-base font-black text-blue-900 leading-tight">Polaco Básico<br>
+        para Latinos</h3>
+       <p class="text-blue-900 text-xs leading-tight">100 páginas con vocabulario esencial, ejercicios y audios.</p>
+       <div class="price-tag text-lg py-2">
+        49 PLN
+       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-xs"> Ver Contenido </a>
+      </div>
+      <div class="card-white text-center space-y-3">
+       <div class="w-16 h-20 rounded-2xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center mx-auto shadow-xl"><span class="text-3xl">💬</span>
+       </div>
+       <h3 class="font-display text-base font-black text-blue-900 leading-tight">Frases<br>
+        del Día a Día</h3>
+       <p class="text-gray-700 text-xs leading-tight">500 Frases Esenciales. Las frases más útiles para tu vida diaria.</p>
+       <div class="price-tag text-lg py-2">
+        39 PLN
+       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-xs"> Ver Contenido </a>
+      </div>
+      <div class="card-red text-center space-y-3">
+       <div class="w-16 h-20 rounded-2xl bg-white flex items-center justify-center mx-auto shadow-xl"><span class="text-3xl">📄</span>
+       </div>
+       <h3 class="font-display text-base font-black text-white leading-tight">Guía de<br>
+        Trámites</h3>
+       <p class="text-white text-xs leading-tight">Guía de Trámites en Polonia. Todo sobre documentos y oficinas.</p>
+       <div class="price-tag text-lg py-2">
+        59 PLN
+       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-yellow w-full text-xs"> Ver Contenido </a>
+      </div>
+     </div>
+    </div>
+   </section><!-- Testimonials Section -->
+   <section class="pt-32 pb-32 bg-gradient-to-b from-blue-800 to-blue-900">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-12">
+      <div class="section-badge mx-auto mb-4">
+       Testimonios
+      </div>
+      <h2 class="font-display text-4xl lg:text-5xl font-black text-white mb-4">Lo que Dicen mis Estudiantes</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-10">
+      <div class="testimonial-card">
+       <div class="stars mb-6">
+        ★★★★★
+       </div>
+       <p class="text-gray-700 mb-8 italic text-lg leading-relaxed">"Después de 3 meses ya puedo comunicarme en el trabajo. El método es perfecto porque explica todo desde el español."</p>
+       <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-yellow-400 flex items-center justify-center text-3xl shadow-lg">
+         👨
+        </div>
+        <div>
+         <div class="font-black text-blue-900 text-lg">
+          Carlos M.
+         </div>
+         <div class="text-gray-600">
+          🇨🇴 Colombia
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="testimonial-card" style="border-top-color: #CE1126;">
+       <div class="stars mb-6">
+        ★★★★★
+       </div>
+       <p class="text-gray-700 mb-8 italic text-lg leading-relaxed">"Me ayudó con todos los papeles del permiso de residencia. ¡Una profesora increíble que entiende nuestras necesidades!"</p>
+       <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center text-3xl shadow-lg">
+         👩
+        </div>
+        <div>
+         <div class="font-black text-blue-900 text-lg">
+          María L.
+         </div>
+         <div class="text-gray-600">
+          🇻🇪 Venezuela
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="testimonial-card" style="border-top-color: #003893;">
+       <div class="stars mb-6">
+        ★★★★★
+       </div>
+       <p class="text-gray-700 mb-8 italic text-lg leading-relaxed">"Los e-books son geniales. Puedo estudiar en el bus y las explicaciones en español hacen todo más fácil."</p>
+       <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-blue-900 flex items-center justify-center text-3xl shadow-lg">
+         🧔
+        </div>
+        <div>
+         <div class="font-black text-blue-900 text-lg">
+          Andrés R.
+         </div>
+         <div class="text-gray-600">
+          🇵🇪 Perú
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Contact Section -->
+   <section id="contacto" class="pt-32 pb-32 bg-gradient-to-b from-blue-900 to-blue-950">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center mb-10">
+      <div class="section-badge mx-auto mb-4">
+       Contacto
+      </div>
+      <h2 class="font-display text-4xl lg:text-5xl font-black text-white mb-4">¿Listo para Empezar tu Aventura?</h2>
+      <p class="text-lg text-blue-100 max-w-2xl mx-auto">Reserva tu primera clase gratis y descubre cómo puedo ayudarte a dominar el polaco y adaptarte a tu nueva vida en Polonia.</p>
+     </div>
+     <div class="grid lg:grid-cols-2 gap-16 items-start"><!-- Left: Contact Info -->
+      <div class="space-y-8">
+       <div class="flex items-center gap-5 text-white"><span class="text-3xl">📧</span>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          Email
+         </div>
+         <div class="font-bold text-white text-lg">
+          aquivivo.pl@gmail.com
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center gap-5 text-white">
+        <svg class="w-8 h-8 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+        </svg>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          WhatsApp
+         </div>
+         <div class="font-bold text-white text-lg">
+          +48 669 69 71 51
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center gap-5 text-white"><span class="text-3xl">📍</span>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          Ubicación
+         </div>
+         <div class="font-bold text-white text-lg">
+          Poznań, Polonia
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center gap-5 text-white"><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform">
+         <svg class="w-8 h-8 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+         </svg></a>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          Instagram
+         </div><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-lg hover:text-yellow-400 transition-colors">@sacariooo</a>
+        </div>
+       </div>
+       <div class="flex items-center gap-5 text-white"><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform">
+         <svg class="w-8 h-8 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+         </svg></a>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          TikTok
+         </div><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-lg hover:text-yellow-400 transition-colors">@latip0l</a>
+        </div>
+       </div>
+      </div><!-- Right: Contact Form -->
+      <div class="card-white">
+       <h3 class="font-display text-lg font-black text-blue-900 mb-6">Envíame un Mensaje</h3>
+       <form id="contact-form" class="space-y-4">
+        <div><label for="email" class="block text-sm font-bold text-blue-900 mb-2">Email <span class="text-red-600">*</span></label> <input type="email" id="email" name="email" placeholder="tu@email.com" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none text-gray-900 text-sm">
+        </div>
+        <div><label for="message" class="block text-sm font-bold text-blue-900 mb-2">Mensaje <span class="text-red-600">*</span></label> <textarea id="message" name="message" rows="4" placeholder="¿En qué puedo ayudarte?" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none resize-none text-gray-900 text-sm"></textarea>
+        </div>
+        <div class="flex items-start gap-3"><input type="checkbox" id="privacy" name="privacy" required class="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-yellow-400 focus:ring-2 focus:ring-yellow-200"> <label for="privacy" class="text-sm text-gray-700"> Acepto la <a href="https://aquivivo.github.io/aquivivo/Privacidad.html" class="text-blue-900 font-black underline hover:text-red-600">Política de Privacidad</a> <span class="text-red-600">*</span> </label>
+        </div><button type="submit" class="btn-yellow w-full text-base"> Enviar Mensaje </button>
+        <div id="form-message" class="hidden text-center font-bold p-3 rounded-lg text-sm"></div>
+       </form>
+      </div>
+     </div>
+    </div>
+   </section><!-- Footer -->
+   <footer class="nav-glass text-white py-6 border-t-2 border-yellow-400">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="grid md:grid-cols-4 gap-6 mb-5">
+      <div class="space-y-3">
+       <div class="flex items-center gap-3">
+        <svg class="w-8 h-8 drop-shadow-lg" viewbox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs>
+          <lineargradient id="colombiaFlagFooter" x1="0%" y1="0%" x2="0%" y2="100%">
+           <stop offset="0%" style="stop-color:#FCD116;stop-opacity:1" />
+           <stop offset="50%" style="stop-color:#FCD116;stop-opacity:1" />
+           <stop offset="50%" style="stop-color:#003893;stop-opacity:1" />
+           <stop offset="75%" style="stop-color:#003893;stop-opacity:1" />
+           <stop offset="75%" style="stop-color:#CE1126;stop-opacity:1" />
+           <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
+          </lineargradient>
+         </defs> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlagFooter)" stroke="#FCD116" stroke-width="2.5" />
+        </svg><span class="font-display text-lg font-black text-yellow-400">Aqui Vivo</span>
+       </div>
+       <p class="text-blue-200 text-xs leading-relaxed">Profesora de español y polaco en Poznań. Ayudo a hispanohablantes y a estudiantes polacos 🌎</p>
+      </div>
+      <div>
+       <h4 class="font-bold mb-3 text-yellow-400 text-sm">Servicios</h4>
+       <ul class="space-y-1.5 text-blue-200 text-xs">
+        <li><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="hover:text-yellow-400 transition-colors">Curso de Español</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Ayuda.html" class="hover:text-yellow-400 transition-colors">Ayuda con Trámites</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Traducciones.html" class="hover:text-yellow-400 transition-colors">Traducciones</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Clases.html" class="hover:text-yellow-400 transition-colors">Clases Grupales</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="hover:text-yellow-400 transition-colors">Polaco Empresarial</a></li>
+       </ul>
+      </div>
+      <div>
+       <h4 class="font-bold mb-3 text-yellow-400 text-sm">Recursos</h4>
+       <ul class="space-y-1.5 text-blue-200 text-xs">
+        <li><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="hover:text-yellow-400 transition-colors">E-books</a></li>
+        <li><a href="#inicio" class="hover:text-yellow-400 transition-colors">Sobre Mí</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Blog.html" class="hover:text-yellow-400 transition-colors">Blog</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/FAQ.html" class="hover:text-yellow-400 transition-colors">FAQ</a></li>
+       </ul>
+      </div>
+      <div>
+       <h4 class="font-bold mb-3 text-yellow-400 text-sm">Legal</h4>
+       <ul class="space-y-1.5 text-blue-200 text-xs">
+        <li><a href="https://aquivivo.github.io/aquivivo/Privacidad.html" class="hover:text-yellow-400 transition-colors">Política de Privacidad</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Condiciones.html" class="hover:text-yellow-400 transition-colors">Términos y Condiciones</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Cookies.html" class="hover:text-yellow-400 transition-colors">Cookies</a></li>
+       </ul>
+      </div>
+     </div>
+     <div class="border-t border-blue-700 pt-4 flex flex-col md:flex-row justify-between items-center gap-3">
+      <p class="text-blue-200 text-xs">© 2024 Aqui Vivo. Todos los derechos reservados.</p>
+      <p class="text-blue-200 text-xs">Hecho con <span class="text-red-500">❤️</span> en Poznań, Polonia</p>
+     </div>
+    </div>
+   </footer>
   </div>
   <script>
-    // ============ CONFIG & STATE ============
-    const defaultConfig = {
-      app_title: 'Polaco',
-      app_subtitle: 'Curso interactivo para extranjeros',
-      primary_color: '#003893',
-      background_color: 'linear-gradient(180deg, #001a4d 0%, #003893 50%, #001a4d 100%)',
-      card_background: '#ffffff',
-      text_color: '#FCD116',
-      accent_color: '#CE1126'
-    };
+    // Contact form handling
+    const contactForm = document.getElementById('contact-form');
+    const formMessage = document.getElementById('form-message');
     
-    let config = { ...defaultConfig };
-    let isAdmin = localStorage.getItem('polaco_admin') === 'true';
-    let exerciseLinks = [];
-    let expandedLevels = {};
-    let currentPopup = null;
-    let currentTopic = null;
-    let currentLinkId = null;
-    let selectedExerciseType = '';
-    let selectedLevel = '';
-    
-    // Exercise type icons mapping
-    const exerciseIcons = {
-      'Rellenar los espacios': '✏️',
-      'Relacionar palabra con imagen': '🖼️',
-      'Relacionar palabra con traducción': '🔄',
-      'Elegir la palabra correcta': '☑️',
-      'Tarjetas interactivas': '🃏',
-      'Agrupar palabras': '📦',
-      'Verdadero o falso': '✅',
-      'Completar la frase con una imagen': '🖼️',
-      'Juego de memoria (pares)': '🧠',
-      'Opción múltiple': '🔘',
-      'Completar la forma correcta': '📝',
-      'Elegir la forma correcta': '✔️',
-      'Transformaciones': '🔀',
-      'Relacionar pregunta con respuesta': '❓',
-      'Ordenar palabras para formar una frase': '🔤',
-      'Corregir errores': '🔍',
-      'Unir dos partes de la frase': '🧩',
-      'Completar con preposición o terminación': '➕',
-      'Opción única': '1️⃣',
-      'Escribir tu propia respuesta': '✍️',
-      'Repetir después del narrador': '🗣️',
-      'Completar la frase con tu voz': '🎤',
-      'Responder a una pregunta': '💬',
-      'Describir una imagen': '🎨',
-      'Juego de roles': '🎭',
-      'Mini-monólogo': '📣',
-      'Diálogo semiabierto': '💭',
-      'Decirlo de otra manera': '🔁',
-      'Escuchar y elegir la respuesta': '👂',
-      'Escuchar y completar los espacios': '🎧',
-      'Escuchar y marcar verdadero o falso': '👂',
-      'Escuchar y relacionar personas': '👥',
-      'Escuchar y ordenar la secuencia': '🔢',
-      'Dictado con audio': '📻',
-      'Escuchar y repetir': '🔊',
-      'Diálogo interactivo': '💬',
-      'Misión del día': '🎯',
-      'Quiz situacional': '🎲',
-      'Video con preguntas': '🎬'
-    };
-    
-    function getExerciseTypeOptions(selectedValue = '') {
-      const types = [
-        'Rellenar los espacios',
-        'Relacionar palabra con imagen',
-        'Relacionar palabra con traducción',
-        'Elegir la palabra correcta',
-        'Tarjetas interactivas',
-        'Agrupar palabras',
-        'Verdadero o falso',
-        'Completar la frase con una imagen',
-        'Juego de memoria (pares)',
-        'Opción múltiple',
-        'Completar la forma correcta',
-        'Elegir la forma correcta',
-        'Transformaciones',
-        'Relacionar pregunta con respuesta',
-        'Ordenar palabras para formar una frase',
-        'Corregir errores',
-        'Unir dos partes de la frase',
-        'Completar con preposición o terminación',
-        'Opción única',
-        'Escribir tu propia respuesta',
-        'Repetir después del narrador',
-        'Completar la frase con tu voz',
-        'Responder a una pregunta',
-        'Describir una imagen',
-        'Juego de roles',
-        'Mini-monólogo',
-        'Diálogo semiabierto',
-        'Decirlo de otra manera',
-        'Escuchar y elegir la respuesta',
-        'Escuchar y completar los espacios',
-        'Escuchar y marcar verdadero o falso',
-        'Escuchar y relacionar personas',
-        'Escuchar y ordenar la secuencia',
-        'Dictado con audio',
-        'Escuchar y repetir',
-        'Diálogo interactivo',
-        'Misión del día',
-        'Quiz situacional',
-        'Video con preguntas'
-      ];
-      
-      let options = '<option value="">Seleccionar tipo...</option>';
-      types.forEach(type => {
-        const icon = exerciseIcons[type] || '📝';
-        const selected = type === selectedValue ? 'selected' : '';
-        options += `<option value="${type}" ${selected}>${icon} ${type}</option>`;
-      });
-      
-      return options;
-    }
-    
-    // ============ COURSE DATA ============
-    const courseData = {
-      A1: {
-        title: 'Nivel A1',
-        subtitle: 'Fundamentos de la vida en Polonia',
-        description: 'Nivel básico para comenzar tu aventura con el polaco. Aprenderás las estructuras fundamentales del idioma.',
-        gradient: 'linear-gradient(135deg, #10b981, #059669)',
-        grammar: [
-          { id: 'a1-g1', title: 'Alfabeto y pronunciación', titlePl: 'Alfabet i wymowa', desc: 'Aprender a leer y pronunciar correctamente los sonidos y letras del polaco', category: 'Grammar' },
-          { id: 'a1-g2', title: 'Orden de palabras en la frase', titlePl: 'Szyk wyrazów w zdaniu', desc: 'Aprender a construir frases simples con el orden básico de palabras en polaco', category: 'Grammar' },
-          { id: 'a1-g3', title: 'Verbos básicos: być y mieć', titlePl: 'Czasowniki podstawowe: być i mieć', desc: 'Aprender a decir quién eres, cómo eres y qué tienes usando los verbos más importantes del polaco', category: 'Grammar' },
-          { id: 'a1-g4', title: 'Presente: verbos regulares', titlePl: 'Czas teraźniejszy: czasowniki regularne', desc: 'Aprender a conjugar verbos regulares en presente para hablar de rutinas y hechos actuales', category: 'Grammar' },
-          { id: 'a1-g5', title: 'Pronombres personales y posesivos', titlePl: 'Zaimki osobowe i dzierżawcze', desc: 'Aprender a usar yo, tú, él/ella y mi, tu, su en frases sencillas', category: 'Grammar' },
-          { id: 'a1-g6', title: 'Oraciones afirmativas, negativas y preguntas', titlePl: 'Zdania twierdzące, przeczące i pytania', desc: 'Aprender a formar frases, negar información y hacer preguntas básicas', category: 'Grammar' },
-          { id: 'a1-g7', title: 'Sustantivos: género y número', titlePl: 'Rzeczowniki: rodzaj i liczba', desc: 'Aprender a reconocer el género de los sustantivos y formar el plural', category: 'Grammar' },
-          { id: 'a1-g8', title: 'Adjetivos y concordancia', titlePl: 'Przymiotniki i ich zgodność', desc: 'Aprender a describir personas y cosas y hacer concordar el adjetivo con el sustantivo', category: 'Grammar' },
-          { id: 'a1-g9', title: 'Preposiciones básicas: w, na, do', titlePl: 'Przyimki podstawowe: w, na, do', desc: 'Aprender a hablar de lugar y dirección con las preposiciones más usadas', category: 'Grammar' },
-          { id: 'a1-g10', title: 'Caso acusativo (introducción)', titlePl: 'Biernik (wprowadzenie)', desc: 'Aprender a hablar de lo que ves, compras o comes usando la forma correcta del sustantivo', category: 'Grammar' },
-          { id: 'a1-g11', title: 'Números y cantidades', titlePl: 'Liczby i ilości', desc: 'Aprender a usar números para edad, precios, horas y teléfonos', category: 'Grammar' }
-        ],
-        vocabulary: [
-          { id: 'a1-v1', title: 'Saludos y presentación', titlePl: 'Powitania i przedstawianie się', desc: 'Aprender a saludar, despedirse, presentarse y decir información básica sobre uno mismo', category: 'Vocab' },
-          { id: 'a1-v2', title: 'Países y nacionalidades', titlePl: 'Kraje i narodowości', desc: 'Aprender a decir de qué país eres y cuál es tu nacionalidad', category: 'Vocab' },
-          { id: 'a1-v3', title: 'Información personal', titlePl: 'Informacje osobiste', desc: 'Aprender a hablar de la edad, el estado civil y datos básicos sobre uno mismo', category: 'Vocab' },
-          { id: 'a1-v4', title: 'Profesiones y trabajo', titlePl: 'Zawody i praca', desc: 'Aprender a decir a qué te dedicas y dónde trabajas', category: 'Vocab' },
-          { id: 'a1-v5', title: 'Familia', titlePl: 'Rodzina', desc: 'Aprender a nombrar a los miembros de la familia y hablar de relaciones familiares simples', category: 'Vocab' },
-          { id: 'a1-v6', title: 'Casa y vivienda', titlePl: 'Dom i mieszkanie', desc: 'Aprender a nombrar las habitaciones y los objetos básicos de la casa', category: 'Vocab' },
-          { id: 'a1-v7', title: 'Comida y bebidas', titlePl: 'Jedzenie i napoje', desc: 'Aprender a hablar de comida, bebidas y preferencias simples', category: 'Vocab' },
-          { id: 'a1-v8', title: 'Tienda y compras', titlePl: 'Sklep i zakupy', desc: 'Aprender a hacer compras simples y preguntar por precios', category: 'Vocab' },
-          { id: 'a1-v9', title: 'Ropa', titlePl: 'Ubrania', desc: 'Aprender a nombrar prendas de vestir y decir qué llevas puesto', category: 'Vocab' },
-          { id: 'a1-v10', title: 'Tiempo y días', titlePl: 'Czas i dni', desc: 'Aprender a hablar de los días de la semana y las partes del día', category: 'Vocab' },
-          { id: 'a1-v11', title: 'Rutina diaria', titlePl: 'Codzienna rutyna', desc: 'Aprender a hablar de actividades cotidianas', category: 'Vocab' },
-          { id: 'a1-v12', title: 'Ciudad y lugares', titlePl: 'Miasto i miejsca', desc: 'Aprender a nombrar lugares de la ciudad y decir dónde estás', category: 'Vocab' },
-          { id: 'a1-v13', title: 'Direcciones y orientación', titlePl: 'Kierunki i orientacja', desc: 'Aprender a pedir direcciones y entender indicaciones simples', category: 'Vocab' },
-          { id: 'a1-v14', title: 'Médico y salud (básico)', titlePl: 'Lekarz i zdrowie (podstawy)', desc: 'Aprender a decir qué te duele y pedir ayuda médica', category: 'Vocab' },
-          { id: 'a1-v15', title: 'Oficina pública y documentos (básico)', titlePl: 'Urząd i dokumenty (podstawy)', desc: 'Aprender a nombrar documentos y decir para qué vienes a la oficina pública', category: 'Vocab' },
-          { id: 'a1-v16', title: 'Frases útiles', titlePl: 'Przydatne zwroty', desc: 'Aprender frases de cortesía y expresiones básicas para la comunicación diaria', category: 'Vocab' }
-        ]
-      },
-      A2: {
-        title: 'Nivel A2',
-        subtitle: 'Funcionamiento cotidiano',
-        description: 'Profundiza tus conocimientos básicos y amplía tu vocabulario para situaciones cotidianas.',
-        gradient: 'linear-gradient(135deg, #003893, #0055CC)',
-        grammar: [
-          { id: 'a2-g1', title: 'Presente: verbos irregulares', titlePl: 'Czas teraźniejszy: czasowniki nieregularne', desc: 'Aprender a conjugar verbos irregulares y hablar con más naturalidad', category: 'Grammar' },
-          { id: 'a2-g2', title: 'Verbos reflexivos', titlePl: 'Czasowniki zwrotne', desc: 'Aprender a hablar de rutinas personales como levantarse, vestirse o sentirse', category: 'Grammar' },
-          { id: 'a2-g3', title: 'Pasado simple', titlePl: 'Czas przeszły prosty', desc: 'Aprender a hablar de acciones pasadas y contar qué hiciste ayer o la semana pasada', category: 'Grammar' },
-          { id: 'a2-g4', title: 'Futuro simple', titlePl: 'Czas przyszły prosty', desc: 'Aprender a hablar de planes y decisiones futuras', category: 'Grammar' },
-          { id: 'a2-g5', title: 'Verbos modales: móc, musieć, chcieć', titlePl: 'Czasowniki modalne: móc, musieć, chcieć', desc: 'Aprender a expresar posibilidad, obligación y deseo', category: 'Grammar' },
-          { id: 'a2-g6', title: 'Casos del polaco: visión general', titlePl: 'Przypadki w języku polskim: przegląd', desc: 'Aprender para qué sirven los casos y cuándo cambia la forma de las palabras', category: 'Grammar' },
-          { id: 'a2-g7', title: 'Caso genitivo', titlePl: 'Dopełniacz', desc: 'Aprender a hablar de posesión, cantidad y negación', category: 'Grammar' },
-          { id: 'a2-g8', title: 'Caso locativo', titlePl: 'Miejscownik', desc: 'Aprender a hablar de lugar después de preposiciones como w y na', category: 'Grammar' },
-          { id: 'a2-g9', title: 'Caso instrumental', titlePl: 'Narzędnik', desc: 'Aprender a hablar de con quién y con qué haces algo', category: 'Grammar' },
-          { id: 'a2-g10', title: 'Preposiciones con casos', titlePl: 'Przyimki z przypadkami', desc: 'Aprender qué caso usar después de cada preposición', category: 'Grammar' },
-          { id: 'a2-g11', title: 'Comparativos y superlativos', titlePl: 'Stopniowanie przymiotników', desc: 'Aprender a comparar personas y cosas', category: 'Grammar' },
-          { id: 'a2-g12', title: 'Adverbios de tiempo y frecuencia', titlePl: 'Przysłówki czasu i częstotliwości', desc: 'Aprender a decir cuándo y con qué frecuencia haces algo', category: 'Grammar' },
-          { id: 'a2-g13', title: 'Conectores básicos', titlePl: 'Spójniki podstawowe', desc: 'Aprender a unir frases con palabras como i, ale, bo, dlatego', category: 'Grammar' }
-        ],
-        vocabulary: [
-          { id: 'a2-v1', title: 'Presentación y small talk', titlePl: 'Przedstawianie się i small talk', desc: 'Aprender a mantener una conversación corta y hablar un poco más sobre ti', category: 'Vocab' },
-          { id: 'a2-v2', title: 'Trabajo y responsabilidades', titlePl: 'Praca i obowiązki', desc: 'Aprender a hablar de tu trabajo, horarios y tareas', category: 'Vocab' },
-          { id: 'a2-v3', title: 'Vivienda y alquiler', titlePl: 'Mieszkanie i wynajem', desc: 'Aprender a hablar del alquiler, el equipamiento y problemas en el departamento', category: 'Vocab' },
-          { id: 'a2-v4', title: 'Comida y restaurante', titlePl: 'Jedzenie i restauracja', desc: 'Aprender a pedir comida y hablar de tus preferencias alimenticias', category: 'Vocab' },
-          { id: 'a2-v5', title: 'Tienda y devoluciones', titlePl: 'Sklep i zwroty', desc: 'Aprender a preguntar por productos y resolver problemas simples con compras', category: 'Vocab' },
-          { id: 'a2-v6', title: 'Médico y farmacia', titlePl: 'Lekarz i apteka', desc: 'Aprender a describir síntomas y comprar medicamentos', category: 'Vocab' },
-          { id: 'a2-v7', title: 'Oficina pública y trámites', titlePl: 'Urząd i załatwianie spraw', desc: 'Aprender a hacer trámites simples en oficinas públicas', category: 'Vocab' },
-          { id: 'a2-v8', title: 'Transporte público', titlePl: 'Transport publiczny', desc: 'Aprender a comprar boletos y moverte por la ciudad', category: 'Vocab' },
-          { id: 'a2-v9', title: 'Tiempo libre', titlePl: 'Czas wolny', desc: 'Aprender a hablar de hobbies y planes para el fin de semana', category: 'Vocab' },
-          { id: 'a2-v10', title: 'Emociones y estado de ánimo', titlePl: 'Emocje i nastrój', desc: 'Aprender a decir cómo te sientes y por qué', category: 'Vocab' }
-        ]
-      },
-      B1: {
-        title: 'Nivel B1',
-        subtitle: 'Vida independiente en Polonia',
-        description: 'Desarrolla tu capacidad de comunicación en situaciones más complejas.',
-        gradient: 'linear-gradient(135deg, #FCD116, #FFD700)',
-        grammar: [
-          { id: 'b1-g1', title: 'Aspecto verbal: perfecto e imperfecto', titlePl: 'Aspekt czasownika: dokonany i niedokonany', desc: 'Aprender a diferenciar acciones terminadas y en proceso', category: 'Grammar' },
-          { id: 'b1-g2', title: 'Pasado: narración y secuencia', titlePl: 'Czas przeszły: narracja i kolejność', desc: 'Aprender a contar historias y describir una secuencia de eventos', category: 'Grammar' },
-          { id: 'b1-g3', title: 'Futuro compuesto y planes', titlePl: 'Czas przyszły złożony i plany', desc: 'Aprender a hablar de planes y predicciones con más precisión', category: 'Grammar' },
-          { id: 'b1-g4', title: 'Imperativo', titlePl: 'Tryb rozkazujący', desc: 'Aprender a dar instrucciones, consejos y órdenes', category: 'Grammar' },
-          { id: 'b1-g5', title: 'Caso dativo', titlePl: 'Celownik', desc: 'Aprender a decir a quién le das algo y para quién haces algo', category: 'Grammar' },
-          { id: 'b1-g6', title: 'Caso vocativo', titlePl: 'Wołacz', desc: 'Aprender a dirigirte correctamente a una persona', category: 'Grammar' },
-          { id: 'b1-g7', title: 'Pronombres de objeto', titlePl: 'Zaimki dopełnienia', desc: 'Aprender a reemplazar sustantivos por pronombres', category: 'Grammar' },
-          { id: 'b1-g8', title: 'Oraciones subordinadas básicas', titlePl: 'Zdania podrzędne podstawowe', desc: 'Aprender a usar że, bo, kiedy, jeśli para construir frases más largas', category: 'Grammar' },
-          { id: 'b1-g9', title: 'Condicional simple', titlePl: 'Tryb przypuszczający prosty', desc: 'Aprender a hablar de situaciones hipotéticas simples', category: 'Grammar' },
-          { id: 'b1-g10', title: 'Estilo formal e informal', titlePl: 'Styl formalny i nieformalny', desc: 'Aprender a adaptar tu lenguaje a situaciones oficiales y privadas', category: 'Grammar' }
-        ],
-        vocabulary: [
-          { id: 'b1-v1', title: 'Trabajo y carrera profesional', titlePl: 'Praca i kariera zawodowa', desc: 'Aprender a hablar de experiencia laboral, planes profesionales y cambio de trabajo', category: 'Vocab' },
-          { id: 'b1-v2', title: 'Salud y médico', titlePl: 'Zdrowie i lekarz', desc: 'Aprender a describir mejor los síntomas y hablar con el médico', category: 'Vocab' },
-          { id: 'b1-v3', title: 'Vivienda y contratos', titlePl: 'Mieszkanie i umowy', desc: 'Aprender a hablar de contratos y problemas con el dueño del departamento', category: 'Vocab' },
-          { id: 'b1-v4', title: 'Oficinas y procedimientos', titlePl: 'Urzędy i procedury', desc: 'Aprender a hacer trámites de residencia y asuntos administrativos', category: 'Vocab' },
-          { id: 'b1-v5', title: 'Banco y finanzas', titlePl: 'Bank i finanse', desc: 'Aprender a hablar de cuentas bancarias, pagos y facturas', category: 'Vocab' },
-          { id: 'b1-v6', title: 'Relaciones y vida personal', titlePl: 'Związki i życie osobiste', desc: 'Aprender a hablar de relaciones, pareja y problemas personales', category: 'Vocab' },
-          { id: 'b1-v7', title: 'Educación y cursos', titlePl: 'Edukacja i kursy', desc: 'Aprender a hablar de estudios y desarrollo profesional', category: 'Vocab' },
-          { id: 'b1-v8', title: 'Viajes por Polonia', titlePl: 'Podróże po Polsce', desc: 'Aprender a planear viajes y reservar alojamiento', category: 'Vocab' },
-          { id: 'b1-v9', title: 'Medios y tecnología', titlePl: 'Media i tecnologia', desc: 'Aprender a hablar de teléfono, internet y aplicaciones', category: 'Vocab' }
-        ]
-      },
-      B2: {
-        title: 'Nivel B2',
-        subtitle: 'Integración total',
-        description: 'Perfecciona tu polaco para alcanzar un nivel avanzado de comunicación.',
-        gradient: 'linear-gradient(135deg, #CE1126, #FF1E3C)',
-        grammar: [
-          { id: 'b2-g1', title: 'Aspecto verbal avanzado', titlePl: 'Aspekt czasownika zaawansowany', desc: 'Aprender a elegir correctamente el aspecto según la intención comunicativa', category: 'Grammar' },
-          { id: 'b2-g2', title: 'Voz pasiva', titlePl: 'Strona bierna', desc: 'Aprender a enfocar la acción y no la persona que la realiza', category: 'Grammar' },
-          { id: 'b2-g3', title: 'Participios y gerundios', titlePl: 'Imiesłowy i gerundium', desc: 'Aprender a construir frases más naturales y compactas', category: 'Grammar' },
-          { id: 'b2-g4', title: 'Oraciones subordinadas complejas', titlePl: 'Zdania podrzędne złożone', desc: 'Aprender a usar estructuras con który, żeby, chociaż, ponieważ', category: 'Grammar' },
-          { id: 'b2-g5', title: 'Estilo indirecto', titlePl: 'Mowa zależna', desc: 'Aprender a contar lo que alguien dijo', category: 'Grammar' },
-          { id: 'b2-g6', title: 'Condicional avanzado', titlePl: 'Tryb przypuszczający zaawansowany', desc: 'Aprender a hablar de situaciones irreales y del pasado', category: 'Grammar' },
-          { id: 'b2-g7', title: 'Orden de palabras avanzado', titlePl: 'Szyk wyrazów zaawansowany', desc: 'Aprender a enfatizar información cambiando el orden de la frase', category: 'Grammar' },
-          { id: 'b2-g8', title: 'Registro y estilo', titlePl: 'Rejestr i styl', desc: 'Aprender a sonar natural, educado o formal según la situación', category: 'Grammar' },
-          { id: 'b2-g9', title: 'Colocaciones y estructuras fijas', titlePl: 'Kolokacje i struktury ustalone', desc: 'Aprender a usar combinaciones de palabras típicas del polaco', category: 'Grammar' }
-        ],
-        vocabulary: [
-          { id: 'b2-v1', title: 'Trabajo y mercado laboral', titlePl: 'Praca i rynek pracy', desc: 'Aprender a debatir sobre trabajo, condiciones laborales y desarrollo profesional', category: 'Vocab' },
-          { id: 'b2-v2', title: 'Salud y estilo de vida', titlePl: 'Zdrowie i styl życia', desc: 'Aprender a hablar de la salud física y mental', category: 'Vocab' },
-          { id: 'b2-v3', title: 'Sociedad en Polonia', titlePl: 'Społeczeństwo w Polsce', desc: 'Aprender a conversar sobre la vida en Polonia y las diferencias culturales', category: 'Vocab' },
-          { id: 'b2-v4', title: 'Derecho y derechos del extranjero', titlePl: 'Prawo i prawa cudzoziemca', desc: 'Aprender a hablar de derechos, deberes y trámites legales', category: 'Vocab' },
-          { id: 'b2-v5', title: 'Relaciones y conflictos', titlePl: 'Związki i konflikty', desc: 'Aprender a resolver conflictos y expresar emociones con claridad', category: 'Vocab' },
-          { id: 'b2-v6', title: 'Medios y opiniones', titlePl: 'Media i opinie', desc: 'Aprender a expresar opiniones y comentar acontecimientos', category: 'Vocab' },
-          { id: 'b2-v7', title: 'Valores y creencias', titlePl: 'Wartości i przekonania', desc: 'Aprender a hablar de valores personales y puntos de vista', category: 'Vocab' },
-          { id: 'b2-v8', title: 'Argumentación y debate', titlePl: 'Argumentacja i debata', desc: 'Aprender a debatir y defender tu opinión', category: 'Vocab' }
-        ]
-      }
-    };
-    
-    // ============ HELPER FUNCTIONS ============
-    function getTopicLock(topicId) {
-      const lock = exerciseLinks.find(l => l.is_topic_lock && l.topic_id === topicId);
-      return lock;
-    }
-    
-    function isTopicLocked(topicId) {
-      return !!getTopicLock(topicId);
-    }
-    
-    function applyFilters() {
-      selectedExerciseType = document.getElementById('exercise-type-filter').value;
-      selectedLevel = document.getElementById('level-filter').value;
-      renderLevelCards();
-      updateFilterCount();
-    }
-    
-    function updateFilterCount() {
-      const counter = document.getElementById('filter-count');
-      
-      if (!selectedExerciseType && !selectedLevel) {
-        counter.textContent = '';
-        return;
-      }
-      
-      let totalMatches = 0;
-      
-      Object.entries(courseData).forEach(([level, data]) => {
-        if (selectedLevel && selectedLevel !== level) return;
+    if (contactForm) {
+      contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
         
-        [...data.grammar, ...data.vocabulary].forEach(topic => {
-          const topicLinks = exerciseLinks.filter(link => 
-            link.topic_id === topic.id && 
-            !link.is_topic_lock &&
-            (!selectedExerciseType || link.exercise_type === selectedExerciseType)
-          );
-          totalMatches += topicLinks.length;
-        });
-      });
-      
-      counter.textContent = `${totalMatches} ejercicio${totalMatches !== 1 ? 's' : ''} encontrado${totalMatches !== 1 ? 's' : ''}`;
-    }
-    
-    function topicHasMatchingExercises(topicId) {
-      const topicLinks = exerciseLinks.filter(link => 
-        link.topic_id === topicId && 
-        !link.is_topic_lock &&
-        (!selectedExerciseType || link.exercise_type === selectedExerciseType)
-      );
-      return topicLinks.length > 0;
-    }
-    
-    // ============ RENDER FUNCTIONS ============
-    function renderLevelCards() {
-      const container = document.getElementById('levels-container');
-      const searchTerm = document.getElementById('search-input').value.toLowerCase();
-      
-      let html = '';
-      
-      for (const [level, data] of Object.entries(courseData)) {
-        // Skip level if level filter is active and doesn't match
-        if (selectedLevel && selectedLevel !== level) continue;
+        // Show success message
+        formMessage.textContent = '¡Mensaje enviado! Te contactaré pronto 😊';
+        formMessage.className = 'text-green-600 bg-green-50 p-4 rounded-xl font-bold';
+        formMessage.classList.remove('hidden');
         
-        const isExpanded = expandedLevels[level] || false;
+        // Reset form
+        contactForm.reset();
         
-        // Filter topics by search and exercise type
-        const filteredGrammar = data.grammar.filter(t => {
-          const matchesSearch = searchTerm === '' || t.title.toLowerCase().includes(searchTerm) || t.desc.toLowerCase().includes(searchTerm);
-          const hasExercises = !selectedExerciseType || topicHasMatchingExercises(t.id);
-          return matchesSearch && hasExercises;
-        });
-        
-        const filteredVocab = data.vocabulary.filter(t => {
-          const matchesSearch = searchTerm === '' || t.title.toLowerCase().includes(searchTerm) || t.desc.toLowerCase().includes(searchTerm);
-          const hasExercises = !selectedExerciseType || topicHasMatchingExercises(t.id);
-          return matchesSearch && hasExercises;
-        });
-        
-        const hasResults = filteredGrammar.length > 0 || filteredVocab.length > 0;
-        
-        if (!hasResults) continue;
-        
-        html += `
-          <div class="level-card card">
-            <div 
-              class="flex items-center justify-between p-5 cursor-pointer"
-              onclick="toggleLevel('${level}')"
-            >
-              <div class="flex items-center gap-4">
-                <div 
-                  class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg"
-                  style="background: ${data.gradient};"
-                >
-                  ${level}
-                </div>
-                <div>
-                  <h3 class="font-bold text-lg" style="color: var(--blue-main);">${data.title}</h3>
-                  <p class="text-sm" style="color: var(--gray-text);">${data.subtitle}</p>
-                </div>
-              </div>
-              <svg 
-                class="w-5 h-5 accordion-arrow ${isExpanded ? 'open' : ''}" 
-                style="color: var(--yellow-main);"
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </div>
-            
-            ${isExpanded ? `
-              <div class="px-5 pb-5">
-                <p class="text-sm mb-6" style="color: var(--gray-text);">${data.description}</p>
-                
-                ${filteredGrammar.length > 0 ? `
-                  <div class="mb-6">
-                    <h4 class="font-bold mb-3 flex items-center gap-2" style="color: var(--blue-main);">
-                      📘 Gramática
-                    </h4>
-                    <div class="space-y-3">
-                      ${filteredGrammar.map(topic => renderTopicTile(topic, level, 'grammar')).join('')}
-                    </div>
-                  </div>
-                ` : ''}
-                
-                ${filteredVocab.length > 0 ? `
-                  <div>
-                    <h4 class="font-bold mb-3 flex items-center gap-2" style="color: var(--blue-main);">
-                      📗 Vocabulario
-                    </h4>
-                    <div class="space-y-3">
-                      ${filteredVocab.map(topic => renderTopicTile(topic, level, 'vocabulary')).join('')}
-                    </div>
-                  </div>
-                ` : ''}
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }
-      
-      container.innerHTML = html;
-    }
-    
-    function renderTopicTile(topic, level, type) {
-      const borderColor = type === 'grammar' ? 'var(--blue-main)' : 'var(--red-main)';
-      const locked = isTopicLocked(topic.id);
-      
-      return `
-        <div 
-          class="topic-tile card cursor-pointer flex items-center"
-          onclick="${locked && !isAdmin ? `openTopicPasswordPopup('${topic.id}', '${topic.title}', '${level}', '${type}')` : `openExercisesPopup('${topic.id}', '${topic.title}', '${level}', '${type}')`}"
-        >
-          <div class="w-1 h-12 rounded-full mr-4" style="background-color: ${borderColor};"></div>
-          <div class="flex-1">
-            <h5 class="font-semibold flex items-center gap-2" style="color: var(--blue-main);">
-              ${locked ? '🔒 ' : ''}${topic.title}
-            </h5>
-            ${topic.titlePl ? `<p class="text-xs mb-1" style="color: var(--yellow-main);">${topic.titlePl}</p>` : ''}
-            <p class="text-sm" style="color: var(--gray-text);">${topic.desc}</p>
-          </div>
-          <svg class="w-5 h-5" style="color: var(--yellow-main);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </div>
-      `;
-    }
-    
-    function toggleLevel(level) {
-      expandedLevels[level] = !expandedLevels[level];
-      renderLevelCards();
-    }
-    
-    // ============ POPUP FUNCTIONS ============
-    function showPopup(content) {
-      const container = document.getElementById('popup-container');
-      const contentDiv = document.getElementById('popup-content');
-      contentDiv.innerHTML = content;
-      container.classList.remove('hidden');
-    }
-    
-    function hidePopup() {
-      const container = document.getElementById('popup-container');
-      container.classList.add('hidden');
-      currentPopup = null;
-      currentTopic = null;
-      currentLinkId = null;
-    }
-    
-    function getPopupFooter() {
-      return `
-        <div class="border-t pt-4 mt-4 flex items-center justify-between" style="border-color: rgba(252, 209, 22, 0.3);">
-          <a 
-            href="https://instagram.com/sacariooo" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity"
-            style="color: #94a3b8;"
-          >
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-            </svg>
-            @sacariooo
-          </a>
-          <a 
-            href="https://tiktok.com/@latip0l" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity"
-            style="color: #94a3b8;"
-          >
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-            </svg>
-            @latip0l
-          </a>
-        </div>
-      `;
-    }
-    
-    function openTopicPasswordPopup(topicId, topicTitle, level, type) {
-      currentTopic = { id: topicId, title: topicTitle, level, type };
-      currentPopup = 'topicPassword';
-      
-      const content = `
-        <div class="card" style="height: 380px; display: flex; flex-direction: column;">
-          <div class="text-center mb-6">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--yellow-main), var(--yellow-light));">
-              <svg class="w-7 h-7" style="color: var(--blue-main);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-              </svg>
-            </div>
-            <h2 class="font-display text-xl font-bold" style="color: var(--blue-main);">Tema protegido</h2>
-            <p class="text-sm" style="color: var(--gray-text);">${topicTitle}</p>
-          </div>
-          
-          <div class="flex-1">
-            <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Contraseña</label>
-            <input 
-              type="password" 
-              id="topic-password-input"
-              class="w-full py-3 px-4 rounded-xl border-2 text-base"
-              style="border-color: var(--yellow-main); color: var(--blue-main);"
-              placeholder="••••••••"
-            >
-            <p id="topic-password-error" class="text-sm mt-2 hidden" style="color: var(--red-main);">Contraseña incorrecta</p>
-          </div>
-          
-          <div class="flex gap-3 mt-4">
-            <button 
-              onclick="hidePopup()"
-              class="flex-1 py-3 rounded-xl font-semibold transition-opacity hover:opacity-80"
-              style="background-color: #e5e7eb; color: #6b7280;"
-            >
-              Cancelar
-            </button>
-            <button 
-              onclick="checkTopicPassword()"
-              class="btn-yellow flex-1"
-            >
-              Abrir
-            </button>
-          </div>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    function checkTopicPassword() {
-      const input = document.getElementById('topic-password-input');
-      const error = document.getElementById('topic-password-error');
-      const lock = getTopicLock(currentTopic.id);
-      
-      if (!lock) return;
-      
-      if (input.value === lock.topic_password) {
-        openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-      } else {
-        error.classList.remove('hidden');
-        input.value = '';
-      }
-    }
-    
-    function openExercisesPopup(topicId, topicTitle, level, type) {
-      currentTopic = { id: topicId, title: topicTitle, level, type };
-      currentPopup = 'exercises';
-      
-      const topicLinks = exerciseLinks.filter(link => link.topic_id === topicId && !link.is_topic_lock);
-      const typeLabel = type === 'grammar' ? 'Gramática' : 'Vocabulario';
-      const locked = isTopicLocked(topicId);
-      
-      let linksHtml = '';
-      if (topicLinks.length === 0) {
-        linksHtml = `
-          <p class="text-center py-4" style="color: var(--gray-text);">No hay links guardados aún.</p>
-        `;
-      } else {
-        linksHtml = topicLinks.map(link => {
-          const icon = exerciseIcons[link.exercise_type] || '📝';
-          return `
-            <div class="mb-3">
-              ${link.password ? `
-                <div 
-                  onclick="openPasswordLinkPopup('${link.__backendId}')"
-                  class="block p-3 rounded-xl hover:opacity-80 transition-opacity cursor-pointer"
-                  style="background: linear-gradient(135deg, rgba(252, 209, 22, 0.1), rgba(255, 215, 0, 0.1));"
-                >
-                  <div class="font-medium flex items-center gap-2" style="color: var(--blue-main);">
-                    ${icon} 🔒 ${link.description}
-                  </div>
-                  ${link.notes ? `<div class="text-xs mt-1" style="color: var(--gray-text);">${link.notes}</div>` : ''}
-                </div>
-              ` : `
-                <a 
-                  href="${link.url}" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  class="block p-3 rounded-xl hover:opacity-80 transition-opacity"
-                  style="background: linear-gradient(135deg, rgba(252, 209, 22, 0.1), rgba(255, 215, 0, 0.1));"
-                >
-                  <div class="font-medium flex items-center gap-2" style="color: var(--blue-main);">
-                    ${icon} ${link.description}
-                  </div>
-                  ${link.notes ? `<div class="text-xs mt-1" style="color: var(--gray-text);">${link.notes}</div>` : ''}
-                </a>
-              `}
-              ${isAdmin ? `
-                <div class="flex gap-3 mt-2 px-3">
-                  <button 
-                    onclick="openEditLinkPopup('${link.__backendId}')"
-                    class="admin-link"
-                    style="color: var(--blue-main);"
-                  >
-                    ✏️ Editar
-                  </button>
-                  <button 
-                    onclick="deleteLink('${link.__backendId}')"
-                    class="admin-link"
-                    style="color: var(--red-main);"
-                  >
-                    × Eliminar
-                  </button>
-                </div>
-              ` : ''}
-            </div>
-          `;
-        }).join('');
-      }
-      
-      const content = `
-        <div class="card" style="height: 420px; display: flex; flex-direction: column;">
-          <div class="text-center mb-4">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--blue-main), var(--blue-light));">
-              <svg class="w-7 h-7" style="color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-            <h2 class="font-display text-xl font-bold" style="color: var(--blue-main);">Ejercicios</h2>
-            <p class="text-sm" style="color: var(--gray-text);">${topicTitle}</p>
-            <p class="text-xs mt-1" style="color: var(--yellow-main);">Nivel: ${level} | Tipo: ${typeLabel}</p>
-          </div>
-          
-          <div class="flex-1 rounded-2xl p-4 overflow-hidden" style="background: linear-gradient(135deg, rgba(252, 209, 22, 0.05), rgba(255, 215, 0, 0.05));">
-            <div class="h-full overflow-y-auto">
-              ${linksHtml}
-            </div>
-          </div>
-          
-          ${isAdmin ? `
-            <div class="flex items-center justify-center gap-4 mt-3">
-              <button 
-                onclick="openAddLinkPopup()"
-                class="admin-link"
-                style="color: var(--blue-main);"
-              >
-                + Añadir link
-              </button>
-              ${locked ? `
-                <button 
-                  onclick="unlockTopic('${topicId}')"
-                  class="admin-link"
-                  style="color: var(--red-main);"
-                >
-                  🔓 Desbloquear tema
-                </button>
-              ` : `
-                <button 
-                  onclick="openLockTopicPopup()"
-                  class="admin-link"
-                  style="color: var(--yellow-main);"
-                >
-                  🔒 Bloquear tema
-                </button>
-              `}
-            </div>
-          ` : ''}
-          
-          <button 
-            onclick="hidePopup()"
-            class="w-full py-3 rounded-xl font-semibold mt-4 transition-opacity hover:opacity-80"
-            style="background-color: #e5e7eb; color: #6b7280;"
-          >
-            Cerrar
-          </button>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    function openLockTopicPopup() {
-      currentPopup = 'lockTopic';
-      
-      const content = `
-        <div class="card" style="height: 380px; display: flex; flex-direction: column;">
-          <div class="text-center mb-6">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--yellow-main), var(--yellow-light));">
-              <svg class="w-7 h-7" style="color: var(--blue-main);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-              </svg>
-            </div>
-            <h2 class="font-display text-xl font-bold" style="color: var(--blue-main);">Bloquear tema</h2>
-            <p class="text-sm" style="color: var(--gray-text);">${currentTopic?.title || ''}</p>
-          </div>
-          
-          <div class="flex-1">
-            <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Contraseña para desbloquear</label>
-            <input 
-              type="text" 
-              id="lock-topic-password"
-              class="w-full py-3 px-4 rounded-xl border-2 text-base"
-              style="border-color: var(--yellow-main); color: var(--blue-main);"
-              placeholder="Escribe una contraseña"
-            >
-            <p class="text-xs mt-2" style="color: var(--gray-text);">Los estudiantes necesitarán esta contraseña para ver el tema</p>
-          </div>
-          
-          <div class="flex gap-3 mt-4">
-            <button 
-              onclick="openExercisesPopup('${currentTopic?.id}', '${currentTopic?.title}', '${currentTopic?.level}', '${currentTopic?.type}')"
-              class="flex-1 py-3 rounded-xl font-semibold transition-opacity hover:opacity-80"
-              style="background-color: #e5e7eb; color: #6b7280;"
-            >
-              Cancelar
-            </button>
-            <button 
-              onclick="lockTopic()"
-              id="lock-topic-btn"
-              class="btn-yellow flex-1"
-            >
-              Bloquear
-            </button>
-          </div>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    async function lockTopic() {
-      const password = document.getElementById('lock-topic-password').value.trim();
-      
-      if (!password) return;
-      
-      if (exerciseLinks.length >= 999) {
-        const btn = document.getElementById('lock-topic-btn');
-        btn.textContent = 'Límite alcanzado';
-        btn.style.background = 'linear-gradient(135deg, var(--red-main), var(--red-dark))';
-        return;
-      }
-      
-      const btn = document.getElementById('lock-topic-btn');
-      btn.textContent = 'Bloqueando...';
-      btn.disabled = true;
-      
-      const result = await window.dataSdk.create({
-        topic_id: currentTopic.id,
-        description: '',
-        url: '',
-        notes: '',
-        password: '',
-        topic_password: password,
-        is_topic_lock: true,
-        created_at: new Date().toISOString()
-      });
-      
-      if (result.isOk) {
-        renderLevelCards();
-        openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-      } else {
-        btn.textContent = 'Error';
-        btn.style.background = 'linear-gradient(135deg, var(--red-main), var(--red-dark))';
+        // Hide message after 5 seconds
         setTimeout(() => {
-          btn.textContent = 'Bloquear';
-          btn.style.background = 'linear-gradient(135deg, var(--yellow-main), var(--yellow-light))';
-          btn.disabled = false;
-        }, 2000);
-      }
-    }
-    
-    async function unlockTopic(topicId) {
-      const lock = getTopicLock(topicId);
-      if (!lock) return;
-      
-      const result = await window.dataSdk.delete(lock);
-      
-      if (result.isOk) {
-        renderLevelCards();
-        openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-      }
-    }
-    
-    function openPasswordLinkPopup(linkId) {
-      currentLinkId = linkId;
-      currentPopup = 'passwordLink';
-      
-      const content = `
-        <div class="card" style="height: 380px; display: flex; flex-direction: column;">
-          <div class="text-center mb-6">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--yellow-main), var(--yellow-light));">
-              <svg class="w-7 h-7" style="color: var(--blue-main);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-              </svg>
-            </div>
-            <h2 class="font-display text-xl font-bold" style="color: var(--blue-main);">Link protegido</h2>
-            <p class="text-sm" style="color: var(--gray-text);">Introduce la contraseña para acceder</p>
-          </div>
-          
-          <div class="flex-1">
-            <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Contraseña</label>
-            <input 
-              type="password" 
-              id="link-password-input"
-              class="w-full py-3 px-4 rounded-xl border-2 text-base"
-              style="border-color: var(--yellow-main); color: var(--blue-main);"
-              placeholder="••••••••"
-            >
-            <p id="link-password-error" class="text-sm mt-2 hidden" style="color: var(--red-main);">Contraseña incorrecta</p>
-          </div>
-          
-          <div class="flex gap-3 mt-4">
-            <button 
-              onclick="openExercisesPopup('${currentTopic.id}', '${currentTopic.title}', '${currentTopic.level}', '${currentTopic.type}')"
-              class="flex-1 py-3 rounded-xl font-semibold transition-opacity hover:opacity-80"
-              style="background-color: #e5e7eb; color: #6b7280;"
-            >
-              Cancelar
-            </button>
-            <button 
-              onclick="checkLinkPassword()"
-              class="btn-yellow flex-1"
-            >
-              Abrir
-            </button>
-          </div>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    function checkLinkPassword() {
-      const input = document.getElementById('link-password-input');
-      const error = document.getElementById('link-password-error');
-      const link = exerciseLinks.find(l => l.__backendId === currentLinkId);
-      
-      if (!link) return;
-      
-      if (input.value === link.password) {
-        window.open(link.url, '_blank', 'noopener,noreferrer');
-        hidePopup();
-      } else {
-        error.classList.remove('hidden');
-        input.value = '';
-      }
-    }
-    
-    function openPasswordPopup() {
-      currentPopup = 'password';
-      
-      const content = `
-        <div class="card" style="height: 380px; display: flex; flex-direction: column;">
-          <div class="text-center mb-6">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--yellow-main), var(--yellow-light));">
-              <svg class="w-7 h-7" style="color: var(--blue-main);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-              </svg>
-            </div>
-            <h2 class="font-display text-xl font-bold" style="color: var(--blue-main);">Contraseña requerida</h2>
-          </div>
-          
-          <div class="flex-1">
-            <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Introduce contraseña</label>
-            <input 
-              type="password" 
-              id="admin-password"
-              class="w-full py-3 px-4 rounded-xl border-2 text-base"
-              style="border-color: var(--yellow-main); color: var(--blue-main);"
-              placeholder="••••••••"
-            >
-            <p id="password-error" class="text-sm mt-2 hidden" style="color: var(--red-main);">Contraseña incorrecta</p>
-          </div>
-          
-          <div class="flex gap-3 mt-4">
-            <button 
-              onclick="hidePopup()"
-              class="flex-1 py-3 rounded-xl font-semibold transition-opacity hover:opacity-80"
-              style="background-color: #e5e7eb; color: #6b7280;"
-            >
-              Cancelar
-            </button>
-            <button 
-              onclick="checkPassword()"
-              class="btn-yellow flex-1"
-            >
-              Confirmar
-            </button>
-          </div>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    function openAddLinkPopup() {
-      currentPopup = 'addLink';
-      
-      const content = `
-        <div class="card" style="max-height: 90vh; display: flex; flex-direction: column;">
-          <div class="text-center mb-4">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--yellow-main), var(--yellow-light));">
-              <svg class="w-7 h-7" style="color: var(--blue-main);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-            </div>
-            <h2 class="font-display text-xl font-bold" style="color: var(--blue-main);">Añadir nuevo link</h2>
-            <p class="text-sm" style="color: var(--gray-text);">${currentTopic?.title || ''}</p>
-          </div>
-          
-          <div class="flex-1 space-y-4 overflow-y-auto">
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Tipo de ejercicio</label>
-              <select 
-                id="link-exercise-type"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-              >
-                ${getExerciseTypeOptions()}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Descripción del ejercicio</label>
-              <input 
-                type="text" 
-                id="link-description"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-                placeholder="Ej: Ejercicios de conjugación"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">URL del ejercicio</label>
-              <input 
-                type="url" 
-                id="link-url"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-                placeholder="https://..."
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Notas (opcional)</label>
-              <input 
-                type="text" 
-                id="link-notes"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-                placeholder="Notas adicionales..."
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">🔒 Proteger con contraseña (opcional)</label>
-              <input 
-                type="text" 
-                id="link-password"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-                placeholder="Dejar vacío si no quieres protegerlo"
-              >
-            </div>
-          </div>
-          
-          <div class="flex gap-3 mt-4">
-            <button 
-              onclick="openExercisesPopup('${currentTopic?.id}', '${currentTopic?.title}', '${currentTopic?.level}', '${currentTopic?.type}')"
-              class="flex-1 py-3 rounded-xl font-semibold transition-opacity hover:opacity-80"
-              style="background-color: #e5e7eb; color: #6b7280;"
-            >
-              Cancelar
-            </button>
-            <button 
-              onclick="saveNewLink()"
-              id="save-link-btn"
-              class="btn-yellow flex-1"
-            >
-              Guardar
-            </button>
-          </div>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    function openEditLinkPopup(backendId) {
-      const linkToEdit = exerciseLinks.find(l => l.__backendId === backendId);
-      if (!linkToEdit) return;
-      
-      currentPopup = 'editLink';
-      
-      const content = `
-        <div class="card" style="max-height: 90vh; display: flex; flex-direction: column;">
-          <div class="text-center mb-4">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--blue-main), var(--blue-light));">
-              <svg class="w-7 h-7" style="color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-              </svg>
-            </div>
-            <h2 class="font-display text-xl font-bold" style="color: var(--blue-main);">Editar link</h2>
-            <p class="text-sm" style="color: var(--gray-text);">${currentTopic?.title || ''}</p>
-          </div>
-          
-          <div class="flex-1 space-y-4 overflow-y-auto">
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Tipo de ejercicio</label>
-              <select 
-                id="edit-link-exercise-type"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-              >
-                ${getExerciseTypeOptions(linkToEdit.exercise_type)}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Descripción del ejercicio</label>
-              <input 
-                type="text" 
-                id="edit-link-description"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-                placeholder="Ej: Ejercicios de conjugación"
-                value="${linkToEdit.description}"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">URL del ejercicio</label>
-              <input 
-                type="url" 
-                id="edit-link-url"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-                placeholder="https://..."
-                value="${linkToEdit.url}"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">Notas (opcional)</label>
-              <input 
-                type="text" 
-                id="edit-link-notes"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-                placeholder="Notas adicionales..."
-                value="${linkToEdit.notes || ''}"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: var(--blue-main);">🔒 Proteger con contraseña (opcional)</label>
-              <input 
-                type="text" 
-                id="edit-link-password"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: var(--yellow-main); color: var(--blue-main);"
-                placeholder="Dejar vacío para quitar protección"
-                value="${linkToEdit.password || ''}"
-              >
-            </div>
-          </div>
-          
-          <div class="flex gap-3 mt-4">
-            <button 
-              onclick="openExercisesPopup('${currentTopic?.id}', '${currentTopic?.title}', '${currentTopic?.level}', '${currentTopic?.type}')"
-              class="flex-1 py-3 rounded-xl font-semibold transition-opacity hover:opacity-80"
-              style="background-color: #e5e7eb; color: #6b7280;"
-            >
-              Cancelar
-            </button>
-            <button 
-              onclick="saveEditedLink('${backendId}')"
-              id="save-edit-btn"
-              class="btn-blue flex-1"
-            >
-              Actualizar
-            </button>
-          </div>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    function checkPassword() {
-      const input = document.getElementById('admin-password');
-      const error = document.getElementById('password-error');
-      
-      if (input.value === 'ADMIN123') {
-        isAdmin = true;
-        localStorage.setItem('polaco_admin', 'true');
-        hidePopup();
-        updateAdminButton();
-      } else {
-        error.classList.remove('hidden');
-        input.value = '';
-      }
-    }
-    
-    async function saveNewLink() {
-      const exerciseType = document.getElementById('link-exercise-type').value.trim();
-      const description = document.getElementById('link-description').value.trim();
-      const url = document.getElementById('link-url').value.trim();
-      const notes = document.getElementById('link-notes').value.trim();
-      const password = document.getElementById('link-password').value.trim();
-      
-      if (!exerciseType || !description || !url) return;
-      
-      if (exerciseLinks.length >= 999) {
-        const btn = document.getElementById('save-link-btn');
-        btn.textContent = 'Límite alcanzado';
-        btn.style.background = 'linear-gradient(135deg, var(--red-main), var(--red-dark))';
-        return;
-      }
-      
-      const btn = document.getElementById('save-link-btn');
-      btn.textContent = 'Guardando...';
-      btn.disabled = true;
-      
-      const result = await window.dataSdk.create({
-        topic_id: currentTopic.id,
-        exercise_type: exerciseType,
-        description: description,
-        url: url,
-        notes: notes,
-        password: password || '',
-        topic_password: '',
-        is_topic_lock: false,
-        created_at: new Date().toISOString()
+          formMessage.classList.add('hidden');
+        }, 5000);
       });
-      
-      if (result.isOk) {
-        openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-      } else {
-        btn.textContent = 'Error';
-        btn.style.background = 'linear-gradient(135deg, var(--red-main), var(--red-dark))';
-        setTimeout(() => {
-          btn.textContent = 'Guardar';
-          btn.style.background = 'linear-gradient(135deg, var(--yellow-main), var(--yellow-light))';
-          btn.disabled = false;
-        }, 2000);
-      }
     }
     
-    async function deleteLink(backendId) {
-      const linkToDelete = exerciseLinks.find(l => l.__backendId === backendId);
-      if (!linkToDelete) return;
-      
-      const result = await window.dataSdk.delete(linkToDelete);
-      
-      if (result.isOk) {
-        openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-      }
-    }
-    
-    async function saveEditedLink(backendId) {
-      const exerciseType = document.getElementById('edit-link-exercise-type').value.trim();
-      const description = document.getElementById('edit-link-description').value.trim();
-      const url = document.getElementById('edit-link-url').value.trim();
-      const notes = document.getElementById('edit-link-notes').value.trim();
-      const password = document.getElementById('edit-link-password').value.trim();
-      
-      if (!exerciseType || !description || !url) return;
-      
-      const linkToEdit = exerciseLinks.find(l => l.__backendId === backendId);
-      if (!linkToEdit) return;
-      
-      const btn = document.getElementById('save-edit-btn');
-      btn.textContent = 'Actualizando...';
-      btn.disabled = true;
-      
-      const updatedLink = {
-        ...linkToEdit,
-        exercise_type: exerciseType,
-        description: description,
-        url: url,
-        notes: notes,
-        password: password || ''
-      };
-      
-      const result = await window.dataSdk.update(updatedLink);
-      
-      if (result.isOk) {
-        openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-      } else {
-        btn.textContent = 'Error';
-        btn.style.background = 'linear-gradient(135deg, var(--red-main), var(--red-dark))';
-        setTimeout(() => {
-          btn.textContent = 'Actualizar';
-          btn.style.background = 'linear-gradient(135deg, var(--blue-main), var(--blue-light))';
-          btn.disabled = false;
-        }, 2000);
-      }
-    }
-    
-    function updateAdminButton() {
-      const btn = document.getElementById('admin-btn');
-      if (isAdmin) {
-        btn.textContent = '✅ Admin Activo';
-        btn.style.opacity = '1';
-        btn.onclick = () => {
-          isAdmin = false;
-          localStorage.removeItem('polaco_admin');
-          updateAdminButton();
-          renderLevelCards();
-        };
-      } else {
-        btn.textContent = '🔐 Modo Admin';
-        btn.style.opacity = '0.6';
-        btn.onclick = openPasswordPopup;
-      }
-    }
-    
-    // ============ SDK INITIALIZATION ============
-    const dataHandler = {
-      onDataChanged(data) {
-        exerciseLinks = data;
-        if (currentPopup === 'exercises' && currentTopic) {
-          openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-        }
-        renderLevelCards();
-      }
-    };
-    
-    async function onConfigChange(cfg) {
-      config = { ...defaultConfig, ...cfg };
-      
-      const title = document.getElementById('main-title');
-      const subtitle = document.getElementById('main-subtitle');
-      
-      if (title) title.textContent = config.app_title || defaultConfig.app_title;
-      if (subtitle) subtitle.textContent = config.app_subtitle || defaultConfig.app_subtitle;
-    }
-    
-    // Initialize
-    (async function init() {
-      // Element SDK
-      window.elementSdk.init({
-        defaultConfig,
-        onConfigChange,
-        mapToCapabilities: (cfg) => ({
-          recolorables: [
-            {
-              get: () => cfg.primary_color || defaultConfig.primary_color,
-              set: (v) => { cfg.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); }
-            },
-            {
-              get: () => cfg.text_color || defaultConfig.text_color,
-              set: (v) => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
-            },
-            {
-              get: () => cfg.accent_color || defaultConfig.accent_color,
-              set: (v) => { cfg.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }
-            },
-            {
-              get: () => cfg.card_background || defaultConfig.card_background,
-              set: (v) => { cfg.card_background = v; window.elementSdk.setConfig({ card_background: v }); }
-            }
-          ],
-          borderables: [],
-          fontEditable: {
-            get: () => cfg.font_family || 'Montserrat',
-            set: (v) => { cfg.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
-          },
-          fontSizeable: undefined
-        }),
-        mapToEditPanelValues: (cfg) => new Map([
-          ['app_title', cfg.app_title || defaultConfig.app_title],
-          ['app_subtitle', cfg.app_subtitle || defaultConfig.app_subtitle]
-        ])
-      });
-      
-      // Data SDK
-      const dataResult = await window.dataSdk.init(dataHandler);
-      if (!dataResult.isOk) {
-        console.error('Failed to initialize data SDK');
-      }
-      
-      // Initial render
-      renderLevelCards();
-      updateAdminButton();
-      updateFilterCount();
-      
-      // Search functionality
-      document.getElementById('search-input').addEventListener('input', renderLevelCards);
-      
-      // Close popup on overlay click
-      document.getElementById('popup-container').addEventListener('click', (e) => {
-        if (e.target.id === 'popup-container') {
-          hidePopup();
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
-    })();
+    });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c196ea3a2cf2540',t:'MTc2OTAyNTk4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c19579245862d19',t:'MTc2OTAyNTA0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
