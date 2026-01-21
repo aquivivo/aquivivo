@@ -108,19 +108,11 @@
     <div class="max-w-7xl mx-auto px-6 py-4">
      <div class="flex items-center justify-between"><button onclick="navigateTo('home')" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
        <div class="w-10 h-10 rounded-full gradient-colombia"></div><span class="font-display text-xl font-semibold text-white">Aqui Vivo</span> </button>
-    <div class="hidden md:flex items-center gap-8">
-  <!-- przewijanie strony głównej -->
-  <a href="#inicio" onclick="navigateTo('home'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Inicio</a>
-  <a href="#programa" onclick="scrollToSection('programa'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Programa</a>
-  <a href="#servicios" onclick="scrollToSection('servicios'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Servicios</a>
-  <a href="#ebooks" onclick="scrollToSection('ebooks'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">E-books</a>
-  <a href="#contacto" onclick="scrollToSection('contacto'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Contacto</a>
-
-  <!-- 🔥 PODSTRONY -->
-  <a href="Blog/" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Blog</a>
-  <a href="Clases/" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Clases</a>
-  <a href="Polaco/" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Polaco</a>
-</div>
+      <div class="hidden md:flex items-center gap-8"><a href="#inicio" onclick="navigateTo('home'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Inicio</a> <a href="#programa" onclick="scrollToSection('programa'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Programa</a> <a href="#servicios" onclick="scrollToSection('servicios'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Servicios</a> <a href="#ebooks" onclick="scrollToSection('ebooks'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">E-books</a> <a href="#contacto" onclick="scrollToSection('contacto'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Contacto</a>
+      </div><button id="mobile-menu-btn" class="md:hidden p-2 text-yellow-400">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+       </svg></button>
+     </div>
     </div><!-- Mobile Menu -->
     <div id="mobile-menu" class="hidden md:hidden bg-blue-900 border-t border-yellow-400">
      <div class="px-6 py-4 space-y-3"><a href="#inicio" onclick="navigateTo('home'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">Inicio</a> <a href="#programa" onclick="scrollToSection('programa'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">Programa</a> <a href="#servicios" onclick="scrollToSection('servicios'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">Servicios</a> <a href="#ebooks" onclick="scrollToSection('ebooks'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">E-books</a> <a href="#contacto" onclick="scrollToSection('contacto'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">Contacto</a>
