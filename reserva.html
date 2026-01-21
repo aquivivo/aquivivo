@@ -211,6 +211,13 @@
       box-shadow: 0 4px 16px rgba(252, 209, 22, 0.4);
     }
     
+    .price-old {
+      color: #666;
+      text-decoration: line-through;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    
     .testimonial-card {
       background: white;
       border-radius: 24px;
@@ -236,6 +243,33 @@
     .glow-text {
       text-shadow: 0 0 20px rgba(252, 209, 22, 0.5);
     }
+    
+    .promo-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
+      color: #003893;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(252, 209, 22, 0.5);
+      white-space: nowrap;
+      z-index: 10;
+    }
+    
+    .promo-badge-red {
+      background: linear-gradient(135deg, #CE1126 0%, #FF1E3C 100%);
+      color: white;
+    }
+    
+    .promo-badge-white {
+      background: white;
+      color: #003893;
+      border: 2px solid #FCD116;
+    }
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
@@ -255,8 +289,8 @@
           <stop offset="75%" style="stop-color:#CE1126;stop-opacity:1" />
           <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
          </lineargradient>
-        </defs> <!-- Poland map - very detailed accurate shape --> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlag)" stroke="#FCD116" stroke-width="2.5" />
-       </svg><span class="font-display text-2xl font-bold text-white">Aqui Vivo</span>
+        </defs> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlag)" stroke="#FCD116" stroke-width="2.5" />
+       </svg><span class="font-display text-2xl font-bold text-white">Aqui vivo</span>
       </div>
       <div class="hidden md:flex items-center gap-8"><a href="#inicio" class="text-white hover:text-yellow-400 font-semibold transition-colors">Inicio</a> <a href="#programa" class="text-white hover:text-yellow-400 font-semibold transition-colors">Programa</a> <a href="#servicios" class="text-white hover:text-yellow-400 font-semibold transition-colors">Servicios</a> <a href="#ebooks" class="text-white hover:text-yellow-400 font-semibold transition-colors">E-books</a> <a href="#contacto" class="text-white hover:text-yellow-400 font-semibold transition-colors">Contacto</a>
       </div>
@@ -271,13 +305,13 @@
       <div class="inline-flex items-center gap-3 bg-yellow-400 text-blue-900 px-6 py-3 rounded-full font-bold shadow-xl"><span class="text-2xl">🇨🇴</span> <span>Para latinos en Polonia</span> <span class="text-2xl">🇵🇱</span>
       </div>
       <h1 class="font-display text-6xl lg:text-7xl font-black text-white leading-tight glow-text">Aprende Polaco<br><span class="text-yellow-400">con Alma Latina</span></h1>
-      <p class="text-xl text-blue-100 leading-relaxed">Profesora certificada de español y polaco. Te ayudo a dominar el idioma y adaptarte a la vida en Polonia con un método diseñado especialmente para hispanohablantes.</p>
+      <p class="text-xl text-blue-100 leading-relaxed">Soy Magdalena — profesora de español y polaco en Let's Talk Poznań. Te ayudo a descubrir que el polaco no es tan difícil como parece, que puede ser ligero, agradable y realmente "alcanzable" 🌸</p>
       <div class="flex flex-col sm:flex-row gap-5 pt-4"><a href="https://aquivivo.github.io/aquivivo/Reserva.html" class="btn-yellow text-lg"> Reserva tu Clase Gratis </a> <a href="#programa" class="btn-white-outline text-lg"> Ver Programa </a>
       </div>
      </div>
      <div class="text-center space-y-10">
       <div class="floating mx-auto">
-       <svg class="w-72 h-72 mx-auto drop-shadow-2xl" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><!-- Colombian Coffee Cup with steam --> <defs>
+       <svg class="w-72 h-72 mx-auto drop-shadow-2xl" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs>
          <lineargradient id="cupGradient" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
           <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
@@ -286,7 +320,7 @@
           <stop offset="0%" style="stop-color:#6F4E37;stop-opacity:1" />
           <stop offset="100%" style="stop-color:#3E2723;stop-opacity:1" />
          </lineargradient>
-        </defs> <!-- Sombrero Vueltiao (Colombian hat) in background --> <ellipse cx="100" cy="55" rx="70" ry="15" fill="#FCD116" opacity="0.3" /> <ellipse cx="100" cy="55" rx="60" ry="12" fill="#003893" opacity="0.3" /> <ellipse cx="100" cy="55" rx="50" ry="10" fill="#FCD116" opacity="0.3" /> <rect x="85" y="55" width="30" height="25" rx="5" fill="#FCD116" opacity="0.3" /> <!-- Coffee cup --> <path d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z" fill="url(#cupGradient)" stroke="#654321" stroke-width="2" /> <!-- Coffee liquid --> <ellipse cx="100" cy="120" rx="35" ry="8" fill="url(#coffeeGradient)" /> <!-- Cup handle --> <path d="M 140 130 Q 155 130 155 145 Q 155 160 140 160" fill="none" stroke="url(#cupGradient)" stroke-width="8" stroke-linecap="round" /> <!-- Colombian flag colors on cup --> <rect x="70" y="135" width="60" height="8" fill="#FCD116" opacity="0.6" rx="2" /> <rect x="70" y="145" width="60" height="5" fill="#003893" opacity="0.6" rx="1" /> <rect x="70" y="152" width="60" height="5" fill="#CE1126" opacity="0.6" rx="1" /> <!-- Steam rising (animated) --> <path d="M 85 110 Q 80 95 85 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
+        </defs> <ellipse cx="100" cy="55" rx="70" ry="15" fill="#FCD116" opacity="0.3" /> <ellipse cx="100" cy="55" rx="60" ry="12" fill="#003893" opacity="0.3" /> <ellipse cx="100" cy="55" rx="50" ry="10" fill="#FCD116" opacity="0.3" /> <rect x="85" y="55" width="30" height="25" rx="5" fill="#FCD116" opacity="0.3" /> <path d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z" fill="url(#cupGradient)" stroke="#654321" stroke-width="2" /> <ellipse cx="100" cy="120" rx="35" ry="8" fill="url(#coffeeGradient)" /> <path d="M 140 130 Q 155 130 155 145 Q 155 160 140 160" fill="none" stroke="url(#cupGradient)" stroke-width="8" stroke-linecap="round" /> <rect x="70" y="135" width="60" height="8" fill="#FCD116" opacity="0.6" rx="2" /> <rect x="70" y="145" width="60" height="5" fill="#003893" opacity="0.6" rx="1" /> <rect x="70" y="152" width="60" height="5" fill="#CE1126" opacity="0.6" rx="1" /> <path d="M 85 110 Q 80 95 85 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
          <animate attributename="opacity" values="0.7;0.3;0.7" dur="2s" repeatcount="indefinite" />
          <animate attributename="d" values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85" dur="2s" repeatcount="indefinite" />
         </path> <path d="M 100 108 Q 100 90 105 80" fill="none" stroke="#FCD116" stroke-width="4" stroke-linecap="round" opacity="0.8">
@@ -295,19 +329,19 @@
         </path> <path d="M 115 110 Q 120 95 115 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
          <animate attributename="opacity" values="0.7;0.3;0.7" dur="2.2s" repeatcount="indefinite" />
          <animate attributename="d" values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85" dur="2.2s" repeatcount="indefinite" />
-        </path> <!-- Coffee beans decoration --> <ellipse cx="50" cy="140" rx="8" ry="10" fill="#3E2723" transform="rotate(-20 50 140)">
+        </path> <ellipse cx="50" cy="140" rx="8" ry="10" fill="#3E2723" transform="rotate(-20 50 140)">
          <animate attributename="opacity" values="1;0.7;1" dur="3s" repeatcount="indefinite" />
         </ellipse> <path d="M 50 135 Q 50 140 50 145" stroke="#654321" stroke-width="1.5" /> <ellipse cx="150" cy="135" rx="8" ry="10" fill="#3E2723" transform="rotate(20 150 135)">
          <animate attributename="opacity" values="0.7;1;0.7" dur="3s" repeatcount="indefinite" />
-        </ellipse> <path d="M 150 130 Q 150 135 150 140" stroke="#654321" stroke-width="1.5" /> <!-- Book pages representing learning --> <rect x="70" y="175" width="60" height="8" fill="#FCD116" rx="1" opacity="0.9" /> <rect x="75" y="178" width="50" height="8" fill="#FFFFFF" rx="1" opacity="0.8" /> <rect x="80" y="181" width="40" height="8" fill="#FCD116" rx="1" opacity="0.7" /> <!-- Small heart connecting cultures --> <path d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z" fill="#CE1126" opacity="0.8">
+        </ellipse> <path d="M 150 130 Q 150 135 150 140" stroke="#654321" stroke-width="1.5" /> <rect x="70" y="175" width="60" height="8" fill="#FCD116" rx="1" opacity="0.9" /> <rect x="75" y="178" width="50" height="8" fill="#FFFFFF" rx="1" opacity="0.8" /> <rect x="80" y="181" width="40" height="8" fill="#FCD116" rx="1" opacity="0.7" /> <path d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z" fill="#CE1126" opacity="0.8">
          <animate attributename="transform" values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)" dur="1.5s" repeatcount="indefinite" />
         </path>
        </svg>
-      </div><!-- Stats -->
+      </div>
       <div class="grid grid-cols-3 gap-6">
        <div class="card-white transform hover:scale-105 transition-transform">
         <div class="text-5xl font-black text-yellow-500 mb-2">
-         500+
+         100+
         </div>
         <div class="text-sm font-bold text-blue-900">
          Estudiantes
@@ -315,7 +349,7 @@
        </div>
        <div class="card-white transform hover:scale-105 transition-transform">
         <div class="text-5xl font-black text-blue-900 mb-2">
-         5 años
+         10 años
         </div>
         <div class="text-sm font-bold text-blue-900">
          Experiencia
@@ -340,8 +374,8 @@
        <div class="icon-circle">
         🎓
        </div>
-       <h3 class="font-display text-xl font-bold text-blue-900">Certificada</h3>
-       <p class="text-blue-900">Títulos oficiales en enseñanza de idiomas</p>
+       <h3 class="font-display text-xl font-bold text-blue-900">Filología Hispánica</h3>
+       <p class="text-blue-900">UAM - Español real de la vida cotidiana</p>
       </div>
       <div class="card-white text-center space-y-5">
        <div class="icon-circle">
@@ -352,7 +386,7 @@
       </div>
       <div class="card-red text-center space-y-5">
        <div class="icon-circle" style="background: white; color: #CE1126;">
-        💡
+        🎯
        </div>
        <h3 class="font-display text-xl font-bold text-white">Método Propio</h3>
        <p class="text-white">Programa diseñado para latinos</p>
@@ -376,21 +410,21 @@
         Sobre Mí
        </div>
        <h2 class="font-display text-5xl lg:text-6xl font-black text-white leading-tight">¿Por qué aprender<br><span class="text-yellow-400">conmigo?</span></h2>
-       <p class="text-xl text-blue-100 leading-relaxed">Como latina viviendo en Polonia, sé exactamente los desafíos que enfrentas. Mi método combina gramática práctica, situaciones reales de la vida cotidiana y el contexto cultural que necesitas para integrarte exitosamente.</p>
+       <p class="text-xl text-blue-100 leading-relaxed">Desde muy pequeña el español estuvo cerca de mi corazón — y, especialmente, su versión latinoamericana, llena de emoción, calidez y vida. Fue este español el que me hizo enamorarme de los idiomas. Hoy me especializo en español latinoamericano, tal como se habla de verdad — entre personas, en las relaciones, en la vida cotidiana 🌸</p>
        <div class="flex items-center gap-6 pt-6">
         <div class="flex -space-x-4">
          <div class="w-16 h-16 rounded-full bg-yellow-400 flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
           👩
          </div>
          <div class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
-          👨‍♂️
+          👨
          </div>
          <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
           🙋‍♀️
          </div>
         </div>
         <div class="text-white">
-         Únete a <span class="font-black text-yellow-400 text-xl">500+ estudiantes</span> que ya dominan el polaco
+         Únete a <span class="font-black text-yellow-400 text-xl">100+ estudiantes</span> que ya dominan el polaco
         </div>
        </div>
       </div>
@@ -433,72 +467,100 @@
    </section><!-- Program Section -->
    <section id="programa" class="pt-32 pb-20 bg-gradient-to-b from-blue-900 to-blue-800">
     <div class="max-w-7xl mx-auto px-6">
-     <div class="text-center max-w-3xl mx-auto mb-8">
-      <div class="section-badge mx-auto mb-3">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="section-badge mx-auto mb-6">
        Mi Programa
       </div>
-      <h2 class="font-display text-5xl font-black text-white mb-3 glow-text">Método Diseñado para Ti</h2>
-      <p class="text-xs text-blue-100">Un programa estructurado que te lleva desde cero hasta la fluidez, con materiales creados específicamente para hispanohablantes.</p>
+      <h2 class="font-display text-5xl font-black text-white mb-6 glow-text">Método Diseñado para Ti</h2>
+      <p class="text-xl text-blue-100">Un programa que te ayuda a dejar de tener miedo a hablar y a descubrir que el polaco puede ser ligero y agradable. Enfoque en polaco real para hispanohablantes.</p>
      </div>
-     <div class="grid md:grid-cols-3 gap-5">
-      <div class="card-yellow">
-       <div class="w-16 h-16 rounded-3xl bg-blue-900 flex items-center justify-center mb-4 shadow-xl mx-auto"><span class="text-3xl">📚</span>
+     <div class="grid md:grid-cols-3 gap-8"><!-- A1-A2 -->
+      <div class="card-yellow relative border-4 border-yellow-400">
+       <div class="promo-badge">
+        🎉 Precio de Lanzamiento
        </div>
-       <div class="text-center space-y-3">
-        <div class="text-xs font-black text-blue-900 uppercase tracking-wider">
+       <div class="w-20 h-20 rounded-3xl bg-blue-900 flex items-center justify-center mb-6 shadow-xl mx-auto"><span class="text-4xl">📚</span>
+       </div>
+       <div class="text-center space-y-4">
+        <div class="text-sm font-black text-blue-900 uppercase tracking-wider">
          Nivel A1-A2
         </div>
-        <h3 class="font-display text-lg font-black text-blue-900">Fundamentos</h3>
-        <ul class="space-y-2 text-blue-900 text-left text-sm">
-         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Pronunciación desde el español</span></li>
-         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Gramática básica explicada</span></li>
-         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Vocabulario esencial cotidiano</span></li>
-         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Situaciones: tiendas, transporte</span></li>
+        <h3 class="font-display text-xl font-black text-blue-900 leading-tight">Fundamentos de la vida en Polonia</h3>
+        <p class="text-blue-900 text-sm font-semibold italic">(Funcionamiento cotidiano)</p>
+        <p class="text-blue-900 text-xs italic font-medium">Ideal para empezar tu vida en Polonia 🇵🇱</p>
+        <ul class="space-y-3 text-blue-900 text-left text-sm pt-2">
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Pronunciación polaca para hispanohablantes</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Vocabulario esencial para la vida diaria</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Situaciones reales: trabajo, tienda, médico, transporte</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Gramática básica explicada paso a paso</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Audios y práctica de conversación desde el primer día</span></li>
         </ul>
-        <div class="price-tag text-lg py-2">
-         150 PLN<span class="text-xs font-semibold">/hora</span>
-        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-red w-full text-sm"> Ver Más Detalles </a>
+        <div class="pt-4">
+         <div class="price-old text-center mb-2">
+          199 zł
+         </div>
+         <div class="price-tag text-xl">
+          180 zł / 3 meses
+         </div>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-red w-full text-base mt-4"> Ver Más Detalles </a>
        </div>
-      </div>
-      <div class="card-white relative border-4 border-yellow-400">
-       <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-blue-900 px-4 py-1 rounded-full text-xs font-black shadow-xl">
-        Más Popular
+      </div><!-- B1 -->
+      <div class="card-white relative">
+       <div class="promo-badge promo-badge-red">
+        🚀 Oferta Especial
        </div>
-       <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center mb-4 shadow-xl mx-auto"><span class="text-3xl">🚀</span>
+       <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center mb-6 shadow-xl mx-auto"><span class="text-4xl">🚀</span>
        </div>
-       <div class="text-center space-y-3">
-        <div class="text-xs font-black text-blue-900 uppercase tracking-wider">
-         Nivel B1-B2
+       <div class="text-center space-y-4">
+        <div class="text-sm font-black text-blue-900 uppercase tracking-wider">
+         Nivel B1
         </div>
-        <h3 class="font-display text-lg font-black text-blue-900">Intermedio</h3>
-        <ul class="space-y-2 text-gray-700 text-left text-sm">
-         <li class="flex items-start gap-2"><span class="text-red-600 font-bold">✓</span> <span>Conversación fluida</span></li>
-         <li class="flex items-start gap-2"><span class="text-red-600 font-bold">✓</span> <span>Gramática avanzada</span></li>
-         <li class="flex items-start gap-2"><span class="text-red-600 font-bold">✓</span> <span>Polaco laboral y profesional</span></li>
-         <li class="flex items-start gap-2"><span class="text-red-600 font-bold">✓</span> <span>Preparación para exámenes</span></li>
+        <h3 class="font-display text-xl font-black text-blue-900 leading-tight">Vida independiente en Polonia</h3>
+        <p class="text-gray-700 text-xs italic font-medium">Para trabajar, comunicarte y vivir con confianza</p>
+        <ul class="space-y-3 text-gray-700 text-left text-sm pt-2">
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Conversación fluida en situaciones cotidianas y profesionales</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Polaco para el trabajo, oficina y vida social</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Expresar opiniones, experiencias y emociones</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Vocabulario avanzado y estructuras naturales</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Preparación práctica para exámenes y entrevistas</span></li>
         </ul>
-        <div class="price-tag text-lg py-2">
-         180 PLN<span class="text-xs font-semibold">/hora</span>
-        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-sm"> Ver Más Detalles </a>
+        <div class="pt-4">
+         <div class="price-old text-center mb-2">
+          279 zł
+         </div>
+         <div class="price-tag text-xl">
+          250 zł / 3 meses
+         </div>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-base mt-4"> Ver Más Detalles </a>
        </div>
-      </div>
-      <div class="card-red">
-       <div class="w-16 h-16 rounded-3xl bg-white flex items-center justify-center mb-4 shadow-xl mx-auto"><span class="text-3xl">👑</span>
+      </div><!-- B2 -->
+      <div class="card-red relative">
+       <div class="promo-badge promo-badge-white">
+        👑 Precio Promocional
        </div>
-       <div class="text-center space-y-3">
-        <div class="text-xs font-black text-white uppercase tracking-wider">
-         Nivel C1-C2
+       <div class="w-20 h-20 rounded-3xl bg-white flex items-center justify-center mb-6 shadow-xl mx-auto"><span class="text-4xl">👑</span>
+       </div>
+       <div class="text-center space-y-4">
+        <div class="text-sm font-black text-white uppercase tracking-wider">
+         Nivel B2
         </div>
-        <h3 class="font-display text-lg font-black text-white">Avanzado</h3>
-        <ul class="space-y-2 text-white text-left text-sm">
-         <li class="flex items-start gap-2"><span class="text-white font-bold">✓</span> <span>Perfeccionamiento del idioma</span></li>
-         <li class="flex items-start gap-2"><span class="text-white font-bold">✓</span> <span>Polaco académico especializado</span></li>
-         <li class="flex items-start gap-2"><span class="text-white font-bold">✓</span> <span>Expresiones idiomáticas</span></li>
-         <li class="flex items-start gap-2"><span class="text-white font-bold">✓</span> <span>Preparación ciudadanía</span></li>
+        <h3 class="font-display text-xl font-black text-white leading-tight">Integración total</h3>
+        <p class="text-white text-xs italic font-medium">Para integrarte completamente y avanzar profesionalmente</p>
+        <ul class="space-y-3 text-white text-left text-sm pt-2">
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Perfeccionamiento de la comunicación oral y escrita</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Polaco profesional y académico especializado</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Expresiones idiomáticas y lenguaje natural</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Debates, negociaciones y situaciones formales</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Preparación para ciudadanía, exámenes oficiales y trabajo avanzado</span></li>
         </ul>
-        <div class="price-tag text-lg py-2">
-         200 PLN<span class="text-xs font-semibold">/hora</span>
-        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-sm"> Ver Más Detalles </a>
+        <div class="pt-4">
+         <div class="price-old text-center mb-2" style="color: rgba(255,255,255,0.6);">
+          399 zł
+         </div>
+         <div class="price-tag text-xl">
+          350 zł / 3 meses
+         </div>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-base mt-4"> Ver Más Detalles </a>
        </div>
       </div>
      </div>
@@ -506,51 +568,51 @@
    </section><!-- Services Section -->
    <section id="servicios" class="pt-32 pb-20 bg-gradient-to-b from-blue-800 to-blue-900">
     <div class="max-w-7xl mx-auto px-6">
-     <div class="text-center max-w-3xl mx-auto mb-8">
-      <div class="section-badge mx-auto mb-3">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="section-badge mx-auto mb-6">
        Servicios Adicionales
       </div>
-      <h2 class="font-display text-5xl font-black text-white mb-3 glow-text">Más que Clases de Idioma</h2>
-      <p class="text-xs text-blue-100">Te acompaño en todo tu proceso de adaptación a Polonia con servicios diseñados para facilitar tu vida.</p>
+      <h2 class="font-display text-5xl font-black text-white mb-6 glow-text">Más que Clases de Idioma</h2>
+      <p class="text-xl text-blue-100">Te acompaño en todo tu proceso de adaptación a Polonia con servicios diseñados para facilitar tu vida.</p>
      </div>
-     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-7">
+     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
       <div class="card-yellow text-center space-y-4">
-       <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-3xl mx-auto shadow-lg">
+       <div class="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-4xl mx-auto shadow-lg">
         📋
        </div>
-       <h3 class="font-bold text-lg text-blue-900">Ayuda con Trámites</h3>
+       <h3 class="font-bold text-xl text-blue-900">Ayuda con Trámites</h3>
        <p class="text-blue-900 text-sm leading-tight">Acompañamiento en oficinas, traducción de documentos oficiales.</p>
-       <div class="price-tag text-base py-2">
+       <div class="price-tag text-lg py-2">
         Desde 100 PLN
        </div><a href="https://aquivivo.github.io/aquivivo/Ayuda.html" class="btn-red w-full text-sm"> Saber Más </a>
       </div>
       <div class="card-red text-center space-y-4">
-       <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl mx-auto shadow-lg" style="color: #CE1126;">
+       <div class="w-20 h-20 rounded-full bg-white flex items-center justify-center text-4xl mx-auto shadow-lg" style="color: #CE1126;">
         📝
        </div>
-       <h3 class="font-bold text-lg text-white">Traducciones</h3>
+       <h3 class="font-bold text-xl text-white">Traducciones</h3>
        <p class="text-white text-sm leading-tight">Traducciones español-polaco de documentos, contratos, certificados.</p>
-       <div class="price-tag text-base py-2">
+       <div class="price-tag text-lg py-2">
         Desde 50 PLN/pág
        </div><a href="https://aquivivo.github.io/aquivivo/Traducciones.html" class="btn-yellow w-full text-sm"> Saber Más </a>
       </div>
       <div class="card-white text-center space-y-4">
-       <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-3xl mx-auto shadow-lg">
+       <div class="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-4xl mx-auto shadow-lg">
         👥
        </div>
-       <h3 class="font-bold text-lg text-blue-900">Clases Grupales</h3>
+       <h3 class="font-bold text-xl text-blue-900">Clases Grupales</h3>
        <p class="text-gray-700 text-sm leading-tight">Grupos pequeños de máximo 5 personas. Aprende con otros latinos.</p>
-       <div class="price-tag text-base py-2">
+       <div class="price-tag text-lg py-2">
         80 PLN/persona
        </div><a href="https://aquivivo.github.io/aquivivo/Clases.html" class="btn-red w-full text-sm"> Saber Más </a>
       </div>
       <div class="card-blue text-center space-y-4">
-       <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl mx-auto shadow-lg">
+       <div class="w-20 h-20 rounded-full bg-white flex items-center justify-center text-4xl mx-auto shadow-lg">
         💼
        </div>
-       <h3 class="font-bold text-lg text-white">Polaco Empresarial</h3>
+       <h3 class="font-bold text-xl text-white">Polaco Empresarial</h3>
        <p class="text-white text-sm leading-tight">Clases para empresas con empleados hispanohablantes.</p>
-       <div class="price-tag text-base py-2">
+       <div class="price-tag text-lg py-2">
         A consultar
        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-sm"> Saber Más </a>
       </div>
@@ -559,54 +621,54 @@
    </section><!-- E-books Section -->
    <section id="ebooks" class="pt-32 pb-20 bg-gradient-to-b from-blue-900 to-blue-800">
     <div class="max-w-7xl mx-auto px-6">
-     <div class="text-center max-w-3xl mx-auto mb-8">
-      <div class="section-badge mx-auto mb-3">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="section-badge mx-auto mb-6">
        Recursos Digitales
       </div>
-      <h2 class="font-display text-5xl font-black text-white mb-3 glow-text">Mis E-books</h2>
-      <p class="text-xs text-blue-100">Material exclusivo creado para hispanohablantes. Aprende a tu ritmo con guías prácticas y ejercicios.</p>
+      <h2 class="font-display text-5xl font-black text-white mb-6 glow-text">Mis E-books</h2>
+      <p class="text-xl text-blue-100">Material exclusivo creado para hispanohablantes. Aprende a tu ritmo con guías prácticas y ejercicios.</p>
      </div>
-     <div class="grid md:grid-cols-3 gap-6">
-      <div class="card-yellow text-center space-y-3">
-       <div class="w-16 h-20 rounded-2xl bg-blue-900 flex items-center justify-center mx-auto shadow-xl"><span class="text-3xl">📖</span>
+     <div class="grid md:grid-cols-3 gap-8">
+      <div class="card-yellow text-center space-y-4">
+       <div class="w-20 h-24 rounded-2xl bg-blue-900 flex items-center justify-center mx-auto shadow-xl"><span class="text-4xl">📖</span>
        </div>
-       <h3 class="font-display text-base font-black text-blue-900 leading-tight">Polaco Básico<br>
+       <h3 class="font-display text-xl font-black text-blue-900 leading-tight">Polaco Básico<br>
         para Latinos</h3>
-       <p class="text-blue-900 text-xs leading-tight">100 páginas con vocabulario esencial, ejercicios y audios.</p>
-       <div class="price-tag text-lg py-2">
+       <p class="text-blue-900 text-sm leading-tight">100 páginas con vocabulario esencial, ejercicios y audios.</p>
+       <div class="price-tag text-xl py-2">
         49 PLN
-       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-xs"> Ver Contenido </a>
+       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-sm"> Ver Contenido </a>
       </div>
-      <div class="card-white text-center space-y-3">
-       <div class="w-16 h-20 rounded-2xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center mx-auto shadow-xl"><span class="text-3xl">💬</span>
+      <div class="card-white text-center space-y-4">
+       <div class="w-20 h-24 rounded-2xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center mx-auto shadow-xl"><span class="text-4xl">💬</span>
        </div>
-       <h3 class="font-display text-base font-black text-blue-900 leading-tight">Frases<br>
+       <h3 class="font-display text-xl font-black text-blue-900 leading-tight">Frases<br>
         del Día a Día</h3>
-       <p class="text-gray-700 text-xs leading-tight">500 Frases Esenciales. Las frases más útiles para tu vida diaria.</p>
-       <div class="price-tag text-lg py-2">
+       <p class="text-gray-700 text-sm leading-tight">500 Frases Esenciales. Las frases más útiles para tu vida diaria.</p>
+       <div class="price-tag text-xl py-2">
         39 PLN
-       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-xs"> Ver Contenido </a>
+       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-sm"> Ver Contenido </a>
       </div>
-      <div class="card-red text-center space-y-3">
-       <div class="w-16 h-20 rounded-2xl bg-white flex items-center justify-center mx-auto shadow-xl"><span class="text-3xl">📄</span>
+      <div class="card-red text-center space-y-4">
+       <div class="w-20 h-24 rounded-2xl bg-white flex items-center justify-center mx-auto shadow-xl"><span class="text-4xl">📄</span>
        </div>
-       <h3 class="font-display text-base font-black text-white leading-tight">Guía de<br>
+       <h3 class="font-display text-xl font-black text-white leading-tight">Guía de<br>
         Trámites</h3>
-       <p class="text-white text-xs leading-tight">Guía de Trámites en Polonia. Todo sobre documentos y oficinas.</p>
-       <div class="price-tag text-lg py-2">
+       <p class="text-white text-sm leading-tight">Guía de Trámites en Polonia. Todo sobre documentos y oficinas.</p>
+       <div class="price-tag text-xl py-2">
         59 PLN
-       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-yellow w-full text-xs"> Ver Contenido </a>
+       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-yellow w-full text-sm"> Ver Contenido </a>
       </div>
      </div>
     </div>
    </section><!-- Testimonials Section -->
    <section class="pt-32 pb-32 bg-gradient-to-b from-blue-800 to-blue-900">
     <div class="max-w-7xl mx-auto px-6">
-     <div class="text-center max-w-3xl mx-auto mb-12">
-      <div class="section-badge mx-auto mb-4">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="section-badge mx-auto mb-6">
        Testimonios
       </div>
-      <h2 class="font-display text-4xl lg:text-5xl font-black text-white mb-4">Lo que Dicen mis Estudiantes</h2>
+      <h2 class="font-display text-5xl font-black text-white mb-4">Lo que Dicen mis Estudiantes</h2>
      </div>
      <div class="grid md:grid-cols-3 gap-10">
       <div class="testimonial-card">
@@ -671,87 +733,87 @@
    </section><!-- Contact Section -->
    <section id="contacto" class="pt-32 pb-32 bg-gradient-to-b from-blue-900 to-blue-950">
     <div class="max-w-7xl mx-auto px-6">
-     <div class="text-center mb-10">
-      <div class="section-badge mx-auto mb-4">
+     <div class="text-center mb-16">
+      <div class="section-badge mx-auto mb-6">
        Contacto
       </div>
-      <h2 class="font-display text-4xl lg:text-5xl font-black text-white mb-4">¿Listo para Empezar tu Aventura?</h2>
-      <p class="text-lg text-blue-100 max-w-2xl mx-auto">Reserva tu primera clase gratis y descubre cómo puedo ayudarte a dominar el polaco y adaptarte a tu nueva vida en Polonia.</p>
+      <h2 class="font-display text-5xl font-black text-white mb-6">¿Listo para Empezar tu Aventura?</h2>
+      <p class="text-xl text-blue-100 max-w-2xl mx-auto">Reserva tu primera clase gratis y descubre cómo puedo ayudarte a dominar el polaco y adaptarte a tu nueva vida en Polonia.</p>
      </div>
-     <div class="grid lg:grid-cols-2 gap-16 items-start"><!-- Left: Contact Info -->
+     <div class="grid lg:grid-cols-2 gap-16 items-start">
       <div class="space-y-8">
-       <div class="flex items-center gap-5 text-white"><span class="text-3xl">📧</span>
+       <div class="flex items-center gap-5 text-white"><span class="text-4xl">📧</span>
         <div>
          <div class="text-sm text-blue-300 font-bold">
           Email
          </div>
-         <div class="font-bold text-white text-lg">
+         <div class="font-bold text-white text-xl">
           aquivivo.pl@gmail.com
          </div>
         </div>
        </div>
        <div class="flex items-center gap-5 text-white">
-        <svg class="w-8 h-8 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+        <svg class="w-10 h-10 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
         </svg>
         <div>
          <div class="text-sm text-blue-300 font-bold">
           WhatsApp
          </div>
-         <div class="font-bold text-white text-lg">
+         <div class="font-bold text-white text-xl">
           +48 669 69 71 51
          </div>
         </div>
        </div>
-       <div class="flex items-center gap-5 text-white"><span class="text-3xl">📍</span>
+       <div class="flex items-center gap-5 text-white"><span class="text-4xl">📍</span>
         <div>
          <div class="text-sm text-blue-300 font-bold">
           Ubicación
          </div>
-         <div class="font-bold text-white text-lg">
+         <div class="font-bold text-white text-xl">
           Poznań, Polonia
          </div>
         </div>
        </div>
        <div class="flex items-center gap-5 text-white"><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform">
-         <svg class="w-8 h-8 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+         <svg class="w-10 h-10 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
          </svg></a>
         <div>
          <div class="text-sm text-blue-300 font-bold">
           Instagram
-         </div><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-lg hover:text-yellow-400 transition-colors">@sacariooo</a>
+         </div><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-xl hover:text-yellow-400 transition-colors">@sacariooo</a>
         </div>
        </div>
        <div class="flex items-center gap-5 text-white"><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform">
-         <svg class="w-8 h-8 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+         <svg class="w-10 h-10 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
          </svg></a>
         <div>
          <div class="text-sm text-blue-300 font-bold">
           TikTok
-         </div><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-lg hover:text-yellow-400 transition-colors">@latip0l</a>
+         </div><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-xl hover:text-yellow-400 transition-colors">@latip0l</a>
         </div>
        </div>
-      </div><!-- Right: Contact Form -->
+      </div>
       <div class="card-white">
-       <h3 class="font-display text-lg font-black text-blue-900 mb-6">Envíame un Mensaje</h3>
-       <form id="contact-form" class="space-y-4">
-        <div><label for="email" class="block text-sm font-bold text-blue-900 mb-2">Email <span class="text-red-600">*</span></label> <input type="email" id="email" name="email" placeholder="tu@email.com" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none text-gray-900 text-sm">
+       <h3 class="font-display text-2xl font-black text-blue-900 mb-6">Envíame un Mensaje</h3>
+       <form id="contact-form" class="space-y-5">
+        <div><label for="email" class="block text-sm font-bold text-blue-900 mb-2">Email <span class="text-red-600">*</span></label> <input type="email" id="email" name="email" placeholder="tu@email.com" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none text-gray-900">
         </div>
-        <div><label for="message" class="block text-sm font-bold text-blue-900 mb-2">Mensaje <span class="text-red-600">*</span></label> <textarea id="message" name="message" rows="4" placeholder="¿En qué puedo ayudarte?" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none resize-none text-gray-900 text-sm"></textarea>
+        <div><label for="message" class="block text-sm font-bold text-blue-900 mb-2">Mensaje <span class="text-red-600">*</span></label> <textarea id="message" name="message" rows="5" placeholder="¿En qué puedo ayudarte?" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none resize-none text-gray-900"></textarea>
         </div>
         <div class="flex items-start gap-3"><input type="checkbox" id="privacy" name="privacy" required class="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-yellow-400 focus:ring-2 focus:ring-yellow-200"> <label for="privacy" class="text-sm text-gray-700"> Acepto la <a href="https://aquivivo.github.io/aquivivo/Privacidad.html" class="text-blue-900 font-black underline hover:text-red-600">Política de Privacidad</a> <span class="text-red-600">*</span> </label>
-        </div><button type="submit" class="btn-yellow w-full text-base"> Enviar Mensaje </button>
-        <div id="form-message" class="hidden text-center font-bold p-3 rounded-lg text-sm"></div>
+        </div><button type="submit" class="btn-yellow w-full text-lg"> Enviar Mensaje </button>
+        <div id="form-message" class="hidden text-center font-bold p-4 rounded-lg"></div>
        </form>
       </div>
      </div>
     </div>
    </section><!-- Footer -->
-   <footer class="nav-glass text-white py-6 border-t-2 border-yellow-400">
+   <footer class="nav-glass text-white py-8 border-t-2 border-yellow-400">
     <div class="max-w-7xl mx-auto px-6">
-     <div class="grid md:grid-cols-4 gap-6 mb-5">
-      <div class="space-y-3">
+     <div class="grid md:grid-cols-4 gap-8 mb-8">
+      <div class="space-y-4">
        <div class="flex items-center gap-3">
-        <svg class="w-8 h-8 drop-shadow-lg" viewbox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs>
+        <svg class="w-10 h-10 drop-shadow-lg" viewbox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs>
           <lineargradient id="colombiaFlagFooter" x1="0%" y1="0%" x2="0%" y2="100%">
            <stop offset="0%" style="stop-color:#FCD116;stop-opacity:1" />
            <stop offset="50%" style="stop-color:#FCD116;stop-opacity:1" />
@@ -761,14 +823,14 @@
            <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
           </lineargradient>
          </defs> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlagFooter)" stroke="#FCD116" stroke-width="2.5" />
-        </svg><span class="font-display text-lg font-black text-yellow-400">Aqui Vivo</span>
+        </svg><span class="font-display text-xl font-black text-yellow-400">Aqui vivo</span>
        </div>
-       <p class="text-blue-200 text-xs leading-relaxed">Profesora de español y polaco en Poznań. Ayudo a hispanohablantes y a estudiantes polacos 🌎</p>
+       <p class="text-blue-200 text-sm leading-relaxed">Profesora de español y polaco en Let's Talk Poznań. Te ayudo a dejar de tener miedo a hablar 🌸🤍</p>
       </div>
       <div>
-       <h4 class="font-bold mb-3 text-yellow-400 text-sm">Servicios</h4>
-       <ul class="space-y-1.5 text-blue-200 text-xs">
-        <li><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="hover:text-yellow-400 transition-colors">Curso de Español</a></li>
+       <h4 class="font-bold mb-4 text-yellow-400">Servicios</h4>
+       <ul class="space-y-2 text-blue-200 text-sm">
+        <li><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="hover:text-yellow-400 transition-colors">Curso de Polaco</a></li>
         <li><a href="https://aquivivo.github.io/aquivivo/Ayuda.html" class="hover:text-yellow-400 transition-colors">Ayuda con Trámites</a></li>
         <li><a href="https://aquivivo.github.io/aquivivo/Traducciones.html" class="hover:text-yellow-400 transition-colors">Traducciones</a></li>
         <li><a href="https://aquivivo.github.io/aquivivo/Clases.html" class="hover:text-yellow-400 transition-colors">Clases Grupales</a></li>
@@ -776,8 +838,8 @@
        </ul>
       </div>
       <div>
-       <h4 class="font-bold mb-3 text-yellow-400 text-sm">Recursos</h4>
-       <ul class="space-y-1.5 text-blue-200 text-xs">
+       <h4 class="font-bold mb-4 text-yellow-400">Recursos</h4>
+       <ul class="space-y-2 text-blue-200 text-sm">
         <li><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="hover:text-yellow-400 transition-colors">E-books</a></li>
         <li><a href="#inicio" class="hover:text-yellow-400 transition-colors">Sobre Mí</a></li>
         <li><a href="https://aquivivo.github.io/aquivivo/Blog.html" class="hover:text-yellow-400 transition-colors">Blog</a></li>
@@ -785,23 +847,22 @@
        </ul>
       </div>
       <div>
-       <h4 class="font-bold mb-3 text-yellow-400 text-sm">Legal</h4>
-       <ul class="space-y-1.5 text-blue-200 text-xs">
+       <h4 class="font-bold mb-4 text-yellow-400">Legal</h4>
+       <ul class="space-y-2 text-blue-200 text-sm">
         <li><a href="https://aquivivo.github.io/aquivivo/Privacidad.html" class="hover:text-yellow-400 transition-colors">Política de Privacidad</a></li>
         <li><a href="https://aquivivo.github.io/aquivivo/Condiciones.html" class="hover:text-yellow-400 transition-colors">Términos y Condiciones</a></li>
         <li><a href="https://aquivivo.github.io/aquivivo/Cookies.html" class="hover:text-yellow-400 transition-colors">Cookies</a></li>
        </ul>
       </div>
      </div>
-     <div class="border-t border-blue-700 pt-4 flex flex-col md:flex-row justify-between items-center gap-3">
-      <p class="text-blue-200 text-xs">© 2024 Aqui Vivo. Todos los derechos reservados.</p>
-      <p class="text-blue-200 text-xs">Hecho con <span class="text-red-500">❤️</span> en Poznań, Polonia</p>
+     <div class="border-t border-blue-700 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-blue-200 text-sm">© 2026 Aqui vivo. Todos los derechos reservados.</p>
+      <p class="text-blue-200 text-sm">Hecho con <span class="text-red-500">❤️</span> en Poznań, Polonia</p>
      </div>
     </div>
    </footer>
   </div>
   <script>
-    // Contact form handling
     const contactForm = document.getElementById('contact-form');
     const formMessage = document.getElementById('form-message');
     
@@ -809,22 +870,18 @@
       contactForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        // Show success message
         formMessage.textContent = '¡Mensaje enviado! Te contactaré pronto 😊';
         formMessage.className = 'text-green-600 bg-green-50 p-4 rounded-xl font-bold';
         formMessage.classList.remove('hidden');
         
-        // Reset form
         contactForm.reset();
         
-        // Hide message after 5 seconds
         setTimeout(() => {
           formMessage.classList.add('hidden');
         }, 5000);
       });
     }
     
-    // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -835,5 +892,5 @@
       });
     });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c19579245862d19',t:'MTc2OTAyNTA0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c19bcc0515ceecf',t:'MTc2OTAyOTE4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
