@@ -3,754 +3,319 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Polaco - Dashboard</title>
+  <title>Profesora de Español y Polaco</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/_sdk/element_sdk.js"></script>
-  <script src="/_sdk/data_sdk.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Signika:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
   <style>
     body {
       box-sizing: border-box;
-      font-family: 'Signika', sans-serif;
+    }
+    .font-display { font-family: 'Playfair Display', serif; }
+    .font-body { font-family: 'DM Sans', sans-serif; }
+    
+    .gradient-colombia {
+      background: linear-gradient(135deg, #FCD116 0%, #FCD116 33%, #003893 33%, #003893 66%, #CE1126 66%, #CE1126 100%);
     }
     
-    * {
-      box-sizing: border-box;
+    .pattern-bg {
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(252, 209, 22, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(206, 17, 38, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(252, 209, 22, 0.08) 0%, transparent 30%);
+      background-color: #003893;
     }
     
-    .search-input:focus {
-      outline: none;
-      border-color: #004aad;
-      box-shadow: 0 0 0 3px rgba(0, 74, 173, 0.15);
+    .card-hover {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 50px -12px rgba(0, 56, 147, 0.25);
     }
     
-    .level-card {
-      transition: all 0.2s ease;
+    .btn-primary {
+      background: linear-gradient(135deg, #FCD116 0%, #F5A623 100%);
+      transition: all 0.3s ease;
     }
-    
-    .topic-tile {
-      transition: all 0.2s ease;
-    }
-    
-    .topic-tile:hover {
-      transform: translateX(4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .popup-overlay {
-      background: rgba(0, 0, 0, 0.5);
-    }
-    
-    .accordion-arrow {
-      transition: transform 0.2s ease;
-    }
-    
-    .accordion-arrow.open {
-      transform: rotate(180deg);
-    }
-    
-    .admin-link {
-      font-size: 11px;
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(252, 209, 22, 0.4);
     }
   </style>
   <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full" style="background-color: #e5d9bf;">
-  <div id="app" class="h-full overflow-auto">
-   <div class="max-w-4xl mx-auto px-4 py-8"><!-- Header -->
-    <header class="text-center mb-8">
-     <h1 id="main-title" class="text-5xl font-bold mb-2" style="color: #004aad;">Polaco</h1>
-     <p id="main-subtitle" class="text-lg" style="color: rgba(0, 74, 173, 0.7);">Curso interactivo para extranjeros</p>
-    </header><!-- Search Bar -->
-    <div class="mb-6">
-     <div class="relative">
-      <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style="color: #9ca3af;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg><input type="text" id="search-input" placeholder="Buscar tema…" class="search-input w-full py-4 pl-12 pr-4 text-base rounded-2xl border-2" style="background-color: #ffffff; border-color: #e5e0d8; color: #004aad;">
+ <body class="h-full font-body bg-blue-900 text-white">
+  <div class="w-full h-full overflow-auto"><!-- Navigation -->
+   <nav class="fixed top-0 left-0 right-0 z-50 bg-blue-900/95 backdrop-blur-md shadow-lg border-b-2 border-yellow-400">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+     <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+       <div class="w-10 h-10 rounded-full gradient-colombia"></div><span class="font-display text-xl font-semibold text-white">Aqui Vivo</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8"><a href="#inicio" class="text-yellow-100 hover:text-yellow-400 font-medium">Inicio</a> <a href="#programa" class="text-yellow-100 hover:text-yellow-400 font-medium">Programa</a> <a href="#servicios" class="text-yellow-100 hover:text-yellow-400 font-medium">Servicios</a> <a href="#contacto" class="text-yellow-100 hover:text-yellow-400 font-medium">Contacto</a>
+      </div>
      </div>
-    </div><!-- Admin Button -->
-    <div class="flex justify-end mb-6"><button id="admin-btn" class="px-4 py-2 text-sm rounded-lg font-medium transition-opacity hover:opacity-80" style="color: #004aad; opacity: 0.6; background: transparent;"> 🔐 Modo Admin </button>
-    </div><!-- Level Cards Container -->
-    <div id="levels-container" class="space-y-4"><!-- Level cards will be rendered here -->
     </div>
-   </div>
-  </div><!-- Popup Container -->
-  <div id="popup-container" class="hidden fixed inset-0 z-50 flex items-center justify-center popup-overlay">
-   <div id="popup-content" class="w-full max-w-md mx-4"><!-- Popup content will be rendered here -->
-   </div>
+   </nav><!-- Hero Section -->
+   <section id="inicio" class="min-h-screen flex items-center pattern-bg pt-24 px-6">
+    <div class="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-12 items-center py-20">
+     <div class="space-y-8">
+      <div class="inline-flex items-center gap-2 bg-yellow-400 text-blue-900 px-4 py-2 rounded-full text-sm font-bold"><span>🇨🇴</span> <span>Para latinos en Polonia</span> <span>🇵🇱</span>
+      </div>
+      <h1 class="font-display text-5xl lg:text-6xl font-bold text-white leading-tight">Aprende Polaco<br><span class="text-yellow-400">con Alma Latina</span></h1>
+      <p class="text-xl text-yellow-50 leading-relaxed">Profesora certificada de español y polaco. Te ayudo a dominar el idioma y adaptarte a la vida en Polonia con un método diseñado especialmente para hispanohablantes.</p>
+      <div class="flex flex-col sm:flex-row gap-4"><a href="#contacto" class="btn-primary px-8 py-4 rounded-full text-slate-900 font-semibold text-lg shadow-xl text-center"> Reserva tu Clase Gratis </a> <a href="#programa" class="px-8 py-4 rounded-full border-2 border-rose-600 text-white font-semibold text-lg hover:bg-rose-600 transition-all text-center"> Ver Programa </a>
+      </div>
+     </div>
+     <div class="text-center text-9xl">
+      👩‍🏫
+     </div>
+    </div>
+   </section><!-- Program Section -->
+   <section id="programa" class="py-24 bg-blue-50">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="inline-block px-4 py-1 bg-yellow-400 text-blue-900 rounded-full text-sm font-bold mb-4">
+       Mi Programa
+      </div>
+      <h2 class="font-display text-4xl lg:text-5xl font-bold text-blue-900 mb-6">Método Diseñado para Ti</h2>
+      <p class="text-lg text-blue-700">Un programa estructurado que te lleva desde cero hasta la fluidez, con materiales creados específicamente para hispanohablantes.</p>
+     </div>
+     <div class="grid md:grid-cols-3 gap-8">
+      <div class="bg-yellow-400 rounded-3xl p-8 shadow-lg card-hover border-4 border-yellow-300">
+       <div class="w-16 h-16 rounded-2xl bg-yellow-500 flex items-center justify-center mb-6"><span class="text-3xl">🌱</span>
+       </div>
+       <div class="text-sm font-bold text-yellow-900 mb-2">
+        Nivel A1-A2
+       </div>
+       <h3 class="font-display text-2xl font-bold text-blue-900 mb-4">Fundamentos</h3>
+       <ul class="space-y-3 text-blue-900 mb-6">
+        <li class="flex items-start gap-2"><span class="text-red-600 mt-1 font-bold">✓</span> <span>Pronunciación desde el español</span></li>
+        <li class="flex items-start gap-2"><span class="text-red-600 mt-1 font-bold">✓</span> <span>Gramática básica explicada en tu idioma</span></li>
+        <li class="flex items-start gap-2"><span class="text-red-600 mt-1 font-bold">✓</span> <span>Vocabulario esencial cotidiano</span></li>
+        <li class="flex items-start gap-2"><span class="text-red-600 mt-1 font-bold">✓</span> <span>Situaciones: tiendas, transporte, médico</span></li>
+       </ul>
+       <div class="text-2xl font-bold text-blue-900">
+        150 PLN<span class="text-sm font-normal text-blue-700">/hora</span>
+       </div>
+      </div>
+      <div class="bg-white rounded-3xl p-8 shadow-xl card-hover border-4 border-yellow-400 scale-105 relative">
+       <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+        Más Popular
+       </div>
+       <div class="w-16 h-16 rounded-2xl bg-blue-900 flex items-center justify-center mb-6"><span class="text-3xl">🚀</span>
+       </div>
+       <div class="text-sm font-bold text-blue-900 mb-2">
+        Nivel B1-B2
+       </div>
+       <h3 class="font-display text-2xl font-bold text-blue-900 mb-4">Intermedio</h3>
+       <ul class="space-y-3 text-blue-800 mb-6">
+        <li class="flex items-start gap-2"><span class="text-yellow-500 mt-1 font-bold">✓</span> <span>Conversación fluida</span></li>
+        <li class="flex items-start gap-2"><span class="text-yellow-500 mt-1 font-bold">✓</span> <span>Gramática avanzada</span></li>
+        <li class="flex items-start gap-2"><span class="text-yellow-500 mt-1 font-bold">✓</span> <span>Polaco laboral y profesional</span></li>
+        <li class="flex items-start gap-2"><span class="text-yellow-500 mt-1 font-bold">✓</span> <span>Preparación exámenes oficiales</span></li>
+       </ul>
+       <div class="text-2xl font-bold text-blue-900">
+        180 PLN<span class="text-sm font-normal text-blue-700">/hora</span>
+       </div>
+      </div>
+      <div class="bg-red-500 rounded-3xl p-8 shadow-lg card-hover border-4 border-red-400">
+       <div class="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center mb-6"><span class="text-3xl">👑</span>
+       </div>
+       <div class="text-sm font-bold text-red-100 mb-2">
+        Nivel C1-C2
+       </div>
+       <h3 class="font-display text-2xl font-bold text-white mb-4">Avanzado</h3>
+       <ul class="space-y-3 text-white mb-6">
+        <li class="flex items-start gap-2"><span class="text-yellow-300 mt-1 font-bold">✓</span> <span>Perfeccionamiento del idioma</span></li>
+        <li class="flex items-start gap-2"><span class="text-yellow-300 mt-1 font-bold">✓</span> <span>Polaco académico y especializado</span></li>
+        <li class="flex items-start gap-2"><span class="text-yellow-300 mt-1 font-bold">✓</span> <span>Expresiones idiomáticas y jerga</span></li>
+        <li class="flex items-start gap-2"><span class="text-yellow-300 mt-1 font-bold">✓</span> <span>Preparación ciudadanía</span></li>
+       </ul>
+       <div class="text-2xl font-bold text-white">
+        200 PLN<span class="text-sm font-normal text-red-100">/hora</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Services Section -->
+   <section id="servicios" class="py-24 bg-gradient-to-b from-blue-900 to-blue-800">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="inline-block px-4 py-1 bg-red-500 text-white rounded-full text-sm font-bold mb-4">
+       Servicios Adicionales
+      </div>
+      <h2 class="font-display text-4xl lg:text-5xl font-bold text-white mb-6">Más que Clases de Idioma</h2>
+      <p class="text-lg text-yellow-100">Te acompaño en todo tu proceso de adaptación a Polonia con servicios diseñados para facilitar tu vida.</p>
+     </div>
+     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="group bg-yellow-400 rounded-2xl p-6 card-hover border-2 border-yellow-300">
+       <div class="w-14 h-14 rounded-xl bg-yellow-500 flex items-center justify-center mb-4"><span class="text-2xl">📋</span>
+       </div>
+       <h3 class="font-semibold text-lg text-blue-900 mb-2">Ayuda con Trámites</h3>
+       <p class="text-blue-800 text-sm mb-4">Acompañamiento en oficinas, traducción de documentos oficiales, asesoría migratoria.</p>
+       <div class="text-blue-900 font-bold">
+        Desde 100 PLN
+       </div>
+      </div>
+      <div class="group bg-white rounded-2xl p-6 card-hover border-2 border-yellow-400">
+       <div class="w-14 h-14 rounded-xl bg-blue-900 flex items-center justify-center mb-4"><span class="text-2xl">📝</span>
+       </div>
+       <h3 class="font-semibold text-lg text-blue-900 mb-2">Traducciones</h3>
+       <p class="text-blue-800 text-sm mb-4">Traducciones español-polaco de documentos, contratos, certificados.</p>
+       <div class="text-blue-900 font-bold">
+        Desde 50 PLN/página
+       </div>
+      </div>
+      <div class="group bg-red-500 rounded-2xl p-6 card-hover border-2 border-red-400">
+       <div class="w-14 h-14 rounded-xl bg-red-600 flex items-center justify-center mb-4"><span class="text-2xl">👥</span>
+       </div>
+       <h3 class="font-semibold text-lg text-white mb-2">Clases Grupales</h3>
+       <p class="text-red-50 text-sm mb-4">Grupos pequeños de máximo 5 personas. Aprende con otros latinos.</p>
+       <div class="text-white font-bold">
+        80 PLN/persona
+       </div>
+      </div>
+      <div class="group bg-white rounded-2xl p-6 card-hover border-2 border-blue-900">
+       <div class="w-14 h-14 rounded-xl bg-blue-900 flex items-center justify-center mb-4"><span class="text-2xl">💼</span>
+       </div>
+       <h3 class="font-semibold text-lg text-blue-900 mb-2">Polaco Empresarial</h3>
+       <p class="text-blue-800 text-sm mb-4">Clases para empresas con empleados hispanohablantes.</p>
+       <div class="text-blue-900 font-bold">
+        Precio a consultar
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Contact Section -->
+   <section id="contacto" class="py-24 bg-gradient-to-b from-blue-900 to-blue-800">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div class="space-y-8">
+       <div class="inline-block px-4 py-1 bg-yellow-400 text-blue-900 rounded-full text-sm font-bold">
+        Contacto
+       </div>
+       <h2 class="font-display text-4xl lg:text-5xl font-bold text-white">¿Listo para Empezar tu Aventura?</h2>
+       <p class="text-lg text-yellow-100">Reserva tu primera clase gratis y descubre cómo puedo ayudarte a dominar el polaco y adaptarte a tu nueva vida en Polonia.</p>
+       <div class="space-y-4">
+        <div class="flex items-center gap-4">
+         <div class="w-12 h-12 rounded-xl bg-yellow-400 flex items-center justify-center"><span class="text-2xl">📧</span>
+         </div>
+         <div>
+          <div class="text-sm text-yellow-200">
+           Email
+          </div>
+          <div class="font-semibold text-white">
+           aquivivo.pl@gmail.com
+          </div>
+         </div>
+        </div>
+        <div class="flex items-center gap-4">
+         <div class="w-12 h-12 rounded-xl bg-red-500 flex items-center justify-center"><span class="text-2xl">📱</span>
+         </div>
+         <div>
+          <div class="text-sm text-yellow-200">
+           WhatsApp
+          </div>
+          <div class="font-semibold text-white">
+           +48 123 456 789
+          </div>
+         </div>
+        </div>
+        <div class="flex items-center gap-4">
+         <div class="w-12 h-12 rounded-xl bg-pink-600 flex items-center justify-center"><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="text-white hover:opacity-80 transition-opacity">
+           <svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+           </svg></a>
+         </div>
+         <div>
+          <div class="text-sm text-yellow-200">
+           Instagram
+          </div>
+          <div class="font-semibold text-white">
+           @sacariooo
+          </div>
+         </div>
+        </div>
+        <div class="flex items-center gap-4">
+         <div class="w-12 h-12 rounded-xl bg-black flex items-center justify-center"><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="text-white hover:opacity-80 transition-opacity">
+           <svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
+            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+           </svg></a>
+         </div>
+         <div>
+          <div class="text-sm text-yellow-200">
+           TikTok
+          </div>
+          <div class="font-semibold text-white">
+           @latip0l
+          </div>
+         </div>
+        </div>
+       </div>
+      </div><!-- Contact Form -->
+      <div class="bg-white rounded-3xl p-8 lg:p-12 border-4 border-yellow-400">
+       <form id="contact-form" class="space-y-6">
+        <div><label for="name" class="block text-sm font-bold text-blue-900 mb-2">Nombre</label> <input type="text" id="name" name="name" placeholder="Tu nombre completo" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none text-blue-900">
+        </div>
+        <div><label for="email" class="block text-sm font-bold text-blue-900 mb-2">Email</label> <input type="email" id="email" name="email" placeholder="tu@email.com" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none text-blue-900">
+        </div>
+        <div><label for="message" class="block text-sm font-bold text-blue-900 mb-2">Mensaje</label> <textarea id="message" name="message" rows="4" placeholder="¿En qué puedo ayudarte?" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none resize-none text-blue-900"></textarea>
+        </div><button type="submit" class="w-full btn-primary py-4 rounded-xl text-blue-900 font-bold text-lg shadow-xl"> Enviar Mensaje </button>
+        <div id="form-message" class="hidden text-center font-medium"></div>
+       </form>
+      </div>
+     </div>
+    </div>
+   </section><!-- Footer -->
+   <footer class="bg-gradient-to-b from-blue-950 to-black text-white py-16 border-t-4 border-yellow-400">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+     <div class="flex items-center justify-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full gradient-colombia"></div><span class="font-display text-xl font-semibold text-yellow-400">Aqui Vivo</span>
+     </div>
+     <p class="text-yellow-200 text-sm mb-4">Profesora de español y polaco en Poznań 🇨🇴 ♥ 🇵🇱</p>
+     <p class="text-yellow-200 text-sm">© 2024 Aqui Vivo. Hecho con ❤️ en Poznań, Polonia</p>
+    </div>
+   </footer>
   </div>
   <script>
-    // ============ CONFIG & STATE ============
-    const defaultConfig = {
-      app_title: 'Polaco',
-      app_subtitle: 'Curso interactivo para extranjeros',
-      primary_color: '#004aad',
-      background_color: '#e5d9bf',
-      card_background: '#faf7f2',
-      text_color: '#004aad',
-      accent_color: '#10b981'
-    };
+    // Contact form handling
+    const contactForm = document.getElementById('contact-form');
+    const formMessage = document.getElementById('form-message');
     
-    let config = { ...defaultConfig };
-    let isAdmin = localStorage.getItem('polaco_admin') === 'true';
-    let exerciseLinks = [];
-    let expandedLevels = {};
-    let currentPopup = null;
-    let currentTopic = null;
-    
-    // ============ COURSE DATA ============
-    const courseData = {
-      A1: {
-        title: 'Nivel A1',
-        subtitle: 'Fundamentos de la vida en Polonia',
-        description: 'Nivel básico para comenzar tu aventura con el polaco. Aprenderás las estructuras fundamentales del idioma.',
-        gradient: 'linear-gradient(135deg, #10b981, #059669)',
-        grammar: [
-          { id: 'a1-g1', title: 'Alfabeto y pronunciación', desc: 'Aprender a leer y pronunciar correctamente los sonidos y letras del polaco' },
-          { id: 'a1-g2', title: 'Orden de palabras en la frase', desc: 'Aprender a construir frases simples con el orden básico de palabras en polaco' },
-          { id: 'a1-g3', title: 'Verbos básicos: być y mieć', desc: 'Aprender a decir quién eres, cómo eres y qué tienes usando los verbos más importantes del polaco' },
-          { id: 'a1-g4', title: 'Presente: verbos regulares', desc: 'Aprender a conjugar verbos regulares en presente para hablar de rutinas y hechos actuales' },
-          { id: 'a1-g5', title: 'Pronombres personales y posesivos', desc: 'Aprender a usar yo, tú, él/ella y mi, tu, su en frases sencillas' },
-          { id: 'a1-g6', title: 'Oraciones afirmativas, negativas y preguntas', desc: 'Aprender a formar frases, negar información y hacer preguntas básicas' },
-          { id: 'a1-g7', title: 'Sustantivos: género y número', desc: 'Aprender a reconocer el género de los sustantivos y formar el plural' },
-          { id: 'a1-g8', title: 'Adjetivos y concordancia', desc: 'Aprender a describir personas y cosas y hacer concordar el adjetivo con el sustantivo' },
-          { id: 'a1-g9', title: 'Preposiciones básicas: w, na, do', desc: 'Aprender a hablar de lugar y dirección con las preposiciones más usadas' },
-          { id: 'a1-g10', title: 'Caso acusativo (introducción)', desc: 'Aprender a hablar de lo que ves, compras o comes usando la forma correcta del sustantivo' },
-          { id: 'a1-g11', title: 'Números y cantidades', desc: 'Aprender a usar números para edad, precios, horas y teléfonos' }
-        ],
-        vocabulary: [
-          { id: 'a1-v1', title: 'Saludos y presentación', desc: 'Aprender a saludar, despedirse, presentarse y decir información básica sobre uno mismo' },
-          { id: 'a1-v2', title: 'Países y nacionalidades', desc: 'Aprender a decir de qué país eres y cuál es tu nacionalidad' },
-          { id: 'a1-v3', title: 'Información personal', desc: 'Aprender a hablar de la edad, el estado civil y datos básicos sobre uno mismo' },
-          { id: 'a1-v4', title: 'Profesiones y trabajo', desc: 'Aprender a decir a qué te dedicas y dónde trabajas' },
-          { id: 'a1-v5', title: 'Familia', desc: 'Aprender a nombrar a los miembros de la familia y hablar de relaciones familiares simples' },
-          { id: 'a1-v6', title: 'Casa y vivienda', desc: 'Aprender a nombrar las habitaciones y los objetos básicos de la casa' },
-          { id: 'a1-v7', title: 'Comida y bebidas', desc: 'Aprender a hablar de comida, bebidas y preferencias simples' },
-          { id: 'a1-v8', title: 'Tienda y compras', desc: 'Aprender a hacer compras simples y preguntar por precios' },
-          { id: 'a1-v9', title: 'Ropa', desc: 'Aprender a nombrar prendas de vestir y decir qué llevas puesto' },
-          { id: 'a1-v10', title: 'Tiempo y días', desc: 'Aprender a hablar de los días de la semana y las partes del día' },
-          { id: 'a1-v11', title: 'Rutina diaria', desc: 'Aprender a hablar de actividades cotidianas' },
-          { id: 'a1-v12', title: 'Ciudad y lugares', desc: 'Aprender a nombrar lugares de la ciudad y decir dónde estás' },
-          { id: 'a1-v13', title: 'Direcciones y orientación', desc: 'Aprender a pedir direcciones y entender indicaciones simples' },
-          { id: 'a1-v14', title: 'Médico y salud (básico)', desc: 'Aprender a decir qué te duele y pedir ayuda médica' },
-          { id: 'a1-v15', title: 'Oficina pública y documentos (básico)', desc: 'Aprender a nombrar documentos y decir para qué vienes a la oficina pública' },
-          { id: 'a1-v16', title: 'Frases útiles', desc: 'Aprender frases de cortesía y expresiones básicas para la comunicación diaria' }
-        ]
-      },
-      A2: {
-        title: 'Nivel A2',
-        subtitle: 'Funcionamiento cotidiano',
-        description: 'Profundiza tus conocimientos básicos y amplía tu vocabulario para situaciones cotidianas.',
-        gradient: 'linear-gradient(135deg, #004aad, #002a62)',
-        grammar: [
-          { id: 'a2-g1', title: 'Presente: verbos irregulares', desc: 'Aprender a conjugar verbos irregulares y hablar con más naturalidad' },
-          { id: 'a2-g2', title: 'Verbos reflexivos', desc: 'Aprender a hablar de rutinas personales como levantarse, vestirse o sentirse' },
-          { id: 'a2-g3', title: 'Pasado simple', desc: 'Aprender a hablar de acciones pasadas y contar qué hiciste ayer o la semana pasada' },
-          { id: 'a2-g4', title: 'Futuro simple', desc: 'Aprender a hablar de planes y decisiones futuras' },
-          { id: 'a2-g5', title: 'Verbos modales: móc, musie��, chcieć', desc: 'Aprender a expresar posibilidad, obligación y deseo' },
-          { id: 'a2-g6', title: 'Casos del polaco: visión general', desc: 'Aprender para qué sirven los casos y cuándo cambia la forma de las palabras' },
-          { id: 'a2-g7', title: 'Caso genitivo', desc: 'Aprender a hablar de posesión, cantidad y negación' },
-          { id: 'a2-g8', title: 'Caso locativo', desc: 'Aprender a hablar de lugar después de preposiciones como w y na' },
-          { id: 'a2-g9', title: 'Caso instrumental', desc: 'Aprender a hablar de con quién y con qué haces algo' },
-          { id: 'a2-g10', title: 'Preposiciones con casos', desc: 'Aprender qué caso usar después de cada preposición' },
-          { id: 'a2-g11', title: 'Comparativos y superlativos', desc: 'Aprender a comparar personas y cosas' },
-          { id: 'a2-g12', title: 'Adverbios de tiempo y frecuencia', desc: 'Aprender a decir cuándo y con qué frecuencia haces algo' },
-          { id: 'a2-g13', title: 'Conectores básicos', desc: 'Aprender a unir frases con palabras como i, ale, bo, dlatego' }
-        ],
-        vocabulary: [
-          { id: 'a2-v1', title: 'Presentación y small talk', desc: 'Aprender a mantener una conversación corta y hablar un poco más sobre ti' },
-          { id: 'a2-v2', title: 'Trabajo y responsabilidades', desc: 'Aprender a hablar de tu trabajo, horarios y tareas' },
-          { id: 'a2-v3', title: 'Vivienda y alquiler', desc: 'Aprender a hablar del alquiler, el equipamiento y problemas en el departamento' },
-          { id: 'a2-v4', title: 'Comida y restaurante', desc: 'Aprender a pedir comida y hablar de tus preferencias alimenticias' },
-          { id: 'a2-v5', title: 'Tienda y devoluciones', desc: 'Aprender a preguntar por productos y resolver problemas simples con compras' },
-          { id: 'a2-v6', title: 'Médico y farmacia', desc: 'Aprender a describir síntomas y comprar medicamentos' },
-          { id: 'a2-v7', title: 'Oficina pública y trámites', desc: 'Aprender a hacer trámites simples en oficinas públicas' },
-          { id: 'a2-v8', title: 'Transporte público', desc: 'Aprender a comprar boletos y moverte por la ciudad' },
-          { id: 'a2-v9', title: 'Tiempo libre', desc: 'Aprender a hablar de hobbies y planes para el fin de semana' },
-          { id: 'a2-v10', title: 'Emociones y estado de ánimo', desc: 'Aprender a decir cómo te sientes y por qué' }
-        ]
-      },
-      B1: {
-        title: 'Nivel B1',
-        subtitle: 'Vida independiente en Polonia',
-        description: 'Desarrolla tu capacidad de comunicación en situaciones más complejas.',
-        gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
-        grammar: [
-          { id: 'b1-g1', title: 'Aspecto verbal: perfecto e imperfecto', desc: 'Aprender a diferenciar acciones terminadas y en proceso' },
-          { id: 'b1-g2', title: 'Pasado: narración y secuencia', desc: 'Aprender a contar historias y describir una secuencia de eventos' },
-          { id: 'b1-g3', title: 'Futuro compuesto y planes', desc: 'Aprender a hablar de planes y predicciones con más precisión' },
-          { id: 'b1-g4', title: 'Imperativo', desc: 'Aprender a dar instrucciones, consejos y órdenes' },
-          { id: 'b1-g5', title: 'Caso dativo', desc: 'Aprender a decir a quién le das algo y para quién haces algo' },
-          { id: 'b1-g6', title: 'Caso vocativo', desc: 'Aprender a dirigirte correctamente a una persona' },
-          { id: 'b1-g7', title: 'Pronombres de objeto', desc: 'Aprender a reemplazar sustantivos por pronombres' },
-          { id: 'b1-g8', title: 'Oraciones subordinadas básicas', desc: 'Aprender a usar że, bo, kiedy, jeśli para construir frases más largas' },
-          { id: 'b1-g9', title: 'Condicional simple', desc: 'Aprender a hablar de situaciones hipotéticas simples' },
-          { id: 'b1-g10', title: 'Estilo formal e informal', desc: 'Aprender a adaptar tu lenguaje a situaciones oficiales y privadas' }
-        ],
-        vocabulary: [
-          { id: 'b1-v1', title: 'Trabajo y carrera profesional', desc: 'Aprender a hablar de experiencia laboral, planes profesionales y cambio de trabajo' },
-          { id: 'b1-v2', title: 'Salud y médico', desc: 'Aprender a describir mejor los síntomas y hablar con el médico' },
-          { id: 'b1-v3', title: 'Vivienda y contratos', desc: 'Aprender a hablar de contratos y problemas con el dueño del departamento' },
-          { id: 'b1-v4', title: 'Oficinas y procedimientos', desc: 'Aprender a hacer trámites de residencia y asuntos administrativos' },
-          { id: 'b1-v5', title: 'Banco y finanzas', desc: 'Aprender a hablar de cuentas bancarias, pagos y facturas' },
-          { id: 'b1-v6', title: 'Relaciones y vida personal', desc: 'Aprender a hablar de relaciones, pareja y problemas personales' },
-          { id: 'b1-v7', title: 'Educación y cursos', desc: 'Aprender a hablar de estudios y desarrollo profesional' },
-          { id: 'b1-v8', title: 'Viajes por Polonia', desc: 'Aprender a planear viajes y reservar alojamiento' },
-          { id: 'b1-v9', title: 'Medios y tecnología', desc: 'Aprender a hablar de teléfono, internet y aplicaciones' }
-        ]
-      },
-      B2: {
-        title: 'Nivel B2',
-        subtitle: 'Integración total',
-        description: 'Perfecciona tu polaco para alcanzar un nivel avanzado de comunicación.',
-        gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
-        grammar: [
-          { id: 'b2-g1', title: 'Aspecto verbal avanzado', desc: 'Aprender a elegir correctamente el aspecto según la intención comunicativa' },
-          { id: 'b2-g2', title: 'Voz pasiva', desc: 'Aprender a enfocar la acción y no la persona que la realiza' },
-          { id: 'b2-g3', title: 'Participios y gerundios', desc: 'Aprender a construir frases más naturales y compactas' },
-          { id: 'b2-g4', title: 'Oraciones subordinadas complejas', desc: 'Aprender a usar estructuras con który, żeby, chociaż, ponieważ' },
-          { id: 'b2-g5', title: 'Estilo indirecto', desc: 'Aprender a contar lo que alguien dijo' },
-          { id: 'b2-g6', title: 'Condicional avanzado', desc: 'Aprender a hablar de situaciones irreales y del pasado' },
-          { id: 'b2-g7', title: 'Orden de palabras avanzado', desc: 'Aprender a enfatizar información cambiando el orden de la frase' },
-          { id: 'b2-g8', title: 'Registro y estilo', desc: 'Aprender a sonar natural, educado o formal según la situación' },
-          { id: 'b2-g9', title: 'Colocaciones y estructuras fijas', desc: 'Aprender a usar combinaciones de palabras típicas del polaco' }
-        ],
-        vocabulary: [
-          { id: 'b2-v1', title: 'Trabajo y mercado laboral', desc: 'Aprender a debatir sobre trabajo, condiciones laborales y desarrollo profesional' },
-          { id: 'b2-v2', title: 'Salud y estilo de vida', desc: 'Aprender a hablar de la salud física y mental' },
-          { id: 'b2-v3', title: 'Sociedad en Polonia', desc: 'Aprender a conversar sobre la vida en Polonia y las diferencias culturales' },
-          { id: 'b2-v4', title: 'Derecho y derechos del extranjero', desc: 'Aprender a hablar de derechos, deberes y trámites legales' },
-          { id: 'b2-v5', title: 'Relaciones y conflictos', desc: 'Aprender a resolver conflictos y expresar emociones con claridad' },
-          { id: 'b2-v6', title: 'Medios y opiniones', desc: 'Aprender a expresar opiniones y comentar acontecimientos' },
-          { id: 'b2-v7', title: 'Valores y creencias', desc: 'Aprender a hablar de valores personales y puntos de vista' },
-          { id: 'b2-v8', title: 'Argumentación y debate', desc: 'Aprender a debatir y defender tu opinión' }
-        ]
-      }
-    };
-    
-    // ============ RENDER FUNCTIONS ============
-    function renderLevelCards() {
-      const container = document.getElementById('levels-container');
-      const searchTerm = document.getElementById('search-input').value.toLowerCase();
-      
-      let html = '';
-      
-      for (const [level, data] of Object.entries(courseData)) {
-        const isExpanded = expandedLevels[level] || false;
+    if (contactForm) {
+      contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
         
-        // Filter topics
-        const filteredGrammar = data.grammar.filter(t => 
-          t.title.toLowerCase().includes(searchTerm) || 
-          t.desc.toLowerCase().includes(searchTerm)
-        );
-        const filteredVocab = data.vocabulary.filter(t => 
-          t.title.toLowerCase().includes(searchTerm) || 
-          t.desc.toLowerCase().includes(searchTerm)
-        );
+        // Show success message
+        formMessage.textContent = '¡Mensaje enviado! Te contactaré pronto 😊';
+        formMessage.className = 'text-green-600 bg-green-50 p-4 rounded-lg';
+        formMessage.classList.remove('hidden');
         
-        const hasResults = searchTerm === '' || filteredGrammar.length > 0 || filteredVocab.length > 0;
+        // Reset form
+        contactForm.reset();
         
-        if (!hasResults) continue;
-        
-        html += `
-          <div class="level-card rounded-3xl shadow-md" style="background-color: #faf7f2;">
-            <div 
-              class="flex items-center justify-between p-5 cursor-pointer"
-              onclick="toggleLevel('${level}')"
-            >
-              <div class="flex items-center gap-4">
-                <div 
-                  class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg"
-                  style="background: ${data.gradient};"
-                >
-                  ${level}
-                </div>
-                <div>
-                  <h3 class="font-bold text-lg" style="color: #004aad;">${data.title}</h3>
-                  <p class="text-sm" style="color: rgba(0, 74, 173, 0.6);">${data.subtitle}</p>
-                </div>
-              </div>
-              <svg 
-                class="w-5 h-5 accordion-arrow ${isExpanded ? 'open' : ''}" 
-                style="color: #9ca3af;"
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </div>
-            
-            ${isExpanded ? `
-              <div class="px-5 pb-5">
-                <p class="text-sm mb-6" style="color: rgba(0, 74, 173, 0.7);">${data.description}</p>
-                
-                ${(searchTerm === '' || filteredGrammar.length > 0) ? `
-                  <div class="mb-6">
-                    <h4 class="font-bold mb-3 flex items-center gap-2" style="color: #004aad;">
-                      📘 Gramática
-                    </h4>
-                    <div class="space-y-3">
-                      ${(searchTerm === '' ? data.grammar : filteredGrammar).map(topic => renderTopicTile(topic, level, 'grammar')).join('')}
-                    </div>
-                  </div>
-                ` : ''}
-                
-                ${(searchTerm === '' || filteredVocab.length > 0) ? `
-                  <div>
-                    <h4 class="font-bold mb-3 flex items-center gap-2" style="color: #004aad;">
-                      📗 Vocabulario
-                    </h4>
-                    <div class="space-y-3">
-                      ${(searchTerm === '' ? data.vocabulary : filteredVocab).map(topic => renderTopicTile(topic, level, 'vocabulary')).join('')}
-                    </div>
-                  </div>
-                ` : ''}
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }
-      
-      container.innerHTML = html;
-    }
-    
-    function renderTopicTile(topic, level, type) {
-      const borderColor = type === 'grammar' ? '#004aad' : '#10b981';
-      return `
-        <div 
-          class="topic-tile bg-white rounded-2xl p-4 shadow-sm cursor-pointer flex items-center"
-          onclick="openExercisesPopup('${topic.id}', '${topic.title}', '${level}', '${type}')"
-        >
-          <div class="w-1 h-12 rounded-full mr-4" style="background-color: ${borderColor};"></div>
-          <div class="flex-1">
-            <h5 class="font-semibold" style="color: #004aad;">${topic.title}</h5>
-            <p class="text-sm" style="color: rgba(0, 74, 173, 0.6);">${topic.desc}</p>
-          </div>
-          <svg class="w-5 h-5" style="color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </div>
-      `;
-    }
-    
-    function toggleLevel(level) {
-      expandedLevels[level] = !expandedLevels[level];
-      renderLevelCards();
-    }
-    
-    // ============ POPUP FUNCTIONS ============
-    function showPopup(content) {
-      const container = document.getElementById('popup-container');
-      const contentDiv = document.getElementById('popup-content');
-      contentDiv.innerHTML = content;
-      container.classList.remove('hidden');
-    }
-    
-    function hidePopup() {
-      const container = document.getElementById('popup-container');
-      container.classList.add('hidden');
-      currentPopup = null;
-      currentTopic = null;
-    }
-    
-    function getPopupFooter() {
-      return `
-        <div class="border-t pt-4 mt-4 flex items-center justify-between" style="border-color: #e5e7eb;">
-          <a 
-            href="https://instagram.com/sacariooo" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity"
-            style="color: #94a3b8;"
-          >
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-            </svg>
-            @sacariooo
-          </a>
-          <a 
-            href="https://tiktok.com/@latip0l" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity"
-            style="color: #94a3b8;"
-          >
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-            </svg>
-            @latip0l
-          </a>
-        </div>
-      `;
-    }
-    
-    function openExercisesPopup(topicId, topicTitle, level, type) {
-      currentTopic = { id: topicId, title: topicTitle, level, type };
-      currentPopup = 'exercises';
-      
-      const topicLinks = exerciseLinks.filter(link => link.topic_id === topicId);
-      const typeLabel = type === 'grammar' ? 'Gramática' : 'Vocabulario';
-      
-      let linksHtml = '';
-      if (topicLinks.length === 0) {
-        linksHtml = `
-          <p class="text-center py-4" style="color: rgba(0, 74, 173, 0.6);">No hay links guardados aún.</p>
-        `;
-      } else {
-        linksHtml = topicLinks.map(link => `
-          <a 
-            href="${link.url}" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="block p-3 rounded-xl mb-2 hover:opacity-80 transition-opacity"
-            style="background-color: rgba(0, 74, 173, 0.05);"
-          >
-            <div class="font-medium" style="color: #004aad;">${link.description}</div>
-            ${link.notes ? `<div class="text-xs mt-1" style="color: rgba(0, 74, 173, 0.6);">${link.notes}</div>` : ''}
-          </a>
-          ${isAdmin ? `
-            <button 
-              onclick="event.stopPropagation(); deleteLink('${link.__backendId}')"
-              class="admin-link mb-3 block"
-              style="color: #ef4444;"
-            >
-              × Eliminar link
-            </button>
-          ` : ''}
-        `).join('');
-      }
-      
-      const content = `
-        <div class="bg-white rounded-3xl shadow-xl p-6" style="height: 420px; display: flex; flex-direction: column;">
-          <div class="text-center mb-4">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background-color: rgba(0, 74, 173, 0.1);">
-              <svg class="w-7 h-7" style="color: #004aad;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-            <h2 class="text-xl font-bold" style="color: #004aad;">Ejercicios</h2>
-            <p class="text-sm" style="color: rgba(0, 74, 173, 0.7);">${topicTitle}</p>
-            <p class="text-xs mt-1" style="color: #9ca3af;">Nivel: ${level} | Tipo: ${typeLabel}</p>
-          </div>
-          
-          <div class="flex-1 rounded-2xl p-4 overflow-hidden" style="background-color: rgba(0, 74, 173, 0.05);">
-            <div class="h-full overflow-y-auto">
-              ${linksHtml}
-            </div>
-          </div>
-          
-          ${isAdmin ? `
-            <div class="text-center mt-3">
-              <button 
-                onclick="openAddLinkPopup()"
-                class="admin-link"
-                style="color: #004aad;"
-              >
-                + Añadir link
-              </button>
-            </div>
-          ` : ''}
-          
-          <button 
-            onclick="hidePopup()"
-            class="w-full py-3 rounded-xl font-semibold mt-4 transition-opacity hover:opacity-80"
-            style="background-color: #e5e7eb; color: #6b7280;"
-          >
-            Cerrar
-          </button>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    function openPasswordPopup() {
-      currentPopup = 'password';
-      
-      const content = `
-        <div class="bg-white rounded-3xl shadow-xl p-6" style="height: 380px; display: flex; flex-direction: column;">
-          <div class="text-center mb-6">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background-color: rgba(0, 74, 173, 0.1);">
-              <svg class="w-7 h-7" style="color: #004aad;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-              </svg>
-            </div>
-            <h2 class="text-xl font-bold" style="color: #004aad;">Contraseña requerida</h2>
-          </div>
-          
-          <div class="flex-1">
-            <label class="block text-sm font-medium mb-2" style="color: #004aad;">Introduce contraseña</label>
-            <input 
-              type="password" 
-              id="admin-password"
-              class="w-full py-3 px-4 rounded-xl border-2 text-base"
-              style="border-color: #004aad; color: #004aad;"
-              placeholder="••••••••"
-            >
-            <p id="password-error" class="text-sm mt-2 hidden" style="color: #ef4444;">Contraseña incorrecta</p>
-          </div>
-          
-          <div class="flex gap-3 mt-4">
-            <button 
-              onclick="hidePopup()"
-              class="flex-1 py-3 rounded-xl font-semibold transition-opacity hover:opacity-80"
-              style="background-color: #e5e7eb; color: #6b7280;"
-            >
-              Cancelar
-            </button>
-            <button 
-              onclick="checkPassword()"
-              class="flex-1 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-80"
-              style="background-color: #10b981;"
-            >
-              Confirmar
-            </button>
-          </div>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    function openAddLinkPopup() {
-      currentPopup = 'addLink';
-      
-      const content = `
-        <div class="bg-white rounded-3xl shadow-xl p-6" style="height: 480px; display: flex; flex-direction: column;">
-          <div class="text-center mb-4">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style="background-color: rgba(16, 185, 129, 0.1);">
-              <svg class="w-7 h-7" style="color: #10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-            </div>
-            <h2 class="text-xl font-bold" style="color: #004aad;">Añadir nuevo link</h2>
-            <p class="text-sm" style="color: rgba(0, 74, 173, 0.7);">${currentTopic?.title || ''}</p>
-          </div>
-          
-          <div class="flex-1 space-y-4">
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: #004aad;">Descripción del ejercicio</label>
-              <input 
-                type="text" 
-                id="link-description"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: #004aad; color: #004aad;"
-                placeholder="Ej: Ejercicios de conjugación"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: #004aad;">URL del ejercicio</label>
-              <input 
-                type="url" 
-                id="link-url"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: #004aad; color: #004aad;"
-                placeholder="https://..."
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: #004aad;">Notas (opcional)</label>
-              <input 
-                type="text" 
-                id="link-notes"
-                class="w-full py-3 px-4 rounded-xl border-2 text-base"
-                style="border-color: #004aad; color: #004aad;"
-                placeholder="Notas adicionales..."
-              >
-            </div>
-          </div>
-          
-          <div class="flex gap-3 mt-4">
-            <button 
-              onclick="openExercisesPopup('${currentTopic?.id}', '${currentTopic?.title}', '${currentTopic?.level}', '${currentTopic?.type}')"
-              class="flex-1 py-3 rounded-xl font-semibold transition-opacity hover:opacity-80"
-              style="background-color: #e5e7eb; color: #6b7280;"
-            >
-              Cancelar
-            </button>
-            <button 
-              onclick="saveNewLink()"
-              id="save-link-btn"
-              class="flex-1 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-80"
-              style="background-color: #10b981;"
-            >
-              Guardar
-            </button>
-          </div>
-          
-          ${getPopupFooter()}
-        </div>
-      `;
-      
-      showPopup(content);
-    }
-    
-    function checkPassword() {
-      const input = document.getElementById('admin-password');
-      const error = document.getElementById('password-error');
-      
-      if (input.value === 'ADMIN123') {
-        isAdmin = true;
-        localStorage.setItem('polaco_admin', 'true');
-        hidePopup();
-        updateAdminButton();
-      } else {
-        error.classList.remove('hidden');
-        input.value = '';
-      }
-    }
-    
-    async function saveNewLink() {
-      const description = document.getElementById('link-description').value.trim();
-      const url = document.getElementById('link-url').value.trim();
-      const notes = document.getElementById('link-notes').value.trim();
-      
-      if (!description || !url) return;
-      
-      if (exerciseLinks.length >= 999) {
-        const btn = document.getElementById('save-link-btn');
-        btn.textContent = 'Límite alcanzado';
-        btn.style.backgroundColor = '#ef4444';
-        return;
-      }
-      
-      const btn = document.getElementById('save-link-btn');
-      btn.textContent = 'Guardando...';
-      btn.disabled = true;
-      
-      const result = await window.dataSdk.create({
-        topic_id: currentTopic.id,
-        description: description,
-        url: url,
-        notes: notes,
-        created_at: new Date().toISOString()
-      });
-      
-      if (result.isOk) {
-        openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-      } else {
-        btn.textContent = 'Error';
-        btn.style.backgroundColor = '#ef4444';
+        // Hide message after 5 seconds
         setTimeout(() => {
-          btn.textContent = 'Guardar';
-          btn.style.backgroundColor = '#10b981';
-          btn.disabled = false;
-        }, 2000);
-      }
-    }
-    
-    async function deleteLink(backendId) {
-      const linkToDelete = exerciseLinks.find(l => l.__backendId === backendId);
-      if (!linkToDelete) return;
-      
-      const result = await window.dataSdk.delete(linkToDelete);
-      
-      if (result.isOk) {
-        openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-      }
-    }
-    
-    function updateAdminButton() {
-      const btn = document.getElementById('admin-btn');
-      if (isAdmin) {
-        btn.textContent = '✅ Admin Activo';
-        btn.style.opacity = '1';
-        btn.onclick = () => {
-          isAdmin = false;
-          localStorage.removeItem('polaco_admin');
-          updateAdminButton();
-        };
-      } else {
-        btn.textContent = '🔐 Modo Admin';
-        btn.style.opacity = '0.6';
-        btn.onclick = openPasswordPopup;
-      }
-    }
-    
-    // ============ SDK INITIALIZATION ============
-    const dataHandler = {
-      onDataChanged(data) {
-        exerciseLinks = data;
-        if (currentPopup === 'exercises' && currentTopic) {
-          openExercisesPopup(currentTopic.id, currentTopic.title, currentTopic.level, currentTopic.type);
-        }
-      }
-    };
-    
-    async function onConfigChange(cfg) {
-      config = { ...defaultConfig, ...cfg };
-      
-      const title = document.getElementById('main-title');
-      const subtitle = document.getElementById('main-subtitle');
-      
-      if (title) title.textContent = config.app_title || defaultConfig.app_title;
-      if (subtitle) subtitle.textContent = config.app_subtitle || defaultConfig.app_subtitle;
-    }
-    
-    // Initialize
-    (async function init() {
-      // Element SDK
-      window.elementSdk.init({
-        defaultConfig,
-        onConfigChange,
-        mapToCapabilities: (cfg) => ({
-          recolorables: [
-            {
-              get: () => cfg.background_color || defaultConfig.background_color,
-              set: (v) => { cfg.background_color = v; window.elementSdk.setConfig({ background_color: v }); }
-            },
-            {
-              get: () => cfg.card_background || defaultConfig.card_background,
-              set: (v) => { cfg.card_background = v; window.elementSdk.setConfig({ card_background: v }); }
-            },
-            {
-              get: () => cfg.primary_color || defaultConfig.primary_color,
-              set: (v) => { cfg.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); }
-            },
-            {
-              get: () => cfg.accent_color || defaultConfig.accent_color,
-              set: (v) => { cfg.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }
-            }
-          ],
-          borderables: [],
-          fontEditable: {
-            get: () => cfg.font_family || 'Signika',
-            set: (v) => { cfg.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
-          },
-          fontSizeable: undefined
-        }),
-        mapToEditPanelValues: (cfg) => new Map([
-          ['app_title', cfg.app_title || defaultConfig.app_title],
-          ['app_subtitle', cfg.app_subtitle || defaultConfig.app_subtitle]
-        ])
+          formMessage.classList.add('hidden');
+        }, 5000);
       });
-      
-      // Data SDK
-      const dataResult = await window.dataSdk.init(dataHandler);
-      if (!dataResult.isOk) {
-        console.error('Failed to initialize data SDK');
-      }
-      
-      // Initial render
-      renderLevelCards();
-      updateAdminButton();
-      
-      // Search functionality
-      document.getElementById('search-input').addEventListener('input', renderLevelCards);
-      
-      // Close popup on overlay click
-      document.getElementById('popup-container').addEventListener('click', (e) => {
-        if (e.target.id === 'popup-container') {
-          hidePopup();
+    }
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
-    })();
+    });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c11a4b984ffb813',t:'MTc2ODk0NDMxNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c1717c022c52d19',t:'MTc2OTAwMTQ1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
