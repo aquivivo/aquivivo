@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="pl" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nauczycielka Hiszpańskiego i Polskiego</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;family=Playfair+Display:wght@700;800;900&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    .font-display { font-family: 'Playfair Display', serif; }
+    .font-body { font-family: 'Montserrat', sans-serif; }
+    
+    .gradient-colombia {
+      background: linear-gradient(135deg, #FCD116 0%, #FCD116 33%, #003893 33%, #003893 66%, #CE1126 66%, #CE1126 100%);
+    }
+    
+    .bg-blue-main {
+      background: linear-gradient(180deg, #001a4d 0%, #003893 50%, #001a4d 100%);
+    }
+    
+    .card-white {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      transition: all 0.4s ease;
+    }
+    
+    .card-white:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    }
+    
+    .card-yellow {
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(252, 209, 22, 0.3);
+      transition: all 0.4s ease;
+    }
+    
+    .card-yellow:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(252, 209, 22, 0.4);
+    }
+    
+    .card-red {
+      background: linear-gradient(135deg, #CE1126 0%, #FF1E3C 100%);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(206, 17, 38, 0.3);
+      transition: all 0.4s ease;
+    }
+    
+    .card-red:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(206, 17, 38, 0.4);
+    }
+    
+    .card-blue {
+      background: linear-gradient(135deg, #003893 0%, #0055CC 100%);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0, 56, 147, 0.3);
+      transition: all 0.4s ease;
+    }
+    
+    .card-blue:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0, 56, 147, 0.4);
+    }
+    
+    .btn-yellow {
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
+      color: #003893;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(252, 209, 22, 0.4);
+      transition: all 0.3s ease;
+      display: inline-block;
+      text-align: center;
+    }
+    
+    .btn-yellow:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(252, 209, 22, 0.6);
+    }
+    
+    .btn-red {
+      background: linear-gradient(135deg, #CE1126 0%, #A00E1E 100%);
+      color: white;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(206, 17, 38, 0.4);
+      transition: all 0.3s ease;
+      display: inline-block;
+      text-align: center;
+    }
+    
+    .btn-red:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(206, 17, 38, 0.6);
+    }
+    
+    .btn-white-outline {
+      border: 3px solid white;
+      color: white;
+      font-weight: 700;
+      padding: 16px 32px;
+      border-radius: 16px;
+      transition: all 0.3s ease;
+      display: inline-block;
+      text-align: center;
+    }
+    
+    .btn-white-outline:hover {
+      background: white;
+      color: #003893;
+    }
+    
+    .accent-yellow {
+      position: relative;
+      padding-left: 24px;
+    }
+    
+    .accent-yellow::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: #FCD116;
+      border-radius: 3px;
+    }
+    
+    .accent-red {
+      position: relative;
+      padding-left: 24px;
+    }
+    
+    .accent-red::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: #CE1126;
+      border-radius: 3px;
+    }
+    
+    .section-badge {
+      background: rgba(252, 209, 22, 0.2);
+      color: #FCD116;
+      padding: 8px 20px;
+      border-radius: 24px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      display: inline-block;
+      border: 2px solid #FCD116;
+    }
+    
+    .icon-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
+      box-shadow: 0 8px 24px rgba(252, 209, 22, 0.4);
+    }
+    
+    .icon-circle-red {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #CE1126 0%, #FF1E3C 100%);
+      box-shadow: 0 8px 24px rgba(206, 17, 38, 0.4);
+    }
+    
+    .nav-glass {
+      background: rgba(0, 26, 77, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid rgba(252, 209, 22, 0.3);
+    }
+    
+    .price-tag {
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
+      color: #003893;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 800;
+      display: inline-block;
+      box-shadow: 0 4px 16px rgba(252, 209, 22, 0.4);
+    }
+    
+    .price-old {
+      color: #666;
+      text-decoration: line-through;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    
+    .testimonial-card {
+      background: white;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      border-top: 6px solid #FCD116;
+    }
+    
+    .stars {
+      color: #FCD116;
+      font-size: 1.5rem;
+    }
+    
+    .floating {
+      animation: floating 3s ease-in-out infinite;
+    }
+    
+    @keyframes floating {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    .glow-text {
+      text-shadow: 0 0 20px rgba(252, 209, 22, 0.5);
+    }
+    
+    .promo-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #FCD116 0%, #FFD700 100%);
+      color: #003893;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(252, 209, 22, 0.5);
+      white-space: nowrap;
+      z-index: 10;
+    }
+    
+    .promo-badge-red {
+      background: linear-gradient(135deg, #CE1126 0%, #FF1E3C 100%);
+      color: white;
+    }
+    
+    .promo-badge-white {
+      background: white;
+      color: #003893;
+      border: 2px solid #FCD116;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full font-body bg-blue-main text-white">
+  <div class="w-full h-full overflow-auto"><!-- Navigation -->
+   <nav class="fixed top-0 left-0 right-0 z-50 nav-glass">
+    <div class="max-w-7xl mx-auto px-6 py-5">
+     <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+       <svg class="w-14 h-14 drop-shadow-xl" viewbox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs>
+         <lineargradient id="colombiaFlag" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#FCD116;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#FCD116;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#003893;stop-opacity:1" />
+          <stop offset="75%" style="stop-color:#003893;stop-opacity:1" />
+          <stop offset="75%" style="stop-color:#CE1126;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
+         </lineargradient>
+        </defs> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlag)" stroke="#FCD116" stroke-width="2.5" />
+       </svg><span class="font-display text-2xl font-bold text-white">Aqui vivo</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8"><a href="https://aquivivo.github.io/aquivivo/" class="flex items-center gap-2 text-white hover:text-yellow-400 font-bold transition-colors group"> <span class="text-xl font-black">ES</span>
+        <svg class="w-6 h-6 group-hover:scale-110 transition-transform" viewbox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs>
+          <lineargradient id="colombiaFlagSmall" x1="0%" y1="0%" x2="0%" y2="100%">
+           <stop offset="0%" style="stop-color:#FCD116;stop-opacity:1" />
+           <stop offset="50%" style="stop-color:#FCD116;stop-opacity:1" />
+           <stop offset="50%" style="stop-color:#003893;stop-opacity:1" />
+           <stop offset="75%" style="stop-color:#003893;stop-opacity:1" />
+           <stop offset="75%" style="stop-color:#CE1126;stop-opacity:1" />
+           <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
+          </lineargradient>
+         </defs> <path d="M 30 60 L 32 80 Q 32 85 37 85 L 63 85 Q 68 85 68 80 L 70 60 Z" fill="url(#colombiaFlagSmall)" stroke="#8B4513" stroke-width="1.5" /> <ellipse cx="50" cy="60" rx="18" ry="4" fill="#6F4E37" /> <path d="M 70 65 Q 80 65 80 72.5 Q 80 80 70 80" fill="none" stroke="#8B4513" stroke-width="4" stroke-linecap="round" /> <path d="M 45 50 Q 43 40 45 35" fill="none" stroke="rgba(252,209,22,0.6)" stroke-width="2" stroke-linecap="round" opacity="0.7">
+          <animate attributename="opacity" values="0.7;0.3;0.7" dur="2s" repeatcount="indefinite" />
+         </path> <path d="M 50 48 Q 50 37 52 32" fill="none" stroke="rgba(252,209,22,0.7)" stroke-width="2.5" stroke-linecap="round" opacity="0.8">
+          <animate attributename="opacity" values="0.8;0.4;0.8" dur="2.5s" repeatcount="indefinite" />
+         </path> <path d="M 55 50 Q 57 40 55 35" fill="none" stroke="rgba(252,209,22,0.6)" stroke-width="2" stroke-linecap="round" opacity="0.7">
+          <animate attributename="opacity" values="0.7;0.3;0.7" dur="2.2s" repeatcount="indefinite" />
+         </path>
+        </svg></a> <a href="#inicio" class="text-white hover:text-yellow-400 font-semibold transition-colors">Start</a> <a href="#programa" class="text-white hover:text-yellow-400 font-semibold transition-colors">Program</a> <a href="#servicios" class="text-white hover:text-yellow-400 font-semibold transition-colors">Usługi</a> <a href="#ebooks" class="text-white hover:text-yellow-400 font-semibold transition-colors">E-booki</a> <a href="#contacto" class="text-white hover:text-yellow-400 font-semibold transition-colors">Kontakt</a>
+      </div>
+     </div>
+    </div>
+   </nav><!-- Hero Section -->
+   <section id="inicio" class="min-h-screen flex items-center pt-24 pb-12 px-6 relative overflow-hidden">
+    <div class="absolute top-20 right-10 w-96 h-96 bg-yellow-400 rounded-full opacity-10 blur-3xl"></div>
+    <div class="absolute bottom-20 left-10 w-80 h-80 bg-red-600 rounded-full opacity-10 blur-3xl"></div>
+    <div class="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-16 items-center relative z-10">
+     <div class="space-y-8">
+      <h1 class="font-display text-6xl lg:text-7xl font-black text-white leading-tight glow-text">Ucz się Polskiego<br><span class="text-yellow-400">z Latynoską Duszą</span></h1>
+      <p class="text-xl text-blue-100 leading-relaxed">Jestem Magdalena — nauczycielka hiszpańskiego i polskiego w Let's Talk Poznań. Pomogę Ci odkryć, że polski nie jest taki trudny, jak się wydaje, że może być lekki, przyjemny i naprawdę "osiągalny" 🌸</p>
+      <div class="flex flex-col sm:flex-row gap-5 pt-4"><a href="https://aquivivo.github.io/aquivivo/Reserva.html" class="btn-yellow text-lg"> Zarezerwuj Bezpłatną Lekcję </a> <a href="#programa" class="btn-white-outline text-lg"> Zobacz Program </a>
+      </div>
+     </div>
+     <div class="text-center space-y-10">
+      <div class="floating mx-auto">
+       <svg class="w-72 h-72 mx-auto drop-shadow-2xl" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs>
+         <lineargradient id="cupGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+         </lineargradient>
+         <lineargradient id="coffeeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#6F4E37;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#3E2723;stop-opacity:1" />
+         </lineargradient>
+        </defs> <ellipse cx="100" cy="55" rx="70" ry="15" fill="#FCD116" opacity="0.3" /> <ellipse cx="100" cy="55" rx="60" ry="12" fill="#003893" opacity="0.3" /> <ellipse cx="100" cy="55" rx="50" ry="10" fill="#FCD116" opacity="0.3" /> <rect x="85" y="55" width="30" height="25" rx="5" fill="#FCD116" opacity="0.3" /> <path d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z" fill="url(#cupGradient)" stroke="#654321" stroke-width="2" /> <ellipse cx="100" cy="120" rx="35" ry="8" fill="url(#coffeeGradient)" /> <path d="M 140 130 Q 155 130 155 145 Q 155 160 140 160" fill="none" stroke="url(#cupGradient)" stroke-width="8" stroke-linecap="round" /> <rect x="70" y="135" width="60" height="8" fill="#FCD116" opacity="0.6" rx="2" /> <rect x="70" y="145" width="60" height="5" fill="#003893" opacity="0.6" rx="1" /> <rect x="70" y="152" width="60" height="5" fill="#CE1126" opacity="0.6" rx="1" /> <path d="M 85 110 Q 80 95 85 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
+         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85" dur="2s" repeatcount="indefinite" />
+        </path> <path d="M 100 108 Q 100 90 105 80" fill="none" stroke="#FCD116" stroke-width="4" stroke-linecap="round" opacity="0.8">
+         <animate attributename="opacity" values="0.8;0.4;0.8" dur="2.5s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80" dur="2.5s" repeatcount="indefinite" />
+        </path> <path d="M 115 110 Q 120 95 115 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
+         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2.2s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85" dur="2.2s" repeatcount="indefinite" />
+        </path> <ellipse cx="50" cy="140" rx="8" ry="10" fill="#3E2723" transform="rotate(-20 50 140)">
+         <animate attributename="opacity" values="1;0.7;1" dur="3s" repeatcount="indefinite" />
+        </ellipse> <path d="M 50 135 Q 50 140 50 145" stroke="#654321" stroke-width="1.5" /> <ellipse cx="150" cy="135" rx="8" ry="10" fill="#3E2723" transform="rotate(20 150 135)">
+         <animate attributename="opacity" values="0.7;1;0.7" dur="3s" repeatcount="indefinite" />
+        </ellipse> <path d="M 150 130 Q 150 135 150 140" stroke="#654321" stroke-width="1.5" /> <rect x="70" y="175" width="60" height="8" fill="#FCD116" rx="1" opacity="0.9" /> <rect x="75" y="178" width="50" height="8" fill="#FFFFFF" rx="1" opacity="0.8" /> <rect x="80" y="181" width="40" height="8" fill="#FCD116" rx="1" opacity="0.7" /> <path d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z" fill="#CE1126" opacity="0.8">
+         <animate attributename="transform" values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)" dur="1.5s" repeatcount="indefinite" />
+        </path>
+       </svg>
+      </div>
+      <div class="grid grid-cols-3 gap-6">
+       <div class="card-white transform hover:scale-105 transition-transform">
+        <div class="text-5xl font-black text-yellow-500 mb-2">
+         100+
+        </div>
+        <div class="text-sm font-bold text-blue-900">
+         Studentów
+        </div>
+       </div>
+       <div class="card-white transform hover:scale-105 transition-transform">
+        <div class="text-5xl font-black text-blue-900 mb-2">
+         10 lat
+        </div>
+        <div class="text-sm font-bold text-blue-900">
+         Doświadczenia
+        </div>
+       </div>
+       <div class="card-white transform hover:scale-105 transition-transform">
+        <div class="text-5xl font-black text-red-600 mb-2">
+         4.9 ★
+        </div>
+        <div class="text-sm font-bold text-blue-900">
+         Ocena
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Features Section -->
+   <section class="py-12 bg-gradient-to-b from-blue-900 to-blue-800">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="card-yellow text-center space-y-5">
+       <div class="icon-circle">
+        🎓
+       </div>
+       <h3 class="font-display text-xl font-bold text-blue-900">Filologia Hiszpańska</h3>
+       <p class="text-blue-900">UAM - Prawdziwy hiszpański z życia codziennego</p>
+      </div>
+      <div class="card-white text-center space-y-5">
+       <div class="icon-circle">
+        🌎
+       </div>
+       <h3 class="font-display text-xl font-bold text-blue-900">Bikulturowość</h3>
+       <p class="text-gray-700">Rozumiem obie kultury perfekcyjnie</p>
+      </div>
+      <div class="card-red text-center space-y-5">
+       <div class="icon-circle" style="background: white; color: #CE1126;">
+        🎯
+       </div>
+       <h3 class="font-display text-xl font-bold text-white">Własna Metoda</h3>
+       <p class="text-white">Program zaprojektowany dla Latynosów</p>
+      </div>
+      <div class="card-blue text-center space-y-5">
+       <div class="icon-circle" style="background: white;">
+        📄
+       </div>
+       <h3 class="font-display text-xl font-bold text-white">Kompleksowe Wsparcie</h3>
+       <p class="text-white">Pomogę Ci z formalnościami i dokumentami</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- About Section -->
+   <section class="py-16 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-blue-800 to-blue-900"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+     <div class="grid lg:grid-cols-2 gap-20 items-center">
+      <div class="space-y-8">
+       <div class="section-badge">
+        O Mnie
+       </div>
+       <h2 class="font-display text-5xl lg:text-6xl font-black text-white leading-tight">Dlaczego warto uczyć się<br><span class="text-yellow-400">ze mną?</span></h2>
+       <p class="text-xl text-blue-100 leading-relaxed">Od najmłodszych lat hiszpański był blisko mojego serca — a szczególnie jego wersja latynoamerykańska, pełna emocji, ciepła i życia. To właśnie ten hiszpański sprawił, że zakochałam się w językach. Dziś specjalizuję się w hiszpańskim latynoamerykańskim, takim jak się naprawdę mówi — między ludźmi, w relacjach, w życiu codziennym 🌸</p>
+       <div class="flex items-center gap-6 pt-6">
+        <div class="flex -space-x-4">
+         <div class="w-16 h-16 rounded-full bg-yellow-400 flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
+          👩
+         </div>
+         <div class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
+          👨
+         </div>
+         <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
+          🙋‍♀️
+         </div>
+        </div>
+        <div class="text-white">
+         Dołącz do <span class="font-black text-yellow-400 text-xl">100+ studentów</span>, którzy już opanowali polski
+        </div>
+       </div>
+      </div>
+      <div class="grid grid-cols-2 gap-6">
+       <div class="space-y-6">
+        <div class="card-yellow accent-yellow">
+         <div class="text-5xl mb-4">
+          🗣️
+         </div>
+         <h4 class="font-bold text-lg text-blue-900 mb-3">Naturalna Rozmowa</h4>
+         <p class="text-blue-900">Naucz się mówić jak native speaker od pierwszego dnia</p>
+        </div>
+        <div class="card-white accent-yellow">
+         <div class="text-5xl mb-4">
+          📚
+         </div>
+         <h4 class="font-bold text-lg text-blue-900 mb-3">Ekskluzywne Materiały</h4>
+         <p class="text-gray-700">E-booki i zasoby stworzone przeze mnie dla Ciebie</p>
+        </div>
+       </div>
+       <div class="space-y-6 mt-12">
+        <div class="card-red accent-red">
+         <div class="text-5xl mb-4">
+          ⚡
+         </div>
+         <h4 class="font-bold text-lg text-white mb-3">Szybkie Rezultaty</h4>
+         <p class="text-white">Zobacz swoje postępy tydzień po tygodniu</p>
+        </div>
+        <div class="card-blue accent-red" style="background: linear-gradient(135deg, #003893 0%, #0055CC 100%);">
+         <div class="text-5xl mb-4">
+          🤝
+         </div>
+         <h4 class="font-bold text-lg text-white mb-3">Pełne Wsparcie</h4>
+         <p class="text-white">Jestem tutaj, aby pomóc Ci na każdym kroku</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Program Section -->
+   <section id="programa" class="pt-32 pb-20 bg-gradient-to-b from-blue-900 to-blue-800">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="section-badge mx-auto mb-6">
+       Mój Program
+      </div>
+      <h2 class="font-display text-5xl font-black text-white mb-6 glow-text">Metoda Zaprojektowana dla Ciebie</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-8"><!-- A1-A2 -->
+      <div class="card-yellow relative border-4 border-yellow-400">
+       <div class="promo-badge">
+        Cena Promocyjna
+       </div>
+       <div class="text-center space-y-4">
+        <div class="text-sm font-black text-blue-900 uppercase tracking-wider">
+         📚 Poziom A1-A2
+        </div>
+        <h3 class="font-display text-xl font-black text-blue-900 leading-tight">Podstawy życia w Polsce</h3>
+        <p class="text-blue-900 text-sm font-semibold italic">(Codzienne funkcjonowanie)</p>
+        <p class="text-blue-900 text-xs italic font-medium">Idealne na start Twojego życia w Polsce 🇵🇱</p>
+        <ul class="space-y-3 text-blue-900 text-left text-sm pt-2">
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Polska wymowa dla osób hiszpańskojęzycznych</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Podstawowe słownictwo życia codziennego</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Realne sytuacje: praca, sklep, lekarz, transport</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Podstawowa gramatyka wyjaśniona krok po kroku</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold text-lg">✔</span> <span>Audio i praktyka konwersacji od pierwszego dnia</span></li>
+        </ul>
+        <div class="pt-4">
+         <div class="price-old text-center mb-2">
+          199 zł
+         </div>
+         <div class="price-tag text-xl">
+          180 zł / 3 miesiące
+         </div>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-red w-full text-base mt-4"> Zobacz Więcej Szczegółów </a>
+       </div>
+      </div><!-- B1 -->
+      <div class="card-white relative">
+       <div class="promo-badge promo-badge-red">
+        Oferta Specjalna
+       </div>
+       <div class="text-center space-y-4">
+        <div class="text-sm font-black text-blue-900 uppercase tracking-wider">
+         🚀 Poziom B1
+        </div>
+        <h3 class="font-display text-xl font-black text-blue-900 leading-tight">Samodzielne życie w Polsce</h3>
+        <p class="text-gray-700 text-xs italic font-medium">Do pracy, komunikacji i życia z pewnością siebie</p>
+        <ul class="space-y-3 text-gray-700 text-left text-sm pt-2">
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Płynna rozmowa w sytuacjach codziennych i zawodowych</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Polski do pracy, biura i życia społecznego</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Wyrażanie opinii, doświadczeń i emocji</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Zaawansowane słownictwo i naturalne struktury</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 font-bold text-lg">✔</span> <span>Praktyczne przygotowanie do egzaminów i rozmów kwalifikacyjnych</span></li>
+        </ul>
+        <div class="pt-4">
+         <div class="price-old text-center mb-2">
+          279 zł
+         </div>
+         <div class="price-tag text-xl">
+          250 zł / 3 miesiące
+         </div>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-base mt-4"> Zobacz Więcej Szczegółów </a>
+       </div>
+      </div><!-- B2 -->
+      <div class="card-red relative">
+       <div class="promo-badge promo-badge-white">
+        Cena Promocyjna
+       </div>
+       <div class="text-center space-y-4">
+        <div class="text-sm font-black text-white uppercase tracking-wider">
+         👑 Poziom B2
+        </div>
+        <h3 class="font-display text-xl font-black text-white leading-tight">Całkowita integracja</h3>
+        <p class="text-white text-xs italic font-medium">Aby w pełni się zintegrować i rozwijać zawodowo</p>
+        <ul class="space-y-3 text-white text-left text-sm pt-2">
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Doskonalenie komunikacji ustnej i pisemnej</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Specjalistyczny polski zawodowy i akademicki</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Idiomy i naturalny język</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Debaty, negocjacje i sytuacje formalne</span></li>
+         <li class="flex items-start gap-2"><span class="text-white font-bold text-lg">✔</span> <span>Przygotowanie do obywatelstwa, egzaminów oficjalnych i zaawansowanej pracy</span></li>
+        </ul>
+        <div class="pt-4">
+         <div class="price-old text-center mb-2" style="color: rgba(255,255,255,0.6);">
+          399 zł
+         </div>
+         <div class="price-tag text-xl">
+          350 zł / 3 miesiące
+         </div>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-base mt-4"> Zobacz Więcej Szczegółów </a>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Services Section -->
+   <section id="servicios" class="pt-32 pb-20 bg-gradient-to-b from-blue-800 to-blue-900">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="section-badge mx-auto mb-6">
+       Dodatkowe Usługi
+      </div>
+      <h2 class="font-display text-5xl font-black text-white mb-6 glow-text">Więcej niż Lekcje Języka</h2>
+      <p class="text-xl text-blue-100">Towarzyszę Ci w całym procesie adaptacji w Polsce dzięki usługom zaprojektowanym, aby ułatwić Ci życie.</p>
+     </div>
+     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="card-yellow text-center space-y-4">
+       <div class="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-4xl mx-auto shadow-lg">
+        📋
+       </div>
+       <h3 class="font-bold text-xl text-blue-900">Pomoc z Formalnościami</h3>
+       <p class="text-blue-900 text-sm leading-tight">Towarzyszenie w urzędach, tłumaczenie dokumentów urzędowych.</p>
+       <div class="price-tag text-lg py-2">
+        Od 100 PLN
+       </div><a href="https://aquivivo.github.io/aquivivo/Ayuda.html" class="btn-red w-full text-sm"> Dowiedz się Więcej </a>
+      </div>
+      <div class="card-red text-center space-y-4">
+       <div class="w-20 h-20 rounded-full bg-white flex items-center justify-center text-4xl mx-auto shadow-lg" style="color: #CE1126;">
+        📝
+       </div>
+       <h3 class="font-bold text-xl text-white">Tłumaczenia</h3>
+       <p class="text-white text-sm leading-tight">Tłumaczenia hiszpańsko-polskie dokumentów, umów, certyfikatów.</p>
+       <div class="price-tag text-lg py-2">
+        Od 50 PLN/str.
+       </div><a href="https://aquivivo.github.io/aquivivo/Traducciones.html" class="btn-yellow w-full text-sm"> Dowiedz się Więcej </a>
+      </div>
+      <div class="card-white text-center space-y-4">
+       <div class="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-4xl mx-auto shadow-lg">
+        👥
+       </div>
+       <h3 class="font-bold text-xl text-blue-900">Zajęcia Grupowe</h3>
+       <p class="text-gray-700 text-sm leading-tight">Małe grupy maksymalnie 5 osób. Ucz się z innymi Latynosami.</p>
+       <div class="price-tag text-lg py-2">
+        80 PLN/osoba
+       </div><a href="https://aquivivo.github.io/aquivivo/Clases.html" class="btn-red w-full text-sm"> Dowiedz się Więcej </a>
+      </div>
+      <div class="card-blue text-center space-y-4">
+       <div class="w-20 h-20 rounded-full bg-white flex items-center justify-center text-4xl mx-auto shadow-lg">
+        💼
+       </div>
+       <h3 class="font-bold text-xl text-white">Polski Biznesowy</h3>
+       <p class="text-white text-sm leading-tight">Zajęcia dla firm z pracownikami hiszpańskojęzycznymi.</p>
+       <div class="price-tag text-lg py-2">
+        Do uzgodnienia
+       </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-sm"> Dowiedz się Więcej </a>
+      </div>
+     </div>
+    </div>
+   </section><!-- E-books Section -->
+   <section id="ebooks" class="pt-32 pb-20 bg-gradient-to-b from-blue-900 to-blue-800">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="section-badge mx-auto mb-6">
+       Zasoby Cyfrowe
+      </div>
+      <h2 class="font-display text-5xl font-black text-white mb-6 glow-text">Moje E-booki</h2>
+      <p class="text-xl text-blue-100">Ekskluzywne materiały stworzone dla osób hiszpańskojęzycznych. Ucz się we własnym tempie z praktycznymi przewodnikami i ćwiczeniami.</p>
+     </div>
+     <div class="grid md:grid-cols-3 gap-8">
+      <div class="card-yellow text-center space-y-4">
+       <div class="w-20 h-24 rounded-2xl bg-blue-900 flex items-center justify-center mx-auto shadow-xl"><span class="text-4xl">📖</span>
+       </div>
+       <h3 class="font-display text-xl font-black text-blue-900 leading-tight">Podstawowy Polski<br>
+        dla Latynosów</h3>
+       <p class="text-blue-900 text-sm leading-tight">100 stron z podstawowym słownictwem, ćwiczeniami i audio.</p>
+       <div class="price-tag text-xl py-2">
+        49 PLN
+       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-sm"> Zobacz Treść </a>
+      </div>
+      <div class="card-white text-center space-y-4">
+       <div class="w-20 h-24 rounded-2xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center mx-auto shadow-xl"><span class="text-4xl">💬</span>
+       </div>
+       <h3 class="font-display text-xl font-black text-blue-900 leading-tight">Zwroty<br>
+        Dnia Codziennego</h3>
+       <p class="text-gray-700 text-sm leading-tight">500 Podstawowych Zwrotów. Najbardziej przydatne frazy na co dzień.</p>
+       <div class="price-tag text-xl py-2">
+        39 PLN
+       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-sm"> Zobacz Treść </a>
+      </div>
+      <div class="card-red text-center space-y-4">
+       <div class="w-20 h-24 rounded-2xl bg-white flex items-center justify-center mx-auto shadow-xl"><span class="text-4xl">📄</span>
+       </div>
+       <h3 class="font-display text-xl font-black text-white leading-tight">Przewodnik po<br>
+        Formalnościach</h3>
+       <p class="text-white text-sm leading-tight">Przewodnik po Formalnościach w Polsce. Wszystko o dokumentach i urzędach.</p>
+       <div class="price-tag text-xl py-2">
+        59 PLN
+       </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-yellow w-full text-sm"> Zobacz Treść </a>
+      </div>
+     </div>
+    </div>
+   </section><!-- Testimonials Section -->
+   <section class="pt-32 pb-32 bg-gradient-to-b from-blue-800 to-blue-900">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="section-badge mx-auto mb-6">
+       Opinie
+      </div>
+      <h2 class="font-display text-5xl font-black text-white mb-4">Co Mówią Moi Studenci</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-10">
+      <div class="testimonial-card">
+       <div class="stars mb-6">
+        ★★★★★
+       </div>
+       <p class="text-gray-700 mb-8 italic text-lg leading-relaxed">"Po 3 miesiącach już mogę porozumiewać się w pracy. Metoda jest doskonała, bo wszystko wyjaśnia od podstaw po hiszpańsku."</p>
+       <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-yellow-400 flex items-center justify-center text-3xl shadow-lg">
+         👨
+        </div>
+        <div>
+         <div class="font-black text-blue-900 text-lg">
+          Carlos M.
+         </div>
+         <div class="text-gray-600">
+          🇨🇴 Kolumbia
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="testimonial-card" style="border-top-color: #CE1126;">
+       <div class="stars mb-6">
+        ★★★★★
+       </div>
+       <p class="text-gray-700 mb-8 italic text-lg leading-relaxed">"Pomogła mi ze wszystkimi dokumentami do pozwolenia na pobyt. Niesamowita nauczycielka, która rozumie nasze potrzeby!"</p>
+       <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center text-3xl shadow-lg">
+         👩
+        </div>
+        <div>
+         <div class="font-black text-blue-900 text-lg">
+          María L.
+         </div>
+         <div class="text-gray-600">
+          🇻🇪 Wenezuela
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="testimonial-card" style="border-top-color: #003893;">
+       <div class="stars mb-6">
+        ★★★★★
+       </div>
+       <p class="text-gray-700 mb-8 italic text-lg leading-relaxed">"E-booki są świetne. Mogę się uczyć w autobusie, a wyjaśnienia po hiszpańsku sprawiają, że wszystko jest łatwiejsze."</p>
+       <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-blue-900 flex items-center justify-center text-3xl shadow-lg">
+         🧔
+        </div>
+        <div>
+         <div class="font-black text-blue-900 text-lg">
+          Andrés R.
+         </div>
+         <div class="text-gray-600">
+          🇵🇪 Peru
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Contact Section -->
+   <section id="contacto" class="pt-32 pb-32 bg-gradient-to-b from-blue-900 to-blue-950">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center mb-16">
+      <div class="section-badge mx-auto mb-6">
+       Kontakt
+      </div>
+      <h2 class="font-display text-5xl font-black text-white mb-6">Gotowy Zacząć Swoją Przygodę?</h2>
+      <p class="text-xl text-blue-100 max-w-2xl mx-auto">Zarezerwuj swoją pierwszą bezpłatną lekcję i odkryj, jak mogę pomóc Ci opanować polski i zaadaptować się do nowego życia w Polsce.</p>
+     </div>
+     <div class="grid lg:grid-cols-2 gap-16 items-start">
+      <div class="space-y-8">
+       <div class="flex items-center gap-5 text-white"><span class="text-4xl">📧</span>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          Email
+         </div>
+         <div class="font-bold text-white text-xl">
+          aquivivo.pl@gmail.com
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center gap-5 text-white">
+        <svg class="w-10 h-10 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+        </svg>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          WhatsApp
+         </div>
+         <div class="font-bold text-white text-xl">
+          +48 669 69 71 51
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center gap-5 text-white"><span class="text-4xl">📍</span>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          Lokalizacja
+         </div>
+         <div class="font-bold text-white text-xl">
+          Poznań, Polska
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center gap-5 text-white"><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform">
+         <svg class="w-10 h-10 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+         </svg></a>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          Instagram
+         </div><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-xl hover:text-yellow-400 transition-colors">@sacariooo</a>
+        </div>
+       </div>
+       <div class="flex items-center gap-5 text-white"><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform">
+         <svg class="w-10 h-10 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+         </svg></a>
+        <div>
+         <div class="text-sm text-blue-300 font-bold">
+          TikTok
+         </div><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-xl hover:text-yellow-400 transition-colors">@latip0l</a>
+        </div>
+       </div>
+      </div>
+      <div class="card-white">
+       <h3 class="font-display text-xl font-black text-blue-900 mb-4">Wyślij mi Wiadomość</h3>
+       <form id="contact-form" class="space-y-4">
+        <div><label for="email" class="block text-xs font-bold text-blue-900 mb-1">Email <span class="text-red-600">*</span></label> <input type="email" id="email" name="email" placeholder="twoj@email.com" required class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none text-gray-900 text-sm">
+        </div>
+        <div><label for="message" class="block text-xs font-bold text-blue-900 mb-1">Wiadomość <span class="text-red-600">*</span></label> <textarea id="message" name="message" rows="3" placeholder="W czym mogę Ci pomóc?" required class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none resize-none text-gray-900 text-sm"></textarea>
+        </div>
+        <div class="flex items-start gap-2"><input type="checkbox" id="privacy" name="privacy" required class="mt-0.5 w-4 h-4 rounded border-2 border-gray-300 text-yellow-400 focus:ring-2 focus:ring-yellow-200"> <label for="privacy" class="text-xs text-gray-700"> Akceptuję <a href="https://aquivivo.github.io/aquivivo/Privacidad.html" class="text-blue-900 font-black underline hover:text-red-600">Politykę Prywatności</a> <span class="text-red-600">*</span> </label>
+        </div><button type="submit" class="btn-yellow w-full text-base py-2"> Wyślij Wiadomość </button>
+        <div id="form-message" class="hidden text-center font-bold p-3 rounded-lg text-sm"></div>
+       </form>
+      </div>
+     </div>
+    </div>
+   </section><!-- Footer -->
+   <footer class="nav-glass text-white py-8 border-t-2 border-yellow-400">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="grid md:grid-cols-4 gap-8 mb-8">
+      <div class="space-y-4">
+       <div class="flex items-center gap-3">
+        <svg class="w-10 h-10 drop-shadow-lg" viewbox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs>
+          <lineargradient id="colombiaFlagFooter" x1="0%" y1="0%" x2="0%" y2="100%">
+           <stop offset="0%" style="stop-color:#FCD116;stop-opacity:1" />
+           <stop offset="50%" style="stop-color:#FCD116;stop-opacity:1" />
+           <stop offset="50%" style="stop-color:#003893;stop-opacity:1" />
+           <stop offset="75%" style="stop-color:#003893;stop-opacity:1" />
+           <stop offset="75%" style="stop-color:#CE1126;stop-opacity:1" />
+           <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
+          </lineargradient>
+         </defs> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlagFooter)" stroke="#FCD116" stroke-width="2.5" />
+        </svg><span class="font-display text-xl font-black text-yellow-400">Aqui vivo</span>
+       </div>
+       <p class="text-blue-200 text-sm leading-relaxed">Nauczycielka hiszpańskiego i polskiego w Let's Talk Poznań. Pomogę Ci przestać bać się mówić 🌸🤍</p>
+      </div>
+      <div>
+       <h4 class="font-bold mb-4 text-yellow-400">Usługi</h4>
+       <ul class="space-y-2 text-blue-200 text-sm">
+        <li><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="hover:text-yellow-400 transition-colors">Kurs Polskiego</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Ayuda.html" class="hover:text-yellow-400 transition-colors">Pomoc z Formalnościami</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Traducciones.html" class="hover:text-yellow-400 transition-colors">Tłumaczenia</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Clases.html" class="hover:text-yellow-400 transition-colors">Zajęcia Grupowe</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="hover:text-yellow-400 transition-colors">Polski Biznesowy</a></li>
+       </ul>
+      </div>
+      <div>
+       <h4 class="font-bold mb-4 text-yellow-400">Zasoby</h4>
+       <ul class="space-y-2 text-blue-200 text-sm">
+        <li><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="hover:text-yellow-400 transition-colors">E-booki</a></li>
+        <li><a href="#inicio" class="hover:text-yellow-400 transition-colors">O Mnie</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Blog.html" class="hover:text-yellow-400 transition-colors">Blog</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/FAQ.html" class="hover:text-yellow-400 transition-colors">FAQ</a></li>
+       </ul>
+      </div>
+      <div>
+       <h4 class="font-bold mb-4 text-yellow-400">Informacje Prawne</h4>
+       <ul class="space-y-2 text-blue-200 text-sm">
+        <li><a href="https://aquivivo.github.io/aquivivo/Privacidad.html" class="hover:text-yellow-400 transition-colors">Polityka Prywatności</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Condiciones.html" class="hover:text-yellow-400 transition-colors">Regulamin</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Cookies.html" class="hover:text-yellow-400 transition-colors">Cookies</a></li>
+       </ul>
+      </div>
+     </div>
+     <div class="border-t border-blue-700 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-blue-200 text-sm">© 2026 Aqui vivo. Wszelkie prawa zastrzeżone.</p>
+      <p class="text-blue-200 text-sm">Stworzone z <span class="text-red-500">❤️</span> w Poznaniu, Polska</p>
+     </div>
+    </div>
+   </footer>
+  </div>
+  <script>
+    const contactForm = document.getElementById('contact-form');
+    const formMessage = document.getElementById('form-message');
+    
+    if (contactForm) {
+      contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        formMessage.textContent = 'Wiadomość wysłana! Skontaktuję się z Tobą wkrótce 😊';
+        formMessage.className = 'text-green-600 bg-green-50 p-4 rounded-xl font-bold';
+        formMessage.classList.remove('hidden');
+        
+        contactForm.reset();
+        
+        setTimeout(() => {
+          formMessage.classList.add('hidden');
+        }, 5000);
+      });
+    }
+    
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c19e9f2c63beecf',t:'MTc2OTAzMTAzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
