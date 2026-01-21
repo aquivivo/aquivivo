@@ -246,7 +246,17 @@
     <div class="max-w-7xl mx-auto px-6 py-5">
      <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
-       <div class="w-14 h-14 rounded-2xl gradient-colombia shadow-xl"></div><span class="font-display text-2xl font-bold text-white">Aqui Vivo</span>
+       <svg class="w-14 h-14 drop-shadow-xl" viewbox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs>
+         <lineargradient id="colombiaFlag" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#FCD116;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#FCD116;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#003893;stop-opacity:1" />
+          <stop offset="75%" style="stop-color:#003893;stop-opacity:1" />
+          <stop offset="75%" style="stop-color:#CE1126;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
+         </lineargradient>
+        </defs> <!-- Poland map - very detailed accurate shape --> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlag)" stroke="#FCD116" stroke-width="2.5" />
+       </svg><span class="font-display text-2xl font-bold text-white">Aqui Vivo</span>
       </div>
       <div class="hidden md:flex items-center gap-8"><a href="#inicio" class="text-white hover:text-yellow-400 font-semibold transition-colors">Inicio</a> <a href="#programa" class="text-white hover:text-yellow-400 font-semibold transition-colors">Programa</a> <a href="#servicios" class="text-white hover:text-yellow-400 font-semibold transition-colors">Servicios</a> <a href="#ebooks" class="text-white hover:text-yellow-400 font-semibold transition-colors">E-books</a> <a href="#contacto" class="text-white hover:text-yellow-400 font-semibold transition-colors">Contacto</a>
       </div>
@@ -266,8 +276,33 @@
       </div>
      </div>
      <div class="text-center space-y-10">
-      <div class="text-9xl floating">
-       ��������🏫
+      <div class="floating mx-auto">
+       <svg class="w-72 h-72 mx-auto drop-shadow-2xl" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><!-- Colombian Coffee Cup with steam --> <defs>
+         <lineargradient id="cupGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+         </lineargradient>
+         <lineargradient id="coffeeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#6F4E37;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#3E2723;stop-opacity:1" />
+         </lineargradient>
+        </defs> <!-- Sombrero Vueltiao (Colombian hat) in background --> <ellipse cx="100" cy="55" rx="70" ry="15" fill="#FCD116" opacity="0.3" /> <ellipse cx="100" cy="55" rx="60" ry="12" fill="#003893" opacity="0.3" /> <ellipse cx="100" cy="55" rx="50" ry="10" fill="#FCD116" opacity="0.3" /> <rect x="85" y="55" width="30" height="25" rx="5" fill="#FCD116" opacity="0.3" /> <!-- Coffee cup --> <path d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z" fill="url(#cupGradient)" stroke="#654321" stroke-width="2" /> <!-- Coffee liquid --> <ellipse cx="100" cy="120" rx="35" ry="8" fill="url(#coffeeGradient)" /> <!-- Cup handle --> <path d="M 140 130 Q 155 130 155 145 Q 155 160 140 160" fill="none" stroke="url(#cupGradient)" stroke-width="8" stroke-linecap="round" /> <!-- Colombian flag colors on cup --> <rect x="70" y="135" width="60" height="8" fill="#FCD116" opacity="0.6" rx="2" /> <rect x="70" y="145" width="60" height="5" fill="#003893" opacity="0.6" rx="1" /> <rect x="70" y="152" width="60" height="5" fill="#CE1126" opacity="0.6" rx="1" /> <!-- Steam rising (animated) --> <path d="M 85 110 Q 80 95 85 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
+         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85" dur="2s" repeatcount="indefinite" />
+        </path> <path d="M 100 108 Q 100 90 105 80" fill="none" stroke="#FCD116" stroke-width="4" stroke-linecap="round" opacity="0.8">
+         <animate attributename="opacity" values="0.8;0.4;0.8" dur="2.5s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80" dur="2.5s" repeatcount="indefinite" />
+        </path> <path d="M 115 110 Q 120 95 115 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
+         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2.2s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85" dur="2.2s" repeatcount="indefinite" />
+        </path> <!-- Coffee beans decoration --> <ellipse cx="50" cy="140" rx="8" ry="10" fill="#3E2723" transform="rotate(-20 50 140)">
+         <animate attributename="opacity" values="1;0.7;1" dur="3s" repeatcount="indefinite" />
+        </ellipse> <path d="M 50 135 Q 50 140 50 145" stroke="#654321" stroke-width="1.5" /> <ellipse cx="150" cy="135" rx="8" ry="10" fill="#3E2723" transform="rotate(20 150 135)">
+         <animate attributename="opacity" values="0.7;1;0.7" dur="3s" repeatcount="indefinite" />
+        </ellipse> <path d="M 150 130 Q 150 135 150 140" stroke="#654321" stroke-width="1.5" /> <!-- Book pages representing learning --> <rect x="70" y="175" width="60" height="8" fill="#FCD116" rx="1" opacity="0.9" /> <rect x="75" y="178" width="50" height="8" fill="#FFFFFF" rx="1" opacity="0.8" /> <rect x="80" y="181" width="40" height="8" fill="#FCD116" rx="1" opacity="0.7" /> <!-- Small heart connecting cultures --> <path d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z" fill="#CE1126" opacity="0.8">
+         <animate attributename="transform" values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)" dur="1.5s" repeatcount="indefinite" />
+        </path>
+       </svg>
       </div><!-- Stats -->
       <div class="grid grid-cols-3 gap-6">
        <div class="card-white transform hover:scale-105 transition-transform">
@@ -345,10 +380,10 @@
        <div class="flex items-center gap-6 pt-6">
         <div class="flex -space-x-4">
          <div class="w-16 h-16 rounded-full bg-yellow-400 flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
-          👨
+          👩
          </div>
          <div class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
-          🙋‍♂️
+          👨‍♂️
          </div>
          <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl border-4 border-blue-900 shadow-xl">
           🙋‍♀️
@@ -379,7 +414,7 @@
        <div class="space-y-6 mt-12">
         <div class="card-red accent-red">
          <div class="text-5xl mb-4">
-          ���
+          ⚡
          </div>
          <h4 class="font-bold text-lg text-white mb-3">Resultados Rápidos</h4>
          <p class="text-white">Ve tu progreso semana tras semana</p>
@@ -415,14 +450,14 @@
         </div>
         <h3 class="font-display text-lg font-black text-blue-900">Fundamentos</h3>
         <ul class="space-y-2 text-blue-900 text-left text-sm">
-         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">���</span> <span>Pronunciación desde el español</span></li>
+         <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Pronunciación desde el español</span></li>
          <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Gramática básica explicada</span></li>
          <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Vocabulario esencial cotidiano</span></li>
          <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span>Situaciones: tiendas, transporte</span></li>
         </ul>
         <div class="price-tag text-lg py-2">
          150 PLN<span class="text-xs font-semibold">/hora</span>
-        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" target="_blank" rel="noopener noreferrer" class="btn-red w-full text-sm"> Ver Más Detalles </a>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-red w-full text-sm"> Ver Más Detalles </a>
        </div>
       </div>
       <div class="card-white relative border-4 border-yellow-400">
@@ -444,7 +479,7 @@
         </ul>
         <div class="price-tag text-lg py-2">
          180 PLN<span class="text-xs font-semibold">/hora</span>
-        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" target="_blank" rel="noopener noreferrer" class="btn-yellow w-full text-sm"> Ver Más Detalles </a>
+        </div><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="btn-yellow w-full text-sm"> Ver Más Detalles </a>
        </div>
       </div>
       <div class="card-red">
@@ -543,11 +578,11 @@
        </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-xs"> Ver Contenido </a>
       </div>
       <div class="card-white text-center space-y-3">
-       <div class="w-16 h-20 rounded-2xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center mx-auto shadow-xl"><span class="text-3xl">🗣️</span>
+       <div class="w-16 h-20 rounded-2xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center mx-auto shadow-xl"><span class="text-3xl">💬</span>
        </div>
        <h3 class="font-display text-base font-black text-blue-900 leading-tight">Frases<br>
         del Día a Día</h3>
-       <p class="text-gray-700 text-xs leading-tight">500 Frases Esenciales. Las frases m����s útiles para tu vida diaria.</p>
+       <p class="text-gray-700 text-xs leading-tight">500 Frases Esenciales. Las frases más útiles para tu vida diaria.</p>
        <div class="price-tag text-lg py-2">
         39 PLN
        </div><a href="https://aquivivo.github.io/aquivivo/Ebooks.html" class="btn-red w-full text-xs"> Ver Contenido </a>
@@ -607,7 +642,7 @@
           María L.
          </div>
          <div class="text-gray-600">
-          ��🇪 Venezuela
+          🇻🇪 Venezuela
          </div>
         </div>
        </div>
@@ -626,7 +661,7 @@
           Andrés R.
          </div>
          <div class="text-gray-600">
-          🇵🇪 Per����
+          🇵🇪 Perú
          </div>
         </div>
        </div>
@@ -663,7 +698,7 @@
           WhatsApp
          </div>
          <div class="font-bold text-white text-lg">
-          +48 123 456 789
+          +48 669 69 71 51
          </div>
         </div>
        </div>
@@ -677,22 +712,22 @@
          </div>
         </div>
        </div>
-       <div class="flex items-center gap-5 text-white"><a href="https://www.instagram.com/sacariooo/" class="hover:scale-110 transition-transform">
+       <div class="flex items-center gap-5 text-white"><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform">
          <svg class="w-8 h-8 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
          </svg></a>
         <div>
          <div class="text-sm text-blue-300 font-bold">
           Instagram
-         </div><a href="https://www.instagram.com/sacariooo/" class="font-bold text-white text-lg hover:text-yellow-400 transition-colors">@sacariooo</a>
+         </div><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-lg hover:text-yellow-400 transition-colors">@sacariooo</a>
         </div>
        </div>
-       <div class="flex items-center gap-5 text-white"><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" class="hover:scale-110 transition-transform">
+       <div class="flex items-center gap-5 text-white"><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform">
          <svg class="w-8 h-8 text-white hover:text-yellow-400 transition-colors" fill="currentColor" viewbox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
          </svg></a>
         <div>
          <div class="text-sm text-blue-300 font-bold">
           TikTok
-         </div><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" class="font-bold text-white text-lg hover:text-yellow-400 transition-colors">@latip0l</a>
+         </div><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="font-bold text-white text-lg hover:text-yellow-400 transition-colors">@latip0l</a>
         </div>
        </div>
       </div><!-- Right: Contact Form -->
@@ -716,14 +751,24 @@
      <div class="grid md:grid-cols-4 gap-6 mb-5">
       <div class="space-y-3">
        <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-xl gradient-colombia shadow-lg"></div><span class="font-display text-lg font-black text-yellow-400">Aqui Vivo</span>
+        <svg class="w-8 h-8 drop-shadow-lg" viewbox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs>
+          <lineargradient id="colombiaFlagFooter" x1="0%" y1="0%" x2="0%" y2="100%">
+           <stop offset="0%" style="stop-color:#FCD116;stop-opacity:1" />
+           <stop offset="50%" style="stop-color:#FCD116;stop-opacity:1" />
+           <stop offset="50%" style="stop-color:#003893;stop-opacity:1" />
+           <stop offset="75%" style="stop-color:#003893;stop-opacity:1" />
+           <stop offset="75%" style="stop-color:#CE1126;stop-opacity:1" />
+           <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
+          </lineargradient>
+         </defs> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlagFooter)" stroke="#FCD116" stroke-width="2.5" />
+        </svg><span class="font-display text-lg font-black text-yellow-400">Aqui Vivo</span>
        </div>
        <p class="text-blue-200 text-xs leading-relaxed">Profesora de español y polaco en Poznań. Ayudo a hispanohablantes y a estudiantes polacos 🌎</p>
       </div>
       <div>
        <h4 class="font-bold mb-3 text-yellow-400 text-sm">Servicios</h4>
        <ul class="space-y-1.5 text-blue-200 text-xs">
-        <li><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="hover:text-yellow-400 transition-colors">Clases de Polaco</a></li>
+        <li><a href="https://aquivivo.github.io/aquivivo/Polaco.html" class="hover:text-yellow-400 transition-colors">Curso de Español</a></li>
         <li><a href="https://aquivivo.github.io/aquivivo/Ayuda.html" class="hover:text-yellow-400 transition-colors">Ayuda con Trámites</a></li>
         <li><a href="https://aquivivo.github.io/aquivivo/Traducciones.html" class="hover:text-yellow-400 transition-colors">Traducciones</a></li>
         <li><a href="https://aquivivo.github.io/aquivivo/Clases.html" class="hover:text-yellow-400 transition-colors">Clases Grupales</a></li>
@@ -790,5 +835,5 @@
       });
     });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c19376ba6082d19',t:'MTc2OTAyMzcyNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c19579245862d19',t:'MTc2OTAyNTA0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
