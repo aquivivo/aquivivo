@@ -1,0 +1,2007 @@
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profesora de Español y Polaco</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+      background: #003893;
+    }
+    .font-display { font-family: 'Playfair Display', serif; }
+    .font-body { font-family: 'DM Sans', sans-serif; }
+    
+    .gradient-colombia {
+      background: linear-gradient(135deg, #FCD116 0%, #FCD116 33%, #003893 33%, #003893 66%, #CE1126 66%, #CE1126 100%);
+    }
+    
+    .gradient-accent {
+      background: linear-gradient(135deg, #FCD116 0%, #F5A623 100%);
+    }
+    
+    .pattern-bg {
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(252, 209, 22, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(206, 17, 38, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(252, 209, 22, 0.08) 0%, transparent 30%);
+      background-color: #003893;
+    }
+    
+    .card-hover {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 50px -12px rgba(0, 56, 147, 0.25);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #FCD116 0%, #F5A623 100%);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(252, 209, 22, 0.4);
+    }
+    
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #FCD116;
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
+    }
+    
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .service-icon {
+      transition: all 0.3s ease;
+    }
+    .card-hover:hover .service-icon {
+      transform: scale(1.1);
+    }
+    
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full font-body bg-blue-900 text-white">
+  <div class="w-full h-full overflow-auto"><!-- Navigation -->
+   <nav class="fixed top-0 left-0 right-0 z-50 bg-blue-900/95 backdrop-blur-md shadow-lg border-b-2 border-yellow-400">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+     <div class="flex items-center justify-between"><button onclick="navigateTo('home')" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+       <div class="w-10 h-10 rounded-full gradient-colombia"></div><span class="font-display text-xl font-semibold text-white">Aqui Vivo</span> </button>
+      <div class="hidden md:flex items-center gap-8"><a href="#inicio" onclick="navigateTo('home'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Inicio</a> <a href="#programa" onclick="scrollToSection('programa'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Programa</a> <a href="#servicios" onclick="scrollToSection('servicios'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Servicios</a> <a href="#ebooks" onclick="scrollToSection('ebooks'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">E-books</a> <a href="#contacto" onclick="scrollToSection('contacto'); event.preventDefault();" class="nav-link text-yellow-100 hover:text-yellow-400 font-medium">Contacto</a>
+      </div><button id="mobile-menu-btn" class="md:hidden p-2 text-yellow-400">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+       </svg></button>
+     </div>
+    </div><!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-blue-900 border-t border-yellow-400">
+     <div class="px-6 py-4 space-y-3"><a href="#inicio" onclick="navigateTo('home'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">Inicio</a> <a href="#programa" onclick="scrollToSection('programa'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">Programa</a> <a href="#servicios" onclick="scrollToSection('servicios'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">Servicios</a> <a href="#ebooks" onclick="scrollToSection('ebooks'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">E-books</a> <a href="#contacto" onclick="scrollToSection('contacto'); event.preventDefault();" class="block text-yellow-100 hover:text-yellow-400 font-medium py-2">Contacto</a>
+     </div>
+    </div>
+   </nav><!-- HOME PAGE -->
+   <div id="page-home" class="page active"><!-- Hero Section -->
+    <section id="inicio" class="relative min-h-screen flex items-center pattern-bg overflow-hidden"><!-- Decorative Elements -->
+     <div class="absolute top-20 right-10 w-64 h-64 floating opacity-30">
+      <svg viewbox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 20C100 20 120 60 150 80C180 100 180 140 150 160C120 180 80 180 50 160C20 140 20 100 50 80C80 60 100 20 100 20Z" fill="#FCD116" /> <circle cx="100" cy="100" r="20" fill="#CE1126" /> <circle cx="100" cy="100" r="8" fill="white" />
+      </svg>
+     </div>
+     <div class="absolute bottom-40 left-10 w-48 h-48 floating opacity-20" style="animation-delay: -2s;">
+      <svg viewbox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="100" rx="80" ry="40" fill="#CE1126" transform="rotate(45 100 100)" /> <ellipse cx="100" cy="100" rx="80" ry="40" fill="#FCD116" transform="rotate(-45 100 100)" opacity="0.7" />
+      </svg>
+     </div>
+     <div class="max-w-7xl mx-auto px-6 pt-32 pb-20 grid lg:grid-cols-2 gap-12 items-center">
+      <div class="space-y-8">
+       <div class="inline-flex items-center gap-2 bg-yellow-400 text-blue-900 px-4 py-2 rounded-full text-sm font-bold"><span>🇨🇴</span> <span>Para latinos en Polonia</span> <span>🇵🇱</span>
+       </div>
+       <h1 class="font-display text-5xl lg:text-6xl font-bold text-white leading-tight">Aprende Polaco<br><span class="text-yellow-400">con Alma Latina</span></h1>
+       <p class="text-xl text-yellow-50 leading-relaxed max-w-lg">Profesora certificada de español y polaco. Te ayudo a dominar el idioma y adaptarte a la vida en Polonia con un método diseñado especialmente para hispanohablantes.</p>
+       <div class="flex flex-col sm:flex-row gap-4"><button onclick="scrollToSection('contacto')" class="btn-primary px-8 py-4 rounded-full text-slate-900 font-semibold text-lg shadow-xl"> Reserva tu Clase Gratis </button> <button onclick="scrollToSection('programa')" class="px-8 py-4 rounded-full border-2 border-rose-600 text-white font-semibold text-lg hover:bg-rose-600 hover:border-rose-700 transition-all"> Ver Programa </button>
+       </div>
+       <div class="flex items-center gap-8 pt-4">
+        <div class="text-center">
+         <div class="text-3xl font-bold text-yellow-400">
+          500+
+         </div>
+         <div class="text-sm text-gray-300">
+          Estudiantes
+         </div>
+        </div>
+        <div class="w-px h-12 bg-yellow-600/30"></div>
+        <div class="text-center">
+         <div class="text-3xl font-bold text-yellow-400">
+          5 años
+         </div>
+         <div class="text-sm text-gray-300">
+          Experiencia
+         </div>
+        </div>
+        <div class="w-px h-12 bg-yellow-600/30"></div>
+        <div class="text-center">
+         <div class="flex items-center justify-center gap-1 text-3xl font-bold text-yellow-400">
+          4.9 <span class="text-yellow-400">★</span>
+         </div>
+         <div class="text-sm text-gray-300">
+          Valoración
+         </div>
+        </div>
+       </div>
+      </div><!-- Hero Illustration -->
+      <div class="relative">
+       <div class="aspect-square bg-gradient-to-br from-yellow-50 via-yellow-50 to-blue-50 rounded-3xl overflow-hidden shadow-2xl relative">
+        <svg viewbox="0 0 400 400" class="w-full h-full" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="400" fill="url(#skyGradient)" /> <defs>
+          <lineargradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+           <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+           <stop offset="100%" style="stop-color:#F0E68C;stop-opacity:1" />
+          </lineargradient>
+          <lineargradient id="wallGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+           <stop offset="0%" style="stop-color:#FFE5B4;stop-opacity:1" />
+           <stop offset="100%" style="stop-color:#F4D03F;stop-opacity:1" />
+          </lineargradient>
+         </defs> <circle cx="340" cy="60" r="35" fill="#FDB813" opacity="0.8" /> <circle cx="340" cy="60" r="28" fill="#FFEB3B" /> <ellipse cx="80" cy="50" rx="35" ry="18" fill="white" opacity="0.7" /> <ellipse cx="95" cy="55" rx="28" ry="15" fill="white" opacity="0.7" /> <ellipse cx="110" cy="50" rx="32" ry="17" fill="white" opacity="0.7" /> <rect x="40" y="120" width="320" height="280" fill="url(#wallGradient)" /> <rect x="40" y="120" width="320" height="280" fill="#F8D568" opacity="0.3" /> <line x1="40" y1="160" x2="360" y2="160" stroke="#E8C558" stroke-width="1" opacity="0.5" /> <line x1="40" y1="240" x2="360" y2="240" stroke="#E8C558" stroke-width="1" opacity="0.5" /> <line x1="40" y1="320" x2="360" y2="320" stroke="#E8C558" stroke-width="1" opacity="0.5" /> <rect x="60" y="180" width="120" height="140" fill="#8B4513" /> <rect x="65" y="185" width="110" height="130" fill="#2C3E50" /> <g stroke="#1A252F" stroke-width="3" fill="none">
+          <line x1="65" y1="240" x2="175" y2="240" />
+          <line x1="75" y1="240" x2="75" y2="315" />
+          <line x1="95" y1="240" x2="95" y2="315" />
+          <line x1="115" y1="240" x2="115" y2="315" />
+          <line x1="135" y1="240" x2="135" y2="315" />
+          <line x1="155" y1="240" x2="155" y2="315" />
+          <line x1="165" y1="240" x2="165" y2="315" />
+          <line x1="65" y1="315" x2="175" y2="315" />
+          <path d="M 75 265 Q 85 255 95 265" stroke="#1A252F" stroke-width="2" />
+          <path d="M 95 265 Q 105 255 115 265" stroke="#1A252F" stroke-width="2" />
+          <path d="M 115 265 Q 125 255 135 265" stroke="#1A252F" stroke-width="2" />
+          <path d="M 135 265 Q 145 255 155 265" stroke="#1A252F" stroke-width="2" />
+         </g> <rect x="220" y="180" width="120" height="140" fill="#8B4513" /> <rect x="225" y="185" width="110" height="130" fill="#34495E" /> <g stroke="#1A252F" stroke-width="3" fill="none">
+          <line x1="225" y1="240" x2="335" y2="240" />
+          <line x1="235" y1="240" x2="235" y2="315" />
+          <line x1="255" y1="240" x2="255" y2="315" />
+          <line x1="275" y1="240" x2="275" y2="315" />
+          <line x1="295" y1="240" x2="295" y2="315" />
+          <line x1="315" y1="240" x2="315" y2="315" />
+          <line x1="325" y1="240" x2="325" y2="315" />
+          <line x1="225" y1="315" x2="335" y2="315" />
+          <path d="M 235 265 Q 245 255 255 265" stroke="#1A252F" stroke-width="2" />
+          <path d="M 255 265 Q 265 255 275 265" stroke="#1A252F" stroke-width="2" />
+          <path d="M 275 265 Q 285 255 295 265" stroke="#1A252F" stroke-width="2" />
+          <path d="M 295 265 Q 305 255 315 265" stroke="#1A252F" stroke-width="2" />
+         </g> <circle cx="80" cy="200" r="8" fill="#E91E63" /> <circle cx="90" cy="195" r="9" fill="#EC407A" /> <circle cx="100" cy="200" r="7" fill="#F06292" /> <circle cx="85" cy="210" r="8" fill="#E91E63" /> <circle cx="95" cy="208" r="9" fill="#EC407A" /> <circle cx="105" cy="205" r="8" fill="#F06292" /> <circle cx="110" cy="198" r="7" fill="#E91E63" /> <circle cx="125" cy="200" r="8" fill="#FF6B9D" /> <circle cx="135" cy="197" r="9" fill="#FF1744" /> <circle cx="145" cy="202" r="8" fill="#F50057" /> <circle cx="130" cy="210" r="9" fill="#FF6B9D" /> <circle cx="140" cy="212" r="8" fill="#FF1744" /> <circle cx="150" cy="208" r="7" fill="#F50057" /> <circle cx="160" cy="202" r="6" fill="#FFEB3B" /> <circle cx="168" cy="200" r="6" fill="#FDD835" /> <circle cx="165" cy="210" r="6" fill="#FBC02D" /> <ellipse cx="90" cy="215" rx="4" ry="7" fill="#4CAF50" opacity="0.7" /> <ellipse cx="110" cy="213" rx="4" ry="7" fill="#66BB6A" opacity="0.7" /> <ellipse cx="130" cy="216" rx="4" ry="7" fill="#4CAF50" opacity="0.7" /> <ellipse cx="150" cy="215" rx="4" ry="7" fill="#66BB6A" opacity="0.7" /> <circle cx="240" cy="198" r="9" fill="#CE1126" /> <circle cx="250" cy="195" r="8" fill="#E91E63" /> <circle cx="260" cy="200" r="9" fill="#F06292" /> <circle cx="245" cy="208" r="8" fill="#CE1126" /> <circle cx="255" cy="210" r="9" fill="#E91E63" /> <circle cx="265" cy="206" r="8" fill="#F06292" /> <circle cx="280" cy="197" r="8" fill="#FCD116" /> <circle cx="290" cy="200" r="9" fill="#FFD54F" /> <circle cx="300" cy="198" r="8" fill="#FFEB3B" /> <circle cx="285" cy="208" r="9" fill="#FCD116" /> <circle cx="295" cy="210" r="8" fill="#FFD54F" /> <circle cx="305" cy="206" r="7" fill="#FFEB3B" /> <circle cx="315" cy="202" r="8" fill="#003893" opacity="0.8" /> <circle cx="323" cy="200" r="7" fill="#1565C0" opacity="0.8" /> <circle cx="320" cy="210" r="8" fill="#1976D2" opacity="0.8" /> <ellipse cx="250" cy="215" rx="4" ry="7" fill="#4CAF50" opacity="0.7" /> <ellipse cx="270" cy="213" rx="4" ry="7" fill="#66BB6A" opacity="0.7" /> <ellipse cx="290" cy="216" rx="4" ry="7" fill="#4CAF50" opacity="0.7" /> <ellipse cx="310" cy="215" rx="4" ry="7" fill="#66BB6A" opacity="0.7" /> <rect x="100" y="185" width="3" height="15" fill="#8B4513" /> <ellipse cx="101.5" cy="188" rx="12" ry="8" fill="#4CAF50" /> <ellipse cx="101.5" cy="192" rx="10" ry="10" fill="#66BB6A" /> <circle cx="98" cy="198" r="3" fill="#FF6B9D" /> <circle cx="105" cy="196" r="3" fill="#F06292" /> <rect x="260" y="185" width="3" height="15" fill="#8B4513" /> <ellipse cx="261.5" cy="188" rx="12" ry="8" fill="#4CAF50" /> <ellipse cx="261.5" cy="192" rx="10" ry="10" fill="#66BB6A" /> <circle cx="258" cy="198" r="3" fill="#FFEB3B" /> <circle cx="265" cy="196" r="3" fill="#FDD835" /> <rect x="85" y="250" width="70" height="50" rx="3" fill="#85C1E9" opacity="0.6" /> <rect x="245" y="250" width="70" height="50" rx="3" fill="#85C1E9" opacity="0.6" /> <rect x="85" y="250" width="70" height="50" rx="3" fill="none" stroke="#1A252F" stroke-width="3" /> <line x1="120" y1="250" x2="120" y2="300" stroke="#1A252F" stroke-width="2" /> <line x1="85" y1="275" x2="155" y2="275" stroke="#1A252F" stroke-width="2" /> <rect x="245" y="250" width="70" height="50" rx="3" fill="none" stroke="#1A252F" stroke-width="3" /> <line x1="280" y1="250" x2="280" y2="300" stroke="#1A252F" stroke-width="2" /> <line x1="245" y1="275" x2="315" y2="275" stroke="#1A252F" stroke-width="2" /> <rect x="90" y="255" width="25" height="15" fill="white" opacity="0.3" /> <rect x="250" y="255" width="25" height="15" fill="white" opacity="0.3" /> <rect x="165" y="260" width="70" height="140" rx="35" fill="#8B4513" /> <rect x="170" y="265" width="60" height="130" rx="30" fill="#654321" /> <circle cx="215" cy="330" r="4" fill="#FFD700" /> <rect x="178" y="275" width="44" height="50" rx="20" fill="#7D4A2A" opacity="0.5" /> <rect x="178" y="335" width="44" height="50" rx="20" fill="#7D4A2A" opacity="0.5" /> <rect x="35" y="250" width="4" height="100" fill="#2C3E50" /> <circle cx="37" cy="255" r="8" fill="#FFD700" /> <circle cx="37" cy="255" r="6" fill="#FFF9C4" opacity="0.8" /> <rect x="0" y="360" width="400" height="40" fill="#95A5A6" /> <rect x="0" y="365" width="400" height="3" fill="#7F8C8D" /> <rect x="0" y="385" width="400" height="3" fill="#7F8C8D" /> <rect x="40" y="115" width="320" height="8" fill="#A0522D" /> <rect x="40" y="115" width="320" height="4" fill="#8B4513" />
+        </svg>
+        <div class="absolute top-4 right-4 text-yellow-400 opacity-30 text-4xl">
+         ✦
+        </div>
+        <div class="absolute bottom-4 left-4 text-blue-600 opacity-20 text-4xl">
+         ✦
+        </div>
+       </div>
+       <div class="absolute bottom-8 right-8 w-28 h-28 rounded-full bg-gradient-to-br from-yellow-400 to-red-500 flex items-center justify-center shadow-xl border-4 border-white"><span class="text-5xl">👩‍🏫</span>
+       </div>
+      </div>
+     </div>
+    </section><!-- About Section -->
+    <section id="about" class="py-24 bg-gradient-to-b from-blue-900 to-blue-800">
+     <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+       <div class="order-2 lg:order-1">
+        <div class="grid grid-cols-2 gap-4">
+         <div class="space-y-4">
+          <div class="bg-yellow-400 rounded-2xl p-6 card-hover border-2 border-yellow-300">
+           <div class="text-4xl mb-3">
+            🎓
+           </div>
+           <h4 class="font-semibold text-blue-900">Certificada</h4>
+           <p class="text-sm text-blue-800">Títulos oficiales en enseñanza de idiomas</p>
+          </div>
+          <div class="bg-white rounded-2xl p-6 card-hover border-2 border-blue-300">
+           <div class="text-4xl mb-3">
+            🌎
+           </div>
+           <h4 class="font-semibold text-blue-900">Bicultural</h4>
+           <p class="text-sm text-blue-700">Entiendo ambas culturas perfectamente</p>
+          </div>
+         </div>
+         <div class="space-y-4 mt-8">
+          <div class="bg-red-500 rounded-2xl p-6 card-hover border-2 border-red-400">
+           <div class="text-4xl mb-3">
+            💡
+           </div>
+           <h4 class="font-semibold text-white">Método Propio</h4>
+           <p class="text-sm text-red-50">Programa diseñado para latinos</p>
+          </div>
+          <div class="bg-white rounded-2xl p-6 card-hover border-2 border-yellow-300">
+           <div class="text-4xl mb-3">
+            📄
+           </div>
+           <h4 class="font-semibold text-blue-900">Apoyo Integral</h4>
+           <p class="text-sm text-blue-700">Te ayudo con trámites y documentos</p>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="order-1 lg:order-2 space-y-6">
+        <div class="inline-block px-4 py-1 bg-yellow-400 text-blue-900 rounded-full text-sm font-bold">
+         Sobre Mí
+        </div>
+        <h2 class="font-display text-4xl lg:text-5xl font-bold text-white">¿Por qué aprender<br>
+         conmigo?</h2>
+        <p class="text-lg text-yellow-50 leading-relaxed">Como latina viviendo en Polonia, sé exactamente los desafíos que enfrentas. Mi método combina gramática práctica, situaciones reales de la vida cotidiana y el contexto cultural que necesitas para integrarte exitosamente.</p>
+        <p class="text-lg text-yellow-50 leading-relaxed">No solo te enseño polaco — te preparo para tu nueva vida aquí. Desde pedir un café hasta resolver trámites en la oficina de extranjería.</p>
+        <div class="flex items-center gap-4 pt-4">
+         <div class="flex -space-x-3">
+          <div class="w-12 h-12 rounded-full bg-yellow-400 border-2 border-white flex items-center justify-center text-xl">
+           👨
+          </div>
+          <div class="w-12 h-12 rounded-full bg-white border-2 border-yellow-400 flex items-center justify-center text-xl">
+           🙋‍♂️
+          </div>
+          <div class="w-12 h-12 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-xl">
+           🙋‍♀️
+          </div>
+         </div>
+         <p class="text-yellow-100">Únete a <strong class="text-yellow-400">500+ estudiantes</strong> que ya dominan el polaco</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Program Section -->
+    <section id="programa" class="py-24 bg-blue-50">
+     <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+       <div class="inline-block px-4 py-1 bg-yellow-400 text-blue-900 rounded-full text-sm font-bold mb-4">
+        Mi Programa
+       </div>
+       <h2 class="font-display text-4xl lg:text-5xl font-bold text-white mb-6">Método Diseñado para Ti</h2>
+       <p class="text-lg text-yellow-100">Un programa estructurado que te lleva desde cero hasta la fluidez, con materiales creados específicamente para hispanohablantes.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+       <div class="bg-yellow-400 rounded-3xl p-8 shadow-lg card-hover border-4 border-yellow-300 cursor-pointer" onclick="navigateTo('basico')">
+        <div class="w-16 h-16 rounded-2xl bg-yellow-500 flex items-center justify-center mb-6 service-icon"><span class="text-3xl">🌱</span>
+        </div>
+        <div class="text-sm font-bold text-yellow-900 mb-2">
+         Nivel A1-A2
+        </div>
+        <h3 class="font-display text-2xl font-bold text-blue-900 mb-4">Fundamentos</h3>
+        <ul class="space-y-3 text-blue-900 mb-6">
+         <li class="flex items-start gap-2"><span class="text-red-600 mt-1 font-bold">✓</span> <span>Pronunciación desde el español</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 mt-1 font-bold">✓</span> <span>Gramática básica explicada en tu idioma</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 mt-1 font-bold">✓</span> <span>Vocabulario esencial cotidiano</span></li>
+         <li class="flex items-start gap-2"><span class="text-red-600 mt-1 font-bold">✓</span> <span>Situaciones: tiendas, transporte, médico</span></li>
+        </ul>
+        <div class="text-2xl font-bold text-blue-900">
+         150 PLN<span class="text-sm font-normal text-blue-700">/hora</span>
+        </div><button class="mt-4 w-full bg-blue-900 text-white py-3 rounded-xl font-semibold hover:bg-blue-800 transition-colors"> Ver Más Detalles </button>
+       </div>
+       <div class="bg-white rounded-3xl p-8 shadow-xl card-hover border-4 border-yellow-400 scale-105 relative cursor-pointer" onclick="navigateTo('intermedio')">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+         Más Popular
+        </div>
+        <div class="w-16 h-16 rounded-2xl bg-blue-900 flex items-center justify-center mb-6 service-icon"><span class="text-3xl">🚀</span>
+        </div>
+        <div class="text-sm font-bold text-blue-900 mb-2">
+         Nivel B1-B2
+        </div>
+        <h3 class="font-display text-2xl font-bold text-blue-900 mb-4">Intermedio</h3>
+        <ul class="space-y-3 text-blue-800 mb-6">
+         <li class="flex items-start gap-2"><span class="text-yellow-500 mt-1 font-bold">✓</span> <span>Conversación fluida</span></li>
+         <li class="flex items-start gap-2"><span class="text-yellow-500 mt-1 font-bold">✓</span> <span>Gramática avanzada</span></li>
+         <li class="flex items-start gap-2"><span class="text-yellow-500 mt-1 font-bold">✓</span> <span>Polaco laboral y profesional</span></li>
+         <li class="flex items-start gap-2"><span class="text-yellow-500 mt-1 font-bold">✓</span> <span>Preparación exámenes oficiales</span></li>
+        </ul>
+        <div class="text-2xl font-bold text-blue-900">
+         180 PLN<span class="text-sm font-normal text-blue-700">/hora</span>
+        </div><button class="mt-4 w-full bg-blue-900 text-white py-3 rounded-xl font-semibold hover:bg-blue-800 transition-colors"> Ver Más Detalles </button>
+       </div>
+       <div class="bg-red-500 rounded-3xl p-8 shadow-lg card-hover border-4 border-red-400 cursor-pointer" onclick="navigateTo('avanzado')">
+        <div class="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center mb-6 service-icon"><span class="text-3xl">👑</span>
+        </div>
+        <div class="text-sm font-bold text-red-100 mb-2">
+         Nivel C1-C2
+        </div>
+        <h3 class="font-display text-2xl font-bold text-white mb-4">Avanzado</h3>
+        <ul class="space-y-3 text-white mb-6">
+         <li class="flex items-start gap-2"><span class="text-yellow-300 mt-1 font-bold">✓</span> <span>Perfeccionamiento del idioma</span></li>
+         <li class="flex items-start gap-2"><span class="text-yellow-300 mt-1 font-bold">✓</span> <span>Polaco académico y especializado</span></li>
+         <li class="flex items-start gap-2"><span class="text-yellow-300 mt-1 font-bold">✓</span> <span>Expresiones idiomáticas y jerga</span></li>
+         <li class="flex items-start gap-2"><span class="text-yellow-300 mt-1 font-bold">✓</span> <span>Preparación ciudadanía</span></li>
+        </ul>
+        <div class="text-2xl font-bold text-white">
+         200 PLN<span class="text-sm font-normal text-red-100">/hora</span>
+        </div><button class="mt-4 w-full bg-white text-red-600 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors"> Ver Más Detalles </button>
+       </div>
+      </div>
+     </div>
+    </section><!-- Services Section -->
+    <section id="servicios" class="py-24 bg-gradient-to-b from-blue-900 to-blue-800">
+     <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+       <div class="inline-block px-4 py-1 bg-red-500 text-white rounded-full text-sm font-bold mb-4">
+        Servicios Adicionales
+       </div>
+       <h2 class="font-display text-4xl lg:text-5xl font-bold text-white mb-6">Más que Clases de Idioma</h2>
+       <p class="text-lg text-yellow-100">Te acompaño en todo tu proceso de adaptación a Polonia con servicios diseñados para facilitar tu vida.</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+       <div class="group bg-yellow-400 rounded-2xl p-6 card-hover border-2 border-yellow-300 cursor-pointer" onclick="navigateTo('tramites')">
+        <div class="w-14 h-14 rounded-xl bg-yellow-500 flex items-center justify-center mb-4 service-icon"><span class="text-2xl">📋</span>
+        </div>
+        <h3 class="font-semibold text-lg text-blue-900 mb-2">Ayuda con Trámites</h3>
+        <p class="text-blue-800 text-sm mb-4">Acompañamiento en oficinas, traducción de documentos oficiales, asesoría migratoria.</p>
+        <div class="text-blue-900 font-bold mb-3">
+         Desde 100 PLN
+        </div><button class="w-full bg-blue-900 text-white py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors text-sm"> Saber Más </button>
+       </div>
+       <div class="group bg-white rounded-2xl p-6 card-hover border-2 border-yellow-400 cursor-pointer" onclick="navigateTo('traducciones')">
+        <div class="w-14 h-14 rounded-xl bg-blue-900 flex items-center justify-center mb-4 service-icon"><span class="text-2xl">📝</span>
+        </div>
+        <h3 class="font-semibold text-lg text-blue-900 mb-2">Traducciones</h3>
+        <p class="text-blue-800 text-sm mb-4">Traducciones español-polaco de documentos, contratos, certificados.</p>
+        <div class="text-blue-900 font-bold mb-3">
+         Desde 50 PLN/página
+        </div><button class="w-full bg-blue-900 text-white py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors text-sm"> Saber Más </button>
+       </div>
+       <div class="group bg-red-500 rounded-2xl p-6 card-hover border-2 border-red-400 cursor-pointer" onclick="navigateTo('grupales')">
+        <div class="w-14 h-14 rounded-xl bg-red-600 flex items-center justify-center mb-4 service-icon"><span class="text-2xl">👥</span>
+        </div>
+        <h3 class="font-semibold text-lg text-white mb-2">Clases Grupales</h3>
+        <p class="text-red-50 text-sm mb-4">Grupos pequeños de máximo 5 personas. Aprende con otros latinos.</p>
+        <div class="text-white font-bold mb-3">
+         80 PLN/persona
+        </div><button class="w-full bg-white text-red-600 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-sm"> Saber Más </button>
+       </div>
+       <div class="group bg-white rounded-2xl p-6 card-hover border-2 border-blue-900 cursor-pointer" onclick="navigateTo('empresarial')">
+        <div class="w-14 h-14 rounded-xl bg-blue-900 flex items-center justify-center mb-4 service-icon"><span class="text-2xl">💼</span>
+        </div>
+        <h3 class="font-semibold text-lg text-blue-900 mb-2">Polaco Empresarial</h3>
+        <p class="text-blue-800 text-sm mb-4">Clases para empresas con empleados hispanohablantes.</p>
+        <div class="text-blue-900 font-bold mb-3">
+         Precio a consultar
+        </div><button class="w-full bg-blue-900 text-white py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors text-sm"> Saber Más </button>
+       </div>
+      </div>
+     </div>
+    </section><!-- E-books Section -->
+    <section id="ebooks" class="py-24 bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 text-white">
+     <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+       <div class="inline-block px-4 py-1 bg-yellow-400/20 text-yellow-300 rounded-full text-sm font-medium mb-4">
+        Recursos Digitales
+       </div>
+       <h2 class="font-display text-4xl lg:text-5xl font-bold mb-6">Mis E-books</h2>
+       <p class="text-lg text-blue-200">Material exclusivo creado para hispanohablantes. Aprende a tu ritmo con guías prácticas y ejercicios.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+       <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 card-hover border border-white/20 cursor-pointer" onclick="navigateTo('ebook1')">
+        <div class="aspect-[3/4] bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl mb-6 flex items-center justify-center shadow-lg">
+         <div class="text-center text-slate-900 p-6">
+          <div class="text-5xl mb-4">
+           📖
+          </div>
+          <div class="font-display font-bold text-lg">
+           Polaco Básico
+          </div>
+          <div class="text-sm opacity-75">
+           para Latinos
+          </div>
+         </div>
+        </div>
+        <h3 class="font-display text-xl font-bold mb-2">Polaco Básico para Latinos</h3>
+        <p class="text-blue-200 text-sm mb-4">100 páginas con vocabulario esencial, ejercicios y audios.</p>
+        <div class="flex items-center justify-between mb-4">
+         <div class="text-2xl font-bold text-yellow-400">
+          49 PLN
+         </div><button class="px-4 py-2 bg-yellow-400 text-slate-900 rounded-full font-semibold text-sm hover:bg-yellow-300 transition-colors"> Ver Contenido </button>
+        </div>
+       </div>
+       <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 card-hover border border-white/20 cursor-pointer" onclick="navigateTo('ebook2')">
+        <div class="aspect-[3/4] bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl mb-6 flex items-center justify-center shadow-lg">
+         <div class="text-center text-white p-6">
+          <div class="text-5xl mb-4">
+           🗣️
+          </div>
+          <div class="font-display font-bold text-lg">
+           Frases
+          </div>
+          <div class="text-sm opacity-75">
+           del Día a Día
+          </div>
+         </div>
+        </div>
+        <h3 class="font-display text-xl font-bold mb-2">500 Frases Esenciales</h3>
+        <p class="text-blue-200 text-sm mb-4">Las frases más útiles para tu vida diaria en Polonia.</p>
+        <div class="flex items-center justify-between mb-4">
+         <div class="text-2xl font-bold text-yellow-400">
+          39 PLN
+         </div><button class="px-4 py-2 bg-yellow-400 text-slate-900 rounded-full font-semibold text-sm hover:bg-yellow-300 transition-colors"> Ver Contenido </button>
+        </div>
+       </div>
+       <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 card-hover border border-white/20 cursor-pointer" onclick="navigateTo('ebook3')">
+        <div class="aspect-[3/4] bg-gradient-to-br from-red-400 to-red-600 rounded-2xl mb-6 flex items-center justify-center shadow-lg">
+         <div class="text-center text-white p-6">
+          <div class="text-5xl mb-4">
+           📄
+          </div>
+          <div class="font-display font-bold text-lg">
+           Guía de
+          </div>
+          <div class="text-sm opacity-75">
+           Trámites
+          </div>
+         </div>
+        </div>
+        <h3 class="font-display text-xl font-bold mb-2">Guía de Trámites en Polonia</h3>
+        <p class="text-blue-200 text-sm mb-4">Todo lo que necesitas saber sobre documentos y oficinas.</p>
+        <div class="flex items-center justify-between mb-4">
+         <div class="text-2xl font-bold text-yellow-400">
+          59 PLN
+         </div><button class="px-4 py-2 bg-yellow-400 text-slate-900 rounded-full font-semibold text-sm hover:bg-yellow-300 transition-colors"> Ver Contenido </button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Testimonials -->
+    <section class="py-24 bg-blue-800">
+     <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+       <div class="inline-block px-4 py-1 bg-yellow-400 text-blue-900 rounded-full text-sm font-bold mb-4">
+        Testimonios
+       </div>
+       <h2 class="font-display text-4xl lg:text-5xl font-bold text-white">Lo que Dicen mis Estudiantes</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+       <div class="bg-white rounded-2xl p-8 shadow-lg card-hover border-2 border-yellow-400">
+        <div class="flex items-center gap-1 text-yellow-500 mb-4 text-xl"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        </div>
+        <p class="text-blue-900 mb-6">"Después de 3 meses ya puedo comunicarme en el trabajo. El método es perfecto porque explica todo desde el español."</p>
+        <div class="flex items-center gap-3">
+         <div class="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center text-2xl">
+          👨
+         </div>
+         <div>
+          <div class="font-semibold text-blue-900">
+           Carlos M.
+          </div>
+          <div class="text-sm text-blue-700">
+           🇨🇴 Colombia
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="bg-yellow-400 rounded-2xl p-8 shadow-lg card-hover border-2 border-yellow-300">
+        <div class="flex items-center gap-1 text-red-600 mb-4 text-xl"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        </div>
+        <p class="text-blue-900 mb-6">"Me ayudó con todos los papeles del permiso de residencia. ¡Una profesora increíble que entiende nuestras necesidades!"</p>
+        <div class="flex items-center gap-3">
+         <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl">
+          👩
+         </div>
+         <div>
+          <div class="font-semibold text-blue-900">
+           María L.
+          </div>
+          <div class="text-sm text-blue-800">
+           🇻🇪 Venezuela
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="bg-red-500 rounded-2xl p-8 shadow-lg card-hover border-2 border-red-400">
+        <div class="flex items-center gap-1 text-yellow-300 mb-4 text-xl"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        </div>
+        <p class="text-white mb-6">"Los e-books son geniales. Puedo estudiar en el bus y las explicaciones en español hacen todo más fácil."</p>
+        <div class="flex items-center gap-3">
+         <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl">
+          👨
+         </div>
+         <div>
+          <div class="font-semibold text-white">
+           Andrés R.
+          </div>
+          <div class="text-sm text-red-100">
+           🇵🇪 Perú
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Contact Section -->
+    <section id="contacto" class="py-24 bg-gradient-to-b from-blue-900 to-blue-800">
+     <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+       <div class="space-y-8">
+        <div class="inline-block px-4 py-1 bg-yellow-400 text-blue-900 rounded-full text-sm font-bold">
+         Contacto
+        </div>
+        <h2 class="font-display text-4xl lg:text-5xl font-bold text-white">¿Listo para Empezar tu Aventura?</h2>
+        <p class="text-lg text-yellow-100">Reserva tu primera clase gratis y descubre cómo puedo ayudarte a dominar el polaco y adaptarte a tu nueva vida en Polonia.</p>
+        <div class="space-y-4">
+         <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-yellow-400 flex items-center justify-center"><span class="text-2xl">📧</span>
+          </div>
+          <div>
+           <div class="text-sm text-yellow-200">
+            Email
+           </div>
+           <div class="font-semibold text-white">
+            aquivivo.pl@gmail.com
+           </div>
+          </div>
+         </div>
+         <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-red-500 flex items-center justify-center"><span class="text-2xl">📱</span>
+          </div>
+          <div>
+           <div class="text-sm text-yellow-200">
+            WhatsApp
+           </div>
+           <div class="font-semibold text-white">
+            +48 123 456 789
+           </div>
+          </div>
+         </div>
+         <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center"><span class="text-2xl">📍</span>
+          </div>
+          <div>
+           <div class="text-sm text-yellow-200">
+            Ubicación
+           </div>
+           <div class="font-semibold text-white">
+            Poznań, Polonia
+           </div>
+          </div>
+         </div>
+        </div>
+        <div class="space-y-4">
+         <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-pink-600 flex items-center justify-center"><a href="https://www.instagram.com/sacariooo/" target="_blank" rel="noopener noreferrer" class="text-white hover:opacity-80 transition-opacity">
+            <svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
+             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+            </svg></a>
+          </div>
+          <div>
+           <div class="text-sm text-yellow-200">
+            Instagram
+           </div>
+           <div class="font-semibold text-white">
+            @sacariooo
+           </div>
+          </div>
+         </div>
+         <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-black flex items-center justify-center"><a href="https://www.tiktok.com/@latip0l?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" class="text-white hover:opacity-80 transition-opacity">
+            <svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
+             <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+            </svg></a>
+          </div>
+          <div>
+           <div class="text-sm text-yellow-200">
+            TikTok
+           </div>
+           <div class="font-semibold text-white">
+            @latip0l
+           </div>
+          </div>
+         </div>
+        </div>
+       </div><!-- Contact Form -->
+       <div class="bg-white rounded-3xl p-8 lg:p-12 border-4 border-yellow-400">
+        <form id="contact-form" class="space-y-6">
+         <div><label for="name" class="block text-sm font-bold text-blue-900 mb-2">Nombre</label> <input type="text" id="name" name="name" placeholder="Tu nombre completo" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none">
+         </div>
+         <div><label for="email" class="block text-sm font-bold text-blue-900 mb-2">Email</label> <input type="email" id="email" name="email" placeholder="tu@email.com" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none">
+         </div>
+         <div><label for="country" class="block text-sm font-bold text-blue-900 mb-2">País de origen</label> <select id="country" name="country" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none bg-white text-blue-900"> <option value="">Selecciona tu país</option> <option value="colombia">🇨🇴 Colombia</option> <option value="venezuela">🇻🇪 Venezuela</option> <option value="mexico">🇲🇽 México</option> <option value="peru">🇵🇪 Perú</option> <option value="argentina">🇦🇷 Argentina</option> <option value="chile">🇨🇱 Chile</option> <option value="ecuador">🇪🇨 Ecuador</option> <option value="otro">Otro</option> </select>
+         </div>
+         <div><label for="message" class="block text-sm font-bold text-blue-900 mb-2">Mensaje</label> <textarea id="message" name="message" rows="4" placeholder="¿En qué puedo ayudarte?" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all outline-none resize-none"></textarea>
+         </div><button type="submit" class="w-full btn-primary py-4 rounded-xl text-blue-900 font-bold text-lg shadow-xl"> Enviar Mensaje </button>
+         <div id="form-message" class="hidden text-center font-medium"></div>
+        </form>
+       </div>
+      </div>
+     </div>
+    </section><!-- Footer -->
+    <footer class="bg-gradient-to-b from-blue-950 to-black text-white py-16 border-t-4 border-yellow-400">
+     <div class="max-w-7xl mx-auto px-6">
+      <div class="grid md:grid-cols-4 gap-12 mb-12">
+       <div class="space-y-4">
+        <div class="flex items-center gap-3">
+         <div class="w-10 h-10 rounded-full gradient-colombia"></div><span class="font-display text-xl font-semibold text-yellow-400">Aqui Vivo</span>
+        </div>
+        <p class="text-yellow-100 text-sm">Profesora de español y polaco en Poznań. Ayudo a hispanohablantes y a estudiantes polacos a descubrir la belleza del español latinoamericano 🤍</p>
+        <div class="flex items-center gap-2 text-2xl"><span>🇨🇴</span> <span class="text-red-500">♥</span> <span>🇵🇱</span>
+        </div>
+       </div>
+       <div>
+        <h4 class="font-semibold mb-4 text-yellow-400">Servicios</h4>
+        <ul class="space-y-2 text-yellow-100 text-sm">
+         <li><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('programa'), 100)" class="hover:text-yellow-400 transition-colors text-left">Clases de Polaco</button></li>
+         <li><button onclick="navigateTo('tramites')" class="hover:text-yellow-400 transition-colors text-left">Ayuda con Trámites</button></li>
+         <li><button onclick="navigateTo('traducciones')" class="hover:text-yellow-400 transition-colors text-left">Traducciones</button></li>
+         <li><button onclick="navigateTo('grupales')" class="hover:text-yellow-400 transition-colors text-left">Clases Grupales</button></li>
+         <li><button onclick="navigateTo('empresarial')" class="hover:text-yellow-400 transition-colors text-left">Polaco Empresarial</button></li>
+        </ul>
+       </div>
+       <div>
+        <h4 class="font-semibold mb-4 text-yellow-400">Recursos</h4>
+        <ul class="space-y-2 text-yellow-100 text-sm">
+         <li><button onclick="navigateTo('ebook1')" class="hover:text-yellow-400 transition-colors text-left">E-books</button></li>
+         <li><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('about'), 100)" class="hover:text-yellow-400 transition-colors text-left">Sobre Mí</button></li>
+         <li><a href="#" class="hover:text-yellow-400 transition-colors">Blog</a></li>
+         <li><a href="#" class="hover:text-yellow-400 transition-colors">FAQ</a></li>
+        </ul>
+       </div>
+       <div>
+        <h4 class="font-semibold mb-4 text-yellow-400">Legal</h4>
+        <ul class="space-y-2 text-yellow-100 text-sm">
+         <li><a href="#" class="hover:text-yellow-400 transition-colors">Política de Privacidad</a></li>
+         <li><a href="#" class="hover:text-yellow-400 transition-colors">Términos y Condiciones</a></li>
+         <li><a href="#" class="hover:text-yellow-400 transition-colors">Cookies</a></li>
+        </ul>
+       </div>
+      </div>
+      <div class="border-t border-yellow-400/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+       <p class="text-yellow-200 text-sm">© 2024 Aqui Vivo. Todos los derechos reservados.</p>
+       <p class="text-yellow-200 text-sm">Hecho con <span class="text-red-500">❤️</span> en Poznań, Polonia</p>
+      </div>
+     </div>
+    </footer>
+   </div><!-- NIVEL BÁSICO PAGE -->
+   <div id="page-basico" class="page">
+    <section class="min-h-screen pattern-bg py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-yellow-400 rounded-3xl p-12 border-4 border-yellow-300 shadow-2xl">
+       <div class="flex items-center gap-4 mb-8">
+        <div class="w-20 h-20 rounded-2xl bg-yellow-500 flex items-center justify-center"><span class="text-5xl">🌱</span>
+        </div>
+        <div>
+         <div class="text-sm font-bold text-yellow-900">
+          Nivel A1-A2
+         </div>
+         <h1 class="font-display text-4xl font-bold text-blue-900">Polaco Fundamentos</h1>
+        </div>
+       </div>
+       <p class="text-xl text-blue-900 mb-8 leading-relaxed">Empieza desde cero con un método diseñado especialmente para hispanohablantes. Te enseño la pronunciación, gramática básica y el vocabulario esencial para tu vida diaria en Polonia.</p>
+       <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-xl p-6">
+         <h3 class="font-bold text-blue-900 mb-4 text-lg">📚 Lo que aprenderás:</h3>
+         <ul class="space-y-2 text-blue-800">
+          <li>✓ Alfabeto y pronunciación polaca</li>
+          <li>✓ Casos gramaticales básicos</li>
+          <li>✓ Conjugación de verbos esenciales</li>
+          <li>✓ Vocabulario cotidiano (600+ palabras)</li>
+          <li>✓ Números, fechas y horas</li>
+          <li>✓ Presentarte y hablar de ti</li>
+         </ul>
+        </div>
+        <div class="bg-white rounded-xl p-6">
+         <h3 class="font-bold text-blue-900 mb-4 text-lg">🎯 Situaciones prácticas:</h3>
+         <ul class="space-y-2 text-blue-800">
+          <li>✓ Hacer compras en el supermercado</li>
+          <li>✓ Pedir comida en restaurantes</li>
+          <li>✓ Usar el transporte público</li>
+          <li>✓ Ir al médico o farmacia</li>
+          <li>✓ Preguntar direcciones</li>
+          <li>✓ Conversaciones básicas con vecinos</li>
+         </ul>
+        </div>
+       </div>
+       <div class="bg-blue-900 rounded-xl p-6 text-white mb-8">
+        <h3 class="font-bold mb-4 text-lg">🎓 Formato de las clases:</h3>
+        <div class="grid md:grid-cols-3 gap-4">
+         <div>
+          <div class="text-yellow-400 font-bold mb-1">
+           Duración
+          </div>
+          <div class="text-sm">
+           60 o 90 minutos por sesión
+          </div>
+         </div>
+         <div>
+          <div class="text-yellow-400 font-bold mb-1">
+           Frecuencia
+          </div>
+          <div class="text-sm">
+           2-3 veces por semana
+          </div>
+         </div>
+         <div>
+          <div class="text-yellow-400 font-bold mb-1">
+           Modalidad
+          </div>
+          <div class="text-sm">
+           Online o presencial en Poznań
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center justify-between">
+        <div>
+         <div class="text-3xl font-bold text-blue-900 mb-2">
+          150 PLN/hora
+         </div>
+         <div class="text-sm text-blue-700">
+          Primera clase gratis (30 min)
+         </div>
+        </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="btn-primary px-8 py-4 rounded-full text-blue-900 font-bold text-lg shadow-xl"> Reservar Clase Gratis </button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- NIVEL INTERMEDIO PAGE -->
+   <div id="page-intermedio" class="page">
+    <section class="min-h-screen pattern-bg py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-white rounded-3xl p-12 border-4 border-yellow-400 shadow-2xl relative">
+       <div class="absolute -top-4 right-8 bg-red-600 text-white px-6 py-2 rounded-full text-sm font-bold">
+        ⭐ Más Popular
+       </div>
+       <div class="flex items-center gap-4 mb-8">
+        <div class="w-20 h-20 rounded-2xl bg-blue-900 flex items-center justify-center"><span class="text-5xl">🚀</span>
+        </div>
+        <div>
+         <div class="text-sm font-bold text-blue-900">
+          Nivel B1-B2
+         </div>
+         <h1 class="font-display text-4xl font-bold text-blue-900">Polaco Intermedio</h1>
+        </div>
+       </div>
+       <p class="text-xl text-blue-800 mb-8 leading-relaxed">Lleva tu polaco al siguiente nivel. Perfecto si ya conoces lo básico y quieres hablar con fluidez en el trabajo, estudios o vida social. Incluye preparación para exámenes oficiales.</p>
+       <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-blue-50 rounded-xl p-6 border-2 border-blue-200">
+         <h3 class="font-bold text-blue-900 mb-4 text-lg">📚 Lo que dominarás:</h3>
+         <ul class="space-y-2 text-blue-800">
+          <li>✓ Todos los casos gramaticales</li>
+          <li>✓ Aspecto verbal (perfectivo/imperfectivo)</li>
+          <li>✓ Construcciones complejas</li>
+          <li>✓ Vocabulario laboral y académico</li>
+          <li>✓ Expresar opiniones y argumentar</li>
+          <li>✓ Comprender medios en polaco</li>
+         </ul>
+        </div>
+        <div class="bg-yellow-50 rounded-xl p-6 border-2 border-yellow-200">
+         <h3 class="font-bold text-blue-900 mb-4 text-lg">🎯 Aplicaciones reales:</h3>
+         <ul class="space-y-2 text-blue-800">
+          <li>✓ Comunicación profesional efectiva</li>
+          <li>✓ Entrevistas de trabajo</li>
+          <li>✓ Presentaciones y reuniones</li>
+          <li>✓ Escribir emails y documentos</li>
+          <li>✓ Negociaciones y trámites complejos</li>
+          <li>✓ Socializar con nativos</li>
+         </ul>
+        </div>
+       </div>
+       <div class="bg-blue-900 rounded-xl p-6 text-white mb-8">
+        <h3 class="font-bold mb-4 text-lg">🎓 Lo que incluye:</h3>
+        <div class="grid md:grid-cols-2 gap-4">
+         <div>
+          <div class="text-yellow-400 font-bold mb-2">
+           Materiales Personalizados
+          </div>
+          <div class="text-sm">
+           Contenido adaptado a tu profesión e intereses
+          </div>
+         </div>
+         <div>
+          <div class="text-yellow-400 font-bold mb-2">
+           Conversación Intensiva
+          </div>
+          <div class="text-sm">
+           70% de cada clase hablando en polaco
+          </div>
+         </div>
+         <div>
+          <div class="text-yellow-400 font-bold mb-2">
+           Corrección Detallada
+          </div>
+          <div class="text-sm">
+           Feedback sobre pronunciación y gramática
+          </div>
+         </div>
+         <div>
+          <div class="text-yellow-400 font-bold mb-2">
+           Preparación Exámenes
+          </div>
+          <div class="text-sm">
+           Certificados B1/B2 para residencia
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center justify-between">
+        <div>
+         <div class="text-3xl font-bold text-blue-900 mb-2">
+          180 PLN/hora
+         </div>
+         <div class="text-sm text-blue-700">
+          Paquetes con descuento disponibles
+         </div>
+        </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="btn-primary px-8 py-4 rounded-full text-blue-900 font-bold text-lg shadow-xl"> Consultar Disponibilidad </button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- NIVEL AVANZADO PAGE -->
+   <div id="page-avanzado" class="page">
+    <section class="min-h-screen pattern-bg py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-red-500 rounded-3xl p-12 border-4 border-red-400 shadow-2xl text-white">
+       <div class="flex items-center gap-4 mb-8">
+        <div class="w-20 h-20 rounded-2xl bg-red-600 flex items-center justify-center"><span class="text-5xl">👑</span>
+        </div>
+        <div>
+         <div class="text-sm font-bold text-red-100">
+          Nivel C1-C2
+         </div>
+         <h1 class="font-display text-4xl font-bold text-white">Polaco Avanzado</h1>
+        </div>
+       </div>
+       <p class="text-xl text-white mb-8 leading-relaxed">Alcanza la excelencia en polaco. Para quienes buscan perfección lingüística, preparación universitaria, ciudadanía polaca o comunicarse como un nativo en cualquier contexto.</p>
+       <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-xl p-6 text-blue-900">
+         <h3 class="font-bold mb-4 text-lg">📚 Perfeccionamiento total:</h3>
+         <ul class="space-y-2">
+          <li>✓ Sutilezas gramaticales avanzadas</li>
+          <li>✓ Registro formal e informal</li>
+          <li>✓ Literatura y cultura polaca</li>
+          <li>✓ Vocabulario especializado</li>
+          <li>✓ Modismos y expresiones idiomáticas</li>
+          <li>✓ Escritura académica y profesional</li>
+         </ul>
+        </div>
+        <div class="bg-yellow-400 rounded-xl p-6 text-blue-900">
+         <h3 class="font-bold mb-4 text-lg">🎯 Objetivos avanzados:</h3>
+         <ul class="space-y-2">
+          <li>✓ Estudios universitarios en polaco</li>
+          <li>✓ Examen de ciudadanía polaca</li>
+          <li>✓ Carrera profesional de alto nivel</li>
+          <li>✓ Publicaciones y presentaciones</li>
+          <li>✓ Traducción e interpretación</li>
+          <li>✓ Integración cultural completa</li>
+         </ul>
+        </div>
+       </div>
+       <div class="bg-white text-blue-900 rounded-xl p-6 mb-8">
+        <h3 class="font-bold mb-4 text-lg">🎓 Metodología premium:</h3>
+        <div class="grid md:grid-cols-2 gap-4 text-sm">
+         <div>
+          <div class="font-bold text-red-600 mb-1">
+           Clases 100% Personalizadas
+          </div>
+          <div>
+           Contenido diseñado específicamente para tus metas
+          </div>
+         </div>
+         <div>
+          <div class="font-bold text-red-600 mb-1">
+           Inmersión Lingüística
+          </div>
+          <div>
+           Conversación exclusivamente en polaco
+          </div>
+         </div>
+         <div>
+          <div class="font-bold text-red-600 mb-1">
+           Textos Auténticos
+          </div>
+          <div>
+           Periódicos, literatura, contenido académico
+          </div>
+         </div>
+         <div>
+          <div class="font-bold text-red-600 mb-1">
+           Coaching Cultural
+          </div>
+          <div>
+           Integración profunda a la sociedad polaca
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8 border-2 border-white/30">
+        <h3 class="font-bold mb-3 text-lg">💼 Ideal para:</h3>
+        <div class="flex flex-wrap gap-3"><span class="px-4 py-2 bg-white/20 rounded-full text-sm">Profesionales</span> <span class="px-4 py-2 bg-white/20 rounded-full text-sm">Estudiantes universitarios</span> <span class="px-4 py-2 bg-white/20 rounded-full text-sm">Solicitantes de ciudadanía</span> <span class="px-4 py-2 bg-white/20 rounded-full text-sm">Traductores</span> <span class="px-4 py-2 bg-white/20 rounded-full text-sm">Investigadores</span>
+        </div>
+       </div>
+       <div class="flex items-center justify-between">
+        <div>
+         <div class="text-3xl font-bold mb-2">
+          200 PLN/hora
+         </div>
+         <div class="text-sm text-red-100">
+          Inversión en tu futuro profesional
+         </div>
+        </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="bg-white text-red-600 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-yellow-400 hover:text-blue-900 transition-colors"> Consultar Programa </button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- TRÁMITES PAGE -->
+   <div id="page-tramites" class="page">
+    <section class="min-h-screen pattern-bg py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-yellow-400 rounded-3xl p-12 border-4 border-yellow-300 shadow-2xl">
+       <div class="flex items-center gap-4 mb-8">
+        <div class="w-20 h-20 rounded-2xl bg-yellow-500 flex items-center justify-center"><span class="text-5xl">📋</span>
+        </div>
+        <div>
+         <h1 class="font-display text-4xl font-bold text-blue-900">Ayuda con Trámites</h1>
+         <p class="text-blue-700">Tu aliada en la burocracia polaca</p>
+        </div>
+       </div>
+       <p class="text-xl text-blue-900 mb-8 leading-relaxed">Sé lo estresante que puede ser enfrentar la burocracia polaca sin dominar el idioma. Te acompaño en cada paso para que tus trámites sean exitosos y sin complicaciones.</p>
+       <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-xl p-6">
+         <h3 class="font-bold text-blue-900 mb-4 text-lg">✅ Servicios incluidos:</h3>
+         <ul class="space-y-3 text-blue-800">
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Acompañamiento presencial</strong> a oficinas (Urząd Miasta, Urząd Wojewódzki, ZUS, NFZ)</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Interpretación</strong> durante tus citas</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Revisión de documentos</strong> en polaco antes de entregarlos</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Asesoría sobre requisitos</strong> y procedimientos</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Llamadas telefónicas</strong> a instituciones en tu nombre</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Completar formularios</strong> correctamente</span></li>
+         </ul>
+        </div>
+        <div class="bg-blue-900 rounded-xl p-6 text-white">
+         <h3 class="font-bold mb-4 text-lg">📄 Trámites más comunes:</h3>
+         <ul class="space-y-2 text-sm">
+          <li>• Permiso de residencia temporal/permanente</li>
+          <li>• Tarjeta de residencia (Karta Pobytu)</li>
+          <li>• PESEL (número de identificación)</li>
+          <li>• Registro de dirección (Meldunek)</li>
+          <li>• Seguro médico (NFZ)</li>
+          <li>• Seguridad social (ZUS)</li>
+          <li>• Declaración de impuestos</li>
+          <li>• Permisos de trabajo</li>
+          <li>• Homologación de títulos</li>
+          <li>• Licencia de conducir polaca</li>
+          <li>• Cuenta bancaria</li>
+          <li>• Contratos de alquiler</li>
+         </ul>
+        </div>
+       </div>
+       <div class="bg-red-100 border-2 border-red-400 rounded-xl p-6 mb-8">
+        <h3 class="font-bold text-red-800 mb-3 text-lg">⚠️ ¿Por qué necesitas ayuda profesional?</h3>
+        <div class="text-blue-900 space-y-2 text-sm">
+         <p>La burocracia polaca es conocida por ser compleja incluso para los propios polacos. Un error en un formulario o documento puede resultar en:</p>
+         <ul class="ml-4 space-y-1">
+          <li>✗ Rechazo de tu solicitud</li>
+          <li>✗ Tener que volver varias veces</li>
+          <li>✗ Retrasos de semanas o meses</li>
+          <li>✗ Multas por documentos incorrectos</li>
+          <li>✗ Estrés y frustración innecesarios</li>
+         </ul>
+        </div>
+       </div>
+       <div class="bg-white rounded-xl p-6 mb-8 border-2 border-blue-200">
+        <h3 class="font-bold text-blue-900 mb-4 text-lg">💰 Tarifas:</h3>
+        <div class="grid md:grid-cols-3 gap-4">
+         <div>
+          <div class="text-blue-700 font-semibold mb-1">
+           Consulta Inicial
+          </div>
+          <div class="text-2xl font-bold text-blue-900">
+           50 PLN
+          </div>
+          <div class="text-sm text-blue-600">
+           30 minutos
+          </div>
+         </div>
+         <div>
+          <div class="text-blue-700 font-semibold mb-1">
+           Acompañamiento
+          </div>
+          <div class="text-2xl font-bold text-blue-900">
+           100 PLN/hora
+          </div>
+          <div class="text-sm text-blue-600">
+           + transporte si aplica
+          </div>
+         </div>
+         <div>
+          <div class="text-blue-700 font-semibold mb-1">
+           Paquete Completo
+          </div>
+          <div class="text-2xl font-bold text-blue-900">
+           Desde 400 PLN
+          </div>
+          <div class="text-sm text-blue-600">
+           Gestión total
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center justify-between">
+        <div class="text-blue-800">
+         <div class="text-sm mb-1">
+          ✓ Tranquilidad garantizada
+         </div>
+         <div class="text-sm">
+          ✓ Ahorro de tiempo y dinero
+         </div>
+        </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="bg-blue-900 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-blue-800 transition-colors"> Solicitar Ayuda </button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- TRADUCCIONES PAGE -->
+   <div id="page-traducciones" class="page">
+    <section class="min-h-screen pattern-bg py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-white rounded-3xl p-12 border-4 border-yellow-400 shadow-2xl">
+       <div class="flex items-center gap-4 mb-8">
+        <div class="w-20 h-20 rounded-2xl bg-blue-900 flex items-center justify-center"><span class="text-5xl">📝</span>
+        </div>
+        <div>
+         <h1 class="font-display text-4xl font-bold text-blue-900">Traducciones Profesionales</h1>
+         <p class="text-blue-700">Español ↔ Polaco</p>
+        </div>
+       </div>
+       <p class="text-xl text-blue-800 mb-8 leading-relaxed">Traducciones precisas y naturales realizadas por una hablante nativa de español con dominio avanzado del polaco. Entiendo ambas culturas y garantizo que tu mensaje se transmita correctamente.</p>
+       <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
+         <h3 class="font-bold text-blue-900 mb-4 text-lg">📄 Tipos de documentos:</h3>
+         <ul class="space-y-2 text-blue-800 text-sm">
+          <li>✓ Certificados de nacimiento, matrimonio</li>
+          <li>✓ Diplomas y títulos académicos</li>
+          <li>✓ Certificados de antecedentes penales</li>
+          <li>✓ Contratos laborales y de alquiler</li>
+          <li>✓ Cartas de motivación y CV</li>
+          <li>✓ Documentos médicos</li>
+          <li>✓ Estados de cuenta bancarios</li>
+          <li>✓ Poderes notariales</li>
+          <li>✓ Correspondencia oficial</li>
+          <li>✓ Páginas web y marketing</li>
+         </ul>
+        </div>
+        <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+         <h3 class="font-bold text-blue-900 mb-4 text-lg">⭐ ¿Por qué elegirme?</h3>
+         <ul class="space-y-3 text-blue-800 text-sm">
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold text-lg">•</span> <span><strong>Nativa de español</strong> con certificación en traducción</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold text-lg">•</span> <span><strong>Experiencia específica</strong> en documentos migratorios</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold text-lg">•</span> <span><strong>Conocimiento profundo</strong> de requisitos legales polacos</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold text-lg">•</span> <span><strong>Entrega rápida</strong> - 24-48h para documentos estándar</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold text-lg">•</span> <span><strong>Formato profesional</strong> listo para presentar</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold text-lg">•</span> <span><strong>Confidencialidad total</strong> de tus documentos</span></li>
+         </ul>
+        </div>
+       </div>
+       <div class="bg-blue-900 text-white rounded-xl p-6 mb-8">
+        <h3 class="font-bold mb-4 text-lg">💰 Tarifas:</h3>
+        <div class="grid md:grid-cols-2 gap-6">
+         <div>
+          <div class="text-yellow-400 font-bold mb-2">
+           Traducción Simple
+          </div>
+          <div class="text-3xl font-bold mb-2">
+           50 PLN/página
+          </div>
+          <div class="text-sm text-blue-200">
+           • Certificados oficiales<br>
+            • Documentos personales<br>
+            • Correspondencia<br>
+            • Página = ~1800 caracteres
+          </div>
+         </div>
+         <div>
+          <div class="text-yellow-400 font-bold mb-2">
+           Traducción Especializada
+          </div>
+          <div class="text-3xl font-bold mb-2">
+           80 PLN/página
+          </div>
+          <div class="text-sm text-blue-200">
+           • Contratos legales<br>
+            • Documentos médicos técnicos<br>
+            • Textos académicos<br>
+            • Marketing y copywriting
+          </div>
+         </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-white/20">
+         <div class="text-sm"><strong>Servicios adicionales:</strong><br>
+           • Traducción jurada: +100 PLN por documento<br>
+           • Entrega urgente (24h): +50% del precio<br>
+           • Formato editable: Incluido sin costo
+         </div>
+        </div>
+       </div>
+       <div class="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-6 mb-8">
+        <h3 class="font-bold text-blue-900 mb-3 text-lg">📤 Proceso simple:</h3>
+        <div class="grid md:grid-cols-4 gap-4 text-center text-sm">
+         <div>
+          <div class="text-3xl mb-2">
+           📧
+          </div>
+          <div class="font-semibold text-blue-900">
+           1. Envías
+          </div>
+          <div class="text-blue-700">
+           Tu documento por email
+          </div>
+         </div>
+         <div>
+          <div class="text-3xl mb-2">
+           💬
+          </div>
+          <div class="font-semibold text-blue-900">
+           2. Te respondo
+          </div>
+          <div class="text-blue-700">
+           Con cotización y plazo
+          </div>
+         </div>
+         <div>
+          <div class="text-3xl mb-2">
+           ✍️
+          </div>
+          <div class="font-semibold text-blue-900">
+           3. Traduzco
+          </div>
+          <div class="text-blue-700">
+           Con máxima precisión
+          </div>
+         </div>
+         <div>
+          <div class="text-3xl mb-2">
+           ✅
+          </div>
+          <div class="font-semibold text-blue-900">
+           4. Recibes
+          </div>
+          <div class="text-blue-700">
+           Documento listo
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center justify-between">
+        <div class="text-blue-700 text-sm">
+         <div>
+          ✓ Primera página de muestra gratis
+         </div>
+         <div>
+          ✓ Descuentos por volumen
+         </div>
+        </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="bg-blue-900 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-blue-800 transition-colors"> Solicitar Cotización </button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- CLASES GRUPALES PAGE -->
+   <div id="page-grupales" class="page">
+    <section class="min-h-screen pattern-bg py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-red-500 rounded-3xl p-12 border-4 border-red-400 shadow-2xl text-white">
+       <div class="flex items-center gap-4 mb-8">
+        <div class="w-20 h-20 rounded-2xl bg-red-600 flex items-center justify-center"><span class="text-5xl">👥</span>
+        </div>
+        <div>
+         <h1 class="font-display text-4xl font-bold">Clases Grupales</h1>
+         <p class="text-red-100">Aprende con otros latinos en Polonia</p>
+        </div>
+       </div>
+       <p class="text-xl mb-8 leading-relaxed">¿Por qué aprender solo si puedes hacerlo en comunidad? Mis clases grupales combinan aprendizaje efectivo con el apoyo y la motivación de otros hispanohablantes que están en tu misma situación.</p>
+       <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white text-blue-900 rounded-xl p-6">
+         <h3 class="font-bold mb-4 text-lg">✨ Ventajas del grupo:</h3>
+         <ul class="space-y-3 text-sm">
+          <li class="flex items-start gap-2"><span class="text-red-600 font-bold">→</span> <span><strong>Precio más accesible:</strong> 80 PLN por persona vs 150-180 individual</span></li>
+          <li class="flex items-start gap-2"><span class="text-red-600 font-bold">→</span> <span><strong>Práctica conversacional:</strong> Más compañeros para practicar diálogos</span></li>
+          <li class="flex items-start gap-2"><span class="text-red-600 font-bold">→</span> <span><strong>Motivación mutua:</strong> Se apoyan y animan entre todos</span></li>
+          <li class="flex items-start gap-2"><span class="text-red-600 font-bold">→</span> <span><strong>Networking:</strong> Conoces a otros latinos en Poznań</span></li>
+          <li class="flex items-start gap-2"><span class="text-red-600 font-bold">→</span> <span><strong>Diversión:</strong> Aprender es más divertido en grupo</span></li>
+          <li class="flex items-start gap-2"><span class="text-red-600 font-bold">→</span> <span><strong>Perspectivas variadas:</strong> Diferentes dudas y experiencias enriquecen la clase</span></li>
+         </ul>
+        </div>
+        <div class="bg-yellow-400 text-blue-900 rounded-xl p-6">
+         <h3 class="font-bold mb-4 text-lg">👫 Formato de los grupos:</h3>
+         <div class="space-y-4 text-sm">
+          <div>
+           <div class="font-bold text-red-600 mb-1">
+            Tamaño
+           </div>
+           <div>
+            Máximo 5 personas por grupo para atención personalizada
+           </div>
+          </div>
+          <div>
+           <div class="font-bold text-red-600 mb-1">
+            Niveles
+           </div>
+           <div>
+            Grupos separados por nivel (A1-A2, B1-B2, C1-C2)
+           </div>
+          </div>
+          <div>
+           <div class="font-bold text-red-600 mb-1">
+            Duración
+           </div>
+           <div>
+            90 minutos por sesión, 2 veces por semana
+           </div>
+          </div>
+          <div>
+           <div class="font-bold text-red-600 mb-1">
+            Modalidad
+           </div>
+           <div>
+            Presencial en Poznań u online por Zoom
+           </div>
+          </div>
+          <div>
+           <div class="font-bold text-red-600 mb-1">
+            Horarios
+           </div>
+           <div>
+            Tardes (18:00-19:30) y fines de semana
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="bg-white text-blue-900 rounded-xl p-6 mb-8">
+        <h3 class="font-bold mb-4 text-lg">📚 Metodología en grupo:</h3>
+        <div class="grid md:grid-cols-3 gap-4 text-sm">
+         <div>
+          <div class="text-red-600 font-bold mb-2">
+           🎯 Dinámicas
+          </div>
+          <div>
+           Role-plays, debates y juegos para practicar en contexto real
+          </div>
+         </div>
+         <div>
+          <div class="text-red-600 font-bold mb-2">
+           💬 Conversación
+          </div>
+          <div>
+           60% del tiempo hablando en parejas y grupos pequeños
+          </div>
+         </div>
+         <div>
+          <div class="text-red-600 font-bold mb-2">
+           📖 Materiales
+          </div>
+          <div>
+           Libro compartido + recursos digitales incluidos
+          </div>
+         </div>
+         <div>
+          <div class="text-red-600 font-bold mb-2">
+           🏠 Tareas
+          </div>
+          <div>
+           Ejercicios opcionales para practicar entre clases
+          </div>
+         </div>
+         <div>
+          <div class="text-red-600 font-bold mb-2">
+           🎤 Presentaciones
+          </div>
+          <div>
+           Cada alumno presenta temas de su interés
+          </div>
+         </div>
+         <div>
+          <div class="text-red-600 font-bold mb-2">
+           🤝 Apoyo
+          </div>
+          <div>
+           Grupo de WhatsApp para dudas y práctica
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8 border-2 border-white/30">
+        <h3 class="font-bold mb-4 text-lg">💰 Opciones de pago:</h3>
+        <div class="grid md:grid-cols-3 gap-4">
+         <div class="text-center">
+          <div class="text-2xl font-bold mb-1">
+           80 PLN
+          </div>
+          <div class="text-sm text-red-100">
+           Por clase individual
+          </div>
+          <div class="text-xs mt-2 opacity-80">
+           Sin compromiso
+          </div>
+         </div>
+         <div class="text-center bg-yellow-400 text-blue-900 rounded-lg p-4">
+          <div class="text-sm font-bold mb-1">
+           ⭐ Popular
+          </div>
+          <div class="text-2xl font-bold mb-1">
+           600 PLN/mes
+          </div>
+          <div class="text-sm">
+           8 clases = 75 PLN/clase
+          </div>
+          <div class="text-xs mt-2">
+           Ahorra 40 PLN/mes
+          </div>
+         </div>
+         <div class="text-center">
+          <div class="text-2xl font-bold mb-1">
+           1600 PLN
+          </div>
+          <div class="text-sm text-red-100">
+           Trimestre (24 clases)
+          </div>
+          <div class="text-xs mt-2 opacity-80">
+           Mejor precio: 67 PLN/clase
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center justify-between">
+        <div>
+         <div class="text-sm">
+          ✓ Primera clase de prueba: 40 PLN
+         </div>
+         <div class="text-sm">
+          ✓ Grupos nuevos cada mes
+         </div>
+        </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="bg-yellow-400 text-blue-900 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-yellow-300 transition-colors"> Unirme a un Grupo </button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- POLACO EMPRESARIAL PAGE -->
+   <div id="page-empresarial" class="page">
+    <section class="min-h-screen pattern-bg py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-white rounded-3xl p-12 border-4 border-blue-900 shadow-2xl">
+       <div class="flex items-center gap-4 mb-8">
+        <div class="w-20 h-20 rounded-2xl bg-blue-900 flex items-center justify-center"><span class="text-5xl">💼</span>
+        </div>
+        <div>
+         <h1 class="font-display text-4xl font-bold text-blue-900">Polaco Empresarial</h1>
+         <p class="text-blue-700">Capacitación corporativa para equipos</p>
+        </div>
+       </div>
+       <p class="text-xl text-blue-800 mb-8 leading-relaxed">¿Tu empresa tiene empleados hispanohablantes en Polonia? Ofrezco programas de capacitación en polaco diseñados específicamente para el entorno corporativo, adaptados a las necesidades de tu negocio.</p>
+       <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6">
+         <h3 class="font-bold text-blue-900 mb-4 text-lg">🎯 Beneficios para tu empresa:</h3>
+         <ul class="space-y-3 text-blue-800 text-sm">
+          <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span><strong>Mayor productividad:</strong> Empleados que se comunican eficazmente</span></li>
+          <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span><strong>Mejor integración:</strong> Equipo más cohesionado y colaborativo</span></li>
+          <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span><strong>Retención de talento:</strong> Empleados se sienten apoyados</span></li>
+          <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span><strong>Imagen corporativa:</strong> Empresa comprometida con sus empleados</span></li>
+          <li class="flex items-start gap-2"><span class="text-blue-900 font-bold">✓</span> <span><strong>ROI comprobado:</strong> Inversión que se refleja en resultados</span></li>
+         </ul>
+        </div>
+        <div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-6">
+         <h3 class="font-bold text-blue-900 mb-4 text-lg">📋 Programas disponibles:</h3>
+         <ul class="space-y-3 text-blue-800 text-sm">
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Polaco para oficina:</strong> Comunicación diaria en el trabajo</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Polaco técnico:</strong> Vocabulario específico de tu industria</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Atención al cliente:</strong> Para roles de cara al público</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Emails y reportes:</strong> Escritura empresarial</span></li>
+          <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">→</span> <span><strong>Preparación entrevistas:</strong> Para procesos internos</span></li>
+         </ul>
+        </div>
+       </div>
+       <div class="bg-blue-900 text-white rounded-xl p-6 mb-8">
+        <h3 class="font-bold mb-4 text-lg">🏢 Formato flexible:</h3>
+        <div class="grid md:grid-cols-3 gap-6 text-sm">
+         <div>
+          <div class="text-yellow-400 font-bold mb-2">
+           In-Company
+          </div>
+          <div>
+           Clases en tus oficinas, adaptadas a tu horario y turnos
+          </div>
+         </div>
+         <div>
+          <div class="text-yellow-400 font-bold mb-2">
+           Online
+          </div>
+          <div>
+           Sesiones por videoconferencia para equipos remotos o híbridos
+          </div>
+         </div>
+         <div>
+          <div class="text-yellow-400 font-bold mb-2">
+           Mixto
+          </div>
+          <div>
+           Combinación de presencial y online según necesidades
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6 mb-8">
+        <h3 class="font-bold text-blue-900 mb-4 text-lg">📊 Lo que incluye el servicio:</h3>
+        <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
+         <ul class="space-y-2">
+          <li>✓ Evaluación inicial del equipo</li>
+          <li>✓ Programa personalizado por industria</li>
+          <li>✓ Materiales didácticos incluidos</li>
+          <li>✓ Plataforma online de apoyo</li>
+          <li>✓ Seguimiento de progreso individual</li>
+         </ul>
+         <ul class="space-y-2">
+          <li>✓ Reportes mensuales a RRHH</li>
+          <li>✓ Certificados de asistencia/nivel</li>
+          <li>✓ Horarios adaptados a turnos</li>
+          <li>✓ Grupos reducidos (max 8 personas)</li>
+          <li>✓ Soporte continuo vía chat</li>
+         </ul>
+        </div>
+       </div>
+       <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6 mb-8">
+        <h3 class="font-bold text-red-800 mb-3 text-lg">💡 Casos de éxito:</h3>
+        <div class="space-y-3 text-blue-900 text-sm">
+         <div class="flex items-start gap-3"><span class="text-2xl">🏭</span>
+          <div><strong>Empresa manufactura:</strong> 15 empleados latinos alcanzaron nivel B1 en 6 meses, mejorando la comunicación con supervisores polacos en un 85%.
+          </div>
+         </div>
+         <div class="flex items-start gap-3"><span class="text-2xl">🏬</span>
+          <div><strong>Centro logístico:</strong> Reducción del 70% en malentendidos operativos tras programa de polaco técnico para almacén.
+          </div>
+         </div>
+         <div class="flex items-start gap-3"><span class="text-2xl">💻</span>
+          <div><strong>Startup tech:</strong> Equipo de desarrollo hispanohablante puede participar activamente en reuniones con clientes polacos.
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center justify-between">
+        <div class="text-blue-700">
+         <div class="text-sm mb-1">
+          ✓ Cotización personalizada sin compromiso
+         </div>
+         <div class="text-sm">
+          ✓ Primera sesión de demo gratis
+         </div>
+         <div class="text-sm">
+          ✓ Descuentos por volumen
+         </div>
+        </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="bg-blue-900 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-blue-800 transition-colors"> Solicitar Propuesta </button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- EBOOK 1 PAGE -->
+   <div id="page-ebook1" class="page">
+    <section class="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-white rounded-3xl p-12 shadow-2xl">
+       <div class="grid md:grid-cols-2 gap-12 items-start"><!-- Book Cover -->
+        <div class="sticky top-8">
+         <div class="aspect-[3/4] bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center shadow-2xl mb-6">
+          <div class="text-center text-slate-900 p-8">
+           <div class="text-7xl mb-6">
+            📖
+           </div>
+           <div class="font-display font-bold text-3xl mb-2">
+            Polaco Básico
+           </div>
+           <div class="text-xl opacity-75 mb-6">
+            para Latinos
+           </div>
+           <div class="text-sm opacity-60">
+            100 páginas
+           </div>
+          </div>
+         </div>
+         <div class="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-6 text-center">
+          <div class="text-4xl font-bold text-blue-900 mb-2">
+           49 PLN
+          </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="w-full bg-yellow-400 text-blue-900 py-3 rounded-xl font-bold text-lg hover:bg-yellow-300 transition-colors mb-3"> Comprar Ahora </button>
+          <div class="text-sm text-blue-700">
+           ✓ Descarga instantánea
+          </div>
+         </div>
+        </div><!-- Content Description -->
+        <div class="space-y-6">
+         <div>
+          <h1 class="font-display text-4xl font-bold text-blue-900 mb-3">Polaco Básico para Latinos</h1>
+          <p class="text-lg text-blue-700">Tu primera guía completa en español para aprender polaco desde cero</p>
+         </div>
+         <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+          <h3 class="font-bold text-blue-900 mb-3 text-lg">📚 ¿Qué incluye?</h3>
+          <ul class="space-y-2 text-blue-800 text-sm">
+           <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span> <span><strong>10 unidades temáticas:</strong> Desde saludos hasta hacer compras</span></li>
+           <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span> <span><strong>600+ palabras esenciales:</strong> El vocabulario que realmente usarás</span></li>
+           <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span> <span><strong>Gramática explicada en español:</strong> Sin tecnicismos, con ejemplos claros</span></li>
+           <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span> <span><strong>Guía de pronunciación:</strong> Comparaciones con sonidos del español</span></li>
+           <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span> <span><strong>50+ ejercicios prácticos:</strong> Con soluciones incluidas</span></li>
+           <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span> <span><strong>Archivos de audio:</strong> Pronunciación nativa de todas las frases</span></li>
+           <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span> <span><strong>Diálogos reales:</strong> Situaciones cotidianas en Polonia</span></li>
+           <li class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span> <span><strong>Tips culturales:</strong> Costumbres polacas que debes conocer</span></li>
+          </ul>
+         </div>
+         <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6">
+          <h3 class="font-bold text-blue-900 mb-3 text-lg">📖 Índice de contenidos:</h3>
+          <div class="grid md:grid-cols-2 gap-x-6 gap-y-2 text-sm text-blue-800">
+           <div>
+            1. Alfabeto y pronunciación
+           </div>
+           <div>
+            2. Saludos y presentaciones
+           </div>
+           <div>
+            3. Números y fechas
+           </div>
+           <div>
+            4. En el supermercado
+           </div>
+           <div>
+            5. Transporte y direcciones
+           </div>
+           <div>
+            6. En el restaurante
+           </div>
+           <div>
+            7. Familia y amigos
+           </div>
+           <div>
+            8. En el médico
+           </div>
+           <div>
+            9. Trabajo y estudios
+           </div>
+           <div>
+            10. Casa y hogar
+           </div>
+          </div>
+         </div>
+         <div class="bg-blue-900 text-white rounded-xl p-6">
+          <h3 class="font-bold mb-3 text-lg">⭐ Ideal para:</h3>
+          <div class="flex flex-wrap gap-2"><span class="px-3 py-1 bg-white/20 rounded-full text-sm">Principiantes absolutos</span> <span class="px-3 py-1 bg-white/20 rounded-full text-sm">Latinos recién llegados</span> <span class="px-3 py-1 bg-white/20 rounded-full text-sm">Autodidactas</span> <span class="px-3 py-1 bg-white/20 rounded-full text-sm">Complemento a clases</span>
+          </div>
+         </div>
+         <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6">
+          <h3 class="font-bold text-red-800 mb-3 text-lg">💬 Reseñas:</h3>
+          <div class="space-y-3 text-sm">
+           <div>
+            <div class="flex items-center gap-1 text-yellow-600 mb-1">
+             ★★★★★
+            </div>
+            <p class="text-blue-900">"¡Por fin un libro en español! Las explicaciones son súper claras y los audios me ayudaron mucho con la pronunciación." <strong>- Ana G.</strong></p>
+           </div>
+           <div>
+            <div class="flex items-center gap-1 text-yellow-600 mb-1">
+             ★★★★★
+            </div>
+            <p class="text-blue-900">"Los diálogos son muy útiles, exactamente las situaciones que vivo cada día en Polonia." <strong>- Miguel R.</strong></p>
+           </div>
+          </div>
+         </div>
+         <div class="border-t-2 border-blue-200 pt-6">
+          <div class="flex items-center justify-between mb-4">
+           <div>
+            <div class="text-sm text-blue-700 mb-1">
+             Formato: PDF + MP3
+            </div>
+            <div class="text-sm text-blue-700">
+             Páginas: 100
+            </div>
+           </div>
+           <div class="text-right">
+            <div class="text-3xl font-bold text-blue-900">
+             49 PLN
+            </div>
+            <div class="text-sm text-blue-700">
+             Una sola vez
+            </div>
+           </div>
+          </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="w-full bg-yellow-400 text-blue-900 py-4 rounded-xl font-bold text-lg hover:bg-yellow-300 transition-colors"> Comprar E-book Ahora </button>
+          <div class="text-center text-sm text-blue-600 mt-3">
+           ✓ Pago seguro • ✓ Descarga inmediata • ✓ Acceso de por vida
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- EBOOK 2 PAGE -->
+   <div id="page-ebook2" class="page">
+    <section class="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-white rounded-3xl p-12 shadow-2xl">
+       <div class="grid md:grid-cols-2 gap-12 items-start">
+        <div class="sticky top-8">
+         <div class="aspect-[3/4] bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center shadow-2xl mb-6">
+          <div class="text-center text-white p-8">
+           <div class="text-7xl mb-6">
+            🗣️
+           </div>
+           <div class="font-display font-bold text-3xl mb-2">
+            500 Frases
+           </div>
+           <div class="text-xl opacity-90 mb-6">
+            Esenciales
+           </div>
+           <div class="text-sm opacity-75">
+            Del Día a Día
+           </div>
+          </div>
+         </div>
+         <div class="bg-blue-50 border-2 border-blue-400 rounded-xl p-6 text-center">
+          <div class="text-4xl font-bold text-blue-900 mb-2">
+           39 PLN
+          </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-700 transition-colors mb-3"> Comprar Ahora </button>
+          <div class="text-sm text-blue-700">
+           ✓ Descarga instantánea
+          </div>
+         </div>
+        </div>
+        <div class="space-y-6">
+         <div>
+          <h1 class="font-display text-4xl font-bold text-blue-900 mb-3">500 Frases Esenciales en Polaco</h1>
+          <p class="text-lg text-blue-700">Las frases que más vas a usar en tu vida diaria en Polonia</p>
+         </div>
+         <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+          <h3 class="font-bold text-blue-900 mb-3 text-lg">📚 ¿Qué aprenderás?</h3>
+          <ul class="space-y-2 text-blue-800 text-sm">
+           <li class="flex items-start gap-2"><span class="text-blue-600 font-bold">•</span> <span><strong>500 frases reales:</strong> Organizadas por situaciones</span></li>
+           <li class="flex items-start gap-2"><span class="text-blue-600 font-bold">•</span> <span><strong>Traducción español-polaco:</strong> Con pronunciación fonética</span></li>
+           <li class="flex items-start gap-2"><span class="text-blue-600 font-bold">•</span> <span><strong>Audios nativos:</strong> Para cada una de las 500 frases</span></li>
+           <li class="flex items-start gap-2"><span class="text-blue-600 font-bold">•</span> <span><strong>Contexto de uso:</strong> Cuándo y cómo usar cada frase</span></li>
+           <li class="flex items-start gap-2"><span class="text-blue-600 font-bold">•</span> <span><strong>Variaciones:</strong> Formal e informal de cada expresión</span></li>
+           <li class="flex items-start gap-2"><span class="text-blue-600 font-bold">•</span> <span><strong>Tips de etiqueta:</strong> Cultura y buenos modales polacos</span></li>
+          </ul>
+         </div>
+         <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6">
+          <h3 class="font-bold text-blue-900 mb-3 text-lg">📖 Categorías incluidas:</h3>
+          <div class="grid md:grid-cols-2 gap-2 text-sm text-blue-800">
+           <div>
+            ✓ Saludos y despedidas
+           </div>
+           <div>
+            ✓ Presentaciones
+           </div>
+           <div>
+            ✓ Agradecimiento y disculpas
+           </div>
+           <div>
+            ✓ En el supermercado
+           </div>
+           <div>
+            ✓ En restaurantes/cafés
+           </div>
+           <div>
+            ✓ Transporte público
+           </div>
+           <div>
+            ✓ Pedir direcciones
+           </div>
+           <div>
+            ✓ En el trabajo
+           </div>
+           <div>
+            ✓ Con vecinos
+           </div>
+           <div>
+            ✓ En el médico/farmacia
+           </div>
+           <div>
+            ✓ En el banco
+           </div>
+           <div>
+            ✓ Llamadas telefónicas
+           </div>
+           <div>
+            ✓ Emergencias
+           </div>
+           <div>
+            ✓ Compras en tiendas
+           </div>
+           <div>
+            ✓ Conversación casual
+           </div>
+           <div>
+            ✓ Y mucho más...
+           </div>
+          </div>
+         </div>
+         <div class="bg-blue-900 text-white rounded-xl p-6">
+          <h3 class="font-bold mb-3 text-lg">💡 Ejemplos de frases:</h3>
+          <div class="space-y-3 text-sm">
+           <div class="bg-white/10 rounded-lg p-3">
+            <div class="font-bold mb-1">
+             🏪 En la tienda:
+            </div>
+            <div>
+             "Ile to kosztuje?" = ¿Cuánto cuesta esto?
+            </div>
+           </div>
+           <div class="bg-white/10 rounded-lg p-3">
+            <div class="font-bold mb-1">
+             🚌 En el bus:
+            </div>
+            <div>
+             "Gdzie mam wysiąść?" = ¿Dónde tengo que bajarme?
+            </div>
+           </div>
+           <div class="bg-white/10 rounded-lg p-3">
+            <div class="font-bold mb-1">
+             💼 En el trabajo:
+            </div>
+            <div>
+             "Przepraszam za spóźnienie" = Disculpe por llegar tarde
+            </div>
+           </div>
+          </div>
+         </div>
+         <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6">
+          <h3 class="font-bold text-red-800 mb-3 text-lg">💬 Lo que dicen:</h3>
+          <div class="space-y-3 text-sm">
+           <div>
+            <div class="flex items-center gap-1 text-yellow-600 mb-1">
+             ★★★★★
+            </div>
+            <p class="text-blue-900">"Lo llevo en el móvil y lo consulto todo el tiempo. Las frases son exactamente las que necesito cada día." <strong>- Laura P.</strong></p>
+           </div>
+           <div>
+            <div class="flex items-center gap-1 text-yellow-600 mb-1">
+             ★★★★★
+            </div>
+            <p class="text-blue-900">"Los audios son geniales, ahora me entienden mejor cuando hablo polaco." <strong>- Carlos D.</strong></p>
+           </div>
+          </div>
+         </div>
+         <div class="border-t-2 border-blue-200 pt-6">
+          <div class="flex items-center justify-between mb-4">
+           <div>
+            <div class="text-sm text-blue-700 mb-1">
+             Formato: PDF + MP3
+            </div>
+            <div class="text-sm text-blue-700">
+             500 frases con audio
+            </div>
+           </div>
+           <div class="text-right">
+            <div class="text-3xl font-bold text-blue-900">
+             39 PLN
+            </div>
+            <div class="text-sm text-blue-700">
+             Precio único
+            </div>
+           </div>
+          </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-colors"> Comprar E-book Ahora </button>
+          <div class="text-center text-sm text-blue-600 mt-3">
+           ✓ Acceso inmediato • ✓ Compatible con móviles • ✓ Actualizado 2024
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- EBOOK 3 PAGE -->
+   <div id="page-ebook3" class="page">
+    <section class="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 py-32">
+     <div class="max-w-5xl mx-auto px-6"><button onclick="navigateTo('home')" class="mb-8 flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors"> <span>←</span> Volver al inicio </button>
+      <div class="bg-white rounded-3xl p-12 shadow-2xl">
+       <div class="grid md:grid-cols-2 gap-12 items-start">
+        <div class="sticky top-8">
+         <div class="aspect-[3/4] bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center shadow-2xl mb-6">
+          <div class="text-center text-white p-8">
+           <div class="text-7xl mb-6">
+            📄
+           </div>
+           <div class="font-display font-bold text-3xl mb-2">
+            Guía de
+           </div>
+           <div class="text-xl opacity-90 mb-6">
+            Trámites
+           </div>
+           <div class="text-sm opacity-75">
+            En Polonia
+           </div>
+          </div>
+         </div>
+         <div class="bg-red-50 border-2 border-red-400 rounded-xl p-6 text-center">
+          <div class="text-4xl font-bold text-blue-900 mb-2">
+           59 PLN
+          </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-red-700 transition-colors mb-3"> Comprar Ahora </button>
+          <div class="text-sm text-blue-700">
+           ✓ Descarga instantánea
+          </div>
+         </div>
+        </div>
+        <div class="space-y-6">
+         <div>
+          <h1 class="font-display text-4xl font-bold text-blue-900 mb-3">Guía Completa de Trámites en Polonia</h1>
+          <p class="text-lg text-blue-700">Todo lo que necesitas saber para navegar la burocracia polaca con éxito</p>
+         </div>
+         <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6">
+          <h3 class="font-bold text-blue-900 mb-3 text-lg">📚 Contenido completo:</h3>
+          <ul class="space-y-2 text-blue-800 text-sm">
+           <li class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span> <span><strong>Paso a paso ilustrado:</strong> De cada trámite importante</span></li>
+           <li class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span> <span><strong>Formularios explicados:</strong> Cómo llenar cada campo correctamente</span></li>
+           <li class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span> <span><strong>Lista de documentos:</strong> Qué necesitas para cada gestión</span></li>
+           <li class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span> <span><strong>Costos actualizados:</strong> Tarifas oficiales 2024</span></li>
+           <li class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span> <span><strong>Tiempos de espera:</strong> Cuánto tarda cada trámite</span></li>
+           <li class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span> <span><strong>Vocabulario clave:</strong> Términos oficiales en polaco-español</span></li>
+           <li class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span> <span><strong>Tips para evitar errores:</strong> Basados en experiencia real</span></li>
+           <li class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span> <span><strong>Enlaces útiles:</strong> Sitios web oficiales</span></li>
+          </ul>
+         </div>
+         <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6">
+          <h3 class="font-bold text-blue-900 mb-3 text-lg">📋 Trámites incluidos:</h3>
+          <div class="grid md:grid-cols-2 gap-2 text-sm text-blue-800">
+           <div>
+            <strong>1.</strong> Permiso de residencia temporal
+           </div>
+           <div>
+            <strong>2.</strong> Permiso de residencia permanente
+           </div>
+           <div>
+            <strong>3.</strong> Tarjeta de residencia (Karta Pobytu)
+           </div>
+           <div>
+            <strong>4.</strong> PESEL (número de identificación)
+           </div>
+           <div>
+            <strong>5.</strong> Registro de dirección (Meldunek)
+           </div>
+           <div>
+            <strong>6.</strong> Seguro médico NFZ
+           </div>
+           <div>
+            <strong>7.</strong> Registro en ZUS
+           </div>
+           <div>
+            <strong>8.</strong> Permiso de trabajo
+           </div>
+           <div>
+            <strong>9.</strong> Cuenta bancaria
+           </div>
+           <div>
+            <strong>10.</strong> Número de contribuyente (NIP)
+           </div>
+           <div>
+            <strong>11.</strong> Homologación de títulos
+           </div>
+           <div>
+            <strong>12.</strong> Licencia de conducir polaca
+           </div>
+           <div>
+            <strong>13.</strong> Declaración de impuestos
+           </div>
+           <div>
+            <strong>14.</strong> Reagrupación familiar
+           </div>
+          </div>
+         </div>
+         <div class="bg-blue-900 text-white rounded-xl p-6">
+          <h3 class="font-bold mb-3 text-lg">🎁 Bonos incluidos:</h3>
+          <div class="space-y-2 text-sm">
+           <div class="flex items-start gap-2"><span class="text-yellow-400">✓</span> <span>Plantillas de cartas en polaco listas para usar</span>
+           </div>
+           <div class="flex items-start gap-2"><span class="text-yellow-400">✓</span> <span>Checklist imprimible para cada trámite</span>
+           </div>
+           <div class="flex items-start gap-2"><span class="text-yellow-400">✓</span> <span>Calendario de vencimientos importantes</span>
+           </div>
+           <div class="flex items-start gap-2"><span class="text-yellow-400">✓</span> <span>Directorio de oficinas en principales ciudades</span>
+           </div>
+           <div class="flex items-start gap-2"><span class="text-yellow-400">✓</span> <span>Guía de derechos del residente extranjero</span>
+           </div>
+           <div class="flex items-start gap-2"><span class="text-yellow-400">✓</span> <span>Actualizaciones gratuitas durante 1 año</span>
+           </div>
+          </div>
+         </div>
+         <div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-6">
+          <h3 class="font-bold text-blue-900 mb-3 text-lg">💡 ¿Por qué necesitas esta guía?</h3>
+          <div class="space-y-2 text-sm text-blue-800">
+           <p><strong>Ahorra tiempo:</strong> No pierdas días investigando información dispersa en internet</p>
+           <p><strong>Ahorra dinero:</strong> Evita multas por errores o documentos rechazados</p>
+           <p><strong>Reduce estrés:</strong> Sabe exactamente qué hacer en cada paso</p>
+           <p><strong>Información actual:</strong> Actualizada en 2024 con últimos cambios legales</p>
+          </div>
+         </div>
+         <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6">
+          <h3 class="font-bold text-red-800 mb-3 text-lg">💬 Testimonios:</h3>
+          <div class="space-y-3 text-sm">
+           <div>
+            <div class="flex items-center gap-1 text-yellow-600 mb-1">
+             ★★★★★
+            </div>
+            <p class="text-blue-900">"Esta guía me salvó la vida. Conseguí mi Karta Pobytu sin problemas siguiendo las instrucciones paso a paso." <strong>- Valentina M.</strong></p>
+           </div>
+           <div>
+            <div class="flex items-center gap-1 text-yellow-600 mb-1">
+             ★★★★★
+            </div>
+            <p class="text-blue-900">"Vale cada złoty. La información está súper organizada y las plantillas de cartas me ahorraron horas." <strong>- Roberto S.</strong></p>
+           </div>
+          </div>
+         </div>
+         <div class="border-t-2 border-blue-200 pt-6">
+          <div class="flex items-center justify-between mb-4">
+           <div>
+            <div class="text-sm text-blue-700 mb-1">
+             Formato: PDF descargable
+            </div>
+            <div class="text-sm text-blue-700">
+             150+ páginas
+            </div>
+           </div>
+           <div class="text-right">
+            <div class="text-3xl font-bold text-blue-900">
+             59 PLN
+            </div>
+            <div class="text-sm text-blue-700">
+             Inversión única
+            </div>
+           </div>
+          </div><button onclick="navigateTo('home'); setTimeout(() => scrollToSection('contacto'), 100)" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-red-700 transition-colors"> Comprar Guía Ahora </button>
+          <div class="text-center text-sm text-blue-600 mt-3">
+           ✓ Descarga inmediata • ✓ Actualizaciones incluidas • ✓ Garantía de satisfacción
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div>
+  </div>
+  <script>
+    // Page navigation system
+    let currentPage = 'home';
+    
+    function navigateTo(page) {
+      const pages = document.querySelectorAll('.page');
+      pages.forEach(p => p.classList.remove('active'));
+      
+      const targetPage = document.getElementById(`page-${page}`);
+      if (targetPage) {
+        targetPage.classList.add('active');
+        currentPage = page;
+        window.scrollTo(0, 0);
+      }
+    }
+    
+    function scrollToSection(sectionId) {
+      if (currentPage !== 'home') {
+        navigateTo('home');
+        setTimeout(() => {
+          const</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c170cbbe13a2d19',t:'MTc2OTAwMTAwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
