@@ -7,7 +7,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <!-- ✅ kurs jest w /kursy, więc wracamy poziom wyżej -->
-  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 
   <style>
     .course-grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; margin-bottom:16px; }
@@ -57,7 +57,7 @@
       </div>
 
       <div class="nav-actions">
-        <a class="btn-white-outline" href="../panel.html">Panel</a>
+        <a class="btn-white-outline" href="panel.html">Panel</a>
         <button class="btn-red" id="logoutBtn" type="button">Wyloguj</button>
       </div>
     </div>
@@ -93,7 +93,7 @@
             <div class="adminBox">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
                 <div style="font-weight:900;">⚙️ Admin narzędzia</div>
-                <a class="btn-white-outline" href="../admin.html" style="text-decoration:none;">Zarządzaj dostępami</a>
+                <a class="btn-white-outline" href="admin.html" style="text-decoration:none;">Zarządzaj dostępami</a>
               </div>
 
               <div class="sectionTitleSmall">Meta kursu</div>
@@ -520,7 +520,7 @@ searchInput.addEventListener("input", applyFilters);
 taskSelect.addEventListener("change", applyFilters);
 
 logoutBtn.addEventListener("click", () => {
-  signOut(auth).then(() => window.location.href = "../login.html");
+  signOut(auth).then(() => window.location.href = "login.html");
 });
 
 editMetaBtn.addEventListener("click", editCourseMeta);
@@ -541,7 +541,7 @@ function hasActiveAccess(userData, level){
 
 onAuthStateChanged(auth, async (user) => {
   if(!user){
-    window.location.href = "../login.html";
+    window.location.href = "login.html";
     return;
   }
 
@@ -555,13 +555,13 @@ onAuthStateChanged(auth, async (user) => {
 
   // jeśli nie ma doca users -> cofamy do panelu (tam tworzy trial)
   if(!udata){
-    window.location.href = "../panel.html";
+    window.location.href = "panel.html";
     return;
   }
 
   if(!hasActiveAccess(udata, LEVEL) && !isAdmin){
     alert("🔒 Brak dostępu do tego poziomu. Wrócisz do panelu.");
-    window.location.href = "../panel.html";
+    window.location.href = "panel.html";
     return;
   }
 
