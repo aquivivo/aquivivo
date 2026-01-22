@@ -212,5 +212,17 @@ window.logout = function() {
 };
 </script>
 
+
+<script>
+  // Podlinkowanie żółtego baneru do course.html
+  const banner = document.querySelector('.yellow-banner');
+  if (banner) {
+    banner.style.cursor = 'pointer';
+    banner.addEventListener('click', () => {
+      window.location.href = 'course.html';
+    });
+  }
+</script>
+
 </body>
 </html>

@@ -6,571 +6,473 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-  <!-- ✅ kurs jest w /kursy, więc wracamy poziom wyżej -->
-  <link rel="stylesheet" href="assets/css/styles.css" />
 
   <style>
-    .course-grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; margin-bottom:16px; }
-    @media (max-width: 980px){ .course-grid{ grid-template-columns: 1fr; } }
+    :root { --yellow:#FCD116; --blue:#003893; --red:#CE1126; }
 
-    .filters{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:14px; }
-    .filters .chip{ border:none; border-radius: 999px; padding: 8px 12px; font-weight: 900; cursor:pointer; }
-    .chip.secondary{ background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.20); color:white; }
-    .chip.active{ background: rgba(252,209,22,.92); color:#111827; }
-
-    .listWrap{ display:grid; gap:14px; margin-top:14px; }
-    .topicCard{ display:flex; flex-direction:column; gap:8px; }
-    .topicTop{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
-    .topicTitle{ font-weight: 900; font-size: 16px; }
-    .topicDesc{ margin:0; font-size: 13px; color:#6b7280; line-height:1.35; }
-    .topicMeta{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-
-    .pill{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:900; font-size:12px; }
-    .pill-done{ background: rgba(34,197,94,.14); color:#065f46; border: 1px solid rgba(34,197,94,.25); }
-    .pill-type{ background: rgba(56,189,248,.12); color:#075985; border: 1px solid rgba(56,189,248,.18); }
-
-    .adminBar{ display:none; margin-top: 12px; }
-    .adminBar.show{ display:block; }
-
-    .adminBox{ background: rgba(255,255,255,.10); color:white; border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(12px); border-radius: 18px; padding: 14px; }
-    .adminBox .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 860px){ .adminBox .row{ grid-template-columns: 1fr; } }
-    .adminBox label{ font-size:12px; font-weight:900; opacity:.9; }
-    .adminBox input, .adminBox select, .adminBox textarea{
-      width:100%; padding:10px 12px; border-radius: 12px; border:1px solid rgba(255,255,255,.20);
-      background: rgba(2,6,23,.65); color:white;
+    body{
+      margin:0;
+      font-family: Montserrat, Arial, sans-serif;
+      min-height:100vh;
+      background:linear-gradient(180deg,#001a4d,#003893,#001a4d);
+      color:white;
     }
-    .adminBox textarea{ min-height: 80px; resize: vertical; }
 
-    .sectionTitleSmall{ margin-top: 10px; font-weight: 900; opacity:.95; }
-    .mutedWhite{ color: rgba(255,255,255,.82); font-size: 13px; line-height:1.35; }
+    .wrap{ max-width: 980px; margin: 0 auto; padding: 36px 16px; }
+
+    .titleRow{ display:flex; align-items:flex-start; gap:14px; }
+    h1{
+      color: var(--yellow);
+      font-family: "Playfair Display", serif;
+      font-size: 46px;
+      margin: 0;
+      line-height: 1.05;
+    }
+
+    .subtitle{ opacity:.85; margin: 6px 0 0 0; }
+
+    .sectionTitle{ margin: 26px 0 10px 0; font-size: 18px; }
+
+    .card{
+      background:white;
+      color: var(--blue);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      margin: 10px 0;
+    }
+
+    .topic{
+      position: relative;
+      transition: .2s;
+      cursor: pointer;
+    }
+    .topic:hover{
+      transform: translateY(-3px);
+      box-shadow: 0 14px 40px rgba(0,0,0,.25);
+    }
+
+    .topic strong{ display:block; margin-bottom:4px; font-size: 18px; }
+    .topic p{ margin:0; font-size: 13px; color: #4b5563; }
+
+    .admin-tools{
+      position:absolute;
+      top:10px;
+      right:10px;
+      display:flex;
+      gap:6px;
+    }
+    .admin-tools button{
+      border:none;
+      padding:6px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:12px;
+      font-weight:700;
+    }
+    .btn-edit{ background: var(--yellow); color:#111827; }
+    .btn-del{ background: var(--red); color:white; }
+
+    .topbar{
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      display:flex;
+      gap:10px;
+      z-index: 50;
+    }
+    .topbar button{
+      padding: 8px 12px;
+      border:none;
+      border-radius: 10px;
+      cursor:pointer;
+      font-weight:700;
+      background: var(--red);
+      color:white;
+    }
+
+    .backlink{ color: white; opacity:.9; text-decoration: underline; display:inline-block; margin-bottom: 14px; }
+
+    .adminPanel{ display:none; margin-top: 20px; }
+    .row{
+      display:grid;
+      grid-template-columns: 160px 1fr 1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .row input, .row select{
+      padding:10px;
+      border-radius:10px;
+      border: 1px solid #d1d5db;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .row button{
+      padding:10px 14px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:800;
+      background: var(--blue);
+      color:white;
+    }
+
+    .adminBar{
+      display:none;
+      margin-top: 14px;
+      gap:10px;
+      flex-wrap: wrap;
+    }
+    .adminBar button{
+      padding:10px 12px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:800;
+      background: rgba(255,255,255,.12);
+      color: white;
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .adminBar button:hover{ opacity:.9; }
   </style>
 </head>
 
 <body>
+  <div class="topbar">
+    <button onclick="logout()">Wyloguj</button>
+  </div>
 
-  <header class="nav-glass">
-    <div class="container nav-inner">
-      <div class="brand">
-        <div class="logo-flag" aria-hidden="true"></div>
-        <div class="name">Aqui vivo</div>
-      </div>
+  <div class="wrap">
+    <a class="backlink" href="panel.html">← Wróć do panelu</a>
 
-      <div class="nav-actions">
-        <a class="btn-white-outline" href="panel.html">Panel</a>
-        <button class="btn-red" id="logoutBtn" type="button">Wyloguj</button>
+    <div class="titleRow">
+      <div style="font-size:44px; line-height:1;">📘</div>
+      <div style="flex:1;">
+        <h1 id="levelTitle">Poziom</h1>
+        <p class="subtitle" id="levelSubtitle">Ładowanie…</p>
+
+        <!-- ADMIN BUTTONS (ukryte dla uczniów) -->
+        <div id="adminBar" class="adminBar">
+          <button onclick="editCourseMeta()">✏️ Edytuj opis kursu</button>
+          <button onclick="dedupeLevel()">🧹 Usuń duplikaty (A1)</button>
+        </div>
       </div>
     </div>
-  </header>
 
-  <main class="page">
-    <div class="container">
+    <div class="sectionTitle">📘 Gramatyka</div>
+    <div id="grammarList"></div>
 
-      <section class="course-grid">
-        <div class="hero-card">
-          <h1 class="hero-title glow-text" id="courseTitle">Kurs</h1>
-          <p class="hero-subtitle" id="courseSubtitle">Ładowanie…</p>
+    <div class="sectionTitle">📗 Słownictwo</div>
+    <div id="vocabList"></div>
 
-          <div class="filters">
-            <button class="chip active" id="btnAll" type="button">Wszystko</button>
-            <button class="chip secondary" id="btnGrammar" type="button">Gramatyka</button>
-            <button class="chip secondary" id="btnVocab" type="button">Słownictwo</button>
+    <!-- ADMIN (dodawanie tematu) -->
+    <div id="adminPanel" class="card adminPanel">
+      <h3 style="margin:0 0 10px 0;">👑 Panel Admin – dodaj temat</h3>
 
-            <div style="flex:1 1 220px;"></div>
+      <div class="row">
+        <select id="adminType">
+          <option value="grammar">gramatyka</option>
+          <option value="vocabulary">słownictwo</option>
+        </select>
 
-            <input id="searchInput" placeholder="Szukaj…" style="max-width:260px; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.18); background: rgba(2,6,23,.55); color:white; font-weight:800;">
-            <select id="taskSelect" style="max-width:220px;">
-              <option value="">Wszystkie typy</option>
-              <option value="flashcards">Fiszki</option>
-              <option value="audio">Audio</option>
-              <option value="quiz">Quiz</option>
-              <option value="pdf">PDF</option>
-              <option value="other">Inne</option>
-            </select>
-          </div>
+        <input id="adminTitle" placeholder="Tytuł (ES)" />
+        <input id="adminDesc" placeholder="Opis (ES)" />
 
-          <div class="adminBar" id="adminBar">
-            <div class="adminBox">
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                <div style="font-weight:900;">⚙️ Admin narzędzia</div>
-                <a class="btn-white-outline" href="admin.html" style="text-decoration:none;">Zarządzaj dostępami</a>
-              </div>
+        <button onclick="addTopic()">➕ Dodaj</button>
+      </div>
 
-              <div class="sectionTitleSmall">Meta kursu</div>
-              <p class="mutedWhite" style="margin-top:6px;">Tytuł i opis są trzymane w Firestore: <code>course_meta/{LEVEL}</code>.</p>
-              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-                <button class="btn-yellow" id="editMetaBtn" type="button">Edytuj tytuł/opis</button>
-              </div>
-
-              <div class="sectionTitleSmall" style="margin-top:14px;">Dodaj temat</div>
-              <div class="row" style="margin-top:8px;">
-                <div>
-                  <label>Tytuł</label>
-                  <input id="newTitle" placeholder="Np. Czas przeszły (być/mieć)">
-                </div>
-                <div>
-                  <label>Typ</label>
-                  <select id="newType">
-                    <option value="grammar">grammar</option>
-                    <option value="vocabulary">vocabulary</option>
-                  </select>
-                </div>
-                <div>
-                  <label>Opis</label>
-                  <input id="newDesc" placeholder="Krótki opis…">
-                </div>
-                <div>
-                  <label>Order (liczba)</label>
-                  <input id="newOrder" placeholder="np. 10">
-                </div>
-                <div>
-                  <label>TaskType</label>
-                  <select id="newTaskType">
-                    <option value="flashcards">flashcards</option>
-                    <option value="audio">audio</option>
-                    <option value="quiz">quiz</option>
-                    <option value="pdf">pdf</option>
-                    <option value="other">other</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-                <button class="btn-yellow" id="addTopicBtn" type="button">➕ Dodaj</button>
-                <button class="btn-white-outline" id="dedupeBtn" type="button">🧹 Usuń duplikaty (level)</button>
-              </div>
-
-              <p class="mutedWhite" style="margin:10px 0 0;">⚠️ CRUD działa na kolekcji <code>courses</code>. Dokumenty mają pola: <code>level, type, title, desc, order, taskType</code>.</p>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="stats">
-          <div class="stat"><div class="big">🃏</div><div class="label">Fiszki</div></div>
-          <div class="stat"><div class="big">🎧</div><div class="label">Audio</div></div>
-          <div class="stat"><div class="big">✅</div><div class="label">Postęp</div></div>
-        </div>
-      </section>
-
-      <div class="sectionTitle">📚 Tematy</div>
-      <div class="listWrap" id="topicsList"></div>
-
+      <p style="font-size:12px; color:#6b7280; margin:10px 0 0 0;">
+        Jeśli kliknęłaś import kilka razy – użyj „Usuń duplikaty”. To usunie powtórki z Firestore.
+      </p>
     </div>
-  </main>
+  </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  orderBy,
-  getDocs,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+  <!-- 🔥 Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+    import {
+      getFirestore, collection, query, where, getDocs,
+      addDoc, deleteDoc, updateDoc, doc, getDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
-  authDomain: "aquivivo-platform.firebaseapp.com",
-  projectId: "aquivivo-platform",
-  storageBucket: "aquivivo-platform.firebasestorage.app",
-  messagingSenderId: "116115622011",
-  appId: "1:116115622011:web:33a4a583eba4368071bade"
-};
+    // ✅ Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
+      authDomain: "aquivivo-platform.firebaseapp.com",
+      projectId: "aquivivo-platform",
+      storageBucket: "aquivivo-platform.firebasestorage.app",
+      messagingSenderId: "116115622011",
+      appId: "1:116115622011:web:33a4a583eba4368071bade"
+    };
 
-const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+    // 👑 admin mail
+    const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
+    let isAdmin = false;
 
-// ---- UI
-const courseTitleEl = document.getElementById("courseTitle");
-const courseSubtitleEl = document.getElementById("courseSubtitle");
-const topicsListEl = document.getElementById("topicsList");
+    // level from URL: course.html?level=A1
+    const params = new URLSearchParams(window.location.search);
+    const LEVEL = (params.get("level") || "A1").toUpperCase();
 
-const btnAll = document.getElementById("btnAll");
-const btnGrammar = document.getElementById("btnGrammar");
-const btnVocab = document.getElementById("btnVocab");
-const searchInput = document.getElementById("searchInput");
-const taskSelect = document.getElementById("taskSelect");
+    // UI refs
+    const levelTitle = document.getElementById("levelTitle");
+    const levelSubtitle = document.getElementById("levelSubtitle");
+    const grammarList = document.getElementById("grammarList");
+    const vocabList = document.getElementById("vocabList");
+    const adminPanel = document.getElementById("adminPanel");
+    const adminBar = document.getElementById("adminBar");
 
-const adminBar = document.getElementById("adminBar");
-const logoutBtn = document.getElementById("logoutBtn");
+    levelTitle.textContent = `Poziom ${LEVEL}`;
+    levelSubtitle.textContent = "Ładowanie…";
 
-// Admin form
-const editMetaBtn = document.getElementById("editMetaBtn");
-const addTopicBtn = document.getElementById("addTopicBtn");
-const dedupeBtn = document.getElementById("dedupeBtn");
+    // 🔐 Auth
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
 
-const newTitle = document.getElementById("newTitle");
-const newType = document.getElementById("newType");
-const newDesc = document.getElementById("newDesc");
-const newOrder = document.getElementById("newOrder");
-const newTaskType = document.getElementById("newTaskType");
+      isAdmin = (user.email === ADMIN_EMAIL);
 
-// ---- State
-const params = new URLSearchParams(window.location.search);
-const LEVEL = (params.get("level") || "A1").toUpperCase();
+      if (isAdmin) {
+        adminPanel.style.display = "block";
+        adminBar.style.display = "flex";
+      } else {
+        adminPanel.style.display = "none";
+        adminBar.style.display = "none";
+      }
 
-let isAdmin = false;
-let allTopics = [];
-let filterKind = "all";
-
-// ---- Progress (bez zewnętrznych plików; trzymamy w localStorage)
-const Progress = {
-  key(level){ return `aqv_progress_${level}`; },
-  load(level){
-    try { return JSON.parse(localStorage.getItem(this.key(level)) || "{}"); }
-    catch { return {}; }
-  },
-  save(level, data){ localStorage.setItem(this.key(level), JSON.stringify(data||{})); },
-  isDone(level, topicId){
-    const data = this.load(level);
-    return !!data[topicId];
-  },
-  toggleDone(level, topicId, title){
-    const data = this.load(level);
-    if (data[topicId]) delete data[topicId];
-    else data[topicId] = { title: title || "", at: new Date().toISOString() };
-    this.save(level, data);
-  }
-};
-
-function esc(s){
-  return String(s||"")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-function setActiveChip(kind){
-  filterKind = kind;
-  const map = { all: btnAll, grammar: btnGrammar, vocabulary: btnVocab };
-  [btnAll, btnGrammar, btnVocab].forEach(b => { b.classList.remove("active"); b.classList.add("secondary"); });
-  map[kind].classList.add("active");
-  map[kind].classList.remove("secondary");
-}
-
-function prettyLevel(lvl){ return `Polski ${lvl}`; }
-
-async function loadCourseMeta(){
-  // course_meta/{LEVEL}: { title, subtitle }
-  const ref = doc(db, "course_meta", LEVEL);
-  const snap = await getDoc(ref);
-
-  const fallbackTitle = prettyLevel(LEVEL);
-  const fallbackSubtitle = "Wybierz temat i ucz się krok po kroku.";
-
-  if (!snap.exists()){
-    courseTitleEl.textContent = fallbackTitle;
-    courseSubtitleEl.textContent = fallbackSubtitle;
-    return;
-  }
-
-  const data = snap.data() || {};
-  courseTitleEl.textContent = data.title || fallbackTitle;
-  courseSubtitleEl.textContent = data.subtitle || fallbackSubtitle;
-}
-
-async function editCourseMeta(){
-  const currentTitle = courseTitleEl.textContent || "";
-  const currentSubtitle = courseSubtitleEl.textContent || "";
-
-  const title = prompt(`Tytuł kursu (${LEVEL})`, currentTitle);
-  if (title === null) return;
-
-  const subtitle = prompt(`Opis kursu (${LEVEL})`, currentSubtitle);
-  if (subtitle === null) return;
-
-  const ref = doc(db, "course_meta", LEVEL);
-  await setDoc(ref, { title: String(title), subtitle: String(subtitle) }, { merge: true });
-  await loadCourseMeta();
-  alert("✅ Zapisano meta kursu");
-}
-
-async function loadTopicsFromFirestore(){
-  // courses: { level, type, title, desc, order, taskType }
-  const q = query(
-    collection(db, "courses"),
-    where("level", "==", LEVEL),
-    orderBy("order", "asc")
-  );
-
-  const snap = await getDocs(q);
-  const out = [];
-  snap.forEach(d => {
-    const x = d.data() || {};
-    out.push({
-      id: d.id,
-      level: x.level,
-      type: x.type || "grammar",
-      title: x.title || "(bez tytułu)",
-      desc: x.desc || "",
-      order: Number.isFinite(Number(x.order)) ? Number(x.order) : 0,
-      taskType: x.taskType || "other"
+      await loadCourseMeta();
+      await loadTopics();
     });
-  });
 
-  allTopics = out;
-}
+    // 🚪 logout
+    window.logout = function () {
+      signOut(auth).then(() => window.location.href = "login.html");
+    };
 
-function applyFilters(){
-  const q = (searchInput.value || "").toLowerCase().trim();
-  const task = (taskSelect.value || "").trim();
+    // --- helpers
+    function normType(t) {
+      return String(t || "").toLowerCase().trim();
+    }
 
-  let filtered = [...allTopics];
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
 
-  if (filterKind !== "all"){
-    filtered = filtered.filter(t => t.type === filterKind);
-  }
+    // ✅ 1) course meta: course_meta/A1 (title + subtitle)
+    async function loadCourseMeta(){
+      const metaRef = doc(db, "course_meta", LEVEL);
+      const metaSnap = await getDoc(metaRef);
 
-  if (task){
-    filtered = filtered.filter(t => (t.taskType || "") === task);
-  }
+      if (metaSnap.exists()){
+        const m = metaSnap.data();
+        levelTitle.textContent = m.title || `Poziom ${LEVEL}`;
+        levelSubtitle.textContent = m.subtitle || "Gotowe ✅";
+      } else {
+        // default if no meta yet
+        levelTitle.textContent = `Poziom ${LEVEL}`;
+        levelSubtitle.textContent = "Gotowe ✅";
+      }
+    }
 
-  if (q){
-    filtered = filtered.filter(t =>
-      (t.title || "").toLowerCase().includes(q) ||
-      (t.desc || "").toLowerCase().includes(q)
-    );
-  }
+    // Admin: edit meta
+    window.editCourseMeta = async function(){
+      if(!isAdmin) return;
 
-  renderTopics(filtered);
-}
+      const currentTitle = levelTitle.textContent;
+      const currentSub = levelSubtitle.textContent;
 
-function renderTopics(list){
-  if (!list.length){
-    topicsListEl.innerHTML = `<div class="card"><b>Brak wyników.</b></div>`;
-    return;
-  }
+      const newTitle = prompt("Nowy tytuł kursu (nagłówek):", currentTitle);
+      if(newTitle === null) return;
 
-  topicsListEl.innerHTML = list.map(renderTopicCard).join("");
-}
+      const newSub = prompt("Nowy opis kursu (pod tytułem):", currentSub);
+      if(newSub === null) return;
 
-function renderTopicCard(t){
-  const done = Progress.isDone(LEVEL, t.id);
+      const metaRef = doc(db, "course_meta", LEVEL);
+      await setDoc(metaRef, {
+        title: newTitle.trim() || `Poziom ${LEVEL}`,
+        subtitle: newSub.trim() || ""
+      }, { merge: true });
 
-  const donePill = done ? `<span class="pill pill-done">✅ zrobione</span>` : "";
-  const typePill = `<span class="pill pill-type">${esc(t.type)} · ${esc(t.taskType || "other")}</span>`;
+      await loadCourseMeta();
+      alert("✅ Opis kursu zapisany");
+    };
 
-  const adminBtns = isAdmin ? `
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button class="btn-white-outline" type="button" onclick="editTopic('${esc(t.id)}')">✏️ Edytuj</button>
-      <button class="btn-red" type="button" onclick="deleteTopicUI('${esc(t.id)}')">❌ Usuń</button>
-    </div>
-  ` : "";
+    // ✅ 2) load topics from courses where level==LEVEL
+    async function loadTopics() {
+      grammarList.innerHTML = "";
+      vocabList.innerHTML = "";
 
-  return `
-    <div class="card topicCard">
-      <div class="topicTop">
-        <div>
-          <div class="topicTitle">${esc(t.title)}</div>
-          ${t.desc ? `<p class="topicDesc">${esc(t.desc)}</p>` : ``}
-          <div class="topicMeta" style="margin-top:8px;">
-            ${typePill}
-            ${donePill}
-          </div>
+      const q = query(collection(db, "courses"), where("level", "==", LEVEL));
+      const snap = await getDocs(q);
+
+      const grammar = [];
+      const vocab = [];
+
+      snap.forEach((d) => {
+        const data = d.data();
+        const t = normType(data.type);
+
+        const item = {
+          id: d.id,
+          title: data.title || "",
+          desc: data.desc || "",
+          order: Number(data.order ?? 9999),
+          type: t
+        };
+
+        if (t === "grammar") grammar.push(item);
+        if (t === "vocabulary") vocab.push(item);
+      });
+
+      grammar.sort((a,b) => a.order - b.order);
+      vocab.sort((a,b) => a.order - b.order);
+
+      grammarList.innerHTML = grammar.length
+        ? grammar.map(renderTopicCard).join("")
+        : `<div class="card">Brak tematów gramatyki (jeszcze 😊)</div>`;
+
+      vocabList.innerHTML = vocab.length
+        ? vocab.map(renderTopicCard).join("")
+        : `<div class="card">Brak tematów słownictwa (jeszcze 😊)</div>`;
+
+      if (levelSubtitle.textContent.toLowerCase().includes("ładowanie")) {
+        levelSubtitle.textContent = "Gotowe ✅";
+      }
+    }
+
+    function renderTopicCard(t) {
+      const adminButtons = isAdmin
+        ? `<div class="admin-tools">
+             <button class="btn-edit" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
+             <button class="btn-del" onclick="event.stopPropagation(); deleteTopic('${t.id}')">❌</button>
+           </div>`
+        : "";
+
+      return `
+        <div class="card topic" onclick="openLesson('${t.id}')">
+          ${adminButtons}
+          <strong>${escapeHtml(t.title)}</strong>
+          <p>${escapeHtml(t.desc)}</p>
         </div>
+      `;
+    }
 
-        <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
-          <button class="btn-yellow" type="button" onclick="openLesson('${esc(t.id)}','${esc(t.title)}')">Otwórz →</button>
-          <button class="btn-white-outline" type="button" onclick="toggleDone('${esc(t.id)}','${esc(t.title)}')">${done ? "Cofnij ✅" : "Zrobione ✅"}</button>
-          ${adminBtns}
-        </div>
-      </div>
-    </div>
-  `;
-}
+    // 🔜 next step: lesson.html?id=...
+    window.openLesson = function(id){
+      alert("Następny etap: lesson.html?id=" + id);
+    };
 
-// ---- Actions
-window.openLesson = function(topicId, title){
-  // Tu zostawiamy miejsce na Twoją docelową lekcję (np. lesson.html?id=...)
-  // Na razie: zapis ostatnio otwartego tematu i info w alert (żeby nic nie "zniknęło").
-  localStorage.setItem("aqv_last_open", JSON.stringify({ level: LEVEL, topicId, title, at: new Date().toISOString() }));
-  alert(`📌 Otwieranie: ${title}\n\n(Jeśli masz osobną stronę lekcji, podepnę to pod prawdziwy link.)`);
-};
+    // ✅ Admin add topic
+    window.addTopic = async function(){
+      if(!isAdmin) return;
 
-window.toggleDone = function(topicId, title){
-  Progress.toggleDone(LEVEL, topicId, title);
-  applyFilters();
-};
+      const type = document.getElementById("adminType").value; // grammar/vocabulary
+      const title = document.getElementById("adminTitle").value.trim();
+      const desc  = document.getElementById("adminDesc").value.trim();
 
-async function addTopic(){
-  const title = (newTitle.value || "").trim();
-  const type = (newType.value || "grammar").trim();
-  const desc = (newDesc.value || "").trim();
-  const order = Number((newOrder.value || "").trim() || "0");
-  const taskType = (newTaskType.value || "other").trim();
+      if(!title || !desc) return alert("Uzupełnij tytuł i opis");
 
-  if(!title){
-    alert("Wpisz tytuł.");
-    return;
-  }
+      // find max order in this level to append at end
+      const q = query(collection(db, "courses"), where("level", "==", LEVEL));
+      const snap = await getDocs(q);
+      let maxOrder = 0;
+      snap.forEach(d => {
+        const o = Number(d.data().order ?? 0);
+        if(o > maxOrder) maxOrder = o;
+      });
 
-  // Tworzymy nowy dokument z automatycznym ID:
-  const ref = doc(collection(db, "courses"));
-  await setDoc(ref, {
-    level: LEVEL,
-    type,
-    title,
-    desc,
-    order: Number.isFinite(order) ? order : 0,
-    taskType
-  });
+      await addDoc(collection(db,"courses"),{
+        level: LEVEL,
+        type, // IMPORTANT: lowercase
+        title,
+        desc,
+        order: maxOrder + 1
+      });
 
-  newTitle.value = "";
-  newDesc.value = "";
-  newOrder.value = "";
+      document.getElementById("adminTitle").value = "";
+      document.getElementById("adminDesc").value = "";
 
-  await loadTopicsFromFirestore();
-  applyFilters();
-  alert("✅ Dodano temat");
-}
+      await loadTopics();
+      alert("✅ Dodano temat");
+    };
 
-window.editTopic = async function(id){
-  const ref = doc(db, "courses", id);
-  const snap = await getDoc(ref);
-  if(!snap.exists()){
-    alert("Nie znaleziono tematu.");
-    return;
-  }
-  const t = snap.data() || {};
+    window.deleteTopic = async function(id){
+      if(!isAdmin) return;
+      if(!confirm("Usunąć ten temat?")) return;
 
-  const title = prompt("Tytuł", t.title || "");
-  if(title === null) return;
+      await deleteDoc(doc(db,"courses",id));
+      await loadTopics();
+    };
 
-  const desc = prompt("Opis", t.desc || "");
-  if(desc === null) return;
+    window.editTopic = async function(id){
+      if(!isAdmin) return;
 
-  const type = prompt("Typ (grammar / vocabulary)", t.type || "grammar");
-  if(type === null) return;
+      // get current doc
+      const ref = doc(db,"courses",id);
+      const snap = await getDoc(ref);
+      if(!snap.exists()) return alert("Nie znaleziono tematu");
 
-  const taskType = prompt("TaskType (flashcards/audio/quiz/pdf/other)", t.taskType || "other");
-  if(taskType === null) return;
+      const cur = snap.data();
+      const newTitle = prompt("Nowy tytuł:", cur.title || "");
+      if(newTitle === null) return;
+      const newDesc  = prompt("Nowy opis:", cur.desc || "");
+      if(newDesc === null) return;
 
-  const order = prompt("Order (liczba)", String(t.order ?? 0));
-  if(order === null) return;
+      const t = newTitle.trim();
+      const d = newDesc.trim();
+      if(!t || !d) return alert("Tytuł i opis nie mogą być puste");
 
-  await updateDoc(ref, {
-    title: String(title),
-    desc: String(desc),
-    type: String(type),
-    taskType: String(taskType),
-    order: Number(order) || 0
-  });
+      await updateDoc(ref, { title: t, desc: d });
+      await loadTopics();
+    };
 
-  await loadTopicsFromFirestore();
-  applyFilters();
-  alert("✅ Zapisano zmiany");
-};
+    // ✅ 3) DEDUPE (usuwa duplikaty z Firestore)
+    // Duplikat = taki sam: level + type + title + desc
+    window.dedupeLevel = async function(){
+      if(!isAdmin) return;
+      if(!confirm("Usunąć duplikaty tematów dla poziomu " + LEVEL + "?")) return;
 
-window.deleteTopicUI = async function(id){
-  if(!confirm("Usunąć temat?")) return;
-  await deleteDoc(doc(db, "courses", id));
-  await loadTopicsFromFirestore();
-  applyFilters();
-  alert("✅ Usunięto");
-};
+      const q = query(collection(db, "courses"), where("level", "==", LEVEL));
+      const snap = await getDocs(q);
 
-async function dedupeLevel(){
-  // usuwa duplikaty w level po kluczu: type|title|taskType
-  const qAll = query(collection(db, "courses"), where("level", "==", LEVEL));
-  const snap = await getDocs(qAll);
+      const seen = new Map(); // key -> keepDocId
+      const toDelete = [];
 
-  const seen = new Set();
-  const toDelete = [];
+      snap.forEach(d => {
+        const data = d.data();
+        const key = [
+          (data.level || "").toString().toUpperCase(),
+          normType(data.type),
+          (data.title || "").trim(),
+          (data.desc || "").trim()
+        ].join("||");
 
-  snap.forEach(d => {
-    const x = d.data() || {};
-    const key = `${(x.type||"").trim()}|${(x.title||"").trim().toLowerCase()}|${(x.taskType||"").trim()}`;
-    if(seen.has(key)) toDelete.push(d.id);
-    else seen.add(key);
-  });
+        if (!seen.has(key)) {
+          seen.set(key, d.id);
+        } else {
+          // extra duplicate -> delete
+          toDelete.push(d.id);
+        }
+      });
 
-  if(!toDelete.length){
-    alert("Brak duplikatów ✅");
-    return;
-  }
+      for (const id of toDelete) {
+        await deleteDoc(doc(db, "courses", id));
+      }
 
-  if(!confirm(`Znaleziono ${toDelete.length} duplikatów. Usunąć?`)) return;
-  for(const id of toDelete){
-    await deleteDoc(doc(db, "courses", id));
-  }
-  await loadTopicsFromFirestore();
-  applyFilters();
-  alert(`✅ Usunięto duplikaty: ${toDelete.length}`);
-}
-
-// ---- Events
-btnAll.addEventListener("click", () => { setActiveChip("all"); applyFilters(); });
-btnGrammar.addEventListener("click", () => { setActiveChip("grammar"); applyFilters(); });
-btnVocab.addEventListener("click", () => { setActiveChip("vocabulary"); applyFilters(); });
-
-searchInput.addEventListener("input", applyFilters);
-taskSelect.addEventListener("change", applyFilters);
-
-logoutBtn.addEventListener("click", () => {
-  signOut(auth).then(() => window.location.href = "login.html");
-});
-
-editMetaBtn.addEventListener("click", editCourseMeta);
-addTopicBtn.addEventListener("click", addTopic);
-dedupeBtn.addEventListener("click", dedupeLevel);
-
-// ---- Auth gate + access check (zgodne z adminem: users.access.{LEVEL}.freeUntil)
-function parseIso(s){
-  if(!s) return null;
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
-}
-function hasActiveAccess(userData, level){
-  const exp = parseIso(userData?.access?.[level]?.freeUntil);
-  if(!exp) return false;
-  return exp > new Date();
-}
-
-onAuthStateChanged(auth, async (user) => {
-  if(!user){
-    window.location.href = "login.html";
-    return;
-  }
-
-  isAdmin = ((user.email||"").toLowerCase() === ADMIN_EMAIL.toLowerCase());
-  if(isAdmin) adminBar.classList.add("show");
-
-  // Access gate:
-  const uref = doc(db, "users", user.uid);
-  const usnap = await getDoc(uref);
-  const udata = usnap.exists() ? usnap.data() : null;
-
-  // jeśli nie ma doca users -> cofamy do panelu (tam tworzy trial)
-  if(!udata){
-    window.location.href = "panel.html";
-    return;
-  }
-
-  if(!hasActiveAccess(udata, LEVEL) && !isAdmin){
-    alert("🔒 Brak dostępu do tego poziomu. Wrócisz do panelu.");
-    window.location.href = "panel.html";
-    return;
-  }
-
-  await loadCourseMeta();
-  await loadTopicsFromFirestore();
-  setActiveChip("all");
-  applyFilters();
-});
-</script>
-
+      alert(`✅ Usunięto duplikaty: ${toDelete.length}`);
+      await loadTopics();
+    };
+  </script>
 </body>
 </html>
