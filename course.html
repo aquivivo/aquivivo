@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kurs | AquiVivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <style>
+    .list-wrap{ display:grid; gap:14px; }
+
+    /* status bar */
+    .statusBar{
+      margin: 0 0 14px 0;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+      font-weight: 800;
+      display: none;
+    }
+    .statusBar.ok{ display:block; border-color: rgba(34,197,94,.45); }
+    .statusBar.err{ display:block; border-color: rgba(239,68,68,.45); }
+    .statusBar.neu{ display:block; border-color: rgba(252,209,22,.35); }
+
+    .adminBar{ display:none; margin-top: 14px; gap:10px; flex-wrap: wrap; }
+    .adminBar button{
+      padding: 11px 14px;
+      border: none;
+      border-radius: 18px;
+      cursor: pointer;
+      font-weight: 900;
+      background: rgba(255,255,255,.10);
+      color: white;
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+    }
+    .adminBar button:hover{ opacity:.95; }
+
+    .admin-tools{
+      position:absolute;
+      top: 12px;
+      right: 12px;
+      display:flex;
+      gap: 8px;
+      z-index: 5;
+    }
+    .admin-tools button{
+      border:none;
+      padding: 8px 10px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .btn-edit{
+      background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+      color: #111827;
+    }
+    .btn-del{
+      background: linear-gradient(135deg, var(--red-main) 0%, var(--red-dark) 100%);
+      color: white;
+    }
+
+    .adminPanel{ display:none; margin-top: 18px; }
+    .row{
+      display:grid;
+      grid-template-columns: 160px 1fr 1fr auto;
+      gap: 10px;
+      align-items:center;
+    }
+    @media (max-width: 860px){
+      .row{ grid-template-columns: 1fr; }
+    }
+    .row input, .row select{
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid #d1d5db;
+      width: 100%;
+      outline: none;
+    }
+
+    /* =========================
+       FILTERS (jak robiliśmy wcześniej)
+       ========================= */
+    .filters-wrap{ margin-top: 16px; }
+
+    .searchbar{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      background: #f3f4f6;
+      border-radius: 22px;
+      padding: 16px 18px;
+      border: 3px solid rgba(252, 209, 22, 0.85);
+      box-shadow: 0 12px 34px rgba(0,0,0,.18);
+    }
+    .searchbar .icon{ font-size: 18px; opacity: .9; color: var(--blue-main); }
+    .searchbar input{
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 18px;
+      font-weight: 800;
+      background: transparent;
+      color: #111827;
+    }
+    .searchbar input::placeholder{ color: #9ca3af; font-weight: 800; }
+
+    .filters-row-2{
+      display:grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    @media (max-width: 860px){
+      .filters-row-2{ grid-template-columns: 1fr; }
+    }
+
+    .filter-block label{
+      display:block;
+      font-weight: 900;
+      margin: 0 0 8px 6px;
+      opacity: .95;
+    }
+
+    .selectbox{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      background: #f3f4f6;
+      border-radius: 18px;
+      padding: 14px 16px;
+      border: 3px solid rgba(252, 209, 22, 0.85);
+      box-shadow: 0 10px 28px rgba(0,0,0,.16);
+    }
+    .selectbox .icon{ font-size: 16px; color: var(--blue-main); }
+    .selectbox select{
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 16px;
+      font-weight: 900;
+      color: #0b1b3f;
+      cursor: pointer;
+    }
+
+    .toggle-row{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .toggle-btn{
+      border: 2px solid rgba(255,255,255,.40);
+      background: rgba(255,255,255,.10);
+      color: white;
+      font-weight: 900;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor:pointer;
+      backdrop-filter: blur(10px);
+      transition: .2s ease;
+    }
+    .toggle-btn:hover{ transform: translateY(-2px); opacity:.95; }
+    .toggle-btn.active{ border-color: rgba(252,209,22,.90); box-shadow: 0 12px 28px rgba(252,209,22,.25); }
+    .toggle-btn.active-yellow{
+      background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+      color: #0b1b3f;
+    }
+    .toggle-btn.active-red{
+      background: linear-gradient(135deg, var(--red-main) 0%, var(--red-dark) 100%);
+      color: white;
+    }
+
+    .filter-actions{
+      margin-top: 14px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+/* ✅ DONE marker */
+    .topic.done{
+      outline: 2px solid rgba(34,197,94,.45);
+      box-shadow: 0 10px 26px rgba(34,197,94,.12);
+    }
+    .done-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 12px;
+      background: rgba(34,197,94,.18);
+      border: 1px solid rgba(34,197,94,.35);
+      margin-top: 8px;
+      width: fit-content;
+    }
+
+
+    /* === Widgets (ładnie i kompaktowo) === */
+    .widgets-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 16px 0 0;
+    }
+    @media (max-width: 860px){
+      .widgets-grid{ grid-template-columns: 1fr; }
+    }
+    .widget-box{
+      background:#f8fafc;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      padding:12px;
+      margin-top:10px;
+      color:#0b1b3f;
+    }
+    .rec-line{font-weight:900;color:#0b1b3f}
+    .rec-sub{margin-top:6px;color:#64748b;font-weight:700}
+
+    .plan-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border-radius:14px;
+      background:white;
+      border:1px solid #e5e7eb;
+      margin-top:8px;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+    .plan-item:hover{transform:translateY(-1px)}
+    .plan-item .left{
+      display:flex;gap:10px;align-items:center;
+      font-weight:900;color:#0b1b3f;
+    }
+    .plan-item .day{opacity:.75;font-weight:900}
+    .plan-item .check{
+      width:22px;height:22px;border-radius:8px;
+      border:2px solid #cbd5e1;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-weight:900;color:#0b1b3f;
+    }
+    .plan-item.done{
+      border-color: rgba(252,209,22,.85);
+      box-shadow: 0 12px 26px rgba(252,209,22,.18);
+    }
+    .plan-item.done .check{
+      border-color: rgba(252,209,22,.85);
+      background: rgba(252,209,22,.20);
+    }
+
+
+    /* === PREMIUM WIDGETS === */
+    .widgets-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+    @media(max-width:860px){.widgets-grid{grid-template-columns:1fr}}
+    .widgets-grid .card{padding:0;overflow:hidden}
+    .widget-head{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;
+      background: linear-gradient(135deg, rgba(252,209,22,.25) 0%, rgba(59,130,246,.12) 100%);
+      border-bottom:1px solid rgba(229,231,235,.9);
+    }
+    .widget-title{
+      display:flex;gap:10px;align-items:center;
+      font-weight:900;color:#0b1b3f;font-size:15px;
+    }
+    .widget-title .ic{width:32px;height:32px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      background: rgba(255,255,255,.75); border:1px solid rgba(229,231,235,.9);
+    }
+    .widget-body{padding:14px 16px;background:white}
+    .widget-note{margin-top:8px;color:#64748b;font-weight:700;font-size:13px}
+
+    .rec-line{font-weight:900;color:#0b1b3f;font-size:14px}
+    .rec-chip{
+      display:inline-flex;align-items:center;gap:8px;
+      margin-top:10px;
+      padding:8px 10px;border-radius:999px;
+      background: rgba(59,130,246,.08);
+      border:1px solid rgba(59,130,246,.18);
+      font-weight:900;color:#0b1b3f;font-size:12px;
+    }
+
+    .plan-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    @media(max-width:860px){.plan-grid{grid-template-columns:1fr}}
+    .plan-pill{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid #e5e7eb;background:#f8fafc;
+      cursor:pointer;transition:.15s ease;
+      font-weight:900;color:#0b1b3f;
+    }
+    .plan-pill:hover{transform:translateY(-1px)}
+    .plan-pill .left{display:flex;gap:10px;align-items:center}
+    .plan-pill .check{
+      width:22px;height:22px;border-radius:8px;
+      border:2px solid #cbd5e1;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-weight:900;
+    }
+    .plan-pill.done{
+      background: rgba(252,209,22,.16);
+      border-color: rgba(252,209,22,.65);
+      box-shadow: 0 12px 26px rgba(252,209,22,.15);
+    }
+    .plan-pill.done .check{
+      border-color: rgba(252,209,22,.85);
+      background: rgba(252,209,22,.25);
+    }
+
+    /* === Courses premium states === */
+    .course-card.glass-card{opacity:.55;filter:grayscale(1)}
+    .course-card:not(.glass-card){
+      border: 2px solid rgba(252,209,22,.55);
+      box-shadow:0 20px 46px rgba(252,209,22,.18);
+    }
+
+</style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <header class="nav-glass">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo-flag" aria-hidden="true"></div>
+        <div class="name">Aqui vivo</div>
+      </div>
+
+      <div class="nav-actions">
+        <a class="btn-white-outline" href="panel.html">← Panel</a>
+        <button class="btn-red" onclick="logout()">Wyloguj</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="container">
+
+      <!-- status -->
+      <div id="statusBar" class="statusBar neu">Ładowanie…</div>
+
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-card">
+          <div style="display:flex; gap:14px; align-items:flex-start;">
+            <div class="icon-circle floating">📘</div>
+
+            <div style="flex:1;">
+              <h1 id="levelTitle" class="hero-title glow-text">Poziom</h1>
+              <p class="hero-subtitle" id="levelSubtitle">Ładowanie…</p>
+
+              <div style="margin-top:10px;padding:10px 14px;border-radius:16px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18)">
+                🎯 Postęp: <b><span id="progressPercent">0</span>%</b>
+                <span style="opacity:.8">•</span>
+                🧩 Ostatni temat: <b><span id="lastTopic">—</span></b>
+              </div>
+
+
+              <div id="adminBar" class="adminBar">
+                <button onclick="editCourseMeta()">✏️ Edytuj tytuł i opis kursu</button>
+                <button onclick="dedupeLevel()">🧹 Usuń duplikaty (ten poziom)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="big" id="statLevel">A1</div>
+            <div class="label">Poziom</div>
+          </div>
+          <div class="stat">
+            <div class="big">🔎</div>
+            <div class="label">Szukaj</div>
+          </div>
+          <div class="stat">
+            <div class="big">🎛️</div>
+            <div class="label">Filtry</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 🧠 + 📅 widgets -->
+      <section class="widgets-grid">
+        <div class="card">
+          <div class="widget-head">
+            <div class="widget-title"><span class="ic">🧠</span> Rekomendacja dnia</div>
+            <span style="font-weight:900;opacity:.75">5 min</span>
+          </div>
+          <div class="widget-body">
+            <div class="rec-line" id="dailyRec">Ładowanie…</div>
+            <div class="rec-chip">🎯 cel: regularność</div>
+            <div class="widget-note">To ma być szybkie i przyjemne 💛</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="widget-head">
+            <div class="widget-title"><span class="ic">📅</span> Plan 7 dni</div>
+            <span style="font-weight:900;opacity:.75">checklist</span>
+          </div>
+          <div class="widget-body">
+            <div id="plan7" class="plan-grid"></div>
+            <div class="widget-note">Kliknij dzień, żeby odhaczyć ✅</div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ✅ FILTRY + WYSZUKIWARKA -->
+      <section class="filters-wrap">
+        <div class="searchbar">
+          <div class="icon">🔎</div>
+          <input id="searchInput" type="text" placeholder="Buscar tema..." />
+        </div>
+
+        <div class="filters-row-2">
+          <div class="filter-block">
+            <label>Tipo de ejercicio</label>
+            <div class="selectbox">
+              <div class="icon">🧩</div>
+              <select id="taskSelect">
+                <option value="all">Todos los tipos de ejercicios</option>
+
+                <optgroup label="📝 Escritos">
+                  <option value="rellenar_los_espacios">✏️ Rellenar los espacios</option>
+                  <option value="elegir_palabra_correcta">☑️ Elegir la palabra correcta</option>
+                  <option value="tarjetas_interactivas">🃏 Tarjetas interactivas</option>
+                  <option value="agrupar_palabras">📦 Agrupar palabras</option>
+                  <option value="verdadero_falso">✅ Verdadero o falso</option>
+                  <option value="memoria_pares">🧠 Juego de memoria (pares)</option>
+                  <option value="opcion_multiple">🔘 Opción múltiple</option>
+                  <option value="completar_forma_correcta">📝 Completar la forma correcta</option>
+                  <option value="elegir_forma_correcta">✔️ Elegir la forma correcta</option>
+                  <option value="transformaciones">🔀 Transformaciones</option>
+                  <option value="ordenar_palabras">🔤 Ordenar palabras para formar una frase</option>
+                  <option value="corregir_errores">🔍 Corregir errores</option>
+                  <option value="unir_partes_frase">🧩 Unir dos partes de la frase</option>
+                  <option value="completar_preposicion">➕ Completar con preposición o terminación</option>
+                  <option value="opcion_unica">1️⃣ Opción única</option>
+                  <option value="respuesta_propia">✍️ Escribir tu propia respuesta</option>
+                  <option value="palabra_imagen">🖼️ Relacionar palabra con imagen</option>
+                  <option value="palabra_traduccion">🔄 Relacionar palabra con traducción</option>
+                  <option value="frase_imagen">🖼️ Completar la frase con una imagen</option>
+                  <option value="pregunta_respuesta">❓ Relacionar pregunta con respuesta</option>
+                </optgroup>
+
+                <optgroup label="🗣️ Hablar">
+                  <option value="repetir_narrador">🗣️ Repetir después del narrador</option>
+                  <option value="completar_voz">🎤 Completar la frase con tu voz</option>
+                  <option value="responder_pregunta">💬 Responder a una pregunta</option>
+                  <option value="describir_imagen">🎨 Describir una imagen</option>
+                  <option value="roles">🎭 Juego de roles</option>
+                  <option value="mini_monologo">📣 Mini-monólogo</option>
+                  <option value="dialogo_semiabierto">💭 Diálogo semiabierto</option>
+                  <option value="decir_otra_manera">🔁 Decirlo de otra manera</option>
+                </optgroup>
+
+                <optgroup label="👂 Escuchar">
+                  <option value="escuchar_elegir">👂 Escuchar y elegir la respuesta</option>
+                  <option value="escuchar_completar">🎧 Escuchar y completar los espacios</option>
+                  <option value="escuchar_vf">👂 Escuchar y marcar verdadero o falso</option>
+                  <option value="escuchar_relacionar_personas">👥 Escuchar y relacionar personas</option>
+                  <option value="escuchar_ordenar">🔢 Escuchar y ordenar la secuencia</option>
+                  <option value="dictado_audio">📻 Dictado con audio</option>
+                  <option value="escuchar_repetir">🔊 Escuchar y repetir</option>
+                  <option value="dialogo_interactivo">💬 Diálogo interactivo</option>
+                </optgroup>
+
+                <optgroup label="🎯 Especiales">
+                  <option value="mision_dia">🎯 Misión del día</option>
+                  <option value="quiz_situacional">🎲 Quiz situacional</option>
+                  <option value="video_preguntas">🎬 Video con preguntas</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="toggle-row">
+              <button class="toggle-btn active active-yellow" id="btnAll" type="button">✨ Todo</button>
+              <button class="toggle-btn" id="btnGrammar" type="button">🟡 Gramática</button>
+              <button class="toggle-btn" id="btnVocab" type="button">🔴 Vocabulario</button>
+            </div>
+
+            <div class="filter-actions">
+              <button class="btn-yellow" id="resetFiltersBtn" type="button">Reset filtrów</button>
+            </div>
+          </div>
+
+          <div class="filter-block">
+            <label>Info</label>
+            <div class="selectbox" style="justify-content:space-between;">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <div class="icon">📌</div>
+                <div style="font-weight:900; color:#0b1b3f;">Filtry dotyczą tylko tego poziomu</div>
+              </div>
+              <div style="font-weight:900; color:#0b1b3f;">Nivel <span id="levelBadge">A1</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="sectionTitle">📘 Gramatyka</div>
+      <div id="grammarList" class="list-wrap"></div>
+
+      <div class="sectionTitle">📗 Słownictwo</div>
+      <div id="vocabList" class="list-wrap"></div>
+
+      <!-- ADMIN PANEL -->
+      <div id="adminPanel" class="card adminPanel">
+        <h3 style="margin:0 0 10px 0; font-weight:900;">👑 Panel Admin – dodaj temat</h3>
+
+        <div class="row">
+          <select id="adminType">
+            <option value="grammar">gramatyka</option>
+            <option value="vocabulary">słownictwo</option>
+          </select>
+
+          <input id="adminTitle" placeholder="Tytuł tematu (ES)" />
+          <input id="adminDesc" placeholder="Opis tematu (ES)" />
+
+          <button class="btn-yellow" onclick="addTopic()">➕ Dodaj</button>
+        </div>
+
+        <p class="small-muted" style="margin-top:10px;">
+          Tip: type trzymaj jako <strong>grammar</strong> lub <strong>vocabulary</strong> (małe litery).
+        </p>
+      </div>
+
+    </div>
+  </main>
+  <script src="assets/js/progress.js"></script>
+  <script src="assets/js/recommendation.js"></script>
+  <script src="assets/js/plan7days.js"></script>
+
+
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+    import {
+      getFirestore, collection, query, where, getDocs,
+      addDoc, deleteDoc, updateDoc, doc, getDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
+      authDomain: "aquivivo-platform.firebaseapp.com",
+      projectId: "aquivivo-platform",
+      storageBucket: "aquivivo-platform.firebasestorage.app",
+      messagingSenderId: "116115622011",
+      appId: "1:116115622011:web:33a4a583eba4368071bade"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
+    let isAdmin = false;
+
+    const params = new URLSearchParams(window.location.search);
+    const LEVEL = (params.get("level") || "A1").toUpperCase();
+
+    // UI refs
+    const statusBar = document.getElementById("statusBar");
+    const levelTitle = document.getElementById("levelTitle");
+    const levelSubtitle = document.getElementById("levelSubtitle");
+    const grammarList = document.getElementById("grammarList");
+    const vocabList = document.getElementById("vocabList");
+    const adminPanel = document.getElementById("adminPanel");
+    const adminBar = document.getElementById("adminBar");
+    const statLevel = document.getElementById("statLevel");
+    const levelBadge = document.getElementById("levelBadge");
+
+    // filters
+    const searchInput = document.getElementById("searchInput");
+    const taskSelect = document.getElementById("taskSelect");
+    const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+    const btnAll = document.getElementById("btnAll");
+    const btnGrammar = document.getElementById("btnGrammar");
+    const btnVocab = document.getElementById("btnVocab");
+
+    statLevel.textContent = LEVEL;
+    levelBadge.textContent = LEVEL;
+
+    let allTopics = []; // pobrane z Firestore dla LEVEL
+    let filterKind = "all"; // all / grammar / vocabulary
+
+    function setStatus(text, type="neu"){
+      statusBar.textContent = text;
+      statusBar.className = "statusBar " + type;
+    }
+
+    function normType(t){
+      const x = String(t || "").trim().toLowerCase();
+      if (x === "vocabulary" || x === "vocabulario") return "vocabulary";
+      if (x === "grammar" || x === "gramatyka") return "grammar";
+      return x;
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function setActiveButton(kind){
+      filterKind = kind;
+      [btnAll, btnGrammar, btnVocab].forEach(b => b.classList.remove("active","active-yellow","active-red"));
+
+      if (kind === "all") btnAll.classList.add("active","active-yellow");
+      if (kind === "grammar") btnGrammar.classList.add("active","active-yellow");
+      if (kind === "vocabulary") btnVocab.classList.add("active","active-red");
+
+      applyFilters();
+    }
+
+    btnAll.addEventListener("click", () => setActiveButton("all"));
+    btnGrammar.addEventListener("click", () => setActiveButton("grammar"));
+    btnVocab.addEventListener("click", () => setActiveButton("vocabulary"));
+
+    resetFiltersBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      taskSelect.value = "all";
+      setActiveButton("all");
+      applyFilters();
+    });
+
+    let tmr;
+    searchInput.addEventListener("input", () => {
+      clearTimeout(tmr);
+      tmr = setTimeout(applyFilters, 120);
+    });
+    taskSelect.addEventListener("change", applyFilters);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      isAdmin = ((user.email||"").toLowerCase() === ADMIN_EMAIL.toLowerCase());
+      adminPanel.style.display = isAdmin ? "block" : "none";
+      adminBar.style.display = isAdmin ? "flex" : "none";
+
+      setStatus(`Zalogowana: ${user.email} • Poziom: ${LEVEL}`, "neu");
+
+      await loadCourseMeta();
+      await loadTopicsFromFirestore();
+      if(window.Progress){ updateProgressUI(Progress.setTotal(LEVEL, allTopics.length)); }
+      renderDailyRec();
+      renderPlan7();
+      applyFilters();
+    });
+
+    window.logout = function(){
+      signOut(auth).then(() => window.location.href = "login.html");
+    };
+
+    // ✅ course_meta/{LEVEL}: title + subtitle
+    async function loadCourseMeta(){
+      try{
+        const metaRef = doc(db, "course_meta", LEVEL);
+        const metaSnap = await getDoc(metaRef);
+
+        if (metaSnap.exists()){
+          const m = metaSnap.data();
+          const title = (m.title && String(m.title).trim()) ? m.title : `Poziom ${LEVEL}`;
+          const subtitle = (m.subtitle && String(m.subtitle).trim()) ? m.subtitle : "";
+
+          levelTitle.textContent = title;
+          levelSubtitle.textContent = subtitle
+            ? subtitle
+            : "👉 Brak opisu kursu. (Admin: kliknij „Edytuj tytuł i opis kursu”)";
+        } else {
+          levelTitle.textContent = `Poziom ${LEVEL}`;
+          levelSubtitle.textContent = "👉 Brak opisu kursu. (Admin: kliknij „Edytuj tytuł i opis kursu”)";
+        }
+
+        setStatus("✅ Kurs załadowany", "ok");
+      } catch(e){
+        console.error(e);
+        levelTitle.textContent = `Poziom ${LEVEL}`;
+        levelSubtitle.textContent = "⚠️ Nie mogę pobrać opisu kursu (sprawdź Firestore Rules)";
+        setStatus("❌ Błąd odczytu course_meta: " + (e?.message || e), "err");
+      }
+    }
+
+    window.editCourseMeta = async function(){
+      if(!isAdmin){
+        setStatus("❌ Nie jesteś adminem (sprawdź email).", "err");
+        return;
+      }
+
+      try{
+        const metaRef = doc(db, "course_meta", LEVEL);
+        const metaSnap = await getDoc(metaRef);
+        const current = metaSnap.exists() ? metaSnap.data() : {};
+
+        const currentTitle = (current.title && String(current.title).trim())
+          ? current.title : `Poziom ${LEVEL}`;
+
+        const currentSub = (current.subtitle && String(current.subtitle).trim())
+          ? current.subtitle : "";
+
+        const newTitle = prompt("Nowy tytuł kursu (nagłówek):", currentTitle);
+        if(newTitle === null) return;
+
+        const newSub = prompt("Nowy opis kursu (co zawiera ten poziom):", currentSub);
+        if(newSub === null) return;
+
+        await setDoc(metaRef, {
+          title: newTitle.trim() || `Poziom ${LEVEL}`,
+          subtitle: newSub.trim() || ""
+        }, { merge: true });
+
+        setStatus("✅ Zapisano opis kursu do Firestore", "ok");
+        await loadCourseMeta();
+
+      } catch(e){
+        console.error(e);
+        setStatus("❌ Nie zapisano course_meta: " + (e?.message || e), "err");
+        alert("❌ Nie zapisano. Sprawdź pasek statusu u góry.");
+      }
+    };
+
+    // 🔥 Pobierz tematy (tylko dla tego LEVEL)
+    async function loadTopicsFromFirestore(){
+      try{
+        const qRef = query(collection(db, "courses"), where("level", "==", LEVEL));
+        const snap = await getDocs(qRef);
+
+        allTopics = [];
+        snap.forEach((d) => {
+          const data = d.data();
+          allTopics.push({
+            id: d.id,
+            level: String(data.level || "").toUpperCase(),
+            type: normType(data.type),            // grammar / vocabulary
+            title: data.title || "",
+            desc: data.desc || "",
+            order: Number(data.order ?? 9999),
+
+            // opcjonalne pola do filtrów typów zadań
+            taskType: data.taskType || null, // string
+            taskTypes: Array.isArray(data.taskTypes) ? data.taskTypes : null,
+            exerciseTypes: Array.isArray(data.exerciseTypes) ? data.exerciseTypes : null
+          });
+        });
+
+        allTopics.sort((a,b) => a.order - b.order);
+      } catch(e){
+        console.error(e);
+        setStatus("❌ Błąd odczytu courses: " + (e?.message || e), "err");
+      }
+    }
+
+    function matchTask(topic, task){
+      if (task === "all") return true;
+
+      const hasAny = (topic.taskType || topic.taskTypes || topic.exerciseTypes);
+      if (!hasAny) return true; // jak nie masz jeszcze pola w danych, filtr nie blokuje
+
+      const one = (topic.taskType && String(topic.taskType) === task);
+      const arr1 = Array.isArray(topic.taskTypes) && topic.taskTypes.includes(task);
+      const arr2 = Array.isArray(topic.exerciseTypes) && topic.exerciseTypes.includes(task);
+      return one || arr1 || arr2;
+    }
+
+    function applyFilters(){
+      const q = searchInput.value.trim().toLowerCase();
+      const task = taskSelect.value;
+      const kind = filterKind;
+
+      let filtered = [...allTopics];
+
+      if (kind !== "all"){
+        filtered = filtered.filter(t => t.type === kind);
+      }
+
+
+    function updateProgressUI(data){
+      try{
+        const p = data || (window.Progress ? Progress.get(LEVEL) : {percent:0,lastTitle:""});
+        document.getElementById("progressPercent").textContent = String(p.percent ?? 0);
+        document.getElementById("lastTopic").textContent = (p.lastTitle && p.lastTitle.trim()) ? p.lastTitle : "—";
+        const statProgress = document.getElementById("statProgress");
+        if(statProgress) statProgress.textContent = String(p.percent ?? 0) + "%";
+      }catch(e){ console.warn(e); }
+    }
+
+    function renderDailyRec(){
+      const el = document.getElementById("dailyRec");
+      if(!el) return;
+      if(window.getDailyRecommendation){
+        el.textContent = getDailyRecommendation(LEVEL);
+      } else {
+        el.textContent = "Dziś 5 minut: fiszki + dialog ✅";
+      }
+    }
+
+    function renderPlan7(){
+      const box = document.getElementById("plan7");
+      if(!box || !window.Plan7) return;
+
+      const labels = [
+        "D1: fiszki",
+        "D2: dialog",
+        "D3: gramatyka",
+        "D4: słownictwo",
+        "D5: powtórka",
+        "D6: mini test",
+        "D7: lekko 😌"
+      ];
+
+      box.innerHTML = "";
+      const data = Plan7.get(LEVEL);
+
+      labels.forEach((label, i)=>{
+        const pill = document.createElement("div");
+        pill.className = "plan-pill" + (data[i] ? " done" : "");
+        pill.innerHTML = `
+          <div class="left">
+            <span class="check">${data[i] ? "✓" : ""}</span>
+            <span>${label}</span>
+          </div>
+          <span style="opacity:.65;font-weight:900">klik</span>
+        `;
+        pill.onclick = ()=>{
+          const updated = Plan7.toggle(LEVEL, i);
+          pill.classList.toggle("done", !!updated[i]);
+          const check = pill.querySelector(".check");
+          if(check) check.textContent = updated[i] ? "✓" : "";
+        };
+        box.appendChild(pill);
+      });
+    };
+        box.appendChild(btn);
+      });
+    }
+
+      if (task !== "all"){
+        filtered = filtered.filter(t => matchTask(t, task));
+      }
+
+      if (q){
+        filtered = filtered.filter(t => (t.title + " " + (t.desc || "")).toLowerCase().includes(q));
+      }
+
+      // podziel na sekcje
+      const grammar = filtered.filter(t => t.type === "grammar");
+      const vocab = filtered.filter(t => t.type === "vocabulary");
+
+      // render
+      grammarList.innerHTML = grammar.length
+        ? grammar.map(renderTopicCard).join("")
+        : `<div class="card">Brak wyników w gramatyce</div>`;
+
+      vocabList.innerHTML = vocab.length
+        ? vocab.map(renderTopicCard).join("")
+        : `<div class="card">Brak wyników w słownictwie</div>`;
+    }
+
+    
+    function renderTopicCard(t){
+      const isDone = (window.Progress && Progress.isDone(LEVEL, t.id));
+      const adminButtons = isAdmin ? `
+        <div class="admin-tools">
+          <button class="btn-edit" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
+          <button class="btn-del" onclick="event.stopPropagation(); deleteTopic('${t.id}')">❌</button>
+        </div>
+      ` : "";
+
+      const donePill = isDone ? `<div class="done-pill">✅ zrobione</div>` : "";
+
+      return `
+        <div class="card topic ${isDone ? "done" : ""}" style="position:relative;" onclick="openLesson('${t.id}', '${escapeHtml(t.title)}')">
+          ${adminButtons}
+          <strong>${escapeHtml(t.title)}</strong>
+          <p class="small-muted">${escapeHtml(t.desc)}</p>
+          ${donePill}
+        </div>
+      `;
+    }
+
+
+    window.openLesson = function(id, title){
+      if(window.Progress){
+        const data = Progress.markDone(LEVEL, id, (title||""));
+        updateProgressUI(data);
+      }
+      // tu potem podepniesz prawdziwą lekcję:
+      alert("✅ Zapisano postęp. Następny etap: lesson.html?id=" + id);
+    };
+
+    // ADMIN add/edit/delete topics
+    window.addTopic = async function(){
+      if(!isAdmin) return;
+
+      const type = document.getElementById("adminType").value;
+      const title = document.getElementById("adminTitle").value.trim();
+      const desc  = document.getElementById("adminDesc").value.trim();
+      if(!title || !desc) return alert("Uzupełnij tytuł i opis tematu");
+
+      try{
+        await addDoc(collection(db,"courses"),{
+          level: LEVEL,
+          type,
+          title,
+          desc,
+          order: Date.now()
+        });
+
+        document.getElementById("adminTitle").value = "";
+        document.getElementById("adminDesc").value = "";
+
+        setStatus("✅ Dodano temat", "ok");
+        await loadTopicsFromFirestore();
+        applyFilters();
+      } catch(e){
+        console.error(e);
+        setStatus("❌ Nie dodano tematu: " + (e?.message || e), "err");
+        alert("❌ Nie dodano tematu. Sprawdź pasek statusu u góry.");
+      }
+    };
+
+    window.editTopic = async function(id){
+      if(!isAdmin) return;
+
+      const ref = doc(db,"courses",id);
+      const snap = await getDoc(ref);
+      if(!snap.exists()) return alert("Nie znaleziono tematu");
+
+      const cur = snap.data();
+      const newTitle = prompt("Nowy tytuł tematu:", cur.title || "");
+      if(newTitle === null) return;
+      const newDesc = prompt("Nowy opis tematu:", cur.desc || "");
+      if(newDesc === null) return;
+
+      const tt = newTitle.trim();
+      const dd = newDesc.trim();
+      if(!tt || !dd) return alert("Tytuł i opis nie mogą być puste");
+
+      try{
+        await updateDoc(ref, { title: tt, desc: dd });
+        setStatus("✅ Zapisano temat", "ok");
+        await loadTopicsFromFirestore();
+        applyFilters();
+      } catch(e){
+        console.error(e);
+        setStatus("❌ Nie zapisano tematu: " + (e?.message || e), "err");
+        alert("❌ Nie zapisano tematu. Sprawdź pasek statusu u góry.");
+      }
+    };
+
+    window.deleteTopic = async function(id){
+      if(!isAdmin) return;
+      if(!confirm("Usunąć ten temat?")) return;
+
+      try{
+        await deleteDoc(doc(db,"courses",id));
+        setStatus("✅ Usunięto temat", "ok");
+        await loadTopicsFromFirestore();
+        applyFilters();
+      } catch(e){
+        console.error(e);
+        setStatus("❌ Nie usunięto tematu: " + (e?.message || e), "err");
+        alert("❌ Nie usunięto tematu. Sprawdź pasek statusu u góry.");
+      }
+    };
+
+    window.dedupeLevel = async function(){
+      if(!isAdmin) return;
+      if(!confirm("Usunąć duplikaty tematów dla poziomu " + LEVEL + "?")) return;
+
+      try{
+        const qRef = query(collection(db, "courses"), where("level", "==", LEVEL));
+        const snap = await getDocs(qRef);
+
+        const seen = new Map();
+        const toDelete = [];
+
+        snap.forEach(d => {
+          const data = d.data();
+          const key = [
+            (data.level || "").toString().toUpperCase(),
+            normType(data.type),
+            (data.title || "").trim(),
+            (data.desc || "").trim()
+          ].join("||");
+
+          if (!seen.has(key)) seen.set(key, d.id);
+          else toDelete.push(d.id);
+        });
+
+        for (const id of toDelete) {
+          await deleteDoc(doc(db, "courses", id));
+        }
+
+        setStatus(`✅ Usunięto duplikaty: ${toDelete.length}`, "ok");
+        await loadTopicsFromFirestore();
+        applyFilters();
+      } catch(e){
+        console.error(e);
+        setStatus("❌ Dedupe nie działa: " + (e?.message || e), "err");
+        alert("❌ Dedupe nie działa. Sprawdź pasek statusu u góry.");
+      }
+    };
+  </script>
+
+</body>
+</html>

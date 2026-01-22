@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel ucznia | AquiVivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <style>
+    .panel-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-bottom:16px}
+    @media(max-width:860px){.panel-grid{grid-template-columns:1fr}}
+    .courses-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:12px}
+    @media(max-width:860px){.courses-grid{grid-template-columns:1fr}}
+    .course-card{display:flex;flex-direction:column;gap:10px;min-height:160px}
+    .course-actions{margin-top:auto;display:flex;gap:10px;flex-wrap:wrap}
+    .course-card.glass-card{opacity:.55;filter:grayscale(1)}
+    .course-card.glass-card .btn-buy{filter:none;opacity:1}
+    .course-card:not(.glass-card){box-shadow:0 18px 40px rgba(252,209,22,.14)}
+
+
+    /* === PREMIUM WIDGETS === */
+    .widgets-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+    @media(max-width:860px){.widgets-grid{grid-template-columns:1fr}}
+    .widgets-grid .card{padding:0;overflow:hidden}
+    .widget-head{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;
+      background: linear-gradient(135deg, rgba(252,209,22,.25) 0%, rgba(59,130,246,.12) 100%);
+      border-bottom:1px solid rgba(229,231,235,.9);
+    }
+    .widget-title{
+      display:flex;gap:10px;align-items:center;
+      font-weight:900;color:#0b1b3f;font-size:15px;
+    }
+    .widget-title .ic{width:32px;height:32px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      background: rgba(255,255,255,.75); border:1px solid rgba(229,231,235,.9);
+    }
+    .widget-body{padding:14px 16px;background:white}
+    .widget-note{margin-top:8px;color:#64748b;font-weight:700;font-size:13px}
+
+    .rec-line{font-weight:900;color:#0b1b3f;font-size:14px}
+    .rec-chip{
+      display:inline-flex;align-items:center;gap:8px;
+      margin-top:10px;
+      padding:8px 10px;border-radius:999px;
+      background: rgba(59,130,246,.08);
+      border:1px solid rgba(59,130,246,.18);
+      font-weight:900;color:#0b1b3f;font-size:12px;
+    }
+
+    .plan-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    @media(max-width:860px){.plan-grid{grid-template-columns:1fr}}
+    .plan-pill{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid #e5e7eb;background:#f8fafc;
+      cursor:pointer;transition:.15s ease;
+      font-weight:900;color:#0b1b3f;
+    }
+    .plan-pill:hover{transform:translateY(-1px)}
+    .plan-pill .left{display:flex;gap:10px;align-items:center}
+    .plan-pill .check{
+      width:22px;height:22px;border-radius:8px;
+      border:2px solid #cbd5e1;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-weight:900;
+    }
+    .plan-pill.done{
+      background: rgba(252,209,22,.16);
+      border-color: rgba(252,209,22,.65);
+      box-shadow: 0 12px 26px rgba(252,209,22,.15);
+    }
+    .plan-pill.done .check{
+      border-color: rgba(252,209,22,.85);
+      background: rgba(252,209,22,.25);
+    }
+
+    /* === Courses premium states === */
+    .course-card.glass-card{opacity:.55;filter:grayscale(1)}
+    .course-card:not(.glass-card){
+      border: 2px solid rgba(252,209,22,.55);
+      box-shadow:0 20px 46px rgba(252,209,22,.18);
+    }
+
+</style>
+</head>
+
+<body>
+<header class="nav-glass">
+  <div class="container nav-inner">
+    <div class="brand">
+      <div class="logo-flag"></div>
+      <div class="name">Aqui vivo</div>
+    </div>
+    <div class="nav-actions">
+      <a class="btn-white-outline" href="index.html">Inicio</a>
+      <button class="btn-red" onclick="logout()">Wyloguj</button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="container">
+    <section class="panel-grid">
+      <div class="hero-card">
+        <h1 class="hero-title glow-text">Panel ucznia 🎓</h1>
+        <p class="hero-subtitle">Twoja nauka w jednym miejscu</p>
+        <div style="margin-top:12px;padding:10px 14px;border-radius:16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18)">
+          👤 Zalogowana jako: <b><span id="userEmail">...</span></b>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="big">📘</div><div class="label">Kursy</div></div>
+        <div class="stat"><div class="big">⏳</div><div class="label">Czas</div></div>
+        <div class="stat"><div class="big">🎯</div><div class="label">Postęp</div></div>
+      </div>
+    </section>
+
+    <section class="widgets-grid">
+      <div class="card">
+        <div class="widget-head">
+          <div class="widget-title"><span class="ic">🧠</span> Rekomendacja dnia</div>
+          <span style="font-weight:900;opacity:.75">5 min</span>
+        </div>
+        <div class="widget-body">
+          <div class="rec-line" id="dailyRec">Ładowanie…</div>
+          <div class="rec-chip">🎯 cel: regularność</div>
+          <div class="widget-note">Zrób tylko to — i zamknij temat. To ma być lekkie 😉</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="widget-head">
+          <div class="widget-title"><span class="ic">📅</span> Plan 7 dni</div>
+          <span style="font-weight:900;opacity:.75">checklist</span>
+        </div>
+        <div class="widget-body">
+          <div id="plan7" class="plan-grid"></div>
+          <div class="widget-note">Kliknij dzień, żeby odhaczyć ✅</div>
+        </div>
+      </div>
+    </section>
+
+
+    <div class="sectionTitle">📘 Moje kursy</div>
+    <div id="coursesCards" class="courses-grid"></div>
+  </div>
+</main>
+
+
+<script src="assets/js/progress.js"></script>
+<script src="assets/js/recommendation.js"></script>
+<script src="assets/js/plan7days.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
+  authDomain: "aquivivo-platform.firebaseapp.com",
+  projectId: "aquivivo-platform",
+  storageBucket: "aquivivo-platform.firebasestorage.app",
+  messagingSenderId: "116115622011",
+  appId: "1:116115622011:web:33a4a583eba4368071bade"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const userEmailEl = document.getElementById("userEmail");
+const coursesCardsEl = document.getElementById("coursesCards");
+
+const COURSE_PAGE_BY_LEVEL = {
+  A1: "course.html",
+  A2: "courseA2.html",
+  B1: "courseB1.html",
+  B2: "courseB2.html"
+};
+
+const COURSE_ACCENT_BY_LEVEL = {
+  A1: "card-accent-yellow",
+  A2: "card-accent-yellow",
+  B1: "card-accent-blue",
+  B2: "card-accent-red"
+};
+
+
+
+function renderPlan7Widget(level){
+  const box = document.getElementById("plan7");
+  if(!box || !window.Plan7) return;
+
+  const labels = [
+    "D1: fiszki",
+    "D2: dialog",
+    "D3: gramatyka",
+    "D4: słownictwo",
+    "D5: powtórka",
+    "D6: mini test",
+    "D7: lekko 😌"
+  ];
+
+  box.innerHTML = "";
+  const data = Plan7.get(level);
+
+  labels.forEach((label, i)=>{
+    const pill = document.createElement("div");
+    pill.className = "plan-pill" + (data[i] ? " done" : "");
+    pill.innerHTML = `
+      <div class="left">
+        <span class="check">${data[i] ? "✓" : ""}</span>
+        <span>${label}</span>
+      </div>
+      <span style="opacity:.65;font-weight:900">klik</span>
+    `;
+    pill.onclick = ()=>{
+      const updated = Plan7.toggle(level, i);
+      pill.classList.toggle("done", !!updated[i]);
+      const check = pill.querySelector(".check");
+      if(check) check.textContent = updated[i] ? "✓" : "";
+    };
+    box.appendChild(pill);
+  });
+}</span>
+        <span class="day">Dzień ${i+1}</span>
+        <span>${label}</span>
+      </div>
+      <span style="opacity:.7;font-weight:900">klik</span>
+    `;
+    row.onclick = ()=>{
+      const updated = Plan7.toggle(level, i);
+      row.classList.toggle("done", !!updated[i]);
+      const check = row.querySelector(".check");
+      if(check) check.textContent = updated[i] ? "✓" : "";
+    };
+    box.appendChild(row);
+  });
+}
+
+function renderRec(level){
+  const el = document.getElementById("dailyRec");
+  if(!el) return;
+  el.textContent = window.getDailyRecommendation
+    ? getDailyRecommendation(level)
+    : "Dziś 5 minut: fiszki + dialog ✅";
+}
+
+
+function daysLeft(date){
+  return Math.ceil((new Date(date) - new Date()) / (1000*60*60*24));
+}
+
+function hasAccess(access, lvl){
+  const it = access?.[lvl];
+  const d = it?.expiresAt || it?.freeUntil;
+  if(!d) return false;
+  return new Date(d) > new Date();
+}
+
+function activeCard(lvl, access){
+  const accent = COURSE_ACCENT_BY_LEVEL[lvl] || "";
+  const page = COURSE_PAGE_BY_LEVEL[lvl];
+  const exp = access[lvl]?.expiresAt || access[lvl]?.freeUntil;
+  const left = daysLeft(exp);
+  const warn = left <= 7;
+  const p = (window.Progress ? Progress.get(lvl) : {percent:0,lastTitle:""});
+  const progress = Number(p.percent || 0);
+  const lastTitle = (p.lastTitle || "").trim();
+
+  return `
+    <div class="card course-card ${accent}">
+      <div style="display:flex;justify-content:space-between">
+        <div class="status-pill ${warn?"warn":"active"}">
+          ${warn?"⚠️ wygasa":"✅ aktywny"}
+        </div>
+        <b>PL ${lvl}</b>
+      </div>
+
+      <b style="font-size:18px">Polski ${lvl}</b>
+      <p class="small-muted">Dostęp wygasa za <b>${left}</b> dni</p>
+
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill ${lvl==="B2"?"red":""}" style="width:${progress}%"></div>
+        </div>
+        <p class="small-muted">${progress}% przerobione</p>
+
+      <p class="small-muted">Ostatni temat: <b>${lastTitle || "—"}</b></p>
+      </div>
+
+      <div class="course-actions">
+        <a class="btn-continue" href="${page}?level=${lvl}">▶ Kontynuuj</a>
+      </div>
+    </div>
+  `;
+}
+
+function lockedCard(lvl, access){
+  const accent = COURSE_ACCENT_BY_LEVEL[lvl] || "";
+  const it = access?.[lvl];
+  const expired = it?.expiresAt && new Date(it.expiresAt) <= new Date();
+
+  return `
+    <div class="card course-card glass-card ${accent}">
+      <div style="display:flex;justify-content:space-between">
+        <div class="status-pill expired">${expired?"⛔ wygasł":"🔒 zablokowany"}</div>
+        <b>PL ${lvl}</b>
+      </div>
+      <b style="font-size:18px">Polski ${lvl}</b>
+      <p class="small-muted">${expired?"Dostęp zakończony.":"Kurs niedostępny."}</p>
+      <div class="course-actions">
+        <a class="btn-buy" href="Contacto.html">🛒 Wykup ponownie</a>
+      </div>
+    </div>
+  `;
+}
+
+onAuthStateChanged(auth, async user => {
+  if(!user){ location.href="login.html"; return; }
+  userEmailEl.textContent = user.email;
+
+  const ref = doc(db,"users",user.uid);
+  let snap = await getDoc(ref);
+
+  if(!snap.exists()){
+    const t = new Date(); t.setDate(t.getDate()+7);
+    await setDoc(ref,{
+      email:user.email,
+      createdAt:serverTimestamp(),
+      access:{A1:{freeUntil:t.toISOString()},A2:null,B1:null,B2:null}
+    });
+    snap = await getDoc(ref);
+  }
+
+  const access = snap.data().access || {};
+  coursesCardsEl.innerHTML = "";
+  ["A1","A2","B1","B2"].forEach(lvl=>{
+    coursesCardsEl.innerHTML += hasAccess(access,lvl)
+      ? activeCard(lvl,access)
+      : lockedCard(lvl,access);
+  });
+
+  // ✅ Widgets: bierz pierwszy aktywny poziom (albo A1)
+  const firstActive = ["A1","A2","B1","B2"].find(l=>hasAccess(access,l)) || "A1";
+  renderRec(firstActive);
+  renderPlan7Widget(firstActive);
+
+});
+
+window.logout = ()=> signOut(auth).then(()=>location.href="login.html");
+</script>
+</body>
+</html>
