@@ -1,0 +1,765 @@
+/* =========================
+   AQUI VIVO – DESIGN SYSTEM (v2)
+   Dopasowany do strony głównej (nav glass, karty, CTA)
+   ========================= */
+
+/* ---------- KOLORY ---------- */
+:root {
+  --yellow-main: #FCD116;
+  --yellow-light: #FFD700;
+
+  --blue-main: #003893;
+  --blue-dark: #001a4d;
+  --blue-light: #0055CC;
+
+  --red-main: #CE1126;
+  --red-light: #FF1E3C;
+  --red-dark: #A00E1E;
+
+  --white: #ffffff;
+  --gray-text: #6b7280;
+  --gray-light: #f3f4f6;
+
+  --glass: rgba(0, 26, 77, 0.92);
+  --glass-border: rgba(252, 209, 22, 0.25);
+}
+
+/* ---------- GLOBAL ---------- */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(180deg, var(--blue-dark) 0%, var(--blue-main) 50%, var(--blue-dark) 100%);
+  color: white;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+a:hover { opacity: 0.95; }
+
+/* ---------- TYPO ---------- */
+.font-display { font-family: 'Playfair Display', serif; }
+
+.glow-text {
+  text-shadow: 0 0 20px rgba(252, 209, 22, 0.45);
+}
+
+/* ---------- LAYOUT ---------- */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+.page {
+  padding: 110px 0 48px 0; /* miejsce na navbar */
+}
+
+/* ---------- NAVBAR (jak na stronie głównej) ---------- */
+.nav-glass {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid var(--glass-border);
+}
+
+.nav-inner {
+  height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+}
+
+.brand .logo-flag {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, #FCD116 0%, #FCD116 33%, #003893 33%, #003893 66%, #CE1126 66%, #CE1126 100%);
+  box-shadow: 0 10px 26px rgba(0,0,0,.25);
+}
+
+.brand .name {
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  letter-spacing: .2px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- BUTTONS ---------- */
+.btn-yellow {
+  background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+  color: var(--blue-main);
+  font-weight: 800;
+  padding: 12px 18px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(252, 209, 22, 0.35);
+  transition: all 0.25s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-yellow:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 38px rgba(252, 209, 22, 0.55);
+}
+
+.btn-red {
+  background: linear-gradient(135deg, var(--red-main) 0%, var(--red-dark) 100%);
+  color: white;
+  font-weight: 800;
+  padding: 12px 18px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(206, 17, 38, 0.30);
+  transition: all 0.25s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-red:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(206, 17, 38, 0.55);
+}
+
+.btn-white-outline {
+  border: 2px solid rgba(255,255,255,.85);
+  color: white;
+  font-weight: 800;
+  padding: 11px 16px;
+  border-radius: 16px;
+  background: transparent;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-white-outline:hover {
+  background: white;
+  color: var(--blue-main);
+}
+
+/* ---------- HERO HEADER (nagłówek kursu/panelu) ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; }
+}
+
+.hero-card {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 26px;
+  padding: 22px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 60px rgba(0,0,0,.20);
+}
+
+.hero-title {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: 44px;
+  line-height: 1.05;
+  color: var(--yellow-main);
+}
+
+.hero-subtitle {
+  margin: 10px 0 0 0;
+  opacity: .92;
+}
+
+/* ---------- STAT CARDS (jak te 3 białe na stronie) ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 860px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .stats { grid-template-columns: 1fr; }
+}
+
+.stat {
+  background: white;
+  border-radius: 22px;
+  padding: 18px;
+  color: var(--blue-main);
+  box-shadow: 0 14px 50px rgba(0,0,0,.18);
+  text-align: center;
+}
+
+.stat .big {
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1;
+  margin: 4px 0 8px 0;
+}
+
+.stat .label {
+  font-weight: 800;
+  opacity: .9;
+}
+
+/* ---------- SECTION TITLES ---------- */
+.sectionTitle {
+  margin: 26px 0 12px 0;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  color: white;
+}
+
+/* ---------- CARDS (tematy/lekcje) ---------- */
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 18px 18px;
+  box-shadow: 0 14px 50px rgba(0, 0, 0, 0.18);
+  transition: all 0.25s ease;
+  color: var(--blue-main);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.26);
+}
+
+.topic {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.topic strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.topic p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--gray-text);
+  line-height: 1.35;
+}
+
+.topic::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  border: 2px solid rgba(252,209,22,.0);
+  transition: .22s ease;
+  pointer-events: none;
+}
+
+.topic:hover::after {
+  border-color: rgba(252,209,22,.55);
+}
+
+/* ---------- ADMIN TOOLS ---------- */
+.admin-tools {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.admin-tools button {
+  border: none;
+  padding: 8px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+  color: #111827;
+}
+
+.btn-del {
+  background: linear-gradient(135deg, var(--red-main) 0%, var(--red-dark) 100%);
+  color: white;
+}
+
+/* ---------- ADMIN PANEL ---------- */
+.adminPanel { display: none; margin-top: 18px; }
+
+.row {
+  display: grid;
+  grid-template-columns: 160px 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 860px) {
+  .row { grid-template-columns: 1fr; }
+}
+
+.row input, .row select {
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid #d1d5db;
+  width: 100%;
+  outline: none;
+}
+
+.row input:focus, .row select:focus {
+  border-color: rgba(252,209,22,.75);
+  box-shadow: 0 0 0 4px rgba(252,209,22,.18);
+}
+
+/* ---------- ADMIN BAR ---------- */
+.adminBar {
+  display: none;
+  margin-top: 14px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.adminBar button {
+  padding: 11px 14px;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+  font-weight: 900;
+  background: rgba(255,255,255,.10);
+  color: white;
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+}
+
+.adminBar button:hover { opacity: .95; }
+
+/* ---------- ICON CIRCLE ---------- */
+.icon-circle {
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+  box-shadow: 0 12px 34px rgba(252, 209, 22, 0.35);
+}
+
+/* ---------- FLOAT ---------- */
+.floating { animation: floating 3s ease-in-out infinite; }
+
+@keyframes floating {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+/* =========================
+   PANEL FILTERS + SEARCH (jak na screenie)
+   ========================= */
+
+.filters-wrap{
+  margin-top: 18px;
+}
+
+.searchbar{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  background: #f3f4f6;
+  border-radius: 22px;
+  padding: 16px 18px;
+  border: 3px solid rgba(252, 209, 22, 0.85);
+  box-shadow: 0 12px 34px rgba(0,0,0,.18);
+}
+
+.searchbar .icon{
+  font-size: 18px;
+  opacity: .9;
+  color: var(--blue-main);
+}
+
+.searchbar input{
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 18px;
+  font-weight: 700;
+  background: transparent;
+  color: #111827;
+}
+
+.searchbar input::placeholder{
+  color: #9ca3af;
+  font-weight: 700;
+}
+
+.filters-row{
+  display:grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 860px){
+  .filters-row{ grid-template-columns: 1fr; }
+}
+
+.filter-block label{
+  display:block;
+  font-weight: 900;
+  margin: 0 0 8px 6px;
+  opacity: .95;
+}
+
+.selectbox{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  background: #f3f4f6;
+  border-radius: 18px;
+  padding: 14px 16px;
+  border: 3px solid rgba(252, 209, 22, 0.85);
+  box-shadow: 0 10px 28px rgba(0,0,0,.16);
+}
+
+.selectbox .icon{
+  font-size: 16px;
+  color: var(--blue-main);
+}
+
+.selectbox select{
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0b1b3f;
+  cursor:pointer;
+}
+
+/* lista tematów */
+.topics-list{
+  margin-top: 22px;
+  display: grid;
+  gap: 14px;
+}
+
+.topic-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 14px;
+}
+
+.badges{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items:center;
+  justify-content:flex-end;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+
+/* 🟡 “fafelki” żółte */
+.badge-yellow{
+  background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+  color: #0b1b3f;
+  box-shadow: 0 10px 26px rgba(252,209,22,.30);
+}
+
+/* 🔴 “fafelki” czerwone */
+.badge-red{
+  background: linear-gradient(135deg, var(--red-main) 0%, var(--red-dark) 100%);
+  color: white;
+  box-shadow: 0 10px 26px rgba(206,17,38,.28);
+}
+
+/* mały opis w karcie */
+.small-muted{
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+/* ===== 3 filtry + przyciski Gram/Vocab ===== */
+
+.filters-row{
+  grid-template-columns: 2fr 1fr 1fr; /* 3 okna */
+}
+@media (max-width: 860px){
+  .filters-row{ grid-template-columns: 1fr; }
+}
+
+/* przyciski gram/vocab */
+.toggle-row{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.toggle-btn{
+  border: 2px solid rgba(255,255,255,.40);
+  background: rgba(255,255,255,.10);
+  color: white;
+  font-weight: 900;
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor:pointer;
+  backdrop-filter: blur(10px);
+  transition: .2s ease;
+}
+
+.toggle-btn:hover{ transform: translateY(-2px); opacity:.95; }
+
+.toggle-btn.active{
+  border-color: rgba(252,209,22,.90);
+  box-shadow: 0 12px 28px rgba(252,209,22,.25);
+}
+
+/* aktywny żółty / czerwony */
+.toggle-btn.active-yellow{
+  background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+  color: #0b1b3f;
+}
+.toggle-btn.active-red{
+  background: linear-gradient(135deg, var(--red-main) 0%, var(--red-dark) 100%);
+  color: white;
+}
+
+
+
+/* =========================
+   AQUI VIVO – COLOR BOOST (v3)
+   Więcej czerwieni + żółci, progress bars, statusy, dekoracje (kawa)
+   ========================= */
+
+/* --- subtelne “plamy” kolorów w tle (czerwony + żółty) --- */
+body::before,
+body::after{
+  content:"";
+  position: fixed;
+  inset: -120px;
+  pointer-events:none;
+  z-index:-1;
+  filter: blur(60px);
+  opacity: .55;
+}
+
+body::before{
+  background:
+    radial-gradient(closest-side at 18% 28%, rgba(252,209,22,.55), transparent 62%),
+    radial-gradient(closest-side at 82% 22%, rgba(206,17,38,.40), transparent 60%),
+    radial-gradient(closest-side at 72% 78%, rgba(252,209,22,.30), transparent 62%);
+}
+
+body::after{
+  background:
+    radial-gradient(closest-side at 12% 78%, rgba(206,17,38,.28), transparent 60%),
+    radial-gradient(closest-side at 92% 62%, rgba(252,209,22,.22), transparent 62%);
+}
+
+/* --- sekcje: delikatne separatory w żółtym/czerwonym --- */
+.sectionTitle{
+  position: relative;
+  padding-left: 10px;
+}
+.sectionTitle::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:50%;
+  transform: translateY(-50%);
+  width:4px;
+  height: 20px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--yellow-main), var(--red-main));
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+
+/* --- karty: warianty akcentów (używaj np. class="card ... card-accent-yellow") --- */
+.card-accent-yellow{
+  border: 2px solid rgba(252,209,22,.40);
+  box-shadow: 0 18px 60px rgba(252,209,22,.14), 0 14px 50px rgba(0,0,0,.18);
+}
+.card-accent-red{
+  border: 2px solid rgba(206,17,38,.28);
+  box-shadow: 0 18px 60px rgba(206,17,38,.12), 0 14px 50px rgba(0,0,0,.18);
+}
+.card-accent-yellow:hover{ box-shadow: 0 22px 70px rgba(252,209,22,.22), 0 22px 70px rgba(0,0,0,.26); }
+.card-accent-red:hover{ box-shadow: 0 22px 70px rgba(206,17,38,.20), 0 22px 70px rgba(0,0,0,.26); }
+
+/* --- status dostępu: pill (aktywny / wygasa / wygasł) --- */
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .2px;
+}
+.status-pill.active{
+  background: rgba(252, 209, 22, .22);
+  border: 1px solid rgba(252, 209, 22, .45);
+  color: #111827;
+}
+.status-pill.warn{
+  background: rgba(206, 17, 38, .15);
+  border: 1px solid rgba(206, 17, 38, .35);
+  color: white;
+}
+.status-pill.expired{
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+/* --- progress bar --- */
+.progress-wrap{
+  margin-top: 6px;
+  background: rgba(0,0,0,.08);
+  border-radius: 999px;
+  padding: 4px;
+  border: 1px solid rgba(0,0,0,.08);
+}
+.progress-bar{
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,.55);
+}
+.progress-fill{
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--yellow-main), var(--yellow-light));
+  box-shadow: 0 10px 24px rgba(252,209,22,.25);
+  transition: width .35s ease;
+}
+.progress-fill.red{
+  background: linear-gradient(90deg, var(--red-main), var(--red-light));
+  box-shadow: 0 10px 24px rgba(206,17,38,.25);
+}
+
+/* --- CTA “Kontynuuj” (żółty) i “Wykup ponownie” (czerwony) --- */
+.btn-continue{
+  background: linear-gradient(135deg, var(--yellow-main) 0%, var(--yellow-light) 100%);
+  color: var(--blue-main);
+  font-weight: 900;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(252,209,22,.30);
+  transition: .2s ease;
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+}
+.btn-continue:hover{ transform: translateY(-2px); box-shadow: 0 16px 34px rgba(252,209,22,.45); }
+
+.btn-buy{
+  background: linear-gradient(135deg, var(--red-main) 0%, var(--red-dark) 100%);
+  color: #fff;
+  font-weight: 900;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(206,17,38,.28);
+  transition: .2s ease;
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+}
+.btn-buy:hover{ transform: translateY(-2px); box-shadow: 0 16px 36px rgba(206,17,38,.45); }
+
+/* --- dekor: mini kawka jako “watermark” na kartach hero/panelu --- */
+/* Wymaga pliku: assets/img/coffee.svg (zapisz go z paczki, którą dołączam) */
+.hero-card{
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::after{
+  content:"";
+  position:absolute;
+  right: -12px;
+  bottom: -18px;
+  width: 168px;
+  height: 168px;
+  opacity: .22;
+  background-image: url("../img/coffee.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  transform: rotate(-8deg);
+  pointer-events:none;
+}
+
+/* --- małe ikonki w kółkach (żółte/czerwone warianty) --- */
+.icon-circle.red{
+  background: linear-gradient(135deg, var(--red-main) 0%, var(--red-light) 100%);
+  box-shadow: 0 12px 34px rgba(206,17,38,0.32);
+}
+.icon-circle.blue{
+  background: linear-gradient(135deg, var(--blue-light) 0%, var(--blue-main) 100%);
+  box-shadow: 0 12px 34px rgba(0,56,147,0.28);
+}
+
+/* --- drobne dopieszczenie navbaru: żółto-czerwony “underline” --- */
+.nav-glass{
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, rgba(252,209,22,.85), rgba(206,17,38,.75)) 1;
+}
