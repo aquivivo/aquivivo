@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zaloguj się | AquiVivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <style>
+    /* dodatki tylko dla loginu */
+    .auth-wrap{
+      max-width: 920px;
+      margin: 0 auto;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 860px){
+      .auth-wrap{ grid-template-columns: 1fr; }
+    }
+
+    .form-card{
+      background: white;
+      color: var(--blue-main);
+      border-radius: 26px;
+      padding: 22px;
+      box-shadow: 0 18px 70px rgba(0,0,0,.22);
+    }
+
+    .form-title{
+      margin: 0 0 6px 0;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .form-sub{
+      margin: 0 0 16px 0;
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .field{
+      display:grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .field label{
+      font-weight: 900;
+      font-size: 13px;
+      color: #0b1b3f;
+    }
+
+    .input{
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 2px solid #e5e7eb;
+      outline: none;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .input:focus{
+      border-color: rgba(252,209,22,.85);
+      box-shadow: 0 0 0 4px rgba(252,209,22,.18);
+    }
+
+    .actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .msg{
+      margin-top: 12px;
+      font-weight: 800;
+      font-size: 13px;
+      color: #0b1b3f;
+    }
+    .msg.error{ color: #b91c1c; }
+    .msg.ok{ color: #065f46; }
+
+    .hint{
+      margin-top: 12px;
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.35;
+    }
+
+    .quick-links{
+      margin-top: 14px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .reset-link{
+      margin-top: 10px;
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      border:none;
+      background:transparent;
+      color:#003893;
+      font-weight:900;
+      cursor:pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+    .reset-link:hover{ opacity:.9; }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <header class="nav-glass">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo-flag" aria-hidden="true"></div>
+        <div class="name">Aqui vivo</div>
+      </div>
+
+      <div class="nav-actions">
+        <a class="btn-white-outline" href="index.html">Inicio</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="container">
+
+      <div class="auth-wrap">
+        <!-- LEWA: hero -->
+        <div class="hero-card">
+          <h1 class="hero-title glow-text">Zaloguj się</h1>
+          <p class="hero-subtitle">Dostęp do kursów A1/A2 i Twojego panelu.</p>
+
+          <div class="stats" style="margin-top:16px;">
+            <div class="stat">
+              <div class="big">📘</div>
+              <div class="label">Kursy</div>
+            </div>
+            <div class="stat">
+              <div class="big">🎧</div>
+              <div class="label">Audio</div>
+            </div>
+            <div class="stat">
+              <div class="big">🃏</div>
+              <div class="label">Fiszki</div>
+            </div>
+          </div>
+
+          <div class="quick-links">
+            <a class="btn-white-outline" href="Programa.html">Programa</a>
+            <a class="btn-white-outline" href="Ebooks.html">E-books</a>
+            <a class="btn-white-outline" href="Contacto.html">Contacto</a>
+          </div>
+        </div>
+
+        <!-- PRAWA: formularz -->
+        <div class="form-card">
+          <div class="form-title">Zaloguj się / Zarejestruj</div>
+          <p class="form-sub">
+            Rejestracja tworzy konto. Po zalogowaniu przejdziesz do panelu ucznia.
+          </p>
+
+          <div class="field">
+            <label for="name">Imię (opcjonalnie)</label>
+            <input class="input" type="text" id="name" placeholder="Imię (tylko przy rejestracji)">
+          </div>
+
+          <div class="field">
+            <label for="email">Email</label>
+            <input class="input" type="email" id="email" placeholder="Email">
+          </div>
+
+          <div class="field">
+            <label for="password">Hasło</label>
+
+            <div style="position:relative;">
+              <input
+                class="input"
+                type="password"
+                id="password"
+                placeholder="Hasło"
+                style="padding-right:48px;"
+              >
+              <button
+                type="button"
+                id="togglePassword"
+                title="Pokaż / ukryj hasło"
+                style="
+                  position:absolute;
+                  right:12px;
+                  top:50%;
+                  transform:translateY(-50%);
+                  border:none;
+                  background:transparent;
+                  cursor:pointer;
+                  font-size:18px;
+                  opacity:.75;
+                "
+              >👁️</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn-yellow" id="loginBtn" type="button">Zaloguj się</button>
+            <button class="btn-red" id="registerBtn" type="button">Zarejestruj się</button>
+          </div>
+
+          <button class="reset-link" type="button" id="resetPasswordBtn">Zapomniałam hasła</button>
+
+          <div id="message" class="msg"></div>
+
+          <div class="hint">
+            Jeśli coś nie działa po GitHub Pages: odśwież <strong>Ctrl + Shift + R</strong>.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 🔥 Firebase (JEDEN skrypt) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendPasswordResetEmail
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
+      authDomain: "aquivivo-platform.firebaseapp.com",
+      projectId: "aquivivo-platform",
+      storageBucket: "aquivivo-platform.firebasestorage.app",
+      messagingSenderId: "116115622011",
+      appId: "1:116115622011:web:33a4a583eba4368071bade"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // UI
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const registerBtn = document.getElementById("registerBtn");
+    const loginBtn = document.getElementById("loginBtn");
+    const messageEl = document.getElementById("message");
+    const toggleBtn = document.getElementById("togglePassword");
+    const resetBtn = document.getElementById("resetPasswordBtn");
+
+    function setMsg(text, type){
+      messageEl.textContent = text || "";
+      messageEl.className = "msg" + (type ? (" " + type) : "");
+    }
+
+    // ENTER = login
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loginBtn.click();
+    });
+
+    // 👁️ Pokaż / ukryj hasło
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", () => {
+        const hidden = passwordInput.type === "password";
+        passwordInput.type = hidden ? "text" : "password";
+        toggleBtn.textContent = hidden ? "🙈" : "👁️";
+      });
+    }
+
+    // LOGOWANIE
+    loginBtn.addEventListener("click", async () => {
+      setMsg("");
+      try {
+        await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
+        setMsg("Zalogowano ✅", "ok");
+        window.location.href = "panel.html";
+      } catch (error) {
+        setMsg("Błąd logowania: " + error.message, "error");
+      }
+    });
+
+    // REJESTRACJA
+    registerBtn.addEventListener("click", async () => {
+      setMsg("");
+      try {
+        await createUserWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
+        setMsg("Konto utworzone 🎉", "ok");
+        window.location.href = "panel.html";
+      } catch (error) {
+        setMsg("Błąd rejestracji: " + error.message, "error");
+      }
+    });
+
+    // 🔒 Reset hasła
+    resetBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      if (!email) {
+        setMsg("Wpisz email, żeby zresetować hasło.", "error");
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        setMsg("📩 Email do resetu hasła został wysłany.", "ok");
+      } catch (error) {
+        setMsg("Błąd resetu hasła: " + error.message, "error");
+      }
+    });
+  </script>
+
+</body>
+</html>
