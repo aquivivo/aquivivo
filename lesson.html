@@ -379,6 +379,7 @@
       <div class="sectionTitle">🧩 Ejercicios</div>
       <div id="exerciseList"></div>
       <div id="emptyExercises" class="card" style="display: none; opacity: 0.9">
+        <div id="toast" style="display: none"></div>
         Todavía no hay ejercicios para este tema.
       </div>
 
@@ -389,13 +390,7 @@
         <div class="adminGrid">
           <div>
             <label>Tipo de ejercicio</label>
-            <select id="exType">
-              <option value="Opción múltiple">Opción múltiple</option>
-              <option value="Rellenar los espacios">
-                Rellenar los espacios
-              </option>
-              <option value="Verdadero o falso">Verdadero o falso</option>
-            </select>
+            <select id="exType"></select>
           </div>
 
           <div>
@@ -471,6 +466,211 @@
         orderBy,
         serverTimestamp,
       } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+      /* =========================
+   EXERCISES – helpers + UX
+   ========================= */
+
+      // ===== helpers =====
+      function normalizeAnswer(a) {
+        return String(a || '').trim();
+      }
+
+      function parseOptions(raw) {
+        return String(raw || '')
+          .split('\n')
+          .map((x) => x.trim())
+          .filter(Boolean);
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      // ===== toast =====
+      const toast = document.getElementById('toast');
+
+      function showToast(msg, kind = 'ok', ms = 2200) {
+        toast.className = '';
+        toast.style.display = 'block';
+        toast.textContent = msg;
+
+        if (kind === 'ok') toast.classList.add('toast-ok');
+        if (kind === 'bad') toast.classList.add('toast-bad');
+        if (kind === 'warn') toast.classList.add('toast-warn');
+
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => {
+          toast.style.display = 'none';
+        }, ms);
+      }
+
+      function markBad(el, bad) {
+        if (!el) return;
+        if (bad) el.classList.add('field-bad');
+        else el.classList.remove('field-bad');
+      }
+
+      function setSaving(isSaving) {
+        btnAddExercise.disabled = isSaving;
+        btnAutoOrder.disabled = isSaving;
+        btnAddExercise.textContent = isSaving
+          ? '⏳ Guardando...'
+          : '➕ Guardar ejercicio';
+      }
+
+      // ===== fill exercise types (Twoja lista) =====
+      const TASK_OPTIONS = [
+        'Rellenar los espacios',
+        'Relacionar palabra con imagen',
+        'Relacionar palabra con traducción',
+        'Elegir la palabra correcta',
+        'Tarjetas interactivas',
+        'Agrupar palabras',
+        'Verdadero o falso',
+        'Completar la frase con una imagen',
+        'Juego de memoria (pares)',
+        'Opción múltiple',
+        'Completar la forma correcta',
+        'Elegir la forma correcta',
+        'Transformaciones',
+        'Relacionar pregunta con respuesta',
+        'Ordenar palabras para formar una frase',
+        'Corregir errores',
+        'Unir dos partes de la frase',
+        'Completar con preposición o terminación',
+        'Opción única',
+        'Escribir tu propia respuesta',
+        'Repetir después del narrador',
+        'Completar la frase con tu voz',
+        'Responder a una pregunta',
+        'Describir una imagen',
+        'Juego de roles',
+        'Mini-monólogo',
+        'Diálogo semiabierto',
+        'Decirlo de otra manera',
+        'Escuchar y elegir la respuesta',
+        'Escuchar y completar los espacios',
+        'Escuchar y marcar verdadero o falso',
+        'Escuchar y relacionar personas',
+        'Escuchar y ordenar la secuencia',
+        'Dictado con audio',
+        'Escuchar y repetir',
+        'Diálogo interactivo',
+        'Misión del día',
+        'Quiz situacional',
+        'Video con preguntas',
+        'Test final del tema',
+        'Debate grabado',
+        'Contar una historia',
+        'Simulación de entrevista de trabajo',
+        'Retroalimentación por voz',
+      ];
+
+      function fillExerciseTypes() {
+        exType.innerHTML = TASK_OPTIONS.map(
+          (t) => `<option value="${t}">${t}</option>`,
+        ).join('');
+
+        const saved = localStorage.getItem('lastExerciseType');
+        if (saved && TASK_OPTIONS.includes(saved)) {
+          exType.value = saved;
+        }
+
+        exType.addEventListener('change', () => {
+          localStorage.setItem('lastExerciseType', exType.value);
+        });
+      }
+
+      // ===== MAIN SAVE HANDLER =====
+      btnAddExercise.onclick = async () => {
+        if (!isAdmin) return;
+
+        // reset validation
+        [exPrompt, exOptions, exAnswer, exOrder].forEach((el) =>
+          markBad(el, false),
+        );
+
+        const type = exType.value;
+        const prompt = exPrompt.value.trim();
+        const notes = exNotes.value.trim();
+        const answer = normalizeAnswer(exAnswer.value);
+        const order = Number(exOrder.value || 0);
+
+        let ok = true;
+
+        if (!prompt) {
+          markBad(exPrompt, true);
+          ok = false;
+        }
+        if (!answer) {
+          markBad(exAnswer, true);
+          ok = false;
+        }
+        if (!order || order < 1) {
+          markBad(exOrder, true);
+          ok = false;
+        }
+
+        const options =
+          type === 'Rellenar los espacios' ? [] : parseOptions(exOptions.value);
+
+        const needsOptions =
+          type === 'Opción múltiple' || type === 'Verdadero o falso';
+
+        if (needsOptions && options.length < 2) {
+          markBad(exOptions, true);
+          ok = false;
+        }
+
+        if (!ok) {
+          showToast('⚠️ Completa los campos marcados.', 'warn', 2600);
+          return;
+        }
+
+        try {
+          setSaving(true);
+          showToast('⏳ Guardando...', 'warn', 1200);
+
+          await addDoc(collection(db, 'exercises'), {
+            level: LEVEL,
+            topicSlug: currentTopic.slug,
+            topicId: currentTopic.id || null,
+            type,
+            prompt,
+            options,
+            answer,
+            notes,
+            order,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+
+          // reset form
+          exPrompt.value = '';
+          exOptions.value = '';
+          exAnswer.value = '';
+          exNotes.value = '';
+          exOrder.value = String(order + 1);
+
+          await loadExercises(currentTopic);
+          showToast('✅ Ejercicio guardado', 'ok', 2200);
+        } catch (err) {
+          console.error(err);
+          showToast('❌ Error al guardar. Mira la consola.', 'bad', 3200);
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      // Enter = save
+      exAnswer.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') btnAddExercise.click();
+      });
 
       // ✅ Firebase config (Twoje)
       const firebaseConfig = {
@@ -494,6 +694,24 @@
       const LEVEL = (params.get('level') || 'A1').toUpperCase();
       const slugParam = params.get('slug') || '';
       const idParam = params.get('id') || '';
+      // ✅ jeśli otwarte bez parametrów – pokaż instrukcję zamiast wiecznego "Cargando"
+      if (!params.get('level') && !params.get('id') && !params.get('slug')) {
+        document.getElementById('topicTitle').textContent =
+          'Brak wybranego tematu';
+        document.getElementById('topicDesc').textContent =
+          'Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).';
+
+        const backBtn = document.getElementById('backToCourse');
+        if (backBtn) backBtn.href = 'course.html?level=A1';
+
+        // ukryj sekcje ćwiczeń + admin
+        document.getElementById('exerciseList').innerHTML = '';
+        document.getElementById('emptyExercises').style.display = 'block';
+        document.getElementById('adminWrap').style.display = 'none';
+
+        // przerwij dalsze ładowanie
+        throw new Error('Lesson opened without params');
+      }
 
       // UI refs
       const sessionEmail = document.getElementById('sessionEmail');
@@ -519,6 +737,21 @@
       const exNotes = document.getElementById('exNotes');
       const btnAddExercise = document.getElementById('btnAddExercise');
       const btnAutoOrder = document.getElementById('btnAutoOrder');
+
+      // wypełnij dropdown typów
+      function fillExerciseTypes() {
+        exType.innerHTML = TASK_OPTIONS.map(
+          (t) => `<option value="${t}">${t}</option>`,
+        ).join('');
+
+        // zapamiętaj ostatnio wybrany typ (szybciej)
+        const saved = localStorage.getItem('lastExerciseType');
+        if (saved && TASK_OPTIONS.includes(saved)) exType.value = saved;
+
+        exType.addEventListener('change', () => {
+          localStorage.setItem('lastExerciseType', exType.value);
+        });
+      }
 
       backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
       pillLevel.textContent = `Nivel ${LEVEL}`;
@@ -552,6 +785,7 @@
         sessionEmail.textContent = user.email || '(sin correo)';
         isAdmin = user.email === ADMIN_EMAIL;
         adminWrap.style.display = isAdmin ? 'block' : 'none';
+        fillExerciseTypes();
 
         // Load topic
         const topic = await loadTopic();
@@ -574,6 +808,9 @@
         // Add exercise
         btnAddExercise.onclick = async () => {
           if (!isAdmin) return;
+          exAnswer.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') btnAddExercise.click();
+          });
 
           const type = exType.value;
           const prompt = exPrompt.value.trim();
