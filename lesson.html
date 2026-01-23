@@ -15,7 +15,10 @@
         --yellow: #fcd116;
         --blue: #003893;
         --red: #ce1126;
+        --ink: #0b1b3f;
       }
+
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
@@ -40,15 +43,10 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.14);
       }
       .nav-glass::after {
-        content: '';
+        content: "";
         display: block;
         height: 3px;
-        background: linear-gradient(
-          90deg,
-          var(--yellow),
-          var(--blue),
-          var(--red)
-        );
+        background: linear-gradient(90deg, var(--yellow), var(--blue), var(--red));
         opacity: 0.85;
       }
       .nav-inner {
@@ -64,6 +62,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 180px;
       }
       .logo-flag {
         width: 42px;
@@ -78,7 +77,7 @@
         box-shadow: 0 12px 26px rgba(0, 0, 0, 0.25);
       }
       .name {
-        font-family: 'Playfair Display', serif;
+        font-family: "Playfair Display", serif;
         font-weight: 900;
         font-size: 24px;
         color: white;
@@ -97,24 +96,23 @@
         text-decoration: none;
         border: 1px solid rgba(255, 255, 255, 0.18);
         user-select: none;
-        transition:
-          transform 0.12s ease,
-          filter 0.12s ease;
+        transition: transform 0.12s ease, filter 0.12s ease;
         background: rgba(255, 255, 255, 0.12);
         color: white;
+        white-space: nowrap;
       }
-      .btn:hover {
-        transform: translateY(-2px);
-        filter: brightness(1.03);
-      }
+      .btn:hover { transform: translateY(-2px); filter: brightness(1.03); }
+      .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
       .btn-yellow {
         background: rgba(252, 209, 22, 0.95);
         border-color: rgba(252, 209, 22, 0.7);
-        color: #0b1b3f;
+        color: var(--ink);
       }
       .btn-red {
         background: rgba(206, 17, 38, 0.92);
         border-color: rgba(206, 17, 38, 0.8);
+        color: white;
       }
 
       .sessionBar {
@@ -126,12 +124,10 @@
         font-weight: 800;
         letter-spacing: 0.2px;
       }
-      .sessionBar strong {
-        font-weight: 900;
-      }
+      .sessionBar strong { font-weight: 900; }
 
       h1 {
-        font-family: 'Playfair Display', serif;
+        font-family: "Playfair Display", serif;
         font-weight: 900;
         font-size: 44px;
         margin: 18px 0 6px 0;
@@ -170,12 +166,10 @@
         background: rgba(255, 255, 255, 0.12);
         color: white;
       }
-      .pill-blue {
-        border-color: rgba(0, 56, 147, 0.35);
-      }
+      .pill-blue { border-color: rgba(0, 56, 147, 0.35); }
       .pill-yellow {
         background: rgba(252, 209, 22, 0.95);
-        color: #0b1b3f;
+        color: var(--ink);
         border-color: rgba(252, 209, 22, 0.7);
       }
 
@@ -189,23 +183,22 @@
         gap: 10px;
       }
 
+      /* Exercises */
       .exercise {
         background: white;
-        color: #0b1b3f;
+        color: var(--ink);
         border-radius: 16px;
         padding: 16px;
         margin: 10px 0;
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
         position: relative;
       }
-
       .exercise h3 {
         margin: 0 0 8px;
         font-size: 16px;
         font-weight: 900;
         color: var(--blue);
       }
-
       .exercise .type {
         display: inline-flex;
         font-size: 12px;
@@ -217,18 +210,8 @@
         border: 1px solid rgba(0, 56, 147, 0.16);
         margin-bottom: 10px;
       }
-
-      .exercise .prompt {
-        margin: 0 0 12px;
-        color: #374151;
-        line-height: 1.55;
-      }
-
-      .opts {
-        display: grid;
-        gap: 10px;
-      }
-
+      .exercise .prompt { margin: 0 0 12px; color: #374151; line-height: 1.55; }
+      .opts { display: grid; gap: 10px; }
       .optBtn {
         text-align: left;
         padding: 12px 12px;
@@ -237,10 +220,10 @@
         background: #f9fafb;
         cursor: pointer;
         font-weight: 800;
+        transition: transform 0.08s ease, filter 0.08s ease;
       }
-      .optBtn:hover {
-        filter: brightness(0.99);
-      }
+      .optBtn:hover { filter: brightness(0.99); transform: translateY(-1px); }
+      .optBtn[disabled] { opacity: 0.75; cursor: not-allowed; transform: none; }
 
       .inputRow {
         display: flex;
@@ -255,27 +238,13 @@
         border: 1px solid #e5e7eb;
         font-size: 14px;
       }
-      .smallNote {
-        font-size: 12px;
-        color: #6b7280;
-        margin-top: 8px;
-      }
+      .smallNote { font-size: 12px; color: #6b7280; margin-top: 8px; }
+      .result { margin-top: 10px; font-weight: 900; }
+      .ok { color: #065f46; }
+      .bad { color: #b91c1c; }
 
-      .result {
-        margin-top: 10px;
-        font-weight: 900;
-      }
-      .ok {
-        color: #065f46;
-      }
-      .bad {
-        color: #b91c1c;
-      }
-
-      /* Admin panel */
-      .adminWrap {
-        display: none;
-      }
+      /* Admin */
+      .adminWrap { display: none; }
       .adminGrid {
         display: grid;
         gap: 10px;
@@ -283,9 +252,9 @@
         align-items: start;
       }
       @media (max-width: 860px) {
-        .adminGrid {
-          grid-template-columns: 1fr;
-        }
+        .nav-inner { flex-wrap: wrap; }
+        .adminGrid { grid-template-columns: 1fr; }
+        h1 { font-size: 36px; }
       }
       .adminGrid label {
         font-size: 12px;
@@ -293,11 +262,8 @@
         font-weight: 800;
         letter-spacing: 0.2px;
       }
-      .adminGrid input,
-      .adminGrid textarea,
-      .adminGrid select {
+      .adminGrid input, .adminGrid textarea, .adminGrid select {
         width: 100%;
-        box-sizing: border-box;
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.25);
         background: rgba(255, 255, 255, 0.12);
@@ -306,25 +272,11 @@
         font-size: 14px;
         outline: none;
       }
-      .adminGrid textarea {
-        min-height: 92px;
-        resize: vertical;
-      }
-      .adminGrid input::placeholder,
-      .adminGrid textarea::placeholder {
-        color: rgba(255, 255, 255, 0.55);
-      }
-      .adminGrid option {
-        background: var(--blue);
-        color: white;
-      }
+      .adminGrid textarea { min-height: 92px; resize: vertical; }
+      .adminGrid input::placeholder, .adminGrid textarea::placeholder { color: rgba(255, 255, 255, 0.55); }
+      .adminGrid option { background: var(--blue); color: white; }
 
-      .adminActions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 10px;
-      }
+      .adminActions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 
       .dangerMini {
         position: absolute;
@@ -338,6 +290,29 @@
         background: var(--red);
         color: white;
       }
+
+      /* Toast + validation */
+      #toast {
+        display: none;
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        z-index: 999;
+        padding: 12px 14px;
+        border-radius: 999px;
+        font-weight: 900;
+        letter-spacing: 0.2px;
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255,255,255,0.18);
+        backdrop-filter: blur(10px);
+      }
+      .toast-ok { background: rgba(6, 95, 70, 0.92); color: white; }
+      .toast-bad { background: rgba(185, 28, 28, 0.92); color: white; }
+      .toast-warn { background: rgba(252, 209, 22, 0.94); color: var(--ink); border-color: rgba(252, 209, 22, 0.7); }
+
+      .field-bad { outline: 2px solid rgba(206, 17, 38, 0.95); outline-offset: 2px; }
+      .muted { opacity: 0.9; }
     </style>
   </head>
 
@@ -349,11 +324,11 @@
           <div class="name">Aqui vivo</div>
         </div>
 
-        <div style="display: flex; gap: 10px; flex-wrap: wrap">
-          <a id="backToCourse" class="btn" href="course.html?level=A1"
-            >⬅️ Volver al curso</a
-          >
-          <a class="btn" href="course.html?level=A1">📚 Niveles</a>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+          <a id="backToCourse" class="btn" href="course.html?level=A1">⬅️ Volver al curso</a>
+          <a class="btn" id="levelsBtn" href="course.html?level=A1">📚 Niveles</a>
+          <button class="btn btn-yellow" id="btnCopyLink" type="button">🔗 Copiar enlace</button>
+          <button class="btn" id="btnReload" type="button">🔄 Recargar</button>
         </div>
       </div>
     </header>
@@ -363,11 +338,14 @@
     </div>
 
     <main class="container">
+      <div id="toast"></div>
+
       <div class="card">
         <div class="metaRow">
           <span class="pill pill-yellow" id="pillLevel">Nivel</span>
           <span class="pill pill-blue" id="pillType">Tipo</span>
           <span class="pill" id="pillSlug">slug</span>
+          <span class="pill" id="pillCount">Ejercicios: 0</span>
         </div>
 
         <h1 id="topicTitle">Cargando…</h1>
@@ -378,9 +356,14 @@
 
       <div class="sectionTitle">🧩 Ejercicios</div>
       <div id="exerciseList"></div>
-      <div id="emptyExercises" class="card" style="display: none; opacity: 0.9">
-        <div id="toast" style="display: none"></div>
-        Todavía no hay ejercicios para este tema.
+
+      <div id="emptyExercises" class="card" style="display:none; opacity:0.95">
+        <div class="muted">
+          Todavía no hay ejercicios para este tema.
+        </div>
+        <div class="smallNote" style="margin-top:10px">
+          Si eres admin, agrega el primero abajo 👇
+        </div>
       </div>
 
       <!-- Admin -->
@@ -399,26 +382,23 @@
           </div>
 
           <div>
-            <label>Opciones (solo para opción múltiple / V-F)</label>
+            <label>Opciones (solo si aplica)</label>
             <textarea
               id="exOptions"
               placeholder="Una opción por línea&#10;Ej:&#10;A) ...&#10;B) ...&#10;C) ..."
             ></textarea>
+            <div class="smallNote">
+              Para ejercicios de selección, añade al menos 2 opciones (una por línea).
+            </div>
           </div>
 
           <div>
             <label>Respuesta correcta</label>
-            <input
-              id="exAnswer"
-              placeholder="Ej: B   |   true   |   palabra_correcta"
-            />
+            <input id="exAnswer" placeholder="Ej: B   |   true   |   palabra_correcta" />
             <div class="smallNote">
-              - Para “Opción múltiple”: wpisz literę (A/B/C/D) lub dokładny
-              tekst opcji.<br />
-              - Para “Verdadero o falso”: wpisz <b>true</b> albo
-              <b>false</b>.<br />
-              - Para “Rellenar los espacios”: wpisz poprawne słowo/odpowiedź
-              (dokładnie).
+              - Opción múltiple: letra (A/B/C/D) o texto exacto.<br />
+              - Verdadero o falso: <b>true</b> / <b>false</b>.<br />
+              - Campo abierto: wpisz poprawne słowo/odpowiedź (dokładnie).
             </div>
           </div>
 
@@ -434,628 +414,541 @@
         </div>
 
         <div class="adminActions">
-          <button class="btn btn-yellow" id="btnAddExercise">
-            ➕ Guardar ejercicio
-          </button>
-          <button class="btn" id="btnAutoOrder">✨ Ustaw kolejny numer</button>
+          <button class="btn btn-yellow" id="btnAddExercise" type="button">➕ Guardar ejercicio</button>
+          <button class="btn" id="btnAutoOrder" type="button">✨ Ustaw kolejny numer</button>
         </div>
 
-        <div class="smallNote" style="margin-top: 10px">
-          Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level,
-          topicSlug, order, type, prompt, options[], answer, notes.
+        <div class="smallNote" style="margin-top:10px">
+          Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level, topicSlug, order, type, prompt, options[], answer, notes.
         </div>
       </div>
     </main>
 
     <script type="module">
-            import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
-            import {
-              getAuth,
-              onAuthStateChanged,
-            } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-            import {
-              getFirestore,
-              collection,
-              query,
-              where,
-              getDocs,
-              addDoc,
-              deleteDoc,
-              doc,
-              getDoc,
-              orderBy,
-              serverTimestamp,
-            } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
-            /* =========================
-         EXERCISES – helpers + UX
-         ========================= */
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+      import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        query,
+        where,
+        getDocs,
+        addDoc,
+        deleteDoc,
+        doc,
+        getDoc,
+        orderBy,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-            // ===== helpers =====
-            function normalizeAnswer(a) {
-              return String(a || '').trim();
-            }
+      // ✅ Firebase config (Twoje)
+      const firebaseConfig = {
+        apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
+        authDomain: "aquivivo-platform.firebaseapp.com",
+        projectId: "aquivivo-platform",
+        storageBucket: "aquivivo-platform.firebasestorage.app",
+        messagingSenderId: "116115622011",
+        appId: "1:116115622011:web:33a4a583eba4368071bade",
+      };
 
-            function parseOptions(raw) {
-              return String(raw || '')
-                .split('\n')
-                .map((x) => x.trim())
-                .filter(Boolean);
-            }
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
-            function escapeHtml(s) {
-              return String(s)
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#039;');
-            }
+      const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
 
-            // ===== toast =====
-            const toast = document.getElementById('toast');
+      // URL params
+      const params = new URLSearchParams(window.location.search);
+      const LEVEL = (params.get("level") || "A1").toUpperCase();
+      const slugParam = params.get("slug") || "";
+      const idParam = params.get("id") || "";
 
-            function showToast(msg, kind = 'ok', ms = 2200) {
-              toast.className = '';
-              toast.style.display = 'block';
-              toast.textContent = msg;
+      // UI refs
+      const toast = document.getElementById("toast");
+      const sessionEmail = document.getElementById("sessionEmail");
+      const backToCourse = document.getElementById("backToCourse");
+      const levelsBtn = document.getElementById("levelsBtn");
+      const btnCopyLink = document.getElementById("btnCopyLink");
+      const btnReload = document.getElementById("btnReload");
 
-              if (kind === 'ok') toast.classList.add('toast-ok');
-              if (kind === 'bad') toast.classList.add('toast-bad');
-              if (kind === 'warn') toast.classList.add('toast-warn');
+      const pillLevel = document.getElementById("pillLevel");
+      const pillType = document.getElementById("pillType");
+      const pillSlug = document.getElementById("pillSlug");
+      const pillCount = document.getElementById("pillCount");
 
-              clearTimeout(showToast._t);
-              showToast._t = setTimeout(() => {
-                toast.style.display = 'none';
-              }, ms);
-            }
+      const topicTitle = document.getElementById("topicTitle");
+      const topicDesc = document.getElementById("topicDesc");
+      const taskChips = document.getElementById("taskChips");
 
-            function markBad(el, bad) {
-              if (!el) return;
-              if (bad) el.classList.add('field-bad');
-              else el.classList.remove('field-bad');
-            }
+      const exerciseList = document.getElementById("exerciseList");
+      const emptyExercises = document.getElementById("emptyExercises");
+      const adminWrap = document.getElementById("adminWrap");
 
-            function setSaving(isSaving) {
-              btnAddExercise.disabled = isSaving;
-              btnAutoOrder.disabled = isSaving;
-              btnAddExercise.textContent = isSaving
-                ? '⏳ Guardando...'
-                : '➕ Guardar ejercicio';
-            }
+      // admin fields
+      const exType = document.getElementById("exType");
+      const exPrompt = document.getElementById("exPrompt");
+      const exOptions = document.getElementById("exOptions");
+      const exAnswer = document.getElementById("exAnswer");
+      const exOrder = document.getElementById("exOrder");
+      const exNotes = document.getElementById("exNotes");
+      const btnAddExercise = document.getElementById("btnAddExercise");
+      const btnAutoOrder = document.getElementById("btnAutoOrder");
 
-            // ===== fill exercise types (Twoja lista) =====
-            const TASK_OPTIONS = [
-              'Rellenar los espacios',
-              'Relacionar palabra con imagen',
-              'Relacionar palabra con traducción',
-              'Elegir la palabra correcta',
-              'Tarjetas interactivas',
-              'Agrupar palabras',
-              'Verdadero o falso',
-              'Completar la frase con una imagen',
-              'Juego de memoria (pares)',
-              'Opción múltiple',
-              'Completar la forma correcta',
-              'Elegir la forma correcta',
-              'Transformaciones',
-              'Relacionar pregunta con respuesta',
-              'Ordenar palabras para formar una frase',
-              'Corregir errores',
-              'Unir dos partes de la frase',
-              'Completar con preposición o terminación',
-              'Opción única',
-              'Escribir tu propia respuesta',
-              'Repetir después del narrador',
-              'Completar la frase con tu voz',
-              'Responder a una pregunta',
-              'Describir una imagen',
-              'Juego de roles',
-              'Mini-monólogo',
-              'Diálogo semiabierto',
-              'Decirlo de otra manera',
-              'Escuchar y elegir la respuesta',
-              'Escuchar y completar los espacios',
-              'Escuchar y marcar verdadero o falso',
-              'Escuchar y relacionar personas',
-              'Escuchar y ordenar la secuencia',
-              'Dictado con audio',
-              'Escuchar y repetir',
-              'Diálogo interactivo',
-              'Misión del día',
-              'Quiz situacional',
-              'Video con preguntas',
-              'Test final del tema',
-              'Debate grabado',
-              'Contar una historia',
-              'Simulación de entrevista de trabajo',
-              'Retroalimentación por voz',
-            ];
-            // ===== MAIN SAVE HANDLER =====
-            btnAddExercise.onclick = async () => {
-              if (!isAdmin) return;
-
-              // reset validation
-              [exPrompt, exOptions, exAnswer, exOrder].forEach((el) =>
-                markBad(el, false),
-              );
-
-              const type = exType.value;
-              const prompt = exPrompt.value.trim();
-              const notes = exNotes.value.trim();
-              const answer = normalizeAnswer(exAnswer.value);
-              const order = Number(exOrder.value || 0);
-
-              let ok = true;
-
-              if (!prompt) {
-                markBad(exPrompt, true);
-                ok = false;
-              }
-              if (!answer) {
-                markBad(exAnswer, true);
-                ok = false;
-              }
-              if (!order || order < 1) {
-                markBad(exOrder, true);
-                ok = false;
-              }
-
-              const options =
-                type === 'Rellenar los espacios' ? [] : parseOptions(exOptions.value);
-
-              const needsOptions =
-                type === 'Opción múltiple' || type === 'Verdadero o falso';
-
-              if (needsOptions && options.length < 2) {
-                markBad(exOptions, true);
-                ok = false;
-              }
-
-              if (!ok) {
-                showToast('⚠️ Completa los campos marcados.', 'warn', 2600);
-                return;
-              }
-
-              try {
-                setSaving(true);
-                showToast('⏳ Guardando...', 'warn', 1200);
-
-                await addDoc(collection(db, 'exercises'), {
-                  level: LEVEL,
-                  topicSlug: currentTopic.slug,
-                  topicId: currentTopic.id || null,
-                  type,
-                  prompt,
-                  options,
-                  answer,
-                  notes,
-                  order,
-                  createdAt: serverTimestamp(),
-                  updatedAt: serverTimestamp(),
-                });
-
-                // reset form
-                exPrompt.value = '';
-                exOptions.value = '';
-                exAnswer.value = '';
-                exNotes.value = '';
-                exOrder.value = String(order + 1);
-
-                await loadExercises(currentTopic);
-                showToast('✅ Ejercicio guardado', 'ok', 2200);
-              } catch (err) {
-                console.error(err);
-                showToast('❌ Error al guardar. Mira la consola.', 'bad', 3200);
-              } finally {
-                setSaving(false);
-              }
-            };
-
-            // Enter = save
-            exAnswer.addEventListener('keydown', (e) => {
-              if (e.key === 'Enter') btnAddExercise.click();
-            });
-
-            // ✅ Firebase config (Twoje)
-            const firebaseConfig = {
-              apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
-              authDomain: 'aquivivo-platform.firebaseapp.com',
-              projectId: 'aquivivo-platform',
-              storageBucket: 'aquivivo-platform.firebasestorage.app',
-              messagingSenderId: '116115622011',
-              appId: '1:116115622011:web:33a4a583eba4368071bade',
-            };
-
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
-
-            const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
-            let isAdmin = false;
-
-            // URL params
-            const params = new URLSearchParams(window.location.search);
-            const LEVEL = (params.get('level') || 'A1').toUpperCase();
-            const slugParam = params.get('slug') || '';
-            const idParam = params.get('id') || '';
-            // ✅ jeśli otwarte bez parametrów – pokaż instrukcję zamiast wiecznego "Cargando"
-            if (!params.get('level') && !params.get('id') && !params.get('slug')) {
-              document.getElementById('topicTitle').textContent =
-                'Brak wybranego tematu';
-              document.getElementById('topicDesc').textContent =
-                'Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).';
-
-              const backBtn = document.getElementById('backToCourse');
-              if (backBtn) backBtn.href = 'course.html?level=A1';
-
-              // ukryj sekcje ćwiczeń + admin
-              document.getElementById('exerciseList').innerHTML = '';
-              document.getElementById('emptyExercises').style.display = 'block';
-              document.getElementById('adminWrap').style.display = 'none';
-
-              // przerwij dalsze ładowanie
-              throw new Error('Lesson opened without params');
-            }
-
-            // UI refs
-            const sessionEmail = document.getElementById('sessionEmail');
-            const backToCourse = document.getElementById('backToCourse');
-
-            const pillLevel = document.getElementById('pillLevel');
-            const pillType = document.getElementById('pillType');
-            const pillSlug = document.getElementById('pillSlug');
-            const topicTitle = document.getElementById('topicTitle');
-            const topicDesc = document.getElementById('topicDesc');
-            const taskChips = document.getElementById('taskChips');
-
-            const exerciseList = document.getElementById('exerciseList');
-            const emptyExercises = document.getElementById('emptyExercises');
-            const adminWrap = document.getElementById('adminWrap');
-
-            // admin fields
-            const exType = document.getElementById('exType');
-            const exPrompt = document.getElementById('exPrompt');
-            const exOptions = document.getElementById('exOptions');
-            const exAnswer = document.getElementById('exAnswer');
-            const exOrder = document.getElementById('exOrder');
-            const exNotes = document.getElementById('exNotes');
-            const btnAddExercise = document.getElementById('btnAddExercise');
-            const btnAutoOrder = document.getElementById('btnAutoOrder');
-
-            backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-            pillLevel.textContent = `Nivel ${LEVEL}`;
-
-            function escapeHtml(s) {
-              return String(s)
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#039;');
-            }
-
-            function normalizeAnswer(a) {
-              return String(a || '').trim();
-            }
-
-            function parseOptions(raw) {
-              return String(raw || '')
-                .split('\n')
-                .map((x) => x.trim())
-                .filter(Boolean);
-            }
-
-            // Auth
-            onAuthStateChanged(auth, async (user) => {
-              if (!user) {
-                window.location.href = 'login.html';
-                return;
-              }
-              sessionEmail.textContent = user.email || '(sin correo)';
-              isAdmin = user.email === ADMIN_EMAIL;
-              adminWrap.style.display = isAdmin ? 'block' : 'none';
-              fillExerciseTypes();
-
-              // Load topic
-              const topic = await loadTopic();
-              if (!topic) {
-                topicTitle.textContent = 'Tema no encontrado';
-                topicDesc.textContent =
-                  'No se pudo cargar el tema. Verifica el enlace (level/slug/id).';
-                return;
-              }
-
-              // Load exercises
-              await loadExercises(topic);
-
-              // auto order helper
-              btnAutoOrder.onclick = () => {
-                const next = getNextOrder();
-                exOrder.value = String(next);
-              };
-
-              // Add exercise
-              btnAddExercise.onclick = async () => {
-                if (!isAdmin) return;
-                exAnswer.addEventListener('keydown', (e) => {
-                  if (e.key === 'Enter') btnAddExercise.click();
-                });
-
-                const type = exType.value;
-                const prompt = exPrompt.value.trim();
-                const notes = exNotes.value.trim();
-                const answer = normalizeAnswer(exAnswer.value);
-
-                if (!prompt) return alert('Uzupełnij enunciado/pregunta.');
-                if (!answer)
-                  return alert('Uzupełnij odpowiedź (respuesta correcta).');
-
-                const order = Number(exOrder.value || 0);
-                if (!order || order < 1)
-                  return alert('Ustaw poprawny order (min 1).');
-
-                const options =
-                  type === 'Rellenar los espacios'
-                    ? []
-                    : parseOptions(exOptions.value);
-
-                if (type !== 'Rellenar los espacios' && options.length < 2) {
-                  return alert('Dodaj przynajmniej 2 opcje (jedna na linię).');
-                }
-
-                // Save
-                await addDoc(collection(db, 'exercises'), {
-                  level: LEVEL,
-                  topicSlug: topic.slug,
-                  topicId: topic.id || null,
-                  type,
-                  prompt,
-                  options,
-                  answer,
-                  notes,
-                  order,
-                  createdAt: serverTimestamp(),
-                  updatedAt: serverTimestamp(),
-                });
-
-                // reset form (light)
-                exPrompt.value = '';
-                exOptions.value = '';
-                exAnswer.value = '';
-                exNotes.value = '';
-                exOrder.value = String(order + 1);
-
-                await loadExercises(topic);
-                alert('✅ Ejercicio guardado');
-              };
-            });
-      onAuthStateChanged(...) {
-        ...
-        fillExerciseTypes();
+      // ===== helpers =====
+      function escapeHtml(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
       }
 
-      // ⬇️ TUTAJ WKLEJ ⬇️
+      function normalizeAnswer(a) {
+        return String(a ?? "").trim();
+      }
+
+      function parseOptions(raw) {
+        return String(raw ?? "")
+          .split("\n")
+          .map((x) => x.trim())
+          .filter(Boolean);
+      }
+
+      function showToast(msg, kind = "ok", ms = 2200) {
+        toast.className = "";
+        toast.style.display = "block";
+        toast.textContent = msg;
+
+        if (kind === "ok") toast.classList.add("toast-ok");
+        if (kind === "bad") toast.classList.add("toast-bad");
+        if (kind === "warn") toast.classList.add("toast-warn");
+
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => {
+          toast.style.display = "none";
+        }, ms);
+      }
+
+      function markBad(el, bad) {
+        if (!el) return;
+        if (bad) el.classList.add("field-bad");
+        else el.classList.remove("field-bad");
+      }
+
+      function setSaving(isSaving) {
+        btnAddExercise.disabled = isSaving;
+        btnAutoOrder.disabled = isSaving;
+        btnAddExercise.textContent = isSaving ? "⏳ Guardando..." : "➕ Guardar ejercicio";
+      }
+
+      // ===== UX buttons =====
+      backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+      levelsBtn.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+      pillLevel.textContent = `Nivel ${LEVEL}`;
+
+      btnCopyLink.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          showToast("✅ Enlace copiado", "ok", 1800);
+        } catch {
+          showToast("⚠️ No se pudo copiar (bloqueado por navegador)", "warn", 2600);
+        }
+      };
+      btnReload.onclick = () => window.location.reload();
+
+      // ===== Exercise types (Twoja lista) =====
+      const TASK_OPTIONS = [
+        "Rellenar los espacios",
+        "Relacionar palabra con imagen",
+        "Relacionar palabra con traducción",
+        "Elegir la palabra correcta",
+        "Tarjetas interactivas",
+        "Agrupar palabras",
+        "Verdadero o falso",
+        "Completar la frase con una imagen",
+        "Juego de memoria (pares)",
+        "Opción múltiple",
+        "Completar la forma correcta",
+        "Elegir la forma correcta",
+        "Transformaciones",
+        "Relacionar pregunta con respuesta",
+        "Ordenar palabras para formar una frase",
+        "Corregir errores",
+        "Unir dos partes de la frase",
+        "Completar con preposición o terminación",
+        "Opción única",
+        "Escribir tu propia respuesta",
+        "Repetir después del narrador",
+        "Completar la frase con tu voz",
+        "Responder a una pregunta",
+        "Describir una imagen",
+        "Juego de roles",
+        "Mini-monólogo",
+        "Diálogo semiabierto",
+        "Decirlo de otra manera",
+        "Escuchar y elegir la respuesta",
+        "Escuchar y completar los espacios",
+        "Escuchar y marcar verdadero o falso",
+        "Escuchar y relacionar personas",
+        "Escuchar y ordenar la secuencia",
+        "Dictado con audio",
+        "Escuchar y repetir",
+        "Diálogo interactivo",
+        "Misión del día",
+        "Quiz situacional",
+        "Video con preguntas",
+        "Test final del tema",
+        "Debate grabado",
+        "Contar una historia",
+        "Simulación de entrevista de trabajo",
+        "Retroalimentación por voz",
+      ];
+
       function fillExerciseTypes() {
-        ...
+        exType.innerHTML = TASK_OPTIONS.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+        const saved = localStorage.getItem("lastExerciseType");
+        if (saved && TASK_OPTIONS.includes(saved)) exType.value = saved;
+        exType.addEventListener("change", () => localStorage.setItem("lastExerciseType", exType.value));
+      }
+
+      // ===== Safe "no params" screen =====
+      if (!params.get("level") && !params.get("id") && !params.get("slug")) {
+        topicTitle.textContent = "Brak wybranego tematu";
+        topicDesc.textContent =
+          "Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).";
+        pillType.textContent = "—";
+        pillSlug.textContent = "slug: —";
+        pillCount.textContent = "Ejercicios: —";
+        exerciseList.innerHTML = "";
+        emptyExercises.style.display = "block";
       }
 
       // ===== Topic loading =====
-      async function loadTopic() { ... }
+      let currentTopic = null;
+      let isAdmin = false;
+      let cachedExercises = [];
 
-            // ===== Topic loading =====
-            let currentTopic = null;
+      function normalizeTopic(t) {
+        return {
+          id: t.id,
+          level: (t.level || "").toString().toUpperCase(),
+          type: (t.type || "").toString(),
+          title: t.title || "",
+          desc: t.desc || "",
+          slug: t.slug || slugParam || "",
+          tasks: Array.isArray(t.tasks) ? t.tasks : [],
+        };
+      }
 
-            async function loadTopic() {
-              // 1) by id
-              if (idParam) {
-                const ref = doc(db, 'courses', idParam);
-                const snap = await getDoc(ref);
-                if (!snap.exists()) return null;
+      function renderTopic(t) {
+        pillType.textContent = t.type === "grammar" ? "Gramática" : "Vocabulario";
+        pillSlug.textContent = t.slug ? `slug: ${t.slug}` : "slug: —";
+        topicTitle.textContent = t.title || "Tema";
+        topicDesc.textContent = t.desc || "";
 
-                const data = snap.data();
-                currentTopic = normalizeTopic({ id: snap.id, ...data });
-                renderTopic(currentTopic);
-                return currentTopic;
-              }
+        taskChips.innerHTML = "";
+        if (t.tasks && t.tasks.length) {
+          t.tasks.slice(0, 14).forEach((x) => {
+            const span = document.createElement("span");
+            span.className = "pill";
+            span.textContent = x;
+            taskChips.appendChild(span);
+          });
+        }
+      }
 
-              // 2) by slug + level
-              if (!slugParam) return null;
-
-              const q = query(
-                collection(db, 'courses'),
-                where('level', '==', LEVEL),
-                where('slug', '==', slugParam),
-              );
-
-              const snap = await getDocs(q);
-              if (snap.empty) return null;
-
-              const d = snap.docs[0];
-              currentTopic = normalizeTopic({ id: d.id, ...d.data() });
-              renderTopic(currentTopic);
-              return currentTopic;
-            }
-
-            function normalizeTopic(t) {
-              return {
-                id: t.id,
-                level: (t.level || '').toString().toUpperCase(),
-                type: (t.type || '').toString(),
-                title: t.title || '',
-                desc: t.desc || '',
-                slug: t.slug || slugParam || '',
-                tasks: Array.isArray(t.tasks) ? t.tasks : [],
-              };
-            }
-
-            function renderTopic(t) {
-              pillType.textContent =
-                t.type === 'grammar' ? 'Gramática' : 'Vocabulario';
-              pillSlug.textContent = t.slug ? `slug: ${t.slug}` : 'slug: -';
-              topicTitle.textContent = t.title || 'Tema';
-              topicDesc.textContent = t.desc || '';
-
-              taskChips.innerHTML = '';
-              if (t.tasks && t.tasks.length) {
-                t.tasks.slice(0, 14).forEach((x) => {
-                  const span = document.createElement('span');
-                  span.className = 'pill';
-                  span.textContent = x;
-                  taskChips.appendChild(span);
-                });
-              }
-            }
-      // ===== Exercise types (dropdown) =====
-      function fillExerciseTypes() {
-        exType.innerHTML = TASK_OPTIONS.map(
-          (t) => `<option value="${t}">${t}</option>`
-        ).join('');
-
-        const saved = localStorage.getItem('lastExerciseType');
-        if (saved && TASK_OPTIONS.includes(saved)) {
-          exType.value = saved;
+      async function loadTopic() {
+        // 1) by id
+        if (idParam) {
+          const ref = doc(db, "courses", idParam);
+          const snap = await getDoc(ref);
+          if (!snap.exists()) return null;
+          const data = snap.data();
+          currentTopic = normalizeTopic({ id: snap.id, ...data });
+          renderTopic(currentTopic);
+          return currentTopic;
         }
 
-        exType.addEventListener('change', () => {
-          localStorage.setItem('lastExerciseType', exType.value);
+        // 2) by slug + level
+        if (!slugParam) return null;
+
+        const q = query(collection(db, "courses"), where("level", "==", LEVEL), where("slug", "==", slugParam));
+        const snap = await getDocs(q);
+        if (snap.empty) return null;
+
+        const d = snap.docs[0];
+        currentTopic = normalizeTopic({ id: d.id, ...d.data() });
+        renderTopic(currentTopic);
+        return currentTopic;
+      }
+
+      // ===== Exercises loading/render =====
+      function getNextOrder() {
+        if (!cachedExercises.length) return 1;
+        const max = Math.max(...cachedExercises.map((x) => Number(x.order || 0)));
+        return (max || 0) + 1;
+      }
+
+      function renderExerciseCard(ex, idx) {
+        const type = ex.type || "Ejercicio";
+        const prompt = ex.prompt || "";
+        const options = Array.isArray(ex.options) ? ex.options : [];
+        const order = Number(ex.order || idx + 1);
+
+        const isChoice = options.length >= 2;
+        const isFill = type === "Rellenar los espacios" || !isChoice;
+
+        const optionsHtml = isFill
+          ? `
+            <div class="inputRow">
+              <input class="textInput" id="inp-${ex.id}" placeholder="Escribe tu respuesta..." />
+              <button class="btn btn-yellow" id="chk-${ex.id}" type="button">Comprobar</button>
+            </div>
+          `
+          : `
+            <div class="opts" id="opts-${ex.id}">
+              ${options
+                .map((o) => `<button class="optBtn" type="button" data-ex="${ex.id}" data-opt="${escapeHtml(o)}">${escapeHtml(o)}</button>`)
+                .join("")}
+            </div>
+          `;
+
+        const adminDelete = isAdmin
+          ? `<button class="dangerMini" id="del-${ex.id}" type="button" title="Eliminar">🗑</button>`
+          : "";
+
+        return `
+          <div class="exercise" id="ex-${ex.id}">
+            ${adminDelete}
+            <div class="type">${escapeHtml(type)} · #${order}</div>
+            <h3>${escapeHtml(prompt)}</h3>
+            ${optionsHtml}
+            <div class="result" id="res-${ex.id}"></div>
+            ${ex.notes ? `<div class="smallNote">${escapeHtml(ex.notes)}</div>` : ""}
+          </div>
+        `;
+      }
+
+      function disableChoiceButtons(exId) {
+        const wrap = document.getElementById(`opts-${exId}`);
+        if (!wrap) return;
+        wrap.querySelectorAll("button.optBtn").forEach((b) => (b.disabled = true));
+      }
+
+      function attachExerciseHandlers(ex) {
+        const correct = String(ex.answer || "").trim();
+        const res = document.getElementById(`res-${ex.id}`);
+
+        // delete
+        if (isAdmin) {
+          const delBtn = document.getElementById(`del-${ex.id}`);
+          if (delBtn) {
+            delBtn.onclick = async (ev) => {
+              ev.stopPropagation();
+              if (!confirm("Usunąć to zadanie?")) return;
+              try {
+                await deleteDoc(doc(db, "exercises", ex.id));
+                showToast("🗑 Usunięto", "ok", 1600);
+                await loadExercises(currentTopic);
+              } catch (e) {
+                console.error(e);
+                showToast("❌ Błąd usuwania (sprawdź konsolę)", "bad", 3200);
+              }
+            };
+          }
+        }
+
+        // text input mode
+        const inp = document.getElementById(`inp-${ex.id}`);
+        const chk = document.getElementById(`chk-${ex.id}`);
+        if (inp && chk && res) {
+          const check = () => {
+            const user = String(inp.value || "").trim();
+            if (!user) return;
+
+            const ok = user.toLowerCase() === correct.toLowerCase();
+            res.innerHTML = ok
+              ? `<span class="ok">✅ Correcto</span>`
+              : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
+          };
+
+          chk.onclick = check;
+          inp.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") check();
+          });
+          return;
+        }
+
+        // choice mode
+        const wrap = document.getElementById(`opts-${ex.id}`);
+        if (!wrap || !res) return;
+
+        wrap.querySelectorAll("button.optBtn").forEach((btn) => {
+          btn.onclick = () => {
+            const picked = btn.getAttribute("data-opt") || "";
+            const ok = picked.trim().toLowerCase() === correct.trim().toLowerCase();
+
+            res.innerHTML = ok
+              ? `<span class="ok">✅ Correcto</span>`
+              : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
+
+            if (ok) disableChoiceButtons(ex.id);
+          };
         });
       }
-            // ===== Exercises loading/render =====
-            let cachedExercises = [];
 
-            async function loadExercises(topic) {
-              exerciseList.innerHTML = '';
-              emptyExercises.style.display = 'none';
-              cachedExercises = [];
+      async function loadExercises(topic) {
+        exerciseList.innerHTML = "";
+        emptyExercises.style.display = "none";
+        cachedExercises = [];
 
-              const qx = query(
-                collection(db, 'exercises'),
-                where('level', '==', LEVEL),
-                where('topicSlug', '==', topic.slug),
-                orderBy('order', 'asc'),
-              );
+        if (!topic || !topic.slug) {
+          emptyExercises.style.display = "block";
+          pillCount.textContent = "Ejercicios: —";
+          return;
+        }
 
-              const snap = await getDocs(qx);
+        const qx = query(
+          collection(db, "exercises"),
+          where("level", "==", LEVEL),
+          where("topicSlug", "==", topic.slug),
+          orderBy("order", "asc"),
+        );
 
-              if (snap.empty) {
-                emptyExercises.style.display = 'block';
-                return;
-              }
+        const snap = await getDocs(qx);
+        if (snap.empty) {
+          emptyExercises.style.display = "block";
+          pillCount.textContent = "Ejercicios: 0";
+          return;
+        }
 
-              snap.forEach((d) => {
-                const data = d.data();
-                cachedExercises.push({ id: d.id, ...data });
-              });
+        snap.forEach((d) => cachedExercises.push({ id: d.id, ...d.data() }));
+        pillCount.textContent = `Ejercicios: ${cachedExercises.length}`;
 
-              cachedExercises.forEach((ex, idx) => {
-                exerciseList.insertAdjacentHTML(
-                  'beforeend',
-                  renderExerciseCard(ex, idx),
-                );
-              });
+        cachedExercises.forEach((ex, idx) => {
+          exerciseList.insertAdjacentHTML("beforeend", renderExerciseCard(ex, idx));
+        });
+        cachedExercises.forEach((ex) => attachExerciseHandlers(ex));
+      }
 
-              // attach handlers for check + delete
-              cachedExercises.forEach((ex) => attachExerciseHandlers(ex));
-            }
+      // ===== Auth + boot =====
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = "login.html";
+          return;
+        }
 
-            function getNextOrder() {
-              if (!cachedExercises.length) return 1;
-              const max = Math.max(
-                ...cachedExercises.map((x) => Number(x.order || 0)),
-              );
-              return (max || 0) + 1;
-            }
+        sessionEmail.textContent = user.email || "(sin correo)";
+        isAdmin = (user.email || "") === ADMIN_EMAIL;
+        adminWrap.style.display = isAdmin ? "block" : "none";
 
-            function renderExerciseCard(ex, idx) {
-              const type = ex.type || 'Ejercicio';
-              const prompt = ex.prompt || '';
-              const options = Array.isArray(ex.options) ? ex.options : [];
-              const order = Number(ex.order || idx + 1);
+        fillExerciseTypes();
 
-              const optionsHtml =
-                type === 'Rellenar los espacios'
-                  ? `
-                <div class="inputRow">
-                  <input class="textInput" id="inp-${ex.id}" placeholder="Escribe tu respuesta..." />
-                  <button class="btn btn-yellow" id="chk-${ex.id}">Comprobar</button>
-                </div>
-              `
-                  : `
-                <div class="opts" id="opts-${ex.id}">
-                  ${options.map((o, i) => `<button class="optBtn" data-ex="${ex.id}" data-opt="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join('')}
-                </div>
-              `;
+        // If opened without params, do not try to query Firestore
+        if (!params.get("id") && !params.get("slug")) return;
 
-              const adminDelete = isAdmin
-                ? `<button class="dangerMini" id="del-${ex.id}" title="Eliminar">🗑</button>`
-                : '';
+        try {
+          showToast("⏳ Cargando tema...", "warn", 1200);
 
-              return `
-              <div class="exercise" id="ex-${ex.id}">
-                ${adminDelete}
-                <div class="type">${escapeHtml(type)} · #${order}</div>
-                <h3>${escapeHtml(prompt)}</h3>
-                ${optionsHtml}
-                <div class="result" id="res-${ex.id}"></div>
-                ${ex.notes ? `<div class="smallNote">${escapeHtml(ex.notes)}</div>` : ''}
-              </div>
-            `;
-            }
+          const topic = await loadTopic();
+          if (!topic) {
+            topicTitle.textContent = "Tema no encontrado";
+            topicDesc.textContent = "No se pudo cargar el tema. Verifica el enlace (level/slug/id).";
+            pillType.textContent = "—";
+            pillSlug.textContent = "slug: —";
+            pillCount.textContent = "Ejercicios: —";
+            emptyExercises.style.display = "block";
+            showToast("⚠️ No se encontró el tema", "warn", 2600);
+            return;
+          }
 
-            function attachExerciseHandlers(ex) {
-              const type = ex.type || '';
-              const correct = String(ex.answer || '').trim();
+          await loadExercises(topic);
+          if (isAdmin) {
+            exOrder.value = String(getNextOrder());
+          }
+        } catch (e) {
+          console.error(e);
+          showToast("❌ Error al cargar (mira la consola)", "bad", 3600);
+        }
+      });
 
-              // delete
-              if (isAdmin) {
-                const delBtn = document.getElementById(`del-${ex.id}`);
-                if (delBtn) {
-                  delBtn.onclick = async (ev) => {
-                    ev.stopPropagation();
-                    if (!confirm('Usunąć to zadanie?')) return;
-                    await deleteDoc(doc(db, 'exercises', ex.id));
-                    await loadExercises(currentTopic);
-                  };
-                }
-              }
+      // ===== Admin actions =====
+      btnAutoOrder.onclick = () => {
+        exOrder.value = String(getNextOrder());
+        showToast("✨ Ustawiono order", "ok", 1400);
+      };
 
-              // rellenar
-              if (type === 'Rellenar los espacios') {
-                const chk = document.getElementById(`chk-${ex.id}`);
-                const inp = document.getElementById(`inp-${ex.id}`);
-                const res = document.getElementById(`res-${ex.id}`);
+      btnAddExercise.onclick = async () => {
+        if (!isAdmin || !currentTopic) return;
 
-                if (chk && inp && res) {
-                  chk.onclick = () => {
-                    const user = String(inp.value || '').trim();
-                    if (!user) return;
+        // reset validation
+        [exPrompt, exOptions, exAnswer, exOrder].forEach((el) => markBad(el, false));
 
-                    const ok = user.toLowerCase() === correct.toLowerCase();
-                    res.innerHTML = ok
-                      ? `<span class="ok">✅ Correcto</span>`
-                      : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
-                  };
-                }
-                return;
-              }
+        const type = exType.value;
+        const prompt = exPrompt.value.trim();
+        const notes = exNotes.value.trim();
+        const answer = normalizeAnswer(exAnswer.value);
+        const order = Number(exOrder.value || 0);
 
-              // opción múltiple / V-F
-              const res = document.getElementById(`res-${ex.id}`);
-              const wrap = document.getElementById(`opts-${ex.id}`);
-              if (!wrap || !res) return;
+        let ok = true;
 
-              wrap.querySelectorAll('button.optBtn').forEach((btn) => {
-                btn.onclick = () => {
-                  const picked = btn.getAttribute('data-opt') || '';
-                  const ok =
-                    picked.trim().toLowerCase() === correct.trim().toLowerCase();
+        if (!prompt) { markBad(exPrompt, true); ok = false; }
+        if (!answer) { markBad(exAnswer, true); ok = false; }
+        if (!order || order < 1) { markBad(exOrder, true); ok = false; }
 
-                  res.innerHTML = ok
-                    ? `<span class="ok">✅ Correcto</span>`
-                    : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
-                };
-              });
-            }
+        const options = parseOptions(exOptions.value);
+        const needsOptions = (options.length > 0) || type === "Opción múltiple" || type === "Verdadero o falso";
+
+        if (needsOptions && options.length < 2) {
+          markBad(exOptions, true);
+          ok = false;
+        }
+
+        if (!ok) {
+          showToast("⚠️ Completa los campos marcados.", "warn", 2600);
+          return;
+        }
+
+        try {
+          setSaving(true);
+          showToast("⏳ Guardando...", "warn", 1200);
+
+          await addDoc(collection(db, "exercises"), {
+            level: LEVEL,
+            topicSlug: currentTopic.slug,
+            topicId: currentTopic.id || null,
+            type,
+            prompt,
+            options: options.length ? options : [],
+            answer,
+            notes,
+            order,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+
+          // reset form
+          exPrompt.value = "";
+          exOptions.value = "";
+          exAnswer.value = "";
+          exNotes.value = "";
+          exOrder.value = String(order + 1);
+
+          await loadExercises(currentTopic);
+          showToast("✅ Ejercicio guardado", "ok", 2200);
+        } catch (e) {
+          console.error(e);
+          showToast("❌ Error al guardar (mira la consola)", "bad", 3600);
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      // Enter on answer = save (admin)
+      exAnswer.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && isAdmin) btnAddExercise.click();
+      });
     </script>
   </body>
 </html>
