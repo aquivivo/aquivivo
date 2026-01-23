@@ -636,7 +636,7 @@
       vocab.sort((a,b) => a.order - b.order);
 
       grammarList.innerHTML = grammar.length
-        ? grammar.map(renderTopicCard).join("")
+        ? grammar.map((item, idx) => renderTopicCard(item, idx)).join("")
         : `<div class="card noResults">Sin resultados para gramática</div>`;
 
       vocabList.innerHTML = vocab.length
@@ -644,7 +644,7 @@
         : `<div class="card noResults">Sin resultados para vocabulario</div>`;
     }
 
-    function renderTopicCard(t) {
+    function renderTopicCard(t, idx) {
       const adminButtons = isAdmin
         ? `<div class="admin-tools">
              <button class="btn-edit" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
@@ -652,6 +652,16 @@
            </div>`
         : "";
 
+      // Only the first grammar card with matching title is a link
+      if (idx === 0 && t.title.trim().toLowerCase().includes('alfabeto') && t.title.trim().toLowerCase().includes('pronunciación')) {
+        return `
+          <a href="A1/A1G01.html" class="card topic" style="display:block;text-decoration:none;cursor:pointer;">
+            ${adminButtons}
+            <strong>${escapeHtml(t.title)}</strong>
+            <p>${escapeHtml(t.desc)}</p>
+          </a>
+        `;
+      }
       return `
         <div class="card topic" onclick="openLesson('${t.id}')">
           ${adminButtons}
