@@ -1014,9 +1014,9 @@
             : `<span class="chip chip-muted">#—</span>`;
 
         return `
-          <div class="card topic ${isDone(t.id) ? "topic-done" : ""}" role="button" tabindex="0" onclick="openLesson('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openLesson('${t.id}') }">
+          <div class="card topic ${(typeof isDone==='function' && isDone(t.id)) ? "topic-done" : ""}" role="button" tabindex="0" onclick="openLesson('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openLesson('${t.id}') }">
             ${adminButtons}
-            ${isDone(t.id) ? `<div class="doneMark" title="Terminado">✅</div>` : ``}
+            ${(typeof isDone==='function' && isDone(t.id)) ? `<div class="doneMark" title="Terminado">✅</div>` : ``}
             <div class="topic-head">
               <div class="topic-title">
                 ${orderChip}
@@ -1038,7 +1038,7 @@
           setVisitedSet(visited);
         } catch {}
 
-        const url = `lesson.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(id)}`;
+        const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(id)}`;
         window.open(url, '_blank', 'noopener,noreferrer');
         updateStatsAndProgress(Number(document.getElementById('statShowing')?.textContent || 0));
       };

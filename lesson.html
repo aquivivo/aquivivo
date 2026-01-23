@@ -388,6 +388,63 @@
       }
       .hintSmall{ font-size: 12px; opacity: .78; margin-top: 8px; }
 
+    
+      /* --- Lesson content block --- */
+      .lessonContentCard{
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
+        backdrop-filter: blur(12px);
+        border-radius: 18px;
+        padding: 16px;
+        margin: 12px 0 14px;
+      }
+      .lessonContentTitle{
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .lessonContentTitle h3{
+        margin: 0;
+        font-size: 16px;
+        font-weight: 900;
+      }
+      .lessonText{
+        line-height: 1.55;
+        font-size: 14px;
+        opacity: .95;
+        white-space: normal;
+      }
+      .lessonEmpty{
+        opacity: .75;
+        font-size: 13px;
+      }
+      .adminEditor{
+        display:grid;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .adminEditor textarea{
+        width: 100%;
+        min-height: 180px;
+        resize: vertical;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(0,0,0,0.18);
+        color: white;
+        padding: 12px;
+        font-size: 13px;
+        outline: none;
+      }
+      .adminEditor .row{
+        display:flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items:center;
+      }
+
     </style>
   </head>
 
@@ -1180,6 +1237,7 @@
           showToast("⏳ Cargando tema...", "warn", 1200);
 
           const topic = await loadTopic();
+      // Lesson editor will be shown after topic loads
           if (!topic) {
             topicTitle.textContent = "Tema no encontrado";
             topicDesc.textContent = "No se pudo cargar el tema. Verifica el enlace (level/slug/id).";

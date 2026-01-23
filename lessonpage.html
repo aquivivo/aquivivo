@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AquiVivo — Lekcja</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --blue:#003893;
+      --red:#CE1126;
+      --yellow:#FCD116;
+      --bg:#071b3a;
+      --card: rgba(255,255,255,0.10);
+      --card2: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.18);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: 'Montserrat', sans-serif;
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(0,56,147,.55), transparent 60%),
+                  radial-gradient(900px 600px at 80% 10%, rgba(206,17,38,.35), transparent 55%),
+                  linear-gradient(180deg, #061634 0%, #041026 100%);
+      color:#fff;
+      min-height:100vh;
+    }
+    .wrap{ max-width: 980px; margin: 0 auto; padding: 22px 16px 56px; }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap: 12px;
+      margin-bottom: 14px;
+    }
+    .brand{ font-weight: 900; letter-spacing:.2px; opacity:.95; }
+    .btn{
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 900;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.10);
+      color: white;
+      cursor: pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .btn:hover{ filter:brightness(1.05); transform: translateY(-1px); }
+    .btn-yellow{
+      background: var(--yellow);
+      color: #111827;
+      border: none;
+    }
+    .btn-red{
+      background: rgba(206,17,38,.16);
+      border: 1px solid rgba(206,17,38,.35);
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.20);
+      border: 1px solid rgba(255,255,255,0.12);
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .hero{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px 18px;
+      box-shadow: 0 18px 44px rgba(0,0,0,.28);
+    }
+    .hero h1{
+      font-family: 'Playfair Display', serif;
+      margin: 10px 0 6px;
+      font-size: clamp(28px, 4vw, 44px);
+      color: var(--yellow);
+      line-height: 1.05;
+    }
+    .hero p{ margin:0; opacity:.9; }
+    .metaRow{ display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+    .contentCard{
+      margin-top: 14px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+    }
+    .contentHead{
+      display:flex; align-items:center; justify-content:space-between; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .contentHead h2{
+      margin:0; font-size: 16px; font-weight: 900;
+    }
+    .hint{ font-size:12px; opacity:.72; }
+    .lessonHtml{
+      line-height: 1.65;
+      font-size: 15px;
+      opacity: .95;
+    }
+    .lessonHtml h2,.lessonHtml h3{ color: var(--yellow); margin: 18px 0 10px; }
+    .lessonHtml img{
+      max-width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.14);
+      display:block;
+      margin: 14px auto;
+    }
+    .lessonEmpty{
+      opacity:.78;
+      font-size: 14px;
+      padding: 12px 0;
+    }
+
+    /* Admin */
+    .adminBox{
+      margin-top: 14px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 22px;
+      padding: 16px;
+    }
+    textarea{
+      width:100%;
+      min-height: 240px;
+      resize: vertical;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.22);
+      color: white;
+      padding: 12px;
+      font-size: 13px;
+      outline: none;
+      line-height: 1.5;
+    }
+    .row{ display:flex; gap: 10px; flex-wrap: wrap; align-items:center; margin-top: 10px; }
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 12px 14px;
+      border-radius: 14px;
+      max-width: min(720px, calc(100% - 24px));
+      box-shadow: 0 18px 44px rgba(0,0,0,0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 9999;
+      font-weight: 800;
+    }
+    .toast.show{ opacity: 1; transform: translateX(-50%) translateY(-2px); }
+
+    .dangerNote{
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: .75;
+    }
+    code.inline{
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+    // 🔧 Wklej swoje dane Firebase (tak jak w innych plikach)
+    const firebaseConfig = window.firebaseConfig || {
+      apiKey: "PASTE_YOUR_API_KEY",
+      authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+      projectId: "PASTE_YOUR_PROJECT_ID",
+      storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+      messagingSenderId: "PASTE_YOUR_SENDER_ID",
+      appId: "PASTE_YOUR_APP_ID"
+    };
+
+    const ADMIN_EMAILS = ["aquivivo.pl@gmail.com"]; // możesz dodać drugi email
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const params = new URLSearchParams(location.search);
+    const LEVEL = (params.get("level") || "").trim();
+    const TOPIC_ID = (params.get("id") || "").trim();
+
+    const backToCourse = document.getElementById("backToCourse");
+    const goExercises = document.getElementById("goExercises");
+    const pillLevel = document.getElementById("pillLevel");
+    const pillSlug = document.getElementById("pillSlug");
+    const pillType = document.getElementById("pillType");
+    const titleEl = document.getElementById("topicTitle");
+    const descEl = document.getElementById("topicDesc");
+    const lessonBox = document.getElementById("lessonBox");
+    const lessonEmpty = document.getElementById("lessonEmpty");
+    const lessonHtml = document.getElementById("lessonHtml");
+    const adminBox = document.getElementById("adminBox");
+    const lessonEditor = document.getElementById("lessonEditor");
+    const btnSave = document.getElementById("btnSave");
+    const btnReload = document.getElementById("btnReload");
+    const toastEl = document.getElementById("toast");
+
+    function toast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(window.__t);
+      window.__t = setTimeout(()=> toastEl.classList.remove("show"), 2200);
+    }
+
+    function isAdminEmail(email){
+      const e = (email || "").toLowerCase();
+      return ADMIN_EMAILS.some(a => (a||"").toLowerCase() === e);
+    }
+
+    function lessonDocId(){
+      // unikalnie per poziom + temat
+      return `${LEVEL}__${TOPIC_ID}`;
+    }
+
+    async function loadTopic(){
+      const ref = doc(db, "courses", TOPIC_ID);
+      const snap = await getDoc(ref);
+      return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+    }
+
+    async function loadLesson(){
+      const ref = doc(db, "lessons", lessonDocId());
+      const snap = await getDoc(ref);
+      return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+    }
+
+    function renderLesson(lesson){
+      const htmlStr = String(lesson?.html || "").trim();
+
+      if(!htmlStr){
+        lessonBox.style.display = "block";
+        lessonEmpty.style.display = "block";
+        lessonHtml.innerHTML = "";
+        return;
+      }
+      lessonBox.style.display = "block";
+      lessonEmpty.style.display = "none";
+      // Admin-controlled HTML (do long lessons with images). Keep it simple.
+      lessonHtml.innerHTML = htmlStr;
+    }
+
+    async function reloadAll(){
+      if(!LEVEL || !TOPIC_ID){
+        toast("Brak parametrów w URL (level, id).");
+        return;
+      }
+
+      backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+      goExercises.href = `lesson.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
+
+      pillLevel.textContent = `Nivel ${LEVEL}`;
+      pillSlug.textContent = `id: ${TOPIC_ID}`;
+
+      const topic = await loadTopic();
+      if(topic){
+        titleEl.textContent = topic.title || "(sin título)";
+        descEl.textContent = topic.desc || "";
+        pillType.textContent = topic.type === "vocab" ? "Vocabulario" : "Gramática";
+      }else{
+        titleEl.textContent = "(Nie znaleziono tematu w courses)";
+        descEl.textContent = "Sprawdź kolekcję Firestore: courses";
+        pillType.textContent = "—";
+      }
+
+      const lesson = await loadLesson();
+      renderLesson(lesson);
+
+      // Fill editor (admin)
+      const htmlText = String(lesson?.html || "");
+      lessonEditor.value = htmlText;
+    }
+
+    async function saveLesson(){
+      const htmlText = String(lessonEditor.value || "");
+      const ref = doc(db, "lessons", lessonDocId());
+      await setDoc(ref, {
+        level: LEVEL,
+        topicId: TOPIC_ID,
+        html: htmlText,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      renderLesson({ html: htmlText });
+      toast("💾 Zapisano lekcję");
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      const email = user?.email || "";
+      const admin = isAdminEmail(email);
+
+      // show editor for admin (also lets you "preview as student" by simply logging into non-admin account)
+      adminBox.style.display = admin ? "block" : "none";
+
+      if(admin){
+        btnSave.addEventListener("click", saveLesson);
+        btnReload.addEventListener("click", async ()=>{
+          await reloadAll();
+          toast("↩️ Wczytano");
+        });
+      }
+
+      await reloadAll();
+    });
+
+    // Safety: allow reload even without auth (just show lesson if public rules allow reads)
+    window.addEventListener("load", async () => {
+      try {
+        if (!LEVEL || !TOPIC_ID) return;
+        await reloadAll();
+      } catch {}
+    });
+  </script>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">AquiVivo — Lekcja 📘</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn" id="backToCourse" href="course.html">← Tematy</a>
+        <a class="btn btn-yellow" id="goExercises" href="lesson.html">🧩 Ćwiczenia</a>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="metaRow">
+        <span class="badge" id="pillLevel">Nivel —</span>
+        <span class="badge" id="pillType">—</span>
+        <span class="badge" id="pillSlug">id: —</span>
+      </div>
+      <h1 id="topicTitle">Ładowanie…</h1>
+      <p id="topicDesc"></p>
+    </div>
+
+    <div class="contentCard" id="lessonBox" style="display:none;">
+      <div class="contentHead">
+        <h2>📘 Lekcja (osobna strona)</h2>
+        <div class="hint">Źródło: Firestore → <code class="inline">lessons</code> → docId: <code class="inline">LEVEL__TOPIC_ID</code></div>
+      </div>
+
+      <div id="lessonEmpty" class="lessonEmpty" style="display:none;">
+        Brak dodanej lekcji do tego tematu. (Admin: uzupełnij w edytorze poniżej.)
+      </div>
+
+      <div id="lessonHtml" class="lessonHtml"></div>
+    </div>
+
+    <div class="adminBox" id="adminBox" style="display:none;">
+      <div style="font-weight:900; margin-bottom:10px;">👑 Admin — edytuj lekcję (długie treści + obrazki)</div>
+      <textarea id="lessonEditor" placeholder="Wklej HTML lekcji. Przykład:
+<h2>Wprowadzenie</h2>
+<p>...</p>
+<img src='https://.../obrazek.png' alt='...' />
+<ul><li>...</li></ul>
+"></textarea>
+
+      <div class="row">
+        <button class="btn btn-yellow" id="btnSave" type="button">💾 Zapisz</button>
+        <button class="btn btn-red" id="btnReload" type="button">↩️ Wczytaj</button>
+      </div>
+
+      <div class="dangerNote">
+        Wskazówka: obrazki dodawaj przez <code class="inline">&lt;img src="URL"&gt;</code>. Najlepiej trzymać je w Firebase Storage i wkleić <em>download URL</em>.
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
