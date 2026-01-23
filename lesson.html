@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lección | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --yellow: #fcd116;
+        --blue: #003893;
+        --red: #ce1126;
+      }
+
+      body {
+        margin: 0;
+        font-family: Montserrat, Arial, sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
+        color: white;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 22px 16px 60px;
+      }
+
+      .nav-glass {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(0, 56, 147, 0.78);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      }
+      .nav-glass::after {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--yellow),
+          var(--blue),
+          var(--red)
+        );
+        opacity: 0.85;
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 14px 16px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo-flag {
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        background: linear-gradient(
+          180deg,
+          var(--yellow) 0 33.33%,
+          var(--blue) 33.33% 66.66%,
+          var(--red) 66.66% 100%
+        );
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.25);
+      }
+      .name {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 24px;
+        color: white;
+        letter-spacing: 0.2px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: 999px;
+        font-weight: 900;
+        cursor: pointer;
+        text-decoration: none;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        user-select: none;
+        transition:
+          transform 0.12s ease,
+          filter 0.12s ease;
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.03);
+      }
+      .btn-yellow {
+        background: rgba(252, 209, 22, 0.95);
+        border-color: rgba(252, 209, 22, 0.7);
+        color: #0b1b3f;
+      }
+      .btn-red {
+        background: rgba(206, 17, 38, 0.92);
+        border-color: rgba(206, 17, 38, 0.8);
+      }
+
+      .sessionBar {
+        background: var(--yellow);
+        padding: 8px 0;
+        text-align: center;
+        font-size: 12px;
+        color: var(--blue);
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+      .sessionBar strong {
+        font-weight: 900;
+      }
+
+      h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 44px;
+        margin: 18px 0 6px 0;
+        line-height: 1.05;
+        color: var(--yellow);
+      }
+      .subtitle {
+        opacity: 0.9;
+        margin: 0 0 16px 0;
+        max-width: 900px;
+        line-height: 1.6;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        padding: 16px;
+        margin: 14px 0;
+      }
+
+      .metaRow {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 10px;
+      }
+      .pill {
+        font-size: 12px;
+        font-weight: 900;
+        border-radius: 999px;
+        padding: 6px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+      }
+      .pill-blue {
+        border-color: rgba(0, 56, 147, 0.35);
+      }
+      .pill-yellow {
+        background: rgba(252, 209, 22, 0.95);
+        color: #0b1b3f;
+        border-color: rgba(252, 209, 22, 0.7);
+      }
+
+      .sectionTitle {
+        margin: 22px 0 12px;
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.3px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .exercise {
+        background: white;
+        color: #0b1b3f;
+        border-radius: 16px;
+        padding: 16px;
+        margin: 10px 0;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+        position: relative;
+      }
+
+      .exercise h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        font-weight: 900;
+        color: var(--blue);
+      }
+
+      .exercise .type {
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 900;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(0, 56, 147, 0.08);
+        color: var(--blue);
+        border: 1px solid rgba(0, 56, 147, 0.16);
+        margin-bottom: 10px;
+      }
+
+      .exercise .prompt {
+        margin: 0 0 12px;
+        color: #374151;
+        line-height: 1.55;
+      }
+
+      .opts {
+        display: grid;
+        gap: 10px;
+      }
+
+      .optBtn {
+        text-align: left;
+        padding: 12px 12px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+        cursor: pointer;
+        font-weight: 800;
+      }
+      .optBtn:hover {
+        filter: brightness(0.99);
+      }
+
+      .inputRow {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .textInput {
+        width: min(520px, 100%);
+        padding: 12px 12px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+      }
+      .smallNote {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 8px;
+      }
+
+      .result {
+        margin-top: 10px;
+        font-weight: 900;
+      }
+      .ok {
+        color: #065f46;
+      }
+      .bad {
+        color: #b91c1c;
+      }
+
+      /* Admin panel */
+      .adminWrap {
+        display: none;
+      }
+      .adminGrid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 180px 1fr;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .adminGrid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .adminGrid label {
+        font-size: 12px;
+        opacity: 0.9;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+      .adminGrid input,
+      .adminGrid textarea,
+      .adminGrid select {
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+        padding: 10px 12px;
+        font-size: 14px;
+        outline: none;
+      }
+      .adminGrid textarea {
+        min-height: 92px;
+        resize: vertical;
+      }
+      .adminGrid input::placeholder,
+      .adminGrid textarea::placeholder {
+        color: rgba(255, 255, 255, 0.55);
+      }
+      .adminGrid option {
+        background: var(--blue);
+        color: white;
+      }
+
+      .adminActions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
+      .dangerMini {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border: none;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-weight: 900;
+        cursor: pointer;
+        background: var(--red);
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="nav-glass">
+      <div class="nav-inner">
+        <div class="brand">
+          <div class="logo-flag" aria-hidden="true"></div>
+          <div class="name">Aqui vivo</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
+          <a id="backToCourse" class="btn" href="course.html?level=A1"
+            >⬅️ Volver al curso</a
+          >
+          <a class="btn" href="course.html?level=A1">📚 Niveles</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="sessionBar">
+      Sesión activa: <strong id="sessionEmail">Cargando...</strong>
+    </div>
+
+    <main class="container">
+      <div class="card">
+        <div class="metaRow">
+          <span class="pill pill-yellow" id="pillLevel">Nivel</span>
+          <span class="pill pill-blue" id="pillType">Tipo</span>
+          <span class="pill" id="pillSlug">slug</span>
+        </div>
+
+        <h1 id="topicTitle">Cargando…</h1>
+        <p class="subtitle" id="topicDesc">Cargando…</p>
+
+        <div class="metaRow" id="taskChips"></div>
+      </div>
+
+      <div class="sectionTitle">🧩 Ejercicios</div>
+      <div id="exerciseList"></div>
+      <div id="emptyExercises" class="card" style="display: none; opacity: 0.9">
+        Todavía no hay ejercicios para este tema.
+      </div>
+
+      <!-- Admin -->
+      <div id="adminWrap" class="card adminWrap">
+        <div class="sectionTitle">👑 Admin – agregar ejercicio</div>
+
+        <div class="adminGrid">
+          <div>
+            <label>Tipo de ejercicio</label>
+            <select id="exType">
+              <option value="Opción múltiple">Opción múltiple</option>
+              <option value="Rellenar los espacios">
+                Rellenar los espacios
+              </option>
+              <option value="Verdadero o falso">Verdadero o falso</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Pregunta / enunciado</label>
+            <input id="exPrompt" placeholder="Escribe el enunciado..." />
+          </div>
+
+          <div>
+            <label>Opciones (solo para opción múltiple / V-F)</label>
+            <textarea
+              id="exOptions"
+              placeholder="Una opción por línea&#10;Ej:&#10;A) ...&#10;B) ...&#10;C) ..."
+            ></textarea>
+          </div>
+
+          <div>
+            <label>Respuesta correcta</label>
+            <input
+              id="exAnswer"
+              placeholder="Ej: B   |   true   |   palabra_correcta"
+            />
+            <div class="smallNote">
+              - Para “Opción múltiple”: wpisz literę (A/B/C/D) lub dokładny
+              tekst opcji.<br />
+              - Para “Verdadero o falso”: wpisz <b>true</b> albo
+              <b>false</b>.<br />
+              - Para “Rellenar los espacios”: wpisz poprawne słowo/odpowiedź
+              (dokładnie).
+            </div>
+          </div>
+
+          <div>
+            <label>Orden</label>
+            <input id="exOrder" type="number" min="1" placeholder="np. 1" />
+          </div>
+
+          <div>
+            <label>Notas (opcjonalnie)</label>
+            <input id="exNotes" placeholder="np. wskazówka / komentarz" />
+          </div>
+        </div>
+
+        <div class="adminActions">
+          <button class="btn btn-yellow" id="btnAddExercise">
+            ➕ Guardar ejercicio
+          </button>
+          <button class="btn" id="btnAutoOrder">✨ Ustaw kolejny numer</button>
+        </div>
+
+        <div class="smallNote" style="margin-top: 10px">
+          Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level,
+          topicSlug, order, type, prompt, options[], answer, notes.
+        </div>
+      </div>
+    </main>
+
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        collection,
+        query,
+        where,
+        getDocs,
+        addDoc,
+        deleteDoc,
+        doc,
+        getDoc,
+        orderBy,
+        serverTimestamp,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+
+      // ✅ Firebase config (Twoje)
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+        authDomain: 'aquivivo-platform.firebaseapp.com',
+        projectId: 'aquivivo-platform',
+        storageBucket: 'aquivivo-platform.firebasestorage.app',
+        messagingSenderId: '116115622011',
+        appId: '1:116115622011:web:33a4a583eba4368071bade',
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+      let isAdmin = false;
+
+      // URL params
+      const params = new URLSearchParams(window.location.search);
+      const LEVEL = (params.get('level') || 'A1').toUpperCase();
+      const slugParam = params.get('slug') || '';
+      const idParam = params.get('id') || '';
+
+      // UI refs
+      const sessionEmail = document.getElementById('sessionEmail');
+      const backToCourse = document.getElementById('backToCourse');
+
+      const pillLevel = document.getElementById('pillLevel');
+      const pillType = document.getElementById('pillType');
+      const pillSlug = document.getElementById('pillSlug');
+      const topicTitle = document.getElementById('topicTitle');
+      const topicDesc = document.getElementById('topicDesc');
+      const taskChips = document.getElementById('taskChips');
+
+      const exerciseList = document.getElementById('exerciseList');
+      const emptyExercises = document.getElementById('emptyExercises');
+      const adminWrap = document.getElementById('adminWrap');
+
+      // admin fields
+      const exType = document.getElementById('exType');
+      const exPrompt = document.getElementById('exPrompt');
+      const exOptions = document.getElementById('exOptions');
+      const exAnswer = document.getElementById('exAnswer');
+      const exOrder = document.getElementById('exOrder');
+      const exNotes = document.getElementById('exNotes');
+      const btnAddExercise = document.getElementById('btnAddExercise');
+      const btnAutoOrder = document.getElementById('btnAutoOrder');
+
+      backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+      pillLevel.textContent = `Nivel ${LEVEL}`;
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      function normalizeAnswer(a) {
+        return String(a || '').trim();
+      }
+
+      function parseOptions(raw) {
+        return String(raw || '')
+          .split('\n')
+          .map((x) => x.trim())
+          .filter(Boolean);
+      }
+
+      // Auth
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = 'login.html';
+          return;
+        }
+        sessionEmail.textContent = user.email || '(sin correo)';
+        isAdmin = user.email === ADMIN_EMAIL;
+        adminWrap.style.display = isAdmin ? 'block' : 'none';
+
+        // Load topic
+        const topic = await loadTopic();
+        if (!topic) {
+          topicTitle.textContent = 'Tema no encontrado';
+          topicDesc.textContent =
+            'No se pudo cargar el tema. Verifica el enlace (level/slug/id).';
+          return;
+        }
+
+        // Load exercises
+        await loadExercises(topic);
+
+        // auto order helper
+        btnAutoOrder.onclick = () => {
+          const next = getNextOrder();
+          exOrder.value = String(next);
+        };
+
+        // Add exercise
+        btnAddExercise.onclick = async () => {
+          if (!isAdmin) return;
+
+          const type = exType.value;
+          const prompt = exPrompt.value.trim();
+          const notes = exNotes.value.trim();
+          const answer = normalizeAnswer(exAnswer.value);
+
+          if (!prompt) return alert('Uzupełnij enunciado/pregunta.');
+          if (!answer)
+            return alert('Uzupełnij odpowiedź (respuesta correcta).');
+
+          const order = Number(exOrder.value || 0);
+          if (!order || order < 1)
+            return alert('Ustaw poprawny order (min 1).');
+
+          const options =
+            type === 'Rellenar los espacios'
+              ? []
+              : parseOptions(exOptions.value);
+
+          if (type !== 'Rellenar los espacios' && options.length < 2) {
+            return alert('Dodaj przynajmniej 2 opcje (jedna na linię).');
+          }
+
+          // Save
+          await addDoc(collection(db, 'exercises'), {
+            level: LEVEL,
+            topicSlug: topic.slug,
+            topicId: topic.id || null,
+            type,
+            prompt,
+            options,
+            answer,
+            notes,
+            order,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+
+          // reset form (light)
+          exPrompt.value = '';
+          exOptions.value = '';
+          exAnswer.value = '';
+          exNotes.value = '';
+          exOrder.value = String(order + 1);
+
+          await loadExercises(topic);
+          alert('✅ Ejercicio guardado');
+        };
+      });
+
+      // ===== Topic loading =====
+      let currentTopic = null;
+
+      async function loadTopic() {
+        // 1) by id
+        if (idParam) {
+          const ref = doc(db, 'courses', idParam);
+          const snap = await getDoc(ref);
+          if (!snap.exists()) return null;
+
+          const data = snap.data();
+          currentTopic = normalizeTopic({ id: snap.id, ...data });
+          renderTopic(currentTopic);
+          return currentTopic;
+        }
+
+        // 2) by slug + level
+        if (!slugParam) return null;
+
+        const q = query(
+          collection(db, 'courses'),
+          where('level', '==', LEVEL),
+          where('slug', '==', slugParam),
+        );
+
+        const snap = await getDocs(q);
+        if (snap.empty) return null;
+
+        const d = snap.docs[0];
+        currentTopic = normalizeTopic({ id: d.id, ...d.data() });
+        renderTopic(currentTopic);
+        return currentTopic;
+      }
+
+      function normalizeTopic(t) {
+        return {
+          id: t.id,
+          level: (t.level || '').toString().toUpperCase(),
+          type: (t.type || '').toString(),
+          title: t.title || '',
+          desc: t.desc || '',
+          slug: t.slug || slugParam || '',
+          tasks: Array.isArray(t.tasks) ? t.tasks : [],
+        };
+      }
+
+      function renderTopic(t) {
+        pillType.textContent =
+          t.type === 'grammar' ? 'Gramática' : 'Vocabulario';
+        pillSlug.textContent = t.slug ? `slug: ${t.slug}` : 'slug: -';
+        topicTitle.textContent = t.title || 'Tema';
+        topicDesc.textContent = t.desc || '';
+
+        taskChips.innerHTML = '';
+        if (t.tasks && t.tasks.length) {
+          t.tasks.slice(0, 14).forEach((x) => {
+            const span = document.createElement('span');
+            span.className = 'pill';
+            span.textContent = x;
+            taskChips.appendChild(span);
+          });
+        }
+      }
+
+      // ===== Exercises loading/render =====
+      let cachedExercises = [];
+
+      async function loadExercises(topic) {
+        exerciseList.innerHTML = '';
+        emptyExercises.style.display = 'none';
+        cachedExercises = [];
+
+        const qx = query(
+          collection(db, 'exercises'),
+          where('level', '==', LEVEL),
+          where('topicSlug', '==', topic.slug),
+          orderBy('order', 'asc'),
+        );
+
+        const snap = await getDocs(qx);
+
+        if (snap.empty) {
+          emptyExercises.style.display = 'block';
+          return;
+        }
+
+        snap.forEach((d) => {
+          const data = d.data();
+          cachedExercises.push({ id: d.id, ...data });
+        });
+
+        cachedExercises.forEach((ex, idx) => {
+          exerciseList.insertAdjacentHTML(
+            'beforeend',
+            renderExerciseCard(ex, idx),
+          );
+        });
+
+        // attach handlers for check + delete
+        cachedExercises.forEach((ex) => attachExerciseHandlers(ex));
+      }
+
+      function getNextOrder() {
+        if (!cachedExercises.length) return 1;
+        const max = Math.max(
+          ...cachedExercises.map((x) => Number(x.order || 0)),
+        );
+        return (max || 0) + 1;
+      }
+
+      function renderExerciseCard(ex, idx) {
+        const type = ex.type || 'Ejercicio';
+        const prompt = ex.prompt || '';
+        const options = Array.isArray(ex.options) ? ex.options : [];
+        const order = Number(ex.order || idx + 1);
+
+        const optionsHtml =
+          type === 'Rellenar los espacios'
+            ? `
+          <div class="inputRow">
+            <input class="textInput" id="inp-${ex.id}" placeholder="Escribe tu respuesta..." />
+            <button class="btn btn-yellow" id="chk-${ex.id}">Comprobar</button>
+          </div>
+        `
+            : `
+          <div class="opts" id="opts-${ex.id}">
+            ${options.map((o, i) => `<button class="optBtn" data-ex="${ex.id}" data-opt="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join('')}
+          </div>
+        `;
+
+        const adminDelete = isAdmin
+          ? `<button class="dangerMini" id="del-${ex.id}" title="Eliminar">🗑</button>`
+          : '';
+
+        return `
+        <div class="exercise" id="ex-${ex.id}">
+          ${adminDelete}
+          <div class="type">${escapeHtml(type)} · #${order}</div>
+          <h3>${escapeHtml(prompt)}</h3>
+          ${optionsHtml}
+          <div class="result" id="res-${ex.id}"></div>
+          ${ex.notes ? `<div class="smallNote">${escapeHtml(ex.notes)}</div>` : ''}
+        </div>
+      `;
+      }
+
+      function attachExerciseHandlers(ex) {
+        const type = ex.type || '';
+        const correct = String(ex.answer || '').trim();
+
+        // delete
+        if (isAdmin) {
+          const delBtn = document.getElementById(`del-${ex.id}`);
+          if (delBtn) {
+            delBtn.onclick = async (ev) => {
+              ev.stopPropagation();
+              if (!confirm('Usunąć to zadanie?')) return;
+              await deleteDoc(doc(db, 'exercises', ex.id));
+              await loadExercises(currentTopic);
+            };
+          }
+        }
+
+        // rellenar
+        if (type === 'Rellenar los espacios') {
+          const chk = document.getElementById(`chk-${ex.id}`);
+          const inp = document.getElementById(`inp-${ex.id}`);
+          const res = document.getElementById(`res-${ex.id}`);
+
+          if (chk && inp && res) {
+            chk.onclick = () => {
+              const user = String(inp.value || '').trim();
+              if (!user) return;
+
+              const ok = user.toLowerCase() === correct.toLowerCase();
+              res.innerHTML = ok
+                ? `<span class="ok">✅ Correcto</span>`
+                : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
+            };
+          }
+          return;
+        }
+
+        // opción múltiple / V-F
+        const res = document.getElementById(`res-${ex.id}`);
+        const wrap = document.getElementById(`opts-${ex.id}`);
+        if (!wrap || !res) return;
+
+        wrap.querySelectorAll('button.optBtn').forEach((btn) => {
+          btn.onclick = () => {
+            const picked = btn.getAttribute('data-opt') || '';
+            const ok =
+              picked.trim().toLowerCase() === correct.trim().toLowerCase();
+
+            res.innerHTML = ok
+              ? `<span class="ok">✅ Correcto</span>`
+              : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
+          };
+        });
+      }
+    </script>
+  </body>
+</html>

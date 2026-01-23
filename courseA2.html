@@ -1,807 +1,1288 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Curso | AquiVivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <title>Curso | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
 
-  <style>
-    :root { --yellow:#FCD116; --blue:#003893; --red:#CE1126; }
+    <style>
+      :root {
+        --yellow: #fcd116;
+        --blue: #003893;
+        --red: #ce1126;
+      }
 
-    body{
-      margin:0;
-      font-family: Montserrat, Arial, sans-serif;
-      min-height:100vh;
-      background:linear-gradient(180deg,#001a4d,#003893,#001a4d);
-      color:white;
-    }
+      body {
+        margin: 0;
+        font-family: Montserrat, Arial, sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
+        color: white;
+      }
 
-    main.page{ padding: 22px 0 70px; }
-    .container{ max-width: 1180px; margin: 0 auto; padding: 28px 16px; }
+      main.page {
+        padding: 22px 0 70px;
+      }
+      .container {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 28px 16px;
+      }
 
-    /* Navigation */
-    .nav-glass{
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(0,56,147,.78);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,.14);
-    }
+      .nav-glass {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(0, 56, 147, 0.78);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      }
 
-    .nav-glass::after{
-      content:"";
-      display:block;
-      height: 3px;
-      background: linear-gradient(90deg, var(--yellow), var(--blue), var(--red));
-      opacity: .85;
-    }
+      .nav-glass::after {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--yellow),
+          var(--blue),
+          var(--red)
+        );
+        opacity: 0.85;
+      }
 
-    .nav-inner{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 14px;
-      padding: 14px 16px;
-      max-width: 1180px;
-      margin: 0 auto;
-    }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 14px 16px;
+        max-width: 1180px;
+        margin: 0 auto;
+      }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 12px;
-    }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
 
-    .logo-flag{
-      width: 42px;
-      height: 42px;
-      border-radius: 999px;
-      background:
-        linear-gradient(180deg, var(--yellow) 0 33.33%, var(--blue) 33.33% 66.66%, var(--red) 66.66% 100%);
-      box-shadow: 0 12px 26px rgba(0,0,0,.25);
-    }
+      .logo-flag {
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        background: linear-gradient(
+          180deg,
+          var(--yellow) 0 33.33%,
+          var(--blue) 33.33% 66.66%,
+          var(--red) 66.66% 100%
+        );
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.25);
+      }
 
-    .name{
-      font-family: "Playfair Display", serif;
-      font-weight: 900;
-      font-size: 24px;
-      letter-spacing: .2px;
-      color: white;
-    }
+      .name {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 24px;
+        letter-spacing: 0.2px;
+        color: white;
+      }
 
-    .nav-actions{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
 
-    .btn-nav{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap: 10px;
-      padding: 12px 16px;
-      border-radius: 999px;
-      font-weight: 900;
-      cursor:pointer;
-      text-decoration:none;
-      border: none;
-      user-select:none;
-      transition: transform .12s ease, filter .12s ease;
-    }
+      .titleRow {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+      }
+      h1 {
+        color: var(--yellow);
+        font-family: 'Playfair Display', serif;
+        font-size: 46px;
+        margin: 0;
+        line-height: 1.05;
+      }
+      .subtitle {
+        opacity: 0.85;
+        margin: 6px 0 0 0;
+      }
 
-    .btn-nav:hover{
-      transform: translateY(-2px);
-      filter: brightness(1.03);
-    }
+      .filtersSection {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        padding: 18px;
+        margin: 20px 0;
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
 
-    .btn-yellow{
-      background: rgba(252,209,22,.95);
-      color:#0b1b3f;
-      box-shadow: 0 14px 36px rgba(0,0,0,.18);
-    }
+      .filterGroup {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
 
-    .wrap{ max-width: 980px; margin: 0 auto; padding: 36px 16px; }
+      .filterLabel {
+        font-size: 13px;
+        opacity: 0.85;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+      }
 
-    .titleRow{ display:flex; align-items:flex-start; gap:14px; }
-    h1{
-      color: var(--yellow);
-      font-family: "Playfair Display", serif;
-      font-size: 46px;
-      margin: 0;
-      line-height: 1.05;
-    }
+      #searchInput {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: white;
+        font-size: 14px;
+        width: 220px;
+        transition: all 0.2s ease;
+      }
+      #searchInput:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(252, 209, 22, 0.5);
+        box-shadow: 0 0 8px rgba(252, 209, 22, 0.2);
+      }
+      #searchInput::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
 
-    .subtitle{ opacity:.85; margin: 6px 0 0 0; }
+      #typeFilter,
+      #taskFilter {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      #typeFilter:hover,
+      #taskFilter:hover {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(252, 209, 22, 0.5);
+      }
+      #typeFilter option,
+      #taskFilter option {
+        background: var(--blue);
+        color: white;
+      }
 
-    /* Filters Section */
-    .filtersSection{
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.18);
-      backdrop-filter: blur(12px);
-      border-radius: 16px;
-      padding: 18px;
-      margin: 20px 0;
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
+      .sectionTitle {
+        margin: 26px 0 16px 0;
+        font-size: 18px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        letter-spacing: 0.3px;
+      }
 
-    .filterGroup{
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
+      .card {
+        background: white;
+        color: var(--blue);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        margin: 10px 0;
+      }
 
-    .filterLabel{
-      font-size: 13px;
-      opacity: .85;
-      font-weight: 700;
-      letter-spacing: .3px;
-    }
+      .topic {
+        position: relative;
+        transition: 0.25s ease;
+        cursor: pointer;
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        margin: 10px 0;
+      }
+      .topic:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+      }
+      .topic strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 18px;
+        font-weight: 900;
+        color: var(--blue);
+      }
+      .topic p {
+        margin: 0;
+        font-size: 14px;
+        color: #6b7280;
+        line-height: 1.5;
+      }
 
-    #searchInput{
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.25);
-      border-radius: 10px;
-      padding: 10px 14px;
-      color: white;
-      font-size: 14px;
-      width: 220px;
-      transition: all .2s ease;
-    }
+      .admin-tools {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        gap: 6px;
+      }
+      .admin-tools button {
+        border: none;
+        padding: 6px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .btn-edit {
+        background: var(--yellow);
+        color: #111827;
+      }
+      .btn-del {
+        background: var(--red);
+        color: white;
+      }
 
-    #searchInput:focus{
-      outline: none;
-      background: rgba(255,255,255,.18);
-      border-color: rgba(252,209,22,.5);
-      box-shadow: 0 0 8px rgba(252,209,22,.2);
-    }
+      .adminPanel {
+        display: none;
+        margin-top: 20px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 160px 1fr 1fr auto;
+        gap: 10px;
+        align-items: center;
+      }
+      .row input,
+      .row select {
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .row button {
+        padding: 10px 14px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 800;
+        background: var(--blue);
+        color: white;
+      }
 
-    #searchInput::placeholder{
-      color: rgba(255,255,255,.5);
-    }
+      .adminBar {
+        display: none;
+        margin-top: 14px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .adminBar button {
+        padding: 10px 12px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+      .adminBar button:hover {
+        opacity: 0.9;
+      }
 
-    #typeFilter, #taskFilter{
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.25);
-      border-radius: 10px;
-      padding: 10px 14px;
-      color: white;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all .2s ease;
-    }
+      .noResults {
+        text-align: center;
+        padding: 20px;
+        opacity: 0.7;
+        font-style: italic;
+      }
 
-    #typeFilter:hover, #taskFilter:hover{
-      background: rgba(255,255,255,.18);
-      border-color: rgba(252,209,22,.5);
-    }
+      .sessionBar {
+        background: var(--yellow);
+        border-bottom: none;
+        padding: 8px 0;
+        text-align: center;
+        font-size: 12px;
+        color: var(--blue);
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+      .sessionBar strong {
+        color: var(--blue);
+        font-weight: 900;
+      }
+    </style>
+  </head>
 
-    #typeFilter option, #taskFilter option{
-      background: var(--blue);
-      color: white;
-    }
+  <body>
+    <header class="nav-glass">
+      <div class="container nav-inner">
+        <div class="brand">
+          <div class="logo-flag" aria-hidden="true"></div>
+          <div class="name">Aqui vivo</div>
+        </div>
 
-    .sectionTitle{ 
-      margin: 26px 0 16px 0; 
-      font-size: 18px; 
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      letter-spacing: .3px;
-    }
-
-    .card{
-      background: white;
-      color: var(--blue);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.2);
-      margin: 10px 0;
-    }
-
-    .topic{
-      position: relative;
-      transition: .25s ease;
-      cursor: pointer;
-      background: white;
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.2);
-      margin: 10px 0;
-    }
-    
-    .topic:hover{
-      transform: translateY(-4px);
-      box-shadow: 0 16px 48px rgba(0,0,0,.28);
-    }
-
-    .topic strong{ 
-      display: block; 
-      margin-bottom: 6px; 
-      font-size: 18px; 
-      font-weight: 900;
-      color: var(--blue);
-    }
-    
-    .topic p{ 
-      margin: 0; 
-      font-size: 14px; 
-      color: #6b7280;
-      line-height: 1.5;
-    }
-
-    .admin-tools{
-      position:absolute;
-      top:10px;
-      right:10px;
-      display:flex;
-      gap:6px;
-    }
-    .admin-tools button{
-      border:none;
-      padding:6px 10px;
-      border-radius:8px;
-      cursor:pointer;
-      font-size:12px;
-      font-weight:700;
-    }
-    .btn-edit{ background: var(--yellow); color:#111827; }
-    .btn-del{ background: var(--red); color:white; }
-
-    .backlink{ color: white; opacity:.9; text-decoration: underline; display:inline-block; margin-bottom: 14px; }
-
-    .adminPanel{ display:none; margin-top: 20px; }
-    .row{
-      display:grid;
-      grid-template-columns: 160px 1fr 1fr auto;
-      gap:10px;
-      align-items:center;
-    }
-    .row input, .row select{
-      padding:10px;
-      border-radius:10px;
-      border: 1px solid #d1d5db;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .row button{
-      padding:10px 14px;
-      border:none;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:800;
-      background: var(--blue);
-      color:white;
-    }
-
-    .adminBar{
-      display:none;
-      margin-top: 14px;
-      gap:10px;
-      flex-wrap: wrap;
-    }
-    .adminBar button{
-      padding:10px 12px;
-      border:none;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:800;
-      background: rgba(255,255,255,.12);
-      color: white;
-      border: 1px solid rgba(255,255,255,.18);
-    }
-    .adminBar button:hover{ opacity:.9; }
-
-    .noResults{
-      text-align: center;
-      padding: 20px;
-      opacity: .7;
-      font-style: italic;
-    }
-
-    .sessionBar{
-      background: var(--yellow);
-      border-bottom: none;
-      padding: 8px 0;
-      text-align: center;
-      font-size: 12px;
-      color: var(--blue);
-      font-weight: 700;
-      letter-spacing: .2px;
-    }
-
-    .sessionBar strong{
-      color: var(--blue);
-      font-weight: 900;
-    }
-  </style>
-</head>
-
-<body>
-
-  <header class="nav-glass">
-    <div class="container nav-inner">
-      <div class="brand">
-        <div class="logo-flag" aria-hidden="true"></div>
-        <div class="name">Aqui vivo</div>
-      </div>
-
-      <div class="nav-actions">
-        <a class="btn-white-outline" href="index.html">Inicio</a>
-        <button class="btn-red" onclick="goBack()">Atrás</button>
-      </div>
-    </div>
-  </header>
-
-  <div class="sessionBar">
-    Sesión activa: <strong id="sessionEmail">Cargando...</strong>
-  </div>
-
-  <main class="page">
-    <div class="container">
-    <div class="titleRow">
-      <div style="font-size:44px; line-height:1;">📘</div>
-      <div style="flex:1;">
-        <h1 id="levelTitle">Nivel</h1>
-        <p class="subtitle" id="levelSubtitle">Cargando…</p>
-
-        <!-- ADMIN BUTTONS (escondidos para estudiantes) -->
-        <div id="adminBar" class="adminBar">
-          <button onclick="editCourseMeta()">✏️ Editar descripción del curso</button>
-          <button onclick="dedupeLevel()">🧹 Eliminar duplicados (A1)</button>
+        <div class="nav-actions">
+          <a class="btn-white-outline" href="index.html">Inicio</a>
+          <button class="btn-red" onclick="goBack()">Atrás</button>
         </div>
       </div>
+    </header>
+
+    <div class="sessionBar">
+      Sesión activa: <strong id="sessionEmail">Cargando...</strong>
     </div>
 
-    <!-- FILTERS SECTION -->
-    <div class="filtersSection">
-      <div class="filterGroup">
-        <span class="filterLabel">🔍 Buscar:</span>
-        <input type="text" id="searchInput" placeholder="Escribe el nombre del tema...">
+    <main class="page">
+      <div class="container">
+        <div class="titleRow">
+          <div style="font-size: 44px; line-height: 1">📘</div>
+          <div style="flex: 1">
+            <h1 id="levelTitle">Nivel</h1>
+            <p class="subtitle" id="levelSubtitle">Cargando…</p>
+
+            <div id="adminBar" class="adminBar">
+              <button onclick="editCourseMeta()">
+                ✏️ Editar descripción del curso
+              </button>
+              <button onclick="dedupeLevel()">🧹 Eliminar duplicados</button>
+              <button id="seedBtn" style="display: none"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="filtersSection">
+          <div class="filterGroup">
+            <span class="filterLabel">🔍 Buscar:</span>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Escribe el nombre del tema..."
+            />
+          </div>
+          <div class="filterGroup">
+            <span class="filterLabel">📂 Tipo:</span>
+            <select id="typeFilter">
+              <option value="">Todos</option>
+              <option value="grammar">Gramática</option>
+              <option value="vocabulary">Vocabulario</option>
+            </select>
+          </div>
+          <div class="filterGroup">
+            <span class="filterLabel">✅ Tarea:</span>
+            <select id="taskFilter">
+              <option value="">Todas las tareas</option>
+              <option value="Rellenar los espacios">
+                Rellenar los espacios
+              </option>
+              <option value="Relacionar palabra con imagen">
+                Relacionar palabra con imagen
+              </option>
+              <option value="Relacionar palabra con traducción">
+                Relacionar palabra con traducción
+              </option>
+              <option value="Elegir la palabra correcta">
+                Elegir la palabra correcta
+              </option>
+              <option value="Tarjetas interactivas">
+                Tarjetas interactivas
+              </option>
+              <option value="Agrupar palabras">Agrupar palabras</option>
+              <option value="Verdadero o falso">Verdadero o falso</option>
+              <option value="Completar la frase con una imagen">
+                Completar la frase con una imagen
+              </option>
+              <option value="Juego de memoria (pares)">
+                Juego de memoria (pares)
+              </option>
+              <option value="Opción múltiple">Opción múltiple</option>
+              <option value="Completar la forma correcta">
+                Completar la forma correcta
+              </option>
+              <option value="Elegir la forma correcta">
+                Elegir la forma correcta
+              </option>
+              <option value="Transformaciones">Transformaciones</option>
+              <option value="Relacionar pregunta con respuesta">
+                Relacionar pregunta con respuesta
+              </option>
+              <option value="Ordenar palabras para formar una frase">
+                Ordenar palabras para formar una frase
+              </option>
+              <option value="Corregir errores">Corregir errores</option>
+              <option value="Unir dos partes de la frase">
+                Unir dos partes de la frase
+              </option>
+              <option value="Completar con preposición o terminación">
+                Completar con preposición o terminación
+              </option>
+              <option value="Opción única">Opción única</option>
+              <option value="Escribir tu propia respuesta">
+                Escribir tu propia respuesta
+              </option>
+              <option value="Repetir después del narrador">
+                Repetir después del narrador
+              </option>
+              <option value="Completar la frase con tu voz">
+                Completar la frase con tu voz
+              </option>
+              <option value="Responder a una pregunta">
+                Responder a una pregunta
+              </option>
+              <option value="Describir una imagen">Describir una imagen</option>
+              <option value="Juego de roles">Juego de roles</option>
+              <option value="Mini-monólogo">Mini-monólogo</option>
+              <option value="Diálogo semiabierto">Diálogo semiabierto</option>
+              <option value="Decirlo de otra manera">
+                Decirlo de otra manera
+              </option>
+              <option value="Escuchar y elegir la respuesta">
+                Escuchar y elegir la respuesta
+              </option>
+              <option value="Escuchar y completar los espacios">
+                Escuchar y completar los espacios
+              </option>
+              <option value="Escuchar y marcar verdadero o falso">
+                Escuchar y marcar verdadero o falso
+              </option>
+              <option value="Escuchar y relacionar personas">
+                Escuchar y relacionar personas
+              </option>
+              <option value="Escuchar y ordenar la secuencia">
+                Escuchar y ordenar la secuencia
+              </option>
+              <option value="Dictado con audio">Dictado con audio</option>
+              <option value="Escuchar y repetir">Escuchar y repetir</option>
+              <option value="Diálogo interactivo">Diálogo interactivo</option>
+              <option value="Misión del día">Misión del día</option>
+              <option value="Quiz situacional">Quiz situacional</option>
+              <option value="Video con preguntas">Video con preguntas</option>
+              <option value="Test final del tema">Test final del tema</option>
+              <option value="Debate grabado">Debate grabado</option>
+              <option value="Contar una historia">Contar una historia</option>
+              <option value="Simulación de entrevista de trabajo">
+                Simulación de entrevista de trabajo
+              </option>
+              <option value="Retroalimentación por voz">
+                Retroalimentación por voz
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sectionTitle">📘 Gramática</div>
+        <div id="grammarList"></div>
+
+        <div class="sectionTitle">📗 Vocabulario</div>
+        <div id="vocabList"></div>
+
+        <div id="adminPanel" class="card adminPanel">
+          <h3 style="margin: 0 0 10px 0">👑 Panel Admin – agregar tema</h3>
+
+          <div class="row">
+            <select id="adminType">
+              <option value="grammar">gramática</option>
+              <option value="vocabulary">vocabulario</option>
+            </select>
+
+            <input id="adminTitle" placeholder="Título (ES)" />
+            <input id="adminDesc" placeholder="Descripción (ES)" />
+
+            <button onclick="addTopic()">➕ Agregar</button>
+          </div>
+
+          <p style="font-size: 12px; color: #6b7280; margin: 10px 0 0 0">
+            Si hiciste clic en importar varias veces – usa "Eliminar
+            duplicados". Esto eliminará las repeticiones en Firestore.
+          </p>
+        </div>
       </div>
-      <div class="filterGroup">
-        <span class="filterLabel">📂 Tipo:</span>
-        <select id="typeFilter">
-          <option value="">Todos</option>
-          <option value="grammar">Gramática</option>
-          <option value="vocabulary">Vocabulario</option>
-        </select>
-      </div>
-      <div class="filterGroup">
-        <span class="filterLabel">✅ Tarea:</span>
-        <select id="taskFilter">
-          <option value="">Todas las tareas</option>
-          <option value="Rellenar los espacios">Rellenar los espacios</option>
-          <option value="Relacionar palabra con imagen">Relacionar palabra con imagen</option>
-          <option value="Relacionar palabra con traducción">Relacionar palabra con traducción</option>
-          <option value="Elegir la palabra correcta">Elegir la palabra correcta</option>
-          <option value="Tarjetas interactivas">Tarjetas interactivas</option>
-          <option value="Agrupar palabras">Agrupar palabras</option>
-          <option value="Verdadero o falso">Verdadero o falso</option>
-          <option value="Completar la frase con una imagen">Completar la frase con una imagen</option>
-          <option value="Juego de memoria (pares)">Juego de memoria (pares)</option>
-          <option value="Opción múltiple">Opción múltiple</option>
-          <option value="Completar la forma correcta">Completar la forma correcta</option>
-          <option value="Elegir la forma correcta">Elegir la forma correcta</option>
-          <option value="Transformaciones">Transformaciones</option>
-          <option value="Relacionar pregunta con respuesta">Relacionar pregunta con respuesta</option>
-          <option value="Ordenar palabras para formar una frase">Ordenar palabras para formar una frase</option>
-          <option value="Corregir errores">Corregir errores</option>
-          <option value="Unir dos partes de la frase">Unir dos partes de la frase</option>
-          <option value="Completar con preposición o terminación">Completar con preposición o terminación</option>
-          <option value="Opción única">Opción única</option>
-          <option value="Escribir tu propia respuesta">Escribir tu propia respuesta</option>
-          <option value="Repetir después del narrador">Repetir después del narrador</option>
-          <option value="Completar la frase con tu voz">Completar la frase con tu voz</option>
-          <option value="Responder a una pregunta">Responder a una pregunta</option>
-          <option value="Describir una imagen">Describir una imagen</option>
-          <option value="Juego de roles">Juego de roles</option>
-          <option value="Mini-monólogo">Mini-monólogo</option>
-          <option value="Diálogo semiabierto">Diálogo semiabierto</option>
-          <option value="Decirlo de otra manera">Decirlo de otra manera</option>
-          <option value="Escuchar y elegir la respuesta">Escuchar y elegir la respuesta</option>
-          <option value="Escuchar y completar los espacios">Escuchar y completar los espacios</option>
-          <option value="Escuchar y marcar verdadero o falso">Escuchar y marcar verdadero o falso</option>
-          <option value="Escuchar y relacionar personas">Escuchar y relacionar personas</option>
-          <option value="Escuchar y ordenar la secuencia">Escuchar y ordenar la secuencia</option>
-          <option value="Dictado con audio">Dictado con audio</option>
-          <option value="Escuchar y repetir">Escuchar y repetir</option>
-          <option value="Diálogo interactivo">Diálogo interactivo</option>
-          <option value="Misión del día">Misión del día</option>
-          <option value="Quiz situacional">Quiz situacional</option>
-          <option value="Video con preguntas">Video con preguntas</option>
-          <option value="Test final del tema">Test final del tema</option>
-          <option value="Debate grabado">Debate grabado</option>
-          <option value="Contar una historia">Contar una historia</option>
-          <option value="Simulación de entrevista de trabajo">Simulación de entrevista de trabajo</option>
-          <option value="Retroalimentación por voz">Retroalimentación por voz</option>
-        </select>
-      </div>
-    </div>
+    </main>
 
-    <div class="sectionTitle">📘 Gramática</div>
-    <div id="grammarList"></div>
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        collection,
+        query,
+        where,
+        getDocs,
+        addDoc,
+        deleteDoc,
+        updateDoc,
+        doc,
+        getDoc,
+        setDoc,
+        writeBatch,
+        serverTimestamp,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-    <div class="sectionTitle">📗 Vocabulario</div>
-    <div id="vocabList"></div>
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+        authDomain: 'aquivivo-platform.firebaseapp.com',
+        projectId: 'aquivivo-platform',
+        storageBucket: 'aquivivo-platform.firebasestorage.app',
+        messagingSenderId: '116115622011',
+        appId: '1:116115622011:web:33a4a583eba4368071bade',
+      };
 
-    <!-- ADMIN (agregar tema) -->
-    <div id="adminPanel" class="card adminPanel">
-      <h3 style="margin:0 0 10px 0;">👑 Panel Admin – agregar tema</h3>
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
-      <div class="row">
-        <select id="adminType">
-          <option value="grammar">gramática</option>
-          <option value="vocabulary">vocabulario</option>
-        </select>
+      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+      let isAdmin = false;
 
-        <input id="adminTitle" placeholder="Título (ES)" />
-        <input id="adminDesc" placeholder="Descripción (ES)" />
+      // LEVEL detection:
+      // 1) ?level=A1/A2/B1/B2
+      // 2) filename contains a1/a2/b1/b2
+      // 3) default A1
+      let LEVEL = 'A1';
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('level')) LEVEL = params.get('level').toUpperCase();
 
-        <button onclick="addTopic()">➕ Agregar</button>
-      </div>
-
-      <p style="font-size:12px; color:#6b7280; margin:10px 0 0 0;">
-        Si hiciste clic en importar varias veces – usa "Eliminar duplicados". Esto eliminará las repeticiones en Firestore.
-      </p>
-    </div>
-    </div>
-  </main>
-
-  <!-- 🔥 Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-    import {
-      getFirestore, collection, query, where, getDocs,
-      addDoc, deleteDoc, updateDoc, doc, getDoc, setDoc
-    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
-
-    // ✅ Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
-      authDomain: "aquivivo-platform.firebaseapp.com",
-      projectId: "aquivivo-platform",
-      storageBucket: "aquivivo-platform.firebasestorage.app",
-      messagingSenderId: "116115622011",
-      appId: "1:116115622011:web:33a4a583eba4368071bade"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // 👑 correo de admin
-    const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
-    let isAdmin = false;
-
-    // Detectar nivel del nombre del archivo (courseA2.html → A2)
-    let LEVEL = "A1";
-    const filename = window.location.pathname.split('/').pop().toLowerCase();
-    if (filename.includes('a2')) LEVEL = "A2";
-    else if (filename.includes('b1')) LEVEL = "B1";
-    else if (filename.includes('b2')) LEVEL = "B2";
-    
-    // Permitir override desde URL
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("level")) LEVEL = params.get("level").toUpperCase();
-
-    // Referencias de UI
-    const levelTitle = document.getElementById("levelTitle");
-    const levelSubtitle = document.getElementById("levelSubtitle");
-    const grammarList = document.getElementById("grammarList");
-    const vocabList = document.getElementById("vocabList");
-    const adminPanel = document.getElementById("adminPanel");
-    const adminBar = document.getElementById("adminBar");
-    const searchInput = document.getElementById("searchInput");
-    const typeFilter = document.getElementById("typeFilter");
-    const taskFilter = document.getElementById("taskFilter");
-
-    // Guardar todos los temas para filtrar
-    let allTopics = [];
-
-    levelTitle.textContent = `Nivel ${LEVEL}`;
-    levelSubtitle.textContent = "Cargando…";
-
-    // 🔐 Autenticación
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-        return;
+      const filename = window.location.pathname.split('/').pop().toLowerCase();
+      if (!params.get('level')) {
+        if (filename.includes('a2')) LEVEL = 'A2';
+        else if (filename.includes('b1')) LEVEL = 'B1';
+        else if (filename.includes('b2')) LEVEL = 'B2';
+        else if (filename.includes('a1')) LEVEL = 'A1';
       }
 
-      // Mostrar email en sessionBar
-      document.getElementById("sessionEmail").textContent = user.email || "(sin correo)";
+      // UI refs
+      const levelTitle = document.getElementById('levelTitle');
+      const levelSubtitle = document.getElementById('levelSubtitle');
+      const grammarList = document.getElementById('grammarList');
+      const vocabList = document.getElementById('vocabList');
+      const adminPanel = document.getElementById('adminPanel');
+      const adminBar = document.getElementById('adminBar');
+      const seedBtn = document.getElementById('seedBtn');
 
-      isAdmin = (user.email === ADMIN_EMAIL);
+      const searchInput = document.getElementById('searchInput');
+      const typeFilter = document.getElementById('typeFilter');
+      const taskFilter = document.getElementById('taskFilter');
 
-      if (isAdmin) {
-        adminPanel.style.display = "block";
-        adminBar.style.display = "flex";
-      } else {
-        adminPanel.style.display = "none";
-        adminBar.style.display = "none";
-      }
+      let allTopics = [];
 
-      await loadCourseMeta();
-      await loadTopics();
-    });
+      levelTitle.textContent = `Nivel ${LEVEL}`;
+      levelSubtitle.textContent = 'Cargando…';
 
-    // 🚪 cerrar sesión
-    window.logout = function () {
-      signOut(auth).then(() => window.location.href = "login.html");
-    };
+      // ===== DATASETS =====
+      const A1_TOPICS = [
+        // 📘 Gramática (11)
+        {
+          type: 'grammar',
+          title: 'Alfabeto y pronunciación (Alfabet i wymowa)',
+          desc: 'Sonidos, letras y acento. Tareas: Repetir después del narrador, Opción múltiple, Escuchar y repetir',
+          order: 1,
+        },
+        {
+          type: 'grammar',
+          title: 'Orden de palabras en la frase (Szyk wyrazów w zdaniu)',
+          desc: 'Estructura básica SVO y énfasis. Tareas: Ordenar palabras para formar una frase, Opción múltiple',
+          order: 2,
+        },
+        {
+          type: 'grammar',
+          title:
+            'Verbos básicos: być y mieć (Czasowniki podstawowe: być i mieć)',
+          desc: 'Conjugación y uso en frases. Tareas: Completar la forma correcta, Elegir la forma correcta, Rellenar los espacios',
+          order: 3,
+        },
+        {
+          type: 'grammar',
+          title:
+            'Presente: verbos regulares (Czas teraźniejszy: czasowniki regularne)',
+          desc: 'Terminaciones y práctica. Tareas: Completar la forma correcta, Transformaciones, Rellenar los espacios',
+          order: 4,
+        },
+        {
+          type: 'grammar',
+          title:
+            'Pronombres personales y posesivos (Zaimki osobowe i dzierżawcze)',
+          desc: 'Yo/tú… y mi/tu… Tareas: Opción múltiple, Relacionar pregunta con respuesta, Rellenar los espacios',
+          order: 5,
+        },
+        {
+          type: 'grammar',
+          title:
+            'Oraciones afirmativas, negativas y preguntas (Zdania twierdzące, przeczące i pytania)',
+          desc: 'Nie…? ¿Czy…? Tareas: Opción múltiple, Corregir errores, Unir dos partes de la frase',
+          order: 6,
+        },
+        {
+          type: 'grammar',
+          title: 'Sustantivos: género y número (Rzeczowniki: rodzaj i liczba)',
+          desc: 'Masculino/femenino/neutro + plural. Tareas: Elegir la palabra correcta, Opción múltiple, Rellenar los espacios',
+          order: 7,
+        },
+        {
+          type: 'grammar',
+          title: 'Adjetivos y concordancia (Przymiotniki i ich zgodność)',
+          desc: 'Acuerdo con sustantivo. Tareas: Completar con preposición o terminación, Elegir la forma correcta, Transformaciones',
+          order: 8,
+        },
+        {
+          type: 'grammar',
+          title:
+            'Preposiciones básicas: w, na, do (Przyimki podstawowe: w, na, do)',
+          desc: 'Uso en lugar y dirección. Tareas: Completar con preposición o terminación, Opción múltiple, Rellenar los espacios',
+          order: 9,
+        },
+        {
+          type: 'grammar',
+          title: 'Caso acusativo (introducción) (Biernik - wprowadzenie)',
+          desc: 'Kogo? co? formas básicas. Tareas: Completar con preposición o terminación, Elegir la forma correcta, Opción múltiple',
+          order: 10,
+        },
+        {
+          type: 'grammar',
+          title: 'Números y cantidades (Liczby i ilości)',
+          desc: 'Números básicos + cantidades. Tareas: Dictado con audio, Opción múltiple, Rellenar los espacios',
+          order: 11,
+        },
 
-    // --- helpers
-    function normType(t) {
-      return String(t || "").toLowerCase().trim();
-    }
+        // 📗 Vocabulario (16)
+        {
+          type: 'vocabulary',
+          title: 'Saludos y presentación (Powitania i przedstawianie się)',
+          desc: 'Frases básicas para empezar conversación. Tareas: Tarjetas interactivas, Juego de memoria (pares), Diálogo interactivo',
+          order: 101,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Países y nacionalidades (Kraje i narodowości)',
+          desc: 'Países, gentilicios, preguntas típicas. Tareas: Relacionar palabra con traducción, Opción múltiple',
+          order: 102,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Información personal (Informacje osobiste)',
+          desc: 'Edad, dirección, teléfono, datos. Tareas: Rellenar los espacios, Responder a una pregunta, Opción múltiple',
+          order: 103,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Profesiones y trabajo (Zawody i praca)',
+          desc: 'Profesiones y verbos básicos del trabajo. Tareas: Relacionar palabra con imagen, Tarjetas interactivas, Opción múltiple',
+          order: 104,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Familia (Rodzina)',
+          desc: 'Miembros de la familia y relaciones. Tareas: Juego de memoria (pares), Relacionar palabra con traducción',
+          order: 105,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Casa y vivienda (Dom i mieszkanie)',
+          desc: 'Habitaciones, muebles, objetos. Tareas: Relacionar palabra con imagen, Agrupar palabras, Opción múltiple',
+          order: 106,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Comida y bebidas (Jedzenie i napoje)',
+          desc: 'Productos, bebidas y verbos (comer/beber). Tareas: Tarjetas interactivas, Verdadero o falso, Opción múltiple',
+          order: 107,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Tienda y compras (Sklep i zakupy)',
+          desc: 'Preguntar precio, cantidades, tienda. Tareas: Quiz situacional, Diálogo semiabierto, Opción múltiple',
+          order: 108,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Ropa (Ubrania)',
+          desc: 'Prendas, colores, tallas. Tareas: Relacionar palabra con imagen, Opción múltiple, Tarjetas interactivas',
+          order: 109,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Tiempo y días (Czas i dni)',
+          desc: 'Días, meses, horas básicas. Tareas: Escuchar y elegir la respuesta, Dictado con audio, Opción múltiple',
+          order: 110,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Rutina diaria (Codzienna rutyna)',
+          desc: 'Acciones diarias y horarios. Tareas: Ordenar palabras para formar una frase, Rellenar los espacios',
+          order: 111,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Ciudad y lugares (Miasto i miejsca)',
+          desc: 'Lugares en la ciudad y servicios. Tareas: Relacionar palabra con imagen, Opción múltiple',
+          order: 112,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Direcciones y orientación (Kierunki i orientacja)',
+          desc: 'Preguntar camino, direcciones. Tareas: Quiz situacional, Relacionar pregunta con respuesta, Opción múltiple',
+          order: 113,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Médico y salud (básico) (Lekarz i zdrowie - podstawy)',
+          desc: 'Síntomas simples y frases útiles. Tareas: Opción múltiple, Verdadero o falso, Responder a una pregunta',
+          order: 114,
+        },
+        {
+          type: 'vocabulary',
+          title:
+            'Oficina pública y documentos (básico) (Urząd i dokumenty - podstawy)',
+          desc: 'Trámites básicos y documentos. Tareas: Quiz situacional, Opción múltiple, Unir dos partes de la frase',
+          order: 115,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Frases útiles (Przydatne zwroty)',
+          desc: 'Zwroty na co dzień. Tareas: Tarjetas interactivas, Diálogo interactivo, Opción única',
+          order: 116,
+        },
+      ];
 
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
+      const A2_TOPICS = [
+        // 📘 Gramática (13)
+        {
+          type: 'grammar',
+          title:
+            'Presente: verbos irregulares (Czas teraźniejszy: czasowniki nieregularne)',
+          desc: 'Conjugación básica de irregulares. Tareas: Completar la forma correcta, Elegir la forma correcta, Transformaciones',
+          order: 1,
+        },
+        {
+          type: 'grammar',
+          title: 'Verbos reflexivos (Czasowniki zwrotne)',
+          desc: 'Formas con się y uso en frases. Tareas: Rellenar los espacios, Elegir la forma correcta, Opción múltiple',
+          order: 2,
+        },
+        {
+          type: 'grammar',
+          title: 'Pasado simple (Czas przeszły prosty)',
+          desc: 'Formación del pasado y práctica. Tareas: Completar la forma correcta, Dictado con audio, Transformaciones',
+          order: 3,
+        },
+        {
+          type: 'grammar',
+          title: 'Futuro simple (Czas przyszły prosty)',
+          desc: 'Futuro con być + infinitivo / formas básicas. Tareas: Rellenar los espacios, Opción múltiple, Transformaciones',
+          order: 4,
+        },
+        {
+          type: 'grammar',
+          title:
+            'Verbos modales: móc, musieć, chcieć (Czasowniki modalne: móc, musieć, chcieć)',
+          desc: 'Estructuras modales en contexto. Tareas: Elegir la forma correcta, Completar la forma correcta, Unir dos partes de la frase',
+          order: 5,
+        },
+        {
+          type: 'grammar',
+          title:
+            'Casos del polaco: visión general (Przypadki w języku polskim: przegląd)',
+          desc: 'Qué caso usar y cuándo. Tareas: Opción múltiple, Relacionar pregunta con respuesta',
+          order: 6,
+        },
+        {
+          type: 'grammar',
+          title: 'Caso genitivo (Dopełniacz)',
+          desc: 'Formas básicas + negación y cantidades. Tareas: Completar con preposición o terminación, Elegir la forma correcta',
+          order: 7,
+        },
+        {
+          type: 'grammar',
+          title: 'Caso locativo (Miejscownik)',
+          desc: 'Dónde: w/na + miejscownik. Tareas: Completar con preposición o terminación, Opción múltiple',
+          order: 8,
+        },
+        {
+          type: 'grammar',
+          title: 'Caso instrumental (Narzędnik)',
+          desc: 'Con kim? z czym? formas y usos. Tareas: Completar con preposición o terminación, Transformaciones',
+          order: 9,
+        },
+        {
+          type: 'grammar',
+          title: 'Preposiciones con casos (Przyimki z przypadkami)',
+          desc: 'Mapa de preposiciones + casos. Tareas: Completar con preposición o terminación, Opción múltiple, Corregir errores',
+          order: 10,
+        },
+        {
+          type: 'grammar',
+          title: 'Comparativos y superlativos (Stopniowanie przymiotników)',
+          desc: 'lepszy/najlepszy + regulares. Tareas: Transformaciones, Elegir la forma correcta',
+          order: 11,
+        },
+        {
+          type: 'grammar',
+          title:
+            'Adverbios de tiempo y frecuencia (Przysłówki czasu i częstotliwości)',
+          desc: 'zawsze/często/już/jeszcze. Tareas: Rellenar los espacios, Opción múltiple',
+          order: 12,
+        },
+        {
+          type: 'grammar',
+          title: 'Conectores básicos (Spójniki podstawowe)',
+          desc: 'i/ale/bo/że/więc. Tareas: Unir dos partes de la frase, Ordenar palabras para formar una frase',
+          order: 13,
+        },
 
-    // ✅ 1) metadatos del curso: course_meta/A1 (título + subtítulo)
-    async function loadCourseMeta(){
-      const metaRef = doc(db, "course_meta", LEVEL);
-      const metaSnap = await getDoc(metaRef);
+        // 📗 Vocabulario (10)
+        {
+          type: 'vocabulary',
+          title: 'Presentación y small talk (Przedstawianie się i small talk)',
+          desc: 'Preguntas típicas + respuestas naturales. Tareas: Diálogo semiabierto, Diálogo interactivo, Responder a una pregunta',
+          order: 101,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Trabajo y responsabilidades (Praca i obowiązki)',
+          desc: 'Vocabulario laboral + verbos. Tareas: Tarjetas interactivas, Opción múltiple, Quiz situacional',
+          order: 102,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Vivienda y alquiler (Mieszkanie i wynajem)',
+          desc: 'Anuncios, contrato, problemas. Tareas: Quiz situacional, Relacionar palabra con traducción, Opción múltiple',
+          order: 103,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Comida y restaurante (Jedzenie i restauracja)',
+          desc: 'Pedido, menú, preferencias. Tareas: Diálogo interactivo, Opción múltiple, Verdadero o falso',
+          order: 104,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Tienda y devoluciones (Sklep i zwroty)',
+          desc: 'Reclamación, cambio, recibo. Tareas: Quiz situacional, Unir dos partes de la frase, Opción múltiple',
+          order: 105,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Médico y farmacia (Lekarz i apteka)',
+          desc: 'Síntomas, medicamentos, consejos. Tareas: Responder a una pregunta, Opción múltiple, Verdadero o falso',
+          order: 106,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Oficina pública y trámites (Urząd i załatwianie spraw)',
+          desc: 'Citas, formularios, documentos. Tareas: Quiz situacional, Opción múltiple, Corregir errores',
+          order: 107,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Transporte público (Transport publiczny)',
+          desc: 'Billetes, horarios, direcciones. Tareas: Escuchar y elegir la respuesta, Opción múltiple, Quiz situacional',
+          order: 108,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Tiempo libre (Czas wolny)',
+          desc: 'Planes, hobbies, propuestas. Tareas: Diálogo semiabierto, Ordenar palabras para formar una frase',
+          order: 109,
+        },
+        {
+          type: 'vocabulary',
+          title: 'Emociones y estado de ánimo (Emocje i nastrój)',
+          desc: 'Sentimientos, reacciones, opiniones. Tareas: Mini-monólogo, Responder a una pregunta, Opción única',
+          order: 110,
+        },
+      ];
 
-      if (metaSnap.exists()){
-        const m = metaSnap.data();
-        levelTitle.textContent = m.title || `Nivel ${LEVEL}`;
-        levelSubtitle.textContent = m.subtitle || "Listo ✅";
-      } else {
-        levelTitle.textContent = `Nivel ${LEVEL}`;
-        levelSubtitle.textContent = "Listo ✅";
-      }
-    }
+      const SEEDS = {
+        A1: { label: '🌱 Reset + Import A1 (27 temas)', topics: A1_TOPICS },
+        A2: { label: '🌿 Reset + Import A2 (23 temas)', topics: A2_TOPICS },
+        // B1: { label: "✨ Reset + Import B1 (...)", topics: B1_TOPICS },
+        // B2: { label: "🚀 Reset + Import B2 (...)", topics: B2_TOPICS },
+      };
 
-    // Admin: editar metadatos
-    window.editCourseMeta = async function(){
-      if(!isAdmin) return;
-
-      const currentTitle = levelTitle.textContent;
-      const currentSub = levelSubtitle.textContent;
-
-      const newTitle = prompt("Nuevo título del curso (encabezado):", currentTitle);
-      if(newTitle === null) return;
-
-      const newSub = prompt("Nueva descripción del curso (debajo del título):", currentSub);
-      if(newSub === null) return;
-
-      const metaRef = doc(db, "course_meta", LEVEL);
-      await setDoc(metaRef, {
-        title: newTitle.trim() || `Nivel ${LEVEL}`,
-        subtitle: newSub.trim() || ""
-      }, { merge: true });
-
-      await loadCourseMeta();
-      alert("✅ Descripción del curso guardada");
-    };
-
-    // ✅ 2) cargar temas desde cursos donde level==LEVEL
-    async function loadTopics() {
-      grammarList.innerHTML = "";
-      vocabList.innerHTML = "";
-
-      const q = query(collection(db, "courses"), where("level", "==", LEVEL));
-      const snap = await getDocs(q);
-
-      allTopics = [];
-
-      snap.forEach((d) => {
-        const data = d.data();
-        const t = normType(data.type);
-
-        const item = {
-          id: d.id,
-          title: data.title || "",
-          desc: data.desc || "",
-          order: Number(data.order ?? 9999),
-          type: t
-        };
-
-        allTopics.push(item);
-      });
-
-      // Ordenar por tipo (grammar primero, luego vocabulary) y luego por orden
-      allTopics.sort((a, b) => {
-        if (a.type !== b.type) {
-          return a.type === "grammar" ? -1 : 1;
-        }
-        return a.order - b.order;
-      });
-
-      renderFiltered();
-
-      if (levelSubtitle.textContent.toLowerCase().includes("cargando")) {
-        levelSubtitle.textContent = "Listo ✅";
-      }
-    }
-
-    // FILTRAR Y RENDERIZAR
-    function renderFiltered(){
-      const searchTerm = searchInput.value.toLowerCase();
-      const selectedType = typeFilter.value;
-      const selectedTask = taskFilter.value;
-
-      const grammar = [];
-      const vocab = [];
-
-      allTopics.forEach(item => {
-        // Aplicar filtro de búsqueda
-        if(searchTerm && !item.title.toLowerCase().includes(searchTerm) && !item.desc.toLowerCase().includes(searchTerm)){
+      // auth
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = 'login.html';
           return;
         }
 
-        // Aplicar filtro de tipo
-        if(selectedType && item.type !== selectedType){
-          return;
+        document.getElementById('sessionEmail').textContent =
+          user.email || '(sin correo)';
+        isAdmin = user.email === ADMIN_EMAIL;
+
+        if (isAdmin) {
+          adminPanel.style.display = 'block';
+          adminBar.style.display = 'flex';
+        } else {
+          adminPanel.style.display = 'none';
+          adminBar.style.display = 'none';
         }
 
-        // Aplicar filtro de tarea - comprobar si la descripción del tema contiene el nombre de la tarea
-        if(selectedTask && !item.desc.toLowerCase().includes(selectedTask.toLowerCase())){
-          return;
-        }
+        // configure seed button per LEVEL
+        configureSeedButton();
 
-        if (item.type === "grammar") grammar.push(item);
-        if (item.type === "vocabulary") vocab.push(item);
+        await loadCourseMeta();
+        await loadTopics();
       });
 
-      grammar.sort((a,b) => a.order - b.order);
-      vocab.sort((a,b) => a.order - b.order);
+      function configureSeedButton() {
+        seedBtn.style.display = 'none';
+        seedBtn.onclick = null;
 
-      grammarList.innerHTML = grammar.length
-        ? grammar.map(renderTopicCard).join("")
-        : `<div class="card noResults">Sin resultados para gramática</div>`;
+        if (!isAdmin) return;
 
-      vocabList.innerHTML = vocab.length
-        ? vocab.map(renderTopicCard).join("")
-        : `<div class="card noResults">Sin resultados para vocabulario</div>`;
-    }
+        const seed = SEEDS[LEVEL];
+        if (!seed) return;
 
-    function renderTopicCard(t) {
-      const adminButtons = isAdmin
-        ? `<div class="admin-tools">
+        seedBtn.textContent = seed.label;
+        seedBtn.style.display = 'inline-flex';
+        seedBtn.onclick = () => seedLevel(LEVEL, seed.topics);
+      }
+
+      // logout (kept)
+      window.logout = function () {
+        signOut(auth).then(() => (window.location.href = 'login.html'));
+      };
+
+      // helpers
+      function normType(t) {
+        return String(t || '')
+          .toLowerCase()
+          .trim();
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      // meta
+      async function loadCourseMeta() {
+        const metaRef = doc(db, 'course_meta', LEVEL);
+        const metaSnap = await getDoc(metaRef);
+
+        if (metaSnap.exists()) {
+          const m = metaSnap.data();
+          levelTitle.textContent = m.title || `Nivel ${LEVEL}`;
+          levelSubtitle.textContent = m.subtitle || 'Listo ✅';
+        } else {
+          levelTitle.textContent = `Nivel ${LEVEL}`;
+          levelSubtitle.textContent = 'Listo ✅';
+        }
+      }
+
+      window.editCourseMeta = async function () {
+        if (!isAdmin) return;
+
+        const currentTitle = levelTitle.textContent;
+        const currentSub = levelSubtitle.textContent;
+
+        const newTitle = prompt(
+          'Nuevo título del curso (encabezado):',
+          currentTitle,
+        );
+        if (newTitle === null) return;
+
+        const newSub = prompt(
+          'Nueva descripción del curso (debajo del título):',
+          currentSub,
+        );
+        if (newSub === null) return;
+
+        const metaRef = doc(db, 'course_meta', LEVEL);
+        await setDoc(
+          metaRef,
+          {
+            title: newTitle.trim() || `Nivel ${LEVEL}`,
+            subtitle: newSub.trim() || '',
+          },
+          { merge: true },
+        );
+
+        await loadCourseMeta();
+        alert('✅ Descripción del curso guardada');
+      };
+
+      // topics
+      async function loadTopics() {
+        grammarList.innerHTML = '';
+        vocabList.innerHTML = '';
+
+        const q = query(collection(db, 'courses'), where('level', '==', LEVEL));
+        const snap = await getDocs(q);
+
+        allTopics = [];
+
+        snap.forEach((d) => {
+          const data = d.data();
+          const t = normType(data.type);
+
+          allTopics.push({
+            id: d.id,
+            title: data.title || '',
+            desc: data.desc || '',
+            order: Number(data.order ?? 9999),
+            type: t,
+          });
+        });
+
+        allTopics.sort((a, b) => {
+          if (a.type !== b.type) return a.type === 'grammar' ? -1 : 1;
+          return a.order - b.order;
+        });
+
+        renderFiltered();
+
+        if (levelSubtitle.textContent.toLowerCase().includes('cargando')) {
+          levelSubtitle.textContent = 'Listo ✅';
+        }
+      }
+
+      function renderFiltered() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedType = typeFilter.value;
+        const selectedTask = taskFilter.value;
+
+        const grammar = [];
+        const vocab = [];
+
+        allTopics.forEach((item) => {
+          if (
+            searchTerm &&
+            !item.title.toLowerCase().includes(searchTerm) &&
+            !item.desc.toLowerCase().includes(searchTerm)
+          )
+            return;
+          if (selectedType && item.type !== selectedType) return;
+          if (
+            selectedTask &&
+            !item.desc.toLowerCase().includes(selectedTask.toLowerCase())
+          )
+            return;
+
+          if (item.type === 'grammar') grammar.push(item);
+          if (item.type === 'vocabulary') vocab.push(item);
+        });
+
+        grammar.sort((a, b) => a.order - b.order);
+        vocab.sort((a, b) => a.order - b.order);
+
+        grammarList.innerHTML = grammar.length
+          ? grammar.map(renderTopicCard).join('')
+          : `<div class="card noResults">Sin resultados para gramática</div>`;
+
+        vocabList.innerHTML = vocab.length
+          ? vocab.map(renderTopicCard).join('')
+          : `<div class="card noResults">Sin resultados para vocabulario</div>`;
+      }
+
+      function renderTopicCard(t) {
+        const adminButtons = isAdmin
+          ? `<div class="admin-tools">
              <button class="btn-edit" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
              <button class="btn-del" onclick="event.stopPropagation(); deleteTopic('${t.id}')">❌</button>
            </div>`
-        : "";
+          : '';
 
-      return `
+        return `
         <div class="card topic" onclick="openLesson('${t.id}')">
           ${adminButtons}
           <strong>${escapeHtml(t.title)}</strong>
           <p>${escapeHtml(t.desc)}</p>
         </div>
       `;
-    }
-
-    // 🔜 próximo paso: lesson.html?id=...
-    window.openLesson = function(id){
-      alert("Próximo paso: lesson.html?id=" + id);
-    };
-
-    // ✅ Admin: agregar tema
-    window.addTopic = async function(){
-      if(!isAdmin) return;
-
-      const type = document.getElementById("adminType").value;
-      const title = document.getElementById("adminTitle").value.trim();
-      const desc  = document.getElementById("adminDesc").value.trim();
-
-      if(!title || !desc) return alert("Completa el título y la descripción");
-
-      const q = query(collection(db, "courses"), where("level", "==", LEVEL));
-      const snap = await getDocs(q);
-      let maxOrder = 0;
-      snap.forEach(d => {
-        const o = Number(d.data().order ?? 0);
-        if(o > maxOrder) maxOrder = o;
-      });
-
-      await addDoc(collection(db,"courses"),{
-        level: LEVEL,
-        type,
-        title,
-        desc,
-        order: maxOrder + 1
-      });
-
-      document.getElementById("adminTitle").value = "";
-      document.getElementById("adminDesc").value = "";
-
-      await loadTopics();
-      alert("✅ Tema agregado");
-    };
-
-    window.deleteTopic = async function(id){
-      if(!isAdmin) return;
-      if(!confirm("¿Eliminar este tema?")) return;
-
-      await deleteDoc(doc(db,"courses",id));
-      await loadTopics();
-    };
-
-    window.editTopic = async function(id){
-      if(!isAdmin) return;
-
-      const ref = doc(db,"courses",id);
-      const snap = await getDoc(ref);
-      if(!snap.exists()) return alert("Tema no encontrado");
-
-      const cur = snap.data();
-      const newTitle = prompt("Nuevo título:", cur.title || "");
-      if(newTitle === null) return;
-      const newDesc  = prompt("Nueva descripción:", cur.desc || "");
-      if(newDesc === null) return;
-
-      const t = newTitle.trim();
-      const d = newDesc.trim();
-      if(!t || !d) return alert("El título y la descripción no pueden estar vacíos");
-
-      await updateDoc(ref, { title: t, desc: d });
-      await loadTopics();
-    };
-
-    // ✅ 3) ELIMINAR DUPLICADOS
-    window.dedupeLevel = async function(){
-      if(!isAdmin) return;
-      if(!confirm("¿Eliminar temas duplicados para el nivel " + LEVEL + "?")) return;
-
-      const q = query(collection(db, "courses"), where("level", "==", LEVEL));
-      const snap = await getDocs(q);
-
-      const seen = new Map();
-      const toDelete = [];
-
-      snap.forEach(d => {
-        const data = d.data();
-        const key = [
-          (data.level || "").toString().toUpperCase(),
-          normType(data.type),
-          (data.title || "").trim(),
-          (data.desc || "").trim()
-        ].join("||");
-
-        if (!seen.has(key)) {
-          seen.set(key, d.id);
-        } else {
-          toDelete.push(d.id);
-        }
-      });
-
-      for (const id of toDelete) {
-        await deleteDoc(doc(db, "courses", id));
       }
 
-      alert(`✅ Duplicados eliminados: ${toDelete.length}`);
-      await loadTopics();
-    };
+      window.openLesson = function (id) {
+        alert('Próximo paso: lesson.html?id=' + id);
+      };
 
-    // ESCUCHADORES DE EVENTOS PARA FILTRADO
-    searchInput.addEventListener("input", renderFiltered);
-    typeFilter.addEventListener("change", renderFiltered);
-    taskFilter.addEventListener("change", renderFiltered);
+      // add/edit/delete
+      window.addTopic = async function () {
+        if (!isAdmin) return;
 
-    // FUNCIÓN PARA VOLVER AL PANEL
-    window.goBack = function() {
-      window.location.href = "espanel.html";
-    };
-  </script>
-</body>
+        const type = document.getElementById('adminType').value;
+        const title = document.getElementById('adminTitle').value.trim();
+        const desc = document.getElementById('adminDesc').value.trim();
+
+        if (!title || !desc)
+          return alert('Completa el título y la descripción');
+
+        const q = query(collection(db, 'courses'), where('level', '==', LEVEL));
+        const snap = await getDocs(q);
+        let maxOrder = 0;
+        snap.forEach((d) => {
+          const o = Number(d.data().order ?? 0);
+          if (o > maxOrder) maxOrder = o;
+        });
+
+        await addDoc(collection(db, 'courses'), {
+          level: LEVEL,
+          type,
+          title,
+          desc,
+          order: maxOrder + 1,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+
+        document.getElementById('adminTitle').value = '';
+        document.getElementById('adminDesc').value = '';
+
+        await loadTopics();
+        alert('✅ Tema agregado');
+      };
+
+      window.deleteTopic = async function (id) {
+        if (!isAdmin) return;
+        if (!confirm('¿Eliminar este tema?')) return;
+
+        await deleteDoc(doc(db, 'courses', id));
+        await loadTopics();
+      };
+
+      window.editTopic = async function (id) {
+        if (!isAdmin) return;
+
+        const ref = doc(db, 'courses', id);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) return alert('Tema no encontrado');
+
+        const cur = snap.data();
+        const newTitle = prompt('Nuevo título:', cur.title || '');
+        if (newTitle === null) return;
+        const newDesc = prompt('Nueva descripción:', cur.desc || '');
+        if (newDesc === null) return;
+
+        const t = newTitle.trim();
+        const d = newDesc.trim();
+        if (!t || !d)
+          return alert('El título y la descripción no pueden estar vacíos');
+
+        await updateDoc(ref, {
+          title: t,
+          desc: d,
+          updatedAt: serverTimestamp(),
+        });
+        await loadTopics();
+      };
+
+      window.dedupeLevel = async function () {
+        if (!isAdmin) return;
+        if (!confirm('¿Eliminar temas duplicados para el nivel ' + LEVEL + '?'))
+          return;
+
+        const q = query(collection(db, 'courses'), where('level', '==', LEVEL));
+        const snap = await getDocs(q);
+
+        const seen = new Map();
+        const toDelete = [];
+
+        snap.forEach((d) => {
+          const data = d.data();
+          const key = [
+            (data.level || '').toString().toUpperCase(),
+            normType(data.type),
+            (data.title || '').trim(),
+            (data.desc || '').trim(),
+          ].join('||');
+
+          if (!seen.has(key)) seen.set(key, d.id);
+          else toDelete.push(d.id);
+        });
+
+        for (const id of toDelete) {
+          await deleteDoc(doc(db, 'courses', id));
+        }
+
+        alert(`✅ Duplicados eliminados: ${toDelete.length}`);
+        await loadTopics();
+      };
+
+      // ===== UNIVERSAL SEED FUNCTION =====
+      async function seedLevel(level, topics) {
+        if (!isAdmin) return;
+
+        const ok = confirm(
+          `UWAGA: To usunie WSZYSTKIE tematy ${level} i wgra ${topics.length} nowych. Kontynuować?`,
+        );
+        if (!ok) return;
+
+        // delete all docs for that level
+        const qLvl = query(
+          collection(db, 'courses'),
+          where('level', '==', level),
+        );
+        const snap = await getDocs(qLvl);
+
+        const ids = [];
+        snap.forEach((d) => ids.push(d.id));
+
+        const CHUNK = 400;
+        for (let i = 0; i < ids.length; i += CHUNK) {
+          const batch = writeBatch(db);
+          ids
+            .slice(i, i + CHUNK)
+            .forEach((id) => batch.delete(doc(db, 'courses', id)));
+          await batch.commit();
+        }
+
+        // add topics
+        const toAdd = topics.map((t) => ({
+          level,
+          type: t.type,
+          title: t.title,
+          desc: t.desc,
+          order: t.order,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        }));
+
+        for (let i = 0; i < toAdd.length; i += CHUNK) {
+          const batch = writeBatch(db);
+          toAdd.slice(i, i + CHUNK).forEach((obj) => {
+            const newRef = doc(collection(db, 'courses'));
+            batch.set(newRef, obj);
+          });
+          await batch.commit();
+        }
+
+        alert(
+          `✅ ${level} gotowe: usunięto ${ids.length} i wgrano ${toAdd.length} tematów.`,
+        );
+        await loadTopics();
+      }
+
+      // listeners
+      searchInput.addEventListener('input', renderFiltered);
+      typeFilter.addEventListener('change', renderFiltered);
+      taskFilter.addEventListener('change', renderFiltered);
+
+      window.goBack = function () {
+        window.location.href = 'espanel.html';
+      };
+    </script>
+  </body>
 </html>
