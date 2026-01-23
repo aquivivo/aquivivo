@@ -1,0 +1,27 @@
+Para agregar descripciones a A1 y A2, accede a Firebase Console:
+
+https://console.firebase.google.com/
+
+1. Ve a: aquivivo-platform > Firestore Database > course_meta
+
+2. Agrega estos documentos:
+
+DOCUMENTO: A1
+Fields:
+- title: "Nivel A1 Fundamentos de la vida en polonia"
+- subtitle: "Funcionamiento cotidiano - Ideal para empezar tu vida en Polonia 🇵🇱"
+
+DOCUMENTO: A2
+Fields:
+- title: "Nivel A2 Fundamentos de la vida en polonia"
+- subtitle: "Funcionamiento cotidiano - Ideal para empezar tu vida en Polonia 🇵🇱"
+
+DOCUMENTO: B1
+Fields:
+- title: "Nivel B1 - Vida independiente en Polonia"
+- subtitle: "Para trabajar, comunicarte y vivir con confianza"
+
+DOCUMENTO: B2
+Fields:
+- title: "Nivel B2 Integración total"
+- subtitle: "Para integrarte completamente y avanzar profesionalmente"
