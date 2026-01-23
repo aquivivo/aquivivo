@@ -238,6 +238,7 @@
       }
 
       .card {
+        position: relative;
         background: white;
         color: var(--blue);
         border-radius: 16px;
@@ -363,6 +364,109 @@
         opacity: 0.7;
         font-style: italic;
       }
+
+      /* --- Enhancements --- */
+      .course-tools { margin: 14px 0 8px; display: grid; gap: 12px; }
+      .progressCard {
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
+        backdrop-filter: blur(12px);
+        border-radius: 18px;
+        padding: 16px;
+      }
+      .progressTop { display:flex; align-items:center; justify-content:space-between; gap: 12px; flex-wrap: wrap; }
+      .progressLabel { font-weight: 900; letter-spacing: .2px; }
+      .progressText { opacity: .9; font-size: 13px; margin-top: 4px; }
+      .progressBar { height: 10px; border-radius: 999px; overflow:hidden; background: rgba(255,255,255,0.16); margin-top: 10px; }
+      .progressFill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--yellow), var(--red)); transition: width .25s ease; }
+      .progressHint { font-size: 12px; opacity: .75; margin-top: 8px; }
+
+      .statsRow { display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
+      .statPill {
+        background: rgba(0,0,0,0.15);
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 999px;
+        padding: 10px 12px;
+        font-size: 13px;
+        display:flex; gap: 6px; align-items: center;
+      }
+      .statBtn{
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: white;
+        border-radius: 999px;
+        padding: 10px 12px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .statBtn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+
+      .topic-head { display:flex; align-items:flex-start; justify-content:space-between; gap: 10px; }
+      .topic-title { display:flex; align-items:center; gap: 10px; min-width: 0; }
+      .chip {
+        font-size: 12px;
+        font-weight: 900;
+        border-radius: 999px;
+        padding: 4px 10px;
+        background: rgba(0,56,147,0.10);
+        border: 1px solid rgba(0,56,147,0.18);
+        color: var(--blue);
+        flex: 0 0 auto;
+      }
+      .chip-muted { opacity: .65; }
+      .badge {
+        font-size: 12px;
+        font-weight: 900;
+        border-radius: 999px;
+        padding: 6px 10px;
+        color: white;
+        flex: 0 0 auto;
+      }
+      .badge-grammar { background: rgba(0,56,147,0.92); }
+      .badge-vocab { background: rgba(206,17,38,0.92); }
+
+      .toast{
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.75);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.18);
+        padding: 12px 14px;
+        border-radius: 14px;
+        max-width: min(720px, calc(100% - 24px));
+        box-shadow: 0 18px 44px rgba(0,0,0,0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .18s ease, transform .18s ease;
+        z-index: 9999;
+        font-weight: 700;
+      }
+      .toast.show{ opacity: 1; transform: translateX(-50%) translateY(-2px); }
+
+      .topic.topic-done{
+        outline: 2px solid rgba(34,197,94,.35);
+        box-shadow: 0 18px 44px rgba(0,0,0,0.18);
+      }
+      .doneMark{
+        position:absolute;
+        top: 12px;
+        right: 12px;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background: rgba(34,197,94,.16);
+        border: 1px solid rgba(34,197,94,.28);
+        color: white;
+        font-weight: 900;
+        backdrop-filter: blur(10px);
+      }
+
+
     </style>
   </head>
 
@@ -395,10 +499,35 @@
                 ✏️ Editar descripción del curso
               </button>
               <button onclick="dedupeLevel()">
-                🧹 Eliminar duplicados (A1)
+                🧹 Eliminar duplicados (nivel actual)
               </button>
             </div>
-          </div>
+          
+            <div class="course-tools" id="courseTools">
+              <div class="progressCard">
+                <div class="progressTop">
+                  <div>
+                    <div class="progressLabel">📈 Progreso (local)</div>
+                    <div class="progressText"><span id="progressText">0%</span> · <span id="progressCount">0/0</span> temas visitados</div>
+                  </div>
+                  <button class="btn-nav btn-yellow" id="btnContinue" style="display:none" type="button">
+                    ▶️ Continuar
+                  </button>
+                </div>
+                <div class="progressBar" aria-hidden="true">
+                  <div class="progressFill" id="progressFill" style="width:0%"></div>
+                </div>
+                <div class="progressHint">Se guarda en tu navegador (localStorage). En el próximo paso podemos pasar esto a Firestore.</div>
+              </div>
+
+              <div class="statsRow">
+                <div class="statPill">📚 Total: <strong id="statTotal">0</strong></div>
+                <div class="statPill">🔎 Mostrando: <strong id="statShowing">0</strong></div>
+                <button class="statBtn" id="btnClearFilters" type="button">🧼 Limpiar filtros</button>
+              </div>
+            </div>
+
+</div>
         </div>
 
         <!-- FILTERS SECTION -->
@@ -652,6 +781,79 @@
           .replaceAll('>', '&gt;')
           .replaceAll('"', '&quot;')
           .replaceAll("'", '&#039;');
+      function toast(msg) {
+        const el = document.getElementById('toast');
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+      }
+
+      window.goBack = function () {
+        window.history.back();
+      };
+
+      // --- progreso local (sin Firestore) ---
+      const LS_VISITED_KEY = `aquivivo_visited_${LEVEL}`;
+      const LS_LAST_KEY = `aquivivo_lastLesson_${LEVEL}`;
+      const LS_DONE_KEY = `aquivivo_done_${LEVEL}`;
+
+      function getVisitedSet() {
+        try {
+          const arr = JSON.parse(localStorage.getItem(LS_VISITED_KEY) || '[]');
+          return new Set(Array.isArray(arr) ? arr : []);
+        } catch {
+          return new Set();
+        }
+      }
+
+      function setVisitedSet(set) {
+        try {
+          localStorage.setItem(LS_VISITED_KEY, JSON.stringify(Array.from(set)));
+        } catch {}
+      }
+      function getDoneSet() {
+        try {
+          const arr = JSON.parse(localStorage.getItem(LS_DONE_KEY) || '[]');
+          return new Set(Array.isArray(arr) ? arr : []);
+        } catch {
+          return new Set();
+        }
+      }
+
+      function isDone(topicId) {
+        return getDoneSet().has(topicId);
+      }
+
+
+      function updateStatsAndProgress(showingCount) {
+        const total = allTopics.length;
+        const visited = getVisitedSet();
+        const visitedCount = Array.from(visited).filter((id) =>
+          allTopics.some((t) => t.id === id),
+        ).length;
+
+        document.getElementById('statTotal').textContent = String(total);
+        document.getElementById('statShowing').textContent = String(showingCount);
+
+        const pct = total ? Math.round((visitedCount / total) * 100) : 0;
+        document.getElementById('progressText').textContent = `${pct}%`;
+        document.getElementById('progressCount').textContent = `${visitedCount}/${total}`;
+        document.getElementById('progressFill').style.width = `${pct}%`;
+
+        const last = localStorage.getItem(LS_LAST_KEY);
+        const btn = document.getElementById('btnContinue');
+        if (btn) {
+          if (last && allTopics.some((t) => t.id === last)) {
+            btn.style.display = 'inline-flex';
+            btn.onclick = () => openLesson(last);
+          } else {
+            btn.style.display = 'none';
+          }
+        }
+      }
+
       }
 
       // ✅ 1) metadatos del curso: course_meta/A1 (título + subtítulo)
@@ -699,7 +901,7 @@
         );
 
         await loadCourseMeta();
-        alert('✅ Descripción del curso guardada');
+        toast('✅ Descripción del curso guardada');
       };
 
       // ✅ 2) cargar temas desde cursos donde level==LEVEL
@@ -736,6 +938,7 @@
         });
 
         renderFiltered();
+        updateStatsAndProgress(allTopics.length);
 
         if (levelSubtitle.textContent.toLowerCase().includes('cargando')) {
           levelSubtitle.textContent = 'Listo ✅';
@@ -783,50 +986,61 @@
 
         grammarList.innerHTML = grammar.length
           ? grammar.map(renderTopicCard).join('')
-          : `<div class="card noResults">Sin resultados para gramática</div>`;
+          : `<div class="card noResults">No hay resultados en gramática</div>`;
 
         vocabList.innerHTML = vocab.length
           ? vocab.map(renderTopicCard).join('')
-          : `<div class="card noResults">Sin resultados para vocabulario</div>`;
+          : `<div class="card noResults">No hay resultados en vocabulario</div>`;
+
+        updateStatsAndProgress(grammar.length + vocab.length);
       }
 
-      function renderTopicCard(t, idx) {
+      function renderTopicCard(t) {
         const adminButtons = isAdmin
           ? `<div class="admin-tools">
-             <button class="btn-edit" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
-             <button class="btn-del" onclick="event.stopPropagation(); deleteTopic('${t.id}')">❌</button>
-           </div>`
+               <button class="btn-edit" title="Editar" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
+               <button class="btn-del" title="Eliminar" onclick="event.stopPropagation(); deleteTopic('${t.id}')">❌</button>
+             </div>`
           : '';
 
-        function renderTopicCard(t) {
-          const adminButtons = isAdmin
-            ? `<div class="admin-tools">
-         <button class="btn-edit" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
-         <button class="btn-del" onclick="event.stopPropagation(); deleteTopic('${t.id}')">❌</button>
-       </div>`
-            : '';
+        const badge =
+          t.type === 'grammar'
+            ? `<span class="badge badge-grammar">Gramática</span>`
+            : `<span class="badge badge-vocab">Vocabulario</span>`;
 
-          return `
-    <div class="card topic" onclick="openLesson('${t.id}')">
-      ${adminButtons}
-      <strong>${escapeHtml(t.title)}</strong>
-      <p>${escapeHtml(t.desc)}</p>
-    </div>
-  `;
-        }
+        const orderChip =
+          Number.isFinite(t.order) && t.order !== 9999
+            ? `<span class="chip">#${t.order}</span>`
+            : `<span class="chip chip-muted">#—</span>`;
+
         return `
-        <div class="card topic" onclick="openLesson('${t.id}')">
-          ${adminButtons}
-          <strong>${escapeHtml(t.title)}</strong>
-          <p>${escapeHtml(t.desc)}</p>
-        </div>
-      `;
+          <div class="card topic ${isDone(t.id) ? "topic-done" : ""}" role="button" tabindex="0" onclick="openLesson('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openLesson('${t.id}') }">
+            ${adminButtons}
+            ${isDone(t.id) ? `<div class="doneMark" title="Terminado">✅</div>` : ``}
+            <div class="topic-head">
+              <div class="topic-title">
+                ${orderChip}
+                <strong>${escapeHtml(t.title)}</strong>
+              </div>
+              ${badge}
+            </div>
+            <p>${escapeHtml(t.desc)}</p>
+          </div>
+        `;
       }
 
       // 🔜 próximo paso: lesson.html?id=...
       window.openLesson = function (id) {
+        try {
+          localStorage.setItem(LS_LAST_KEY, id);
+          const visited = getVisitedSet();
+          visited.add(id);
+          setVisitedSet(visited);
+        } catch {}
+
         const url = `lesson.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(id)}`;
         window.open(url, '_blank', 'noopener,noreferrer');
+        updateStatsAndProgress(Number(document.getElementById('statShowing')?.textContent || 0));
       };
 
       // ✅ Admin: agregar tema
@@ -860,7 +1074,7 @@
         document.getElementById('adminDesc').value = '';
 
         await loadTopics();
-        alert('✅ Tema agregado');
+        toast('✅ Tema agregado');
       };
 
       window.deleteTopic = async function (id) {
@@ -925,7 +1139,7 @@
           await deleteDoc(doc(db, 'courses', id));
         }
 
-        alert(`✅ Duplicados eliminados: ${toDelete.length}`);
+        toast(`✅ Duplicados eliminados: ${toDelete.length}`);
         await loadTopics();
       };
 
@@ -933,6 +1147,32 @@
       searchInput.addEventListener('input', renderFiltered);
       typeFilter.addEventListener('change', renderFiltered);
       taskFilter.addEventListener('change', renderFiltered);
+
+      // Limpiar filtros
+      const btnClearFilters = document.getElementById('btnClearFilters');
+      btnClearFilters.addEventListener('click', () => {
+        searchInput.value = '';
+        typeFilter.value = '';
+        taskFilter.value = '';
+        renderFiltered();
+        toast('🧼 Filtros limpiados');
+      });
+
+      // Atajos: "/" enfoca búsqueda, "Esc" limpia búsqueda
+      window.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement !== searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+        }
+        if (e.key === 'Escape' && document.activeElement === searchInput) {
+          searchInput.value = '';
+          renderFiltered();
+        }
+      });
+
     </script>
+  
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
   </body>
 </html>

@@ -21,6 +21,10 @@
 
     .pill{ display:inline-flex; align-items:center; gap: 8px; padding: 8px 12px; border-radius: 999px; font-weight: 900; font-size: 12px; letter-spacing: .2px; }
     .pill-ok{ background: rgba(252, 209, 22, .22); border: 1px solid rgba(252, 209, 22, .45); color: #111827; }
+    
+    .pill-warn{ background: rgba(206, 17, 38, .18); border: 1px solid rgba(206, 17, 38, .35); color: #fff; }
+    .pill-neutral{ background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color: #fff; }
+
     .pill-lock{ background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color: white; backdrop-filter: blur(10px); }
 
     .small-muted{ margin: 0; font-size: 13px; color: #6b7280; line-height:1.35; }
@@ -97,7 +101,13 @@ const firebaseConfig = {
   appId: "1:116115622011:web:33a4a583eba4368071bade"
 };
 
-const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
+const ADMIN_EMAILS = ["aquivivo.pl@gmail.com", "DODAJ_DRUGI_EMAIL_TUTAJ@example.com"]; // <- wpisz tu drugi email (uczeń-test)
+
+function isAdminEmail(email){
+  const e = (email || "").toLowerCase();
+  return ADMIN_EMAILS.some(a => (a||"").toLowerCase() === e);
+}
+
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -111,6 +121,23 @@ function parseIso(s){
   if(!s) return null;
   const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
+}
+
+
+function daysLeft(accessObj, level){
+  if (!accessObj || !accessObj[level] || !accessObj[level].freeUntil) return null;
+  const exp = parseIso(accessObj[level].freeUntil);
+  if(!exp) return null;
+  const ms = exp.getTime() - Date.now();
+  return Math.ceil(ms / (1000*60*60*24));
+}
+
+function formatLeft(accessObj, level){
+  const d = daysLeft(accessObj, level);
+  if(d === null) return "—";
+  if(d <= 0) return "expirado";
+  if(d === 1) return "1 día";
+  return `${d} días`;
 }
 
 function hasAccess(accessObj, level){
@@ -130,17 +157,13 @@ function renderCourseCards(accessObj, metaData){
     const subtitle = meta.subtitle || "Haz clic para acceder al curso.";
     
     // Mapear nivel a archivo de curso
-    const courseFile = {
-      "A1": "courseA2.html",
-      "A2": "courseA2.html",
-      "B1": "courseB1.html",
-      "B2": "courseB2.html"
-    }[lvl];
+    const courseFile = `course.html?level=${encodeURIComponent(lvl)}`;
     
     return `
       <div class="card course-card">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
           <div class="pill pill-ok">✅ acceso activo</div>
+          <div class="pill pill-neutral">⏳ <span id="exp_${lvl}">—</span></div>
           <div style="font-weight:900; opacity:.9;">PL ${lvl}</div>
         </div>
 
@@ -166,10 +189,11 @@ function renderCourseCards(accessObj, metaData){
         </div>
 
         <div style="font-size:20px; font-weight:900; margin-top:4px;">${title}</div>
-        <p style="margin:0; font-size:13px; opacity:.9;">Próximamente / a activar.</p>
+        <p style="margin:0; font-size:13px; opacity:.9;">Bloqueado. Puedes activar una prueba de 7 días (una vez por nivel).</p>
 
         <div class="course-actions">
-          <a class="btn-white-outline" href="Contacto.html">Activar</a>
+          <button class="btn-yellow" type="button" onclick="activateTrial('${lvl}')">Activar 7 días</button>
+          <a class="btn-white-outline" href="Contacto.html">Comprar acceso</a>
         </div>
       </div>
     `;
@@ -179,7 +203,66 @@ function renderCourseCards(accessObj, metaData){
     const active = hasAccess(accessObj, lvl);
     coursesCardsEl.innerHTML += active ? activeCard(lvl) : lockedCard(lvl);
   });
+
+  // Rellenar expiración en tarjetas activas
+  levels.forEach(lvl => {
+    const el = document.getElementById(`exp_${lvl}`);
+    if(!el) return;
+    const left = daysLeft(accessObj, lvl);
+    el.textContent = formatLeft(accessObj, lvl);
+    const pill = el.parentElement;
+    if(left !== null && left <= 2){
+      pill.classList.add('pill-warn');
+      pill.classList.remove('pill-neutral');
+    }
+  });
 }
+
+
+let CURRENT_UID = null;
+
+async function activateTrial(level){
+  if(!CURRENT_UID) return;
+  const ref = doc(db, "users", CURRENT_UID);
+  const snap = await getDoc(ref);
+  const data = snap.data() || {};
+
+  const trialUsed = data.trialUsed || {};
+  if(trialUsed[level]){
+    alert("La prueba ya fue usada para este nivel.");
+    return;
+  }
+
+  const now = new Date();
+  const trialEnd = new Date(now.getTime() + 7*24*60*60*1000);
+
+  const newAccess = { ...(data.access || {}) };
+  newAccess[level] = { freeUntil: trialEnd.toISOString() };
+
+  await setDoc(ref, {
+    access: newAccess,
+    trialUsed: { ...trialUsed, [level]: true },
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+
+  const refreshed = await getDoc(ref);
+
+  // Cargar metadata otra vez
+  const metaData = {};
+  const levels = ["A1","A2","B1","B2"];
+  for (const lvl of levels) {
+    try {
+      const metaRef = doc(db, "course_meta", lvl);
+      const metaSnap = await getDoc(metaRef);
+      if (metaSnap.exists()) metaData[lvl] = metaSnap.data();
+    } catch {}
+  }
+
+  renderCourseCards(refreshed.data()?.access || {}, metaData);
+  alert(`✅ Activado: ${level} por 7 días`);
+}
+
+
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -188,9 +271,10 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   userEmailEl.textContent = user.email || "(sin correo)";
+  CURRENT_UID = user.uid;
 
   // mostrar enlace al administrador (si es email de admin)
-  if ((user.email || "").toLowerCase() === ADMIN_EMAIL.toLowerCase()){
+  if (isAdminEmail(user.email)){
     adminLinkWrap.classList.add("show");
   }
 
@@ -199,7 +283,7 @@ onAuthStateChanged(auth, async (user) => {
 
   // si el usuario no existe en la colección users -> establecer A1 prueba = 7 días
   if (!snap.exists()) {
-    const isAdmin = (user.email || "").toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const isAdmin = isAdminEmail(user.email);
     const now = new Date();
     const trialEnd = new Date();
     
@@ -231,7 +315,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   // Si es admin, asegurarse de que tiene acceso a todos los cursos
-  if ((user.email || "").toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+  if (isAdminEmail(user.email)) {
     const trialEnd = new Date();
     trialEnd.setFullYear(2099);
     

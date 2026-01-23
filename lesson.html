@@ -313,6 +313,81 @@
 
       .field-bad { outline: 2px solid rgba(206, 17, 38, 0.95); outline-offset: 2px; }
       .muted { opacity: 0.9; }
+    
+      .modal { position: fixed; inset: 0; z-index: 200; }
+      .modalBackdrop { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+      .modalBox {
+        position: relative;
+        width: min(760px, calc(100vw - 28px));
+        max-height: calc(100vh - 28px);
+        overflow: auto;
+        margin: 14px auto;
+        padding: 16px 16px 14px;
+        border: 1px solid rgba(255,255,255,.16);
+      }
+      .dragHint { cursor: grab; }
+      .dragging { opacity: .6; transform: scale(.99); }
+
+
+      /* --- Lesson navigation + completion --- */
+      .lessonTopTools{
+        display:flex;
+        gap:10px;
+        flex-wrap: wrap;
+        align-items:center;
+        justify-content: space-between;
+        margin: 10px 0 14px;
+      }
+      .lessonNavRow{
+        display:flex;
+        gap:10px;
+        flex-wrap: wrap;
+        align-items:center;
+      }
+      .btnGhost{
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: white;
+        border-radius: 999px;
+        padding: 10px 12px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .btnGhost:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+      .btnPrimary{
+        background: var(--yellow);
+        border: none;
+        color: #111827;
+        border-radius: 999px;
+        padding: 10px 12px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .btnPrimary:hover{ filter: brightness(1.02); transform: translateY(-1px); }
+      .pillDone{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: rgba(34,197,94,.14);
+        border: 1px solid rgba(34,197,94,.25);
+        color: #eafff1;
+        font-weight: 900;
+      }
+      .pillNotDone{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: rgba(239,68,68,.12);
+        border: 1px solid rgba(239,68,68,.22);
+        color: #ffecec;
+        font-weight: 900;
+      }
+      .hintSmall{ font-size: 12px; opacity: .78; margin-top: 8px; }
+
     </style>
   </head>
 
@@ -355,6 +430,45 @@
       </div>
 
       <div class="sectionTitle">🧩 Ejercicios</div>
+
+      <div class="card" id="filtersCard" style="padding:14px 14px 12px; margin-bottom:14px">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end">
+          <div style="flex:1; min-width:220px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Buscar</label>
+            <input id="filterSearch" placeholder="Szukaj po treści / odpowiedzi…" />
+          </div>
+
+          <div style="min-width:190px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Typ</label>
+            <select id="filterType"></select>
+          </div>
+
+          <div style="min-width:190px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Kategoria</label>
+            <select id="filterCategory">
+              <option value="">Wszystko</option>
+              <option value="grammar">Gramatyka</option>
+              <option value="vocab">Słownictwo</option>
+              <option value="both">Gramatyka + słownictwo</option>
+            </select>
+          </div>
+
+          <button class="btn" id="btnClearFilters" type="button">🧹 Wyczyść</button>
+
+          <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+            <label style="display:flex; gap:8px; align-items:center; user-select:none; font-weight:700">
+              <input id="toggleReorder" type="checkbox" style="transform:scale(1.15)" />
+              Tryb sortowania (drag&drop)
+            </label>
+            <button class="btn btn-yellow" id="btnSaveOrder" type="button" style="display:none">💾 Zapisz kolejność</button>
+          </div>
+        </div>
+
+        <div class="smallNote" style="margin-top:8px; opacity:.95">
+          Tip: w trybie sortowania przeciągaj kafelki. Zapis kolejności aktualizuje pole <b>order</b> w Firestore.
+        </div>
+      </div>
+
       <div id="exerciseList"></div>
 
       <div id="emptyExercises" class="card" style="display:none; opacity:0.95">
@@ -403,6 +517,20 @@
           </div>
 
           <div>
+            <label>Kategoria</label>
+            <select id="exCategory">
+              <option value="grammar">Gramatyka</option>
+              <option value="vocab">Słownictwo</option>
+              <option value="both">Gramatyka + słownictwo</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Tagi (opcjonalnie)</label>
+            <input id="exTags" placeholder="np. przypadki, czasowniki, kolokacje (oddziel przecinkami)" />
+          </div>
+
+          <div>
             <label>Orden</label>
             <input id="exOrder" type="number" min="1" placeholder="np. 1" />
           </div>
@@ -424,7 +552,30 @@
       </div>
     </main>
 
-    <script type="module">
+    
+    <!-- Preview modal -->
+    <div id="previewModal" class="modal" style="display:none">
+      <div class="modalBackdrop" id="previewBackdrop"></div>
+      <div class="modalBox card">
+        <div style="display:flex; gap:10px; align-items:center; justify-content:space-between">
+          <div class="sectionTitle" style="margin:0">👀 Podgląd (uczeń)</div>
+          <button class="btn" id="btnClosePreview" type="button">✖</button>
+        </div>
+
+        <div id="previewBody" style="margin-top:10px"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center">
+          <button class="btn btn-yellow" id="btnCheckPreview" type="button">✅ Sprawdź</button>
+          <span id="previewResult" class="pill" style="display:none"></span>
+        </div>
+
+        <div class="smallNote" style="margin-top:10px; opacity:.95">
+          Ten podgląd jest po to, żeby szybko sprawdzić czy treść i odpowiedź są spójne.
+        </div>
+      </div>
+    </div>
+
+<script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
       import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
       import {
@@ -439,6 +590,7 @@
         getDoc,
         orderBy,
         serverTimestamp,
+        updateDoc,
       } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
       // ✅ Firebase config (Twoje)
@@ -489,10 +641,28 @@
       const exPrompt = document.getElementById("exPrompt");
       const exOptions = document.getElementById("exOptions");
       const exAnswer = document.getElementById("exAnswer");
+      const exCategory = document.getElementById("exCategory");
+      const exTags = document.getElementById("exTags");
       const exOrder = document.getElementById("exOrder");
       const exNotes = document.getElementById("exNotes");
       const btnAddExercise = document.getElementById("btnAddExercise");
       const btnAutoOrder = document.getElementById("btnAutoOrder");
+
+      // Filters + reorder
+      const filterSearch = document.getElementById("filterSearch");
+      const filterType = document.getElementById("filterType");
+      const filterCategory = document.getElementById("filterCategory");
+      const btnClearFilters = document.getElementById("btnClearFilters");
+      const toggleReorder = document.getElementById("toggleReorder");
+      const btnSaveOrder = document.getElementById("btnSaveOrder");
+
+      // Preview modal
+      const previewModal = document.getElementById("previewModal");
+      const previewBackdrop = document.getElementById("previewBackdrop");
+      const btnClosePreview = document.getElementById("btnClosePreview");
+      const previewBody = document.getElementById("previewBody");
+      const btnCheckPreview = document.getElementById("btnCheckPreview");
+      const previewResult = document.getElementById("previewResult");
 
       // ===== helpers =====
       function escapeHtml(s) {
@@ -636,14 +806,15 @@
           type: (t.type || "").toString(),
           title: t.title || "",
           desc: t.desc || "",
-          slug: t.slug || slugParam || "",
+          slug: (t.slug || slugParam || t.id || "").toString(),
           tasks: Array.isArray(t.tasks) ? t.tasks : [],
         };
       }
 
       function renderTopic(t) {
         pillType.textContent = t.type === "grammar" ? "Gramática" : "Vocabulario";
-        pillSlug.textContent = t.slug ? `slug: ${t.slug}` : "slug: —";
+        const eff = (t.slug || t.id) ? String(t.slug || t.id) : "";
+        pillSlug.textContent = eff ? `slug: ${eff}` : "slug: —";
         topicTitle.textContent = t.title || "Tema";
         topicDesc.textContent = t.desc || "";
 
@@ -684,6 +855,42 @@
       }
 
       // ===== Exercises loading/render =====
+
+      function renderExerciseList() {
+        exerciseList.innerHTML = "";
+
+        const list = Array.isArray(VIEW_EXERCISES) ? VIEW_EXERCISES : [];
+        const total = Array.isArray(ALL_EXERCISES) ? ALL_EXERCISES.length : 0;
+        const shown = list.length;
+
+        pillCount.textContent = qLabel(total, shown);
+
+        if (!shown) {
+          emptyExercises.style.display = "block";
+          return;
+        }
+
+        emptyExercises.style.display = "none";
+
+        // Ensure visual order label is consistent with current array order in reorder mode
+        list.forEach((ex, idx) => {
+          // For display only; actual "order" is saved to Firestore when you click "Zapisz kolejność"
+          if (REORDER_MODE && IS_ADMIN) ex.__tmpOrder = idx + 1;
+        });
+
+        list.forEach((ex, idx) => {
+          const x = { ...ex, order: (REORDER_MODE && IS_ADMIN) ? (ex.__tmpOrder || (idx + 1)) : ex.order };
+          exerciseList.insertAdjacentHTML("beforeend", renderExerciseCard(x, idx));
+        });
+
+        list.forEach((ex) => attachExerciseHandlers(ex));
+      }
+
+      function qLabel(total, shown) {
+        if (!filterSearch && !filterType && !filterCategory) return `Ejercicios: ${total}`;
+        if (shown === total) return `Ejercicios: ${total}`;
+        return `Ejercicios: ${shown} / ${total}`;
+      }
       function getNextOrder() {
         if (!cachedExercises.length) return 1;
         const max = Math.max(...cachedExercises.map((x) => Number(x.order || 0)));
@@ -714,14 +921,19 @@
             </div>
           `;
 
-        const adminDelete = isAdmin
-          ? `<button class="dangerMini" id="del-${ex.id}" type="button" title="Eliminar">🗑</button>`
+        const adminControls = isAdmin
+          ? `
+              <div style="display:flex; gap:8px; align-items:center">
+                <button class="btn" id="pv-${ex.id}" type="button" title="Podgląd (uczeń)">👀</button>
+                <button class="dangerMini" id="del-${ex.id}" type="button" title="Eliminar">🗑</button>
+              </div>
+            `
           : "";
 
         return `
-          <div class="exercise" id="ex-${ex.id}">
-            ${adminDelete}
-            <div class="type">${escapeHtml(type)} · #${order}</div>
+          <div class="exercise ${REORDER_MODE && IS_ADMIN ? "dragHint" : ""}" id="ex-${ex.id}" data-id="${ex.id}" ${REORDER_MODE && IS_ADMIN ? "draggable=\"true\"" : ""}>
+            ${adminControls}
+            <div class="type">${escapeHtml(type)} · #${order} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ""}</div>
             <h3>${escapeHtml(prompt)}</h3>
             ${optionsHtml}
             <div class="result" id="res-${ex.id}"></div>
@@ -742,6 +954,10 @@
 
         // delete
         if (isAdmin) {
+        document.getElementById('btnStudentPreview')?.addEventListener('click', ()=>{
+          const url = `lesson.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}&preview=1`;
+          window.open(url, '_blank', 'noopener,noreferrer');
+        });
           const delBtn = document.getElementById(`del-${ex.id}`);
           if (delBtn) {
             delBtn.onclick = async (ev) => {
@@ -758,6 +974,49 @@
             };
           }
         }
+
+        // preview (admin)
+        if (isAdmin) {
+          const pvBtn = document.getElementById(`pv-${ex.id}`);
+          if (pvBtn) {
+            pvBtn.onclick = (ev) => {
+              ev.stopPropagation();
+              openPreview(ex);
+            };
+          }
+        }
+
+        // drag&drop reorder (admin)
+        const card = document.getElementById(`ex-${ex.id}`);
+        if (card && isAdmin && REORDER_MODE) {
+          card.addEventListener("dragstart", (e) => {
+            DRAG_ID = ex.id;
+            card.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+          });
+          card.addEventListener("dragend", () => {
+            card.classList.remove("dragging");
+          });
+          card.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+          });
+          card.addEventListener("drop", (e) => {
+            e.preventDefault();
+            const targetId = card.getAttribute("data-id");
+            if (!DRAG_ID || !targetId || DRAG_ID === targetId) return;
+
+            const fromIdx = ALL_EXERCISES.findIndex((x) => x.id === DRAG_ID);
+            const toIdx = ALL_EXERCISES.findIndex((x) => x.id === targetId);
+            if (fromIdx < 0 || toIdx < 0) return;
+
+            const [moved] = ALL_EXERCISES.splice(fromIdx, 1);
+            ALL_EXERCISES.splice(toIdx, 0, moved);
+            HAS_ORDER_CHANGES = true;
+            applyFilters();
+          });
+        }
+
 
         // text input mode
         const inp = document.getElementById(`inp-${ex.id}`);
@@ -803,7 +1062,9 @@
         emptyExercises.style.display = "none";
         cachedExercises = [];
 
-        if (!topic || !topic.slug) {
+        const effectiveSlug = (topic && (topic.slug || topic.id)) ? String(topic.slug || topic.id) : "";
+
+        if (!effectiveSlug) {
           emptyExercises.style.display = "block";
           pillCount.textContent = "Ejercicios: —";
           return;
@@ -812,7 +1073,7 @@
         const qx = query(
           collection(db, "exercises"),
           where("level", "==", LEVEL),
-          where("topicSlug", "==", topic.slug),
+          where("topicSlug", "==", effectiveSlug),
           orderBy("order", "asc"),
         );
 
@@ -824,12 +1085,17 @@
         }
 
         snap.forEach((d) => cachedExercises.push({ id: d.id, ...d.data() }));
-        pillCount.textContent = `Ejercicios: ${cachedExercises.length}`;
 
-        cachedExercises.forEach((ex, idx) => {
-          exerciseList.insertAdjacentHTML("beforeend", renderExerciseCard(ex, idx));
-        });
-        cachedExercises.forEach((ex) => attachExerciseHandlers(ex));
+        // state for filters/reorder
+        ALL_EXERCISES = cachedExercises.slice();
+        VIEW_EXERCISES = cachedExercises.slice();
+        buildTypeFilterOptions();
+        applyFilters();
+
+        // admin conveniences
+        if (isAdmin) {
+          exOrder.value = getNextOrder();
+        }
       }
 
       // ===== Auth + boot =====
@@ -841,9 +1107,71 @@
 
         sessionEmail.textContent = user.email || "(sin correo)";
         isAdmin = (user.email || "") === ADMIN_EMAIL;
+        IS_ADMIN = isAdmin;
         adminWrap.style.display = isAdmin ? "block" : "none";
 
         fillExerciseTypes();
+
+        // UI wiring
+        if (filterType) {
+          // default options; real types filled after load
+          filterType.innerHTML = `<option value="">Wszystko</option>`;
+        }
+        if (!IS_ADMIN) {
+          if (toggleReorder) toggleReorder.disabled = true;
+          if (toggleReorder) toggleReorder.checked = false;
+        }
+
+        const onFilter = () => applyFilters();
+        filterSearch?.addEventListener("input", onFilter);
+        filterType?.addEventListener("change", onFilter);
+        filterCategory?.addEventListener("change", onFilter);
+
+        btnClearFilters?.addEventListener("click", () => {
+          if (filterSearch) filterSearch.value = "";
+          if (filterType) filterType.value = "";
+          if (filterCategory) filterCategory.value = "";
+          applyFilters();
+        });
+
+        toggleReorder?.addEventListener("change", () => {
+          if (!IS_ADMIN) return;
+          setReorderMode(toggleReorder.checked);
+        });
+
+        btnSaveOrder?.addEventListener("click", async () => {
+          if (!IS_ADMIN) return;
+          if (!currentTopic || !currentTopic.slug) return;
+          if (!HAS_ORDER_CHANGES) {
+            setToast("Brak zmian w kolejności.", "info");
+            return;
+          }
+
+          try {
+            btnSaveOrder.disabled = true;
+            // save sequential order starting at 1
+            for (let i = 0; i < ALL_EXERCISES.length; i++) {
+              const ex = ALL_EXERCISES[i];
+              await updateDoc(doc(db, "exercises", ex.id), { order: i + 1 });
+            }
+            setToast("💾 Zapisano kolejność.", "ok");
+            HAS_ORDER_CHANGES = false;
+            await loadExercises(currentTopic);
+          } catch (e) {
+            console.error(e);
+            setToast("❌ Nie udało się zapisać kolejności (konsola).", "error");
+          } finally {
+            btnSaveOrder.disabled = false;
+          }
+        });
+
+        // ESC closes preview
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && previewModal?.style.display === "block") {
+            previewModal.style.display = "none";
+          }
+        });
+
 
         // If opened without params, do not try to query Firestore
         if (!params.get("id") && !params.get("slug")) return;
@@ -916,13 +1244,15 @@
 
           await addDoc(collection(db, "exercises"), {
             level: LEVEL,
-            topicSlug: currentTopic.slug,
+            topicSlug: String(currentTopic.slug || currentTopic.id || ""),
             topicId: currentTopic.id || null,
             type,
             prompt,
             options: options.length ? options : [],
             answer,
             notes,
+            category: (exCategory?.value || "grammar"),
+            tags: toTagsArray(exTags?.value),
             order,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
@@ -933,6 +1263,7 @@
           exOptions.value = "";
           exAnswer.value = "";
           exNotes.value = "";
+          if (exTags) exTags.value = "";
           exOrder.value = String(order + 1);
 
           await loadExercises(currentTopic);
@@ -949,6 +1280,122 @@
       exAnswer.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && isAdmin) btnAddExercise.click();
       });
-    </script>
+   
+
+      // ===== state =====
+      let ALL_EXERCISES = [];
+      let VIEW_EXERCISES = [];
+      let IS_ADMIN = false;
+      let REORDER_MODE = false;
+      let HAS_ORDER_CHANGES = false;
+      let DRAG_ID = null;
+
+      function toTagsArray(s) {
+        return String(s || "")
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean);
+      }
+
+      function setToast(msg, kind = "info") {
+        const el = document.getElementById("toast");
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.remove("toast-red", "toast-yellow");
+        if (kind === "error") el.classList.add("toast-red");
+        if (kind === "ok") el.classList.add("toast-yellow");
+        el.style.opacity = "1";
+        clearTimeout(window.__toastT);
+        window.__toastT = setTimeout(() => (el.style.opacity = "0"), 2500);
+      }
+
+      function applyFilters() {
+        const q = (filterSearch?.value || "").trim().toLowerCase();
+        const t = (filterType?.value || "").trim();
+        const c = (filterCategory?.value || "").trim();
+
+        VIEW_EXERCISES = ALL_EXERCISES.filter((ex) => {
+          const hay = `${ex.prompt || ""} ${ex.answer || ""} ${(ex.options || []).join(" ")} ${(ex.notes || "")}`.toLowerCase();
+          const okQ = !q || hay.includes(q);
+          const okT = !t || ex.type === t;
+          const okC = !c || (ex.category || "grammar") === c;
+          return okQ && okT && okC;
+        });
+
+        renderExerciseList();
+      }
+
+      function buildTypeFilterOptions() {
+        if (!filterType) return;
+        const unique = Array.from(new Set(ALL_EXERCISES.map((e) => e.type))).sort();
+        filterType.innerHTML =
+          `<option value="">Wszystko</option>` +
+          unique.map((x) => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+      }
+
+      function setReorderMode(on) {
+        REORDER_MODE = !!on;
+        HAS_ORDER_CHANGES = false;
+        if (btnSaveOrder) btnSaveOrder.style.display = (REORDER_MODE && IS_ADMIN) ? "inline-flex" : "none";
+        renderExerciseList();
+      }
+
+      function openPreview(ex) {
+        if (!previewModal) return;
+        previewResult.style.display = "none";
+        previewResult.textContent = "";
+        previewResult.className = "pill";
+
+        const opt = Array.isArray(ex.options) ? ex.options : [];
+        const type = ex.type || "open";
+
+        let body = `<div class="card" style="padding:12px; margin:0">
+          <div class="smallNote" style="opacity:.9; margin-bottom:8px">Typ: <b>${escapeHtml(type)}</b> • Kategoria: <b>${escapeHtml(ex.category || "grammar")}</b></div>
+          <div style="font-weight:800; font-size:18px">${escapeHtml(ex.prompt || "")}</div>`;
+
+        if (opt.length) {
+          body += `<div style="margin-top:10px; display:grid; gap:8px">` +
+            opt.map((o, i) => {
+              const letter = String.fromCharCode(65 + i);
+              return `<label class="card" style="padding:10px; margin:0; cursor:pointer; display:flex; gap:10px; align-items:flex-start">
+                <input type="radio" name="pv" value="${escapeHtml(o)}" style="margin-top:2px" />
+                <div><b>${letter})</b> ${escapeHtml(o)}</div>
+              </label>`;
+            }).join("") + `</div>`;
+          body += `<div class="smallNote" style="margin-top:8px; opacity:.9">Wybierz odpowiedź i kliknij „Sprawdź”.</div>`;
+        } else {
+          body += `<div style="margin-top:10px">
+            <input id="pvInput" placeholder="Wpisz odpowiedź…" />
+          </div>`;
+        }
+
+        if (ex.notes) {
+          body += `<div class="smallNote" style="margin-top:10px; opacity:.9">Nota: ${escapeHtml(ex.notes)}</div>`;
+        }
+
+        body += `</div>`;
+        previewBody.innerHTML = body;
+
+        btnCheckPreview.onclick = () => {
+          let userAnswer = "";
+          const picked = previewBody.querySelector('input[name="pv"]:checked');
+          if (picked) userAnswer = picked.value;
+          else userAnswer = (document.getElementById("pvInput")?.value || "").trim();
+
+          const correct = normalizeAnswer(ex.answer);
+          const given = normalizeAnswer(userAnswer);
+          const ok = !!given && given === correct;
+
+          previewResult.style.display = "inline-flex";
+          previewResult.classList.toggle("pill-yellow", ok);
+          previewResult.classList.toggle("pill-red", !ok);
+          previewResult.textContent = ok ? "✅ OK" : `❌ Nie. Poprawna: ${ex.answer || ""}`;
+        };
+
+        previewBackdrop.onclick = () => (previewModal.style.display = "none");
+        btnClosePreview.onclick = () => (previewModal.style.display = "none");
+        previewModal.style.display = "block";
+      }
+ </script>
   </body>
 </html>
