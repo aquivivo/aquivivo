@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Zaloguj się | AquiVivo</title>
+  <title>Inicia sesión | AquiVivo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css" />
 
   <style>
-    /* dodatki tylko dla loginu */
+    /* extras solo para login */
     .auth-wrap{
       max-width: 920px;
       margin: 0 auto;
@@ -137,15 +137,15 @@
     <div class="container">
 
       <div class="auth-wrap">
-        <!-- LEWA: hero -->
+        <!-- IZQUIERDA: hero -->
         <div class="hero-card">
-          <h1 class="hero-title glow-text">Zaloguj się</h1>
-          <p class="hero-subtitle">Dostęp do kursów A1/A2 i Twojego panelu.</p>
+          <h1 class="hero-title glow-text">Inicia sesión</h1>
+          <p class="hero-subtitle">Accede a los cursos A1/A2 y tu panel de estudiante.</p>
 
           <div class="stats" style="margin-top:16px;">
             <div class="stat">
               <div class="big">📘</div>
-              <div class="label">Kursy</div>
+              <div class="label">Cursos</div>
             </div>
             <div class="stat">
               <div class="big">🎧</div>
@@ -153,7 +153,7 @@
             </div>
             <div class="stat">
               <div class="big">🃏</div>
-              <div class="label">Fiszki</div>
+              <div class="label">Tarjetas</div>
             </div>
           </div>
 
@@ -164,38 +164,38 @@
           </div>
         </div>
 
-        <!-- PRAWA: formularz -->
+        <!-- DERECHA: formulario -->
         <div class="form-card">
-          <div class="form-title">Zaloguj się / Zarejestruj</div>
+          <div class="form-title">Inicia sesión / Regístrate</div>
           <p class="form-sub">
-            Rejestracja tworzy konto. Po zalogowaniu przejdziesz do panelu ucznia.
+            El registro crea una cuenta. Después de iniciar sesión, irás a tu panel de estudiante.
           </p>
 
           <div class="field">
-            <label for="name">Imię (opcjonalnie)</label>
-            <input class="input" type="text" id="name" placeholder="Imię (tylko przy rejestracji)">
+            <label for="name">Nombre (opcional)</label>
+            <input class="input" type="text" id="name" placeholder="Nombre (solo en registro)">
           </div>
 
           <div class="field">
-            <label for="email">Email</label>
-            <input class="input" type="email" id="email" placeholder="Email">
+            <label for="email">Correo electrónico</label>
+            <input class="input" type="email" id="email" placeholder="Correo electrónico">
           </div>
 
           <div class="field">
-            <label for="password">Hasło</label>
+            <label for="password">Contraseña</label>
 
             <div style="position:relative;">
               <input
                 class="input"
                 type="password"
                 id="password"
-                placeholder="Hasło"
+                placeholder="Contraseña"
                 style="padding-right:48px;"
               >
               <button
                 type="button"
                 id="togglePassword"
-                title="Pokaż / ukryj hasło"
+                title="Mostrar / ocultar contraseña"
                 style="
                   position:absolute;
                   right:12px;
@@ -212,16 +212,16 @@
           </div>
 
           <div class="actions">
-            <button class="btn-yellow" id="loginBtn" type="button">Zaloguj się</button>
-            <button class="btn-red" id="registerBtn" type="button">Zarejestruj się</button>
+            <button class="btn-yellow" id="loginBtn" type="button">Inicia sesión</button>
+            <button class="btn-red" id="registerBtn" type="button">Regístrate</button>
           </div>
 
-          <button class="reset-link" type="button" id="resetPasswordBtn">Zapomniałam hasła</button>
+          <button class="reset-link" type="button" id="resetPasswordBtn">Olvidé mi contraseña</button>
 
           <div id="message" class="msg"></div>
 
           <div class="hint">
-            Jeśli coś nie działa po GitHub Pages: odśwież <strong>Ctrl + Shift + R</strong>.
+            Si algo no funciona en GitHub Pages: recarga <strong>Ctrl + Shift + R</strong>.
           </div>
         </div>
       </div>
@@ -229,7 +229,7 @@
     </div>
   </main>
 
-  <!-- 🔥 Firebase (JEDEN skrypt) -->
+  <!-- 🔥 Firebase (UN solo script) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import {
@@ -270,7 +270,7 @@
       if (e.key === "Enter") loginBtn.click();
     });
 
-    // 👁️ Pokaż / ukryj hasło
+    // 👁️ Mostrar / ocultar contraseña
     if (toggleBtn) {
       toggleBtn.addEventListener("click", () => {
         const hidden = passwordInput.type === "password";
@@ -279,42 +279,42 @@
       });
     }
 
-    // LOGOWANIE
+    // INICIO DE SESIÓN
     loginBtn.addEventListener("click", async () => {
       setMsg("");
       try {
         await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
-        setMsg("Zalogowano ✅", "ok");
-        window.location.href = "panel.html";
+        setMsg("¡Iniciada sesión! ✅", "ok");
+        window.location.href = "espanel.html";
       } catch (error) {
-        setMsg("Błąd logowania: " + error.message, "error");
+        setMsg("Error de inicio de sesión: " + error.message, "error");
       }
     });
 
-    // REJESTRACJA
+    // REGISTRO
     registerBtn.addEventListener("click", async () => {
       setMsg("");
       try {
         await createUserWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
-        setMsg("Konto utworzone 🎉", "ok");
-        window.location.href = "panel.html";
+        setMsg("¡Cuenta creada! 🎉", "ok");
+        window.location.href = "espanel.html";
       } catch (error) {
-        setMsg("Błąd rejestracji: " + error.message, "error");
+        setMsg("Error de registro: " + error.message, "error");
       }
     });
 
-    // 🔒 Reset hasła
+    // 🔒 Restablecer contraseña
     resetBtn.addEventListener("click", async () => {
       const email = emailInput.value.trim();
       if (!email) {
-        setMsg("Wpisz email, żeby zresetować hasło.", "error");
+        setMsg("Ingresa tu correo para restablecer tu contraseña.", "error");
         return;
       }
       try {
         await sendPasswordResetEmail(auth, email);
-        setMsg("📩 Email do resetu hasła został wysłany.", "ok");
+        setMsg("📩 Se envió un correo para restablecer tu contraseña.", "ok");
       } catch (error) {
-        setMsg("Błąd resetu hasła: " + error.message, "error");
+        setMsg("Error al restablecer contraseña: " + error.message, "error");
       }
     });
   </script>

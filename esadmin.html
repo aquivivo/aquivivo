@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pl">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -149,17 +149,17 @@
 
 <body>
   <div class="topbar">
-    <button onclick="logout()">Wyloguj</button>
+    <button onclick="logout()">Cerrar sesión</button>
   </div>
 
   <div class="wrap">
-    <a class="back" href="panel.html">← Wróć do panelu</a>
+    <a class="back" href="espanel.html">← Volver al panel</a>
 
     <h1>Admin</h1>
-    <p class="sub">Zarządzanie dostępami użytkowników (A1: 7 dni trial, A2/B1/B2: 3 miesiące).</p>
+    <p class="sub">Gestionar acceso a usuarios (A1: 7 días de prueba, A2/B1/B2: 3 meses).</p>
 
     <div class="toolbar">
-      <input id="search" placeholder="Szukaj po emailu / UID…" />
+      <input id="search" placeholder="Buscar por correo / UID…" />
       <span id="status" class="muted"></span>
     </div>
 
@@ -172,7 +172,7 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-    // ✅ Firebase config
+    // ✅ Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
       authDomain: "aquivivo-platform.firebaseapp.com",
@@ -196,19 +196,19 @@
 
     let allUsers = [];
 
-    // logout
+    // cerrar sesión
     window.logout = function(){
-      signOut(auth).then(()=> window.location.href="login.html");
+      signOut(auth).then(()=> window.location.href="eslogin.html");
     };
 
-    // auth gate
+    // verificación de auth
     onAuthStateChanged(auth, async (user) => {
       if(!user){
-        window.location.href = "login.html";
+        window.location.href = "eslogin.html";
         return;
       }
       if(((user.email||"").toLowerCase()) !== ADMIN_EMAIL.toLowerCase()){
-        document.body.innerHTML = `<div class="wrap"><h1>Brak dostępu</h1><p class="sub">Ta strona jest tylko dla admina.</p></div>`;
+        document.body.innerHTML = `<div class="wrap"><h1>Acceso denegado</h1><p class="sub">Esta página es solo para administradores.</p></div>`;
         return;
       }
 
@@ -216,7 +216,7 @@
       renderUsers();
     });
 
-    // helpers
+    // funciones auxiliares
     function nowDate(){ return new Date(); }
     function addDays(date, days){
       const d = new Date(date);
@@ -235,7 +235,7 @@
     }
     function fmt(d){
       if(!d) return "-";
-      return d.toLocaleString("pl-PL");
+      return d.toLocaleString("es-MX");
     }
     function hasActiveAccess(userData, level){
       const expireIso = userData?.access?.[level]?.freeUntil;
@@ -257,11 +257,11 @@
     }
 
     async function loadUsers(){
-      statusEl.textContent = "Ładowanie użytkowników…";
+      statusEl.textContent = "Cargando usuarios…";
       const snap = await getDocs(collection(db, "users"));
       allUsers = [];
       snap.forEach(d => allUsers.push({ uid: d.id, ...d.data() }));
-      statusEl.textContent = `Użytkownicy: ${allUsers.length}`;
+      statusEl.textContent = `Usuarios: ${allUsers.length}`;
     }
 
     function renderUsers(){
@@ -273,7 +273,7 @@
 
       usersList.innerHTML = filtered.length
         ? filtered.map(renderUserCard).join("")
-        : `<div class="card"><b>Brak wyników.</b></div>`;
+        : `<div class="card"><b>Sin resultados.</b></div>`;
     }
 
     function renderUserCard(u){
@@ -284,19 +284,19 @@
 
       const meta = `
         <div class="userMeta">
-          <div><b>Email:</b> ${esc(u.email || "(brak)")}</div>
+          <div><b>Correo:</b> ${esc(u.email || "(ninguno)")}</div>
           <div><b>UID:</b> <span class="muted">${esc(u.uid)}</span></div>
           <div class="small">
-            A1 do: <b>${fmt(parseIso(u?.access?.A1?.freeUntil))}</b>
-            <br/>A2 do: <b>${fmt(parseIso(u?.access?.A2?.freeUntil))}</b>
-            <br/>B1 do: <b>${fmt(parseIso(u?.access?.B1?.freeUntil))}</b>
-            <br/>B2 do: <b>${fmt(parseIso(u?.access?.B2?.freeUntil))}</b>
+            A1 hasta: <b>${fmt(parseIso(u?.access?.A1?.freeUntil))}</b>
+            <br/>A2 hasta: <b>${fmt(parseIso(u?.access?.A2?.freeUntil))}</b>
+            <br/>B1 hasta: <b>${fmt(parseIso(u?.access?.B1?.freeUntil))}</b>
+            <br/>B2 hasta: <b>${fmt(parseIso(u?.access?.B2?.freeUntil))}</b>
           </div>
           <div style="margin-top:10px;">
-            ${pillHtml(`A1: ${a1Active ? "AKTYWNY" : "BRAK"}`, a1Active ? "ok" : "no")}
-            ${pillHtml(`A2: ${a2Active ? "AKTYWNY" : "BRAK"}`, a2Active ? "ok" : "no")}
-            ${pillHtml(`B1: ${b1Active ? "AKTYWNY" : "BRAK"}`, b1Active ? "ok" : "no")}
-            ${pillHtml(`B2: ${b2Active ? "AKTYWNY" : "BRAK"}`, b2Active ? "ok" : "no")}
+            ${pillHtml(`A1: ${a1Active ? "ACTIVO" : "SIN ACCESO"}`, a1Active ? "ok" : "no")}
+            ${pillHtml(`A2: ${a2Active ? "ACTIVO" : "SIN ACCESO"}`, a2Active ? "ok" : "no")}
+            ${pillHtml(`B1: ${b1Active ? "ACTIVO" : "SIN ACCESO"}`, b1Active ? "ok" : "no")}
+            ${pillHtml(`B2: ${b2Active ? "ACTIVO" : "SIN ACCESO"}`, b2Active ? "ok" : "no")}
           </div>
         </div>
       `;
@@ -308,9 +308,9 @@
               <div class="levelBox">
                 <div class="levelTitle">${level}</div>
                 <div class="btnRow">
-                  <button class="btn btnBlue" onclick="grant3m('${esc(u.uid)}','${level}')">➕ Daj 3 miesiące</button>
-                  <button class="btn btnYellow" onclick="extend3m('${esc(u.uid)}','${level}')">⏳ Przedłuż 3 miesiące</button>
-                  <button class="btn btnRed" onclick="revoke('${esc(u.uid)}','${level}')">❌ Zabierz</button>
+                  <button class="btn btnBlue" onclick="grant3m('${esc(u.uid)}','${level}')">➕ Dar 3 meses</button>
+                  <button class="btn btnYellow" onclick="extend3m('${esc(u.uid)}','${level}')">⏳ Extender 3 meses</button>
+                  <button class="btn btnRed" onclick="revoke('${esc(u.uid)}','${level}')">❌ Revocar</button>
                 </div>
               </div>
             `;
@@ -321,14 +321,14 @@
       return `<div class="card"><div class="userRow">${meta}${actions}</div></div>`;
     }
 
-    // ✅ Actions
+    // ✅ Acciones
     window.grant3m = async function(uid, level){
-      if(!confirm(`Dodać dostęp ${level} na 3 miesiące dla ${uid}?`)) return;
+      if(!confirm(`¿Dar acceso a ${level} por 3 meses para ${uid}?`)) return;
 
       const ref = doc(db,"users",uid);
       const snap = await getDoc(ref);
       if(!snap.exists()){
-        alert("Ten użytkownik nie ma dokumentu w users (coś nie tak).");
+        alert("Este usuario no tiene documento en users (algo está mal).");
         return;
       }
 
@@ -342,16 +342,16 @@
       }, { merge: true });
 
       await refreshOne(uid);
-      alert(`✅ ${level} aktywny do: ${until.toLocaleString("pl-PL")}`);
+      alert(`✅ ${level} activo hasta: ${until.toLocaleString("es-MX")}`);
     };
 
     window.extend3m = async function(uid, level){
-      if(!confirm(`Przedłużyć dostęp ${level} o 3 miesiące dla ${uid}?`)) return;
+      if(!confirm(`¿Extender acceso a ${level} por 3 meses más para ${uid}?`)) return;
 
       const ref = doc(db,"users",uid);
       const snap = await getDoc(ref);
       if(!snap.exists()){
-        alert("Ten użytkownik nie ma dokumentu w users (coś nie tak).");
+        alert("Este usuario no tiene documento en users (algo está mal).");
         return;
       }
 
@@ -369,11 +369,11 @@
       }, { merge: true });
 
       await refreshOne(uid);
-      alert(`✅ ${level} przedłużony do: ${until.toLocaleString("pl-PL")}`);
+      alert(`✅ ${level} extendido hasta: ${until.toLocaleString("es-MX")}`);
     };
 
     window.revoke = async function(uid, level){
-      if(!confirm(`Zabrać dostęp ${level} dla ${uid}?`)) return;
+      if(!confirm(`¿Revocar acceso a ${level} para ${uid}?`)) return;
 
       const ref = doc(db,"users",uid);
       await setDoc(ref, {
@@ -383,11 +383,11 @@
       }, { merge: true });
 
       await refreshOne(uid);
-      alert(`✅ ${level} zablokowany`);
+      alert(`✅ ${level} bloqueado`);
     };
 
     async function refreshOne(uid){
-      // odświeżamy lokalnie listę userów
+      // refrescamos localmente la lista de usuarios
       const ref = doc(db,"users",uid);
       const snap = await getDoc(ref);
       const idx = allUsers.findIndex(u => u.uid === uid);

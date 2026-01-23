@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Panel ucznia | AquiVivo</title>
+  <title>Panel del estudiante | AquiVivo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-  <!-- ✅ spójnie jak w login/admin -->
+  <!-- ✅ consistente con login/admin -->
   <link rel="stylesheet" href="assets/css/styles.css" />
 
   <style>
@@ -43,7 +43,7 @@
 
       <div class="nav-actions">
         <a class="btn-white-outline" href="index.html">Inicio</a>
-        <button class="btn-red" onclick="logout()">Wyloguj</button>
+        <button class="btn-red" onclick="logout()">Cerrar sesión</button>
       </div>
     </div>
   </header>
@@ -53,30 +53,30 @@
 
       <section class="panel-grid">
         <div class="hero-card">
-          <h1 class="hero-title glow-text">Panel ucznia 🎓</h1>
-          <p class="hero-subtitle">Moje kursy</p>
+          <h1 class="hero-title glow-text">Panel del estudiante 🎓</h1>
+          <p class="hero-subtitle">Mis cursos</p>
 
           <div style="margin-top:12px; display:inline-flex; gap:10px; align-items:center; padding:10px 14px; border-radius:16px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px);">
             <div style="font-weight:900;">👤</div>
-            <div style="font-weight:800;">Zalogowana jako: <span id="userEmail" style="font-weight:700; opacity:.95;">...</span></div>
+            <div style="font-weight:800;">Iniciada sesión como: <span id="userEmail" style="font-weight:700; opacity:.95;">...</span></div>
           </div>
 
           <div id="adminLinkWrap" class="adminLinkWrap">
             <div style="margin-top:12px;">
-              <a class="btn-white-outline" href="admin.html">⚙️ Admin</a>
+              <a class="btn-white-outline" href="esadmin.html">⚙️ Admin</a>
             </div>
-            <p class="small-muted" style="margin-top:8px; color: rgba(255,255,255,.8);">Widoczne tylko dla admina.</p>
+            <p class="small-muted" style="margin-top:8px; color: rgba(255,255,255,.8);">Solo visible para administradores.</p>
           </div>
         </div>
 
         <div class="stats">
-          <div class="stat"><div class="big">📘</div><div class="label">Kursy</div></div>
-          <div class="stat"><div class="big">⏳</div><div class="label">Dostęp</div></div>
-          <div class="stat"><div class="big">🎓</div><div class="label">Nauka</div></div>
+          <div class="stat"><div class="big">📘</div><div class="label">Cursos</div></div>
+          <div class="stat"><div class="big">⏳</div><div class="label">Acceso</div></div>
+          <div class="stat"><div class="big">🎓</div><div class="label">Aprendizaje</div></div>
         </div>
       </section>
 
-      <div class="sectionTitle">📘 Moje kursy</div>
+      <div class="sectionTitle">📘 Mis cursos</div>
       <div id="coursesCards" class="courses-grid"></div>
 
     </div>
@@ -85,7 +85,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, getDocs }
   from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -120,42 +120,56 @@ function hasAccess(accessObj, level){
   return exp > new Date();
 }
 
-function renderCourseCards(accessObj){
+function renderCourseCards(accessObj, metaData){
   coursesCardsEl.innerHTML = "";
   const levels = ["A1","A2","B1","B2"];
 
   function activeCard(lvl){
+    const meta = metaData[lvl] || {};
+    const title = meta.title || `Polaco ${lvl}`;
+    const subtitle = meta.subtitle || "Haz clic para acceder al curso.";
+    
+    // Mapear nivel a archivo de curso
+    const courseFile = {
+      "A1": "courseA2.html",
+      "A2": "courseA2.html",
+      "B1": "courseB1.html",
+      "B2": "courseB2.html"
+    }[lvl];
+    
     return `
       <div class="card course-card">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div class="pill pill-ok">✅ dostęp aktywny</div>
+          <div class="pill pill-ok">✅ acceso activo</div>
           <div style="font-weight:900; opacity:.9;">PL ${lvl}</div>
         </div>
 
-        <div style="font-size:20px; font-weight:900; margin-top:4px;">Polski ${lvl}</div>
-        <p class="small-muted">Kliknij i przejdź do kursu.</p>
+        <div style="font-size:20px; font-weight:900; margin-top:4px;">${title}</div>
+        <p class="small-muted">${subtitle}</p>
 
         <div class="course-actions">
-          <!-- ✅ kurs w /kursy -->
-          <a class="btn-yellow" href="kursy/course.html?level=${encodeURIComponent(lvl)}">Wejdź →</a>
+          <a class="btn-yellow" href="${courseFile}">Acceder →</a>
         </div>
       </div>
     `;
   }
 
   function lockedCard(lvl){
+    const meta = metaData[lvl] || {};
+    const title = meta.title || `Polaco ${lvl}`;
+    
     return `
       <div class="card course-card glass-card">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div class="pill pill-lock">🔒 zablokowany</div>
+          <div class="pill pill-lock">🔒 bloqueado</div>
           <div style="font-weight:900; opacity:.9;">PL ${lvl}</div>
         </div>
 
-        <div style="font-size:20px; font-weight:900; margin-top:4px;">Polski ${lvl}</div>
-        <p style="margin:0; font-size:13px; opacity:.9;">Wkrótce / do aktywacji.</p>
+        <div style="font-size:20px; font-weight:900; margin-top:4px;">${title}</div>
+        <p style="margin:0; font-size:13px; opacity:.9;">Próximamente / a activar.</p>
 
         <div class="course-actions">
-          <a class="btn-white-outline" href="Contacto.html">Aktywuj</a>
+          <a class="btn-white-outline" href="Contacto.html">Activar</a>
         </div>
       </div>
     `;
@@ -169,13 +183,13 @@ function renderCourseCards(accessObj){
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = "login.html";
+    window.location.href = "eslogin.html";
     return;
   }
 
-  userEmailEl.textContent = user.email || "(brak email)";
+  userEmailEl.textContent = user.email || "(sin correo)";
 
-  // pokaż link adminowi (jeśli email admina)
+  // mostrar enlace al administrador (si es email de admin)
   if ((user.email || "").toLowerCase() === ADMIN_EMAIL.toLowerCase()){
     adminLinkWrap.classList.add("show");
   }
@@ -183,16 +197,29 @@ onAuthStateChanged(auth, async (user) => {
   const ref = doc(db, "users", user.uid);
   let snap = await getDoc(ref);
 
-  // jeśli user nie istnieje w kolekcji users -> ustaw trial A1 = 7 dni
+  // si el usuario no existe en la colección users -> establecer A1 prueba = 7 días
   if (!snap.exists()) {
+    const isAdmin = (user.email || "").toLowerCase() === ADMIN_EMAIL.toLowerCase();
     const now = new Date();
     const trialEnd = new Date();
-    trialEnd.setDate(now.getDate() + 7);
+    
+    if (isAdmin) {
+      // Admin: acceso ilimitado a todos los cursos (hasta año 2099)
+      trialEnd.setFullYear(2099);
+    } else {
+      // Usuario regular: A1 por 7 días
+      trialEnd.setDate(now.getDate() + 7);
+    }
 
     await setDoc(ref, {
       email: user.email || null,
       createdAt: serverTimestamp(),
-      access: {
+      access: isAdmin ? {
+        A1: { freeUntil: trialEnd.toISOString() },
+        A2: { freeUntil: trialEnd.toISOString() },
+        B1: { freeUntil: trialEnd.toISOString() },
+        B2: { freeUntil: trialEnd.toISOString() }
+      } : {
         A1: { freeUntil: trialEnd.toISOString() },
         A2: null,
         B1: null,
@@ -203,18 +230,49 @@ onAuthStateChanged(auth, async (user) => {
     snap = await getDoc(ref);
   }
 
+  // Si es admin, asegurarse de que tiene acceso a todos los cursos
+  if ((user.email || "").toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    const trialEnd = new Date();
+    trialEnd.setFullYear(2099);
+    
+    await setDoc(ref, {
+      ...snap.data(),
+      access: {
+        A1: { freeUntil: trialEnd.toISOString() },
+        A2: { freeUntil: trialEnd.toISOString() },
+        B1: { freeUntil: trialEnd.toISOString() },
+        B2: { freeUntil: trialEnd.toISOString() }
+      }
+    }, { merge: true });
+
+    snap = await getDoc(ref);
+  }
+  const metaData = {};
+  const levels = ["A1", "A2", "B1", "B2"];
+  for (const level of levels) {
+    try {
+      const metaRef = doc(db, "course_meta", level);
+      const metaSnap = await getDoc(metaRef);
+      if (metaSnap.exists()) {
+        metaData[level] = metaSnap.data();
+      }
+    } catch (e) {
+      console.log(`No metadata for ${level}`);
+    }
+  }
+
   const data = snap.data();
-  renderCourseCards(data?.access || {});
+  renderCourseCards(data?.access || {}, metaData);
 });
 
 window.logout = function() {
-  signOut(auth).then(() => window.location.href = "login.html");
+  signOut(auth).then(() => window.location.href = "eslogin.html");
 };
 </script>
 
 
 <script>
-  // Podlinkowanie żółtego baneru do course.html
+  // Enlazar el banner amarillo a course.html
   const banner = document.querySelector('.yellow-banner');
   if (banner) {
     banner.style.cursor = 'pointer';

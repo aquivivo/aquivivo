@@ -16,6 +16,10 @@
 </head>
 <body>
 
+<div style="background:#FCD116; color:#003893; padding:8px; text-align:center; font-size:12px; font-weight:700; margin-bottom:14px;">
+  Sesión activa: <strong id="sessionEmail" style="color:#003893; font-weight:900;">Cargando...</strong>
+</div>
+
 <h2>🔥 Import B2 → Firestore</h2>
 <p>Dodaje tematy <b>B2</b> do kolekcji <code>courses</code> bez duplikatów. Ustawia <code>free=false</code>.</p>
 <p class="muted">Wymaga zalogowania jako admin: <code>aquivivo.pl@gmail.com</code></p>
@@ -157,6 +161,15 @@ document.getElementById("importBtn").onclick = async () => {
     alert("❌ Błąd importu: " + (e?.message || e));
   }
 };
+
+// Load session email
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("sessionEmail").textContent = user.email || "(sin correo)";
+  } else {
+    document.getElementById("sessionEmail").textContent = "No conectado";
+  }
+});
 </script>
 
 </body>

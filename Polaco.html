@@ -312,6 +312,9 @@
      </div>
     </div>
    </nav><!-- Hero Section -->
+   <div class="sessionBar bg-yellow-400 text-blue-900 py-2 text-center font-bold text-xs tracking-wider">
+    Sesión activa: <span id="sessionEmail">Cargando...</span>
+   </div>
    <section id="inicio" class="min-h-screen flex items-center pt-24 pb-12 px-6 relative overflow-hidden">
     <div class="absolute top-20 right-10 w-96 h-96 bg-yellow-400 rounded-full opacity-10 blur-3xl"></div>
     <div class="absolute bottom-20 left-10 w-80 h-80 bg-red-600 rounded-full opacity-10 blur-3xl"></div>
@@ -896,6 +899,30 @@
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
+    });
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
+      authDomain: "aquivivo-platform.firebaseapp.com",
+      projectId: "aquivivo-platform",
+      storageBucket: "aquivivo-platform.firebasestorage.app",
+      messagingSenderId: "116115622011",
+      appId: "1:116115622011:web:33a4a583eba4368071bade"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("sessionEmail").textContent = user.email || "(sin correo)";
+      } else {
+        document.getElementById("sessionEmail").textContent = "No conectado";
+      }
     });
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c19da009511bf88',t:'MTc2OTAzMDM4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
