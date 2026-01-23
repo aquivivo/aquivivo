@@ -448,588 +448,614 @@
     </main>
 
     <script type="module">
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
-      import {
-        getAuth,
-        onAuthStateChanged,
-      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-      import {
-        getFirestore,
-        collection,
-        query,
-        where,
-        getDocs,
-        addDoc,
-        deleteDoc,
-        doc,
-        getDoc,
-        orderBy,
-        serverTimestamp,
-      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
-      /* =========================
-   EXERCISES – helpers + UX
-   ========================= */
+            import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+            import {
+              getAuth,
+              onAuthStateChanged,
+            } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+            import {
+              getFirestore,
+              collection,
+              query,
+              where,
+              getDocs,
+              addDoc,
+              deleteDoc,
+              doc,
+              getDoc,
+              orderBy,
+              serverTimestamp,
+            } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+            /* =========================
+         EXERCISES – helpers + UX
+         ========================= */
 
-      // ===== helpers =====
-      function normalizeAnswer(a) {
-        return String(a || '').trim();
-      }
+            // ===== helpers =====
+            function normalizeAnswer(a) {
+              return String(a || '').trim();
+            }
 
-      function parseOptions(raw) {
-        return String(raw || '')
-          .split('\n')
-          .map((x) => x.trim())
-          .filter(Boolean);
-      }
+            function parseOptions(raw) {
+              return String(raw || '')
+                .split('\n')
+                .map((x) => x.trim())
+                .filter(Boolean);
+            }
 
-      function escapeHtml(s) {
-        return String(s)
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;')
-          .replaceAll('"', '&quot;')
-          .replaceAll("'", '&#039;');
-      }
+            function escapeHtml(s) {
+              return String(s)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+            }
 
-      // ===== toast =====
-      const toast = document.getElementById('toast');
+            // ===== toast =====
+            const toast = document.getElementById('toast');
 
-      function showToast(msg, kind = 'ok', ms = 2200) {
-        toast.className = '';
-        toast.style.display = 'block';
-        toast.textContent = msg;
+            function showToast(msg, kind = 'ok', ms = 2200) {
+              toast.className = '';
+              toast.style.display = 'block';
+              toast.textContent = msg;
 
-        if (kind === 'ok') toast.classList.add('toast-ok');
-        if (kind === 'bad') toast.classList.add('toast-bad');
-        if (kind === 'warn') toast.classList.add('toast-warn');
+              if (kind === 'ok') toast.classList.add('toast-ok');
+              if (kind === 'bad') toast.classList.add('toast-bad');
+              if (kind === 'warn') toast.classList.add('toast-warn');
 
-        clearTimeout(showToast._t);
-        showToast._t = setTimeout(() => {
-          toast.style.display = 'none';
-        }, ms);
-      }
+              clearTimeout(showToast._t);
+              showToast._t = setTimeout(() => {
+                toast.style.display = 'none';
+              }, ms);
+            }
 
-      function markBad(el, bad) {
-        if (!el) return;
-        if (bad) el.classList.add('field-bad');
-        else el.classList.remove('field-bad');
-      }
+            function markBad(el, bad) {
+              if (!el) return;
+              if (bad) el.classList.add('field-bad');
+              else el.classList.remove('field-bad');
+            }
 
-      function setSaving(isSaving) {
-        btnAddExercise.disabled = isSaving;
-        btnAutoOrder.disabled = isSaving;
-        btnAddExercise.textContent = isSaving
-          ? '⏳ Guardando...'
-          : '➕ Guardar ejercicio';
-      }
+            function setSaving(isSaving) {
+              btnAddExercise.disabled = isSaving;
+              btnAutoOrder.disabled = isSaving;
+              btnAddExercise.textContent = isSaving
+                ? '⏳ Guardando...'
+                : '➕ Guardar ejercicio';
+            }
 
-      // ===== fill exercise types (Twoja lista) =====
-      const TASK_OPTIONS = [
-        'Rellenar los espacios',
-        'Relacionar palabra con imagen',
-        'Relacionar palabra con traducción',
-        'Elegir la palabra correcta',
-        'Tarjetas interactivas',
-        'Agrupar palabras',
-        'Verdadero o falso',
-        'Completar la frase con una imagen',
-        'Juego de memoria (pares)',
-        'Opción múltiple',
-        'Completar la forma correcta',
-        'Elegir la forma correcta',
-        'Transformaciones',
-        'Relacionar pregunta con respuesta',
-        'Ordenar palabras para formar una frase',
-        'Corregir errores',
-        'Unir dos partes de la frase',
-        'Completar con preposición o terminación',
-        'Opción única',
-        'Escribir tu propia respuesta',
-        'Repetir después del narrador',
-        'Completar la frase con tu voz',
-        'Responder a una pregunta',
-        'Describir una imagen',
-        'Juego de roles',
-        'Mini-monólogo',
-        'Diálogo semiabierto',
-        'Decirlo de otra manera',
-        'Escuchar y elegir la respuesta',
-        'Escuchar y completar los espacios',
-        'Escuchar y marcar verdadero o falso',
-        'Escuchar y relacionar personas',
-        'Escuchar y ordenar la secuencia',
-        'Dictado con audio',
-        'Escuchar y repetir',
-        'Diálogo interactivo',
-        'Misión del día',
-        'Quiz situacional',
-        'Video con preguntas',
-        'Test final del tema',
-        'Debate grabado',
-        'Contar una historia',
-        'Simulación de entrevista de trabajo',
-        'Retroalimentación por voz',
-      ];
-      // ===== MAIN SAVE HANDLER =====
-      btnAddExercise.onclick = async () => {
-        if (!isAdmin) return;
+            // ===== fill exercise types (Twoja lista) =====
+            const TASK_OPTIONS = [
+              'Rellenar los espacios',
+              'Relacionar palabra con imagen',
+              'Relacionar palabra con traducción',
+              'Elegir la palabra correcta',
+              'Tarjetas interactivas',
+              'Agrupar palabras',
+              'Verdadero o falso',
+              'Completar la frase con una imagen',
+              'Juego de memoria (pares)',
+              'Opción múltiple',
+              'Completar la forma correcta',
+              'Elegir la forma correcta',
+              'Transformaciones',
+              'Relacionar pregunta con respuesta',
+              'Ordenar palabras para formar una frase',
+              'Corregir errores',
+              'Unir dos partes de la frase',
+              'Completar con preposición o terminación',
+              'Opción única',
+              'Escribir tu propia respuesta',
+              'Repetir después del narrador',
+              'Completar la frase con tu voz',
+              'Responder a una pregunta',
+              'Describir una imagen',
+              'Juego de roles',
+              'Mini-monólogo',
+              'Diálogo semiabierto',
+              'Decirlo de otra manera',
+              'Escuchar y elegir la respuesta',
+              'Escuchar y completar los espacios',
+              'Escuchar y marcar verdadero o falso',
+              'Escuchar y relacionar personas',
+              'Escuchar y ordenar la secuencia',
+              'Dictado con audio',
+              'Escuchar y repetir',
+              'Diálogo interactivo',
+              'Misión del día',
+              'Quiz situacional',
+              'Video con preguntas',
+              'Test final del tema',
+              'Debate grabado',
+              'Contar una historia',
+              'Simulación de entrevista de trabajo',
+              'Retroalimentación por voz',
+            ];
+            // ===== MAIN SAVE HANDLER =====
+            btnAddExercise.onclick = async () => {
+              if (!isAdmin) return;
 
-        // reset validation
-        [exPrompt, exOptions, exAnswer, exOrder].forEach((el) =>
-          markBad(el, false),
-        );
+              // reset validation
+              [exPrompt, exOptions, exAnswer, exOrder].forEach((el) =>
+                markBad(el, false),
+              );
 
-        const type = exType.value;
-        const prompt = exPrompt.value.trim();
-        const notes = exNotes.value.trim();
-        const answer = normalizeAnswer(exAnswer.value);
-        const order = Number(exOrder.value || 0);
+              const type = exType.value;
+              const prompt = exPrompt.value.trim();
+              const notes = exNotes.value.trim();
+              const answer = normalizeAnswer(exAnswer.value);
+              const order = Number(exOrder.value || 0);
 
-        let ok = true;
+              let ok = true;
 
-        if (!prompt) {
-          markBad(exPrompt, true);
-          ok = false;
-        }
-        if (!answer) {
-          markBad(exAnswer, true);
-          ok = false;
-        }
-        if (!order || order < 1) {
-          markBad(exOrder, true);
-          ok = false;
-        }
+              if (!prompt) {
+                markBad(exPrompt, true);
+                ok = false;
+              }
+              if (!answer) {
+                markBad(exAnswer, true);
+                ok = false;
+              }
+              if (!order || order < 1) {
+                markBad(exOrder, true);
+                ok = false;
+              }
 
-        const options =
-          type === 'Rellenar los espacios' ? [] : parseOptions(exOptions.value);
+              const options =
+                type === 'Rellenar los espacios' ? [] : parseOptions(exOptions.value);
 
-        const needsOptions =
-          type === 'Opción múltiple' || type === 'Verdadero o falso';
+              const needsOptions =
+                type === 'Opción múltiple' || type === 'Verdadero o falso';
 
-        if (needsOptions && options.length < 2) {
-          markBad(exOptions, true);
-          ok = false;
-        }
+              if (needsOptions && options.length < 2) {
+                markBad(exOptions, true);
+                ok = false;
+              }
 
-        if (!ok) {
-          showToast('⚠️ Completa los campos marcados.', 'warn', 2600);
-          return;
-        }
+              if (!ok) {
+                showToast('⚠️ Completa los campos marcados.', 'warn', 2600);
+                return;
+              }
 
-        try {
-          setSaving(true);
-          showToast('⏳ Guardando...', 'warn', 1200);
+              try {
+                setSaving(true);
+                showToast('⏳ Guardando...', 'warn', 1200);
 
-          await addDoc(collection(db, 'exercises'), {
-            level: LEVEL,
-            topicSlug: currentTopic.slug,
-            topicId: currentTopic.id || null,
-            type,
-            prompt,
-            options,
-            answer,
-            notes,
-            order,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          });
+                await addDoc(collection(db, 'exercises'), {
+                  level: LEVEL,
+                  topicSlug: currentTopic.slug,
+                  topicId: currentTopic.id || null,
+                  type,
+                  prompt,
+                  options,
+                  answer,
+                  notes,
+                  order,
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp(),
+                });
 
-          // reset form
-          exPrompt.value = '';
-          exOptions.value = '';
-          exAnswer.value = '';
-          exNotes.value = '';
-          exOrder.value = String(order + 1);
+                // reset form
+                exPrompt.value = '';
+                exOptions.value = '';
+                exAnswer.value = '';
+                exNotes.value = '';
+                exOrder.value = String(order + 1);
 
-          await loadExercises(currentTopic);
-          showToast('✅ Ejercicio guardado', 'ok', 2200);
-        } catch (err) {
-          console.error(err);
-          showToast('❌ Error al guardar. Mira la consola.', 'bad', 3200);
-        } finally {
-          setSaving(false);
-        }
-      };
+                await loadExercises(currentTopic);
+                showToast('✅ Ejercicio guardado', 'ok', 2200);
+              } catch (err) {
+                console.error(err);
+                showToast('❌ Error al guardar. Mira la consola.', 'bad', 3200);
+              } finally {
+                setSaving(false);
+              }
+            };
 
-      // Enter = save
-      exAnswer.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') btnAddExercise.click();
-      });
+            // Enter = save
+            exAnswer.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') btnAddExercise.click();
+            });
 
-      // ✅ Firebase config (Twoje)
-      const firebaseConfig = {
-        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
-        authDomain: 'aquivivo-platform.firebaseapp.com',
-        projectId: 'aquivivo-platform',
-        storageBucket: 'aquivivo-platform.firebasestorage.app',
-        messagingSenderId: '116115622011',
-        appId: '1:116115622011:web:33a4a583eba4368071bade',
-      };
+            // ✅ Firebase config (Twoje)
+            const firebaseConfig = {
+              apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+              authDomain: 'aquivivo-platform.firebaseapp.com',
+              projectId: 'aquivivo-platform',
+              storageBucket: 'aquivivo-platform.firebasestorage.app',
+              messagingSenderId: '116115622011',
+              appId: '1:116115622011:web:33a4a583eba4368071bade',
+            };
 
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
 
-      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
-      let isAdmin = false;
+            const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+            let isAdmin = false;
 
-      // URL params
-      const params = new URLSearchParams(window.location.search);
-      const LEVEL = (params.get('level') || 'A1').toUpperCase();
-      const slugParam = params.get('slug') || '';
-      const idParam = params.get('id') || '';
-      // ✅ jeśli otwarte bez parametrów – pokaż instrukcję zamiast wiecznego "Cargando"
-      if (!params.get('level') && !params.get('id') && !params.get('slug')) {
-        document.getElementById('topicTitle').textContent =
-          'Brak wybranego tematu';
-        document.getElementById('topicDesc').textContent =
-          'Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).';
+            // URL params
+            const params = new URLSearchParams(window.location.search);
+            const LEVEL = (params.get('level') || 'A1').toUpperCase();
+            const slugParam = params.get('slug') || '';
+            const idParam = params.get('id') || '';
+            // ✅ jeśli otwarte bez parametrów – pokaż instrukcję zamiast wiecznego "Cargando"
+            if (!params.get('level') && !params.get('id') && !params.get('slug')) {
+              document.getElementById('topicTitle').textContent =
+                'Brak wybranego tematu';
+              document.getElementById('topicDesc').textContent =
+                'Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).';
 
-        const backBtn = document.getElementById('backToCourse');
-        if (backBtn) backBtn.href = 'course.html?level=A1';
+              const backBtn = document.getElementById('backToCourse');
+              if (backBtn) backBtn.href = 'course.html?level=A1';
 
-        // ukryj sekcje ćwiczeń + admin
-        document.getElementById('exerciseList').innerHTML = '';
-        document.getElementById('emptyExercises').style.display = 'block';
-        document.getElementById('adminWrap').style.display = 'none';
+              // ukryj sekcje ćwiczeń + admin
+              document.getElementById('exerciseList').innerHTML = '';
+              document.getElementById('emptyExercises').style.display = 'block';
+              document.getElementById('adminWrap').style.display = 'none';
 
-        // przerwij dalsze ładowanie
-        throw new Error('Lesson opened without params');
-      }
+              // przerwij dalsze ładowanie
+              throw new Error('Lesson opened without params');
+            }
 
-      // UI refs
-      const sessionEmail = document.getElementById('sessionEmail');
-      const backToCourse = document.getElementById('backToCourse');
+            // UI refs
+            const sessionEmail = document.getElementById('sessionEmail');
+            const backToCourse = document.getElementById('backToCourse');
 
-      const pillLevel = document.getElementById('pillLevel');
-      const pillType = document.getElementById('pillType');
-      const pillSlug = document.getElementById('pillSlug');
-      const topicTitle = document.getElementById('topicTitle');
-      const topicDesc = document.getElementById('topicDesc');
-      const taskChips = document.getElementById('taskChips');
+            const pillLevel = document.getElementById('pillLevel');
+            const pillType = document.getElementById('pillType');
+            const pillSlug = document.getElementById('pillSlug');
+            const topicTitle = document.getElementById('topicTitle');
+            const topicDesc = document.getElementById('topicDesc');
+            const taskChips = document.getElementById('taskChips');
 
-      const exerciseList = document.getElementById('exerciseList');
-      const emptyExercises = document.getElementById('emptyExercises');
-      const adminWrap = document.getElementById('adminWrap');
+            const exerciseList = document.getElementById('exerciseList');
+            const emptyExercises = document.getElementById('emptyExercises');
+            const adminWrap = document.getElementById('adminWrap');
 
-      // admin fields
-      const exType = document.getElementById('exType');
-      const exPrompt = document.getElementById('exPrompt');
-      const exOptions = document.getElementById('exOptions');
-      const exAnswer = document.getElementById('exAnswer');
-      const exOrder = document.getElementById('exOrder');
-      const exNotes = document.getElementById('exNotes');
-      const btnAddExercise = document.getElementById('btnAddExercise');
-      const btnAutoOrder = document.getElementById('btnAutoOrder');
+            // admin fields
+            const exType = document.getElementById('exType');
+            const exPrompt = document.getElementById('exPrompt');
+            const exOptions = document.getElementById('exOptions');
+            const exAnswer = document.getElementById('exAnswer');
+            const exOrder = document.getElementById('exOrder');
+            const exNotes = document.getElementById('exNotes');
+            const btnAddExercise = document.getElementById('btnAddExercise');
+            const btnAutoOrder = document.getElementById('btnAutoOrder');
 
-      backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-      pillLevel.textContent = `Nivel ${LEVEL}`;
+            backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+            pillLevel.textContent = `Nivel ${LEVEL}`;
 
-      function escapeHtml(s) {
-        return String(s)
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;')
-          .replaceAll('"', '&quot;')
-          .replaceAll("'", '&#039;');
-      }
+            function escapeHtml(s) {
+              return String(s)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+            }
 
-      function normalizeAnswer(a) {
-        return String(a || '').trim();
-      }
+            function normalizeAnswer(a) {
+              return String(a || '').trim();
+            }
 
-      function parseOptions(raw) {
-        return String(raw || '')
-          .split('\n')
-          .map((x) => x.trim())
-          .filter(Boolean);
-      }
+            function parseOptions(raw) {
+              return String(raw || '')
+                .split('\n')
+                .map((x) => x.trim())
+                .filter(Boolean);
+            }
 
-      // Auth
-      onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-          window.location.href = 'login.html';
-          return;
-        }
-        sessionEmail.textContent = user.email || '(sin correo)';
-        isAdmin = user.email === ADMIN_EMAIL;
-        adminWrap.style.display = isAdmin ? 'block' : 'none';
+            // Auth
+            onAuthStateChanged(auth, async (user) => {
+              if (!user) {
+                window.location.href = 'login.html';
+                return;
+              }
+              sessionEmail.textContent = user.email || '(sin correo)';
+              isAdmin = user.email === ADMIN_EMAIL;
+              adminWrap.style.display = isAdmin ? 'block' : 'none';
+              fillExerciseTypes();
+
+              // Load topic
+              const topic = await loadTopic();
+              if (!topic) {
+                topicTitle.textContent = 'Tema no encontrado';
+                topicDesc.textContent =
+                  'No se pudo cargar el tema. Verifica el enlace (level/slug/id).';
+                return;
+              }
+
+              // Load exercises
+              await loadExercises(topic);
+
+              // auto order helper
+              btnAutoOrder.onclick = () => {
+                const next = getNextOrder();
+                exOrder.value = String(next);
+              };
+
+              // Add exercise
+              btnAddExercise.onclick = async () => {
+                if (!isAdmin) return;
+                exAnswer.addEventListener('keydown', (e) => {
+                  if (e.key === 'Enter') btnAddExercise.click();
+                });
+
+                const type = exType.value;
+                const prompt = exPrompt.value.trim();
+                const notes = exNotes.value.trim();
+                const answer = normalizeAnswer(exAnswer.value);
+
+                if (!prompt) return alert('Uzupełnij enunciado/pregunta.');
+                if (!answer)
+                  return alert('Uzupełnij odpowiedź (respuesta correcta).');
+
+                const order = Number(exOrder.value || 0);
+                if (!order || order < 1)
+                  return alert('Ustaw poprawny order (min 1).');
+
+                const options =
+                  type === 'Rellenar los espacios'
+                    ? []
+                    : parseOptions(exOptions.value);
+
+                if (type !== 'Rellenar los espacios' && options.length < 2) {
+                  return alert('Dodaj przynajmniej 2 opcje (jedna na linię).');
+                }
+
+                // Save
+                await addDoc(collection(db, 'exercises'), {
+                  level: LEVEL,
+                  topicSlug: topic.slug,
+                  topicId: topic.id || null,
+                  type,
+                  prompt,
+                  options,
+                  answer,
+                  notes,
+                  order,
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp(),
+                });
+
+                // reset form (light)
+                exPrompt.value = '';
+                exOptions.value = '';
+                exAnswer.value = '';
+                exNotes.value = '';
+                exOrder.value = String(order + 1);
+
+                await loadExercises(topic);
+                alert('✅ Ejercicio guardado');
+              };
+            });
+      onAuthStateChanged(...) {
+        ...
         fillExerciseTypes();
+      }
 
-        // Load topic
-        const topic = await loadTopic();
-        if (!topic) {
-          topicTitle.textContent = 'Tema no encontrado';
-          topicDesc.textContent =
-            'No se pudo cargar el tema. Verifica el enlace (level/slug/id).';
-          return;
-        }
-
-        // Load exercises
-        await loadExercises(topic);
-
-        // auto order helper
-        btnAutoOrder.onclick = () => {
-          const next = getNextOrder();
-          exOrder.value = String(next);
-        };
-
-        // Add exercise
-        btnAddExercise.onclick = async () => {
-          if (!isAdmin) return;
-          exAnswer.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') btnAddExercise.click();
-          });
-
-          const type = exType.value;
-          const prompt = exPrompt.value.trim();
-          const notes = exNotes.value.trim();
-          const answer = normalizeAnswer(exAnswer.value);
-
-          if (!prompt) return alert('Uzupełnij enunciado/pregunta.');
-          if (!answer)
-            return alert('Uzupełnij odpowiedź (respuesta correcta).');
-
-          const order = Number(exOrder.value || 0);
-          if (!order || order < 1)
-            return alert('Ustaw poprawny order (min 1).');
-
-          const options =
-            type === 'Rellenar los espacios'
-              ? []
-              : parseOptions(exOptions.value);
-
-          if (type !== 'Rellenar los espacios' && options.length < 2) {
-            return alert('Dodaj przynajmniej 2 opcje (jedna na linię).');
-          }
-
-          // Save
-          await addDoc(collection(db, 'exercises'), {
-            level: LEVEL,
-            topicSlug: topic.slug,
-            topicId: topic.id || null,
-            type,
-            prompt,
-            options,
-            answer,
-            notes,
-            order,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          });
-
-          // reset form (light)
-          exPrompt.value = '';
-          exOptions.value = '';
-          exAnswer.value = '';
-          exNotes.value = '';
-          exOrder.value = String(order + 1);
-
-          await loadExercises(topic);
-          alert('✅ Ejercicio guardado');
-        };
-      });
+      // ⬇️ TUTAJ WKLEJ ⬇️
+      function fillExerciseTypes() {
+        ...
+      }
 
       // ===== Topic loading =====
-      let currentTopic = null;
+      async function loadTopic() { ... }
 
-      async function loadTopic() {
-        // 1) by id
-        if (idParam) {
-          const ref = doc(db, 'courses', idParam);
-          const snap = await getDoc(ref);
-          if (!snap.exists()) return null;
+            // ===== Topic loading =====
+            let currentTopic = null;
 
-          const data = snap.data();
-          currentTopic = normalizeTopic({ id: snap.id, ...data });
-          renderTopic(currentTopic);
-          return currentTopic;
+            async function loadTopic() {
+              // 1) by id
+              if (idParam) {
+                const ref = doc(db, 'courses', idParam);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) return null;
+
+                const data = snap.data();
+                currentTopic = normalizeTopic({ id: snap.id, ...data });
+                renderTopic(currentTopic);
+                return currentTopic;
+              }
+
+              // 2) by slug + level
+              if (!slugParam) return null;
+
+              const q = query(
+                collection(db, 'courses'),
+                where('level', '==', LEVEL),
+                where('slug', '==', slugParam),
+              );
+
+              const snap = await getDocs(q);
+              if (snap.empty) return null;
+
+              const d = snap.docs[0];
+              currentTopic = normalizeTopic({ id: d.id, ...d.data() });
+              renderTopic(currentTopic);
+              return currentTopic;
+            }
+
+            function normalizeTopic(t) {
+              return {
+                id: t.id,
+                level: (t.level || '').toString().toUpperCase(),
+                type: (t.type || '').toString(),
+                title: t.title || '',
+                desc: t.desc || '',
+                slug: t.slug || slugParam || '',
+                tasks: Array.isArray(t.tasks) ? t.tasks : [],
+              };
+            }
+
+            function renderTopic(t) {
+              pillType.textContent =
+                t.type === 'grammar' ? 'Gramática' : 'Vocabulario';
+              pillSlug.textContent = t.slug ? `slug: ${t.slug}` : 'slug: -';
+              topicTitle.textContent = t.title || 'Tema';
+              topicDesc.textContent = t.desc || '';
+
+              taskChips.innerHTML = '';
+              if (t.tasks && t.tasks.length) {
+                t.tasks.slice(0, 14).forEach((x) => {
+                  const span = document.createElement('span');
+                  span.className = 'pill';
+                  span.textContent = x;
+                  taskChips.appendChild(span);
+                });
+              }
+            }
+      // ===== Exercise types (dropdown) =====
+      function fillExerciseTypes() {
+        exType.innerHTML = TASK_OPTIONS.map(
+          (t) => `<option value="${t}">${t}</option>`
+        ).join('');
+
+        const saved = localStorage.getItem('lastExerciseType');
+        if (saved && TASK_OPTIONS.includes(saved)) {
+          exType.value = saved;
         }
 
-        // 2) by slug + level
-        if (!slugParam) return null;
-
-        const q = query(
-          collection(db, 'courses'),
-          where('level', '==', LEVEL),
-          where('slug', '==', slugParam),
-        );
-
-        const snap = await getDocs(q);
-        if (snap.empty) return null;
-
-        const d = snap.docs[0];
-        currentTopic = normalizeTopic({ id: d.id, ...d.data() });
-        renderTopic(currentTopic);
-        return currentTopic;
-      }
-
-      function normalizeTopic(t) {
-        return {
-          id: t.id,
-          level: (t.level || '').toString().toUpperCase(),
-          type: (t.type || '').toString(),
-          title: t.title || '',
-          desc: t.desc || '',
-          slug: t.slug || slugParam || '',
-          tasks: Array.isArray(t.tasks) ? t.tasks : [],
-        };
-      }
-
-      function renderTopic(t) {
-        pillType.textContent =
-          t.type === 'grammar' ? 'Gramática' : 'Vocabulario';
-        pillSlug.textContent = t.slug ? `slug: ${t.slug}` : 'slug: -';
-        topicTitle.textContent = t.title || 'Tema';
-        topicDesc.textContent = t.desc || '';
-
-        taskChips.innerHTML = '';
-        if (t.tasks && t.tasks.length) {
-          t.tasks.slice(0, 14).forEach((x) => {
-            const span = document.createElement('span');
-            span.className = 'pill';
-            span.textContent = x;
-            taskChips.appendChild(span);
-          });
-        }
-      }
-
-      // ===== Exercises loading/render =====
-      let cachedExercises = [];
-
-      async function loadExercises(topic) {
-        exerciseList.innerHTML = '';
-        emptyExercises.style.display = 'none';
-        cachedExercises = [];
-
-        const qx = query(
-          collection(db, 'exercises'),
-          where('level', '==', LEVEL),
-          where('topicSlug', '==', topic.slug),
-          orderBy('order', 'asc'),
-        );
-
-        const snap = await getDocs(qx);
-
-        if (snap.empty) {
-          emptyExercises.style.display = 'block';
-          return;
-        }
-
-        snap.forEach((d) => {
-          const data = d.data();
-          cachedExercises.push({ id: d.id, ...data });
-        });
-
-        cachedExercises.forEach((ex, idx) => {
-          exerciseList.insertAdjacentHTML(
-            'beforeend',
-            renderExerciseCard(ex, idx),
-          );
-        });
-
-        // attach handlers for check + delete
-        cachedExercises.forEach((ex) => attachExerciseHandlers(ex));
-      }
-
-      function getNextOrder() {
-        if (!cachedExercises.length) return 1;
-        const max = Math.max(
-          ...cachedExercises.map((x) => Number(x.order || 0)),
-        );
-        return (max || 0) + 1;
-      }
-
-      function renderExerciseCard(ex, idx) {
-        const type = ex.type || 'Ejercicio';
-        const prompt = ex.prompt || '';
-        const options = Array.isArray(ex.options) ? ex.options : [];
-        const order = Number(ex.order || idx + 1);
-
-        const optionsHtml =
-          type === 'Rellenar los espacios'
-            ? `
-          <div class="inputRow">
-            <input class="textInput" id="inp-${ex.id}" placeholder="Escribe tu respuesta..." />
-            <button class="btn btn-yellow" id="chk-${ex.id}">Comprobar</button>
-          </div>
-        `
-            : `
-          <div class="opts" id="opts-${ex.id}">
-            ${options.map((o, i) => `<button class="optBtn" data-ex="${ex.id}" data-opt="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join('')}
-          </div>
-        `;
-
-        const adminDelete = isAdmin
-          ? `<button class="dangerMini" id="del-${ex.id}" title="Eliminar">🗑</button>`
-          : '';
-
-        return `
-        <div class="exercise" id="ex-${ex.id}">
-          ${adminDelete}
-          <div class="type">${escapeHtml(type)} · #${order}</div>
-          <h3>${escapeHtml(prompt)}</h3>
-          ${optionsHtml}
-          <div class="result" id="res-${ex.id}"></div>
-          ${ex.notes ? `<div class="smallNote">${escapeHtml(ex.notes)}</div>` : ''}
-        </div>
-      `;
-      }
-
-      function attachExerciseHandlers(ex) {
-        const type = ex.type || '';
-        const correct = String(ex.answer || '').trim();
-
-        // delete
-        if (isAdmin) {
-          const delBtn = document.getElementById(`del-${ex.id}`);
-          if (delBtn) {
-            delBtn.onclick = async (ev) => {
-              ev.stopPropagation();
-              if (!confirm('Usunąć to zadanie?')) return;
-              await deleteDoc(doc(db, 'exercises', ex.id));
-              await loadExercises(currentTopic);
-            };
-          }
-        }
-
-        // rellenar
-        if (type === 'Rellenar los espacios') {
-          const chk = document.getElementById(`chk-${ex.id}`);
-          const inp = document.getElementById(`inp-${ex.id}`);
-          const res = document.getElementById(`res-${ex.id}`);
-
-          if (chk && inp && res) {
-            chk.onclick = () => {
-              const user = String(inp.value || '').trim();
-              if (!user) return;
-
-              const ok = user.toLowerCase() === correct.toLowerCase();
-              res.innerHTML = ok
-                ? `<span class="ok">✅ Correcto</span>`
-                : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
-            };
-          }
-          return;
-        }
-
-        // opción múltiple / V-F
-        const res = document.getElementById(`res-${ex.id}`);
-        const wrap = document.getElementById(`opts-${ex.id}`);
-        if (!wrap || !res) return;
-
-        wrap.querySelectorAll('button.optBtn').forEach((btn) => {
-          btn.onclick = () => {
-            const picked = btn.getAttribute('data-opt') || '';
-            const ok =
-              picked.trim().toLowerCase() === correct.trim().toLowerCase();
-
-            res.innerHTML = ok
-              ? `<span class="ok">✅ Correcto</span>`
-              : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
-          };
+        exType.addEventListener('change', () => {
+          localStorage.setItem('lastExerciseType', exType.value);
         });
       }
+            // ===== Exercises loading/render =====
+            let cachedExercises = [];
+
+            async function loadExercises(topic) {
+              exerciseList.innerHTML = '';
+              emptyExercises.style.display = 'none';
+              cachedExercises = [];
+
+              const qx = query(
+                collection(db, 'exercises'),
+                where('level', '==', LEVEL),
+                where('topicSlug', '==', topic.slug),
+                orderBy('order', 'asc'),
+              );
+
+              const snap = await getDocs(qx);
+
+              if (snap.empty) {
+                emptyExercises.style.display = 'block';
+                return;
+              }
+
+              snap.forEach((d) => {
+                const data = d.data();
+                cachedExercises.push({ id: d.id, ...data });
+              });
+
+              cachedExercises.forEach((ex, idx) => {
+                exerciseList.insertAdjacentHTML(
+                  'beforeend',
+                  renderExerciseCard(ex, idx),
+                );
+              });
+
+              // attach handlers for check + delete
+              cachedExercises.forEach((ex) => attachExerciseHandlers(ex));
+            }
+
+            function getNextOrder() {
+              if (!cachedExercises.length) return 1;
+              const max = Math.max(
+                ...cachedExercises.map((x) => Number(x.order || 0)),
+              );
+              return (max || 0) + 1;
+            }
+
+            function renderExerciseCard(ex, idx) {
+              const type = ex.type || 'Ejercicio';
+              const prompt = ex.prompt || '';
+              const options = Array.isArray(ex.options) ? ex.options : [];
+              const order = Number(ex.order || idx + 1);
+
+              const optionsHtml =
+                type === 'Rellenar los espacios'
+                  ? `
+                <div class="inputRow">
+                  <input class="textInput" id="inp-${ex.id}" placeholder="Escribe tu respuesta..." />
+                  <button class="btn btn-yellow" id="chk-${ex.id}">Comprobar</button>
+                </div>
+              `
+                  : `
+                <div class="opts" id="opts-${ex.id}">
+                  ${options.map((o, i) => `<button class="optBtn" data-ex="${ex.id}" data-opt="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join('')}
+                </div>
+              `;
+
+              const adminDelete = isAdmin
+                ? `<button class="dangerMini" id="del-${ex.id}" title="Eliminar">🗑</button>`
+                : '';
+
+              return `
+              <div class="exercise" id="ex-${ex.id}">
+                ${adminDelete}
+                <div class="type">${escapeHtml(type)} · #${order}</div>
+                <h3>${escapeHtml(prompt)}</h3>
+                ${optionsHtml}
+                <div class="result" id="res-${ex.id}"></div>
+                ${ex.notes ? `<div class="smallNote">${escapeHtml(ex.notes)}</div>` : ''}
+              </div>
+            `;
+            }
+
+            function attachExerciseHandlers(ex) {
+              const type = ex.type || '';
+              const correct = String(ex.answer || '').trim();
+
+              // delete
+              if (isAdmin) {
+                const delBtn = document.getElementById(`del-${ex.id}`);
+                if (delBtn) {
+                  delBtn.onclick = async (ev) => {
+                    ev.stopPropagation();
+                    if (!confirm('Usunąć to zadanie?')) return;
+                    await deleteDoc(doc(db, 'exercises', ex.id));
+                    await loadExercises(currentTopic);
+                  };
+                }
+              }
+
+              // rellenar
+              if (type === 'Rellenar los espacios') {
+                const chk = document.getElementById(`chk-${ex.id}`);
+                const inp = document.getElementById(`inp-${ex.id}`);
+                const res = document.getElementById(`res-${ex.id}`);
+
+                if (chk && inp && res) {
+                  chk.onclick = () => {
+                    const user = String(inp.value || '').trim();
+                    if (!user) return;
+
+                    const ok = user.toLowerCase() === correct.toLowerCase();
+                    res.innerHTML = ok
+                      ? `<span class="ok">✅ Correcto</span>`
+                      : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
+                  };
+                }
+                return;
+              }
+
+              // opción múltiple / V-F
+              const res = document.getElementById(`res-${ex.id}`);
+              const wrap = document.getElementById(`opts-${ex.id}`);
+              if (!wrap || !res) return;
+
+              wrap.querySelectorAll('button.optBtn').forEach((btn) => {
+                btn.onclick = () => {
+                  const picked = btn.getAttribute('data-opt') || '';
+                  const ok =
+                    picked.trim().toLowerCase() === correct.trim().toLowerCase();
+
+                  res.innerHTML = ok
+                    ? `<span class="ok">✅ Correcto</span>`
+                    : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
+                };
+              });
+            }
     </script>
   </body>
 </html>
