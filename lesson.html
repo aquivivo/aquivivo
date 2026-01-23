@@ -570,22 +570,6 @@
         'Simulación de entrevista de trabajo',
         'Retroalimentación por voz',
       ];
-
-      function fillExerciseTypes() {
-        exType.innerHTML = TASK_OPTIONS.map(
-          (t) => `<option value="${t}">${t}</option>`,
-        ).join('');
-
-        const saved = localStorage.getItem('lastExerciseType');
-        if (saved && TASK_OPTIONS.includes(saved)) {
-          exType.value = saved;
-        }
-
-        exType.addEventListener('change', () => {
-          localStorage.setItem('lastExerciseType', exType.value);
-        });
-      }
-
       // ===== MAIN SAVE HANDLER =====
       btnAddExercise.onclick = async () => {
         if (!isAdmin) return;
@@ -737,21 +721,6 @@
       const exNotes = document.getElementById('exNotes');
       const btnAddExercise = document.getElementById('btnAddExercise');
       const btnAutoOrder = document.getElementById('btnAutoOrder');
-
-      // wypełnij dropdown typów
-      function fillExerciseTypes() {
-        exType.innerHTML = TASK_OPTIONS.map(
-          (t) => `<option value="${t}">${t}</option>`,
-        ).join('');
-
-        // zapamiętaj ostatnio wybrany typ (szybciej)
-        const saved = localStorage.getItem('lastExerciseType');
-        if (saved && TASK_OPTIONS.includes(saved)) exType.value = saved;
-
-        exType.addEventListener('change', () => {
-          localStorage.setItem('lastExerciseType', exType.value);
-        });
-      }
 
       backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
       pillLevel.textContent = `Nivel ${LEVEL}`;
