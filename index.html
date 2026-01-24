@@ -14,6 +14,19 @@
   <style>@view-transition { navigation: auto; }</style>
  </head>
  <body class="h-full font-body bg-blue-main text-white">
+<!-- Global navigation (added) -->
+<div id="globalNav" style="position:fixed;top:16px;left:16px;z-index:9999;display:flex;gap:10px;align-items:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
+  <button type="button"
+    onclick="(window.history.length>1)?window.history.back():window.location.href='index.html'"
+    style="cursor:pointer;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;">
+    ← Powrót
+  </button>
+  <a href="index.html"
+    style="text-decoration:none;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;display:inline-flex;gap:8px;align-items:center;">
+    🏠 Strona główna
+  </a>
+</div>
+
   <div class="w-full h-full overflow-auto"><!-- Navigation -->
    <nav class="fixed top-0 left-0 right-0 z-50 nav-glass">
     <div class="max-w-7xl mx-auto px-6 py-5">
