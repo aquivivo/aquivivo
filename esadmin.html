@@ -148,19 +148,6 @@
 </head>
 
 <body>
-<!-- Global navigation (added) -->
-<div id="globalNav" style="position:fixed;top:16px;left:16px;z-index:9999;display:flex;gap:10px;align-items:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
-  <button type="button"
-    onclick="(window.history.length>1)?window.history.back():window.location.href='index.html'"
-    style="cursor:pointer;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;">
-    ← Powrót
-  </button>
-  <a href="index.html"
-    style="text-decoration:none;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;display:inline-flex;gap:8px;align-items:center;">
-    🏠 Strona główna
-  </a>
-</div>
-
   <div class="topbar">
     <button onclick="logout()">Cerrar sesión</button>
   </div>
@@ -181,6 +168,20 @@
 
   <!-- Firebase -->
   <script type="module">
+
+// ✅ HOTFIX: guard helpers to avoid "already been declared"
+window.addDays = window.addDays || function(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + Number(days || 0));
+  return d;
+};
+window.addMonths = window.addMonths || function(date, months) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + Number(months || 0));
+  return d;
+};
+
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
@@ -231,16 +232,6 @@
 
     // funciones auxiliares
     function nowDate(){ return new Date(); }
-    function addDays(date, days){
-      const d = new Date(date);
-      d.setDate(d.getDate() + days);
-      return d;
-    }
-    function addMonths(date, months){
-      const d = new Date(date);
-      d.setMonth(d.getMonth() + months);
-      return d;
-    }
     function parseIso(s){
       if(!s) return null;
       const d = new Date(s);
@@ -415,17 +406,6 @@
     searchInput.addEventListener("input", renderUsers);
   
   // --- Helpers: access durations (A1 = days, A2/B1/B2 = months) ---
-  function addDays(date, days){
-    const d = new Date(date.getTime());
-    d.setDate(d.getDate() + days);
-    return d;
-  }
-  function addMonths(date, months){
-    const d = new Date(date.getTime());
-    d.setMonth(d.getMonth() + months);
-    return d;
-  }
-
   async function grantAccess(userId, level, daysOrMonths){
     const ref = doc(db, "users", userId);
     const snap = await getDoc(ref);
@@ -477,6 +457,13 @@
     await refreshUsers();
   }
 
+</script>
+
+<script>
+function goBack(){
+  if (window.history.length > 1) window.history.back();
+  else window.location.href = 'index.html';
+}
 </script>
 </body>
 </html>

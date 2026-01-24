@@ -24,21 +24,35 @@
     .reset-link{ margin-top: 10px; display:inline-flex; align-items:center; gap: 10px; border:none; background:transparent; color:#003893; font-weight:900; cursor:pointer; text-decoration: underline; padding: 0; }
     .reset-link:hover{ opacity:.9; }
   </style>
+
+  <style id="av-shared-css">
+    /* AquiVivo shared header/footer (ES) */
+    .av-shell{min-height:100vh; display:flex; flex-direction:column;}
+    .av-main{flex:1;}
+    .av-footer{margin-top:28px; padding:18px 0; border-top:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.06);}
+    .av-footer .av-footer__inner{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;}
+    .av-footer a, .av-footer button{color:rgba(255,255,255,.92); font-weight:800; font-size:14px; text-decoration:none;}
+    .av-footer a:hover, .av-footer button:hover{text-decoration:underline;}
+    .av-footer button{background:none; border:none; padding:0; cursor:pointer;}
+    /* keep buttons consistent */
+    .av-navbtn{cursor:pointer;}
+  </style>
+
+
+  <script id="av-goBack">
+    window.goBack = function(){
+      try{
+        if (window.history && window.history.length > 1) { window.history.back(); }
+        else { window.location.href = 'index.html'; }
+      } catch(e){
+        window.location.href = 'index.html';
+      }
+    };
+  </script>
+
 </head>
 <body>
-<!-- Global navigation (added) -->
-<div id="globalNav" style="position:fixed;top:16px;left:16px;z-index:9999;display:flex;gap:10px;align-items:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
-  <button type="button"
-    onclick="(window.history.length>1)?window.history.back():window.location.href='index.html'"
-    style="cursor:pointer;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;">
-    ← Powrót
-  </button>
-  <a href="index.html"
-    style="text-decoration:none;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;display:inline-flex;gap:8px;align-items:center;">
-    🏠 Strona główna
-  </a>
-</div>
-
+<div class="av-shell">
   <header class="nav-glass">
     <div class="container nav-inner">
       <div class="brand">
@@ -50,7 +64,7 @@
       </div>
     </div>
   </header>
-  <main class="page">
+  <main class="page"><div class="av-main">
     <div class="container">
       <div class="auth-wrap">
         <div class="hero-card">
@@ -95,7 +109,7 @@
         </div>
       </div>
     </div>
-  </main>
+  </div></main>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import {

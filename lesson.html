@@ -446,22 +446,36 @@
       }
 
     </style>
-  </head>
+  
+  <style id="av-shared-css">
+    /* AquiVivo shared header/footer (ES) */
+    .av-shell{min-height:100vh; display:flex; flex-direction:column;}
+    .av-main{flex:1;}
+    .av-footer{margin-top:28px; padding:18px 0; border-top:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.06);}
+    .av-footer .av-footer__inner{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;}
+    .av-footer a, .av-footer button{color:rgba(255,255,255,.92); font-weight:800; font-size:14px; text-decoration:none;}
+    .av-footer a:hover, .av-footer button:hover{text-decoration:underline;}
+    .av-footer button{background:none; border:none; padding:0; cursor:pointer;}
+    /* keep buttons consistent */
+    .av-navbtn{cursor:pointer;}
+  </style>
+
+
+  <script id="av-goBack">
+    window.goBack = function(){
+      try{
+        if (window.history && window.history.length > 1) { window.history.back(); }
+        else { window.location.href = 'index.html'; }
+      } catch(e){
+        window.location.href = 'index.html';
+      }
+    };
+  </script>
+
+</head>
 
   <body>
-<!-- Global navigation (added) -->
-<div id="globalNav" style="position:fixed;top:16px;left:16px;z-index:9999;display:flex;gap:10px;align-items:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
-  <button type="button"
-    onclick="(window.history.length>1)?window.history.back():window.location.href='index.html'"
-    style="cursor:pointer;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;">
-    ← Powrót
-  </button>
-  <a href="index.html"
-    style="text-decoration:none;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;display:inline-flex;gap:8px;align-items:center;">
-    🏠 Strona główna
-  </a>
-</div>
-
+<div class="av-shell">
     <header class="nav-glass">
       <div class="nav-inner">
         <div class="brand">
@@ -482,7 +496,7 @@
       Sesión activa: <strong id="sessionEmail">Cargando...</strong>
     </div>
 
-    <main class="container">
+    <main class="container"><div class="av-main">
       <div id="toast"></div>
 
       <div class="card">
@@ -505,7 +519,7 @@
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end">
           <div style="flex:1; min-width:220px">
             <label style="display:block; font-weight:700; margin-bottom:6px">Buscar</label>
-            <input id="filterSearch" placeholder="Szukaj po treści / odpowiedzi…" />
+            <input id="filterSearch" placeholder="Buscar por contenido / respuestazi…" />
           </div>
 
           <div style="min-width:190px">
@@ -516,19 +530,19 @@
           <div style="min-width:190px">
             <label style="display:block; font-weight:700; margin-bottom:6px">Kategoria</label>
             <select id="filterCategory">
-              <option value="">Wszystko</option>
+              <option value="">Todo</option>
               <option value="grammar">Gramatyka</option>
               <option value="vocab">Słownictwo</option>
               <option value="both">Gramatyka + słownictwo</option>
             </select>
           </div>
 
-          <button class="btn" id="btnClearFilters" type="button">🧹 Wyczyść</button>
+          <button class="btn" id="btnClearFilters" type="button">🧹 Limpiar</button>
 
           <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
             <label style="display:flex; gap:8px; align-items:center; user-select:none; font-weight:700">
               <input id="toggleReorder" type="checkbox" style="transform:scale(1.15)" />
-              Tryb sortowania (drag&drop)
+              Modo de ordenación (drag&drop)
             </label>
             <button class="btn btn-yellow" id="btnSaveOrder" type="button" style="display:none">💾 Zapisz kolejność</button>
           </div>
@@ -620,7 +634,7 @@
           Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level, topicSlug, order, type, prompt, options[], answer, notes.
         </div>
       </div>
-    </main>
+    </div></main>
 
     
     <!-- Preview modal -->
@@ -854,9 +868,9 @@
 
       // ===== Safe "no params" screen =====
       if (!params.get("level") && !params.get("id") && !params.get("slug")) {
-        topicTitle.textContent = "Brak wybranego tematu";
+        topicTitle.textContent = "No se ha seleccionado ningún tema";
         topicDesc.textContent =
-          "Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).";
+          "Abre primero course.html y haz clic en un tema (lesson otworzy się automatycznie z parametrami).";
         pillType.textContent = "—";
         pillSlug.textContent = "slug: —";
         pillCount.textContent = "Ejercicios: —";
@@ -1185,7 +1199,7 @@
         // UI wiring
         if (filterType) {
           // default options; real types filled after load
-          filterType.innerHTML = `<option value="">Wszystko</option>`;
+          filterType.innerHTML = `<option value="">Todo</option>`;
         }
         if (!IS_ADMIN) {
           if (toggleReorder) toggleReorder.disabled = true;
@@ -1400,7 +1414,7 @@
         if (!filterType) return;
         const unique = Array.from(new Set(ALL_EXERCISES.map((e) => e.type))).sort();
         filterType.innerHTML =
-          `<option value="">Wszystko</option>` +
+          `<option value="">Todo</option>` +
           unique.map((x) => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
       }
 
@@ -1468,5 +1482,21 @@
         previewModal.style.display = "block";
       }
  </script>
-  </body>
+  
+</div>
+
+  <footer class="av-footer" id="av-footer">
+    <div class="container av-footer__inner">
+      <div>© <span id="avYear"></span> AquiVivo</div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <a href="index.html">Inicio</a>
+        <button type="button" onclick="goBack()">Atrás</button>
+      </div>
+    </div>
+  </footer>
+  <script>
+    (function(){var y=document.getElementById('avYear'); if(y) y.textContent=new Date().getFullYear();})();
+  </script>
+
+</body>
 </html>

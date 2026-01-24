@@ -37,19 +37,6 @@
 </head>
 
 <body>
-<!-- Global navigation (added) -->
-<div id="globalNav" style="position:fixed;top:16px;left:16px;z-index:9999;display:flex;gap:10px;align-items:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
-  <button type="button"
-    onclick="(window.history.length>1)?window.history.back():window.location.href='index.html'"
-    style="cursor:pointer;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;">
-    ← Powrót
-  </button>
-  <a href="index.html"
-    style="text-decoration:none;border:1px solid rgba(0,0,0,.12);background:#ffffff;color:#111;padding:10px 12px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.10);font-weight:600;display:inline-flex;gap:8px;align-items:center;">
-    🏠 Strona główna
-  </a>
-</div>
-
 
   <header class="nav-glass">
     <div class="container nav-inner">
@@ -60,6 +47,7 @@
 
       <div class="nav-actions">
         <a class="btn-white-outline" href="index.html">Inicio</a>
+        <button class="btn-white-outline" type="button" onclick="goBack()">Atrás</button>
         <button class="btn-red" onclick="logout()">Cerrar sesión</button>
       </div>
     </div>
@@ -234,10 +222,10 @@ function renderCourseCards(accessObj, metaData){
 
 let CURRENT_UID = null;
 
-async function activateTrial(level){
+function activateTrial(level){
   if(!CURRENT_UID) return;
   const ref = doc(db, "users", CURRENT_UID);
-  const snap = await getDoc(ref);
+  const snap = getDoc(ref);
   const data = snap.data() || {};
 
   const trialUsed = data.trialUsed || {};
@@ -252,13 +240,13 @@ async function activateTrial(level){
   const newAccess = { ...(data.access || {}) };
   newAccess[level] = { freeUntil: trialEnd.toISOString() };
 
-  await setDoc(ref, {
+  setDoc(ref, {
     access: newAccess,
     trialUsed: { ...trialUsed, [level]: true },
     updatedAt: serverTimestamp()
   }, { merge: true });
 
-  const refreshed = await getDoc(ref);
+  const refreshed = getDoc(ref);
 
   // Cargar metadata otra vez
   const metaData = {};
@@ -266,7 +254,7 @@ async function activateTrial(level){
   for (const lvl of levels) {
     try {
       const metaRef = doc(db, "course_meta", lvl);
-      const metaSnap = await getDoc(metaRef);
+      const metaSnap = getDoc(metaRef);
       if (metaSnap.exists()) metaData[lvl] = metaSnap.data();
     } catch {}
   }
@@ -292,7 +280,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const ref = doc(db, "users", user.uid);
-  let snap = await getDoc(ref);
+  let snap = getDoc(ref);
 
   // si el usuario no existe en la colección users -> establecer A1 prueba = 7 días
   if (!snap.exists()) {
@@ -308,7 +296,7 @@ onAuthStateChanged(auth, async (user) => {
       trialEnd.setDate(now.getDate() + 7);
     }
 
-    await setDoc(ref, {
+    setDoc(ref, {
       email: user.email || null,
       createdAt: serverTimestamp(),
       access: isAdmin ? {
@@ -324,7 +312,7 @@ onAuthStateChanged(auth, async (user) => {
       }
     });
 
-    snap = await getDoc(ref);
+    snap = getDoc(ref);
   }
 
   // Si es admin, asegurarse de que tiene acceso a todos los cursos
@@ -332,7 +320,7 @@ onAuthStateChanged(auth, async (user) => {
     const trialEnd = new Date();
     trialEnd.setFullYear(2099);
     
-    await setDoc(ref, {
+    setDoc(ref, {
       ...snap.data(),
       access: {
         A1: { freeUntil: trialEnd.toISOString() },
@@ -342,14 +330,14 @@ onAuthStateChanged(auth, async (user) => {
       }
     }, { merge: true });
 
-    snap = await getDoc(ref);
+    snap = getDoc(ref);
   }
   const metaData = {};
   const levels = ["A1", "A2", "B1", "B2"];
   for (const level of levels) {
     try {
       const metaRef = doc(db, "course_meta", level);
-      const metaSnap = await getDoc(metaRef);
+      const metaSnap = getDoc(metaRef);
       if (metaSnap.exists()) {
         metaData[level] = metaSnap.data();
       }
@@ -379,5 +367,32 @@ window.logout = function() {
   }
 </script>
 
+
+<script>
+function goBack(){
+  if (window.history.length > 1) window.history.back();
+  else window.location.href = 'index.html';
+}
+
+// ✅ HOTFIX: renderAccess (prevents ReferenceError if original function is missing)
+function renderAccess(access) {
+  const el =
+    document.getElementById('accessInfo') ||
+    document.getElementById('accessStatus') ||
+    document.querySelector('[data-access]') ||
+    document.querySelector('#accesoBox .content') ||
+    null;
+
+  if (!el) return;
+
+  const a = (access && access.access) ? access.access : (access || {});
+  const trialUntil = a.trialUntil || a.trialEnd || a.expiresAt || a.validUntil;
+
+  el.innerHTML = trialUntil
+    ? `✅ Acceso activo hasta: <b>${String(trialUntil).slice(0, 10)}</b>`
+    : `⚠️ Sin acceso activo.`;
+}
+
+</script>
 </body>
 </html>
