@@ -148,11 +148,8 @@
 </head>
 
 <body>
-  <div class="topbar">
-    <button onclick="logout()">Cerrar sesión</button>
-  </div>
-
-  <div class="wrap">
+  <div id="appHeader"></div>
+<div class="wrap">
     <a class="back" href="espanel.html">← Volver al panel</a>
 
     <h1>Admin</h1>
@@ -168,20 +165,6 @@
 
   <!-- Firebase -->
   <script type="module">
-
-// ✅ HOTFIX: guard helpers to avoid "already been declared"
-window.addDays = window.addDays || function(date, days) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + Number(days || 0));
-  return d;
-};
-window.addMonths = window.addMonths || function(date, months) {
-  const d = new Date(date);
-  d.setMonth(d.getMonth() + Number(months || 0));
-  return d;
-};
-
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
@@ -232,6 +215,16 @@ window.addMonths = window.addMonths || function(date, months) {
 
     // funciones auxiliares
     function nowDate(){ return new Date(); }
+    function addDays(date, days){
+      const d = new Date(date);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+    function addMonths(date, months){
+      const d = new Date(date);
+      d.setMonth(d.getMonth() + months);
+      return d;
+    }
     function parseIso(s){
       if(!s) return null;
       const d = new Date(s);
@@ -406,6 +399,17 @@ window.addMonths = window.addMonths || function(date, months) {
     searchInput.addEventListener("input", renderUsers);
   
   // --- Helpers: access durations (A1 = days, A2/B1/B2 = months) ---
+  function addDays(date, days){
+    const d = new Date(date.getTime());
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+  function addMonths(date, months){
+    const d = new Date(date.getTime());
+    d.setMonth(d.getMonth() + months);
+    return d;
+  }
+
   async function grantAccess(userId, level, daysOrMonths){
     const ref = doc(db, "users", userId);
     const snap = await getDoc(ref);
@@ -458,12 +462,7 @@ window.addMonths = window.addMonths || function(date, months) {
   }
 
 </script>
-
-<script>
-function goBack(){
-  if (window.history.length > 1) window.history.back();
-  else window.location.href = 'index.html';
-}
-</script>
+  <div id="appFooter"></div>
+  <script src="assets/js/layout.js"></script>
 </body>
 </html>

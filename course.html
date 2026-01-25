@@ -486,51 +486,11 @@
 
 
     </style>
-  
-  <style id="av-shared-css">
-    /* AquiVivo shared header/footer (ES) */
-    .av-shell{min-height:100vh; display:flex; flex-direction:column;}
-    .av-main{flex:1;}
-    .av-footer{margin-top:28px; padding:18px 0; border-top:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.06);}
-    .av-footer .av-footer__inner{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;}
-    .av-footer a, .av-footer button{color:rgba(255,255,255,.92); font-weight:800; font-size:14px; text-decoration:none;}
-    .av-footer a:hover, .av-footer button:hover{text-decoration:underline;}
-    .av-footer button{background:none; border:none; padding:0; cursor:pointer;}
-    /* keep buttons consistent */
-    .av-navbtn{cursor:pointer;}
-  </style>
-
-
-  <script id="av-goBack">
-    window.goBack = function(){
-      try{
-        if (window.history && window.history.length > 1) { window.history.back(); }
-        else { window.location.href = 'index.html'; }
-      } catch(e){
-        window.location.href = 'index.html';
-      }
-    };
-  </script>
-
-</head>
+  </head>
 
   <body>
-<div class="av-shell">
-    <header class="nav-glass">
-      <div class="container nav-inner">
-        <div class="brand">
-          <div class="logo-flag" aria-hidden="true"></div>
-          <div class="name">Aqui vivo</div>
-        </div>
-
-        <div class="nav-actions">
-          <a class="btn-white-outline" href="index.html">Inicio</a>
-          <button class="btn-red" onclick="goBack()">Atrás</button>
-        </div>
-      </div>
-    </header>
-
-    <main class="page"><div class="av-main">
+  <div id="appHeader"></div>
+<main class="page">
       <div class="container">
         <div class="titleRow">
           <div style="font-size: 44px; line-height: 1">📘</div>
@@ -723,7 +683,7 @@
           </p>
         </div>
       </div>
-    </div></main>
+    </main>
 
     <!-- 🔥 Firebase -->
     <script type="module">
@@ -1235,21 +1195,7 @@
   
     <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  
-</div>
-
-  <footer class="av-footer" id="av-footer">
-    <div class="container av-footer__inner">
-      <div>© <span id="avYear"></span> AquiVivo</div>
-      <div style="display:flex; gap:12px; align-items:center;">
-        <a href="index.html">Inicio</a>
-        <button type="button" onclick="goBack()">Atrás</button>
-      </div>
-    </div>
-  </footer>
-  <script>
-    (function(){var y=document.getElementById('avYear'); if(y) y.textContent=new Date().getFullYear();})();
-  </script>
-
+    <div id="appFooter"></div>
+  <script src="assets/js/layout.js"></script>
 </body>
 </html>

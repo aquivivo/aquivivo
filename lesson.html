@@ -248,7 +248,9 @@
       .adminGrid {
         display: grid;
         gap: 10px;
-        grid-template-columns: 180px 1fr;
+        /* Each cell already contains label + control.
+           Use a true 2-column form grid (fix: narrow left column + misaligned fields). */
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         align-items: start;
       }
       @media (max-width: 860px) {
@@ -271,6 +273,22 @@
         padding: 10px 12px;
         font-size: 14px;
         outline: none;
+      }
+      /* Better select UX (fix: hard-to-use dropdowns) */
+      .adminGrid select{
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding-right: 42px;
+        background-image:
+          linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.92) 50%),
+          linear-gradient(135deg, rgba(255,255,255,0.92) 50%, transparent 50%);
+        background-position:
+          calc(100% - 18px) calc(50% - 3px),
+          calc(100% - 12px) calc(50% - 3px);
+        background-size: 6px 6px, 6px 6px;
+        background-repeat: no-repeat;
       }
       .adminGrid textarea { min-height: 92px; resize: vertical; }
       .adminGrid input::placeholder, .adminGrid textarea::placeholder { color: rgba(255, 255, 255, 0.55); }
@@ -389,93 +407,95 @@
       .hintSmall{ font-size: 12px; opacity: .78; margin-top: 8px; }
 
     
-      /* --- Lesson content block --- */
-      .lessonContentCard{
-        background: rgba(255,255,255,0.10);
-        border: 1px solid rgba(255,255,255,0.18);
-        backdrop-filter: blur(12px);
-        border-radius: 18px;
-        padding: 16px;
-        margin: 12px 0 14px;
-      }
-      .lessonContentTitle{
-        display:flex;
-        align-items:center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 10px;
-      }
-      .lessonContentTitle h3{
-        margin: 0;
-        font-size: 16px;
-        font-weight: 900;
-      }
-      .lessonText{
-        line-height: 1.55;
+      /* === PATCH UI: unified glass inputs (filters + common inputs) === */
+      #filtersCard input,
+      #filtersCard select,
+      #filtersCard textarea,
+      #importJsonArea,
+      .inputRow .textInput{
+        font-family: Montserrat, Arial, sans-serif;
+        font-weight: 700;
         font-size: 14px;
-        opacity: .95;
-        white-space: normal;
-      }
-      .lessonEmpty{
-        opacity: .75;
-        font-size: 13px;
-      }
-      .adminEditor{
-        display:grid;
-        gap: 10px;
-        margin-top: 10px;
-      }
-      .adminEditor textarea{
-        width: 100%;
-        min-height: 180px;
-        resize: vertical;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.18);
-        background: rgba(0,0,0,0.18);
+
+        background: rgba(255, 255, 255, 0.12);
         color: white;
-        padding: 12px;
-        font-size: 13px;
+
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+
+        padding: 10px 14px;
         outline: none;
+
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
       }
-      .adminEditor .row{
-        display:flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items:center;
+
+      /* extra: fix misaligned form fields + make selects clickable everywhere */
+      #filtersCard input,
+      #filtersCard select,
+      #filtersCard textarea,
+      .adminGrid input,
+      .adminGrid select,
+      .adminGrid textarea{
+        box-sizing: border-box;
+      }
+
+      .adminGrid > div{ min-width: 0; }
+
+      /* Make selects more obvious + consistent */
+      select{
+        font-family: Montserrat, Arial, sans-serif;
+      }
+
+
+      #filtersCard textarea,
+      #importJsonArea{
+        border-radius: 16px;
+        font-weight: 600;
+      }
+
+      #filtersCard input:focus,
+      #filtersCard select:focus,
+      #filtersCard textarea:focus,
+      #importJsonArea:focus,
+      .inputRow .textInput:focus{
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(252, 209, 22, 0.6);
+        box-shadow: 0 0 0 3px rgba(252, 209, 22, 0.22);
+      }
+
+      #filtersCard input::placeholder,
+      #filtersCard textarea::placeholder,
+      #importJsonArea::placeholder,
+      .inputRow .textInput::placeholder{
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 600;
+      }
+
+      #filtersCard select option{
+        background: var(--blue);
+        color: white;
+        font-weight: 600;
+      }
+
+      /* --- FIX: student answer input inside WHITE exercise card --- */
+      .exercise .textInput{
+        background: #ffffff;
+        color: var(--ink);
+        border: 1px solid #d1d5db;
+      }
+      .exercise .textInput::placeholder{ color: #6b7280; }
+      .exercise .textInput:focus{
+        border-color: rgba(0,56,147,0.45);
+        box-shadow: 0 0 0 3px rgba(0,56,147,0.12);
       }
 
     </style>
-  
-  <style id="av-shared-css">
-    /* AquiVivo shared header/footer (ES) */
-    .av-shell{min-height:100vh; display:flex; flex-direction:column;}
-    .av-main{flex:1;}
-    .av-footer{margin-top:28px; padding:18px 0; border-top:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.06);}
-    .av-footer .av-footer__inner{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;}
-    .av-footer a, .av-footer button{color:rgba(255,255,255,.92); font-weight:800; font-size:14px; text-decoration:none;}
-    .av-footer a:hover, .av-footer button:hover{text-decoration:underline;}
-    .av-footer button{background:none; border:none; padding:0; cursor:pointer;}
-    /* keep buttons consistent */
-    .av-navbtn{cursor:pointer;}
-  </style>
-
-
-  <script id="av-goBack">
-    window.goBack = function(){
-      try{
-        if (window.history && window.history.length > 1) { window.history.back(); }
-        else { window.location.href = 'index.html'; }
-      } catch(e){
-        window.location.href = 'index.html';
-      }
-    };
-  </script>
-
-</head>
+  </head>
 
   <body>
-<div class="av-shell">
     <header class="nav-glass">
       <div class="nav-inner">
         <div class="brand">
@@ -496,7 +516,7 @@
       Sesión activa: <strong id="sessionEmail">Cargando...</strong>
     </div>
 
-    <main class="container"><div class="av-main">
+    <main class="container">
       <div id="toast"></div>
 
       <div class="card">
@@ -519,7 +539,7 @@
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end">
           <div style="flex:1; min-width:220px">
             <label style="display:block; font-weight:700; margin-bottom:6px">Buscar</label>
-            <input id="filterSearch" placeholder="Buscar por contenido / respuestazi…" />
+            <input id="filterSearch" placeholder="Szukaj po treści / odpowiedzi…" />
           </div>
 
           <div style="min-width:190px">
@@ -530,19 +550,19 @@
           <div style="min-width:190px">
             <label style="display:block; font-weight:700; margin-bottom:6px">Kategoria</label>
             <select id="filterCategory">
-              <option value="">Todo</option>
-              <option value="grammar">Gramatyka</option>
-              <option value="vocab">Słownictwo</option>
-              <option value="both">Gramatyka + słownictwo</option>
+              <option value="">Wszystko</option>
+              <option value="grammar">Gramática</option>
+              <option value="vocab">Vocabulario</option>
+              <option value="both">Gramática + vocabulario</option>
             </select>
           </div>
 
-          <button class="btn" id="btnClearFilters" type="button">🧹 Limpiar</button>
+          <button class="btn" id="btnClearFilters" type="button">🧹 Wyczyść</button>
 
           <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
             <label style="display:flex; gap:8px; align-items:center; user-select:none; font-weight:700">
               <input id="toggleReorder" type="checkbox" style="transform:scale(1.15)" />
-              Modo de ordenación (drag&drop)
+              Tryb sortowania (drag&drop)
             </label>
             <button class="btn btn-yellow" id="btnSaveOrder" type="button" style="display:none">💾 Zapisz kolejność</button>
           </div>
@@ -566,7 +586,36 @@
 
       <!-- Admin -->
       <div id="adminWrap" class="card adminWrap">
+        
         <div class="sectionTitle">👑 Admin – agregar ejercicio</div>
+
+        <div class="card" style="margin-top:10px">
+          <div class="sectionTitle" style="margin-top:0">⚡ Producción rápida</div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <button class="btn" id="btnTplFill" type="button">+ Plantilla: rellenar</button>
+            <button class="btn" id="btnTplChoice" type="button">+ Plantilla: choice</button>
+            <button class="btn" id="btnTplTF" type="button">+ Plantilla: true/false</button>
+          </div>
+
+          <div style="margin-top:12px">
+            <label style="display:block; font-weight:800; margin-bottom:6px">Import JSON (array de ejercicios)</label>
+            <textarea id="importJsonArea" placeholder='[
+  {"type":"Opción múltiple","prompt":"...","options":["A) ...","B) ..."],"answer":"A","category":"grammar","order":1},
+  {"type":"Rellenar los espacios","prompt":"...","answer":"...","category":"vocab"}
+]'></textarea>
+            <div class="smallNote" style="margin-top:8px">
+              - Wklej <b>tablicę</b> ćwiczeń. Jeśli element nie ma <b>order</b>, dostanie automatycznie kolejny numer.<br/>
+              - Obsługiwane pola: <b>type, prompt, options[], answer, category, tags, notes, imageUrl, order</b>.
+            </div>
+
+            <div class="adminActions" style="margin-top:10px">
+              <button class="btn btn-yellow" id="btnImportJson" type="button">📥 Importuj i zapisz</button>
+              <button class="btn" id="btnClearImport" type="button">🧽 Wyczyść</button>
+              <span class="smallNote" id="importStatus" style="margin-left:auto"></span>
+            </div>
+          </div>
+        </div>
 
         <div class="adminGrid">
           <div>
@@ -577,6 +626,12 @@
           <div>
             <label>Pregunta / enunciado</label>
             <input id="exPrompt" placeholder="Escribe el enunciado..." />
+          </div>
+
+          <div>
+            <label>Imagen (URL) — opcional</label>
+            <input id="exImageUrl" placeholder="https://.../imagen.png" />
+            <div class="smallNote">Jeśli dodasz obrazek, pokaże się nad odpowiedziami.</div>
           </div>
 
           <div>
@@ -603,9 +658,9 @@
           <div>
             <label>Kategoria</label>
             <select id="exCategory">
-              <option value="grammar">Gramatyka</option>
-              <option value="vocab">Słownictwo</option>
-              <option value="both">Gramatyka + słownictwo</option>
+              <option value="grammar">Gramática</option>
+              <option value="vocab">Vocabulario</option>
+              <option value="both">Gramática + vocabulario</option>
             </select>
           </div>
 
@@ -628,13 +683,15 @@
         <div class="adminActions">
           <button class="btn btn-yellow" id="btnAddExercise" type="button">➕ Guardar ejercicio</button>
           <button class="btn" id="btnAutoOrder" type="button">✨ Ustaw kolejny numer</button>
+          <button class="btn" id="btnCancelEdit" type="button" style="display:none">✖ Anuluj edycję</button>
+          <span class="pill pill-yellow" id="editModePill" style="display:none">✏️ Tryb edycji</span>
         </div>
 
         <div class="smallNote" style="margin-top:10px">
           Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level, topicSlug, order, type, prompt, options[], answer, notes.
         </div>
       </div>
-    </div></main>
+    </main>
 
     
     <!-- Preview modal -->
@@ -672,6 +729,7 @@
         deleteDoc,
         doc,
         getDoc,
+        setDoc,
         orderBy,
         serverTimestamp,
         updateDoc,
@@ -711,6 +769,7 @@
       const pillType = document.getElementById("pillType");
       const pillSlug = document.getElementById("pillSlug");
       const pillCount = document.getElementById("pillCount");
+      const btnOpenLessonPage = document.getElementById("btnOpenLessonPage");
 
       const topicTitle = document.getElementById("topicTitle");
       const topicDesc = document.getElementById("topicDesc");
@@ -723,6 +782,7 @@
       // admin fields
       const exType = document.getElementById("exType");
       const exPrompt = document.getElementById("exPrompt");
+      const exImageUrl = document.getElementById("exImageUrl");
       const exOptions = document.getElementById("exOptions");
       const exAnswer = document.getElementById("exAnswer");
       const exCategory = document.getElementById("exCategory");
@@ -730,6 +790,15 @@
       const exOrder = document.getElementById("exOrder");
       const exNotes = document.getElementById("exNotes");
       const btnAddExercise = document.getElementById("btnAddExercise");
+      const btnTplFill = document.getElementById("btnTplFill");
+      const btnTplChoice = document.getElementById("btnTplChoice");
+      const btnTplTF = document.getElementById("btnTplTF");
+      const importJsonArea = document.getElementById("importJsonArea");
+      const btnImportJson = document.getElementById("btnImportJson");
+      const btnClearImport = document.getElementById("btnClearImport");
+      const importStatus = document.getElementById("importStatus");
+      
+
       const btnAutoOrder = document.getElementById("btnAutoOrder");
 
       // Filters + reorder
@@ -795,6 +864,49 @@
         btnAutoOrder.disabled = isSaving;
         btnAddExercise.textContent = isSaving ? "⏳ Guardando..." : "➕ Guardar ejercicio";
       }
+
+
+      function setEditMode(exOrNull){
+        const isOn = !!exOrNull;
+        EDITING_EX_ID = isOn ? String(exOrNull.id) : null;
+
+        if(btnCancelEdit) btnCancelEdit.style.display = isOn ? "inline-flex" : "none";
+        if(editModePill) editModePill.style.display = isOn ? "inline-flex" : "none";
+
+        btnAddExercise.textContent = isOn ? "💾 Zapisz zmiany" : "➕ Guardar ejercicio";
+
+        if(!isOn){
+          // reset form back to "add" mode
+          exPrompt.value = "";
+          if (exImageUrl) exImageUrl.value = "";
+          exOptions.value = "";
+          exAnswer.value = "";
+          exNotes.value = "";
+          if (exTags) exTags.value = "";
+          exOrder.value = String(getNextOrder());
+          return;
+        }
+
+        // fill form from selected exercise
+        exType.value = exOrNull.type || exType.value;
+        exPrompt.value = exOrNull.prompt || "";
+        if (exImageUrl) exImageUrl.value = exOrNull.imageUrl || "";
+        exOptions.value = Array.isArray(exOrNull.options) ? exOrNull.options.join("\n") : "";
+        exAnswer.value = exOrNull.answer || "";
+        exNotes.value = exOrNull.notes || "";
+        if (exCategory) exCategory.value = exOrNull.category || "grammar";
+        if (exTags) exTags.value = Array.isArray(exOrNull.tags) ? exOrNull.tags.join(", ") : (exOrNull.tags || "");
+        exOrder.value = String(Number(exOrNull.order || 1));
+
+        // scroll to admin form for convenience
+        try{ document.getElementById("adminWrap")?.scrollIntoView({behavior:"smooth", block:"start"}); }catch{}
+      }
+
+      if(btnCancelEdit){
+        btnCancelEdit.addEventListener("click", ()=> setEditMode(null));
+      }
+
+
 
       // ===== UX buttons =====
       backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
@@ -868,9 +980,9 @@
 
       // ===== Safe "no params" screen =====
       if (!params.get("level") && !params.get("id") && !params.get("slug")) {
-        topicTitle.textContent = "No se ha seleccionado ningún tema";
+        topicTitle.textContent = "Brak wybranego tematu";
         topicDesc.textContent =
-          "Abre primero course.html y haz clic en un tema (lesson otworzy się automatycznie z parametrami).";
+          "Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).";
         pillType.textContent = "—";
         pillSlug.textContent = "slug: —";
         pillCount.textContent = "Ejercicios: —";
@@ -1009,6 +1121,7 @@
           ? `
               <div style="display:flex; gap:8px; align-items:center">
                 <button class="btn" id="pv-${ex.id}" type="button" title="Podgląd (uczeń)">👀</button>
+                <button class="btn" id="ed-${ex.id}" type="button" title="Edytuj">✏️</button>
                 <button class="dangerMini" id="del-${ex.id}" type="button" title="Eliminar">🗑</button>
               </div>
             `
@@ -1019,6 +1132,7 @@
             ${adminControls}
             <div class="type">${escapeHtml(type)} · #${order} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ""}</div>
             <h3>${escapeHtml(prompt)}</h3>
+            ${ex.imageUrl ? `<img src="${escapeHtml(ex.imageUrl)}" alt="" style="max-width:100%; border-radius:14px; border:1px solid rgba(0,0,0,0.08); margin: 10px 0 12px;" />` : ""}
             ${optionsHtml}
             <div class="result" id="res-${ex.id}"></div>
             ${ex.notes ? `<div class="smallNote">${escapeHtml(ex.notes)}</div>` : ""}
@@ -1069,6 +1183,19 @@
             };
           }
         }
+
+        // edit (admin)
+        if (isAdmin) {
+          const edBtn = document.getElementById(`ed-${ex.id}`);
+          if (edBtn) {
+            edBtn.onclick = (ev) => {
+              ev.stopPropagation();
+              setEditMode(ex);
+              showToast("✏️ Tryb edycji: wprowadź zmiany i kliknij „Zapisz zmiany”", "warn", 2400);
+            };
+          }
+        }
+
 
         // drag&drop reorder (admin)
         const card = document.getElementById(`ex-${ex.id}`);
@@ -1199,7 +1326,7 @@
         // UI wiring
         if (filterType) {
           // default options; real types filled after load
-          filterType.innerHTML = `<option value="">Todo</option>`;
+          filterType.innerHTML = `<option value="">Wszystko</option>`;
         }
         if (!IS_ADMIN) {
           if (toggleReorder) toggleReorder.disabled = true;
@@ -1275,8 +1402,7 @@
             showToast("⚠️ No se encontró el tema", "warn", 2600);
             return;
           }
-
-          await loadExercises(topic);
+await loadExercises(topic);
           if (isAdmin) {
             exOrder.value = String(getNextOrder());
           }
@@ -1287,6 +1413,138 @@
       });
 
       // ===== Admin actions =====
+
+      // Templates
+      function applyTemplate(kind){
+        if(!isAdmin) return;
+        const next = String(getNextOrder());
+        if(kind === "fill"){
+          exType.value = "Rellenar los espacios";
+          exPrompt.value = "Completa la frase: Yo ___ de España.";
+          exOptions.value = "";
+          exAnswer.value = "soy";
+          exCategory.value = "grammar";
+          exNotes.value = "Podpowiedź: czasownik 'być' w 1 os.";
+          if (exTags) exTags.value = "czasowniki, być";
+          if (exImageUrl) exImageUrl.value = "";
+          exOrder.value = next;
+        } else if(kind === "choice"){
+          exType.value = "Opción múltiple";
+          exPrompt.value = "Elige la forma correcta: Ona ___ w domu.";
+          exOptions.value = "A) jestem\nB) jest\nC) są";
+          exAnswer.value = "B";
+          exCategory.value = "grammar";
+          exNotes.value = "";
+          if (exTags) exTags.value = "być, teraźniejszy";
+          if (exImageUrl) exImageUrl.value = "";
+          exOrder.value = next;
+        } else if(kind === "tf"){
+          exType.value = "Verdadero o falso";
+          exPrompt.value = "‘Mam’ es la forma de ‘tener’ en polaco (1ª persona).";
+          exOptions.value = "true\nfalse";
+          exAnswer.value = "true";
+          exCategory.value = "vocab";
+          exNotes.value = "";
+          if (exTags) exTags.value = "mieć, podstawy";
+          if (exImageUrl) exImageUrl.value = "";
+          exOrder.value = next;
+        }
+        showToast("✨ Plantilla aplicada", "ok", 1400);
+      }
+
+      btnTplFill?.addEventListener("click", () => applyTemplate("fill"));
+      btnTplChoice?.addEventListener("click", () => applyTemplate("choice"));
+      btnTplTF?.addEventListener("click", () => applyTemplate("tf"));
+
+      // Import JSON (array)
+      function safeParseJsonArray(raw){
+        const txt = (raw || "").trim();
+        if(!txt) return [];
+        const parsed = JSON.parse(txt);
+        if(!Array.isArray(parsed)) throw new Error("JSON debe ser un ARRAY []");
+        return parsed;
+      }
+
+      btnClearImport?.addEventListener("click", () => { if(importJsonArea) importJsonArea.value = ""; if(importStatus) importStatus.textContent = ""; });
+
+      btnImportJson?.addEventListener("click", async () => {
+        if(!isAdmin || !currentTopic) return;
+        if(!importJsonArea) return;
+
+        if(importStatus) importStatus.textContent = "Importando...";
+        let items = [];
+        try{
+          items = safeParseJsonArray(importJsonArea.value);
+        }catch(e){
+          console.error(e);
+          if(importStatus) importStatus.textContent = "JSON inválido ❌";
+          showToast("❌ JSON inválido (mira la consola)", "bad", 3200);
+          return;
+        }
+
+        if(!items.length){
+          if(importStatus) importStatus.textContent = "Nada para importar.";
+          showToast("⚠️ Wklej tablicę ćwiczeń", "warn", 2200);
+          return;
+        }
+
+        try{
+          setSaving(true);
+          const baseSlug = String(currentTopic.slug || currentTopic.id || "");
+          let auto = getNextOrder();
+          let saved = 0;
+
+          // sequential to keep stable ordering
+          for(const it of items){
+            if(!it || typeof it !== "object") continue;
+
+            const type = String(it.type || "Rellenar los espacios");
+            const prompt = String(it.prompt || "").trim();
+            const answer = normalizeAnswer(String(it.answer || ""));
+            const options = Array.isArray(it.options) ? it.options.map(x=>String(x)) : parseOptions(String(it.options||""));
+            const notes = String(it.notes || "");
+            const category = String(it.category || "grammar");
+            const tags = Array.isArray(it.tags) ? it.tags.map(x=>String(x)) : toTagsArray(String(it.tags||""));
+            const imageUrl = String(it.imageUrl || "").trim();
+
+            if(!prompt || !answer) continue;
+
+            const order = Number(it.order || 0) > 0 ? Number(it.order) : auto++;
+
+            await addDoc(collection(db, "exercises"), {
+              level: LEVEL,
+              topicSlug: baseSlug,
+              topicId: currentTopic.id || null,
+              type,
+              prompt,
+              imageUrl,
+              options: options.length ? options : [],
+              answer,
+              notes,
+              category,
+              tags,
+              order,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+            });
+
+            saved++;
+          }
+
+          if(importStatus) importStatus.textContent = `Importado: ${saved} ✅`;
+          showToast(`✅ Importado: ${saved}`, "ok", 2200);
+
+          await loadExercises(currentTopic);
+          exOrder.value = String(getNextOrder());
+        }catch(e){
+          console.error(e);
+          if(importStatus) importStatus.textContent = "Error ❌";
+          showToast("❌ Error importando (mira la consola)", "bad", 3600);
+        }finally{
+          setSaving(false);
+        }
+      });
+
       btnAutoOrder.onclick = () => {
         exOrder.value = String(getNextOrder());
         showToast("✨ Ustawiono order", "ok", 1400);
@@ -1303,6 +1561,7 @@
         const notes = exNotes.value.trim();
         const answer = normalizeAnswer(exAnswer.value);
         const order = Number(exOrder.value || 0);
+        const imageUrl = (exImageUrl?.value || "").trim();
 
         let ok = true;
 
@@ -1323,36 +1582,45 @@
           return;
         }
 
+        const payload = {
+          type,
+          prompt,
+          imageUrl,
+          options: options.length ? options : [],
+          answer,
+          notes,
+          category: (exCategory?.value || "grammar"),
+          tags: toTagsArray(exTags?.value),
+          order,
+          updatedAt: serverTimestamp(),
+        };
+
+        const wasEditing = !!EDITING_EX_ID;
+
         try {
           setSaving(true);
           showToast("⏳ Guardando...", "warn", 1200);
 
-          await addDoc(collection(db, "exercises"), {
-            level: LEVEL,
-            topicSlug: String(currentTopic.slug || currentTopic.id || ""),
-            topicId: currentTopic.id || null,
-            type,
-            prompt,
-            options: options.length ? options : [],
-            answer,
-            notes,
-            category: (exCategory?.value || "grammar"),
-            tags: toTagsArray(exTags?.value),
-            order,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          });
+          if (EDITING_EX_ID) {
+            // update existing
+            const ref = doc(db, "exercises", EDITING_EX_ID);
+            await updateDoc(ref, payload);
+          } else {
+            // create new
+            await addDoc(collection(db, "exercises"), {
+              level: LEVEL,
+              topicSlug: String(currentTopic.slug || currentTopic.id || ""),
+              topicId: currentTopic.id || null,
+              createdAt: serverTimestamp(),
+              ...payload,
+            });
+          }
 
-          // reset form
-          exPrompt.value = "";
-          exOptions.value = "";
-          exAnswer.value = "";
-          exNotes.value = "";
-          if (exTags) exTags.value = "";
-          exOrder.value = String(order + 1);
+          // reset form + exit edit mode
+          setEditMode(null);
 
           await loadExercises(currentTopic);
-          showToast("✅ Ejercicio guardado", "ok", 2200);
+          showToast(wasEditing ? "✅ Zapisano zmiany" : "✅ Ejercicio guardado", "ok", 2200);
         } catch (e) {
           console.error(e);
           showToast("❌ Error al guardar (mira la consola)", "bad", 3600);
@@ -1368,6 +1636,7 @@
    
 
       // ===== state =====
+      let EDITING_EX_ID = null;
       let ALL_EXERCISES = [];
       let VIEW_EXERCISES = [];
       let IS_ADMIN = false;
@@ -1414,7 +1683,7 @@
         if (!filterType) return;
         const unique = Array.from(new Set(ALL_EXERCISES.map((e) => e.type))).sort();
         filterType.innerHTML =
-          `<option value="">Todo</option>` +
+          `<option value="">Wszystko</option>` +
           unique.map((x) => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
       }
 
@@ -1482,21 +1751,5 @@
         previewModal.style.display = "block";
       }
  </script>
-  
-</div>
-
-  <footer class="av-footer" id="av-footer">
-    <div class="container av-footer__inner">
-      <div>© <span id="avYear"></span> AquiVivo</div>
-      <div style="display:flex; gap:12px; align-items:center;">
-        <a href="index.html">Inicio</a>
-        <button type="button" onclick="goBack()">Atrás</button>
-      </div>
-    </div>
-  </footer>
-  <script>
-    (function(){var y=document.getElementById('avYear'); if(y) y.textContent=new Date().getFullYear();})();
-  </script>
-
-</body>
+  </body>
 </html>

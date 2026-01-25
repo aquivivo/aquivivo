@@ -37,23 +37,8 @@
 </head>
 
 <body>
-
-  <header class="nav-glass">
-    <div class="container nav-inner">
-      <div class="brand">
-        <div class="logo-flag" aria-hidden="true"></div>
-        <div class="name">Aqui vivo</div>
-      </div>
-
-      <div class="nav-actions">
-        <a class="btn-white-outline" href="index.html">Inicio</a>
-        <button class="btn-white-outline" type="button" onclick="goBack()">Atrás</button>
-        <button class="btn-red" onclick="logout()">Cerrar sesión</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="page">
+  <div id="appHeader"></div>
+<main class="page">
     <div class="container">
 
       <section class="panel-grid">
@@ -222,10 +207,10 @@ function renderCourseCards(accessObj, metaData){
 
 let CURRENT_UID = null;
 
-function activateTrial(level){
+async function activateTrial(level){
   if(!CURRENT_UID) return;
   const ref = doc(db, "users", CURRENT_UID);
-  const snap = getDoc(ref);
+  const snap = await getDoc(ref);
   const data = snap.data() || {};
 
   const trialUsed = data.trialUsed || {};
@@ -240,13 +225,13 @@ function activateTrial(level){
   const newAccess = { ...(data.access || {}) };
   newAccess[level] = { freeUntil: trialEnd.toISOString() };
 
-  setDoc(ref, {
+  await setDoc(ref, {
     access: newAccess,
     trialUsed: { ...trialUsed, [level]: true },
     updatedAt: serverTimestamp()
   }, { merge: true });
 
-  const refreshed = getDoc(ref);
+  const refreshed = await getDoc(ref);
 
   // Cargar metadata otra vez
   const metaData = {};
@@ -254,7 +239,7 @@ function activateTrial(level){
   for (const lvl of levels) {
     try {
       const metaRef = doc(db, "course_meta", lvl);
-      const metaSnap = getDoc(metaRef);
+      const metaSnap = await getDoc(metaRef);
       if (metaSnap.exists()) metaData[lvl] = metaSnap.data();
     } catch {}
   }
@@ -280,7 +265,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const ref = doc(db, "users", user.uid);
-  let snap = getDoc(ref);
+  let snap = await getDoc(ref);
 
   // si el usuario no existe en la colección users -> establecer A1 prueba = 7 días
   if (!snap.exists()) {
@@ -296,7 +281,7 @@ onAuthStateChanged(auth, async (user) => {
       trialEnd.setDate(now.getDate() + 7);
     }
 
-    setDoc(ref, {
+    await setDoc(ref, {
       email: user.email || null,
       createdAt: serverTimestamp(),
       access: isAdmin ? {
@@ -312,7 +297,7 @@ onAuthStateChanged(auth, async (user) => {
       }
     });
 
-    snap = getDoc(ref);
+    snap = await getDoc(ref);
   }
 
   // Si es admin, asegurarse de que tiene acceso a todos los cursos
@@ -320,7 +305,7 @@ onAuthStateChanged(auth, async (user) => {
     const trialEnd = new Date();
     trialEnd.setFullYear(2099);
     
-    setDoc(ref, {
+    await setDoc(ref, {
       ...snap.data(),
       access: {
         A1: { freeUntil: trialEnd.toISOString() },
@@ -330,14 +315,14 @@ onAuthStateChanged(auth, async (user) => {
       }
     }, { merge: true });
 
-    snap = getDoc(ref);
+    snap = await getDoc(ref);
   }
   const metaData = {};
   const levels = ["A1", "A2", "B1", "B2"];
   for (const level of levels) {
     try {
       const metaRef = doc(db, "course_meta", level);
-      const metaSnap = getDoc(metaRef);
+      const metaSnap = await getDoc(metaRef);
       if (metaSnap.exists()) {
         metaData[level] = metaSnap.data();
       }
@@ -367,32 +352,7 @@ window.logout = function() {
   }
 </script>
 
-
-<script>
-function goBack(){
-  if (window.history.length > 1) window.history.back();
-  else window.location.href = 'index.html';
-}
-
-// ✅ HOTFIX: renderAccess (prevents ReferenceError if original function is missing)
-function renderAccess(access) {
-  const el =
-    document.getElementById('accessInfo') ||
-    document.getElementById('accessStatus') ||
-    document.querySelector('[data-access]') ||
-    document.querySelector('#accesoBox .content') ||
-    null;
-
-  if (!el) return;
-
-  const a = (access && access.access) ? access.access : (access || {});
-  const trialUntil = a.trialUntil || a.trialEnd || a.expiresAt || a.validUntil;
-
-  el.innerHTML = trialUntil
-    ? `✅ Acceso activo hasta: <b>${String(trialUntil).slice(0, 10)}</b>`
-    : `⚠️ Sin acceso activo.`;
-}
-
-</script>
+  <div id="appFooter"></div>
+  <script src="assets/js/layout.js"></script>
 </body>
 </html>
