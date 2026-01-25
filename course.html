@@ -1,16 +1,15 @@
 <!doctype html>
+
 <html lang="es">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <title>Curso | AquiVivo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css" />
-
+    <link href="assets/css/styles.css" rel="stylesheet" />
     <style>
       :root {
         --yellow: #fcd116;
@@ -366,54 +365,108 @@
       }
 
       /* --- Enhancements --- */
-      .course-tools { margin: 14px 0 8px; display: grid; gap: 12px; }
+      .course-tools {
+        margin: 14px 0 8px;
+        display: grid;
+        gap: 12px;
+      }
       .progressCard {
-        background: rgba(255,255,255,0.10);
-        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
         backdrop-filter: blur(12px);
         border-radius: 18px;
         padding: 16px;
       }
-      .progressTop { display:flex; align-items:center; justify-content:space-between; gap: 12px; flex-wrap: wrap; }
-      .progressLabel { font-weight: 900; letter-spacing: .2px; }
-      .progressText { opacity: .9; font-size: 13px; margin-top: 4px; }
-      .progressBar { height: 10px; border-radius: 999px; overflow:hidden; background: rgba(255,255,255,0.16); margin-top: 10px; }
-      .progressFill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--yellow), var(--red)); transition: width .25s ease; }
-      .progressHint { font-size: 12px; opacity: .75; margin-top: 8px; }
+      .progressTop {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .progressLabel {
+        font-weight: 900;
+        letter-spacing: 0.2px;
+      }
+      .progressText {
+        opacity: 0.9;
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .progressBar {
+        height: 10px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.16);
+        margin-top: 10px;
+      }
+      .progressFill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--yellow), var(--red));
+        transition: width 0.25s ease;
+      }
+      .progressHint {
+        font-size: 12px;
+        opacity: 0.75;
+        margin-top: 8px;
+      }
 
-      .statsRow { display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
+      .statsRow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
       .statPill {
-        background: rgba(0,0,0,0.15);
-        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.14);
         border-radius: 999px;
         padding: 10px 12px;
         font-size: 13px;
-        display:flex; gap: 6px; align-items: center;
+        display: flex;
+        gap: 6px;
+        align-items: center;
       }
-      .statBtn{
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.18);
+      .statBtn {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
         color: white;
         border-radius: 999px;
         padding: 10px 12px;
         font-weight: 800;
         cursor: pointer;
       }
-      .statBtn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+      .statBtn:hover {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+      }
 
-      .topic-head { display:flex; align-items:flex-start; justify-content:space-between; gap: 10px; }
-      .topic-title { display:flex; align-items:center; gap: 10px; min-width: 0; }
+      .topic-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .topic-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
       .chip {
         font-size: 12px;
         font-weight: 900;
         border-radius: 999px;
         padding: 4px 10px;
-        background: rgba(0,56,147,0.10);
-        border: 1px solid rgba(0,56,147,0.18);
+        background: rgba(0, 56, 147, 0.1);
+        border: 1px solid rgba(0, 56, 147, 0.18);
         color: var(--blue);
         flex: 0 0 auto;
       }
-      .chip-muted { opacity: .65; }
+      .chip-muted {
+        opacity: 0.65;
+      }
       .badge {
         font-size: 12px;
         font-weight: 900;
@@ -422,84 +475,91 @@
         color: white;
         flex: 0 0 auto;
       }
-      .badge-grammar { background: rgba(0,56,147,0.92); }
-      .badge-vocab { background: rgba(206,17,38,0.92); }
+      .badge-grammar {
+        background: rgba(0, 56, 147, 0.92);
+      }
+      .badge-vocab {
+        background: rgba(206, 17, 38, 0.92);
+      }
 
-      .toast{
+      .toast {
         position: fixed;
         left: 50%;
         bottom: 18px;
         transform: translateX(-50%);
-        background: rgba(0,0,0,0.75);
+        background: rgba(0, 0, 0, 0.75);
         color: white;
-        border: 1px solid rgba(255,255,255,0.18);
+        border: 1px solid rgba(255, 255, 255, 0.18);
         padding: 12px 14px;
         border-radius: 14px;
         max-width: min(720px, calc(100% - 24px));
-        box-shadow: 0 18px 44px rgba(0,0,0,0.35);
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35);
         opacity: 0;
         pointer-events: none;
-        transition: opacity .18s ease, transform .18s ease;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
         z-index: 9999;
         font-weight: 700;
       }
-      .toast.show{ opacity: 1; transform: translateX(-50%) translateY(-2px); }
-
-      .topic.topic-done{
-        outline: 2px solid rgba(34,197,94,.35);
-        box-shadow: 0 18px 44px rgba(0,0,0,0.18);
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-2px);
       }
-      .readMark{
-        position:absolute;
+
+      .topic.topic-done {
+        outline: 2px solid rgba(34, 197, 94, 0.35);
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+      }
+      .readMark {
+        position: absolute;
         top: 12px;
         right: 54px;
         width: 34px;
         height: 34px;
         border-radius: 999px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        background: rgba(255,255,255,.12);
-        border: 1px solid rgba(255,255,255,.22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.22);
         color: white;
         font-weight: 900;
         backdrop-filter: blur(10px);
       }
-      .topic.topic-read{ outline: 2px solid rgba(255,255,255,.18); }
+      .topic.topic-read {
+        outline: 2px solid rgba(255, 255, 255, 0.18);
+      }
 
-      .doneMark{
-        position:absolute;
+      .doneMark {
+        position: absolute;
         top: 12px;
         right: 12px;
         width: 34px;
         height: 34px;
         border-radius: 999px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        background: rgba(34,197,94,.16);
-        border: 1px solid rgba(34,197,94,.28);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(34, 197, 94, 0.16);
+        border: 1px solid rgba(34, 197, 94, 0.28);
         color: white;
         font-weight: 900;
         backdrop-filter: blur(10px);
       }
-
-
     </style>
   </head>
-
   <body>
-  <div id="appHeader"></div>
-<main class="page">
+    <div id="appHeader"></div>
+    <main class="page">
       <div class="container">
         <div class="titleRow">
           <div style="font-size: 44px; line-height: 1">📘</div>
           <div style="flex: 1">
             <h1 id="levelTitle">Nivel</h1>
             <p class="subtitle" id="levelSubtitle">Cargando…</p>
-
             <!-- ADMIN BUTTONS (escondidos para estudiantes) -->
-            <div id="adminBar" class="adminBar">
+            <div class="adminBar" id="adminBar">
               <button onclick="editCourseMeta()">
                 ✏️ Editar descripción del curso
               </button>
@@ -507,42 +567,59 @@
                 🧹 Eliminar duplicados (nivel actual)
               </button>
             </div>
-          
             <div class="course-tools" id="courseTools">
               <div class="progressCard">
                 <div class="progressTop">
                   <div>
                     <div class="progressLabel">📈 Progreso (local)</div>
-                    <div class="progressText"><span id="progressText">0%</span> · <span id="progressCount">0/0</span> temas visitados</div>
+                    <div class="progressText">
+                      <span id="progressText">0%</span> ·
+                      <span id="progressCount">0/0</span> temas visitados
+                    </div>
                   </div>
-                  <button class="btn-nav btn-yellow" id="btnContinue" style="display:none" type="button">
+                  <button
+                    class="btn-nav btn-yellow"
+                    id="btnContinue"
+                    style="display: none"
+                    type="button"
+                  >
                     ▶️ Continuar
                   </button>
                 </div>
-                <div class="progressBar" aria-hidden="true">
-                  <div class="progressFill" id="progressFill" style="width:0%"></div>
+                <div aria-hidden="true" class="progressBar">
+                  <div
+                    class="progressFill"
+                    id="progressFill"
+                    style="width: 0%"
+                  ></div>
                 </div>
-                <div class="progressHint">Se guarda en tu navegador (localStorage). En el próximo paso podemos pasar esto a Firestore.</div>
+                <div class="progressHint">
+                  Se guarda en tu navegador (localStorage). En el próximo paso
+                  podemos pasar esto a Firestore.
+                </div>
               </div>
-
               <div class="statsRow">
-                <div class="statPill">📚 Total: <strong id="statTotal">0</strong></div>
-                <div class="statPill">🔎 Mostrando: <strong id="statShowing">0</strong></div>
-                <button class="statBtn" id="btnClearFilters" type="button">🧼 Limpiar filtros</button>
+                <div class="statPill">
+                  📚 Total: <strong id="statTotal">0</strong>
+                </div>
+                <div class="statPill">
+                  🔎 Mostrando: <strong id="statShowing">0</strong>
+                </div>
+                <button class="statBtn" id="btnClearFilters" type="button">
+                  🧼 Limpiar filtros
+                </button>
               </div>
             </div>
-
-</div>
+          </div>
         </div>
-
         <!-- FILTERS SECTION -->
         <div class="filtersSection">
           <div class="filterGroup">
             <span class="filterLabel">🔍 Buscar:</span>
             <input
-              type="text"
               id="searchInput"
               placeholder="Escribe el nombre del tema..."
+              type="text"
             />
           </div>
           <div class="filterGroup">
@@ -654,29 +731,22 @@
             </select>
           </div>
         </div>
-
         <div class="sectionTitle">📘 Gramática</div>
         <div id="grammarList"></div>
-
         <div class="sectionTitle">📗 Vocabulario</div>
         <div id="vocabList"></div>
-
         <!-- ADMIN (agregar tema) -->
-        <div id="adminPanel" class="card adminPanel">
+        <div class="card adminPanel" id="adminPanel">
           <h3 style="margin: 0 0 10px 0">👑 Panel Admin – agregar tema</h3>
-
           <div class="row">
             <select id="adminType">
               <option value="grammar">gramática</option>
               <option value="vocabulary">vocabulario</option>
             </select>
-
             <input id="adminTitle" placeholder="Título (ES)" />
             <input id="adminDesc" placeholder="Descripción (ES)" />
-
             <button onclick="addTopic()">➕ Agregar</button>
           </div>
-
           <p style="font-size: 12px; color: #6b7280; margin: 10px 0 0 0">
             Si hiciste clic en importar varias veces – usa "Eliminar
             duplicados". Esto eliminará las repeticiones en Firestore.
@@ -684,7 +754,6 @@
         </div>
       </div>
     </main>
-
     <!-- 🔥 Firebase -->
     <script type="module">
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
@@ -786,94 +855,102 @@
           .replaceAll('>', '&gt;')
           .replaceAll('"', '&quot;')
           .replaceAll("'", '&#039;');
-      function toast(msg) {
-        const el = document.getElementById('toast');
-        if (!el) return;
-        el.textContent = msg;
-        el.classList.add('show');
-        clearTimeout(window.__toastTimer);
-        window.__toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
-      }
-
-      window.goBack = function () {
-        window.history.back();
-      };
-
-      // --- progreso local (sin Firestore) ---
-      const LS_VISITED_KEY = `aquivivo_visited_${LEVEL}`;
-      const LS_LAST_KEY = `aquivivo_lastLesson_${LEVEL}`;
-      const LS_DONE_KEY = `aquivivo_done_${LEVEL}`;
-      const LS_READ_KEY = `aquivivo_read_${LEVEL}`;
-
-      function getVisitedSet() {
-        try {
-          const arr = JSON.parse(localStorage.getItem(LS_VISITED_KEY) || '[]');
-          return new Set(Array.isArray(arr) ? arr : []);
-        } catch {
-          return new Set();
+        function toast(msg) {
+          const el = document.getElementById('toast');
+          if (!el) return;
+          el.textContent = msg;
+          el.classList.add('show');
+          clearTimeout(window.__toastTimer);
+          window.__toastTimer = setTimeout(
+            () => el.classList.remove('show'),
+            2200,
+          );
         }
-      }
 
-      function setVisitedSet(set) {
-        try {
-          localStorage.setItem(LS_VISITED_KEY, JSON.stringify(Array.from(set)));
-        } catch {}
-      }
-      
-      function getReadSet() {
-        try {
-          const arr = JSON.parse(localStorage.getItem(LS_READ_KEY) || '[]');
-          return new Set(Array.isArray(arr) ? arr : []);
-        } catch {
-          return new Set();
-        }
-      }
+        window.goBack = function () {
+          window.history.back();
+        };
 
-      function isRead(topicId){
-        return getReadSet().has(topicId);
-      }
+        // --- progreso local (sin Firestore) ---
+        const LS_VISITED_KEY = `aquivivo_visited_${LEVEL}`;
+        const LS_LAST_KEY = `aquivivo_lastLesson_${LEVEL}`;
+        const LS_DONE_KEY = `aquivivo_done_${LEVEL}`;
+        const LS_READ_KEY = `aquivivo_read_${LEVEL}`;
 
-      function getDoneSet() {
-        try {
-          const arr = JSON.parse(localStorage.getItem(LS_DONE_KEY) || '[]');
-          return new Set(Array.isArray(arr) ? arr : []);
-        } catch {
-          return new Set();
-        }
-      }
-
-      function isDone(topicId) {
-        return getDoneSet().has(topicId);
-      }
-
-
-      function updateStatsAndProgress(showingCount) {
-        const total = allTopics.length;
-        const visited = getVisitedSet();
-        const visitedCount = Array.from(visited).filter((id) =>
-          allTopics.some((t) => t.id === id),
-        ).length;
-
-        document.getElementById('statTotal').textContent = String(total);
-        document.getElementById('statShowing').textContent = String(showingCount);
-
-        const pct = total ? Math.round((visitedCount / total) * 100) : 0;
-        document.getElementById('progressText').textContent = `${pct}%`;
-        document.getElementById('progressCount').textContent = `${visitedCount}/${total}`;
-        document.getElementById('progressFill').style.width = `${pct}%`;
-
-        const last = localStorage.getItem(LS_LAST_KEY);
-        const btn = document.getElementById('btnContinue');
-        if (btn) {
-          if (last && allTopics.some((t) => t.id === last)) {
-            btn.style.display = 'inline-flex';
-            btn.onclick = () => openLesson(last);
-          } else {
-            btn.style.display = 'none';
+        function getVisitedSet() {
+          try {
+            const arr = JSON.parse(
+              localStorage.getItem(LS_VISITED_KEY) || '[]',
+            );
+            return new Set(Array.isArray(arr) ? arr : []);
+          } catch {
+            return new Set();
           }
         }
-      }
 
+        function setVisitedSet(set) {
+          try {
+            localStorage.setItem(
+              LS_VISITED_KEY,
+              JSON.stringify(Array.from(set)),
+            );
+          } catch {}
+        }
+
+        function getReadSet() {
+          try {
+            const arr = JSON.parse(localStorage.getItem(LS_READ_KEY) || '[]');
+            return new Set(Array.isArray(arr) ? arr : []);
+          } catch {
+            return new Set();
+          }
+        }
+
+        function isRead(topicId) {
+          return getReadSet().has(topicId);
+        }
+
+        function getDoneSet() {
+          try {
+            const arr = JSON.parse(localStorage.getItem(LS_DONE_KEY) || '[]');
+            return new Set(Array.isArray(arr) ? arr : []);
+          } catch {
+            return new Set();
+          }
+        }
+
+        function isDone(topicId) {
+          return getDoneSet().has(topicId);
+        }
+
+        function updateStatsAndProgress(showingCount) {
+          const total = allTopics.length;
+          const visited = getVisitedSet();
+          const visitedCount = Array.from(visited).filter((id) =>
+            allTopics.some((t) => t.id === id),
+          ).length;
+
+          document.getElementById('statTotal').textContent = String(total);
+          document.getElementById('statShowing').textContent =
+            String(showingCount);
+
+          const pct = total ? Math.round((visitedCount / total) * 100) : 0;
+          document.getElementById('progressText').textContent = `${pct}%`;
+          document.getElementById('progressCount').textContent =
+            `${visitedCount}/${total}`;
+          document.getElementById('progressFill').style.width = `${pct}%`;
+
+          const last = localStorage.getItem(LS_LAST_KEY);
+          const btn = document.getElementById('btnContinue');
+          if (btn) {
+            if (last && allTopics.some((t) => t.id === last)) {
+              btn.style.display = 'inline-flex';
+              btn.onclick = () => openLesson(last);
+            } else {
+              btn.style.display = 'none';
+            }
+          }
+        }
       }
 
       // ✅ 1) metadatos del curso: course_meta/A1 (título + subtítulo)
@@ -1034,10 +1111,10 @@
             : `<span class="chip chip-muted">#—</span>`;
 
         return `
-          <div class="card topic ${((typeof isDone==='function' && isDone(t.id)) ? "topic-done" : "") + ((typeof isRead==='function' && isRead(t.id)) ? " topic-read" : "")}" role="button" tabindex="0" onclick="openLesson('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openLesson('${t.id}') }">
+          <div class="card topic ${(typeof isDone === 'function' && isDone(t.id) ? 'topic-done' : '') + (typeof isRead === 'function' && isRead(t.id) ? ' topic-read' : '')}" role="button" tabindex="0" onclick="openLesson('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openLesson('${t.id}') }">
             ${adminButtons}
-            ${(typeof isRead==='function' && isRead(t.id)) ? `<div class="readMark" title="Lekcja przeczytana">📘</div>` : ``}
-            ${(typeof isDone==='function' && isDone(t.id)) ? `<div class="doneMark" title="Terminado">✅</div>` : ``}
+            ${typeof isRead === 'function' && isRead(t.id) ? `<div class="readMark" title="Lekcja przeczytana">📘</div>` : ``}
+            ${typeof isDone === 'function' && isDone(t.id) ? `<div class="doneMark" title="Terminado">✅</div>` : ``}
             <div class="topic-head">
               <div class="topic-title">
                 ${orderChip}
@@ -1061,7 +1138,9 @@
 
         const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(id)}`;
         window.open(url, '_blank', 'noopener,noreferrer');
-        updateStatsAndProgress(Number(document.getElementById('statShowing')?.textContent || 0));
+        updateStatsAndProgress(
+          Number(document.getElementById('statShowing')?.textContent || 0),
+        );
       };
 
       // ✅ Admin: agregar tema
@@ -1190,12 +1269,13 @@
           renderFiltered();
         }
       });
-
     </script>
-  
-    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
-
-    <div id="appFooter"></div>
-  <script src="assets/js/layout.js"></script>
-</body>
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      class="toast"
+      id="toast"
+      role="status"
+    ></div>
+  </body>
 </html>

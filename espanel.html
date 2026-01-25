@@ -1,358 +1,1232 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Panel del estudiante | AquiVivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="utf-8" />
+    <title>Panel del estudiante | AquiVivo</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- ✅ consistente con login/admin -->
+    <link href="assets/css/styles.css" rel="stylesheet" />
+    <style>
+      .panel-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      @media (max-width: 860px) {
+        .panel-grid {
+          grid-template-columns: 1fr;
+        }
+      }
 
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-  <!-- ✅ consistente con login/admin -->
-  <link rel="stylesheet" href="assets/css/styles.css" />
+      .courses-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-top: 12px;
+      }
+      @media (max-width: 860px) {
+        .courses-grid {
+          grid-template-columns: 1fr;
+        }
+      }
 
-  <style>
-    .panel-grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; margin-bottom: 16px; }
-    @media (max-width: 860px){ .panel-grid{ grid-template-columns: 1fr; } }
+      .course-card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 140px;
+      }
+      .course-actions {
+        margin-top: auto;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
 
-    .courses-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 12px; }
-    @media (max-width: 860px){ .courses-grid{ grid-template-columns: 1fr; } }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-weight: 900;
+        font-size: 12px;
+        letter-spacing: 0.2px;
+      }
+      .pill-ok {
+        background: rgba(252, 209, 22, 0.22);
+        border: 1px solid rgba(252, 209, 22, 0.45);
+        color: #111827;
+      }
 
-    .course-card{ display:flex; flex-direction:column; gap: 10px; min-height: 140px; }
-    .course-actions{ margin-top:auto; display:flex; gap:10px; flex-wrap:wrap; }
+      .pill-warn {
+        background: rgba(206, 17, 38, 0.18);
+        border: 1px solid rgba(206, 17, 38, 0.35);
+        color: #fff;
+      }
+      .pill-neutral {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: #fff;
+      }
 
-    .pill{ display:inline-flex; align-items:center; gap: 8px; padding: 8px 12px; border-radius: 999px; font-weight: 900; font-size: 12px; letter-spacing: .2px; }
-    .pill-ok{ background: rgba(252, 209, 22, .22); border: 1px solid rgba(252, 209, 22, .45); color: #111827; }
+      
+      .pill-expired {
+        background: rgba(255, 80, 80, 0.25);
+        color: #ff8080;
+        border: 1px solid rgba(255, 80, 80, 0.4);
+      }
+
+      .pill-lock {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: white;
+        backdrop-filter: blur(10px);
+      }
+
+      .small-muted {
+        margin: 0;
+        font-size: 13px;
+        color: #6b7280;
+        line-height: 1.35;
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(12px);
+      }
+
+      .adminLinkWrap {
+        margin-top: 10px;
+        display: none;
+      }
+      .adminLinkWrap.show {
+        display: block;
+      }
+
+.progress-wrap{
+        margin-top: 6px;
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+      }
+      .progress-bar{
+        width:100%;
+        height:10px;
+        border-radius:999px;
+        background: rgba(255,255,255,0.16);
+        border: 1px solid rgba(255,255,255,0.18);
+        overflow:hidden;
+      }
+      .progress-fill{
+        height:100%;
+        width:0%;
+        border-radius:999px;
+        background: rgba(252, 209, 22, 0.85);
+      }
+      .progress-meta{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        font-size:12px;
+        font-weight:800;
+        opacity:.95;
+      }
+      .last-activity{
+        margin-top: 12px;
+        display:none;
+      }
+
+
+      /* Course tiles (match homepage pricing style) */
+      .course-tile{
+        position: relative;
+        border-radius: 28px;
+        overflow: hidden;
+        padding: 16px 16px 14px;
+        box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+        border: 2px solid rgba(255,255,255,0.14);
+        min-height: 300px;
+      }
+      .tile-blue{ background: #173B8C; color: #ffffff; }
+      .tile-yellow{ background: #FCD116; color: #0b1a3a; }
+      .tile-white{ background: #ffffff; color: #0b1a3a; }
+      .tile-red{ background: #CE1126; color: #ffffff; }
+
+      .tile-top-pill{
+        position:absolute;
+        top: -14px;
+        left: 22px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-weight: 900;
+        font-size: 14px;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+        border: 2px solid rgba(255,255,255,0.35);
+        background: rgba(255,255,255,0.92);
+        color: #0b1a3a;
+      }
+      .tile-top-pill.red{
+        background: #CE1126;
+        color: #fff;
+        border-color: rgba(255,255,255,0.35);
+      }
+
+      .tile-badge{
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-weight: 900;
+        font-size: 15px;
+        background: rgba(255,255,255,0.25);
+        border: 1px solid rgba(255,255,255,0.35);
+        backdrop-filter: blur(10px);
+      }
+      .tile-yellow .tile-badge{ background: rgba(11,26,58,0.08); border-color: rgba(11,26,58,0.18); }
+      .tile-white .tile-badge{ background: rgba(11,26,58,0.06); border-color: rgba(11,26,58,0.16); }
+      .tile-red .tile-badge{ background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.25); }
+      .tile-blue .tile-badge{ background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.26); }
+
+      .tile-title{
+        margin-top: 18px;
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 28px;
+        line-height: 1.08;
+      }
+      .tile-subtitle{
+        margin-top: 10px;
+        font-style: italic;
+        font-weight: 700;
+        opacity: .92;
+      }
+
+      .tile-meta{
+        margin-top: 18px;
+        font-size: 14px;
+        line-height: 1.35;
+        opacity: .92;
+      }
+
+      .tile-actions{
+        margin-top: auto;
+        display:flex;
+        flex-direction:column;
+        gap: 12px;
+      }
+      .tile-actions .btn-yellow{ width:100%; justify-content:center; }
+      .tile-actions .btn-white-outline{ width:100%; justify-content:center; }
+      .tile-red .btn-white-outline{ border-color: rgba(255,255,255,0.7); color:#fff; }
+      .tile-blue .btn-white-outline{ border-color: rgba(255,255,255,0.7); color:#fff; }
+      .tile-yellow .btn-white-outline{ border-color: rgba(11,26,58,0.35); color:#0b1a3a; }
+      .tile-white .btn-white-outline{ border-color: rgba(11,26,58,0.35); color:#0b1a3a; }
+
+      .tile-red .progress-bar{ background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.22); }
+      .tile-red .progress-fill{ background: rgba(252, 209, 22, 0.95); }
+      .tile-blue .progress-bar{ background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.22); }
+      .tile-blue .progress-fill{ background: rgba(252, 209, 22, 0.95); }
+      .tile-yellow .progress-bar{ background: rgba(11,26,58,0.10); border-color: rgba(11,26,58,0.18); }
+      .tile-yellow .progress-fill{ background: rgba(206, 17, 38, 0.85); }
+      .tile-white .progress-bar{ background: rgba(11,26,58,0.08); border-color: rgba(11,26,58,0.16); }
+      .tile-white .progress-fill{ background: rgba(252, 209, 22, 0.9); }
     
-    .pill-warn{ background: rgba(206, 17, 38, .18); border: 1px solid rgba(206, 17, 38, .35); color: #fff; }
-    .pill-neutral{ background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color: #fff; }
+      /* Coffee cup forced white */
+      
+    
+      
+    
+      /* Coffee cup forced white */
+      
+    
+      
+      
+    
+      /* Coffee cup correct + white */
+      
 
-    .pill-lock{ background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color: white; backdrop-filter: blur(10px); }
+      /* Floating coffee on background */
+      #coffeeFloat {
+        animation: coffeeFloat 6s ease-in-out infinite;
+        transform-origin: 50% 60%;
+      }
+      #coffeeFloat svg {
+        width: 100%;
+        height: 100%;
+      }
+      
+        50%  { transform: translateY(-14px) translateX(-6px) rotate(1deg) scale(1.02); }
+        100% { transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1); }
+      }
+      @media (max-width: 980px) {
+        #coffeeFloat { display:none; }
+      }
 
-    .small-muted{ margin: 0; font-size: 13px; color: #6b7280; line-height:1.35; }
 
-    .glass-card{ background: rgba(255,255,255,.10); color:white; border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(12px); }
+      /* Floating coffee (gentle, background) */
+      #coffeeFloat {
+        position:absolute;
+        right:-40px;
+        top:360px;
+        width:420px;
+        height:420px;
+        pointer-events:none;
+        opacity:0.9;
+        filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35));
+        animation: coffeeFloat 7s ease-in-out infinite;
+        transform-origin: 50% 60%;
+      }
+      #coffeeFloat svg {
+        width:100%;
+        height:100%;
+      }
+      @keyframes coffeeFloat {
+        0%   { transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1); }
+        50%  { transform: translateY(-18px) translateX(-6px) rotate(1deg) scale(1.02); }
+        100% { transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1); }
+      }
 
-    .adminLinkWrap{ margin-top: 10px; display:none; }
-    .adminLinkWrap.show{ display:block; }
-  </style>
+          .admin-only{ display:none; }
+    </style>
+
+
 </head>
 
-<body>
-  <div id="appHeader"></div>
-<main class="page">
-    <div class="container">
-
-      <section class="panel-grid">
-        <div class="hero-card">
-          <h1 class="hero-title glow-text">Panel del estudiante 🎓</h1>
-          <p class="hero-subtitle">Mis cursos</p>
-
-          <div style="margin-top:12px; display:inline-flex; gap:10px; align-items:center; padding:10px 14px; border-radius:16px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px);">
-            <div style="font-weight:900;">👤</div>
-            <div style="font-weight:800;">Iniciada sesión como: <span id="userEmail" style="font-weight:700; opacity:.95;">...</span></div>
-          </div>
-
-          <div id="adminLinkWrap" class="adminLinkWrap">
-            <div style="margin-top:12px;">
-              <a class="btn-white-outline" href="esadmin.html">⚙️ Admin</a>
+  <body>
+    <div id="appHeader"></div>
+    <main class="page">
+      <div class="container">
+        <section class="panel-grid">
+          <div class="hero-card">
+            <h1 class="hero-title glow-text">Panel del estudiante 🎓</h1>
+            <p class="hero-subtitle">Mis cursos</p>
+            <div
+              style="
+                margin-top: 12px;
+                display: inline-flex;
+                gap: 10px;
+                align-items: center;
+                padding: 10px 14px;
+                border-radius: 16px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                backdrop-filter: blur(10px);
+              "
+            >
+              <div style="font-weight: 900">👤</div>
+              <div style="font-weight: 800">
+                Iniciada sesión como:
+                <span id="userEmail" style="font-weight: 700; opacity: 0.95"
+                  >...</span
+                >
+              </div>
             </div>
-            <p class="small-muted" style="margin-top:8px; color: rgba(255,255,255,.8);">Solo visible para administradores.</p>
+            <div class="card glass-card last-activity" id="lastActivityCard" style="padding:12px 14px; border-radius:16px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <div style="font-weight:900;">🕒 Última actividad</div>
+                <div style="font-weight:900; opacity:.9;" id="lastActivityWhen"></div>
+              </div>
+              <div style="margin-top:6px; font-weight:900; font-size:16px;" id="lastActivityTitle">—</div>
+              <div style="margin-top:10px;">
+                <a class="btn-yellow" id="lastActivityLink" href="#">Continuar →</a>
+              </div>
+            </div>
+            <div class="adminLinkWrap" id="adminLinkWrap">
+              <div style="margin-top: 12px">
+                <a class="btn-white-outline" href="esadmin.html">⚙️ Admin</a>
+              </div>
+              <p
+                class="small-muted"
+                style="margin-top: 8px; color: rgba(255, 255, 255, 0.8)"
+              >
+                Solo visible para administradores.
+              </p>
+            </div>
           </div>
-        </div>
+          <div class="stats">
+            <div class="stat">
+              <div class="big">📘</div>
+              <div class="label">Cursos</div>
+            </div>
+            <div class="stat">
+              <div class="big">⏳</div>
+              <div class="label">Acceso</div>
+            </div>
+            <div class="stat">
+              <div class="big">🎓</div>
+              <div class="label">Aprendizaje</div>
+            </div>
+          </div>
+        </section>
+        <!-- Big section header (style like landing title) -->
+<div style="margin-top:10px;">
+  <div style="
+    width:100%;
+    padding: 14px 18px;
+    border-radius: 18px;
+    background: rgba(13, 36, 92, 0.35);
+    border: 1px solid rgba(255,255,255,0.14);
+    backdrop-filter: blur(10px);
+  ">
+    <div style="
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: 56px;
+      line-height: 1;
+      letter-spacing: 0.5px;
+      color: #FCD116;
+      text-shadow: 0 10px 28px rgba(0,0,0,0.25);
+    ">Mis cursos</div>
+  </div>
+</div>
+        
+<div style="display:grid;grid-template-columns: 2fr 1fr; gap:28px;">
 
-        <div class="stats">
-          <div class="stat"><div class="big">📘</div><div class="label">Cursos</div></div>
-          <div class="stat"><div class="big">⏳</div><div class="label">Acceso</div></div>
-          <div class="stat"><div class="big">🎓</div><div class="label">Aprendizaje</div></div>
-        </div>
-      </section>
+  <!-- LEFT: courses -->
+  <div class="courses-grid" id="coursesCards"></div>
 
-      <div class="sectionTitle">📘 Mis cursos</div>
-      <div id="coursesCards" class="courses-grid"></div>
+  <div id="coffeeFloat" aria-hidden="true" style="position:absolute; right:-40px; top:120px; width:420px; height:420px; pointer-events:none; opacity:0.9; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35));">
+    <svg class="w-72 h-72 mx-auto drop-shadow-2xl" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs>
+         <lineargradient id="cupGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+         </lineargradient>
+         <lineargradient id="coffeeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#6F4E37;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#3E2723;stop-opacity:1" />
+         </lineargradient>
+        </defs> <ellipse cx="100" cy="55" rx="70" ry="15" fill="#FCD116" opacity="0.3" /> <ellipse cx="100" cy="55" rx="60" ry="12" fill="#003893" opacity="0.3" /> <ellipse cx="100" cy="55" rx="50" ry="10" fill="#FCD116" opacity="0.3" /> <rect x="85" y="55" width="30" height="25" rx="5" fill="#FCD116" opacity="0.3" /> <path d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z" fill="url(#cupGradient)" stroke="#654321" stroke-width="2" /> <ellipse cx="100" cy="120" rx="35" ry="8" fill="url(#coffeeGradient)" /> <path d="M 140 130 Q 155 130 155 145 Q 155 160 140 160" fill="none" stroke="url(#cupGradient)" stroke-width="8" stroke-linecap="round" /> <rect x="70" y="135" width="60" height="8" fill="#FCD116" opacity="0.6" rx="2" /> <rect x="70" y="145" width="60" height="5" fill="#003893" opacity="0.6" rx="1" /> <rect x="70" y="152" width="60" height="5" fill="#CE1126" opacity="0.6" rx="1" /> <path d="M 85 110 Q 80 95 85 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
+         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85" dur="2s" repeatcount="indefinite" />
+        </path> <path d="M 100 108 Q 100 90 105 80" fill="none" stroke="#FCD116" stroke-width="4" stroke-linecap="round" opacity="0.8">
+         <animate attributename="opacity" values="0.8;0.4;0.8" dur="2.5s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80" dur="2.5s" repeatcount="indefinite" />
+        </path> <path d="M 115 110 Q 120 95 115 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
+         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2.2s" repeatcount="indefinite" />
+         <animate attributename="d" values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85" dur="2.2s" repeatcount="indefinite" />
+        </path> <ellipse cx="50" cy="140" rx="8" ry="10" fill="#3E2723" transform="rotate(-20 50 140)">
+         <animate attributename="opacity" values="1;0.7;1" dur="3s" repeatcount="indefinite" />
+        </ellipse> <path d="M 50 135 Q 50 140 50 145" stroke="#654321" stroke-width="1.5" /> <ellipse cx="150" cy="135" rx="8" ry="10" fill="#3E2723" transform="rotate(20 150 135)">
+         <animate attributename="opacity" values="0.7;1;0.7" dur="3s" repeatcount="indefinite" />
+        </ellipse> <path d="M 150 130 Q 150 135 150 140" stroke="#654321" stroke-width="1.5" /> <rect x="70" y="175" width="60" height="8" fill="#FCD116" rx="1" opacity="0.9" /> <rect x="75" y="178" width="50" height="8" fill="#FFFFFF" rx="1" opacity="0.8" /> <rect x="80" y="181" width="40" height="8" fill="#FCD116" rx="1" opacity="0.7" /> <path d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z" fill="#CE1126" opacity="0.8">
+         <animate attributename="transform" values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)" dur="1.5s" repeatcount="indefinite" />
+        </path>
+       </svg>
+  </div>
+<section id="pricingSection" style="max-width:1200px;margin:80px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;" style="margin-top:60px;">
+  <h2 style="font-family:'Playfair Display',serif;font-size:46px;color:#FCD116;" data-editable-key="pricing_title">Planes y precios</h2>
 
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:30px;">
+
+    <div class="course-tile tile-blue" data-plan="A1A2">
+      <div class="tile-title"
+ data-editable="true" contenteditable="false"
+>Nivel A1–A2</div>
+      <div class="tile-subtitle"
+ data-editable="true" contenteditable="false"
+>Fundamentos de la vida en Polonia</div>
+      <div class="tile-meta"
+ data-editable="true" contenteditable="false"
+ contenteditable="false" id="price_A1A2">180 zł / 3 meses</div>
+      <div class="tile-actions">
+        <a class="btn-yellow" href="Contacto.html" data-editable-key="buy_label">Comprar acceso</a>
+        
+      </div>
     </div>
-  </main>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, getDocs }
-  from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+    <div class="course-tile tile-white" data-plan="B1">
+      <div class="tile-title"
+ data-editable="true" contenteditable="false"
+>Nivel B1</div>
+      <div class="tile-subtitle"
+ data-editable="true" contenteditable="false"
+>Vida independiente en Polonia</div>
+      <div class="tile-meta"
+ data-editable="true" contenteditable="false"
+ contenteditable="false" id="price_B1">250 zł / 3 meses</div>
+      <div class="tile-actions">
+        <a class="btn-yellow" href="Contacto.html" data-editable-key="buy_label">Comprar acceso</a>
+        
+      </div>
+    </div>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
-  authDomain: "aquivivo-platform.firebaseapp.com",
-  projectId: "aquivivo-platform",
-  storageBucket: "aquivivo-platform.firebasestorage.app",
-  messagingSenderId: "116115622011",
-  appId: "1:116115622011:web:33a4a583eba4368071bade"
-};
+    <div class="course-tile tile-red" data-plan="B2">
+      <div class="tile-title"
+ data-editable="true" contenteditable="false"
+>Nivel B2</div>
+      <div class="tile-subtitle"
+ data-editable="true" contenteditable="false"
+>Integración total</div>
+      <div class="tile-meta"
+ data-editable="true" contenteditable="false"
+ contenteditable="false" id="price_B2">350 zł / 3 meses</div>
+      <div class="tile-actions">
+        <a class="btn-yellow" href="Contacto.html" data-editable-key="buy_label">Comprar acceso</a>
+        
+      </div>
+    </div>
 
-const ADMIN_EMAILS = ["aquivivo.pl@gmail.com", "DODAJ_DRUGI_EMAIL_TUTAJ@example.com"]; // <- wpisz tu drugi email (uczeń-test)
-
-function isAdminEmail(email){
-  const e = (email || "").toLowerCase();
-  return ADMIN_EMAILS.some(a => (a||"").toLowerCase() === e);
-}
-
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const userEmailEl = document.getElementById("userEmail");
-const coursesCardsEl = document.getElementById("coursesCards");
-const adminLinkWrap = document.getElementById("adminLinkWrap");
-
-function parseIso(s){
-  if(!s) return null;
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
-}
+  </div>
+</section>
 
 
-function daysLeft(accessObj, level){
-  if (!accessObj || !accessObj[level] || !accessObj[level].freeUntil) return null;
-  const exp = parseIso(accessObj[level].freeUntil);
-  if(!exp) return null;
-  const ms = exp.getTime() - Date.now();
-  return Math.ceil(ms / (1000*60*60*24));
-}
+<!-- ADMIN MODAL -->
+<div id="adminModal" style="display:none; position:fixed; inset:0; background: rgba(0,0,0,0.55); z-index:9999; padding:22px; overflow:auto;">
+  <div style="max-width:860px; margin:0 auto; background:#0b1a3a; border:1px solid rgba(255,255,255,0.18); border-radius:22px; padding:18px 18px 14px; box-shadow:0 20px 60px rgba(0,0,0,0.45);">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+      <div style="font-family:'Playfair Display',serif; font-size:34px; font-weight:900; color:#FCD116;">Panel Admin</div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn-white-outline" onclick="closeAdminPanel()">Cerrar</button>
+      </div>
+    </div>
 
-function formatLeft(accessObj, level){
-  const d = daysLeft(accessObj, level);
-  if(d === null) return "—";
-  if(d <= 0) return "expirado";
-  if(d === 1) return "1 día";
-  return `${d} días`;
-}
+    <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px;">
+        <div style="font-weight:900; margin-bottom:10px;">💳 Precios</div>
+        <label style="display:block; font-weight:800; opacity:.9;">A1–A2</label>
+        <input id="adm_price_A1A2" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+        <div style="height:10px;"></div>
 
-function hasAccess(accessObj, level){
-  if (!accessObj || !accessObj[level] || !accessObj[level].freeUntil) return false;
-  const exp = parseIso(accessObj[level].freeUntil);
-  if(!exp) return false;
-  return exp > new Date();
-}
+        <label style="display:block; font-weight:800; opacity:.9;">B1</label>
+        <input id="adm_price_B1" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+        <div style="height:10px;"></div>
 
-function renderCourseCards(accessObj, metaData){
-  coursesCardsEl.innerHTML = "";
-  const levels = ["A1","A2","B1","B2"];
+        <label style="display:block; font-weight:800; opacity:.9;">B2</label>
+        <input id="adm_price_B2" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+      </div>
 
-  function activeCard(lvl){
-    const meta = metaData[lvl] || {};
-    const title = meta.title || `Polaco ${lvl}`;
-    const subtitle = meta.subtitle || "Haz clic para acceder al curso.";
-    
-    // Mapear nivel a archivo de curso
-    const courseFile = `course.html?level=${encodeURIComponent(lvl)}`;
-    
-    return `
-      <div class="card course-card">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div class="pill pill-ok">✅ acceso activo</div>
-          <div class="pill pill-neutral">⏳ <span id="exp_${lvl}">—</span></div>
-          <div style="font-weight:900; opacity:.9;">PL ${lvl}</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px;">
+        <div style="font-weight:900; margin-bottom:10px;">🎛️ Trial / acceso gratis</div>
+
+        <label style="display:block; font-weight:800; opacity:.9;">Días de trial (por nivel)</label>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+          <input id="adm_trial_A1" placeholder="A1" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+          <input id="adm_trial_A2" placeholder="A2" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+          <input id="adm_trial_B1" placeholder="B1" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+          <input id="adm_trial_B2" placeholder="B2" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
         </div>
 
-        <div style="font-size:20px; font-weight:900; margin-top:4px;">${title}</div>
-        <p class="small-muted">${subtitle}</p>
+        <div style="height:12px;"></div>
 
-        <div class="course-actions">
-          <a class="btn-yellow" href="${courseFile}">Acceder →</a>
+        <div style="font-weight:900; margin-bottom:8px;">🏷️ Código de descuento</div>
+        <div style="display:grid; grid-template-columns: 1.2fr .8fr 1fr; gap:10px;">
+          <input id="adm_promo_code" placeholder="CODIGO (ej. BIENVENIDA10)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+          <input id="adm_promo_pct" placeholder="% (ej. 10)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+          <input id="adm_promo_days" placeholder="días gratis (opcional)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+        </div>
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-yellow" onclick="addPromo()">Añadir código</button>
+          <button class="btn-white-outline" onclick="clearPromos()">Borrar lista</button>
+        </div>
+
+        <div id="promoList" style="margin-top:12px; font-size:13px; opacity:.95;"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px;">
+      <div style="font-weight:900; margin-bottom:10px;">➕ Botones extra (sección precios)</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr .6fr; gap:10px;">
+        <input id="adm_btn_text" placeholder="Texto del botón" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+        <input id="adm_btn_href" placeholder="Link (ej. Contacto.html)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
+        <select id="adm_btn_style" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;">
+          <option value="yellow">Amarillo</option>
+          <option value="outline">Outline</option>
+        </select>
+      </div>
+      <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-yellow" onclick="addExtraButton()">Añadir botón</button>
+        <button class="btn-white-outline" onclick="clearExtraButtons()">Borrar botones</button>
+      </div>
+      <div id="extraButtonsPreview" style="margin-top:12px;"></div>
+    </div>
+
+    <div style="margin-top:14px; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
+      <button class="btn-white-outline" onclick="reloadSettings()">Revertir</button>
+      <button class="btn-yellow" onclick="saveSettings()">Guardar en Firestore</button>
+    </div>
+  </div>
+</div>
+
+</main>
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        serverTimestamp,
+        collection,
+        getDocs,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+        authDomain: 'aquivivo-platform.firebaseapp.com',
+        projectId: 'aquivivo-platform',
+        storageBucket: 'aquivivo-platform.firebasestorage.app',
+        messagingSenderId: '116115622011',
+        appId: '1:116115622011:web:33a4a583eba4368071bade',
+      };
+
+      const ADMIN_EMAILS = [
+        'aquivivo.pl@gmail.com',
+        'DODAJ_DRUGI_EMAIL_TUTAJ@example.com',
+      ]; // <- wpisz tu drugi email (uczeń-test)
+
+      function isAdminEmail(email) {
+        const e = (email || '').toLowerCase();
+        return ADMIN_EMAILS.some((a) => (a || '').toLowerCase() === e);
+      }
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const userEmailEl = document.getElementById('userEmail');
+      const coursesCardsEl = document.getElementById('coursesCards');
+      const adminLinkWrap = document.getElementById('adminLinkWrap');
+
+      function parseIso(s) {
+        if (!s) return null;
+        const d = new Date(s);
+        return isNaN(d.getTime()) ? null : d;
+      }
+
+      function daysLeft(accessObj, level) {
+        if (!accessObj || !accessObj[level] || !accessObj[level].freeUntil)
+          return null;
+        const exp = parseIso(accessObj[level].freeUntil);
+        if (!exp) return null;
+        const ms = exp.getTime() - Date.now();
+        return Math.ceil(ms / (1000 * 60 * 60 * 24));
+      }
+
+      function formatLeft(accessObj, level) {
+        const d = daysLeft(accessObj, level);
+        if (d === null) return '—';
+        if (d <= 0) return 'expirado';
+        if (d === 1) return '1 día';
+        return `Quedan ${d} días`;
+      }
+
+      function hasAccess(accessObj, level) {
+        if (!accessObj || !accessObj[level] || !accessObj[level].freeUntil)
+          return false;
+        const exp = parseIso(accessObj[level].freeUntil);
+        if (!exp) return false;
+        return exp > new Date();
+      }
+
+      // ===== PROGRESS + LAST ACTIVITY (STEP 3) =====
+      function safeJsonParse(s) {
+        try { return JSON.parse(s); } catch { return null; }
+      }
+
+      function getProgress(level) {
+        // expected: { completed: number, total: number, lastUrl?: string, lastTitle?: string }
+        const raw = localStorage.getItem(`av_progress_${level}`);
+        const obj = safeJsonParse(raw || "");
+        const completed = Number(obj?.completed || 0);
+        const total = Number(obj?.total || 0);
+        const pct = total > 0 ? Math.max(0, Math.min(100, Math.round((completed / total) * 100))) : 0;
+        return {
+          completed,
+          total,
+          pct,
+          lastUrl: obj?.lastUrl || null,
+          lastTitle: obj?.lastTitle || null,
+        };
+      }
+
+      function getLastActivity() {
+        // expected: { level: "A1", title: string, url: string, at: number }
+        const obj = safeJsonParse(localStorage.getItem("av_last_activity") || "");
+        if (!obj || !obj.url) return null;
+        return obj;
+      }
+
+      function renderLastActivity() {
+        const card = document.getElementById("lastActivityCard");
+        if (!card) return;
+        const a = getLastActivity();
+        if (!a) { card.style.display = "none"; return; }
+        document.getElementById("lastActivityTitle").textContent = a.title || `Curso ${a.level}`;
+        document.getElementById("lastActivityLink").href = a.url;
+        const whenEl = document.getElementById("lastActivityWhen");
+        if (a.at) {
+          const d = new Date(a.at);
+          whenEl.textContent = d.toLocaleDateString();
+        } else {
+          whenEl.textContent = "";
+        }
+        card.style.display = "block";
+      }
+
+      function renderCourseCards(accessObj, metaData) {
+        coursesCardsEl.innerHTML = '';
+        const levels = ['A1', 'A2', 'B1', 'B2']; // fixed order A1 A2 / B1 B2
+
+        function tileClass(lvl){
+          if (lvl === 'B2') return 'tile-red';
+          if (lvl === 'B1') return 'tile-white';
+          return 'tile-blue'; // A1/A2
+        }
+function activeCard(lvl) {
+          const meta = metaData[lvl] || {};
+          const title = meta.title || `Polaco ${lvl}`;
+          const subtitle = meta.subtitle || 'Haz clic para acceder al curso.';
+
+          // Mapear nivel a archivo de curso
+          const courseFile = `course.html?level=${encodeURIComponent(lvl)}`;
+
+          return `
+      <div class="course-tile ${tileClass(lvl)}">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:6px;">
+          <div class="tile-badge">🎓 NIVEL ${lvl}</div>
+          <div style="font-weight:900; opacity:.9;">⏳ <span id="exp_${lvl}">—</span></div>
+        </div>
+
+        <div class="tile-title"
+ data-editable="true" contenteditable="false"
+>${title}</div>
+        <div class="tile-subtitle"
+ data-editable="true" contenteditable="false"
+>${subtitle}</div>
+
+        <div class="progress-wrap" style="margin-top:18px;">
+          <div class="progress-meta">
+            <div>Progreso</div>
+            <div><span id="pct_${lvl}">0</span>%</div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="fill_${lvl}"></div></div>
+        </div>
+
+        <div class="tile-meta"
+ data-editable="true" contenteditable="false"
+ style="margin-top:16px;">
+          ✅ Acceso activo
+        </div>
+
+        <div class="tile-actions" style="margin-top:22px;">
+          <a class="btn-yellow" id="enter_${lvl}" href="${courseFile}"
+ data-editable="true" contenteditable="false"
+>${siteSettings?.texts?.enter_label || 'Entrar al curso →'}</a>
+          <a class="btn-white-outline" href="Contacto.html"
+ data-editable="true" contenteditable="false"
+>${siteSettings?.texts?.extend_label || "Extender acceso"}</a>
         </div>
       </div>
-    `;
-  }
+`;
+        }
 
-  function lockedCard(lvl){
-    const meta = metaData[lvl] || {};
-    const title = meta.title || `Polaco ${lvl}`;
-    
-    return `
-      <div class="card course-card glass-card">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        function lockedCard(lvl) {
+          const meta = metaData[lvl] || {};
+          const title = meta.title || `Polaco ${lvl}`;
+          const subtitle = meta.subtitle || '';
+
+
+          return `
+      <div class="course-tile ${tileClass(lvl)}">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:6px;">
+          <div class="tile-badge">🎓 NIVEL ${lvl}</div>
           <div class="pill pill-lock">🔒 bloqueado</div>
-          <div style="font-weight:900; opacity:.9;">PL ${lvl}</div>
         </div>
 
-        <div style="font-size:20px; font-weight:900; margin-top:4px;">${title}</div>
-        <p style="margin:0; font-size:13px; opacity:.9;">Bloqueado. Puedes activar una prueba de 7 días (una vez por nivel).</p>
+        <div class="tile-title"
+ data-editable="true" contenteditable="false"
+>${title}</div>
+        <div class="tile-subtitle"
+ data-editable="true" contenteditable="false"
+>Curso bloqueado</div>
 
-        <div class="course-actions">
-          <button class="btn-yellow" type="button" onclick="activateTrial('${lvl}')">Activar 7 días</button>
-          <a class="btn-white-outline" href="Contacto.html">Comprar acceso</a>
+        <div class="tile-meta"
+ data-editable="true" contenteditable="false"
+>
+          Este curso está bloqueado.<br><span style="font-weight:900; color:#FCD116;">Trial: ${siteSettings?.trialDays?.[lvl] ?? 7} días</span>
+        </div>
+
+        <div class="tile-actions" style="margin-top:22px;">
+          <a class="btn-yellow" href="Contacto.html"
+ data-editable="true" contenteditable="false"
+>${siteSettings?.texts?.unlock_label || "Desbloquear el curso"}</a>
         </div>
       </div>
-    `;
-  }
-
-  levels.forEach(lvl => {
-    const active = hasAccess(accessObj, lvl);
-    coursesCardsEl.innerHTML += active ? activeCard(lvl) : lockedCard(lvl);
-  });
-
-  // Rellenar expiración en tarjetas activas
-  levels.forEach(lvl => {
-    const el = document.getElementById(`exp_${lvl}`);
-    if(!el) return;
-    const left = daysLeft(accessObj, lvl);
-    el.textContent = formatLeft(accessObj, lvl);
-    const pill = el.parentElement;
-    if(left !== null && left <= 2){
-      pill.classList.add('pill-warn');
-      pill.classList.remove('pill-neutral');
-    }
-  });
-}
+`;
+        }
 
 
-let CURRENT_UID = null;
-
-async function activateTrial(level){
-  if(!CURRENT_UID) return;
-  const ref = doc(db, "users", CURRENT_UID);
-  const snap = await getDoc(ref);
-  const data = snap.data() || {};
-
-  const trialUsed = data.trialUsed || {};
-  if(trialUsed[level]){
-    alert("La prueba ya fue usada para este nivel.");
-    return;
-  }
-
-  const now = new Date();
-  const trialEnd = new Date(now.getTime() + 7*24*60*60*1000);
-
-  const newAccess = { ...(data.access || {}) };
-  newAccess[level] = { freeUntil: trialEnd.toISOString() };
-
-  await setDoc(ref, {
-    access: newAccess,
-    trialUsed: { ...trialUsed, [level]: true },
-    updatedAt: serverTimestamp()
-  }, { merge: true });
-
-  const refreshed = await getDoc(ref);
-
-  // Cargar metadata otra vez
-  const metaData = {};
-  const levels = ["A1","A2","B1","B2"];
-  for (const lvl of levels) {
-    try {
-      const metaRef = doc(db, "course_meta", lvl);
-      const metaSnap = await getDoc(metaRef);
-      if (metaSnap.exists()) metaData[lvl] = metaSnap.data();
-    } catch {}
-  }
-
-  renderCourseCards(refreshed.data()?.access || {}, metaData);
-  alert(`✅ Activado: ${level} por 7 días`);
-}
+        function expiredCard(lvl) {
+          const meta = metaData[lvl] || {};
+          const title = meta.title || `Polaco ${lvl}`;
+          const subtitle = meta.subtitle || '';
 
 
+          return `
+      <div class="course-tile ${tileClass(lvl)}">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:6px;">
+          <div class="tile-badge">🎓 NIVEL ${lvl}</div>
+          <div class="pill pill-expired">❌ expirado</div>
+        </div>
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "eslogin.html";
-    return;
-  }
+        <div class="tile-title"
+ data-editable="true" contenteditable="false"
+>${title}</div>
+        <div class="tile-subtitle"
+ data-editable="true" contenteditable="false"
+>Acceso expirado</div>
 
-  userEmailEl.textContent = user.email || "(sin correo)";
-  CURRENT_UID = user.uid;
+        <div class="tile-meta"
+ data-editable="true" contenteditable="false"
+>
+          Tu acceso ha expirado. Desbloquea el curso para continuar.
+        </div>
 
-  // mostrar enlace al administrador (si es email de admin)
-  if (isAdminEmail(user.email)){
-    adminLinkWrap.classList.add("show");
-  }
+        <div class="tile-actions" style="margin-top:22px;">
+          <a class="btn-yellow" href="Contacto.html"
+ data-editable="true" contenteditable="false"
+>${siteSettings?.texts?.unlock_label || "Desbloquear el curso"}</a>
+        </div>
+      </div>
+`;
+        }
 
-  const ref = doc(db, "users", user.uid);
-  let snap = await getDoc(ref);
 
-  // si el usuario no existe en la colección users -> establecer A1 prueba = 7 días
-  if (!snap.exists()) {
-    const isAdmin = isAdminEmail(user.email);
-    const now = new Date();
-    const trialEnd = new Date();
+        let cActive = 0, cLocked = 0, cExpired = 0;
+
+        levels.forEach((lvl) => {
+          const active = hasAccess(accessObj, lvl);
+          coursesCardsEl.innerHTML += active
+            ? activeCard(lvl)
+            : lockedCard(lvl);
+        });
+
+        // Rellenar expiración en tarjetas activas
+        levels.forEach((lvl) => {
+          const el = document.getElementById(`exp_${lvl}`);
+          if (!el) return;
+          const left = daysLeft(accessObj, lvl);
+          el.textContent = formatLeft(accessObj, lvl);
+          const pill = el.parentElement;
+          if (left !== null && left <= 2) {
+            pill.classList.add('pill-warn');
+            pill.classList.remove('pill-neutral');
+          }
+        });
+      }
+
+      let CURRENT_UID = null;
+
+      async function activateTrial(level) {
+        if (!CURRENT_UID) return;
+        const ref = doc(db, 'users', CURRENT_UID);
+        const snap = await getDoc(ref);
+        const data = snap.data() || {};
+
+        const trialUsed = data.trialUsed || {};
+        if (trialUsed[level]) {
+          alert('La prueba ya fue usada para este nivel.');
+          return;
+        }
+
+        const now = new Date();
+        const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+        const newAccess = { ...(data.access || {}) };
+        newAccess[level] = { freeUntil: trialEnd.toISOString() };
+
+        await setDoc(
+          ref,
+          {
+            access: newAccess,
+            trialUsed: { ...trialUsed, [level]: true },
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+
+        const refreshed = await getDoc(ref);
+
+        // Cargar metadata otra vez
+        const metaData = {};
+        const levels = ['A1', 'A2', 'B1', 'B2']; // fixed order A1 A2 / B1 B2
+        for (const lvl of levels) {
+          try {
+            const metaRef = doc(db, 'course_meta', lvl);
+            const metaSnap = await getDoc(metaRef);
+            if (metaSnap.exists()) metaData[lvl] = metaSnap.data();
+          } catch {}
+        }
+
+        renderCourseCards(refreshed.data()?.access || {}, metaData);
+            renderLastActivity();
+        alert(`✅ Activado: ${level} por 7 días`);
+      }
+
+      // Expose for inline onclick handlers
+      window.activateTrial = activateTrial;
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = 'eslogin.html';
+          return;
+        }
+
+        userEmailEl.textContent = user.email || '(sin correo)';
+        CURRENT_UID = user.uid;
+
+        // mostrar enlace al administrador (si es email de admin)
+        if (isAdminEmail(user.email)) {
+          adminLinkWrap.classList.add('show');
+        }
+
+        const ref = doc(db, 'users', user.uid);
+        let snap = await getDoc(ref);
+
+        // si el usuario no existe en la colección users -> establecer A1 prueba = 7 días
+        if (!snap.exists()) {
+          const isAdmin = isAdminEmail(user.email);
+          const now = new Date();
+          const trialEnd = new Date();
+
+          if (isAdmin) { document.querySelectorAll('.admin-only').forEach(b=>b.style.display='inline-flex');
+            // Admin: acceso ilimitado a todos los cursos (hasta año 2099)
+            trialEnd.setFullYear(2099);
+          } else {
+            // Usuario regular: A1 por 7 días
+            trialEnd.setDate(now.getDate() + 7);
+          }
+
+          await setDoc(ref, {
+            email: user.email || null,
+            createdAt: serverTimestamp(),
+            access: isAdmin
+              ? {
+                  A1: { freeUntil: trialEnd.toISOString() },
+                  A2: { freeUntil: trialEnd.toISOString() },
+                  B1: { freeUntil: trialEnd.toISOString() },
+                  B2: { freeUntil: trialEnd.toISOString() },
+                }
+              : {
+                  A1: { freeUntil: trialEnd.toISOString() },
+                  A2: null,
+                  B1: null,
+                  B2: null,
+                },
+          });
+
+          snap = await getDoc(ref);
+        }
+
+        // Si es admin, asegurarse de que tiene acceso a todos los cursos
+        if (isAdminEmail(user.email)) {
+          const trialEnd = new Date();
+          trialEnd.setFullYear(2099);
+
+          await setDoc(
+            ref,
+            {
+              ...snap.data(),
+              access: {
+                A1: { freeUntil: trialEnd.toISOString() },
+                A2: { freeUntil: trialEnd.toISOString() },
+                B1: { freeUntil: trialEnd.toISOString() },
+                B2: { freeUntil: trialEnd.toISOString() },
+              },
+            },
+            { merge: true },
+          );
+
+          snap = await getDoc(ref);
+        }
+        const metaData = {};
+        const levels = ['A1', 'A2', 'B1', 'B2']; // fixed order A1 A2 / B1 B2
+        for (const level of levels) {
+          try {
+            const metaRef = doc(db, 'course_meta', level);
+            const metaSnap = await getDoc(metaRef);
+            if (metaSnap.exists()) {
+              metaData[level] = metaSnap.data();
+            }
+          } catch (e) {
+            console.log(`No metadata for ${level}`);
+          }
+        }
+
+        const data = snap.data();
+        renderCourseCards(data?.access || {}, metaData);
+        renderLastActivity();
+      });
+
+      window.logout = function () {
+        signOut(auth).then(() => (window.location.href = 'eslogin.html'));
+      };
     
-    if (isAdmin) {
-      // Admin: acceso ilimitado a todos los cursos (hasta año 2099)
-      trialEnd.setFullYear(2099);
-    } else {
-      // Usuario regular: A1 por 7 días
-      trialEnd.setDate(now.getDate() + 7);
-    }
 
-    await setDoc(ref, {
-      email: user.email || null,
-      createdAt: serverTimestamp(),
-      access: isAdmin ? {
-        A1: { freeUntil: trialEnd.toISOString() },
-        A2: { freeUntil: trialEnd.toISOString() },
-        B1: { freeUntil: trialEnd.toISOString() },
-        B2: { freeUntil: trialEnd.toISOString() }
-      } : {
-        A1: { freeUntil: trialEnd.toISOString() },
-        A2: null,
-        B1: null,
-        B2: null
+
+
+
+      // ===== SITE SETTINGS (Firestore) =====
+      const SETTINGS_REF = doc(db, "site_settings", "panel_es");
+
+      const DEFAULT_SETTINGS = {
+        prices: { A1A2: "180 zł / 3 meses", B1: "250 zł / 3 meses", B2: "350 zł / 3 meses" },
+        trialDays: { A1: 7, A2: 7, B1: 7, B2: 7 },
+        promos: [], // {code, pct, days}
+        extraButtons: [], // {text, href, style}
+        texts: {
+          pricing_title: "Planes y precios",
+          buy_label: "Comprar acceso",
+          enter_label: 'Entrar al curso →',
+          extend_label: 'Extender acceso',
+          unlock_label: 'Desbloquear el curso',
+        }
+      };
+
+      let siteSettings = structuredClone(DEFAULT_SETTINGS);
+
+      function isAdminUser(userEmail){
+        return ADMIN_EMAILS.includes(userEmail);
       }
-    });
 
-    snap = await getDoc(ref);
-  }
+      function applySettingsToUI(){
+        // prices
+        const p = siteSettings.prices || {};
+        const elA = document.getElementById("price_A1A2"); if (elA && p.A1A2) elA.textContent = p.A1A2;
+        const elB1 = document.getElementById("price_B1"); if (elB1 && p.B1) elB1.textContent = p.B1;
+        const elB2 = document.getElementById("price_B2"); if (elB2 && p.B2) elB2.textContent = p.B2;
 
-  // Si es admin, asegurarse de que tiene acceso a todos los cursos
-  if (isAdminEmail(user.email)) {
-    const trialEnd = new Date();
-    trialEnd.setFullYear(2099);
-    
-    await setDoc(ref, {
-      ...snap.data(),
-      access: {
-        A1: { freeUntil: trialEnd.toISOString() },
-        A2: { freeUntil: trialEnd.toISOString() },
-        B1: { freeUntil: trialEnd.toISOString() },
-        B2: { freeUntil: trialEnd.toISOString() }
+        // pricing title
+        const t = siteSettings.texts || {};
+        const pricingTitle = document.querySelector('[data-editable-key="pricing_title"]');
+        if (pricingTitle && t.pricing_title) pricingTitle.textContent = t.pricing_title;
+
+        // buy labels in pricing section
+        document.querySelectorAll('#pricingSection a[data-editable-key="buy_label"]').forEach(a => {
+          if (t.buy_label) a.textContent = t.buy_label;
+        });
+
+        // promos list preview
+        renderPromoList();
+
+        // extra buttons preview + render into pricing section
+        renderExtraButtons();
       }
-    }, { merge: true });
 
-    snap = await getDoc(ref);
-  }
-  const metaData = {};
-  const levels = ["A1", "A2", "B1", "B2"];
-  for (const level of levels) {
-    try {
-      const metaRef = doc(db, "course_meta", level);
-      const metaSnap = await getDoc(metaRef);
-      if (metaSnap.exists()) {
-        metaData[level] = metaSnap.data();
+      async function loadSettings(){
+        try{
+          const snap = await getDoc(SETTINGS_REF);
+          if (snap.exists()){
+            const data = snap.data();
+            siteSettings = {
+              ...DEFAULT_SETTINGS,
+              ...data,
+              prices: { ...DEFAULT_SETTINGS.prices, ...(data.prices || {}) },
+              trialDays: { ...DEFAULT_SETTINGS.trialDays, ...(data.trialDays || {}) },
+              texts: { ...DEFAULT_SETTINGS.texts, ...(data.texts || {}) },
+              promos: Array.isArray(data.promos) ? data.promos : [],
+              extraButtons: Array.isArray(data.extraButtons) ? data.extraButtons : [],
+            };
+          } else {
+            siteSettings = structuredClone(DEFAULT_SETTINGS);
+          }
+          applySettingsToUI();
+        } catch(e){
+          console.error("loadSettings", e);
+        }
       }
-    } catch (e) {
-      console.log(`No metadata for ${level}`);
-    }
-  }
 
-  const data = snap.data();
-  renderCourseCards(data?.access || {}, metaData);
-});
+      async function saveSettings(){
+        if (!window.__isAdmin) return;
+        // pull current UI text edits (contenteditable)
+        document.querySelectorAll('[data-editable-key]').forEach(el => {
+          const key = el.getAttribute('data-editable-key');
+          siteSettings.texts = siteSettings.texts || {};
+          siteSettings.texts[key] = el.textContent.trim();
+        });
 
-window.logout = function() {
-  signOut(auth).then(() => window.location.href = "eslogin.html");
-};
+        // pull admin modal inputs
+        siteSettings.prices = siteSettings.prices || {};
+        siteSettings.prices.A1A2 = document.getElementById("adm_price_A1A2").value.trim() || siteSettings.prices.A1A2;
+        siteSettings.prices.B1 = document.getElementById("adm_price_B1").value.trim() || siteSettings.prices.B1;
+        siteSettings.prices.B2 = document.getElementById("adm_price_B2").value.trim() || siteSettings.prices.B2;
+
+        siteSettings.trialDays = siteSettings.trialDays || {};
+        ["A1","A2","B1","B2"].forEach(lvl => {
+          const v = document.getElementById("adm_trial_" + lvl).value.trim();
+          if (v !== "") siteSettings.trialDays[lvl] = Number(v) || siteSettings.trialDays[lvl];
+        });
+
+        try{
+          await setDoc(SETTINGS_REF, siteSettings, { merge: true });
+          closeAdminPanel();
+          await loadSettings();
+          alert("✅ Guardado");
+        } catch(e){
+          console.error("saveSettings", e);
+          alert("❌ Error al guardar (Firestore rules?)");
+        }
+      }
+
+      async function reloadSettings(){
+        await loadSettings();
+        alert("↩️ Restaurado");
+      }
+
+      // ===== Admin modal =====
+      function openAdminPanel(){
+        if (!window.__isAdmin) return;
+        document.getElementById("adminModal").style.display = "block";
+
+        // populate inputs from current settings
+        document.getElementById("adm_price_A1A2").value = siteSettings.prices?.A1A2 || "";
+        document.getElementById("adm_price_B1").value = siteSettings.prices?.B1 || "";
+        document.getElementById("adm_price_B2").value = siteSettings.prices?.B2 || "";
+
+        ["A1","A2","B1","B2"].forEach(lvl => {
+          document.getElementById("adm_trial_" + lvl).value = String(siteSettings.trialDays?.[lvl] ?? 7);
+        });
+
+        renderPromoList();
+        renderExtraButtons();
+      }
+      function closeAdminPanel(){
+        document.getElementById("adminModal").style.display = "none";
+      }
+
+      // ===== Promos =====
+      function addPromo(){
+        if (!window.__isAdmin) return;
+        const code = document.getElementById("adm_promo_code").value.trim();
+        const pct = Number(document.getElementById("adm_promo_pct").value.trim() || 0);
+        const days = Number(document.getElementById("adm_promo_days").value.trim() || 0);
+        if (!code) return;
+        siteSettings.promos = siteSettings.promos || [];
+        siteSettings.promos.push({ code, pct, days });
+        document.getElementById("adm_promo_code").value = "";
+        document.getElementById("adm_promo_pct").value = "";
+        document.getElementById("adm_promo_days").value = "";
+        renderPromoList();
+      }
+      function clearPromos(){
+        if (!window.__isAdmin) return;
+        siteSettings.promos = [];
+        renderPromoList();
+      }
+      function renderPromoList(){
+        const box = document.getElementById("promoList");
+        if (!box) return;
+        const promos = siteSettings.promos || [];
+        if (!promos.length){
+          box.innerHTML = '<span style="opacity:.85;">Sin códigos</span>';
+          return;
+        }
+        box.innerHTML = promos.map((p,i)=>{
+          const d = p.days ? ` +${p.days} días` : "";
+          const pct = p.pct ? `-${p.pct}%` : "";
+          return `<div style="display:flex; justify-content:space-between; gap:10px; padding:8px 10px; border-radius:12px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); margin-bottom:8px;">
+            <div style="font-weight:900;">${p.code}</div>
+            <div style="opacity:.9;">${pct}${d}</div>
+          </div>`;
+        }).join("");
+      }
+
+      // ===== Extra buttons (pricing section) =====
+      function addExtraButton(){
+        if (!window.__isAdmin) return;
+        const textB = document.getElementById("adm_btn_text").value.trim();
+        const href = document.getElementById("adm_btn_href").value.trim() || "#";
+        const style = document.getElementById("adm_btn_style").value;
+        if (!textB) return;
+        siteSettings.extraButtons = siteSettings.extraButtons || [];
+        siteSettings.extraButtons.push({ text: textB, href, style });
+        document.getElementById("adm_btn_text").value = "";
+        document.getElementById("adm_btn_href").value = "";
+        renderExtraButtons();
+      }
+      function clearExtraButtons(){
+        if (!window.__isAdmin) return;
+        siteSettings.extraButtons = [];
+        renderExtraButtons();
+      }
+      function renderExtraButtons(){
+        const wrap = document.getElementById("extraButtonsPreview");
+        if (!wrap) return;
+        const btns = siteSettings.extraButtons || [];
+        wrap.innerHTML = btns.length ? btns.map((b,i)=>{
+          const cls = b.style === "yellow" ? "btn-yellow" : "btn-white-outline";
+          return `<a class="${cls}" style="display:inline-flex; margin:6px 8px 0 0;" href="${b.href}">${b.text}</a>`;
+        }).join("") : '<span style="opacity:.85;">Sin botones</span>';
+
+        // also render into pricing section under the grid
+        const sec = document.getElementById("pricingSection");
+        if (!sec) return;
+        let host = document.getElementById("extraButtonsHost");
+        if (!host){
+          host = document.createElement("div");
+          host.id = "extraButtonsHost";
+          host.style.marginTop = "16px";
+          sec.appendChild(host);
+        }
+        host.innerHTML = btns.length ? btns.map((b)=>{
+          const cls = b.style === "yellow" ? "btn-yellow" : "btn-white-outline";
+          return `<a class="${cls}" style="display:inline-flex; margin:6px 8px 0 0;" href="${b.href}">${b.text}</a>`;
+        }).join("") : "";
+      }
+
+      // ===== Text editor (whole page) =====
+      let editMode = false;
+      function toggleEditMode(){
+        if (!window.__isAdmin) return;
+        editMode = !editMode;
+
+        // only elements explicitly marked by data-editable-key
+        document.querySelectorAll('[data-editable-key]').forEach(el => {
+          el.contentEditable = editMode;
+          el.style.outline = editMode ? '2px dashed #FCD116' : 'none';
+        });
+
+        document.getElementById("toggleEdit").textContent = editMode ? "💾 Guardar textos" : "✏️ Editar textos";
+        if (!editMode){
+          // persist texts into settings (still need Guardar en Firestore to publish)
+          document.querySelectorAll('[data-editable-key]').forEach(el => {
+            const key = el.getAttribute('data-editable-key');
+            siteSettings.texts = siteSettings.texts || {};
+            siteSettings.texts[key] = el.textContent.trim();
+          });
+          alert("Textos listos. Ahora: ⚙️ Admin → Guardar en Firestore");
+        }
+      }
+
+      // ===== Hook: admin-only visibility =====
+      window.__isAdmin = false;
+
 </script>
+    <script>
+      // Enlazar el banner amarillo a course.html
+      const banner = document.querySelector('.yellow-banner');
+      if (banner) {
+        banner.style.cursor = 'pointer';
+        banner.addEventListener('click', () => {
+          window.location.href = 'course.html';
+        });
+      }
+    </script>
 
-
-<script>
-  // Enlazar el banner amarillo a course.html
-  const banner = document.querySelector('.yellow-banner');
-  if (banner) {
-    banner.style.cursor = 'pointer';
-    banner.addEventListener('click', () => {
-      window.location.href = 'course.html';
-    });
-  }
-</script>
-
-  <div id="appFooter"></div>
-  <script src="assets/js/layout.js"></script>
-</body>
+    <script src="assets/js/layout.js"></script>
+  </body>
 </html>

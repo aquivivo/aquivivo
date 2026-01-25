@@ -407,6 +407,63 @@
       .hintSmall{ font-size: 12px; opacity: .78; margin-top: 8px; }
 
     
+      /* --- Lesson content block --- */
+      .lessonContentCard{
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
+        backdrop-filter: blur(12px);
+        border-radius: 18px;
+        padding: 16px;
+        margin: 12px 0 14px;
+      }
+      .lessonContentTitle{
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .lessonContentTitle h3{
+        margin: 0;
+        font-size: 16px;
+        font-weight: 900;
+      }
+      .lessonText{
+        line-height: 1.55;
+        font-size: 14px;
+        opacity: .95;
+        white-space: normal;
+      }
+      .lessonEmpty{
+        opacity: .75;
+        font-size: 13px;
+      }
+      .adminEditor{
+        display:grid;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .adminEditor textarea{
+        width: 100%;
+        min-height: 180px;
+        resize: vertical;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(0,0,0,0.18);
+        color: white;
+        padding: 12px;
+        font-size: 13px;
+        outline: none;
+      }
+      .adminEditor .row{
+        display:flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items:center;
+      }
+
+
       /* === PATCH UI: unified glass inputs (filters + common inputs) === */
       #filtersCard input,
       #filtersCard select,
@@ -480,18 +537,6 @@
         font-weight: 600;
       }
 
-      /* --- FIX: student answer input inside WHITE exercise card --- */
-      .exercise .textInput{
-        background: #ffffff;
-        color: var(--ink);
-        border: 1px solid #d1d5db;
-      }
-      .exercise .textInput::placeholder{ color: #6b7280; }
-      .exercise .textInput:focus{
-        border-color: rgba(0,56,147,0.45);
-        box-shadow: 0 0 0 3px rgba(0,56,147,0.12);
-      }
-
     </style>
   </head>
 
@@ -532,6 +577,20 @@
 
         <div class="metaRow" id="taskChips"></div>
       </div>
+
+      <!-- Lesson content (from course_meta docId: LEVEL__topicSlug) -->
+      <div id="lessonContentCard" class="lessonContentCard" style="display:none">
+        <div class="lessonContentTitle">
+          <h3>📘 Lección — materiales del tema</h3>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <a class="btn" id="btnOpenLessonPage" href="#" target="_blank" rel="noopener noreferrer">📖 Abrir lección (página)</a>
+          </div>
+        </div>
+
+        <div id="lessonContentBody" class="lessonText"></div>
+        <div id="lessonContentEmpty" class="lessonEmpty" style="display:none">Todavía no hay contenido de lección para este tema.</div>
+      </div>
+
 
       <div class="sectionTitle">🧩 Ejercicios</div>
 
@@ -587,7 +646,77 @@
       <!-- Admin -->
       <div id="adminWrap" class="card adminWrap">
         
-        <div class="sectionTitle">👑 Admin – agregar ejercicio</div>
+        <div id="lessonMetaWrap" class="card" style="margin-top:0; margin-bottom:14px;">
+          <div class="sectionTitle">📘 Admin – agregar/editar lección</div>
+          <div class="smallNote" style="margin-top:-6px">
+            Esto guarda el contenido de la lección (título, objetivos, diálogo, etc.) para <b>este</b> tema.
+          </div>
+
+          <div class="adminGrid" style="margin-top:12px">
+            <div>
+              <label>Título de la lección (ES)</label>
+              <input id="lessonTitleEs" placeholder="Ej: Presentarse: Soy, me llamo..." />
+            </div>
+
+            <div>
+              <label>Descripción corta</label>
+              <input id="lessonDescEs" placeholder="1–2 frases sobre la lección" />
+            </div>
+
+            <div>
+              <label>Imagen (URL) — opcional</label>
+              <input id="lessonImageUrl" placeholder="https://.../imagen.jpg" />
+              <div class="smallNote">Tip: możesz wkleić link do obrazka z Canva/Drive/Hosting.</div>
+            </div>
+
+            <div>
+              <label>Contenido extra (HTML) — opcional</label>
+              <textarea id="lessonHtml" placeholder="Możesz wkleić HTML: nagłówki, listy, <img>, tabelki..."></textarea>
+              <div class="smallNote">To pole wyświetla się uczniowi jako dodatkowa treść pod lekcją.</div>
+            </div>
+
+            <div>
+              <label>Objetivos (uno por línea)</label>
+              <textarea id="lessonObjectives" placeholder="Ej:
+- Presentarme
+- Preguntar el nombre
+- Decir de dónde soy"></textarea>
+            </div>
+
+            <div>
+              <label>Gramática clave (uno por línea)</label>
+              <textarea id="lessonGrammar" placeholder="Ej:
+- być (ser)
+- pronombres personales
+- preguntas: kto?"></textarea>
+            </div>
+
+            <div>
+              <label>Vocabulario (uno por línea)</label>
+              <textarea id="lessonVocab" placeholder="Ej:
+cześć — hola
+mam na imię — me llamo"></textarea>
+            </div>
+
+            <div>
+              <label>Diálogo</label>
+              <textarea id="lessonDialog" placeholder="Escribe un diálogo corto..."></textarea>
+            </div>
+
+            <div>
+              <label>Práctica oral (prompt)</label>
+              <textarea id="lessonSpeaking" placeholder="Ej: Preséntate en 5 frases..."></textarea>
+            </div>
+
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+              <button class="btn" id="btnSaveLessonMeta" type="button">💾 Guardar lección</button>
+              <button class="btn" id="btnClearLessonMeta" type="button">🧽 Limpiar</button>
+              <span class="smallNote" id="lessonMetaStatus" style="margin-left:auto"></span>
+            </div>
+          </div>
+        </div>
+
+<div class="sectionTitle">👑 Admin – agregar ejercicio</div>
 
         <div class="card" style="margin-top:10px">
           <div class="sectionTitle" style="margin-top:0">⚡ Producción rápida</div>
@@ -683,8 +812,6 @@
         <div class="adminActions">
           <button class="btn btn-yellow" id="btnAddExercise" type="button">➕ Guardar ejercicio</button>
           <button class="btn" id="btnAutoOrder" type="button">✨ Ustaw kolejny numer</button>
-          <button class="btn" id="btnCancelEdit" type="button" style="display:none">✖ Anuluj edycję</button>
-          <span class="pill pill-yellow" id="editModePill" style="display:none">✏️ Tryb edycji</span>
         </div>
 
         <div class="smallNote" style="margin-top:10px">
@@ -769,6 +896,11 @@
       const pillType = document.getElementById("pillType");
       const pillSlug = document.getElementById("pillSlug");
       const pillCount = document.getElementById("pillCount");
+
+      // Lesson content (public view)
+      const lessonContentCard = document.getElementById("lessonContentCard");
+      const lessonContentBody = document.getElementById("lessonContentBody");
+      const lessonContentEmpty = document.getElementById("lessonContentEmpty");
       const btnOpenLessonPage = document.getElementById("btnOpenLessonPage");
 
       const topicTitle = document.getElementById("topicTitle");
@@ -799,7 +931,213 @@
       const importStatus = document.getElementById("importStatus");
       
 
-      const btnAutoOrder = document.getElementById("btnAutoOrder");
+      // ===== Lesson meta (course_meta) =====
+      const lessonMetaWrap = document.getElementById("lessonMetaWrap");
+      const lessonTitleEs = document.getElementById("lessonTitleEs");
+      const lessonDescEs = document.getElementById("lessonDescEs");
+      const lessonImageUrl = document.getElementById("lessonImageUrl");
+      const lessonHtml = document.getElementById("lessonHtml");
+      const lessonObjectives = document.getElementById("lessonObjectives");
+      const lessonGrammar = document.getElementById("lessonGrammar");
+      const lessonVocab = document.getElementById("lessonVocab");
+      const lessonDialog = document.getElementById("lessonDialog");
+      const lessonSpeaking = document.getElementById("lessonSpeaking");
+      const btnSaveLessonMeta = document.getElementById("btnSaveLessonMeta");
+      const btnClearLessonMeta = document.getElementById("btnClearLessonMeta");
+      const lessonMetaStatus = document.getElementById("lessonMetaStatus");
+
+      function linesToArray(text) {
+        return (text || "")
+          .split("\n")
+          .map(s => s.replace(/^\s*[-•]\s*/,"").trim())
+          .filter(Boolean);
+      }
+      function arrayToLines(arr) {
+        return Array.isArray(arr) ? arr.join("\n") : "";
+      }
+
+      function getLessonMetaDocId(topic) {
+        const slug = topic && (topic.slug || topic.id) ? String(topic.slug || topic.id) : "";
+        return `${LEVEL}__${slug}`;
+      
+      }
+      function syncLessonPageLink(){
+        if(!btnOpenLessonPage) return;
+        if(!currentTopic) { btnOpenLessonPage.style.display = "none"; return; }
+        const slug = String(currentTopic.slug || currentTopic.id || "");
+        const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(slug)}`;
+        btnOpenLessonPage.href = url;
+        btnOpenLessonPage.style.display = "inline-flex";
+      }
+
+      function renderLessonContent(data){
+        if(!lessonContentCard || !lessonContentBody || !lessonContentEmpty) return;
+
+        // show only when there's anything to show (image or html or objectives etc.)
+        if(!data){
+          lessonContentCard.style.display = "none";
+          lessonContentBody.innerHTML = "";
+          lessonContentEmpty.style.display = "none";
+          return;
+        }
+
+        const parts = [];
+
+        const img = (data.imageUrl || "").trim();
+        if(img){
+          const safe = escapeHtml(img);
+          parts.push(`<img src="${safe}" alt="" style="max-width:100%; border-radius:18px; border:1px solid rgba(255,255,255,0.14); display:block; margin: 10px auto 14px;">`);
+        }
+
+        const html = (data.html || "").trim();
+        if(html){
+          // trusted admin content
+          parts.push(`<div class="lessonText">${html}</div>`);
+        }
+
+        // If no html, we can render simple sections from arrays/dialog
+        if(!html){
+          const obj = Array.isArray(data.objectives) ? data.objectives : [];
+          const gram = Array.isArray(data.grammar) ? data.grammar : [];
+          const voc = Array.isArray(data.vocab) ? data.vocab : [];
+          const dialog = (data.dialog || "").trim();
+          const speak = (data.speakingTask || "").trim();
+
+          if(obj.length){
+            parts.push(`<div class="lessonText"><b>🎯 Cele:</b><ul>${obj.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul></div>`);
+          }
+          if(dialog){
+            parts.push(`<div class="lessonText"><b>💬 Diálogo:</b><div style="white-space:pre-wrap; margin-top:6px">${escapeHtml(dialog)}</div></div>`);
+          }
+          if(gram.length){
+            parts.push(`<div class="lessonText"><b>📚 Gramatyka:</b><ul>${gram.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul></div>`);
+          }
+          if(voc.length){
+            parts.push(`<div class="lessonText"><b>🧠 Słownictwo:</b><ul>${voc.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul></div>`);
+          }
+          if(speak){
+            parts.push(`<div class="lessonText"><b>🗣 Zadanie mówione:</b><div style="margin-top:6px">${escapeHtml(speak)}</div></div>`);
+          }
+        }
+
+        const hasAny = parts.length > 0;
+        lessonContentCard.style.display = hasAny ? "block" : "none";
+        lessonContentEmpty.style.display = hasAny ? "none" : "block";
+        lessonContentBody.innerHTML = parts.join("");
+      }
+
+      async function loadLessonMetaPublic(topic){
+        if(!topic) return;
+        try{
+          const docId = getLessonMetaDocId(topic);
+          const ref = doc(db, "course_meta", docId);
+          const snap = await getDoc(ref);
+          if(!snap.exists()){
+            renderLessonContent(null);
+            syncLessonPageLink();
+            return;
+          }
+          renderLessonContent(snap.data());
+          syncLessonPageLink();
+        }catch(e){
+          console.error(e);
+          renderLessonContent(null);
+          syncLessonPageLink();
+        }
+      }
+
+      async function loadLessonMeta(topic) {
+        if (!isAdmin) return;
+        if (!topic || !(topic.slug || topic.id)) return;
+
+        lessonMetaStatus.textContent = "Cargando...";
+        try {
+          const docId = getLessonMetaDocId(topic);
+          const ref = doc(db, "course_meta", docId);
+          const snap = await getDoc(ref);
+
+          if (!snap.exists()) {
+            lessonMetaStatus.textContent = "Sin lección guardada aún.";
+            return;
+          }
+
+          const data = snap.data() || {};
+          lessonTitleEs.value = data.titleEs || "";
+          lessonDescEs.value = data.descriptionEs || "";
+          lessonObjectives.value = arrayToLines(data.objectives || data.objectivesEs || []);
+          lessonGrammar.value = arrayToLines(data.grammar || data.grammarEs || []);
+          lessonVocab.value = arrayToLines(data.vocab || data.vocabEs || []);
+          lessonDialog.value = data.dialog || data.dialogEs || "";
+          lessonSpeaking.value = data.speakingTask || data.speakingTaskEs || "";
+          lessonImageUrl.value = data.imageUrl || "";
+          lessonHtml.value = data.html || "";
+
+          lessonMetaStatus.textContent = "Lección cargada ✅";
+          renderLessonContent(data);
+          syncLessonPageLink();
+        } catch (e) {
+          console.error(e);
+          lessonMetaStatus.textContent = "Error cargando lección ❌";
+        }
+      }
+
+      async function saveLessonMeta(topic) {
+        if (!isAdmin) return;
+        if (!topic || !(topic.slug || topic.id)) {
+          showToast("Primero elige un tema desde course.html", "warn", 3000);
+          return;
+        }
+
+        lessonMetaStatus.textContent = "Guardando...";
+        try {
+          const slug = String(topic.slug || topic.id);
+          const docId = getLessonMetaDocId(topic);
+          const ref = doc(db, "course_meta", docId);
+
+          const payload = {
+            level: LEVEL,
+            topicSlug: slug,
+            titleEs: (lessonTitleEs.value || "").trim(),
+            descriptionEs: (lessonDescEs.value || "").trim(),
+            objectives: linesToArray(lessonObjectives.value),
+            grammar: linesToArray(lessonGrammar.value),
+            vocab: linesToArray(lessonVocab.value),
+            dialog: (lessonDialog.value || "").trim(),
+            speakingTask: (lessonSpeaking.value || "").trim(),
+            imageUrl: (lessonImageUrl.value || "").trim(),
+            html: (lessonHtml.value || "").trim(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          await setDoc(ref, payload, { merge: true });
+
+          lessonMetaStatus.textContent = "Guardado ✅";
+          showToast("Lección guardada ✅", "ok", 2200);
+        } catch (e) {
+          console.error(e);
+          lessonMetaStatus.textContent = "Error ❌";
+          showToast("Error guardando lección", "err", 2600);
+        }
+      }
+
+      function clearLessonMeta() {
+        lessonTitleEs.value = "";
+        lessonDescEs.value = "";
+        lessonObjectives.value = "";
+        lessonGrammar.value = "";
+        lessonVocab.value = "";
+        lessonDialog.value = "";
+        lessonSpeaking.value = "";
+        lessonImageUrl.value = "";
+        lessonHtml.value = "";
+        lessonMetaStatus.textContent = "";
+        renderLessonContent(null);
+      }
+
+      if (btnSaveLessonMeta) btnSaveLessonMeta.onclick = () => saveLessonMeta(currentTopic);
+      if (btnClearLessonMeta) btnClearLessonMeta.onclick = clearLessonMeta;
+
+const btnAutoOrder = document.getElementById("btnAutoOrder");
 
       // Filters + reorder
       const filterSearch = document.getElementById("filterSearch");
@@ -864,49 +1202,6 @@
         btnAutoOrder.disabled = isSaving;
         btnAddExercise.textContent = isSaving ? "⏳ Guardando..." : "➕ Guardar ejercicio";
       }
-
-
-      function setEditMode(exOrNull){
-        const isOn = !!exOrNull;
-        EDITING_EX_ID = isOn ? String(exOrNull.id) : null;
-
-        if(btnCancelEdit) btnCancelEdit.style.display = isOn ? "inline-flex" : "none";
-        if(editModePill) editModePill.style.display = isOn ? "inline-flex" : "none";
-
-        btnAddExercise.textContent = isOn ? "💾 Zapisz zmiany" : "➕ Guardar ejercicio";
-
-        if(!isOn){
-          // reset form back to "add" mode
-          exPrompt.value = "";
-          if (exImageUrl) exImageUrl.value = "";
-          exOptions.value = "";
-          exAnswer.value = "";
-          exNotes.value = "";
-          if (exTags) exTags.value = "";
-          exOrder.value = String(getNextOrder());
-          return;
-        }
-
-        // fill form from selected exercise
-        exType.value = exOrNull.type || exType.value;
-        exPrompt.value = exOrNull.prompt || "";
-        if (exImageUrl) exImageUrl.value = exOrNull.imageUrl || "";
-        exOptions.value = Array.isArray(exOrNull.options) ? exOrNull.options.join("\n") : "";
-        exAnswer.value = exOrNull.answer || "";
-        exNotes.value = exOrNull.notes || "";
-        if (exCategory) exCategory.value = exOrNull.category || "grammar";
-        if (exTags) exTags.value = Array.isArray(exOrNull.tags) ? exOrNull.tags.join(", ") : (exOrNull.tags || "");
-        exOrder.value = String(Number(exOrNull.order || 1));
-
-        // scroll to admin form for convenience
-        try{ document.getElementById("adminWrap")?.scrollIntoView({behavior:"smooth", block:"start"}); }catch{}
-      }
-
-      if(btnCancelEdit){
-        btnCancelEdit.addEventListener("click", ()=> setEditMode(null));
-      }
-
-
 
       // ===== UX buttons =====
       backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
@@ -1121,7 +1416,6 @@
           ? `
               <div style="display:flex; gap:8px; align-items:center">
                 <button class="btn" id="pv-${ex.id}" type="button" title="Podgląd (uczeń)">👀</button>
-                <button class="btn" id="ed-${ex.id}" type="button" title="Edytuj">✏️</button>
                 <button class="dangerMini" id="del-${ex.id}" type="button" title="Eliminar">🗑</button>
               </div>
             `
@@ -1183,19 +1477,6 @@
             };
           }
         }
-
-        // edit (admin)
-        if (isAdmin) {
-          const edBtn = document.getElementById(`ed-${ex.id}`);
-          if (edBtn) {
-            edBtn.onclick = (ev) => {
-              ev.stopPropagation();
-              setEditMode(ex);
-              showToast("✏️ Tryb edycji: wprowadź zmiany i kliknij „Zapisz zmiany”", "warn", 2400);
-            };
-          }
-        }
-
 
         // drag&drop reorder (admin)
         const card = document.getElementById(`ex-${ex.id}`);
@@ -1402,7 +1683,10 @@
             showToast("⚠️ No se encontró el tema", "warn", 2600);
             return;
           }
-await loadExercises(topic);
+
+          await loadLessonMetaPublic(topic);
+          if (isAdmin) await loadLessonMeta(topic);
+          await loadExercises(topic);
           if (isAdmin) {
             exOrder.value = String(getNextOrder());
           }
@@ -1561,7 +1845,6 @@ await loadExercises(topic);
         const notes = exNotes.value.trim();
         const answer = normalizeAnswer(exAnswer.value);
         const order = Number(exOrder.value || 0);
-        const imageUrl = (exImageUrl?.value || "").trim();
 
         let ok = true;
 
@@ -1582,45 +1865,38 @@ await loadExercises(topic);
           return;
         }
 
-        const payload = {
-          type,
-          prompt,
-          imageUrl,
-          options: options.length ? options : [],
-          answer,
-          notes,
-          category: (exCategory?.value || "grammar"),
-          tags: toTagsArray(exTags?.value),
-          order,
-          updatedAt: serverTimestamp(),
-        };
-
-        const wasEditing = !!EDITING_EX_ID;
-
         try {
           setSaving(true);
           showToast("⏳ Guardando...", "warn", 1200);
 
-          if (EDITING_EX_ID) {
-            // update existing
-            const ref = doc(db, "exercises", EDITING_EX_ID);
-            await updateDoc(ref, payload);
-          } else {
-            // create new
-            await addDoc(collection(db, "exercises"), {
-              level: LEVEL,
-              topicSlug: String(currentTopic.slug || currentTopic.id || ""),
-              topicId: currentTopic.id || null,
-              createdAt: serverTimestamp(),
-              ...payload,
-            });
-          }
+          await addDoc(collection(db, "exercises"), {
+            level: LEVEL,
+            topicSlug: String(currentTopic.slug || currentTopic.id || ""),
+            topicId: currentTopic.id || null,
+            type,
+            prompt,
+            imageUrl,
+            options: options.length ? options : [],
+            answer,
+            notes,
+            category: (exCategory?.value || "grammar"),
+            tags: toTagsArray(exTags?.value),
+            order,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
 
-          // reset form + exit edit mode
-          setEditMode(null);
+          // reset form
+          exPrompt.value = "";
+          if (exImageUrl) exImageUrl.value = "";
+          exOptions.value = "";
+          exAnswer.value = "";
+          exNotes.value = "";
+          if (exTags) exTags.value = "";
+          exOrder.value = String(order + 1);
 
           await loadExercises(currentTopic);
-          showToast(wasEditing ? "✅ Zapisano zmiany" : "✅ Ejercicio guardado", "ok", 2200);
+          showToast("✅ Ejercicio guardado", "ok", 2200);
         } catch (e) {
           console.error(e);
           showToast("❌ Error al guardar (mira la consola)", "bad", 3600);
@@ -1636,7 +1912,6 @@ await loadExercises(topic);
    
 
       // ===== state =====
-      let EDITING_EX_ID = null;
       let ALL_EXERCISES = [];
       let VIEW_EXERCISES = [];
       let IS_ADMIN = false;

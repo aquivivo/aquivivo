@@ -1,287 +1,354 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin | AquiVivo</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | AquiVivo</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
 
-  
-  <link rel="stylesheet" href="assets/css/styles.css" />
-<style>
-    :root { --yellow:#FCD116; --blue:#003893; --red:#CE1126; }
-    body{
-      margin:0;
-      font-family: Montserrat, Arial, sans-serif;
-      min-height:100vh;
-      background:linear-gradient(180deg,#001a4d,#003893,#001a4d);
-      color:white;
-    }
-    .wrap{ max-width:1100px; margin:0 auto; padding:28px 16px 60px; }
-    h1{
-      font-family:"Playfair Display", serif;
-      color: var(--yellow);
-      margin: 0 0 6px 0;
-      font-size: 44px;
-    }
-    .sub{ opacity:.85; margin:0 0 18px 0; }
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <style>
+      :root {
+        --yellow: #fcd116;
+        --blue: #003893;
+        --red: #ce1126;
+      }
+      body {
+        margin: 0;
+        font-family: Montserrat, Arial, sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
+        color: white;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 16px 60px;
+      }
+      h1 {
+        font-family: 'Playfair Display', serif;
+        color: var(--yellow);
+        margin: 0 0 6px 0;
+        font-size: 44px;
+      }
+      .sub {
+        opacity: 0.85;
+        margin: 0 0 18px 0;
+      }
 
-    .topbar{
-      position: fixed;
-      top: 14px;
-      right: 14px;
-      display:flex;
-      gap:10px;
-      z-index: 50;
-    }
-    .topbar button{
-      padding: 8px 12px;
-      border:none;
-      border-radius: 10px;
-      cursor:pointer;
-      font-weight:700;
-      background: var(--red);
-      color:white;
-    }
-    a.back{
-      display:inline-block;
-      color:white;
-      opacity:.9;
-      text-decoration: underline;
-      margin-bottom: 18px;
-    }
+      .topbar {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        display: flex;
+        gap: 10px;
+        z-index: 50;
+      }
+      .topbar button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 700;
+        background: var(--red);
+        color: white;
+      }
+      a.back {
+        display: inline-block;
+        color: white;
+        opacity: 0.9;
+        text-decoration: underline;
+        margin-bottom: 18px;
+      }
 
-    .card{
-      background:white;
-      color: #111827;
-      border-radius: 14px;
-      padding: 14px 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.22);
-      margin: 12px 0;
-    }
+      .card {
+        background: white;
+        color: #111827;
+        border-radius: 14px;
+        padding: 14px 14px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+        margin: 12px 0;
+      }
 
-    .toolbar{
-      display:flex;
-      flex-wrap: wrap;
-      gap:10px;
-      align-items:center;
-      margin: 14px 0 18px 0;
-    }
-    .toolbar input{
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid #d1d5db;
-      min-width: 260px;
-      width: 100%;
-      max-width: 420px;
-      box-sizing: border-box;
-    }
-    .pill{
-      display:inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-weight: 700;
-      font-size: 12px;
-      border: 1px solid rgba(0,0,0,.08);
-      margin-right: 6px;
-    }
-    .ok{ background: rgba(34,197,94,.14); color:#065f46; }
-    .no{ background: rgba(239,68,68,.14); color:#7f1d1d; }
-    .soon{ background: rgba(245,158,11,.14); color:#7c2d12; }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin: 14px 0 18px 0;
+      }
+      .toolbar input {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        min-width: 260px;
+        width: 100%;
+        max-width: 420px;
+        box-sizing: border-box;
+      }
+      .pill {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        margin-right: 6px;
+      }
+      .ok {
+        background: rgba(34, 197, 94, 0.14);
+        color: #065f46;
+      }
+      .no {
+        background: rgba(239, 68, 68, 0.14);
+        color: #7f1d1d;
+      }
+      .soon {
+        background: rgba(245, 158, 11, 0.14);
+        color: #7c2d12;
+      }
 
-    .userRow{
-      display:grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 12px;
-      align-items:start;
-    }
-    @media (max-width: 860px){
-      .userRow{ grid-template-columns: 1fr; }
-    }
-    .userMeta{
-      font-size: 14px;
-      line-height: 1.45;
-    }
-    .userMeta b{ color: var(--blue); }
+      .userRow {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 12px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .userRow {
+          grid-template-columns: 1fr;
+        }
+      }
+      .userMeta {
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      .userMeta b {
+        color: var(--blue);
+      }
 
-    .actions{
-      display:flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
 
-    .levelBox{
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 10px;
-    }
-    .levelTitle{
-      font-weight: 800;
-      color: var(--blue);
-      margin-bottom: 6px;
-    }
-    .btnRow{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .btn{
-      border:none;
-      border-radius: 10px;
-      cursor:pointer;
-      font-weight:800;
-      padding: 8px 10px;
-      font-size: 12px;
-    }
-    .btnBlue{ background: var(--blue); color:white; }
-    .btnYellow{ background: var(--yellow); color:#111827; }
-    .btnRed{ background: var(--red); color:white; }
+      .levelBox {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 10px;
+      }
+      .levelTitle {
+        font-weight: 800;
+        color: var(--blue);
+        margin-bottom: 6px;
+      }
+      .btnRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .btn {
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 800;
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+      .btnBlue {
+        background: var(--blue);
+        color: white;
+      }
+      .btnYellow {
+        background: var(--yellow);
+        color: #111827;
+      }
+      .btnRed {
+        background: var(--red);
+        color: white;
+      }
 
-    .small{ font-size: 12px; color:#6b7280; margin-top: 6px; }
-    .err{ color:#b91c1c; font-weight:800; }
-    .okMsg{ color:#065f46; font-weight:800; }
+      .small {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 6px;
+      }
+      .err {
+        color: #b91c1c;
+        font-weight: 800;
+      }
+      .okMsg {
+        color: #065f46;
+        font-weight: 800;
+      }
 
-    .muted{ color:#6b7280; }
-  </style>
-</head>
+      .muted {
+        color: #6b7280;
+      }
+    </style>
+  </head>
 
-<body>
-  <div id="appHeader"></div>
-<div class="wrap">
-    <a class="back" href="espanel.html">← Volver al panel</a>
+  <body>
+    <div id="appHeader"></div>
+    <div class="wrap">
+      <a class="back" href="espanel.html">← Volver al panel</a>
 
-    <h1>Admin</h1>
-    <p class="sub">Gestionar acceso a usuarios (A1: 7 días de prueba, A2/B1/B2: 3 meses).</p>
+      <h1>Admin</h1>
+      <p class="sub">
+        Gestionar acceso a usuarios (A1: 7 días de prueba, A2/B1/B2: 3 meses).
+      </p>
 
-    <div class="toolbar">
-      <input id="search" placeholder="Buscar por correo / UID…" />
-      <span id="status" class="muted"></span>
+      <div class="toolbar">
+        <input id="search" placeholder="Buscar por correo / UID…" />
+        <span id="status" class="muted"></span>
+      </div>
+
+      <div id="usersList"></div>
     </div>
 
-    <div id="usersList"></div>
-  </div>
+    <!-- Firebase -->
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        doc,
+        getDoc,
+        setDoc,
+        updateDoc,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+      // ✅ Configuración de Firebase
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+        authDomain: 'aquivivo-platform.firebaseapp.com',
+        projectId: 'aquivivo-platform',
+        storageBucket: 'aquivivo-platform.firebasestorage.app',
+        messagingSenderId: '116115622011',
+        appId: '1:116115622011:web:33a4a583eba4368071bade',
+      };
 
-    // ✅ Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
-      authDomain: "aquivivo-platform.firebaseapp.com",
-      projectId: "aquivivo-platform",
-      storageBucket: "aquivivo-platform.firebasestorage.app",
-      messagingSenderId: "116115622011",
-      appId: "1:116115622011:web:33a4a583eba4368071bade"
-    };
+      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+      const LEVELS = ['A1', 'A2', 'B1', 'B2'];
+      const PAID_LEVELS = ['A2', 'B1', 'B2'];
 
-    const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
-    const LEVELS = ["A1","A2","B1","B2"];
-    const PAID_LEVELS = ["A2","B1","B2"];
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+      const usersList = document.getElementById('usersList');
+      const searchInput = document.getElementById('search');
+      const statusEl = document.getElementById('status');
 
-    const usersList = document.getElementById("usersList");
-    const searchInput = document.getElementById("search");
-    const statusEl = document.getElementById("status");
+      let allUsers = [];
 
-    let allUsers = [];
+      // cerrar sesión
+      window.logout = function () {
+        signOut(auth).then(() => (window.location.href = 'eslogin.html'));
+      };
 
-    // cerrar sesión
-    window.logout = function(){
-      signOut(auth).then(()=> window.location.href="eslogin.html");
-    };
+      // verificación de auth
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = 'eslogin.html';
+          return;
+        }
+        if ((user.email || '').toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+          document.body.innerHTML = `<div class="wrap"><h1>Acceso denegado</h1><p class="sub">Esta página es solo para administradores.</p></div>`;
+          return;
+        }
 
-    // verificación de auth
-    onAuthStateChanged(auth, async (user) => {
-      if(!user){
-        window.location.href = "eslogin.html";
-        return;
-      }
-      if(((user.email||"").toLowerCase()) !== ADMIN_EMAIL.toLowerCase()){
-        document.body.innerHTML = `<div class="wrap"><h1>Acceso denegado</h1><p class="sub">Esta página es solo para administradores.</p></div>`;
-        return;
-      }
-
-      await loadUsers();
-      renderUsers();
-    });
-
-    // funciones auxiliares
-    function nowDate(){ return new Date(); }
-    function addDays(date, days){
-      const d = new Date(date);
-      d.setDate(d.getDate() + days);
-      return d;
-    }
-    function addMonths(date, months){
-      const d = new Date(date);
-      d.setMonth(d.getMonth() + months);
-      return d;
-    }
-    function parseIso(s){
-      if(!s) return null;
-      const d = new Date(s);
-      return isNaN(d.getTime()) ? null : d;
-    }
-    function fmt(d){
-      if(!d) return "-";
-      return d.toLocaleString("es-MX");
-    }
-    function hasActiveAccess(userData, level){
-      const expireIso = userData?.access?.[level]?.freeUntil;
-      const exp = parseIso(expireIso);
-      if(!exp) return false;
-      return exp > nowDate();
-    }
-    function pillHtml(label, kind){
-      const cls = kind === "ok" ? "pill ok" : kind === "no" ? "pill no" : "pill soon";
-      return `<span class="${cls}">${label}</span>`;
-    }
-    function esc(s){
-      return String(s||"")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    async function loadUsers(){
-      statusEl.textContent = "Cargando usuarios…";
-      const snap = await getDocs(collection(db, "users"));
-      allUsers = [];
-      snap.forEach(d => allUsers.push({ uid: d.id, ...d.data() }));
-      statusEl.textContent = `Usuarios: ${allUsers.length}`;
-    }
-
-    function renderUsers(){
-      const q = (searchInput.value || "").toLowerCase().trim();
-      const filtered = allUsers.filter(u => {
-        if(!q) return true;
-        return (u.email || "").toLowerCase().includes(q) || (u.uid || "").toLowerCase().includes(q);
+        await loadUsers();
+        renderUsers();
       });
 
-      usersList.innerHTML = filtered.length
-        ? filtered.map(renderUserCard).join("")
-        : `<div class="card"><b>Sin resultados.</b></div>`;
-    }
+      // funciones auxiliares
+      function nowDate() {
+        return new Date();
+      }
+      function addDays(date, days) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + days);
+        return d;
+      }
+      function addMonths(date, months) {
+        const d = new Date(date);
+        d.setMonth(d.getMonth() + months);
+        return d;
+      }
+      function parseIso(s) {
+        if (!s) return null;
+        const d = new Date(s);
+        return isNaN(d.getTime()) ? null : d;
+      }
+      function fmt(d) {
+        if (!d) return '-';
+        return d.toLocaleString('es-MX');
+      }
+      function hasActiveAccess(userData, level) {
+        const expireIso = userData?.access?.[level]?.freeUntil;
+        const exp = parseIso(expireIso);
+        if (!exp) return false;
+        return exp > nowDate();
+      }
+      function pillHtml(label, kind) {
+        const cls =
+          kind === 'ok' ? 'pill ok' : kind === 'no' ? 'pill no' : 'pill soon';
+        return `<span class="${cls}">${label}</span>`;
+      }
+      function esc(s) {
+        return String(s || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
 
-    function renderUserCard(u){
-      const a1Active = hasActiveAccess(u,"A1");
-      const a2Active = hasActiveAccess(u,"A2");
-      const b1Active = hasActiveAccess(u,"B1");
-      const b2Active = hasActiveAccess(u,"B2");
+      async function loadUsers() {
+        statusEl.textContent = 'Cargando usuarios…';
+        const snap = await getDocs(collection(db, 'users'));
+        allUsers = [];
+        snap.forEach((d) => allUsers.push({ uid: d.id, ...d.data() }));
+        statusEl.textContent = `Usuarios: ${allUsers.length}`;
+      }
 
-      const meta = `
+      function renderUsers() {
+        const q = (searchInput.value || '').toLowerCase().trim();
+        const filtered = allUsers.filter((u) => {
+          if (!q) return true;
+          return (
+            (u.email || '').toLowerCase().includes(q) ||
+            (u.uid || '').toLowerCase().includes(q)
+          );
+        });
+
+        usersList.innerHTML = filtered.length
+          ? filtered.map(renderUserCard).join('')
+          : `<div class="card"><b>Sin resultados.</b></div>`;
+      }
+
+      function renderUserCard(u) {
+        const a1Active = hasActiveAccess(u, 'A1');
+        const a2Active = hasActiveAccess(u, 'A2');
+        const b1Active = hasActiveAccess(u, 'B1');
+        const b2Active = hasActiveAccess(u, 'B2');
+
+        const meta = `
         <div class="userMeta">
-          <div><b>Correo:</b> ${esc(u.email || "(ninguno)")}</div>
+          <div><b>Correo:</b> ${esc(u.email || '(ninguno)')}</div>
           <div><b>UID:</b> <span class="muted">${esc(u.uid)}</span></div>
           <div class="small">
             A1 hasta: <b>${fmt(parseIso(u?.access?.A1?.freeUntil))}</b>
@@ -290,17 +357,17 @@
             <br/>B2 hasta: <b>${fmt(parseIso(u?.access?.B2?.freeUntil))}</b>
           </div>
           <div style="margin-top:10px;">
-            ${pillHtml(`A1: ${a1Active ? "ACTIVO" : "SIN ACCESO"}`, a1Active ? "ok" : "no")}
-            ${pillHtml(`A2: ${a2Active ? "ACTIVO" : "SIN ACCESO"}`, a2Active ? "ok" : "no")}
-            ${pillHtml(`B1: ${b1Active ? "ACTIVO" : "SIN ACCESO"}`, b1Active ? "ok" : "no")}
-            ${pillHtml(`B2: ${b2Active ? "ACTIVO" : "SIN ACCESO"}`, b2Active ? "ok" : "no")}
+            ${pillHtml(`A1: ${a1Active ? 'ACTIVO' : 'SIN ACCESO'}`, a1Active ? 'ok' : 'no')}
+            ${pillHtml(`A2: ${a2Active ? 'ACTIVO' : 'SIN ACCESO'}`, a2Active ? 'ok' : 'no')}
+            ${pillHtml(`B1: ${b1Active ? 'ACTIVO' : 'SIN ACCESO'}`, b1Active ? 'ok' : 'no')}
+            ${pillHtml(`B2: ${b2Active ? 'ACTIVO' : 'SIN ACCESO'}`, b2Active ? 'ok' : 'no')}
           </div>
         </div>
       `;
 
-      const actions = `
+        const actions = `
         <div class="actions">
-          ${PAID_LEVELS.map(level => {
+          ${PAID_LEVELS.map((level) => {
             return `
               <div class="levelBox">
                 <div class="levelTitle">${level}</div>
@@ -311,158 +378,188 @@
                 </div>
               </div>
             `;
-          }).join("")}
+          }).join('')}
         </div>
       `;
 
-      return `<div class="card"><div class="userRow">${meta}${actions}</div></div>`;
-    }
-
-    // ✅ Acciones
-    window.grant3m = async function(uid, level){
-      if(!confirm(`¿Dar acceso a ${level} por 3 meses para ${uid}?`)) return;
-
-      const ref = doc(db,"users",uid);
-      const snap = await getDoc(ref);
-      if(!snap.exists()){
-        alert("Este usuario no tiene documento en users (algo está mal).");
-        return;
+        return `<div class="card"><div class="userRow">${meta}${actions}</div></div>`;
       }
 
-      const start = nowDate();
-      const until = addMonths(start, 3);
+      // ✅ Acciones
+      window.grant3m = async function (uid, level) {
+        if (!confirm(`¿Dar acceso a ${level} por 3 meses para ${uid}?`)) return;
 
-      await setDoc(ref, {
-        access: {
-          [level]: { freeUntil: until.toISOString() }
+        const ref = doc(db, 'users', uid);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          alert('Este usuario no tiene documento en users (algo está mal).');
+          return;
         }
-      }, { merge: true });
 
-      await refreshOne(uid);
-      alert(`✅ ${level} activo hasta: ${until.toLocaleString("es-MX")}`);
-    };
+        const start = nowDate();
+        const until = addMonths(start, 3);
 
-    window.extend3m = async function(uid, level){
-      if(!confirm(`¿Extender acceso a ${level} por 3 meses más para ${uid}?`)) return;
+        await setDoc(
+          ref,
+          {
+            access: {
+              [level]: { freeUntil: until.toISOString() },
+            },
+          },
+          { merge: true },
+        );
 
-      const ref = doc(db,"users",uid);
-      const snap = await getDoc(ref);
-      if(!snap.exists()){
-        alert("Este usuario no tiene documento en users (algo está mal).");
-        return;
+        await refreshOne(uid);
+        alert(`✅ ${level} activo hasta: ${until.toLocaleString('es-MX')}`);
+      };
+
+      window.extend3m = async function (uid, level) {
+        if (
+          !confirm(`¿Extender acceso a ${level} por 3 meses más para ${uid}?`)
+        )
+          return;
+
+        const ref = doc(db, 'users', uid);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          alert('Este usuario no tiene documento en users (algo está mal).');
+          return;
+        }
+
+        const data = snap.data();
+        const currentIso = data?.access?.[level]?.freeUntil;
+        const current = parseIso(currentIso);
+
+        const base = current && current > nowDate() ? current : nowDate();
+        const until = addMonths(base, 3);
+
+        await setDoc(
+          ref,
+          {
+            access: {
+              [level]: { freeUntil: until.toISOString() },
+            },
+          },
+          { merge: true },
+        );
+
+        await refreshOne(uid);
+        alert(`✅ ${level} extendido hasta: ${until.toLocaleString('es-MX')}`);
+      };
+
+      window.revoke = async function (uid, level) {
+        if (!confirm(`¿Revocar acceso a ${level} para ${uid}?`)) return;
+
+        const ref = doc(db, 'users', uid);
+        await setDoc(
+          ref,
+          {
+            access: {
+              [level]: null,
+            },
+          },
+          { merge: true },
+        );
+
+        await refreshOne(uid);
+        alert(`✅ ${level} bloqueado`);
+      };
+
+      async function refreshOne(uid) {
+        // refrescamos localmente la lista de usuarios
+        const ref = doc(db, 'users', uid);
+        const snap = await getDoc(ref);
+        const idx = allUsers.findIndex((u) => u.uid === uid);
+        if (idx >= 0) {
+          allUsers[idx] = { uid, ...snap.data() };
+        } else {
+          allUsers.push({ uid, ...snap.data() });
+        }
+        renderUsers();
       }
 
-      const data = snap.data();
-      const currentIso = data?.access?.[level]?.freeUntil;
-      const current = parseIso(currentIso);
+      searchInput.addEventListener('input', renderUsers);
 
-      const base = (current && current > nowDate()) ? current : nowDate();
-      const until = addMonths(base, 3);
-
-      await setDoc(ref, {
-        access: {
-          [level]: { freeUntil: until.toISOString() }
-        }
-      }, { merge: true });
-
-      await refreshOne(uid);
-      alert(`✅ ${level} extendido hasta: ${until.toLocaleString("es-MX")}`);
-    };
-
-    window.revoke = async function(uid, level){
-      if(!confirm(`¿Revocar acceso a ${level} para ${uid}?`)) return;
-
-      const ref = doc(db,"users",uid);
-      await setDoc(ref, {
-        access: {
-          [level]: null
-        }
-      }, { merge: true });
-
-      await refreshOne(uid);
-      alert(`✅ ${level} bloqueado`);
-    };
-
-    async function refreshOne(uid){
-      // refrescamos localmente la lista de usuarios
-      const ref = doc(db,"users",uid);
-      const snap = await getDoc(ref);
-      const idx = allUsers.findIndex(u => u.uid === uid);
-      if(idx >= 0){
-        allUsers[idx] = { uid, ...snap.data() };
-      } else {
-        allUsers.push({ uid, ...snap.data() });
+      // --- Helpers: access durations (A1 = days, A2/B1/B2 = months) ---
+      function addDays(date, days) {
+        const d = new Date(date.getTime());
+        d.setDate(d.getDate() + days);
+        return d;
       }
-      renderUsers();
-    }
+      function addMonths(date, months) {
+        const d = new Date(date.getTime());
+        d.setMonth(d.getMonth() + months);
+        return d;
+      }
 
-    searchInput.addEventListener("input", renderUsers);
-  
-  // --- Helpers: access durations (A1 = days, A2/B1/B2 = months) ---
-  function addDays(date, days){
-    const d = new Date(date.getTime());
-    d.setDate(d.getDate() + days);
-    return d;
-  }
-  function addMonths(date, months){
-    const d = new Date(date.getTime());
-    d.setMonth(d.getMonth() + months);
-    return d;
-  }
+      async function grantAccess(userId, level, daysOrMonths) {
+        const ref = doc(db, 'users', userId);
+        const snap = await getDoc(ref);
+        const data = snap.exists() ? snap.data() || {} : {};
+        const access = { ...(data.access || {}) };
 
-  async function grantAccess(userId, level, daysOrMonths){
-    const ref = doc(db, "users", userId);
-    const snap = await getDoc(ref);
-    const data = snap.exists() ? (snap.data() || {}) : {};
-    const access = { ...(data.access || {}) };
+        const now = new Date();
+        const until =
+          level === 'A1'
+            ? addDays(now, Number(daysOrMonths) || 7)
+            : addMonths(now, Number(daysOrMonths) || 3);
 
-    const now = new Date();
-    const until = (level === "A1")
-      ? addDays(now, Number(daysOrMonths)||7)
-      : addMonths(now, Number(daysOrMonths)||3);
+        access[level] = { freeUntil: until.toISOString() };
 
-    access[level] = { freeUntil: until.toISOString() };
+        await setDoc(
+          ref,
+          { access, updatedAt: serverTimestamp() },
+          { merge: true },
+        );
+        toast(`✅ ${level}: acceso hasta ${until.toLocaleString()}`);
+        await refreshUsers();
+      }
 
-    await setDoc(ref, { access, updatedAt: serverTimestamp() }, { merge: true });
-    toast(`✅ ${level}: acceso hasta ${until.toLocaleString()}`);
-    await refreshUsers();
-  }
+      async function extendAccess(userId, level, daysOrMonths) {
+        const ref = doc(db, 'users', userId);
+        const snap = await getDoc(ref);
+        const data = snap.exists() ? snap.data() || {} : {};
+        const access = { ...(data.access || {}) };
 
-  async function extendAccess(userId, level, daysOrMonths){
-    const ref = doc(db, "users", userId);
-    const snap = await getDoc(ref);
-    const data = snap.exists() ? (snap.data() || {}) : {};
-    const access = { ...(data.access || {}) };
+        const base = access[level]?.freeUntil
+          ? new Date(access[level].freeUntil)
+          : new Date();
+        const safeBase = isNaN(base.getTime()) ? new Date() : base;
 
-    const base = access[level]?.freeUntil ? new Date(access[level].freeUntil) : new Date();
-    const safeBase = isNaN(base.getTime()) ? new Date() : base;
+        const until =
+          level === 'A1'
+            ? addDays(safeBase, Number(daysOrMonths) || 7)
+            : addMonths(safeBase, Number(daysOrMonths) || 3);
 
-    const until = (level === "A1")
-      ? addDays(safeBase, Number(daysOrMonths)||7)
-      : addMonths(safeBase, Number(daysOrMonths)||3);
+        access[level] = { freeUntil: until.toISOString() };
 
-    access[level] = { freeUntil: until.toISOString() };
+        await setDoc(
+          ref,
+          { access, updatedAt: serverTimestamp() },
+          { merge: true },
+        );
+        toast(`⏳ ${level}: extendido hasta ${until.toLocaleString()}`);
+        await refreshUsers();
+      }
 
-    await setDoc(ref, { access, updatedAt: serverTimestamp() }, { merge: true });
-    toast(`⏳ ${level}: extendido hasta ${until.toLocaleString()}`);
-    await refreshUsers();
-  }
+      async function revokeAccess(userId, level) {
+        const ref = doc(db, 'users', userId);
+        const snap = await getDoc(ref);
+        const data = snap.exists() ? snap.data() || {} : {};
+        const access = { ...(data.access || {}) };
 
-  async function revokeAccess(userId, level){
-    const ref = doc(db, "users", userId);
-    const snap = await getDoc(ref);
-    const data = snap.exists() ? (snap.data() || {}) : {};
-    const access = { ...(data.access || {}) };
+        if (access[level]) delete access[level];
 
-    if(access[level]) delete access[level];
+        await setDoc(
+          ref,
+          { access, updatedAt: serverTimestamp() },
+          { merge: true },
+        );
+        toast(`✖ ${level}: revocado`);
+        await refreshUsers();
+      }
+    </script>
 
-    await setDoc(ref, { access, updatedAt: serverTimestamp() }, { merge: true });
-    toast(`✖ ${level}: revocado`);
-    await refreshUsers();
-  }
-
-</script>
-  <div id="appFooter"></div>
-  <script src="assets/js/layout.js"></script>
-</body>
+    <script src="assets/js/layout.js"></script>
+  </body>
 </html>
