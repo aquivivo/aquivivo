@@ -548,11 +548,187 @@
         backdrop-filter: blur(10px);
       }
     </style>
-  </head>
+  
+<style>
+/* Top action bar */
+.topActionBar{
+  position: sticky; top: 0; z-index: 50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 14px 18px;
+  background: rgba(0,56,147,0.95);
+  border-bottom: 3px solid rgba(252,209,22,0.35);
+  backdrop-filter: blur(10px);
+}
+.topActionLeft{display:flex; gap:12px; align-items:center;}
+.navBtn{
+  background: rgba(255,255,255,0.10);
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor:pointer;
+}
+.navBtn:hover{background: rgba(255,255,255,0.16);}
+
+/* Red logout button */
+.btnLogout{
+  background:#CE1126; color:#fff;
+  border:none; border-radius:999px;
+  padding: 12px 26px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor:pointer;
+}
+.btnLogout:hover{background:#a80e1f;}
+
+/* Certificate banner */
+.certBanner{
+  margin: 18px auto 8px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(0,26,77,0.55);
+  border: 2px solid rgba(252,209,22,0.35);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+}
+.certText{color:#fff; font-size: 16px;}
+.certText strong{color:#FCD116;}
+
+/* Locked + completed topics */
+.card.topic.locked{
+  opacity: 0.55;
+  filter: grayscale(0.15);
+  pointer-events: none;
+}
+.badgeLock{
+  display:none;
+  margin-left: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.25);
+  color:#fff;
+  font-weight: 800;
+  font-size: 12px;
+}
+.card.topic.locked .badgeLock{display:inline-flex;}
+
+.card.topic.completed{
+  background: #FCD116 !important;
+  color: #001a4d !important;
+  border-color: rgba(0,0,0,0.15) !important;
+}
+.card.topic.completed *{color:#001a4d !important;}
+.card.topic.completed .btn,
+.card.topic.completed button{
+  background:#003893 !important;
+  color:#fff !important;
+}
+
+/* Teacher panel */
+.teacherPanel{
+  margin: 26px auto 18px;
+  padding: 18px 16px;
+  border-radius: 18px;
+  background: rgba(0,26,77,0.40);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+}
+.teacherPanel h3{margin:0 0 10px; color:#FCD116;}
+.teacherPanel .muted{opacity:0.85; margin:0 0 10px;}
+.teacherRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+.teacherRow .textInput{
+  min-width: 260px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.10);
+  color:#fff;
+  outline:none;
+}
+.teacherRow .textInput::placeholder{color: rgba(255,255,255,0.65);}
+.studentOut{margin-top:12px; font-size:14px;}
+.studentOut .row{display:flex; justify-content:space-between; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.12);}
+
+/* Improve filter label readability */
+.filters label, .filters span, .filters small { color: #fff !important; }
+</style>
+
+
+<style>
+/* --- HEADER LAYOUT FIX --- */
+.topBar, .headerBar, .navBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rightActions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+/* --- FORCE WHITE TEXT (REMOVE BLACK TEXT) --- */
+body, label, span, strong, h1, h2, h3, h4, h5, h6 {
+  color: white;
+}
+
+.filters, .filters *, .progressBox, .progressBox * {
+  color: white !important;
+}
+
+select, input {
+  color: black;
+  background: #ffffff;
+}
+</style>
+
+
+<style>
+/* --- FORCE WHITE TEXT EVERYWHERE (UI CONSISTENCY) --- */
+body, label, span, strong, h1, h2, h3, h4, h5, h6, p, small {
+  color: white !important;
+}
+
+/* inputs still readable */
+input, select, textarea {
+  color: black !important;
+  background: #ffffff !important;
+}
+
+/* right header buttons layout */
+.rightActions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+</style>
+
+</head>
   <body>
+
+  <div id="topActionBar" class="topActionBar">
+    <div class="topActionLeft">
+      
+      
+    </div>
+    <button class="btnLogout" id="btnLogout">Cerrar sesión</button>
+  </div>
+
     <div id="appHeader"></div>
     <main class="page">
       <div class="container">
+      <div id="certBanner" class="certBanner" style="display:none">
+        <div class="certText">
+          ✅ <strong>¡Curso completado!</strong> Ya puedes descargar tu certificado.
+        </div>
+        <button class="btn btn-yellow" id="btnCert">Descargar certificado</button>
+      </div>
+
         <div class="titleRow">
           <div style="font-size: 44px; line-height: 1">📘</div>
           <div style="flex: 1">
@@ -737,7 +913,7 @@
         <div id="vocabList"></div>
         <!-- ADMIN (agregar tema) -->
         <div class="card adminPanel" id="adminPanel">
-          <h3 style="margin: 0 0 10px 0">👑 Panel Admin – agregar tema</h3>
+          <h3 style="margin: 0 0 10px 0">👑 Panel Admin – agregar tema <span class="badgeLock">🔒 Bloqueado</span></h3>
           <div class="row">
             <select id="adminType">
               <option value="grammar">gramática</option>
@@ -753,7 +929,17 @@
           </p>
         </div>
       </div>
-    </main>
+    
+      
+        <p class="muted">Introduce el UID del alumno para ver su progreso en este curso.</p>
+        <div class="teacherRow">
+          <input id="teacherUid" class="textInput" placeholder="UID del alumno..." />
+          <button id="btnViewStudent" class="btn btn-white">Ver progreso</button>
+        </div>
+        
+      </section>
+
+</main>
     <!-- 🔥 Firebase -->
     <script type="module">
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
@@ -823,6 +1009,8 @@
         }
 
         isAdmin = user.email === ADMIN_EMAIL;
+        window.__isAdminUser = isAdmin;
+        window.__currentLevel = LEVEL;
 
         if (isAdmin) {
           adminPanel.style.display = 'block';
@@ -1090,6 +1278,12 @@
           : `<div class="card noResults">No hay resultados en vocabulario</div>`;
 
         updateStatsAndProgress(grammar.length + vocab.length);
+        try {
+          const courseTitle = document.getElementById('levelTitle')?.textContent || document.title || '';
+          if (window.__applyLockingAndCert) {
+            window.__applyLockingAndCert({ level: LEVEL, topics: [...grammar, ...vocab], courseTitle });
+          }
+        } catch (e) { console.warn(e); }
       }
 
       function renderTopicCard(t) {
@@ -1111,7 +1305,7 @@
             : `<span class="chip chip-muted">#—</span>`;
 
         return `
-          <div class="card topic ${(typeof isDone === 'function' && isDone(t.id) ? 'topic-done' : '') + (typeof isRead === 'function' && isRead(t.id) ? ' topic-read' : '')}" role="button" tabindex="0" onclick="openLesson('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openLesson('${t.id}') }">
+          <div class="card topic ${(typeof isDone === 'function' && isDone(t.id) ? 'topic-done' : '') + (typeof isRead === 'function' && isRead(t.id) ? ' topic-read' : '')}" data-topic-slug="${t.topicSlug || t.slug || t.id}" role="button" tabindex="0" onclick="openLesson('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openLesson('${t.id}') }">
             ${adminButtons}
             ${typeof isRead === 'function' && isRead(t.id) ? `<div class="readMark" title="Lekcja przeczytana">📘</div>` : ``}
             ${typeof isDone === 'function' && isDone(t.id) ? `<div class="doneMark" title="Terminado">✅</div>` : ``}
@@ -1277,5 +1471,225 @@
       id="toast"
       role="status"
     ></div>
-  </body>
+  
+<script>
+(function(){
+  // Nav buttons
+  const btnAtras = document.getElementById("btnAtras");
+  const btnInicio = document.getElementById("btnInicio");
+  const btnLogout = document.getElementById("btnLogout");
+  if (btnAtras) btnAtras.addEventListener("click", () => history.back());
+  if (btnInicio) btnInicio.addEventListener("click", () => window.location.href = "index.html");
+  if (btnLogout) btnLogout.addEventListener("click", async () => {
+    try { if (window.auth && auth.signOut) await auth.signOut(); } catch(e){}
+    window.location.href = "index.html";
+  });
+
+  function calcPct(prog){
+    const done = Array.isArray(prog?.doneIds) ? prog.doneIds.length : (Number(prog?.completedExercises)||0);
+    const total = Number(prog?.totalExercises)||0;
+    if (!total) return 0;
+    return Math.min(100, Math.round((done/total)*100));
+  }
+
+  async function loadUserProgressMap(level){
+    const map = new Map(); // slug -> data
+    try{
+      if (!window.auth || !auth.currentUser) return map;
+      const uid = auth.currentUser.uid;
+      const colRef = window.collection(window.db, "user_progress", uid, "topics");
+      const snap = await window.getDocs(colRef);
+      snap.forEach(d=>{
+        if (!d.id.startsWith(level + "__")) return;
+        const slug = d.id.slice((level + "__").length);
+        map.set(slug, d.data() || {});
+      });
+    }catch(e){
+      console.warn("progress load", e);
+    }
+    return map;
+  }
+
+  function openCertificate({level, courseTitle, studentName, studentEmail}){
+    const d = new Date();
+    const dateStr = d.toLocaleDateString("es-ES", {year:"numeric", month:"long", day:"numeric"});
+    const html = `
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"/>
+<title>Certificado ${level}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:Montserrat,Arial,sans-serif;background:#001a4d;color:#fff}
+.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px}
+.cert{width:min(900px,95vw);background:linear-gradient(180deg,#003893,#001a4d);border:6px solid #FCD116;border-radius:24px;padding:44px 42px;box-shadow:0 18px 60px rgba(0,0,0,.45)}
+.brand{font-weight:700;opacity:.9}
+h1{font-family:"Playfair Display",serif;margin:14px 0 6px;font-size:54px}
+.sub{opacity:.9;font-size:18px;margin-bottom:24px}
+.name{font-family:"Playfair Display",serif;font-size:40px;margin:16px 0;color:#FCD116}
+.line{height:1px;background:rgba(255,255,255,.25);margin:24px 0}
+.meta{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;opacity:.95}
+.btn{margin-top:24px;background:#FCD116;color:#001a4d;border:none;border-radius:999px;padding:12px 18px;font-weight:800;cursor:pointer}
+</style>
+<style>
+/* --- HEADER LAYOUT FIX --- */
+.topBar, .headerBar, .navBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rightActions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+/* --- FORCE WHITE TEXT (REMOVE BLACK TEXT) --- */
+body, label, span, strong, h1, h2, h3, h4, h5, h6 {
+  color: white;
+}
+
+.filters, .filters *, .progressBox, .progressBox * {
+  color: white !important;
+}
+
+select, input {
+  color: black;
+  background: #ffffff;
+}
+</style>
+
+
+<style>
+/* --- FORCE WHITE TEXT EVERYWHERE (UI CONSISTENCY) --- */
+body, label, span, strong, h1, h2, h3, h4, h5, h6, p, small {
+  color: white !important;
+}
+
+/* inputs still readable */
+input, select, textarea {
+  color: black !important;
+  background: #ffffff !important;
+}
+
+/* right header buttons layout */
+.rightActions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+</style>
+
+</head><body>
+<div class="page"><div class="cert">
+<div class="brand">AquiVivo</div>
+<h1>Certificado</h1>
+<div class="sub">Se certifica que</div>
+<div class="name">${studentName || studentEmail || "Estudiante"}</div>
+<div class="sub">ha completado satisfactoriamente el curso <strong>${level}</strong> — ${courseTitle || ""}.</div>
+<div class="line"></div>
+<div class="meta"><div><strong>Fecha:</strong> ${dateStr}</div><div><strong>Email:</strong> ${studentEmail || ""}</div></div>
+<button class="btn" onclick="window.print()">Imprimir / Guardar como PDF</button>
+</div></div></body></html>`;
+    const w = window.open("", "_blank");
+    w.document.open(); w.document.write(html); w.document.close();
+  }
+
+  // Hook: after topics render
+  window.__applyLockingAndCert = async function({level, topics, courseTitle}){
+    const progressMap = await loadUserProgressMap(level);
+    const isAdmin = !!window.__isAdminUser;
+
+    let allCompleted = true;
+
+    topics.forEach((t, i) => {
+      const slug = t.topicSlug || t.slug || t.id || "";
+      const prog = progressMap.get(slug) || {};
+      const pct = calcPct(prog);
+      const completed = !!prog.completed || pct >= 100;
+
+      const card = document.querySelector(`[data-topic-slug="${slug}"]`);
+      if (card){
+        // ensure lock badge exists
+        if (!card.querySelector(".badgeLock")){
+          const b = document.createElement("span");
+          b.className = "badgeLock";
+          b.textContent = "🔒 Bloqueado";
+          const titleEl = card.querySelector("h3") || card;
+          titleEl.appendChild(b);
+        }
+
+        if (completed) card.classList.add("completed");
+        else card.classList.remove("completed");
+
+        // lock if previous not completed
+        let unlocked = (i === 0) || isAdmin;
+        if (!unlocked && i > 0){
+          const prev = topics[i-1];
+          const prevSlug = prev.topicSlug || prev.slug || prev.id || "";
+          const prevProg = progressMap.get(prevSlug) || {};
+          const prevCompleted = !!prevProg.completed || calcPct(prevProg) >= 100;
+          unlocked = prevCompleted;
+        }
+        if (!unlocked) card.classList.add("locked");
+        else card.classList.remove("locked");
+      }
+
+      if (!completed) allCompleted = false;
+    });
+
+    // Certificate banner
+    const banner = document.getElementById("certBanner");
+    const btnCert = document.getElementById("btnCert");
+    if (banner) banner.style.display = (allCompleted && topics.length) ? "flex" : "none";
+    if (btnCert){
+      btnCert.onclick = () => {
+        const user = auth.currentUser;
+        openCertificate({
+          level,
+          courseTitle,
+          studentName: user?.displayName || "",
+          studentEmail: user?.email || ""
+        });
+      };
+    }
+
+    // Teacher panel (admin only)
+    const tp = document.getElementById("teacherPanel");
+    if (tp) tp.style.display = isAdmin ? "block" : "none";
+  };
+
+  // Teacher view by UID
+  const btnView = document.getElementById("btnViewStudent");
+  if (btnView){
+    btnView.addEventListener("click", async () => {
+      const uid = (document.getElementById("teacherUid")?.value || "").trim();
+      const out = document.getElementById("studentProgressOut");
+      if (!uid){ if(out) out.textContent = "Introduce un UID."; return; }
+      try{
+        const level = (window.__currentLevel || "").trim();
+        if (!level){ if(out) out.textContent="Nivel no detectado."; return; }
+        const colRef = window.collection(window.db, "user_progress", uid, "topics");
+        const snap = await window.getDocs(colRef);
+        const rows = [];
+        snap.forEach(d=>{
+          if (!d.id.startsWith(level + "__")) return;
+          const topicSlug = d.id.slice((level + "__").length);
+          const data = d.data() || {};
+          const pct = calcPct(data);
+          rows.push({topicSlug, pct});
+        });
+        rows.sort((a,b)=>a.topicSlug.localeCompare(b.topicSlug));
+        if (out){
+          if (!rows.length){ out.textContent = "Sin datos de progreso para este nivel."; return; }
+          out.innerHTML = rows.map(r=>`<div class="row"><span>${r.topicSlug}</span><strong>${r.pct}%</strong></div>`).join("");
+        }
+      }catch(e){
+        console.error(e);
+        if (out) out.textContent = "Error al cargar progreso (ver consola).";
+      }
+    });
+  }
+})();
+</script></body>
 </html>

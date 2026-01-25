@@ -18,9 +18,7 @@
         --ink: #0b1b3f;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
@@ -45,15 +43,10 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.14);
       }
       .nav-glass::after {
-        content: '';
+        content: "";
         display: block;
         height: 3px;
-        background: linear-gradient(
-          90deg,
-          var(--yellow),
-          var(--blue),
-          var(--red)
-        );
+        background: linear-gradient(90deg, var(--yellow), var(--blue), var(--red));
         opacity: 0.85;
       }
       .nav-inner {
@@ -84,7 +77,7 @@
         box-shadow: 0 12px 26px rgba(0, 0, 0, 0.25);
       }
       .name {
-        font-family: 'Playfair Display', serif;
+        font-family: "Playfair Display", serif;
         font-weight: 900;
         font-size: 24px;
         color: white;
@@ -103,22 +96,13 @@
         text-decoration: none;
         border: 1px solid rgba(255, 255, 255, 0.18);
         user-select: none;
-        transition:
-          transform 0.12s ease,
-          filter 0.12s ease;
+        transition: transform 0.12s ease, filter 0.12s ease;
         background: rgba(255, 255, 255, 0.12);
         color: white;
         white-space: nowrap;
       }
-      .btn:hover {
-        transform: translateY(-2px);
-        filter: brightness(1.03);
-      }
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-      }
+      .btn:hover { transform: translateY(-2px); filter: brightness(1.03); }
+      .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
       .btn-yellow {
         background: rgba(252, 209, 22, 0.95);
@@ -140,12 +124,10 @@
         font-weight: 800;
         letter-spacing: 0.2px;
       }
-      .sessionBar strong {
-        font-weight: 900;
-      }
+      .sessionBar strong { font-weight: 900; }
 
       h1 {
-        font-family: 'Playfair Display', serif;
+        font-family: "Playfair Display", serif;
         font-weight: 900;
         font-size: 44px;
         margin: 18px 0 6px 0;
@@ -184,9 +166,7 @@
         background: rgba(255, 255, 255, 0.12);
         color: white;
       }
-      .pill-blue {
-        border-color: rgba(0, 56, 147, 0.35);
-      }
+      .pill-blue { border-color: rgba(0, 56, 147, 0.35); }
       .pill-yellow {
         background: rgba(252, 209, 22, 0.95);
         color: var(--ink);
@@ -230,15 +210,8 @@
         border: 1px solid rgba(0, 56, 147, 0.16);
         margin-bottom: 10px;
       }
-      .exercise .prompt {
-        margin: 0 0 12px;
-        color: #374151;
-        line-height: 1.55;
-      }
-      .opts {
-        display: grid;
-        gap: 10px;
-      }
+      .exercise .prompt { margin: 0 0 12px; color: #374151; line-height: 1.55; }
+      .opts { display: grid; gap: 10px; }
       .optBtn {
         text-align: left;
         padding: 12px 12px;
@@ -247,19 +220,10 @@
         background: #f9fafb;
         cursor: pointer;
         font-weight: 800;
-        transition:
-          transform 0.08s ease,
-          filter 0.08s ease;
+        transition: transform 0.08s ease, filter 0.08s ease;
       }
-      .optBtn:hover {
-        filter: brightness(0.99);
-        transform: translateY(-1px);
-      }
-      .optBtn[disabled] {
-        opacity: 0.75;
-        cursor: not-allowed;
-        transform: none;
-      }
+      .optBtn:hover { filter: brightness(0.99); transform: translateY(-1px); }
+      .optBtn[disabled] { opacity: 0.75; cursor: not-allowed; transform: none; }
 
       .inputRow {
         display: flex;
@@ -274,26 +238,13 @@
         border: 1px solid #e5e7eb;
         font-size: 14px;
       }
-      .smallNote {
-        font-size: 12px;
-        color: #6b7280;
-        margin-top: 8px;
-      }
-      .result {
-        margin-top: 10px;
-        font-weight: 900;
-      }
-      .ok {
-        color: #065f46;
-      }
-      .bad {
-        color: #b91c1c;
-      }
+      .smallNote { font-size: 12px; color: #6b7280; margin-top: 8px; }
+      .result { margin-top: 10px; font-weight: 900; }
+      .ok { color: #065f46; }
+      .bad { color: #b91c1c; }
 
       /* Admin */
-      .adminWrap {
-        display: none;
-      }
+      .adminWrap { display: none; }
       .adminGrid {
         display: grid;
         gap: 10px;
@@ -303,15 +254,9 @@
         align-items: start;
       }
       @media (max-width: 860px) {
-        .nav-inner {
-          flex-wrap: wrap;
-        }
-        .adminGrid {
-          grid-template-columns: 1fr;
-        }
-        h1 {
-          font-size: 36px;
-        }
+        .nav-inner { flex-wrap: wrap; }
+        .adminGrid { grid-template-columns: 1fr; }
+        h1 { font-size: 36px; }
       }
       .adminGrid label {
         font-size: 12px;
@@ -319,9 +264,7 @@
         font-weight: 800;
         letter-spacing: 0.2px;
       }
-      .adminGrid input,
-      .adminGrid textarea,
-      .adminGrid select {
+      .adminGrid input, .adminGrid textarea, .adminGrid select {
         width: 100%;
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.25);
@@ -332,50 +275,26 @@
         outline: none;
       }
       /* Better select UX (fix: hard-to-use dropdowns) */
-      .adminGrid select {
+      .adminGrid select{
         cursor: pointer;
         appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
         padding-right: 42px;
         background-image:
-          linear-gradient(
-            45deg,
-            transparent 50%,
-            rgba(255, 255, 255, 0.92) 50%
-          ),
-          linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.92) 50%,
-            transparent 50%
-          );
+          linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.92) 50%),
+          linear-gradient(135deg, rgba(255,255,255,0.92) 50%, transparent 50%);
         background-position:
           calc(100% - 18px) calc(50% - 3px),
           calc(100% - 12px) calc(50% - 3px);
-        background-size:
-          6px 6px,
-          6px 6px;
+        background-size: 6px 6px, 6px 6px;
         background-repeat: no-repeat;
       }
-      .adminGrid textarea {
-        min-height: 92px;
-        resize: vertical;
-      }
-      .adminGrid input::placeholder,
-      .adminGrid textarea::placeholder {
-        color: rgba(255, 255, 255, 0.55);
-      }
-      .adminGrid option {
-        background: var(--blue);
-        color: white;
-      }
+      .adminGrid textarea { min-height: 92px; resize: vertical; }
+      .adminGrid input::placeholder, .adminGrid textarea::placeholder { color: rgba(255, 255, 255, 0.55); }
+      .adminGrid option { background: var(--blue); color: white; }
 
-      .adminActions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 10px;
-      }
+      .adminActions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 
       .dangerMini {
         position: absolute;
@@ -403,41 +322,18 @@
         font-weight: 900;
         letter-spacing: 0.2px;
         box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255,255,255,0.18);
         backdrop-filter: blur(10px);
       }
-      .toast-ok {
-        background: rgba(6, 95, 70, 0.92);
-        color: white;
-      }
-      .toast-bad {
-        background: rgba(185, 28, 28, 0.92);
-        color: white;
-      }
-      .toast-warn {
-        background: rgba(252, 209, 22, 0.94);
-        color: var(--ink);
-        border-color: rgba(252, 209, 22, 0.7);
-      }
+      .toast-ok { background: rgba(6, 95, 70, 0.92); color: white; }
+      .toast-bad { background: rgba(185, 28, 28, 0.92); color: white; }
+      .toast-warn { background: rgba(252, 209, 22, 0.94); color: var(--ink); border-color: rgba(252, 209, 22, 0.7); }
 
-      .field-bad {
-        outline: 2px solid rgba(206, 17, 38, 0.95);
-        outline-offset: 2px;
-      }
-      .muted {
-        opacity: 0.9;
-      }
-
-      .modal {
-        position: fixed;
-        inset: 0;
-        z-index: 200;
-      }
-      .modalBackdrop {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.55);
-      }
+      .field-bad { outline: 2px solid rgba(206, 17, 38, 0.95); outline-offset: 2px; }
+      .muted { opacity: 0.9; }
+    
+      .modal { position: fixed; inset: 0; z-index: 200; }
+      .modalBackdrop { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
       .modalBox {
         position: relative;
         width: min(760px, calc(100vw - 28px));
@@ -445,45 +341,38 @@
         overflow: auto;
         margin: 14px auto;
         padding: 16px 16px 14px;
-        border: 1px solid rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255,255,255,.16);
       }
-      .dragHint {
-        cursor: grab;
-      }
-      .dragging {
-        opacity: 0.6;
-        transform: scale(0.99);
-      }
+      .dragHint { cursor: grab; }
+      .dragging { opacity: .6; transform: scale(.99); }
+
 
       /* --- Lesson navigation + completion --- */
-      .lessonTopTools {
-        display: flex;
-        gap: 10px;
+      .lessonTopTools{
+        display:flex;
+        gap:10px;
         flex-wrap: wrap;
-        align-items: center;
+        align-items:center;
         justify-content: space-between;
         margin: 10px 0 14px;
       }
-      .lessonNavRow {
-        display: flex;
-        gap: 10px;
+      .lessonNavRow{
+        display:flex;
+        gap:10px;
         flex-wrap: wrap;
-        align-items: center;
+        align-items:center;
       }
-      .btnGhost {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.18);
+      .btnGhost{
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
         color: white;
         border-radius: 999px;
         padding: 10px 12px;
         font-weight: 800;
         cursor: pointer;
       }
-      .btnGhost:hover {
-        filter: brightness(1.05);
-        transform: translateY(-1px);
-      }
-      .btnPrimary {
+      .btnGhost:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+      .btnPrimary{
         background: var(--yellow);
         border: none;
         color: #111827;
@@ -492,100 +381,95 @@
         font-weight: 900;
         cursor: pointer;
       }
-      .btnPrimary:hover {
-        filter: brightness(1.02);
-        transform: translateY(-1px);
-      }
-      .pillDone {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+      .btnPrimary:hover{ filter: brightness(1.02); transform: translateY(-1px); }
+      .pillDone{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
         padding: 10px 12px;
         border-radius: 999px;
-        background: rgba(34, 197, 94, 0.14);
-        border: 1px solid rgba(34, 197, 94, 0.25);
+        background: rgba(34,197,94,.14);
+        border: 1px solid rgba(34,197,94,.25);
         color: #eafff1;
         font-weight: 900;
       }
-      .pillNotDone {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+      .pillNotDone{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
         padding: 10px 12px;
         border-radius: 999px;
-        background: rgba(239, 68, 68, 0.12);
-        border: 1px solid rgba(239, 68, 68, 0.22);
+        background: rgba(239,68,68,.12);
+        border: 1px solid rgba(239,68,68,.22);
         color: #ffecec;
         font-weight: 900;
       }
-      .hintSmall {
-        font-size: 12px;
-        opacity: 0.78;
-        margin-top: 8px;
-      }
+      .hintSmall{ font-size: 12px; opacity: .78; margin-top: 8px; }
 
+    
       /* --- Lesson content block --- */
-      .lessonContentCard {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.18);
+      .lessonContentCard{
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
         backdrop-filter: blur(12px);
         border-radius: 18px;
         padding: 16px;
         margin: 12px 0 14px;
       }
-      .lessonContentTitle {
-        display: flex;
-        align-items: center;
+      .lessonContentTitle{
+        display:flex;
+        align-items:center;
         justify-content: space-between;
         gap: 12px;
         flex-wrap: wrap;
         margin-bottom: 10px;
       }
-      .lessonContentTitle h3 {
+      .lessonContentTitle h3{
         margin: 0;
         font-size: 16px;
         font-weight: 900;
       }
-      .lessonText {
+      .lessonText{
         line-height: 1.55;
         font-size: 14px;
-        opacity: 0.95;
+        opacity: .95;
         white-space: normal;
       }
-      .lessonEmpty {
-        opacity: 0.75;
+      .lessonEmpty{
+        opacity: .75;
         font-size: 13px;
       }
-      .adminEditor {
-        display: grid;
+      .adminEditor{
+        display:grid;
         gap: 10px;
         margin-top: 10px;
       }
-      .adminEditor textarea {
+      .adminEditor textarea{
         width: 100%;
         min-height: 180px;
         resize: vertical;
         border-radius: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        background: rgba(0, 0, 0, 0.18);
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(0,0,0,0.18);
         color: white;
         padding: 12px;
         font-size: 13px;
         outline: none;
       }
-      .adminEditor .row {
-        display: flex;
+      .adminEditor .row{
+        display:flex;
         gap: 10px;
         flex-wrap: wrap;
-        align-items: center;
+        align-items:center;
       }
+
 
       /* === PATCH UI: unified glass inputs (filters + common inputs) === */
       #filtersCard input,
       #filtersCard select,
       #filtersCard textarea,
       #importJsonArea,
-      .inputRow .textInput {
+      .inputRow .textInput{
         font-family: Montserrat, Arial, sans-serif;
         font-weight: 700;
         font-size: 14px;
@@ -611,21 +495,20 @@
       #filtersCard textarea,
       .adminGrid input,
       .adminGrid select,
-      .adminGrid textarea {
+      .adminGrid textarea{
         box-sizing: border-box;
       }
 
-      .adminGrid > div {
-        min-width: 0;
-      }
+      .adminGrid > div{ min-width: 0; }
 
       /* Make selects more obvious + consistent */
-      select {
+      select{
         font-family: Montserrat, Arial, sans-serif;
       }
 
+
       #filtersCard textarea,
-      #importJsonArea {
+      #importJsonArea{
         border-radius: 16px;
         font-weight: 600;
       }
@@ -634,7 +517,7 @@
       #filtersCard select:focus,
       #filtersCard textarea:focus,
       #importJsonArea:focus,
-      .inputRow .textInput:focus {
+      .inputRow .textInput:focus{
         background: rgba(255, 255, 255, 0.18);
         border-color: rgba(252, 209, 22, 0.6);
         box-shadow: 0 0 0 3px rgba(252, 209, 22, 0.22);
@@ -643,17 +526,25 @@
       #filtersCard input::placeholder,
       #filtersCard textarea::placeholder,
       #importJsonArea::placeholder,
-      .inputRow .textInput::placeholder {
+      .inputRow .textInput::placeholder{
         color: rgba(255, 255, 255, 0.6);
         font-weight: 600;
       }
 
-      #filtersCard select option {
+      #filtersCard select option{
         background: var(--blue);
         color: white;
         font-weight: 600;
       }
-    </style>
+
+    
+      /* --- Progress --- */
+      .progressWrap{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+      .progressBar{ width:min(520px,100%); height:12px; border-radius:999px; background: rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.18); overflow:hidden; }
+      .progressFill{ height:100%; background: var(--yellow); width:0%; transition: width .25s ease; }
+      .progressText{ font-size:12px; font-weight:900; opacity:.92; }
+
+</style>
   </head>
 
   <body>
@@ -664,18 +555,10 @@
           <div class="name">Aqui vivo</div>
         </div>
 
-        <div
-          style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center"
-        >
-          <a id="backToCourse" class="btn" href="course.html?level=A1"
-            >⬅️ Volver al curso</a
-          >
-          <a class="btn" id="levelsBtn" href="course.html?level=A1"
-            >📚 Niveles</a
-          >
-          <button class="btn btn-yellow" id="btnCopyLink" type="button">
-            🔗 Copiar enlace
-          </button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+          <a id="backToCourse" class="btn" href="course.html?level=A1">⬅️ Volver al curso</a>
+          <a class="btn" id="levelsBtn" href="course.html?level=A1">📚 Niveles</a>
+          <button class="btn btn-yellow" id="btnCopyLink" type="button">🔗 Copiar enlace</button>
           <button class="btn" id="btnReload" type="button">🔄 Recargar</button>
         </div>
       </div>
@@ -694,6 +577,11 @@
           <span class="pill pill-blue" id="pillType">Tipo</span>
           <span class="pill" id="pillSlug">slug</span>
           <span class="pill" id="pillCount">Ejercicios: 0</span>
+          <span class="pill" id="pillProgress" style="background: rgba(252,209,22,0.16); border-color: rgba(252,209,22,0.35);">Progreso: 0%</span>
+        </div>
+        <div class="progressWrap" style="margin-top:10px">
+          <div class="progressBar"><div class="progressFill" id="progressFill" style="width:0%"></div></div>
+          <div class="progressText" id="progressText">0 / 0 completados</div>
         </div>
 
         <h1 id="topicTitle">Cargando…</h1>
@@ -703,74 +591,35 @@
       </div>
 
       <!-- Lesson content (from course_meta docId: LEVEL__topicSlug) -->
-      <div
-        id="lessonContentCard"
-        class="lessonContentCard"
-        style="display: none"
-      >
+      <div id="lessonContentCard" class="lessonContentCard" style="display:none">
         <div class="lessonContentTitle">
           <h3>📘 Lección — materiales del tema</h3>
-          <div
-            style="
-              display: flex;
-              gap: 10px;
-              flex-wrap: wrap;
-              align-items: center;
-            "
-          >
-            <a
-              class="btn"
-              id="btnOpenLessonPage"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              >📖 Abrir lección (página)</a
-            >
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <a class="btn" id="btnOpenLessonPage" href="#" target="_blank" rel="noopener noreferrer">📖 Abrir lección (página)</a>
           </div>
         </div>
 
         <div id="lessonContentBody" class="lessonText"></div>
-        <div id="lessonContentEmpty" class="lessonEmpty" style="display: none">
-          Todavía no hay contenido de lección para este tema.
-        </div>
+        <div id="lessonContentEmpty" class="lessonEmpty" style="display:none">Todavía no hay contenido de lección para este tema.</div>
       </div>
+
 
       <div class="sectionTitle">🧩 Ejercicios</div>
 
-      <div
-        class="card"
-        id="filtersCard"
-        style="padding: 14px 14px 12px; margin-bottom: 14px"
-      >
-        <div
-          style="
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-          "
-        >
-          <div style="flex: 1; min-width: 220px">
-            <label style="display: block; font-weight: 700; margin-bottom: 6px"
-              >Buscar</label
-            >
-            <input
-              id="filterSearch"
-              placeholder="Szukaj po treści / odpowiedzi…"
-            />
+      <div class="card" id="filtersCard" style="padding:14px 14px 12px; margin-bottom:14px">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end">
+          <div style="flex:1; min-width:220px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Buscar</label>
+            <input id="filterSearch" placeholder="Szukaj po treści / odpowiedzi…" />
           </div>
 
-          <div style="min-width: 190px">
-            <label style="display: block; font-weight: 700; margin-bottom: 6px"
-              >Typ</label
-            >
+          <div style="min-width:190px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Typ</label>
             <select id="filterType"></select>
           </div>
 
-          <div style="min-width: 190px">
-            <label style="display: block; font-weight: 700; margin-bottom: 6px"
-              >Kategoria</label
-            >
+          <div style="min-width:190px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Kategoria</label>
             <select id="filterCategory">
               <option value="">Wszystko</option>
               <option value="grammar">Gramática</option>
@@ -779,244 +628,132 @@
             </select>
           </div>
 
-          <button class="btn" id="btnClearFilters" type="button">
-            🧹 Wyczyść
-          </button>
+          <button class="btn" id="btnClearFilters" type="button">🧹 Wyczyść</button>
 
-          <div
-            style="
-              margin-left: auto;
-              display: flex;
-              gap: 10px;
-              align-items: center;
-              flex-wrap: wrap;
-            "
-          >
-            <label
-              style="
-                display: flex;
-                gap: 8px;
-                align-items: center;
-                user-select: none;
-                font-weight: 700;
-              "
-            >
-              <input
-                id="toggleReorder"
-                type="checkbox"
-                style="transform: scale(1.15)"
-              />
+          <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+            <label style="display:flex; gap:8px; align-items:center; user-select:none; font-weight:700">
+              <input id="toggleReorder" type="checkbox" style="transform:scale(1.15)" />
               Tryb sortowania (drag&drop)
             </label>
-            <button
-              class="btn btn-yellow"
-              id="btnSaveOrder"
-              type="button"
-              style="display: none"
-            >
-              💾 Zapisz kolejność
-            </button>
+            <button class="btn btn-yellow" id="btnSaveOrder" type="button" style="display:none">💾 Zapisz kolejność</button>
           </div>
         </div>
 
-        <div class="smallNote" style="margin-top: 8px; opacity: 0.95">
-          Tip: w trybie sortowania przeciągaj kafelki. Zapis kolejności
-          aktualizuje pole <b>order</b> w Firestore.
+        <div class="smallNote" style="margin-top:8px; opacity:.95">
+          Tip: w trybie sortowania przeciągaj kafelki. Zapis kolejności aktualizuje pole <b>order</b> w Firestore.
         </div>
       </div>
 
       <div id="exerciseList"></div>
 
-      <div
-        id="emptyExercises"
-        class="card"
-        style="display: none; opacity: 0.95"
-      >
-        <div class="muted">Todavía no hay ejercicios para este tema.</div>
-        <div class="smallNote" style="margin-top: 10px">
+      <div id="emptyExercises" class="card" style="display:none; opacity:0.95">
+        <div class="muted">
+          Todavía no hay ejercicios para este tema.
+        </div>
+        <div class="smallNote" style="margin-top:10px">
           Si eres admin, agrega el primero abajo 👇
         </div>
       </div>
 
       <!-- Admin -->
       <div id="adminWrap" class="card adminWrap">
-        <div
-          id="lessonMetaWrap"
-          class="card"
-          style="margin-top: 0; margin-bottom: 14px"
-        >
+        
+        <div id="lessonMetaWrap" class="card" style="margin-top:0; margin-bottom:14px;">
           <div class="sectionTitle">📘 Admin – agregar/editar lección</div>
-          <div class="smallNote" style="margin-top: -6px">
-            Esto guarda el contenido de la lección (título, objetivos, diálogo,
-            etc.) para <b>este</b> tema.
+          <div class="smallNote" style="margin-top:-6px">
+            Esto guarda el contenido de la lección (título, objetivos, diálogo, etc.) para <b>este</b> tema.
           </div>
 
-          <div class="adminGrid" style="margin-top: 12px">
+          <div class="adminGrid" style="margin-top:12px">
             <div>
               <label>Título de la lección (ES)</label>
-              <input
-                id="lessonTitleEs"
-                placeholder="Ej: Presentarse: Soy, me llamo..."
-              />
+              <input id="lessonTitleEs" placeholder="Ej: Presentarse: Soy, me llamo..." />
             </div>
 
             <div>
               <label>Descripción corta</label>
-              <input
-                id="lessonDescEs"
-                placeholder="1–2 frases sobre la lección"
-              />
+              <input id="lessonDescEs" placeholder="1–2 frases sobre la lección" />
             </div>
 
             <div>
               <label>Imagen (URL) — opcional</label>
               <input id="lessonImageUrl" placeholder="https://.../imagen.jpg" />
-              <div class="smallNote">
-                Tip: możesz wkleić link do obrazka z Canva/Drive/Hosting.
-              </div>
+              <div class="smallNote">Tip: możesz wkleić link do obrazka z Canva/Drive/Hosting.</div>
             </div>
 
             <div>
               <label>Contenido extra (HTML) — opcional</label>
-              <textarea
-                id="lessonHtml"
-                placeholder="Możesz wkleić HTML: nagłówki, listy, <img>, tabelki..."
-              ></textarea>
-              <div class="smallNote">
-                To pole wyświetla się uczniowi jako dodatkowa treść pod lekcją.
-              </div>
+              <textarea id="lessonHtml" placeholder="Możesz wkleić HTML: nagłówki, listy, <img>, tabelki..."></textarea>
+              <div class="smallNote">To pole wyświetla się uczniowi jako dodatkowa treść pod lekcją.</div>
             </div>
 
             <div>
               <label>Objetivos (uno por línea)</label>
-              <textarea
-                id="lessonObjectives"
-                placeholder="Ej:
+              <textarea id="lessonObjectives" placeholder="Ej:
 - Presentarme
 - Preguntar el nombre
-- Decir de dónde soy"
-              ></textarea>
+- Decir de dónde soy"></textarea>
             </div>
 
             <div>
               <label>Gramática clave (uno por línea)</label>
-              <textarea
-                id="lessonGrammar"
-                placeholder="Ej:
+              <textarea id="lessonGrammar" placeholder="Ej:
 - być (ser)
 - pronombres personales
-- preguntas: kto?"
-              ></textarea>
+- preguntas: kto?"></textarea>
             </div>
 
             <div>
               <label>Vocabulario (uno por línea)</label>
-              <textarea
-                id="lessonVocab"
-                placeholder="Ej:
+              <textarea id="lessonVocab" placeholder="Ej:
 cześć — hola
-mam na imię — me llamo"
-              ></textarea>
+mam na imię — me llamo"></textarea>
             </div>
 
             <div>
               <label>Diálogo</label>
-              <textarea
-                id="lessonDialog"
-                placeholder="Escribe un diálogo corto..."
-              ></textarea>
+              <textarea id="lessonDialog" placeholder="Escribe un diálogo corto..."></textarea>
             </div>
 
             <div>
               <label>Práctica oral (prompt)</label>
-              <textarea
-                id="lessonSpeaking"
-                placeholder="Ej: Preséntate en 5 frases..."
-              ></textarea>
+              <textarea id="lessonSpeaking" placeholder="Ej: Preséntate en 5 frases..."></textarea>
             </div>
 
-            <div
-              style="
-                display: flex;
-                gap: 10px;
-                align-items: center;
-                flex-wrap: wrap;
-              "
-            >
-              <button class="btn" id="btnSaveLessonMeta" type="button">
-                💾 Guardar lección
-              </button>
-              <button class="btn" id="btnClearLessonMeta" type="button">
-                🧽 Limpiar
-              </button>
-              <span
-                class="smallNote"
-                id="lessonMetaStatus"
-                style="margin-left: auto"
-              ></span>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+              <button class="btn" id="btnSaveLessonMeta" type="button">💾 Guardar lección</button>
+              <button class="btn" id="btnClearLessonMeta" type="button">🧽 Limpiar</button>
+              <span class="smallNote" id="lessonMetaStatus" style="margin-left:auto"></span>
             </div>
           </div>
         </div>
 
-        <div class="sectionTitle">👑 Admin – agregar ejercicio</div>
+<div class="sectionTitle">👑 Admin – agregar ejercicio</div>
 
-        <div class="card" style="margin-top: 10px">
-          <div class="sectionTitle" style="margin-top: 0">
-            ⚡ Producción rápida
+        <div class="card" style="margin-top:10px">
+          <div class="sectionTitle" style="margin-top:0">⚡ Producción rápida</div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <button class="btn" id="btnTplFill" type="button">+ Plantilla: rellenar</button>
+            <button class="btn" id="btnTplChoice" type="button">+ Plantilla: choice</button>
+            <button class="btn" id="btnTplTF" type="button">+ Plantilla: true/false</button>
           </div>
 
-          <div
-            style="
-              display: flex;
-              gap: 10px;
-              flex-wrap: wrap;
-              align-items: center;
-            "
-          >
-            <button class="btn" id="btnTplFill" type="button">
-              + Plantilla: rellenar
-            </button>
-            <button class="btn" id="btnTplChoice" type="button">
-              + Plantilla: choice
-            </button>
-            <button class="btn" id="btnTplTF" type="button">
-              + Plantilla: true/false
-            </button>
-          </div>
-
-          <div style="margin-top: 12px">
-            <label style="display: block; font-weight: 800; margin-bottom: 6px"
-              >Import JSON (array de ejercicios)</label
-            >
-            <textarea
-              id="importJsonArea"
-              placeholder='[
+          <div style="margin-top:12px">
+            <label style="display:block; font-weight:800; margin-bottom:6px">Import JSON (array de ejercicios)</label>
+            <textarea id="importJsonArea" placeholder='[
   {"type":"Opción múltiple","prompt":"...","options":["A) ...","B) ..."],"answer":"A","category":"grammar","order":1},
   {"type":"Rellenar los espacios","prompt":"...","answer":"...","category":"vocab"}
-]'
-            ></textarea>
-            <div class="smallNote" style="margin-top: 8px">
-              - Wklej <b>tablicę</b> ćwiczeń. Jeśli element nie ma <b>order</b>,
-              dostanie automatycznie kolejny numer.<br />
-              - Obsługiwane pola:
-              <b
-                >type, prompt, options[], answer, category, tags, notes,
-                imageUrl, order</b
-              >.
+]'></textarea>
+            <div class="smallNote" style="margin-top:8px">
+              - Wklej <b>tablicę</b> ćwiczeń. Jeśli element nie ma <b>order</b>, dostanie automatycznie kolejny numer.<br/>
+              - Obsługiwane pola: <b>type, prompt, options[], answer, category, tags, notes, imageUrl, order</b>.
             </div>
 
-            <div class="adminActions" style="margin-top: 10px">
-              <button class="btn btn-yellow" id="btnImportJson" type="button">
-                📥 Importuj i zapisz
-              </button>
-              <button class="btn" id="btnClearImport" type="button">
-                🧽 Wyczyść
-              </button>
-              <span
-                class="smallNote"
-                id="importStatus"
-                style="margin-left: auto"
-              ></span>
+            <div class="adminActions" style="margin-top:10px">
+              <button class="btn btn-yellow" id="btnImportJson" type="button">📥 Importuj i zapisz</button>
+              <button class="btn" id="btnClearImport" type="button">🧽 Wyczyść</button>
+              <span class="smallNote" id="importStatus" style="margin-left:auto"></span>
             </div>
           </div>
         </div>
@@ -1035,9 +772,7 @@ mam na imię — me llamo"
           <div>
             <label>Imagen (URL) — opcional</label>
             <input id="exImageUrl" placeholder="https://.../imagen.png" />
-            <div class="smallNote">
-              Jeśli dodasz obrazek, pokaże się nad odpowiedziami.
-            </div>
+            <div class="smallNote">Jeśli dodasz obrazek, pokaże się nad odpowiedziami.</div>
           </div>
 
           <div>
@@ -1047,17 +782,13 @@ mam na imię — me llamo"
               placeholder="Una opción por línea&#10;Ej:&#10;A) ...&#10;B) ...&#10;C) ..."
             ></textarea>
             <div class="smallNote">
-              Para ejercicios de selección, añade al menos 2 opciones (una por
-              línea).
+              Para ejercicios de selección, añade al menos 2 opciones (una por línea).
             </div>
           </div>
 
           <div>
             <label>Respuesta correcta</label>
-            <input
-              id="exAnswer"
-              placeholder="Ej: B   |   true   |   palabra_correcta"
-            />
+            <input id="exAnswer" placeholder="Ej: B   |   true   |   palabra_correcta" />
             <div class="smallNote">
               - Opción múltiple: letra (A/B/C/D) o texto exacto.<br />
               - Verdadero o falso: <b>true</b> / <b>false</b>.<br />
@@ -1076,10 +807,7 @@ mam na imię — me llamo"
 
           <div>
             <label>Tagi (opcjonalnie)</label>
-            <input
-              id="exTags"
-              placeholder="np. przypadki, czasowniki, kolokacje (oddziel przecinkami)"
-            />
+            <input id="exTags" placeholder="np. przypadki, czasowniki, kolokacje (oddziel przecinkami)" />
           </div>
 
           <div>
@@ -1094,67 +822,42 @@ mam na imię — me llamo"
         </div>
 
         <div class="adminActions">
-          <button class="btn btn-yellow" id="btnAddExercise" type="button">
-            ➕ Guardar ejercicio
-          </button>
-          <button class="btn" id="btnAutoOrder" type="button">
-            ✨ Ustaw kolejny numer
-          </button>
+          <button class="btn btn-yellow" id="btnAddExercise" type="button">➕ Guardar ejercicio</button>
+          <button class="btn" id="btnAutoOrder" type="button">✨ Ustaw kolejny numer</button>
         </div>
 
-        <div class="smallNote" style="margin-top: 10px">
-          Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level,
-          topicSlug, order, type, prompt, options[], answer, notes.
+        <div class="smallNote" style="margin-top:10px">
+          Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level, topicSlug, order, type, prompt, options[], answer, notes.
         </div>
       </div>
     </main>
 
+    
     <!-- Preview modal -->
-    <div id="previewModal" class="modal" style="display: none">
+    <div id="previewModal" class="modal" style="display:none">
       <div class="modalBackdrop" id="previewBackdrop"></div>
       <div class="modalBox card">
-        <div
-          style="
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: space-between;
-          "
-        >
-          <div class="sectionTitle" style="margin: 0">👀 Podgląd (uczeń)</div>
+        <div style="display:flex; gap:10px; align-items:center; justify-content:space-between">
+          <div class="sectionTitle" style="margin:0">👀 Podgląd (uczeń)</div>
           <button class="btn" id="btnClosePreview" type="button">✖</button>
         </div>
 
-        <div id="previewBody" style="margin-top: 10px"></div>
+        <div id="previewBody" style="margin-top:10px"></div>
 
-        <div
-          style="
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 12px;
-            align-items: center;
-          "
-        >
-          <button class="btn btn-yellow" id="btnCheckPreview" type="button">
-            ✅ Sprawdź
-          </button>
-          <span id="previewResult" class="pill" style="display: none"></span>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center">
+          <button class="btn btn-yellow" id="btnCheckPreview" type="button">✅ Sprawdź</button>
+          <span id="previewResult" class="pill" style="display:none"></span>
         </div>
 
-        <div class="smallNote" style="margin-top: 10px; opacity: 0.95">
-          Ten podgląd jest po to, żeby szybko sprawdzić czy treść i odpowiedź są
-          spójne.
+        <div class="smallNote" style="margin-top:10px; opacity:.95">
+          Ten podgląd jest po to, żeby szybko sprawdzić czy treść i odpowiedź są spójne.
         </div>
       </div>
     </div>
 
-    <script type="module">
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
-      import {
-        getAuth,
-        onAuthStateChanged,
-      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+<script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+      import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
       import {
         getFirestore,
         collection,
@@ -1168,204 +871,188 @@ mam na imię — me llamo"
         setDoc,
         orderBy,
         serverTimestamp,
-        updateDoc,
-      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+        arrayUnion,
+        updateDoc
+      } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
       // ✅ Firebase config (Twoje)
       const firebaseConfig = {
-        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
-        authDomain: 'aquivivo-platform.firebaseapp.com',
-        projectId: 'aquivivo-platform',
-        storageBucket: 'aquivivo-platform.firebasestorage.app',
-        messagingSenderId: '116115622011',
-        appId: '1:116115622011:web:33a4a583eba4368071bade',
+        apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
+        authDomain: "aquivivo-platform.firebaseapp.com",
+        projectId: "aquivivo-platform",
+        storageBucket: "aquivivo-platform.firebasestorage.app",
+        messagingSenderId: "116115622011",
+        appId: "1:116115622011:web:33a4a583eba4368071bade",
       };
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
 
-      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+      const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
 
       // URL params
       const params = new URLSearchParams(window.location.search);
-      const LEVEL = (params.get('level') || 'A1').toUpperCase();
-      const slugParam = params.get('slug') || '';
-      const idParam = params.get('id') || '';
+      const LEVEL = (params.get("level") || "A1").toUpperCase();
+      const slugParam = params.get("slug") || "";
+      const idParam = params.get("id") || "";
 
       // UI refs
-      const toast = document.getElementById('toast');
-      const sessionEmail = document.getElementById('sessionEmail');
-      const backToCourse = document.getElementById('backToCourse');
-      const levelsBtn = document.getElementById('levelsBtn');
-      const btnCopyLink = document.getElementById('btnCopyLink');
-      const btnReload = document.getElementById('btnReload');
+      const toast = document.getElementById("toast");
+      const sessionEmail = document.getElementById("sessionEmail");
+      const backToCourse = document.getElementById("backToCourse");
+      const levelsBtn = document.getElementById("levelsBtn");
+      const btnCopyLink = document.getElementById("btnCopyLink");
+      const btnReload = document.getElementById("btnReload");
 
-      const pillLevel = document.getElementById('pillLevel');
-      const pillType = document.getElementById('pillType');
-      const pillSlug = document.getElementById('pillSlug');
-      const pillCount = document.getElementById('pillCount');
+      const pillLevel = document.getElementById("pillLevel");
+      const pillType = document.getElementById("pillType");
+      const pillSlug = document.getElementById("pillSlug");
+      const pillCount = document.getElementById("pillCount");
 
       // Lesson content (public view)
-      const lessonContentCard = document.getElementById('lessonContentCard');
-      const lessonContentBody = document.getElementById('lessonContentBody');
-      const lessonContentEmpty = document.getElementById('lessonContentEmpty');
-      const btnOpenLessonPage = document.getElementById('btnOpenLessonPage');
+      const lessonContentCard = document.getElementById("lessonContentCard");
+      const lessonContentBody = document.getElementById("lessonContentBody");
+      const lessonContentEmpty = document.getElementById("lessonContentEmpty");
+      const btnOpenLessonPage = document.getElementById("btnOpenLessonPage");
 
-      const topicTitle = document.getElementById('topicTitle');
-      const topicDesc = document.getElementById('topicDesc');
-      const taskChips = document.getElementById('taskChips');
+      const topicTitle = document.getElementById("topicTitle");
+      const topicDesc = document.getElementById("topicDesc");
+      const taskChips = document.getElementById("taskChips");
 
-      const exerciseList = document.getElementById('exerciseList');
-      const emptyExercises = document.getElementById('emptyExercises');
-      const adminWrap = document.getElementById('adminWrap');
+      const exerciseList = document.getElementById("exerciseList");
+      const emptyExercises = document.getElementById("emptyExercises");
+      const adminWrap = document.getElementById("adminWrap");
 
       // admin fields
-      const exType = document.getElementById('exType');
-      const exPrompt = document.getElementById('exPrompt');
-      const exImageUrl = document.getElementById('exImageUrl');
-      const exOptions = document.getElementById('exOptions');
-      const exAnswer = document.getElementById('exAnswer');
-      const exCategory = document.getElementById('exCategory');
-      const exTags = document.getElementById('exTags');
-      const exOrder = document.getElementById('exOrder');
-      const exNotes = document.getElementById('exNotes');
-      const btnAddExercise = document.getElementById('btnAddExercise');
-      const btnTplFill = document.getElementById('btnTplFill');
-      const btnTplChoice = document.getElementById('btnTplChoice');
-      const btnTplTF = document.getElementById('btnTplTF');
-      const importJsonArea = document.getElementById('importJsonArea');
-      const btnImportJson = document.getElementById('btnImportJson');
-      const btnClearImport = document.getElementById('btnClearImport');
-      const importStatus = document.getElementById('importStatus');
+      const exType = document.getElementById("exType");
+      const exPrompt = document.getElementById("exPrompt");
+      const exImageUrl = document.getElementById("exImageUrl");
+      const exOptions = document.getElementById("exOptions");
+      const exAnswer = document.getElementById("exAnswer");
+      const exCategory = document.getElementById("exCategory");
+      const exTags = document.getElementById("exTags");
+      const exOrder = document.getElementById("exOrder");
+      const exNotes = document.getElementById("exNotes");
+      const btnAddExercise = document.getElementById("btnAddExercise");
+      const btnTplFill = document.getElementById("btnTplFill");
+      const btnTplChoice = document.getElementById("btnTplChoice");
+      const btnTplTF = document.getElementById("btnTplTF");
+      const importJsonArea = document.getElementById("importJsonArea");
+      const btnImportJson = document.getElementById("btnImportJson");
+      const btnClearImport = document.getElementById("btnClearImport");
+      const importStatus = document.getElementById("importStatus");
+      
 
       // ===== Lesson meta (course_meta) =====
-      const lessonMetaWrap = document.getElementById('lessonMetaWrap');
-      const lessonTitleEs = document.getElementById('lessonTitleEs');
-      const lessonDescEs = document.getElementById('lessonDescEs');
-      const lessonImageUrl = document.getElementById('lessonImageUrl');
-      const lessonHtml = document.getElementById('lessonHtml');
-      const lessonObjectives = document.getElementById('lessonObjectives');
-      const lessonGrammar = document.getElementById('lessonGrammar');
-      const lessonVocab = document.getElementById('lessonVocab');
-      const lessonDialog = document.getElementById('lessonDialog');
-      const lessonSpeaking = document.getElementById('lessonSpeaking');
-      const btnSaveLessonMeta = document.getElementById('btnSaveLessonMeta');
-      const btnClearLessonMeta = document.getElementById('btnClearLessonMeta');
-      const lessonMetaStatus = document.getElementById('lessonMetaStatus');
+      const lessonMetaWrap = document.getElementById("lessonMetaWrap");
+      const lessonTitleEs = document.getElementById("lessonTitleEs");
+      const lessonDescEs = document.getElementById("lessonDescEs");
+      const lessonImageUrl = document.getElementById("lessonImageUrl");
+      const lessonHtml = document.getElementById("lessonHtml");
+      const lessonObjectives = document.getElementById("lessonObjectives");
+      const lessonGrammar = document.getElementById("lessonGrammar");
+      const lessonVocab = document.getElementById("lessonVocab");
+      const lessonDialog = document.getElementById("lessonDialog");
+      const lessonSpeaking = document.getElementById("lessonSpeaking");
+      const btnSaveLessonMeta = document.getElementById("btnSaveLessonMeta");
+      const btnClearLessonMeta = document.getElementById("btnClearLessonMeta");
+      const lessonMetaStatus = document.getElementById("lessonMetaStatus");
 
       function linesToArray(text) {
-        return (text || '')
-          .split('\n')
-          .map((s) => s.replace(/^\s*[-•]\s*/, '').trim())
+        return (text || "")
+          .split("\n")
+          .map(s => s.replace(/^\s*[-•]\s*/,"").trim())
           .filter(Boolean);
       }
       function arrayToLines(arr) {
-        return Array.isArray(arr) ? arr.join('\n') : '';
+        return Array.isArray(arr) ? arr.join("\n") : "";
       }
 
       function getLessonMetaDocId(topic) {
-        const slug =
-          topic && (topic.slug || topic.id)
-            ? String(topic.slug || topic.id)
-            : '';
+        const slug = topic && (topic.slug || topic.id) ? String(topic.slug || topic.id) : "";
         return `${LEVEL}__${slug}`;
+      
       }
-      function syncLessonPageLink() {
-        if (!btnOpenLessonPage) return;
-        if (!currentTopic) {
-          btnOpenLessonPage.style.display = 'none';
-          return;
-        }
-        const slug = String(currentTopic.slug || currentTopic.id || '');
+      function syncLessonPageLink(){
+        if(!btnOpenLessonPage) return;
+        if(!currentTopic) { btnOpenLessonPage.style.display = "none"; return; }
+        const slug = String(currentTopic.slug || currentTopic.id || "");
         const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(slug)}`;
         btnOpenLessonPage.href = url;
-        btnOpenLessonPage.style.display = 'inline-flex';
+        btnOpenLessonPage.style.display = "inline-flex";
       }
 
-      function renderLessonContent(data) {
-        if (!lessonContentCard || !lessonContentBody || !lessonContentEmpty)
-          return;
+      function renderLessonContent(data){
+        if(!lessonContentCard || !lessonContentBody || !lessonContentEmpty) return;
 
         // show only when there's anything to show (image or html or objectives etc.)
-        if (!data) {
-          lessonContentCard.style.display = 'none';
-          lessonContentBody.innerHTML = '';
-          lessonContentEmpty.style.display = 'none';
+        if(!data){
+          lessonContentCard.style.display = "none";
+          lessonContentBody.innerHTML = "";
+          lessonContentEmpty.style.display = "none";
           return;
         }
 
         const parts = [];
 
-        const img = (data.imageUrl || '').trim();
-        if (img) {
+        const img = (data.imageUrl || "").trim();
+        if(img){
           const safe = escapeHtml(img);
-          parts.push(
-            `<img src="${safe}" alt="" style="max-width:100%; border-radius:18px; border:1px solid rgba(255,255,255,0.14); display:block; margin: 10px auto 14px;">`,
-          );
+          parts.push(`<img src="${safe}" alt="" style="max-width:100%; border-radius:18px; border:1px solid rgba(255,255,255,0.14); display:block; margin: 10px auto 14px;">`);
         }
 
-        const html = (data.html || '').trim();
-        if (html) {
+        const html = (data.html || "").trim();
+        if(html){
           // trusted admin content
           parts.push(`<div class="lessonText">${html}</div>`);
         }
 
         // If no html, we can render simple sections from arrays/dialog
-        if (!html) {
+        if(!html){
           const obj = Array.isArray(data.objectives) ? data.objectives : [];
           const gram = Array.isArray(data.grammar) ? data.grammar : [];
           const voc = Array.isArray(data.vocab) ? data.vocab : [];
-          const dialog = (data.dialog || '').trim();
-          const speak = (data.speakingTask || '').trim();
+          const dialog = (data.dialog || "").trim();
+          const speak = (data.speakingTask || "").trim();
 
-          if (obj.length) {
-            parts.push(
-              `<div class="lessonText"><b>🎯 Cele:</b><ul>${obj.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`,
-            );
+          if(obj.length){
+            parts.push(`<div class="lessonText"><b>🎯 Cele:</b><ul>${obj.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul></div>`);
           }
-          if (dialog) {
-            parts.push(
-              `<div class="lessonText"><b>💬 Diálogo:</b><div style="white-space:pre-wrap; margin-top:6px">${escapeHtml(dialog)}</div></div>`,
-            );
+          if(dialog){
+            parts.push(`<div class="lessonText"><b>💬 Diálogo:</b><div style="white-space:pre-wrap; margin-top:6px">${escapeHtml(dialog)}</div></div>`);
           }
-          if (gram.length) {
-            parts.push(
-              `<div class="lessonText"><b>📚 Gramatyka:</b><ul>${gram.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`,
-            );
+          if(gram.length){
+            parts.push(`<div class="lessonText"><b>📚 Gramatyka:</b><ul>${gram.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul></div>`);
           }
-          if (voc.length) {
-            parts.push(
-              `<div class="lessonText"><b>🧠 Słownictwo:</b><ul>${voc.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`,
-            );
+          if(voc.length){
+            parts.push(`<div class="lessonText"><b>🧠 Słownictwo:</b><ul>${voc.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul></div>`);
           }
-          if (speak) {
-            parts.push(
-              `<div class="lessonText"><b>🗣 Zadanie mówione:</b><div style="margin-top:6px">${escapeHtml(speak)}</div></div>`,
-            );
+          if(speak){
+            parts.push(`<div class="lessonText"><b>🗣 Zadanie mówione:</b><div style="margin-top:6px">${escapeHtml(speak)}</div></div>`);
           }
         }
 
         const hasAny = parts.length > 0;
-        lessonContentCard.style.display = hasAny ? 'block' : 'none';
-        lessonContentEmpty.style.display = hasAny ? 'none' : 'block';
-        lessonContentBody.innerHTML = parts.join('');
+        lessonContentCard.style.display = hasAny ? "block" : "none";
+        lessonContentEmpty.style.display = hasAny ? "none" : "block";
+        lessonContentBody.innerHTML = parts.join("");
       }
 
-      async function loadLessonMetaPublic(topic) {
-        if (!topic) return;
-        try {
+      async function loadLessonMetaPublic(topic){
+        if(!topic) return;
+        try{
           const docId = getLessonMetaDocId(topic);
-          const ref = doc(db, 'course_meta', docId);
+          const ref = doc(db, "course_meta", docId);
           const snap = await getDoc(ref);
-          if (!snap.exists()) {
+          if(!snap.exists()){
             renderLessonContent(null);
             syncLessonPageLink();
             return;
           }
           renderLessonContent(snap.data());
           syncLessonPageLink();
-        } catch (e) {
+        }catch(e){
           console.error(e);
           renderLessonContent(null);
           syncLessonPageLink();
@@ -1376,164 +1063,157 @@ mam na imię — me llamo"
         if (!isAdmin) return;
         if (!topic || !(topic.slug || topic.id)) return;
 
-        lessonMetaStatus.textContent = 'Cargando...';
+        lessonMetaStatus.textContent = "Cargando...";
         try {
           const docId = getLessonMetaDocId(topic);
-          const ref = doc(db, 'course_meta', docId);
+          const ref = doc(db, "course_meta", docId);
           const snap = await getDoc(ref);
 
           if (!snap.exists()) {
-            lessonMetaStatus.textContent = 'Sin lección guardada aún.';
+            lessonMetaStatus.textContent = "Sin lección guardada aún.";
             return;
           }
 
           const data = snap.data() || {};
-          lessonTitleEs.value = data.titleEs || '';
-          lessonDescEs.value = data.descriptionEs || '';
-          lessonObjectives.value = arrayToLines(
-            data.objectives || data.objectivesEs || [],
-          );
-          lessonGrammar.value = arrayToLines(
-            data.grammar || data.grammarEs || [],
-          );
+          lessonTitleEs.value = data.titleEs || "";
+          lessonDescEs.value = data.descriptionEs || "";
+          lessonObjectives.value = arrayToLines(data.objectives || data.objectivesEs || []);
+          lessonGrammar.value = arrayToLines(data.grammar || data.grammarEs || []);
           lessonVocab.value = arrayToLines(data.vocab || data.vocabEs || []);
-          lessonDialog.value = data.dialog || data.dialogEs || '';
-          lessonSpeaking.value = data.speakingTask || data.speakingTaskEs || '';
-          lessonImageUrl.value = data.imageUrl || '';
-          lessonHtml.value = data.html || '';
+          lessonDialog.value = data.dialog || data.dialogEs || "";
+          lessonSpeaking.value = data.speakingTask || data.speakingTaskEs || "";
+          lessonImageUrl.value = data.imageUrl || "";
+          lessonHtml.value = data.html || "";
 
-          lessonMetaStatus.textContent = 'Lección cargada ✅';
+          lessonMetaStatus.textContent = "Lección cargada ✅";
           renderLessonContent(data);
           syncLessonPageLink();
         } catch (e) {
           console.error(e);
-          lessonMetaStatus.textContent = 'Error cargando lección ❌';
+          lessonMetaStatus.textContent = "Error cargando lección ❌";
         }
       }
 
       async function saveLessonMeta(topic) {
         if (!isAdmin) return;
         if (!topic || !(topic.slug || topic.id)) {
-          showToast('Primero elige un tema desde course.html', 'warn', 3000);
+          showToast("Primero elige un tema desde course.html", "warn", 3000);
           return;
         }
 
-        lessonMetaStatus.textContent = 'Guardando...';
+        lessonMetaStatus.textContent = "Guardando...";
         try {
           const slug = String(topic.slug || topic.id);
           const docId = getLessonMetaDocId(topic);
-          const ref = doc(db, 'course_meta', docId);
+          const ref = doc(db, "course_meta", docId);
 
           const payload = {
             level: LEVEL,
             topicSlug: slug,
-            titleEs: (lessonTitleEs.value || '').trim(),
-            descriptionEs: (lessonDescEs.value || '').trim(),
+            titleEs: (lessonTitleEs.value || "").trim(),
+            descriptionEs: (lessonDescEs.value || "").trim(),
             objectives: linesToArray(lessonObjectives.value),
             grammar: linesToArray(lessonGrammar.value),
             vocab: linesToArray(lessonVocab.value),
-            dialog: (lessonDialog.value || '').trim(),
-            speakingTask: (lessonSpeaking.value || '').trim(),
-            imageUrl: (lessonImageUrl.value || '').trim(),
-            html: (lessonHtml.value || '').trim(),
+            dialog: (lessonDialog.value || "").trim(),
+            speakingTask: (lessonSpeaking.value || "").trim(),
+            imageUrl: (lessonImageUrl.value || "").trim(),
+            html: (lessonHtml.value || "").trim(),
             updatedAt: new Date().toISOString(),
           };
 
           await setDoc(ref, payload, { merge: true });
 
-          lessonMetaStatus.textContent = 'Guardado ✅';
-          showToast('Lección guardada ✅', 'ok', 2200);
+          lessonMetaStatus.textContent = "Guardado ✅";
+          showToast("Lección guardada ✅", "ok", 2200);
         } catch (e) {
           console.error(e);
-          lessonMetaStatus.textContent = 'Error ❌';
-          showToast('Error guardando lección', 'err', 2600);
+          lessonMetaStatus.textContent = "Error ❌";
+          showToast("Error guardando lección", "err", 2600);
         }
       }
 
       function clearLessonMeta() {
-        lessonTitleEs.value = '';
-        lessonDescEs.value = '';
-        lessonObjectives.value = '';
-        lessonGrammar.value = '';
-        lessonVocab.value = '';
-        lessonDialog.value = '';
-        lessonSpeaking.value = '';
-        lessonImageUrl.value = '';
-        lessonHtml.value = '';
-        lessonMetaStatus.textContent = '';
+        lessonTitleEs.value = "";
+        lessonDescEs.value = "";
+        lessonObjectives.value = "";
+        lessonGrammar.value = "";
+        lessonVocab.value = "";
+        lessonDialog.value = "";
+        lessonSpeaking.value = "";
+        lessonImageUrl.value = "";
+        lessonHtml.value = "";
+        lessonMetaStatus.textContent = "";
         renderLessonContent(null);
       }
 
-      if (btnSaveLessonMeta)
-        btnSaveLessonMeta.onclick = () => saveLessonMeta(currentTopic);
+      if (btnSaveLessonMeta) btnSaveLessonMeta.onclick = () => saveLessonMeta(currentTopic);
       if (btnClearLessonMeta) btnClearLessonMeta.onclick = clearLessonMeta;
 
-      const btnAutoOrder = document.getElementById('btnAutoOrder');
+const btnAutoOrder = document.getElementById("btnAutoOrder");
 
       // Filters + reorder
-      const filterSearch = document.getElementById('filterSearch');
-      const filterType = document.getElementById('filterType');
-      const filterCategory = document.getElementById('filterCategory');
-      const btnClearFilters = document.getElementById('btnClearFilters');
-      const toggleReorder = document.getElementById('toggleReorder');
-      const btnSaveOrder = document.getElementById('btnSaveOrder');
+      const filterSearch = document.getElementById("filterSearch");
+      const filterType = document.getElementById("filterType");
+      const filterCategory = document.getElementById("filterCategory");
+      const btnClearFilters = document.getElementById("btnClearFilters");
+      const toggleReorder = document.getElementById("toggleReorder");
+      const btnSaveOrder = document.getElementById("btnSaveOrder");
 
       // Preview modal
-      const previewModal = document.getElementById('previewModal');
-      const previewBackdrop = document.getElementById('previewBackdrop');
-      const btnClosePreview = document.getElementById('btnClosePreview');
-      const previewBody = document.getElementById('previewBody');
-      const btnCheckPreview = document.getElementById('btnCheckPreview');
-      const previewResult = document.getElementById('previewResult');
+      const previewModal = document.getElementById("previewModal");
+      const previewBackdrop = document.getElementById("previewBackdrop");
+      const btnClosePreview = document.getElementById("btnClosePreview");
+      const previewBody = document.getElementById("previewBody");
+      const btnCheckPreview = document.getElementById("btnCheckPreview");
+      const previewResult = document.getElementById("previewResult");
 
       // ===== helpers =====
       function escapeHtml(s) {
-        return String(s ?? '')
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;')
-          .replaceAll('"', '&quot;')
-          .replaceAll("'", '&#039;');
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
       }
 
       function normalizeAnswer(a) {
-        return String(a ?? '').trim();
+        return String(a ?? "").trim();
       }
 
       function parseOptions(raw) {
-        return String(raw ?? '')
-          .split('\n')
+        return String(raw ?? "")
+          .split("\n")
           .map((x) => x.trim())
           .filter(Boolean);
       }
 
-      function showToast(msg, kind = 'ok', ms = 2200) {
-        toast.className = '';
-        toast.style.display = 'block';
+      function showToast(msg, kind = "ok", ms = 2200) {
+        toast.className = "";
+        toast.style.display = "block";
         toast.textContent = msg;
 
-        if (kind === 'ok') toast.classList.add('toast-ok');
-        if (kind === 'bad') toast.classList.add('toast-bad');
-        if (kind === 'warn') toast.classList.add('toast-warn');
+        if (kind === "ok") toast.classList.add("toast-ok");
+        if (kind === "bad") toast.classList.add("toast-bad");
+        if (kind === "warn") toast.classList.add("toast-warn");
 
         clearTimeout(showToast._t);
         showToast._t = setTimeout(() => {
-          toast.style.display = 'none';
+          toast.style.display = "none";
         }, ms);
       }
 
       function markBad(el, bad) {
         if (!el) return;
-        if (bad) el.classList.add('field-bad');
-        else el.classList.remove('field-bad');
+        if (bad) el.classList.add("field-bad");
+        else el.classList.remove("field-bad");
       }
 
       function setSaving(isSaving) {
         btnAddExercise.disabled = isSaving;
         btnAutoOrder.disabled = isSaving;
-        btnAddExercise.textContent = isSaving
-          ? '⏳ Guardando...'
-          : '➕ Guardar ejercicio';
+        btnAddExercise.textContent = isSaving ? "⏳ Guardando..." : "➕ Guardar ejercicio";
       }
 
       // ===== UX buttons =====
@@ -1544,118 +1224,176 @@ mam na imię — me llamo"
       btnCopyLink.onclick = async () => {
         try {
           await navigator.clipboard.writeText(window.location.href);
-          showToast('✅ Enlace copiado', 'ok', 1800);
+          showToast("✅ Enlace copiado", "ok", 1800);
         } catch {
-          showToast(
-            '⚠️ No se pudo copiar (bloqueado por navegador)',
-            'warn',
-            2600,
-          );
+          showToast("⚠️ No se pudo copiar (bloqueado por navegador)", "warn", 2600);
         }
       };
       btnReload.onclick = () => window.location.reload();
 
       // ===== Exercise types (Twoja lista) =====
       const TASK_OPTIONS = [
-        'Rellenar los espacios',
-        'Relacionar palabra con imagen',
-        'Relacionar palabra con traducción',
-        'Elegir la palabra correcta',
-        'Tarjetas interactivas',
-        'Agrupar palabras',
-        'Verdadero o falso',
-        'Completar la frase con una imagen',
-        'Juego de memoria (pares)',
-        'Opción múltiple',
-        'Completar la forma correcta',
-        'Elegir la forma correcta',
-        'Transformaciones',
-        'Relacionar pregunta con respuesta',
-        'Ordenar palabras para formar una frase',
-        'Corregir errores',
-        'Unir dos partes de la frase',
-        'Completar con preposición o terminación',
-        'Opción única',
-        'Escribir tu propia respuesta',
-        'Repetir después del narrador',
-        'Completar la frase con tu voz',
-        'Responder a una pregunta',
-        'Describir una imagen',
-        'Juego de roles',
-        'Mini-monólogo',
-        'Diálogo semiabierto',
-        'Decirlo de otra manera',
-        'Escuchar y elegir la respuesta',
-        'Escuchar y completar los espacios',
-        'Escuchar y marcar verdadero o falso',
-        'Escuchar y relacionar personas',
-        'Escuchar y ordenar la secuencia',
-        'Dictado con audio',
-        'Escuchar y repetir',
-        'Diálogo interactivo',
-        'Misión del día',
-        'Quiz situacional',
-        'Video con preguntas',
-        'Test final del tema',
-        'Debate grabado',
-        'Contar una historia',
-        'Simulación de entrevista de trabajo',
-        'Retroalimentación por voz',
+        "Rellenar los espacios",
+        "Relacionar palabra con imagen",
+        "Relacionar palabra con traducción",
+        "Elegir la palabra correcta",
+        "Tarjetas interactivas",
+        "Agrupar palabras",
+        "Verdadero o falso",
+        "Completar la frase con una imagen",
+        "Juego de memoria (pares)",
+        "Opción múltiple",
+        "Completar la forma correcta",
+        "Elegir la forma correcta",
+        "Transformaciones",
+        "Relacionar pregunta con respuesta",
+        "Ordenar palabras para formar una frase",
+        "Corregir errores",
+        "Unir dos partes de la frase",
+        "Completar con preposición o terminación",
+        "Opción única",
+        "Escribir tu propia respuesta",
+        "Repetir después del narrador",
+        "Completar la frase con tu voz",
+        "Responder a una pregunta",
+        "Describir una imagen",
+        "Juego de roles",
+        "Mini-monólogo",
+        "Diálogo semiabierto",
+        "Decirlo de otra manera",
+        "Escuchar y elegir la respuesta",
+        "Escuchar y completar los espacios",
+        "Escuchar y marcar verdadero o falso",
+        "Escuchar y relacionar personas",
+        "Escuchar y ordenar la secuencia",
+        "Dictado con audio",
+        "Escuchar y repetir",
+        "Diálogo interactivo",
+        "Misión del día",
+        "Quiz situacional",
+        "Video con preguntas",
+        "Test final del tema",
+        "Debate grabado",
+        "Contar una historia",
+        "Simulación de entrevista de trabajo",
+        "Retroalimentación por voz",
       ];
 
       function fillExerciseTypes() {
-        exType.innerHTML = TASK_OPTIONS.map(
-          (t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`,
-        ).join('');
-        const saved = localStorage.getItem('lastExerciseType');
+        exType.innerHTML = TASK_OPTIONS.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+        const saved = localStorage.getItem("lastExerciseType");
         if (saved && TASK_OPTIONS.includes(saved)) exType.value = saved;
-        exType.addEventListener('change', () =>
-          localStorage.setItem('lastExerciseType', exType.value),
-        );
+        exType.addEventListener("change", () => localStorage.setItem("lastExerciseType", exType.value));
       }
 
       // ===== Safe "no params" screen =====
-      if (!params.get('level') && !params.get('id') && !params.get('slug')) {
-        topicTitle.textContent = 'Brak wybranego tematu';
+      if (!params.get("level") && !params.get("id") && !params.get("slug")) {
+        topicTitle.textContent = "Brak wybranego tematu";
         topicDesc.textContent =
-          'Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).';
-        pillType.textContent = '—';
-        pillSlug.textContent = 'slug: —';
-        pillCount.textContent = 'Ejercicios: —';
-        exerciseList.innerHTML = '';
-        emptyExercises.style.display = 'block';
+          "Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).";
+        pillType.textContent = "—";
+        pillSlug.textContent = "slug: —";
+        pillCount.textContent = "Ejercicios: —";
+        exerciseList.innerHTML = "";
+        emptyExercises.style.display = "block";
       }
 
       // ===== Topic loading =====
       let currentTopic = null;
       let isAdmin = false;
       let cachedExercises = [];
+      // ===== User progress (Firestore) =====
+      let CURRENT_TOPIC_KEY = null; // `${LEVEL}__${slug}`
+      let TOTAL_EXERCISES = 0;
+      let DONE_SET = new Set();
+
+      const pillProgress = document.getElementById("pillProgress");
+      const progressFill = document.getElementById("progressFill");
+      const progressText = document.getElementById("progressText");
+
+      function progressDocRef(uid, topicKey){
+        return doc(db, "user_progress", uid, "topics", topicKey);
+      }
+
+      function renderProgress(doneCount, total){
+        const t = Number(total || 0);
+        const d = Number(doneCount || 0);
+        const pct = t ? Math.round((d / t) * 100) : 0;
+
+        if (pillProgress) pillProgress.textContent = `Progreso: ${pct}%`;
+        if (progressFill) progressFill.style.width = `${pct}%`;
+        if (progressText) progressText.textContent = `${d} / ${t} completados`;
+      }
+
+      async function loadProgressForTopic(uid){
+        if(!uid || !CURRENT_TOPIC_KEY) return;
+        try{
+          const ref = progressDocRef(uid, CURRENT_TOPIC_KEY);
+          const snap = await getDoc(ref);
+          DONE_SET = new Set();
+          if(snap.exists()){
+            const data = snap.data() || {};
+            const done = Array.isArray(data.doneIds) ? data.doneIds : [];
+            done.forEach(id=> DONE_SET.add(String(id)));
+            const total = Number(data.totalExercises || TOTAL_EXERCISES || 0);
+            TOTAL_EXERCISES = total || TOTAL_EXERCISES;
+          }
+          renderProgress(DONE_SET.size, TOTAL_EXERCISES);
+        }catch(e){
+          // permissions or missing rules -> silently ignore (UI stays 0)
+          console.warn("Progress read failed:", e?.code || e);
+          renderProgress(DONE_SET.size, TOTAL_EXERCISES);
+        }
+      }
+
+      async function markDone(uid, exId){
+        if(!uid || !CURRENT_TOPIC_KEY || !exId) return;
+        const id = String(exId);
+        if(DONE_SET.has(id)) return;
+
+        DONE_SET.add(id);
+        renderProgress(DONE_SET.size, TOTAL_EXERCISES);
+
+        try{
+          const ref = progressDocRef(uid, CURRENT_TOPIC_KEY);
+          await setDoc(ref, {
+            level: LEVEL,
+            topicSlug: (currentTopic && (currentTopic.slug || currentTopic.id)) ? String(currentTopic.slug || currentTopic.id) : null,
+            totalExercises: Number(TOTAL_EXERCISES || 0),
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+
+          // arrayUnion requires write permission to user's own doc
+          await updateDoc(ref, { doneIds: arrayUnion(id), updatedAt: serverTimestamp() });
+        }catch(e){
+          console.warn("Progress write failed:", e?.code || e);
+        }
+      }
 
       function normalizeTopic(t) {
         return {
           id: t.id,
-          level: (t.level || '').toString().toUpperCase(),
-          type: (t.type || '').toString(),
-          title: t.title || '',
-          desc: t.desc || '',
-          slug: (t.slug || slugParam || t.id || '').toString(),
+          level: (t.level || "").toString().toUpperCase(),
+          type: (t.type || "").toString(),
+          title: t.title || "",
+          desc: t.desc || "",
+          slug: (t.slug || slugParam || t.id || "").toString(),
           tasks: Array.isArray(t.tasks) ? t.tasks : [],
         };
       }
 
       function renderTopic(t) {
-        pillType.textContent =
-          t.type === 'grammar' ? 'Gramática' : 'Vocabulario';
-        const eff = t.slug || t.id ? String(t.slug || t.id) : '';
-        pillSlug.textContent = eff ? `slug: ${eff}` : 'slug: —';
-        topicTitle.textContent = t.title || 'Tema';
-        topicDesc.textContent = t.desc || '';
+        pillType.textContent = t.type === "grammar" ? "Gramática" : "Vocabulario";
+        const eff = (t.slug || t.id) ? String(t.slug || t.id) : "";
+        pillSlug.textContent = eff ? `slug: ${eff}` : "slug: —";
+        topicTitle.textContent = t.title || "Tema";
+        topicDesc.textContent = t.desc || "";
 
-        taskChips.innerHTML = '';
+        taskChips.innerHTML = "";
         if (t.tasks && t.tasks.length) {
           t.tasks.slice(0, 14).forEach((x) => {
-            const span = document.createElement('span');
-            span.className = 'pill';
+            const span = document.createElement("span");
+            span.className = "pill";
             span.textContent = x;
             taskChips.appendChild(span);
           });
@@ -1665,7 +1403,7 @@ mam na imię — me llamo"
       async function loadTopic() {
         // 1) by id
         if (idParam) {
-          const ref = doc(db, 'courses', idParam);
+          const ref = doc(db, "courses", idParam);
           const snap = await getDoc(ref);
           if (!snap.exists()) return null;
           const data = snap.data();
@@ -1677,11 +1415,7 @@ mam na imię — me llamo"
         // 2) by slug + level
         if (!slugParam) return null;
 
-        const q = query(
-          collection(db, 'courses'),
-          where('level', '==', LEVEL),
-          where('slug', '==', slugParam),
-        );
+        const q = query(collection(db, "courses"), where("level", "==", LEVEL), where("slug", "==", slugParam));
         const snap = await getDocs(q);
         if (snap.empty) return null;
 
@@ -1694,7 +1428,7 @@ mam na imię — me llamo"
       // ===== Exercises loading/render =====
 
       function renderExerciseList() {
-        exerciseList.innerHTML = '';
+        exerciseList.innerHTML = "";
 
         const list = Array.isArray(VIEW_EXERCISES) ? VIEW_EXERCISES : [];
         const total = Array.isArray(ALL_EXERCISES) ? ALL_EXERCISES.length : 0;
@@ -1703,11 +1437,11 @@ mam na imię — me llamo"
         pillCount.textContent = qLabel(total, shown);
 
         if (!shown) {
-          emptyExercises.style.display = 'block';
+          emptyExercises.style.display = "block";
           return;
         }
 
-        emptyExercises.style.display = 'none';
+        emptyExercises.style.display = "none";
 
         // Ensure visual order label is consistent with current array order in reorder mode
         list.forEach((ex, idx) => {
@@ -1716,42 +1450,32 @@ mam na imię — me llamo"
         });
 
         list.forEach((ex, idx) => {
-          const x = {
-            ...ex,
-            order:
-              REORDER_MODE && IS_ADMIN ? ex.__tmpOrder || idx + 1 : ex.order,
-          };
-          exerciseList.insertAdjacentHTML(
-            'beforeend',
-            renderExerciseCard(x, idx),
-          );
+          const x = { ...ex, order: (REORDER_MODE && IS_ADMIN) ? (ex.__tmpOrder || (idx + 1)) : ex.order };
+          exerciseList.insertAdjacentHTML("beforeend", renderExerciseCard(x, idx));
         });
 
         list.forEach((ex) => attachExerciseHandlers(ex));
       }
 
       function qLabel(total, shown) {
-        if (!filterSearch && !filterType && !filterCategory)
-          return `Ejercicios: ${total}`;
+        if (!filterSearch && !filterType && !filterCategory) return `Ejercicios: ${total}`;
         if (shown === total) return `Ejercicios: ${total}`;
         return `Ejercicios: ${shown} / ${total}`;
       }
       function getNextOrder() {
         if (!cachedExercises.length) return 1;
-        const max = Math.max(
-          ...cachedExercises.map((x) => Number(x.order || 0)),
-        );
+        const max = Math.max(...cachedExercises.map((x) => Number(x.order || 0)));
         return (max || 0) + 1;
       }
 
       function renderExerciseCard(ex, idx) {
-        const type = ex.type || 'Ejercicio';
-        const prompt = ex.prompt || '';
+        const type = ex.type || "Ejercicio";
+        const prompt = ex.prompt || "";
         const options = Array.isArray(ex.options) ? ex.options : [];
         const order = Number(ex.order || idx + 1);
 
         const isChoice = options.length >= 2;
-        const isFill = type === 'Rellenar los espacios' || !isChoice;
+        const isFill = type === "Rellenar los espacios" || !isChoice;
 
         const optionsHtml = isFill
           ? `
@@ -1763,11 +1487,8 @@ mam na imię — me llamo"
           : `
             <div class="opts" id="opts-${ex.id}">
               ${options
-                .map(
-                  (o) =>
-                    `<button class="optBtn" type="button" data-ex="${ex.id}" data-opt="${escapeHtml(o)}">${escapeHtml(o)}</button>`,
-                )
-                .join('')}
+                .map((o) => `<button class="optBtn" type="button" data-ex="${ex.id}" data-opt="${escapeHtml(o)}">${escapeHtml(o)}</button>`)
+                .join("")}
             </div>
           `;
 
@@ -1778,17 +1499,17 @@ mam na imię — me llamo"
                 <button class="dangerMini" id="del-${ex.id}" type="button" title="Eliminar">🗑</button>
               </div>
             `
-          : '';
+          : "";
 
         return `
-          <div class="exercise ${REORDER_MODE && IS_ADMIN ? 'dragHint' : ''}" id="ex-${ex.id}" data-id="${ex.id}" ${REORDER_MODE && IS_ADMIN ? 'draggable="true"' : ''}>
+          <div class="exercise ${REORDER_MODE && IS_ADMIN ? "dragHint" : ""}" id="ex-${ex.id}" data-id="${ex.id}" ${REORDER_MODE && IS_ADMIN ? "draggable=\"true\"" : ""}>
             ${adminControls}
-            <div class="type">${escapeHtml(type)} · #${order} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ''}</div>
+            <div class="type">${escapeHtml(type)} · #${order} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ""}</div>
             <h3>${escapeHtml(prompt)}</h3>
-            ${ex.imageUrl ? `<img src="${escapeHtml(ex.imageUrl)}" alt="" style="max-width:100%; border-radius:14px; border:1px solid rgba(0,0,0,0.08); margin: 10px 0 12px;" />` : ''}
+            ${ex.imageUrl ? `<img src="${escapeHtml(ex.imageUrl)}" alt="" style="max-width:100%; border-radius:14px; border:1px solid rgba(0,0,0,0.08); margin: 10px 0 12px;" />` : ""}
             ${optionsHtml}
             <div class="result" id="res-${ex.id}"></div>
-            ${ex.notes ? `<div class="smallNote">${escapeHtml(ex.notes)}</div>` : ''}
+            ${ex.notes ? `<div class="smallNote">${escapeHtml(ex.notes)}</div>` : ""}
           </div>
         `;
       }
@@ -1796,35 +1517,31 @@ mam na imię — me llamo"
       function disableChoiceButtons(exId) {
         const wrap = document.getElementById(`opts-${exId}`);
         if (!wrap) return;
-        wrap
-          .querySelectorAll('button.optBtn')
-          .forEach((b) => (b.disabled = true));
+        wrap.querySelectorAll("button.optBtn").forEach((b) => (b.disabled = true));
       }
 
       function attachExerciseHandlers(ex) {
-        const correct = String(ex.answer || '').trim();
+        const correct = String(ex.answer || "").trim();
         const res = document.getElementById(`res-${ex.id}`);
 
         // delete
         if (isAdmin) {
-          document
-            .getElementById('btnStudentPreview')
-            ?.addEventListener('click', () => {
-              const url = `lesson.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}&preview=1`;
-              window.open(url, '_blank', 'noopener,noreferrer');
-            });
+        document.getElementById('btnStudentPreview')?.addEventListener('click', ()=>{
+          const url = `lesson.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}&preview=1`;
+          window.open(url, '_blank', 'noopener,noreferrer');
+        });
           const delBtn = document.getElementById(`del-${ex.id}`);
           if (delBtn) {
             delBtn.onclick = async (ev) => {
               ev.stopPropagation();
-              if (!confirm('Usunąć to zadanie?')) return;
+              if (!confirm("Usunąć to zadanie?")) return;
               try {
-                await deleteDoc(doc(db, 'exercises', ex.id));
-                showToast('🗑 Usunięto', 'ok', 1600);
+                await deleteDoc(doc(db, "exercises", ex.id));
+                showToast("🗑 Usunięto", "ok", 1600);
                 await loadExercises(currentTopic);
               } catch (e) {
                 console.error(e);
-                showToast('❌ Błąd usuwania (sprawdź konsolę)', 'bad', 3200);
+                showToast("❌ Błąd usuwania (sprawdź konsolę)", "bad", 3200);
               }
             };
           }
@@ -1844,21 +1561,21 @@ mam na imię — me llamo"
         // drag&drop reorder (admin)
         const card = document.getElementById(`ex-${ex.id}`);
         if (card && isAdmin && REORDER_MODE) {
-          card.addEventListener('dragstart', (e) => {
+          card.addEventListener("dragstart", (e) => {
             DRAG_ID = ex.id;
-            card.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
+            card.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
           });
-          card.addEventListener('dragend', () => {
-            card.classList.remove('dragging');
+          card.addEventListener("dragend", () => {
+            card.classList.remove("dragging");
           });
-          card.addEventListener('dragover', (e) => {
+          card.addEventListener("dragover", (e) => {
             e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
+            e.dataTransfer.dropEffect = "move";
           });
-          card.addEventListener('drop', (e) => {
+          card.addEventListener("drop", (e) => {
             e.preventDefault();
-            const targetId = card.getAttribute('data-id');
+            const targetId = card.getAttribute("data-id");
             if (!DRAG_ID || !targetId || DRAG_ID === targetId) return;
 
             const fromIdx = ALL_EXERCISES.findIndex((x) => x.id === DRAG_ID);
@@ -1872,23 +1589,25 @@ mam na imię — me llamo"
           });
         }
 
+
         // text input mode
         const inp = document.getElementById(`inp-${ex.id}`);
         const chk = document.getElementById(`chk-${ex.id}`);
         if (inp && chk && res) {
           const check = () => {
-            const user = String(inp.value || '').trim();
+            const user = String(inp.value || "").trim();
             if (!user) return;
 
             const ok = user.toLowerCase() === correct.toLowerCase();
+            if (ok) { markDone(CURRENT_UID, ex.id); }
             res.innerHTML = ok
               ? `<span class="ok">✅ Correcto</span>`
               : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
           };
 
           chk.onclick = check;
-          inp.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') check();
+          inp.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") check();
           });
           return;
         }
@@ -1897,11 +1616,11 @@ mam na imię — me llamo"
         const wrap = document.getElementById(`opts-${ex.id}`);
         if (!wrap || !res) return;
 
-        wrap.querySelectorAll('button.optBtn').forEach((btn) => {
+        wrap.querySelectorAll("button.optBtn").forEach((btn) => {
           btn.onclick = () => {
-            const picked = btn.getAttribute('data-opt') || '';
-            const ok =
-              picked.trim().toLowerCase() === correct.trim().toLowerCase();
+            const picked = btn.getAttribute("data-opt") || "";
+            const ok = picked.trim().toLowerCase() === correct.trim().toLowerCase();
+            if (ok) { markDone(CURRENT_UID, ex.id); }
 
             res.innerHTML = ok
               ? `<span class="ok">✅ Correcto</span>`
@@ -1913,32 +1632,29 @@ mam na imię — me llamo"
       }
 
       async function loadExercises(topic) {
-        exerciseList.innerHTML = '';
-        emptyExercises.style.display = 'none';
+        exerciseList.innerHTML = "";
+        emptyExercises.style.display = "none";
         cachedExercises = [];
 
-        const effectiveSlug =
-          topic && (topic.slug || topic.id)
-            ? String(topic.slug || topic.id)
-            : '';
+        const effectiveSlug = (topic && (topic.slug || topic.id)) ? String(topic.slug || topic.id) : "";
 
         if (!effectiveSlug) {
-          emptyExercises.style.display = 'block';
-          pillCount.textContent = 'Ejercicios: —';
+          emptyExercises.style.display = "block";
+          pillCount.textContent = "Ejercicios: —";
           return;
         }
 
         const qx = query(
-          collection(db, 'exercises'),
-          where('level', '==', LEVEL),
-          where('topicSlug', '==', effectiveSlug),
-          orderBy('order', 'asc'),
+          collection(db, "exercises"),
+          where("level", "==", LEVEL),
+          where("topicSlug", "==", effectiveSlug),
+          orderBy("order", "asc"),
         );
 
         const snap = await getDocs(qx);
         if (snap.empty) {
-          emptyExercises.style.display = 'block';
-          pillCount.textContent = 'Ejercicios: 0';
+          emptyExercises.style.display = "block";
+          pillCount.textContent = "Ejercicios: 0";
           return;
         }
 
@@ -1946,6 +1662,10 @@ mam na imię — me llamo"
 
         // state for filters/reorder
         ALL_EXERCISES = cachedExercises.slice();
+        TOTAL_EXERCISES = Array.isArray(ALL_EXERCISES) ? ALL_EXERCISES.length : 0;
+        CURRENT_TOPIC_KEY = `${LEVEL}__${effectiveSlug}`;
+        await loadProgressForTopic(CURRENT_UID);
+
         VIEW_EXERCISES = cachedExercises.slice();
         buildTypeFilterOptions();
         applyFilters();
@@ -1957,16 +1677,19 @@ mam na imię — me llamo"
       }
 
       // ===== Auth + boot =====
+      let CURRENT_UID = null;
+
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
-          window.location.href = 'login.html';
+          window.location.href = "login.html";
           return;
         }
 
-        sessionEmail.textContent = user.email || '(sin correo)';
-        isAdmin = (user.email || '') === ADMIN_EMAIL;
+        sessionEmail.textContent = user.email || "(sin correo)";
+        CURRENT_UID = user.uid || null;
+        isAdmin = (user.email || "") === ADMIN_EMAIL;
         IS_ADMIN = isAdmin;
-        adminWrap.style.display = isAdmin ? 'block' : 'none';
+        adminWrap.style.display = isAdmin ? "block" : "none";
 
         fillExerciseTypes();
 
@@ -1981,27 +1704,27 @@ mam na imię — me llamo"
         }
 
         const onFilter = () => applyFilters();
-        filterSearch?.addEventListener('input', onFilter);
-        filterType?.addEventListener('change', onFilter);
-        filterCategory?.addEventListener('change', onFilter);
+        filterSearch?.addEventListener("input", onFilter);
+        filterType?.addEventListener("change", onFilter);
+        filterCategory?.addEventListener("change", onFilter);
 
-        btnClearFilters?.addEventListener('click', () => {
-          if (filterSearch) filterSearch.value = '';
-          if (filterType) filterType.value = '';
-          if (filterCategory) filterCategory.value = '';
+        btnClearFilters?.addEventListener("click", () => {
+          if (filterSearch) filterSearch.value = "";
+          if (filterType) filterType.value = "";
+          if (filterCategory) filterCategory.value = "";
           applyFilters();
         });
 
-        toggleReorder?.addEventListener('change', () => {
+        toggleReorder?.addEventListener("change", () => {
           if (!IS_ADMIN) return;
           setReorderMode(toggleReorder.checked);
         });
 
-        btnSaveOrder?.addEventListener('click', async () => {
+        btnSaveOrder?.addEventListener("click", async () => {
           if (!IS_ADMIN) return;
           if (!currentTopic || !currentTopic.slug) return;
           if (!HAS_ORDER_CHANGES) {
-            setToast('Brak zmian w kolejności.', 'info');
+            setToast("Brak zmian w kolejności.", "info");
             return;
           }
 
@@ -2010,43 +1733,43 @@ mam na imię — me llamo"
             // save sequential order starting at 1
             for (let i = 0; i < ALL_EXERCISES.length; i++) {
               const ex = ALL_EXERCISES[i];
-              await updateDoc(doc(db, 'exercises', ex.id), { order: i + 1 });
+              await updateDoc(doc(db, "exercises", ex.id), { order: i + 1 });
             }
-            setToast('💾 Zapisano kolejność.', 'ok');
+            setToast("💾 Zapisano kolejność.", "ok");
             HAS_ORDER_CHANGES = false;
             await loadExercises(currentTopic);
           } catch (e) {
             console.error(e);
-            setToast('❌ Nie udało się zapisać kolejności (konsola).', 'error');
+            setToast("❌ Nie udało się zapisać kolejności (konsola).", "error");
           } finally {
             btnSaveOrder.disabled = false;
           }
         });
 
         // ESC closes preview
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && previewModal?.style.display === 'block') {
-            previewModal.style.display = 'none';
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && previewModal?.style.display === "block") {
+            previewModal.style.display = "none";
           }
         });
 
+
         // If opened without params, do not try to query Firestore
-        if (!params.get('id') && !params.get('slug')) return;
+        if (!params.get("id") && !params.get("slug")) return;
 
         try {
-          showToast('⏳ Cargando tema...', 'warn', 1200);
+          showToast("⏳ Cargando tema...", "warn", 1200);
 
           const topic = await loadTopic();
-          // Lesson editor will be shown after topic loads
+      // Lesson editor will be shown after topic loads
           if (!topic) {
-            topicTitle.textContent = 'Tema no encontrado';
-            topicDesc.textContent =
-              'No se pudo cargar el tema. Verifica el enlace (level/slug/id).';
-            pillType.textContent = '—';
-            pillSlug.textContent = 'slug: —';
-            pillCount.textContent = 'Ejercicios: —';
-            emptyExercises.style.display = 'block';
-            showToast('⚠️ No se encontró el tema', 'warn', 2600);
+            topicTitle.textContent = "Tema no encontrado";
+            topicDesc.textContent = "No se pudo cargar el tema. Verifica el enlace (level/slug/id).";
+            pillType.textContent = "—";
+            pillSlug.textContent = "slug: —";
+            pillCount.textContent = "Ejercicios: —";
+            emptyExercises.style.display = "block";
+            showToast("⚠️ No se encontró el tema", "warn", 2600);
             return;
           }
 
@@ -2058,119 +1781,110 @@ mam na imię — me llamo"
           }
         } catch (e) {
           console.error(e);
-          showToast('❌ Error al cargar (mira la consola)', 'bad', 3600);
+          showToast("❌ Error al cargar (mira la consola)", "bad", 3600);
         }
       });
 
       // ===== Admin actions =====
 
       // Templates
-      function applyTemplate(kind) {
-        if (!isAdmin) return;
+      function applyTemplate(kind){
+        if(!isAdmin) return;
         const next = String(getNextOrder());
-        if (kind === 'fill') {
-          exType.value = 'Rellenar los espacios';
-          exPrompt.value = 'Completa la frase: Yo ___ de España.';
-          exOptions.value = '';
-          exAnswer.value = 'soy';
-          exCategory.value = 'grammar';
+        if(kind === "fill"){
+          exType.value = "Rellenar los espacios";
+          exPrompt.value = "Completa la frase: Yo ___ de España.";
+          exOptions.value = "";
+          exAnswer.value = "soy";
+          exCategory.value = "grammar";
           exNotes.value = "Podpowiedź: czasownik 'być' w 1 os.";
-          if (exTags) exTags.value = 'czasowniki, być';
-          if (exImageUrl) exImageUrl.value = '';
+          if (exTags) exTags.value = "czasowniki, być";
+          if (exImageUrl) exImageUrl.value = "";
           exOrder.value = next;
-        } else if (kind === 'choice') {
-          exType.value = 'Opción múltiple';
-          exPrompt.value = 'Elige la forma correcta: Ona ___ w domu.';
-          exOptions.value = 'A) jestem\nB) jest\nC) są';
-          exAnswer.value = 'B';
-          exCategory.value = 'grammar';
-          exNotes.value = '';
-          if (exTags) exTags.value = 'być, teraźniejszy';
-          if (exImageUrl) exImageUrl.value = '';
+        } else if(kind === "choice"){
+          exType.value = "Opción múltiple";
+          exPrompt.value = "Elige la forma correcta: Ona ___ w domu.";
+          exOptions.value = "A) jestem\nB) jest\nC) są";
+          exAnswer.value = "B";
+          exCategory.value = "grammar";
+          exNotes.value = "";
+          if (exTags) exTags.value = "być, teraźniejszy";
+          if (exImageUrl) exImageUrl.value = "";
           exOrder.value = next;
-        } else if (kind === 'tf') {
-          exType.value = 'Verdadero o falso';
-          exPrompt.value =
-            '‘Mam’ es la forma de ‘tener’ en polaco (1ª persona).';
-          exOptions.value = 'true\nfalse';
-          exAnswer.value = 'true';
-          exCategory.value = 'vocab';
-          exNotes.value = '';
-          if (exTags) exTags.value = 'mieć, podstawy';
-          if (exImageUrl) exImageUrl.value = '';
+        } else if(kind === "tf"){
+          exType.value = "Verdadero o falso";
+          exPrompt.value = "‘Mam’ es la forma de ‘tener’ en polaco (1ª persona).";
+          exOptions.value = "true\nfalse";
+          exAnswer.value = "true";
+          exCategory.value = "vocab";
+          exNotes.value = "";
+          if (exTags) exTags.value = "mieć, podstawy";
+          if (exImageUrl) exImageUrl.value = "";
           exOrder.value = next;
         }
-        showToast('✨ Plantilla aplicada', 'ok', 1400);
+        showToast("✨ Plantilla aplicada", "ok", 1400);
       }
 
-      btnTplFill?.addEventListener('click', () => applyTemplate('fill'));
-      btnTplChoice?.addEventListener('click', () => applyTemplate('choice'));
-      btnTplTF?.addEventListener('click', () => applyTemplate('tf'));
+      btnTplFill?.addEventListener("click", () => applyTemplate("fill"));
+      btnTplChoice?.addEventListener("click", () => applyTemplate("choice"));
+      btnTplTF?.addEventListener("click", () => applyTemplate("tf"));
 
       // Import JSON (array)
-      function safeParseJsonArray(raw) {
-        const txt = (raw || '').trim();
-        if (!txt) return [];
+      function safeParseJsonArray(raw){
+        const txt = (raw || "").trim();
+        if(!txt) return [];
         const parsed = JSON.parse(txt);
-        if (!Array.isArray(parsed))
-          throw new Error('JSON debe ser un ARRAY []');
+        if(!Array.isArray(parsed)) throw new Error("JSON debe ser un ARRAY []");
         return parsed;
       }
 
-      btnClearImport?.addEventListener('click', () => {
-        if (importJsonArea) importJsonArea.value = '';
-        if (importStatus) importStatus.textContent = '';
-      });
+      btnClearImport?.addEventListener("click", () => { if(importJsonArea) importJsonArea.value = ""; if(importStatus) importStatus.textContent = ""; });
 
-      btnImportJson?.addEventListener('click', async () => {
-        if (!isAdmin || !currentTopic) return;
-        if (!importJsonArea) return;
+      btnImportJson?.addEventListener("click", async () => {
+        if(!isAdmin || !currentTopic) return;
+        if(!importJsonArea) return;
 
-        if (importStatus) importStatus.textContent = 'Importando...';
+        if(importStatus) importStatus.textContent = "Importando...";
         let items = [];
-        try {
+        try{
           items = safeParseJsonArray(importJsonArea.value);
-        } catch (e) {
+        }catch(e){
           console.error(e);
-          if (importStatus) importStatus.textContent = 'JSON inválido ❌';
-          showToast('❌ JSON inválido (mira la consola)', 'bad', 3200);
+          if(importStatus) importStatus.textContent = "JSON inválido ❌";
+          showToast("❌ JSON inválido (mira la consola)", "bad", 3200);
           return;
         }
 
-        if (!items.length) {
-          if (importStatus) importStatus.textContent = 'Nada para importar.';
-          showToast('⚠️ Wklej tablicę ćwiczeń', 'warn', 2200);
+        if(!items.length){
+          if(importStatus) importStatus.textContent = "Nada para importar.";
+          showToast("⚠️ Wklej tablicę ćwiczeń", "warn", 2200);
           return;
         }
 
-        try {
+        try{
           setSaving(true);
-          const baseSlug = String(currentTopic.slug || currentTopic.id || '');
+          const baseSlug = String(currentTopic.slug || currentTopic.id || "");
           let auto = getNextOrder();
           let saved = 0;
 
           // sequential to keep stable ordering
-          for (const it of items) {
-            if (!it || typeof it !== 'object') continue;
+          for(const it of items){
+            if(!it || typeof it !== "object") continue;
 
-            const type = String(it.type || 'Rellenar los espacios');
-            const prompt = String(it.prompt || '').trim();
-            const answer = normalizeAnswer(String(it.answer || ''));
-            const options = Array.isArray(it.options)
-              ? it.options.map((x) => String(x))
-              : parseOptions(String(it.options || ''));
-            const notes = String(it.notes || '');
-            const category = String(it.category || 'grammar');
-            const tags = Array.isArray(it.tags)
-              ? it.tags.map((x) => String(x))
-              : toTagsArray(String(it.tags || ''));
-            const imageUrl = String(it.imageUrl || '').trim();
+            const type = String(it.type || "Rellenar los espacios");
+            const prompt = String(it.prompt || "").trim();
+            const answer = normalizeAnswer(String(it.answer || ""));
+            const options = Array.isArray(it.options) ? it.options.map(x=>String(x)) : parseOptions(String(it.options||""));
+            const notes = String(it.notes || "");
+            const category = String(it.category || "grammar");
+            const tags = Array.isArray(it.tags) ? it.tags.map(x=>String(x)) : toTagsArray(String(it.tags||""));
+            const imageUrl = String(it.imageUrl || "").trim();
 
-            if (!prompt || !answer) continue;
+            if(!prompt || !answer) continue;
 
             const order = Number(it.order || 0) > 0 ? Number(it.order) : auto++;
 
-            await addDoc(collection(db, 'exercises'), {
+            await addDoc(collection(db, "exercises"), {
               level: LEVEL,
               topicSlug: baseSlug,
               topicId: currentTopic.id || null,
@@ -2190,32 +1904,30 @@ mam na imię — me llamo"
             saved++;
           }
 
-          if (importStatus) importStatus.textContent = `Importado: ${saved} ✅`;
-          showToast(`✅ Importado: ${saved}`, 'ok', 2200);
+          if(importStatus) importStatus.textContent = `Importado: ${saved} ✅`;
+          showToast(`✅ Importado: ${saved}`, "ok", 2200);
 
           await loadExercises(currentTopic);
           exOrder.value = String(getNextOrder());
-        } catch (e) {
+        }catch(e){
           console.error(e);
-          if (importStatus) importStatus.textContent = 'Error ❌';
-          showToast('❌ Error importando (mira la consola)', 'bad', 3600);
-        } finally {
+          if(importStatus) importStatus.textContent = "Error ❌";
+          showToast("❌ Error importando (mira la consola)", "bad", 3600);
+        }finally{
           setSaving(false);
         }
       });
 
       btnAutoOrder.onclick = () => {
         exOrder.value = String(getNextOrder());
-        showToast('✨ Ustawiono order', 'ok', 1400);
+        showToast("✨ Ustawiono order", "ok", 1400);
       };
 
       btnAddExercise.onclick = async () => {
         if (!isAdmin || !currentTopic) return;
 
         // reset validation
-        [exPrompt, exOptions, exAnswer, exOrder].forEach((el) =>
-          markBad(el, false),
-        );
+        [exPrompt, exOptions, exAnswer, exOrder].forEach((el) => markBad(el, false));
 
         const type = exType.value;
         const prompt = exPrompt.value.trim();
@@ -2225,24 +1937,12 @@ mam na imię — me llamo"
 
         let ok = true;
 
-        if (!prompt) {
-          markBad(exPrompt, true);
-          ok = false;
-        }
-        if (!answer) {
-          markBad(exAnswer, true);
-          ok = false;
-        }
-        if (!order || order < 1) {
-          markBad(exOrder, true);
-          ok = false;
-        }
+        if (!prompt) { markBad(exPrompt, true); ok = false; }
+        if (!answer) { markBad(exAnswer, true); ok = false; }
+        if (!order || order < 1) { markBad(exOrder, true); ok = false; }
 
         const options = parseOptions(exOptions.value);
-        const needsOptions =
-          options.length > 0 ||
-          type === 'Opción múltiple' ||
-          type === 'Verdadero o falso';
+        const needsOptions = (options.length > 0) || type === "Opción múltiple" || type === "Verdadero o falso";
 
         if (needsOptions && options.length < 2) {
           markBad(exOptions, true);
@@ -2250,17 +1950,17 @@ mam na imię — me llamo"
         }
 
         if (!ok) {
-          showToast('⚠️ Completa los campos marcados.', 'warn', 2600);
+          showToast("⚠️ Completa los campos marcados.", "warn", 2600);
           return;
         }
 
         try {
           setSaving(true);
-          showToast('⏳ Guardando...', 'warn', 1200);
+          showToast("⏳ Guardando...", "warn", 1200);
 
-          await addDoc(collection(db, 'exercises'), {
+          await addDoc(collection(db, "exercises"), {
             level: LEVEL,
-            topicSlug: String(currentTopic.slug || currentTopic.id || ''),
+            topicSlug: String(currentTopic.slug || currentTopic.id || ""),
             topicId: currentTopic.id || null,
             type,
             prompt,
@@ -2268,7 +1968,7 @@ mam na imię — me llamo"
             options: options.length ? options : [],
             answer,
             notes,
-            category: exCategory?.value || 'grammar',
+            category: (exCategory?.value || "grammar"),
             tags: toTagsArray(exTags?.value),
             order,
             createdAt: serverTimestamp(),
@@ -2276,28 +1976,29 @@ mam na imię — me llamo"
           });
 
           // reset form
-          exPrompt.value = '';
-          if (exImageUrl) exImageUrl.value = '';
-          exOptions.value = '';
-          exAnswer.value = '';
-          exNotes.value = '';
-          if (exTags) exTags.value = '';
+          exPrompt.value = "";
+          if (exImageUrl) exImageUrl.value = "";
+          exOptions.value = "";
+          exAnswer.value = "";
+          exNotes.value = "";
+          if (exTags) exTags.value = "";
           exOrder.value = String(order + 1);
 
           await loadExercises(currentTopic);
-          showToast('✅ Ejercicio guardado', 'ok', 2200);
+          showToast("✅ Ejercicio guardado", "ok", 2200);
         } catch (e) {
           console.error(e);
-          showToast('❌ Error al guardar (mira la consola)', 'bad', 3600);
+          showToast("❌ Error al guardar (mira la consola)", "bad", 3600);
         } finally {
           setSaving(false);
         }
       };
 
       // Enter on answer = save (admin)
-      exAnswer.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && isAdmin) btnAddExercise.click();
+      exAnswer.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && isAdmin) btnAddExercise.click();
       });
+   
 
       // ===== state =====
       let ALL_EXERCISES = [];
@@ -2308,35 +2009,34 @@ mam na imię — me llamo"
       let DRAG_ID = null;
 
       function toTagsArray(s) {
-        return String(s || '')
-          .split(',')
+        return String(s || "")
+          .split(",")
           .map((x) => x.trim())
           .filter(Boolean);
       }
 
-      function setToast(msg, kind = 'info') {
-        const el = document.getElementById('toast');
+      function setToast(msg, kind = "info") {
+        const el = document.getElementById("toast");
         if (!el) return;
         el.textContent = msg;
-        el.classList.remove('toast-red', 'toast-yellow');
-        if (kind === 'error') el.classList.add('toast-red');
-        if (kind === 'ok') el.classList.add('toast-yellow');
-        el.style.opacity = '1';
+        el.classList.remove("toast-red", "toast-yellow");
+        if (kind === "error") el.classList.add("toast-red");
+        if (kind === "ok") el.classList.add("toast-yellow");
+        el.style.opacity = "1";
         clearTimeout(window.__toastT);
-        window.__toastT = setTimeout(() => (el.style.opacity = '0'), 2500);
+        window.__toastT = setTimeout(() => (el.style.opacity = "0"), 2500);
       }
 
       function applyFilters() {
-        const q = (filterSearch?.value || '').trim().toLowerCase();
-        const t = (filterType?.value || '').trim();
-        const c = (filterCategory?.value || '').trim();
+        const q = (filterSearch?.value || "").trim().toLowerCase();
+        const t = (filterType?.value || "").trim();
+        const c = (filterCategory?.value || "").trim();
 
         VIEW_EXERCISES = ALL_EXERCISES.filter((ex) => {
-          const hay =
-            `${ex.prompt || ''} ${ex.answer || ''} ${(ex.options || []).join(' ')} ${ex.notes || ''}`.toLowerCase();
+          const hay = `${ex.prompt || ""} ${ex.answer || ""} ${(ex.options || []).join(" ")} ${(ex.notes || "")}`.toLowerCase();
           const okQ = !q || hay.includes(q);
           const okT = !t || ex.type === t;
-          const okC = !c || (ex.category || 'grammar') === c;
+          const okC = !c || (ex.category || "grammar") === c;
           return okQ && okT && okC;
         });
 
@@ -2345,54 +2045,41 @@ mam na imię — me llamo"
 
       function buildTypeFilterOptions() {
         if (!filterType) return;
-        const unique = Array.from(
-          new Set(ALL_EXERCISES.map((e) => e.type)),
-        ).sort();
+        const unique = Array.from(new Set(ALL_EXERCISES.map((e) => e.type))).sort();
         filterType.innerHTML =
           `<option value="">Wszystko</option>` +
-          unique
-            .map(
-              (x) =>
-                `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`,
-            )
-            .join('');
+          unique.map((x) => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
       }
 
       function setReorderMode(on) {
         REORDER_MODE = !!on;
         HAS_ORDER_CHANGES = false;
-        if (btnSaveOrder)
-          btnSaveOrder.style.display =
-            REORDER_MODE && IS_ADMIN ? 'inline-flex' : 'none';
+        if (btnSaveOrder) btnSaveOrder.style.display = (REORDER_MODE && IS_ADMIN) ? "inline-flex" : "none";
         renderExerciseList();
       }
 
       function openPreview(ex) {
         if (!previewModal) return;
-        previewResult.style.display = 'none';
-        previewResult.textContent = '';
-        previewResult.className = 'pill';
+        previewResult.style.display = "none";
+        previewResult.textContent = "";
+        previewResult.className = "pill";
 
         const opt = Array.isArray(ex.options) ? ex.options : [];
-        const type = ex.type || 'open';
+        const type = ex.type || "open";
 
         let body = `<div class="card" style="padding:12px; margin:0">
-          <div class="smallNote" style="opacity:.9; margin-bottom:8px">Typ: <b>${escapeHtml(type)}</b> • Kategoria: <b>${escapeHtml(ex.category || 'grammar')}</b></div>
-          <div style="font-weight:800; font-size:18px">${escapeHtml(ex.prompt || '')}</div>`;
+          <div class="smallNote" style="opacity:.9; margin-bottom:8px">Typ: <b>${escapeHtml(type)}</b> • Kategoria: <b>${escapeHtml(ex.category || "grammar")}</b></div>
+          <div style="font-weight:800; font-size:18px">${escapeHtml(ex.prompt || "")}</div>`;
 
         if (opt.length) {
-          body +=
-            `<div style="margin-top:10px; display:grid; gap:8px">` +
-            opt
-              .map((o, i) => {
-                const letter = String.fromCharCode(65 + i);
-                return `<label class="card" style="padding:10px; margin:0; cursor:pointer; display:flex; gap:10px; align-items:flex-start">
+          body += `<div style="margin-top:10px; display:grid; gap:8px">` +
+            opt.map((o, i) => {
+              const letter = String.fromCharCode(65 + i);
+              return `<label class="card" style="padding:10px; margin:0; cursor:pointer; display:flex; gap:10px; align-items:flex-start">
                 <input type="radio" name="pv" value="${escapeHtml(o)}" style="margin-top:2px" />
                 <div><b>${letter})</b> ${escapeHtml(o)}</div>
               </label>`;
-              })
-              .join('') +
-            `</div>`;
+            }).join("") + `</div>`;
           body += `<div class="smallNote" style="margin-top:8px; opacity:.9">Wybierz odpowiedź i kliknij „Sprawdź”.</div>`;
         } else {
           body += `<div style="margin-top:10px">
@@ -2408,200 +2095,25 @@ mam na imię — me llamo"
         previewBody.innerHTML = body;
 
         btnCheckPreview.onclick = () => {
-          let userAnswer = '';
+          let userAnswer = "";
           const picked = previewBody.querySelector('input[name="pv"]:checked');
           if (picked) userAnswer = picked.value;
-          else
-            userAnswer = (
-              document.getElementById('pvInput')?.value || ''
-            ).trim();
+          else userAnswer = (document.getElementById("pvInput")?.value || "").trim();
 
           const correct = normalizeAnswer(ex.answer);
           const given = normalizeAnswer(userAnswer);
           const ok = !!given && given === correct;
 
-          previewResult.style.display = 'inline-flex';
-          previewResult.classList.toggle('pill-yellow', ok);
-          previewResult.classList.toggle('pill-red', !ok);
-          previewResult.textContent = ok
-            ? '✅ OK'
-            : `❌ Nie. Poprawna: ${ex.answer || ''}`;
+          previewResult.style.display = "inline-flex";
+          previewResult.classList.toggle("pill-yellow", ok);
+          previewResult.classList.toggle("pill-red", !ok);
+          previewResult.textContent = ok ? "✅ OK" : `❌ Nie. Poprawna: ${ex.answer || ""}`;
         };
 
-        previewBackdrop.onclick = () => (previewModal.style.display = 'none');
-        btnClosePreview.onclick = () => (previewModal.style.display = 'none');
-        previewModal.style.display = 'block';
+        previewBackdrop.onclick = () => (previewModal.style.display = "none");
+        btnClosePreview.onclick = () => (previewModal.style.display = "none");
+        previewModal.style.display = "block";
       }
-    </script>
-    <!-- Footer -->
-    <footer
-      class="footer-glass text-white py-1 border-t-2 border-yellow-400 w-full z-50 text-xs"
-    >
-      <div class="max-w-7xl mx-auto px-2">
-        <div class="grid md:grid-cols-4 gap-1 mb-1">
-          <div class="space-y-0.5">
-            <div class="flex items-center gap-1">
-              <svg
-                class="w-6 h-6 drop-shadow-lg"
-                viewbox="0 0 300 320"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <defs>
-                  <lineargradient
-                    id="colombiaFlagFooter"
-                    x1="0%"
-                    y1="0%"
-                    x2="0%"
-                    y2="100%"
-                  >
-                    <stop
-                      offset="0%"
-                      style="stop-color: #fcd116; stop-opacity: 1"
-                    />
-                    <stop
-                      offset="50%"
-                      style="stop-color: #fcd116; stop-opacity: 1"
-                    />
-                    <stop
-                      offset="50%"
-                      style="stop-color: #003893; stop-opacity: 1"
-                    />
-                    <stop
-                      offset="75%"
-                      style="stop-color: #003893; stop-opacity: 1"
-                    />
-                    <stop
-                      offset="75%"
-                      style="stop-color: #ce1126; stop-opacity: 1"
-                    />
-                    <stop
-                      offset="100%"
-                      style="stop-color: #ce1126; stop-opacity: 1"
-                    />
-                  </lineargradient>
-                </defs>
-                <path
-                  d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z"
-                  fill="url(#colombiaFlagFooter)"
-                  stroke="#FCD116"
-                  stroke-width="2.5"
-                /></svg
-              ><span class="font-display text-xs font-black text-yellow-400"
-                >Aqui vivo</span
-              >
-            </div>
-            <div class="mt-0.5">
-              <p class="text-blue-200 text-[10px]">
-                © 2026 Aqui vivo. Wszelkie prawa zastrzeżone.
-              </p>
-              <p class="text-blue-200 text-[10px]">
-                Nauczycielka hiszpańskiego i polskiego w Let's Talk Poznań.
-                Pomogę Ci przestać bać się mówić 🌸🤍
-              </p>
-            </div>
-          </div>
-          <div>
-            <h4 class="font-bold mb-1 text-yellow-400 text-xs">Usługi</h4>
-            <ul class="space-y-0.5 text-blue-200 text-[10px]">
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/plpolski.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >Kurs Polskiego</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/plpomoc.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >Pomoc z Formalnościami</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/pltlumaczenie.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >Tłumaczenia</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/plzajecia.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >Zajęcia Grupowe</a
-                >
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="font-bold mb-1 text-yellow-400 text-xs">Zasoby</h4>
-            <ul class="space-y-0.5 text-blue-200 text-[10px]">
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/plebooks.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >E-booki</a
-                >
-              </li>
-              <li>
-                <a
-                  href="#inicio"
-                  class="hover:text-yellow-400 transition-colors"
-                  >O Mnie</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/plblog.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >Blog</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/plFAQ.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >FAQ</a
-                >
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="font-bold mb-1 text-yellow-400 text-xs">
-              Informacje Prawne
-            </h4>
-            <ul class="space-y-0.5 text-blue-200 text-[10px]">
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/plprywatnosc.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >Polityka Prywatności</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/plwarunki.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >Regulamin</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://aquivivo.github.io/aquivivo/plcookies.html"
-                  class="hover:text-yellow-400 transition-colors"
-                  >Cookies</a
-                >
-              </li>
-              <li>
-                <span class="block text-blue-200 text-[10px] mt-0.5"
-                  >Stworzone z <span class="text-red-500">❤️</span> w Poznaniu,
-                  Polska</span
-                >
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </footer>
+ </script>
   </body>
 </html>
