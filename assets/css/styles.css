@@ -605,3 +605,12 @@ body {
   outline: 2px solid rgba(206, 17, 38, 0.85);
   outline-offset: 2px;
 }
+
+/* Footer glass style */
+.footer-glass {
+  position: static;
+  background: rgba(0, 56, 147, 0.92);
+  backdrop-filter: blur(6px);
+  border-top: 1.5px solid var(--yellow);
+  box-shadow: 0 -2px 18px rgba(0, 0, 0, 0.1);
+}

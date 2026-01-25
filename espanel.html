@@ -1,17 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <title>Panel del estudiante | AquiVivo</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap"
-      rel="stylesheet"
-    />
-    <!-- ✅ consistente con login/admin -->
-    <link href="assets/css/styles.css" rel="stylesheet" />
-    <style>
+<head>
+<meta charset="utf-8"/>
+<title>Panel del estudiante | AquiVivo</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<!-- ✅ consistente con login/admin -->
+<link href="assets/css/styles.css" rel="stylesheet"/>
+<style>
       .panel-grid {
         display: grid;
         grid-template-columns: 1.2fr 0.8fr;
@@ -296,21 +293,90 @@
       }
 
           .admin-only{ display:none; }
-    </style>
+    
+      /* Admin modal */
+      .modal-backdrop{
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding: 18px;
+        z-index: 9999;
+      }
+      .modal-card{
+        width: min(560px, 100%);
+        background: rgba(12, 24, 48, 0.96);
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+        color: #fff;
+      }
+      .input{
+        width: 100%;
+        margin-top: 8px;
+        padding: 12px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.07);
+        color: #fff;
+        font-family: inherit;
+        outline: none;
+      }
+      .input:focus{ border-color: rgba(252,209,22,0.8); }
+      .btn-icon{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.08);
+        color:#fff;
+        cursor:pointer;
+      }
+      .btn-icon:hover{ transform: translateY(-1px); }
 
 
+      /* ===== Settings modal (Planes/Precios + Promos) ===== */
+      #settingsModal { display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.55); }
+      #settingsModal .modalBox { width:min(980px, 100%); max-height:90vh; overflow:auto; background:rgba(10,20,45,.98); border:1px solid rgba(255,255,255,.12); border-radius:22px; box-shadow: 0 18px 60px rgba(0,0,0,.45); }
+      #settingsModal .modalHead { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.10); }
+      #settingsModal .modalHead h3 { margin:0; font-size:18px; letter-spacing:.3px; }
+      #settingsModal .tabs { display:flex; gap:10px; padding:12px 18px; flex-wrap:wrap; border-bottom:1px solid rgba(255,255,255,.10); }
+      #settingsModal .tabBtn { border:1px solid rgba(255,255,255,.18); background:transparent; color:#fff; padding:10px 14px; border-radius:999px; font-weight:900; cursor:pointer; }
+      #settingsModal .tabBtn.active { background: rgba(252,209,22,.18); border-color: rgba(252,209,22,.55); }
+      #settingsModal .modalBody { padding:16px 18px 20px; }
+      #settingsModal .grid2 { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:14px; }
+      #settingsModal .grid3 { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:14px; }
+      #settingsModal label { display:block; font-size:12px; opacity:.95; margin-bottom:6px; color:#fff; }
+      #settingsModal input, #settingsModal select { width:100%; padding:12px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.06); color:#fff; outline:none; }
+      #settingsModal .row { margin-top:12px; }
+      #settingsModal .hr { height:1px; background:rgba(255,255,255,.10); margin:16px 0; }
+      #settingsModal .actions { display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:14px; }
+      #settingsModal .mini { font-size:12px; opacity:.92; color:#fff; }
+      #promoList { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+      .promoItem { border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.04); border-radius:16px; padding:12px; display:flex; gap:12px; justify-content:space-between; align-items:flex-start; }
+      .promoItem strong { font-size:14px; }
+      .promoItem .meta { font-size:12px; opacity:.85; margin-top:4px; }
+      .promoItem .btns { display:flex; gap:8px; flex-wrap:wrap; }
+      @media (max-width: 760px){ #settingsModal .grid2, #settingsModal .grid3 { grid-template-columns: 1fr; } }
+      #settingsModal, #settingsModal * { color:#fff; }
+
+</style>
 </head>
-
-  <body>
-    <div id="appHeader"></div>
-    <main class="page">
-      <div class="container">
-        <section class="panel-grid">
-          <div class="hero-card">
-            <h1 class="hero-title glow-text">Panel del estudiante 🎓</h1>
-            <p class="hero-subtitle">Mis cursos</p>
-            <div
-              style="
+<body>
+<div id="appHeader"></div>
+<main class="page">
+<div class="container">
+<section class="panel-grid">
+<div class="hero-card">
+<h1 class="hero-title glow-text">Panel del estudiante 🎓</h1>
+<p class="hero-subtitle">Mis cursos</p>
+<div style="
                 margin-top: 12px;
                 display: inline-flex;
                 gap: 10px;
@@ -320,56 +386,52 @@
                 background: rgba(255, 255, 255, 0.1);
                 border: 1px solid rgba(255, 255, 255, 0.18);
                 backdrop-filter: blur(10px);
-              "
-            >
-              <div style="font-weight: 900">👤</div>
-              <div style="font-weight: 800">
+              ">
+<div style="font-weight: 900">👤</div>
+<div style="font-weight: 800">
                 Iniciada sesión como:
-                <span id="userEmail" style="font-weight: 700; opacity: 0.95"
-                  >...</span
-                >
-              </div>
-            </div>
-            <div class="card glass-card last-activity" id="lastActivityCard" style="padding:12px 14px; border-radius:16px;">
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                <div style="font-weight:900;">🕒 Última actividad</div>
-                <div style="font-weight:900; opacity:.9;" id="lastActivityWhen"></div>
-              </div>
-              <div style="margin-top:6px; font-weight:900; font-size:16px;" id="lastActivityTitle">—</div>
-              <div style="margin-top:10px;">
-                <a class="btn-yellow" id="lastActivityLink" href="#">Continuar →</a>
-              </div>
-            </div>
-            <div class="adminLinkWrap" id="adminLinkWrap">
-              <div style="margin-top: 12px">
-                <a class="btn-white-outline" href="esadmin.html">⚙️ Admin</a>
-              </div>
-              <p
-                class="small-muted"
-                style="margin-top: 8px; color: rgba(255, 255, 255, 0.8)"
-              >
+                <span id="userEmail" style="font-weight: 700; opacity: 0.95">...</span><span id="adminBadge" style="margin-left:10px; font-weight:900; opacity:.95">(admin: —)</span>
+</div>
+</div>
+<div class="card glass-card last-activity" id="lastActivityCard" style="padding:12px 14px; border-radius:16px;">
+<div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+<div style="font-weight:900;">🕒 Última actividad</div>
+<div id="lastActivityWhen" style="font-weight:900; opacity:.9;"></div>
+</div>
+<div id="lastActivityTitle" style="margin-top:6px; font-weight:900; font-size:16px;">—</div>
+<div style="margin-top:10px;">
+<a class="btn-yellow" href="#" id="lastActivityLink">Continuar →</a>
+</div>
+</div>
+<div class="adminLinkWrap" id="adminLinkWrap">
+<div style="margin-top: 12px; display:flex; gap:12px; flex-wrap:wrap;">
+<a class="btn-white-outline" href="esadmin.html">⚙️ Admin</a>
+<button class="btn-white-outline" id="openSettingsBtn" type="button">⚙️ Ajustes</button>
+<button class="btn-yellow" id="addCourseBtn" type="button" style="padding:12px 16px; border-radius:999px; font-weight:900;">➕ Nuevo curso</button>
+</div>
+<p class="small-muted" style="margin-top: 8px; color: rgba(255, 255, 255, 0.8)">
                 Solo visible para administradores.
               </p>
-            </div>
-          </div>
-          <div class="stats">
-            <div class="stat">
-              <div class="big">📘</div>
-              <div class="label">Cursos</div>
-            </div>
-            <div class="stat">
-              <div class="big">⏳</div>
-              <div class="label">Acceso</div>
-            </div>
-            <div class="stat">
-              <div class="big">🎓</div>
-              <div class="label">Aprendizaje</div>
-            </div>
-          </div>
-        </section>
-        <!-- Big section header (style like landing title) -->
+</div>
+</div>
+<div class="stats">
+<div class="stat">
+<div class="big">📘</div>
+<div class="label">Cursos</div>
+</div>
+<div class="stat">
+<div class="big">⏳</div>
+<div class="label">Acceso</div>
+</div>
+<div class="stat">
+<div class="big">🎓</div>
+<div class="label">Aprendizaje</div>
+</div>
+</div>
+</section>
+<!-- Big section header (style like landing title) -->
 <div style="margin-top:10px;">
-  <div style="
+<div style="
     width:100%;
     padding: 14px 18px;
     border-radius: 18px;
@@ -377,7 +439,7 @@
     border: 1px solid rgba(255,255,255,0.14);
     backdrop-filter: blur(10px);
   ">
-    <div style="
+<div style="
       font-family: 'Playfair Display', serif;
       font-weight: 900;
       font-size: 56px;
@@ -386,178 +448,136 @@
       color: #FCD116;
       text-shadow: 0 10px 28px rgba(0,0,0,0.25);
     ">Mis cursos</div>
-  </div>
 </div>
-        
+</div>
 <div style="display:grid;grid-template-columns: 2fr 1fr; gap:28px;">
-
-  <!-- LEFT: courses -->
-  <div class="courses-grid" id="coursesCards"></div>
-
-  <div id="coffeeFloat" aria-hidden="true" style="position:absolute; right:-40px; top:120px; width:420px; height:420px; pointer-events:none; opacity:0.9; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35));">
-    <svg class="w-72 h-72 mx-auto drop-shadow-2xl" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs>
-         <lineargradient id="cupGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
-         </lineargradient>
-         <lineargradient id="coffeeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#6F4E37;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#3E2723;stop-opacity:1" />
-         </lineargradient>
-        </defs> <ellipse cx="100" cy="55" rx="70" ry="15" fill="#FCD116" opacity="0.3" /> <ellipse cx="100" cy="55" rx="60" ry="12" fill="#003893" opacity="0.3" /> <ellipse cx="100" cy="55" rx="50" ry="10" fill="#FCD116" opacity="0.3" /> <rect x="85" y="55" width="30" height="25" rx="5" fill="#FCD116" opacity="0.3" /> <path d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z" fill="url(#cupGradient)" stroke="#654321" stroke-width="2" /> <ellipse cx="100" cy="120" rx="35" ry="8" fill="url(#coffeeGradient)" /> <path d="M 140 130 Q 155 130 155 145 Q 155 160 140 160" fill="none" stroke="url(#cupGradient)" stroke-width="8" stroke-linecap="round" /> <rect x="70" y="135" width="60" height="8" fill="#FCD116" opacity="0.6" rx="2" /> <rect x="70" y="145" width="60" height="5" fill="#003893" opacity="0.6" rx="1" /> <rect x="70" y="152" width="60" height="5" fill="#CE1126" opacity="0.6" rx="1" /> <path d="M 85 110 Q 80 95 85 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
-         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2s" repeatcount="indefinite" />
-         <animate attributename="d" values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85" dur="2s" repeatcount="indefinite" />
-        </path> <path d="M 100 108 Q 100 90 105 80" fill="none" stroke="#FCD116" stroke-width="4" stroke-linecap="round" opacity="0.8">
-         <animate attributename="opacity" values="0.8;0.4;0.8" dur="2.5s" repeatcount="indefinite" />
-         <animate attributename="d" values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80" dur="2.5s" repeatcount="indefinite" />
-        </path> <path d="M 115 110 Q 120 95 115 85" fill="none" stroke="#FCD116" stroke-width="3" stroke-linecap="round" opacity="0.7">
-         <animate attributename="opacity" values="0.7;0.3;0.7" dur="2.2s" repeatcount="indefinite" />
-         <animate attributename="d" values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85" dur="2.2s" repeatcount="indefinite" />
-        </path> <ellipse cx="50" cy="140" rx="8" ry="10" fill="#3E2723" transform="rotate(-20 50 140)">
-         <animate attributename="opacity" values="1;0.7;1" dur="3s" repeatcount="indefinite" />
-        </ellipse> <path d="M 50 135 Q 50 140 50 145" stroke="#654321" stroke-width="1.5" /> <ellipse cx="150" cy="135" rx="8" ry="10" fill="#3E2723" transform="rotate(20 150 135)">
-         <animate attributename="opacity" values="0.7;1;0.7" dur="3s" repeatcount="indefinite" />
-        </ellipse> <path d="M 150 130 Q 150 135 150 140" stroke="#654321" stroke-width="1.5" /> <rect x="70" y="175" width="60" height="8" fill="#FCD116" rx="1" opacity="0.9" /> <rect x="75" y="178" width="50" height="8" fill="#FFFFFF" rx="1" opacity="0.8" /> <rect x="80" y="181" width="40" height="8" fill="#FCD116" rx="1" opacity="0.7" /> <path d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z" fill="#CE1126" opacity="0.8">
-         <animate attributename="transform" values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)" dur="1.5s" repeatcount="indefinite" />
-        </path>
-       </svg>
-  </div>
-<section id="pricingSection" style="max-width:1200px;margin:80px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;" style="margin-top:60px;">
-  <h2 style="font-family:'Playfair Display',serif;font-size:46px;color:#FCD116;" data-editable-key="pricing_title">Planes y precios</h2>
-
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:30px;">
-
-    <div class="course-tile tile-blue" data-plan="A1A2">
-      <div class="tile-title"
- data-editable="true" contenteditable="false"
->Nivel A1–A2</div>
-      <div class="tile-subtitle"
- data-editable="true" contenteditable="false"
->Fundamentos de la vida en Polonia</div>
-      <div class="tile-meta"
- data-editable="true" contenteditable="false"
- contenteditable="false" id="price_A1A2">180 zł / 3 meses</div>
-      <div class="tile-actions">
-        <a class="btn-yellow" href="Contacto.html" data-editable-key="buy_label">Comprar acceso</a>
-        
-      </div>
-    </div>
-
-    <div class="course-tile tile-white" data-plan="B1">
-      <div class="tile-title"
- data-editable="true" contenteditable="false"
->Nivel B1</div>
-      <div class="tile-subtitle"
- data-editable="true" contenteditable="false"
->Vida independiente en Polonia</div>
-      <div class="tile-meta"
- data-editable="true" contenteditable="false"
- contenteditable="false" id="price_B1">250 zł / 3 meses</div>
-      <div class="tile-actions">
-        <a class="btn-yellow" href="Contacto.html" data-editable-key="buy_label">Comprar acceso</a>
-        
-      </div>
-    </div>
-
-    <div class="course-tile tile-red" data-plan="B2">
-      <div class="tile-title"
- data-editable="true" contenteditable="false"
->Nivel B2</div>
-      <div class="tile-subtitle"
- data-editable="true" contenteditable="false"
->Integración total</div>
-      <div class="tile-meta"
- data-editable="true" contenteditable="false"
- contenteditable="false" id="price_B2">350 zł / 3 meses</div>
-      <div class="tile-actions">
-        <a class="btn-yellow" href="Contacto.html" data-editable-key="buy_label">Comprar acceso</a>
-        
-      </div>
-    </div>
-
-  </div>
+<!-- LEFT: courses -->
+<div class="courses-grid" id="coursesCards"></div>
+<div aria-hidden="true" id="coffeeFloat" style="position:absolute; right:-40px; top:120px; width:420px; height:420px; pointer-events:none; opacity:0.9; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35));">
+<svg class="w-72 h-72 mx-auto drop-shadow-2xl" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs>
+<lineargradient id="cupGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#8B4513;stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:#654321;stop-opacity:1"></stop>
+</lineargradient>
+<lineargradient id="coffeeGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#6F4E37;stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:#3E2723;stop-opacity:1"></stop>
+</lineargradient>
+</defs> <ellipse cx="100" cy="55" fill="#FCD116" opacity="0.3" rx="70" ry="15"></ellipse> <ellipse cx="100" cy="55" fill="#003893" opacity="0.3" rx="60" ry="12"></ellipse> <ellipse cx="100" cy="55" fill="#FCD116" opacity="0.3" rx="50" ry="10"></ellipse> <rect fill="#FCD116" height="25" opacity="0.3" rx="5" width="30" x="85" y="55"></rect> <path d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z" fill="url(#cupGradient)" stroke="#654321" stroke-width="2"></path> <ellipse cx="100" cy="120" fill="url(#coffeeGradient)" rx="35" ry="8"></ellipse> <path d="M 140 130 Q 155 130 155 145 Q 155 160 140 160" fill="none" stroke="url(#cupGradient)" stroke-linecap="round" stroke-width="8"></path> <rect fill="#FCD116" height="8" opacity="0.6" rx="2" width="60" x="70" y="135"></rect> <rect fill="#003893" height="5" opacity="0.6" rx="1" width="60" x="70" y="145"></rect> <rect fill="#CE1126" height="5" opacity="0.6" rx="1" width="60" x="70" y="152"></rect> <path d="M 85 110 Q 80 95 85 85" fill="none" opacity="0.7" stroke="#FCD116" stroke-linecap="round" stroke-width="3">
+<animate attributename="opacity" dur="2s" repeatcount="indefinite" values="0.7;0.3;0.7"></animate>
+<animate attributename="d" dur="2s" repeatcount="indefinite" values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85"></animate>
+</path> <path d="M 100 108 Q 100 90 105 80" fill="none" opacity="0.8" stroke="#FCD116" stroke-linecap="round" stroke-width="4">
+<animate attributename="opacity" dur="2.5s" repeatcount="indefinite" values="0.8;0.4;0.8"></animate>
+<animate attributename="d" dur="2.5s" repeatcount="indefinite" values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80"></animate>
+</path> <path d="M 115 110 Q 120 95 115 85" fill="none" opacity="0.7" stroke="#FCD116" stroke-linecap="round" stroke-width="3">
+<animate attributename="opacity" dur="2.2s" repeatcount="indefinite" values="0.7;0.3;0.7"></animate>
+<animate attributename="d" dur="2.2s" repeatcount="indefinite" values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85"></animate>
+</path> <ellipse cx="50" cy="140" fill="#3E2723" rx="8" ry="10" transform="rotate(-20 50 140)">
+<animate attributename="opacity" dur="3s" repeatcount="indefinite" values="1;0.7;1"></animate>
+</ellipse> <path d="M 50 135 Q 50 140 50 145" stroke="#654321" stroke-width="1.5"></path> <ellipse cx="150" cy="135" fill="#3E2723" rx="8" ry="10" transform="rotate(20 150 135)">
+<animate attributename="opacity" dur="3s" repeatcount="indefinite" values="0.7;1;0.7"></animate>
+</ellipse> <path d="M 150 130 Q 150 135 150 140" stroke="#654321" stroke-width="1.5"></path> <rect fill="#FCD116" height="8" opacity="0.9" rx="1" width="60" x="70" y="175"></rect> <rect fill="#FFFFFF" height="8" opacity="0.8" rx="1" width="50" x="75" y="178"></rect> <rect fill="#FCD116" height="8" opacity="0.7" rx="1" width="40" x="80" y="181"></rect> <path d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z" fill="#CE1126" opacity="0.8">
+<animate attributename="transform" dur="1.5s" repeatcount="indefinite" values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)"></animate>
+</path>
+</svg>
+</div>
+<section id="pricingSection" style="margin-top:60px;">
+<h2 data-editable-key="pricing_title" style="font-family:'Playfair Display',serif;font-size:46px;color:#FCD116;">Planes y precios</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:30px;">
+<div class="course-tile tile-blue" data-plan="A1A2">
+<div class="tile-title" contenteditable="false" data-editable="true">Nivel A1–A2</div>
+<div class="tile-subtitle" contenteditable="false" data-editable="true">Fundamentos de la vida en Polonia</div>
+<div class="tile-meta" contenteditable="false" data-editable="true" id="price_A1A2">180 zł / 3 meses</div>
+<div class="tile-actions">
+<a class="btn-yellow" data-buy-btn="1" data-editable-key="buy_label" href="Contacto.html">Comprar acceso</a>
+</div>
+</div>
+<div class="course-tile tile-white" data-plan="B1">
+<div class="tile-title" contenteditable="false" data-editable="true">Nivel B1</div>
+<div class="tile-subtitle" contenteditable="false" data-editable="true">Vida independiente en Polonia</div>
+<div class="tile-meta" contenteditable="false" data-editable="true" id="price_B1">250 zł / 3 meses</div>
+<div class="tile-actions">
+<a class="btn-yellow" data-buy-btn="1" data-editable-key="buy_label" href="Contacto.html">Comprar acceso</a>
+</div>
+</div>
+<div class="course-tile tile-red" data-plan="B2">
+<div class="tile-title" contenteditable="false" data-editable="true">Nivel B2</div>
+<div class="tile-subtitle" contenteditable="false" data-editable="true">Integración total</div>
+<div class="tile-meta" contenteditable="false" data-editable="true" id="price_B2">350 zł / 3 meses</div>
+<div class="tile-actions">
+<a class="btn-yellow" data-buy-btn="1" data-editable-key="buy_label" href="Contacto.html">Comprar acceso</a>
+</div>
+</div>
+</div>
 </section>
-
-
 <!-- ADMIN MODAL -->
 <div id="adminModal" style="display:none; position:fixed; inset:0; background: rgba(0,0,0,0.55); z-index:9999; padding:22px; overflow:auto;">
-  <div style="max-width:860px; margin:0 auto; background:#0b1a3a; border:1px solid rgba(255,255,255,0.18); border-radius:22px; padding:18px 18px 14px; box-shadow:0 20px 60px rgba(0,0,0,0.45);">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-      <div style="font-family:'Playfair Display',serif; font-size:34px; font-weight:900; color:#FCD116;">Panel Admin</div>
-      <div style="display:flex; gap:10px; align-items:center;">
-        <button class="btn-white-outline" onclick="closeAdminPanel()">Cerrar</button>
-      </div>
-    </div>
-
-    <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px;">
-        <div style="font-weight:900; margin-bottom:10px;">💳 Precios</div>
-        <label style="display:block; font-weight:800; opacity:.9;">A1–A2</label>
-        <input id="adm_price_A1A2" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-        <div style="height:10px;"></div>
-
-        <label style="display:block; font-weight:800; opacity:.9;">B1</label>
-        <input id="adm_price_B1" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-        <div style="height:10px;"></div>
-
-        <label style="display:block; font-weight:800; opacity:.9;">B2</label>
-        <input id="adm_price_B2" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-      </div>
-
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px;">
-        <div style="font-weight:900; margin-bottom:10px;">🎛️ Trial / acceso gratis</div>
-
-        <label style="display:block; font-weight:800; opacity:.9;">Días de trial (por nivel)</label>
-        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
-          <input id="adm_trial_A1" placeholder="A1" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-          <input id="adm_trial_A2" placeholder="A2" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-          <input id="adm_trial_B1" placeholder="B1" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-          <input id="adm_trial_B2" placeholder="B2" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-        </div>
-
-        <div style="height:12px;"></div>
-
-        <div style="font-weight:900; margin-bottom:8px;">🏷️ Código de descuento</div>
-        <div style="display:grid; grid-template-columns: 1.2fr .8fr 1fr; gap:10px;">
-          <input id="adm_promo_code" placeholder="CODIGO (ej. BIENVENIDA10)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-          <input id="adm_promo_pct" placeholder="% (ej. 10)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-          <input id="adm_promo_days" placeholder="días gratis (opcional)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-        </div>
-        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-          <button class="btn-yellow" onclick="addPromo()">Añadir código</button>
-          <button class="btn-white-outline" onclick="clearPromos()">Borrar lista</button>
-        </div>
-
-        <div id="promoList" style="margin-top:12px; font-size:13px; opacity:.95;"></div>
-      </div>
-    </div>
-
-    <div style="margin-top:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px;">
-      <div style="font-weight:900; margin-bottom:10px;">➕ Botones extra (sección precios)</div>
-      <div style="display:grid; grid-template-columns: 1fr 1fr .6fr; gap:10px;">
-        <input id="adm_btn_text" placeholder="Texto del botón" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-        <input id="adm_btn_href" placeholder="Link (ej. Contacto.html)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;" />
-        <select id="adm_btn_style" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;">
-          <option value="yellow">Amarillo</option>
-          <option value="outline">Outline</option>
-        </select>
-      </div>
-      <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn-yellow" onclick="addExtraButton()">Añadir botón</button>
-        <button class="btn-white-outline" onclick="clearExtraButtons()">Borrar botones</button>
-      </div>
-      <div id="extraButtonsPreview" style="margin-top:12px;"></div>
-    </div>
-
-    <div style="margin-top:14px; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
-      <button class="btn-white-outline" onclick="reloadSettings()">Revertir</button>
-      <button class="btn-yellow" onclick="saveSettings()">Guardar en Firestore</button>
-    </div>
-  </div>
+<div style="max-width:860px; margin:0 auto; background:#0b1a3a; border:1px solid rgba(255,255,255,0.18); border-radius:22px; padding:18px 18px 14px; box-shadow:0 20px 60px rgba(0,0,0,0.45);">
+<div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+<div style="font-family:'Playfair Display',serif; font-size:34px; font-weight:900; color:#FCD116;">Panel Admin</div>
+<div style="display:flex; gap:10px; align-items:center;">
+<button class="btn-white-outline" onclick="closeAdminPanel()">Cerrar</button>
 </div>
-
-</main>
-    <script type="module">
+</div>
+<div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+<div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px;">
+<div style="font-weight:900; margin-bottom:10px;">💳 Precios</div>
+<label style="display:block; font-weight:800; opacity:.9;">A1–A2</label>
+<input id="adm_price_A1A2" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+<div style="height:10px;"></div>
+<label style="display:block; font-weight:800; opacity:.9;">B1</label>
+<input id="adm_price_B1" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+<div style="height:10px;"></div>
+<label style="display:block; font-weight:800; opacity:.9;">B2</label>
+<input id="adm_price_B2" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+</div>
+<div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px;">
+<div style="font-weight:900; margin-bottom:10px;">🎛️ Trial / acceso gratis</div>
+<label style="display:block; font-weight:800; opacity:.9;">Días de trial (por nivel)</label>
+<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+<input id="adm_trial_A1" placeholder="A1" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+<input id="adm_trial_A2" placeholder="A2" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+<input id="adm_trial_B1" placeholder="B1" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+<input id="adm_trial_B2" placeholder="B2" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+</div>
+<div style="height:12px;"></div>
+<div style="font-weight:900; margin-bottom:8px;">🏷️ Código de descuento</div>
+<div style="display:grid; grid-template-columns: 1.2fr .8fr 1fr; gap:10px;">
+<input id="adm_promo_code" placeholder="CODIGO (ej. BIENVENIDA10)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+<input id="adm_promo_pct" placeholder="% (ej. 10)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+<input id="adm_promo_days" placeholder="días gratis (opcional)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+</div>
+<div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+<button class="btn-yellow" onclick="addPromo()">Añadir código</button>
+<button class="btn-white-outline" onclick="clearPromos()">Borrar lista</button>
+</div>
+<div id="promoList" style="margin-top:12px; font-size:13px; opacity:.95;"></div>
+</div>
+</div>
+<div style="margin-top:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px;">
+<div style="font-weight:900; margin-bottom:10px;">➕ Botones extra (sección precios)</div>
+<div style="display:grid; grid-template-columns: 1fr 1fr .6fr; gap:10px;">
+<input id="adm_btn_text" placeholder="Texto del botón" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+<input id="adm_btn_href" placeholder="Link (ej. Contacto.html)" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;"/>
+<select id="adm_btn_style" style="padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white;">
+<option value="yellow">Amarillo</option>
+<option value="outline">Outline</option>
+</select>
+</div>
+<div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+<button class="btn-yellow" onclick="addExtraButton()">Añadir botón</button>
+<button class="btn-white-outline" onclick="clearExtraButtons()">Borrar botones</button>
+</div>
+<div id="extraButtonsPreview" style="margin-top:12px;"></div>
+</div>
+<div style="margin-top:14px; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
+<button class="btn-white-outline" onclick="reloadSettings()">Revertir</button>
+<button class="btn-yellow" onclick="saveSettingsLegacy()">Guardar en Firestore</button>
+</div>
+</div>
+</div>
+</div></div></main>
+<script type="module">
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
       import {
         getAuth,
@@ -569,9 +589,16 @@
         doc,
         getDoc,
         setDoc,
+        deleteDoc,
         serverTimestamp,
         collection,
         getDocs,
+        query,
+        where,
+        orderBy,
+        limit,
+        startAfter,
+        writeBatch,
       } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
       const firebaseConfig = {
@@ -586,7 +613,12 @@
       const ADMIN_EMAILS = [
         'aquivivo.pl@gmail.com',
         'DODAJ_DRUGI_EMAIL_TUTAJ@example.com',
-      ]; // <- wpisz tu drugi email (uczeń-test)
+      ];
+
+      let IS_ADMIN = false;
+      let META_CACHE = {};
+      let ACCESS_CACHE = {};
+ // <- wpisz tu drugi email (uczeń-test)
 
       function isAdminEmail(email) {
         const e = (email || '').toLowerCase();
@@ -677,9 +709,23 @@
         card.style.display = "block";
       }
 
-      function renderCourseCards(accessObj, metaData) {
+      
+      async function fetchAllCourseMeta() {
+        const metaData = {};
+        try {
+          const snap = await getDocs(collection(db, 'course_meta'));
+          snap.forEach(d => { metaData[d.id] = d.data(); });
+        } catch (e) {
+          console.warn('fetchAllCourseMeta failed', e);
+        }
+        return metaData;
+      }
+
+function renderCourseCards(accessObj, metaData) {
         coursesCardsEl.innerHTML = '';
-        const levels = ['A1', 'A2', 'B1', 'B2']; // fixed order A1 A2 / B1 B2
+        const baseLevels = ['A1', 'A2', 'B1', 'B2'];
+        const extraLevels = Object.keys(metaData || {}).filter(l => !baseLevels.includes(l)).sort();
+        const levels = [...baseLevels, ...extraLevels]; // A1/A2/B1/B2 first, then extras
 
         function tileClass(lvl){
           if (lvl === 'B2') return 'tile-red';
@@ -688,6 +734,13 @@
         }
 function activeCard(lvl) {
           const meta = metaData[lvl] || {};
+          const tileStyle = meta.tileBg ? `background:${meta.tileBg};` : '';
+          const tileTextStyle = meta.tileText ? `color:${meta.tileText};` : '';
+          const primaryLabel = meta.primaryLabel || (siteSettings?.texts?.enter_label || 'Entrar al curso →');
+          const primaryHref = meta.primaryHref || `course.html?level=${encodeURIComponent(lvl)}`;
+          const btnStyle = (meta.btnBg || meta.btnText)
+            ? `background:${meta.btnBg || '#FCD34D'}; color:${meta.btnText || '#111'}; border-color:${meta.btnBg || '#FCD34D'};`
+            : '';
           const title = meta.title || `Polaco ${lvl}`;
           const subtitle = meta.subtitle || 'Haz clic para acceder al curso.';
 
@@ -695,10 +748,13 @@ function activeCard(lvl) {
           const courseFile = `course.html?level=${encodeURIComponent(lvl)}`;
 
           return `
-      <div class="course-tile ${tileClass(lvl)}">
+      <div class="course-tile ${tileClass(lvl)}" style="${tileStyle}${tileTextStyle}">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:6px;">
           <div class="tile-badge">🎓 NIVEL ${lvl}</div>
-          <div style="font-weight:900; opacity:.9;">⏳ <span id="exp_${lvl}">—</span></div>
+          <div style="display:flex; align-items:center; gap:10px; font-weight:900; opacity:.9;">
+            ${IS_ADMIN ? `<button class="btn-icon" title="Editar tarjeta" onclick="openEditMeta(\'${lvl}\')">✏️</button>` : ``}
+            ⏳ <span id="exp_${lvl}">—</span>
+          </div>
         </div>
 
         <div class="tile-title"
@@ -723,9 +779,9 @@ function activeCard(lvl) {
         </div>
 
         <div class="tile-actions" style="margin-top:22px;">
-          <a class="btn-yellow" id="enter_${lvl}" href="${courseFile}"
+          <a class="btn-yellow" id="enter_${lvl}" href="${primaryHref}" style="${btnStyle}"
  data-editable="true" contenteditable="false"
->${siteSettings?.texts?.enter_label || 'Entrar al curso →'}</a>
+>${primaryLabel}</a>
           <a class="btn-white-outline" href="Contacto.html"
  data-editable="true" contenteditable="false"
 >${siteSettings?.texts?.extend_label || "Extender acceso"}</a>
@@ -736,15 +792,26 @@ function activeCard(lvl) {
 
         function lockedCard(lvl) {
           const meta = metaData[lvl] || {};
+          const tileStyle = meta.tileBg ? `background:${meta.tileBg};` : '';
+          const tileTextStyle = meta.tileText ? `color:${meta.tileText};` : '';
+          const primaryLabel = meta.primaryLabel || (siteSettings?.texts?.buy_label || 'Comprar acceso');
+          const primaryHref = meta.primaryHref || 'Contacto.html';
+          const btnStyle = (meta.btnBg || meta.btnText)
+            ? `background:${meta.btnBg || '#EF4444'}; color:${meta.btnText || '#fff'}; border-color:${meta.btnBg || '#EF4444'};`
+            : '';
+
           const title = meta.title || `Polaco ${lvl}`;
           const subtitle = meta.subtitle || '';
 
 
           return `
-      <div class="course-tile ${tileClass(lvl)}">
+      <div class="course-tile ${tileClass(lvl)}" style="${tileStyle}${tileTextStyle}">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:6px;">
           <div class="tile-badge">🎓 NIVEL ${lvl}</div>
-          <div class="pill pill-lock">🔒 bloqueado</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${IS_ADMIN ? `<button class="btn-icon" title="Editar tarjeta" onclick="openEditMeta(\'${lvl}\')">✏️</button>` : ``}
+            <div class="pill pill-lock">🔒 bloqueado</div>
+          </div>
         </div>
 
         <div class="tile-title"
@@ -761,9 +828,9 @@ function activeCard(lvl) {
         </div>
 
         <div class="tile-actions" style="margin-top:22px;">
-          <a class="btn-yellow" href="Contacto.html"
+          <a class="btn-yellow" href="${primaryHref}" style="${btnStyle}"
  data-editable="true" contenteditable="false"
->${siteSettings?.texts?.unlock_label || "Desbloquear el curso"}</a>
+>${primaryLabel}</a>
         </div>
       </div>
 `;
@@ -772,15 +839,23 @@ function activeCard(lvl) {
 
         function expiredCard(lvl) {
           const meta = metaData[lvl] || {};
+          const tileStyle = meta.tileBg ? `background:${meta.tileBg};` : '';
+          const tileTextStyle = meta.tileText ? `color:${meta.tileText};` : '';
+          const primaryLabel = meta.primaryLabel || (siteSettings?.texts?.renew_label || 'Renovar acceso');
+          const primaryHref = meta.primaryHref || 'Contacto.html';
+          const btnStyle = (meta.btnBg || meta.btnText)
+            ? `background:${meta.btnBg || '#EF4444'}; color:${meta.btnText || '#fff'}; border-color:${meta.btnBg || '#EF4444'};`
+            : '';
           const title = meta.title || `Polaco ${lvl}`;
           const subtitle = meta.subtitle || '';
 
 
           return `
-      <div class="course-tile ${tileClass(lvl)}">
+      <div class="course-tile ${tileClass(lvl)}" style="${tileStyle}${tileTextStyle}">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:6px;">
           <div class="tile-badge">🎓 NIVEL ${lvl}</div>
-          <div class="pill pill-expired">❌ expirado</div>
+          ${IS_ADMIN ? `<button class="btn-icon" title="Editar tarjeta" onclick="openEditMeta(\'${lvl}\')">✏️</button>` : ``}
+            <div class="pill pill-expired">❌ expirado</div>
         </div>
 
         <div class="tile-title"
@@ -797,9 +872,9 @@ function activeCard(lvl) {
         </div>
 
         <div class="tile-actions" style="margin-top:22px;">
-          <a class="btn-yellow" href="Contacto.html"
+          <a class="btn-yellow" href="${primaryHref}" style="${btnStyle}"
  data-editable="true" contenteditable="false"
->${siteSettings?.texts?.unlock_label || "Desbloquear el curso"}</a>
+>${primaryLabel}</a>
         </div>
       </div>
 `;
@@ -862,23 +937,271 @@ function activeCard(lvl) {
         const refreshed = await getDoc(ref);
 
         // Cargar metadata otra vez
-        const metaData = {};
-        const levels = ['A1', 'A2', 'B1', 'B2']; // fixed order A1 A2 / B1 B2
-        for (const lvl of levels) {
-          try {
-            const metaRef = doc(db, 'course_meta', lvl);
-            const metaSnap = await getDoc(metaRef);
-            if (metaSnap.exists()) metaData[lvl] = metaSnap.data();
-          } catch {}
-        }
+        const metaData = await fetchAllCourseMeta();
 
-        renderCourseCards(refreshed.data()?.access || {}, metaData);
+ACCESS_CACHE = refreshed.data()?.access || {};
+        renderCourseCards(ACCESS_CACHE, metaData);
             renderLastActivity();
         alert(`✅ Activado: ${level} por 7 días`);
       }
 
       // Expose for inline onclick handlers
       window.activateTrial = activateTrial;
+
+      // ===== Admin: edit course tile metadata (title/subtitle) =====
+      let __editingLevel = null;
+
+      function openEditMeta(level){
+        if (!IS_ADMIN) return;
+        __editingLevel = level;
+        const meta = (META_CACHE && META_CACHE[level]) ? META_CACHE[level] : {};
+        document.getElementById('metaLevel').textContent = level;
+        document.getElementById('metaTitle').value = meta.title || `Polaco ${level}`;
+        document.getElementById('metaSubtitle').value = meta.subtitle || '';
+        document.getElementById('metaTileBg').value = meta.tileBg || '';
+        document.getElementById('metaTileText').value = meta.tileText || '';
+        document.getElementById('metaPrimaryLabel').value = meta.primaryLabel || '';
+        document.getElementById('metaPrimaryHref').value = meta.primaryHref || '';
+        document.getElementById('metaBtnBg').value = meta.btnBg || '';
+        document.getElementById('metaBtnText').value = meta.btnText || '';
+        // delete UI (only for non-protected levels)
+        const canDelete = !PROTECTED_LEVELS.has(level);
+        const delWrap = document.getElementById('metaDeleteWrap');
+        const delBtn = document.getElementById('metaDelete');
+        const delChk = document.getElementById('metaDeleteWithData');
+
+        if (delWrap) delWrap.style.display = canDelete ? 'block' : 'none';
+        if (delBtn) delBtn.style.display = canDelete ? 'inline-flex' : 'none';
+        if (delChk) delChk.checked = false;
+
+        document.getElementById('metaModal').style.display = 'flex';
+      }
+
+      function closeEditMeta(){
+        document.getElementById('metaModal').style.display = 'none';
+        __editingLevel = null;
+      }
+
+      async function saveEditMeta(){
+        if (!IS_ADMIN) return;
+        if (!__editingLevel) return;
+        const level = __editingLevel;
+        const title = document.getElementById('metaTitle').value.trim();
+        const subtitle = document.getElementById('metaSubtitle').value.trim();
+        const tileBg = document.getElementById('metaTileBg').value.trim();
+        const tileText = document.getElementById('metaTileText').value.trim();
+        const primaryLabel = document.getElementById('metaPrimaryLabel').value.trim();
+        const primaryHref = document.getElementById('metaPrimaryHref').value.trim();
+        const btnBg = document.getElementById('metaBtnBg').value.trim();
+        const btnText = document.getElementById('metaBtnText').value.trim();
+
+        try{
+          const metaRef = doc(db, 'course_meta', level);
+          await setDoc(metaRef, {
+            title,
+            subtitle,
+            tileBg: tileBg || null,
+            tileText: tileText || null,
+            primaryLabel: primaryLabel || null,
+            primaryHref: primaryHref || null,
+            btnBg: btnBg || null,
+            btnText: btnText || null,
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+
+          META_CACHE = META_CACHE || {};
+          META_CACHE[level] = { ...(META_CACHE[level] || {}), title, subtitle, tileBg, tileText, primaryLabel, primaryHref, btnBg, btnText };
+
+          // refresh tiles
+          if (CURRENT_UID){
+            const userRef = doc(db, 'users', CURRENT_UID);
+            const userSnap = await getDoc(userRef);
+            ACCESS_CACHE = userSnap.data()?.access || {};
+            renderCourseCards(ACCESS_CACHE, META_CACHE);
+            renderLastActivity();
+          }
+          closeEditMeta();
+        }catch(e){
+          console.error(e);
+          alert('No se pudo guardar. Revisa permisos/reglas y consola.');
+        }
+      }
+
+
+      const PROTECTED_LEVELS = new Set(["A1","A2","B1","B2"]);
+
+      async function deleteAllByLevel(collectionName, level){
+        // deletes documents in batches (safe for medium datasets)
+        let deleted = 0;
+        let lastDoc = null;
+
+        while(true){
+          let q = query(
+            collection(db, collectionName),
+            where("level", "==", level),
+            orderBy("__name__"),
+            limit(200)
+          );
+          if (lastDoc) q = query(
+            collection(db, collectionName),
+            where("level", "==", level),
+            orderBy("__name__"),
+            startAfter(lastDoc),
+            limit(200)
+          );
+
+          const snap = await getDocs(q);
+          if (snap.empty) break;
+
+          const batch = writeBatch(db);
+          snap.docs.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+
+          deleted += snap.size;
+          lastDoc = snap.docs[snap.docs.length - 1];
+
+          if (snap.size < 200) break;
+        }
+        return deleted;
+      }
+
+      async function deleteCourseFlow(){
+        if (!IS_ADMIN) return;
+        if (!__editingLevel) return;
+
+        const level = __editingLevel;
+        if (PROTECTED_LEVELS.has(level)){
+          alert("Este curso está protegido y no se puede eliminar desde aquí.");
+          return;
+        }
+
+        const withData = !!document.getElementById("metaDeleteWithData")?.checked;
+        const msg = withData
+          ? `Vas a ELIMINAR el curso "${level}" (tarjeta + temas + ejercicios).\n\nEscribe ELIMINAR para confirmar:`
+          : `Vas a ELIMINAR la tarjeta del curso "${level}".\n(Los temas/ejercicios se quedan.)\n\nEscribe ELIMINAR para confirmar:`;
+
+        const typed = prompt(msg, "");
+        if ((typed || "").trim().toUpperCase() !== "ELIMINAR") return;
+
+        try{
+          // delete meta
+          await deleteDoc(doc(db, "course_meta", level));
+
+          // optionally delete data
+          let deletedCourses = 0, deletedExercises = 0;
+          if (withData){
+            deletedCourses = await deleteAllByLevel("courses", level);
+            deletedExercises = await deleteAllByLevel("exercises", level);
+          }
+
+          // update caches + UI
+          if (META_CACHE && META_CACHE[level]) delete META_CACHE[level];
+          if (ACCESS_CACHE && ACCESS_CACHE[level]) delete ACCESS_CACHE[level];
+
+          if (CURRENT_UID){
+            const userRef = doc(db, "users", CURRENT_UID);
+            const userSnap = await getDoc(userRef);
+            ACCESS_CACHE = userSnap.data()?.access || {};
+          }
+
+          renderCourseCards(ACCESS_CACHE || {}, META_CACHE || {});
+          renderLastActivity();
+
+          closeEditMeta();
+          alert(withData
+            ? `Eliminado: ${level}.\nBorrados: temas=${deletedCourses}, ejercicios=${deletedExercises}.`
+            : `Eliminado: tarjeta ${level}.`);
+        }catch(e){
+          console.error(e);
+          alert("No se pudo eliminar. Revisa permisos/reglas y consola.");
+        }
+      }
+
+      // expose for inline onclick
+      window.openEditMeta = openEditMeta;
+
+      // ===== Admin: Add new course =====
+      function openAddCourse(){
+        if (!IS_ADMIN) return;
+        document.getElementById('newCourseLevel').value = '';
+        document.getElementById('newCourseTitle').value = '';
+        document.getElementById('newCourseSubtitle').value = '';
+        document.getElementById('newCourseTileBg').value = '';
+        document.getElementById('newCourseTileText').value = '';
+        document.getElementById('newCoursePrimaryLabel').value = '';
+        document.getElementById('newCoursePrimaryHref').value = '';
+        document.getElementById('newCourseBtnBg').value = '';
+        document.getElementById('newCourseBtnText').value = '';
+        document.getElementById('addCourseModal').style.display = 'flex';
+        setTimeout(() => document.getElementById('newCourseLevel')?.focus(), 50);
+      }
+      function closeAddCourse(){
+        document.getElementById('addCourseModal').style.display = 'none';
+      }
+
+      function normalizeCourseId(raw){
+        const s = (raw || '').trim().toUpperCase();
+        // allow A1, B2, C1, "ESP_BASICO", "A1-PLUS"
+        if (!/^[A-Z0-9_-]{1,12}$/.test(s)) return null;
+        return s;
+      }
+
+      async function createNewCourse(){
+        if (!IS_ADMIN) return;
+
+        const rawLevel = document.getElementById('newCourseLevel').value;
+        const level = normalizeCourseId(rawLevel);
+        if (!level){
+          alert('⚠️ El ID debe tener 1–12 caracteres: A-Z, 0-9, _ o - (ej.: C1, A1-PLUS).');
+          return;
+        }
+
+        const title = document.getElementById('newCourseTitle').value.trim() || `Polaco ${level}`;
+        const subtitle = document.getElementById('newCourseSubtitle').value.trim();
+        const tileBg = document.getElementById('newCourseTileBg').value.trim();
+        const tileText = document.getElementById('newCourseTileText').value.trim();
+        const primaryLabel = document.getElementById('newCoursePrimaryLabel').value.trim();
+        const primaryHref = document.getElementById('newCoursePrimaryHref').value.trim();
+        const btnBg = document.getElementById('newCourseBtnBg').value.trim();
+        const btnText = document.getElementById('newCourseBtnText').value.trim();
+
+        try{
+          const metaRef = doc(db, 'course_meta', level);
+          const exists = await getDoc(metaRef);
+          if (exists.exists()){
+            alert('⚠️ Ya existe un curso con este ID. Elige otro.');
+            return;
+          }
+
+          await setDoc(metaRef, {
+            title,
+            subtitle,
+            tileBg: tileBg || null,
+            tileText: tileText || null,
+            primaryLabel: primaryLabel || null,
+            primaryHref: primaryHref || null,
+            btnBg: btnBg || null,
+            btnText: btnText || null,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+
+          // refresh meta + tiles
+          const metaData = await fetchAllCourseMeta();
+          META_CACHE = metaData;
+          renderCourseCards(ACCESS_CACHE || {}, metaData);
+          renderLastActivity();
+
+          closeAddCourse();
+          alert('✅ Curso creado. Ahora puedes entrar y añadir temas.');
+        }catch(e){
+          console.error(e);
+          alert('No se pudo crear el curso. Revisa permisos/reglas y consola.');
+        }
+      }
+
+      window.openAddCourse = openAddCourse;
+
 
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -887,10 +1210,19 @@ function activeCard(lvl) {
         }
 
         userEmailEl.textContent = user.email || '(sin correo)';
+        const __isAdmin = isAdminEmail(user.email);
+        IS_ADMIN = __isAdmin;
+        window.__isAdmin = __isAdmin;
+        const adminBadge = document.getElementById('adminBadge');
+        if(adminBadge){
+          adminBadge.textContent = __isAdmin ? '(admin: SÍ)' : '(admin: NO)';
+          adminBadge.style.color = __isAdmin ? '#FCD116' : 'rgba(255,255,255,0.75)';
+        }
+
         CURRENT_UID = user.uid;
 
         // mostrar enlace al administrador (si es email de admin)
-        if (isAdminEmail(user.email)) {
+        if (__isAdmin) {
           adminLinkWrap.classList.add('show');
         }
 
@@ -899,7 +1231,7 @@ function activeCard(lvl) {
 
         // si el usuario no existe en la colección users -> establecer A1 prueba = 7 días
         if (!snap.exists()) {
-          const isAdmin = isAdminEmail(user.email);
+          const isAdmin = __isAdmin;
           const now = new Date();
           const trialEnd = new Date();
 
@@ -933,7 +1265,7 @@ function activeCard(lvl) {
         }
 
         // Si es admin, asegurarse de que tiene acceso a todos los cursos
-        if (isAdminEmail(user.email)) {
+        if (__isAdmin) {
           const trialEnd = new Date();
           trialEnd.setFullYear(2099);
 
@@ -953,22 +1285,11 @@ function activeCard(lvl) {
 
           snap = await getDoc(ref);
         }
-        const metaData = {};
-        const levels = ['A1', 'A2', 'B1', 'B2']; // fixed order A1 A2 / B1 B2
-        for (const level of levels) {
-          try {
-            const metaRef = doc(db, 'course_meta', level);
-            const metaSnap = await getDoc(metaRef);
-            if (metaSnap.exists()) {
-              metaData[level] = metaSnap.data();
-            }
-          } catch (e) {
-            console.log(`No metadata for ${level}`);
-          }
-        }
-
+        const metaData = await fetchAllCourseMeta();
         const data = snap.data();
-        renderCourseCards(data?.access || {}, metaData);
+        META_CACHE = metaData;
+        ACCESS_CACHE = data?.access || {};
+        renderCourseCards(ACCESS_CACHE, metaData);
         renderLastActivity();
       });
 
@@ -1050,7 +1371,7 @@ function activeCard(lvl) {
         }
       }
 
-      async function saveSettings(){
+      async function saveSettingsLegacy(){
         if (!window.__isAdmin) return;
         // pull current UI text edits (contenteditable)
         document.querySelectorAll('[data-editable-key]').forEach(el => {
@@ -1213,10 +1534,287 @@ function activeCard(lvl) {
       }
 
       // ===== Hook: admin-only visibility =====
+
+      // Modal hooks
+      document.getElementById('metaClose')?.addEventListener('click', closeEditMeta);
+      document.getElementById('metaCancel')?.addEventListener('click', closeEditMeta);
+      document.getElementById('metaSave')?.addEventListener('click', saveEditMeta);
+      document.getElementById('metaDelete')?.addEventListener('click', deleteCourseFlow);
+      document.getElementById('metaModal')?.addEventListener('click', (e)=>{ if (e.target?.id === 'metaModal') closeEditMeta(); });
+
+      document.getElementById('openSettingsBtn')?.addEventListener('click', openSettings);
+      document.getElementById('closeSettingsBtn')?.addEventListener('click', closeSettings);
+      document.getElementById('saveSettingsBtn')?.addEventListener('click', saveSettings);
+      document.getElementById('resetSettingsBtn')?.addEventListener('click', resetSettings);
+      document.getElementById('addPromoBtn')?.addEventListener('click', upsertPromo);
+      document.getElementById('settingsModal')?.addEventListener('click', (e)=>{ if (e.target?.id === 'settingsModal') closeSettings(); });
+      document.querySelectorAll('#settingsModal .tabBtn').forEach(b=> b.addEventListener('click', ()=> switchSettingsTab(b.dataset.tab)) );
+
+      document.getElementById('addCourseBtn')?.addEventListener('click', openAddCourse);
+      document.getElementById('addCourseClose')?.addEventListener('click', closeAddCourse);
+      document.getElementById('addCourseCancel')?.addEventListener('click', closeAddCourse);
+      document.getElementById('addCourseCreate')?.addEventListener('click', createNewCourse);
+      document.getElementById('addCourseModal')?.addEventListener('click', (e)=>{ if (e.target?.id === 'addCourseModal') closeAddCourse(); });
+
+      
+      // ===== Admin: Settings modal (Planes/Precios + Promos) =====
+      const SETTINGS_PLANS = ["A1A2","B1","B2"];
+
+      function ensurePlanUI(){
+        if (!siteSettings.planUI) siteSettings.planUI = {};
+        SETTINGS_PLANS.forEach(k=>{
+          if (!siteSettings.planUI[k]) siteSettings.planUI[k] = {};
+        });
+      }
+
+      function normHex(v){
+        const s = (v||"").trim();
+        if (!s) return "";
+        if (/^#[0-9a-fA-F]{6}$/.test(s)) return s;
+        return s; // pozwól wpisać też np. 'red' jeśli chcesz, ale preferuj #RRGGBB
+      }
+
+      function applyPlanUI(){
+        ensurePlanUI();
+        SETTINGS_PLANS.forEach(k=>{
+          const tile = document.querySelector(`#pricingSection .course-tile[data-plan="${k}"]`);
+          if (!tile) return;
+          const ui = siteSettings.planUI[k] || {};
+          const bg = normHex(ui.tileBg);
+          const tx = normHex(ui.tileText);
+          if (bg) tile.style.background = bg;
+          if (tx) tile.style.color = tx;
+
+          const btn = tile.querySelector('a[data-buy-btn="1"]');
+          if (btn){
+            if (ui.btnLabel) btn.textContent = ui.btnLabel;
+            if (ui.btnHref) btn.setAttribute('href', ui.btnHref);
+            const bbg = normHex(ui.btnBg);
+            const btx = normHex(ui.btnText);
+            if (bbg) btn.style.background = bbg;
+            if (btx) btn.style.color = btx;
+            if (bbg) btn.style.borderColor = bbg;
+          }
+        });
+      }
+
+      // extend existing applySettingsToUI by re-calling plan UI after settings loaded
+      const __origApplySettingsToUI = applySettingsToUI;
+      applySettingsToUI = function(){
+        __origApplySettingsToUI();
+        applyPlanUI();
+      };
+
+      function openSettings(){
+        if (!IS_ADMIN) return;
+        ensurePlanUI();
+
+        // fill fields
+        document.getElementById('set_price_A1A2').value = siteSettings?.prices?.A1A2 || "";
+        document.getElementById('set_price_B1').value   = siteSettings?.prices?.B1 || "";
+        document.getElementById('set_price_B2').value   = siteSettings?.prices?.B2 || "";
+
+        // plan ui
+        const fill = (k)=>{
+          const ui = siteSettings.planUI[k] || {};
+          document.getElementById(`set_tileBg_${k}`).value = ui.tileBg || "";
+          document.getElementById(`set_tileText_${k}`).value = ui.tileText || "";
+          document.getElementById(`set_btnBg_${k}`).value = ui.btnBg || "";
+          document.getElementById(`set_btnText_${k}`).value = ui.btnText || "";
+          document.getElementById(`set_btnLabel_${k}`).value = ui.btnLabel || "";
+          document.getElementById(`set_btnHref_${k}`).value = ui.btnHref || "";
+        };
+        SETTINGS_PLANS.forEach(fill);
+
+        // promos
+        loadPromoCodes();
+
+        document.getElementById('settingsModal').style.display = 'flex';
+      }
+
+      function closeSettings(){
+        document.getElementById('settingsModal').style.display = 'none';
+      }
+
+      function switchSettingsTab(tabId){
+        document.querySelectorAll('#settingsModal .tabBtn').forEach(b=>{
+          b.classList.toggle('active', b.dataset.tab === tabId);
+        });
+        document.getElementById('tabPlans').style.display = (tabId === 'tabPlans') ? '' : 'none';
+        document.getElementById('tabPromos').style.display = (tabId === 'tabPromos') ? '' : 'none';
+      }
+
+      async function saveSettings(){
+        if (!IS_ADMIN) return;
+        ensurePlanUI();
+
+        const next = structuredClone(siteSettings);
+
+        next.prices = {
+          ...(next.prices || {}),
+          A1A2: document.getElementById('set_price_A1A2').value.trim() || (next.prices?.A1A2 || ""),
+          B1: document.getElementById('set_price_B1').value.trim() || (next.prices?.B1 || ""),
+          B2: document.getElementById('set_price_B2').value.trim() || (next.prices?.B2 || ""),
+        };
+
+        SETTINGS_PLANS.forEach(k=>{
+          next.planUI[k] = {
+            ...(next.planUI[k] || {}),
+            tileBg: normHex(document.getElementById(`set_tileBg_${k}`).value),
+            tileText: normHex(document.getElementById(`set_tileText_${k}`).value),
+            btnBg: normHex(document.getElementById(`set_btnBg_${k}`).value),
+            btnText: normHex(document.getElementById(`set_btnText_${k}`).value),
+            btnLabel: document.getElementById(`set_btnLabel_${k}`).value.trim(),
+            btnHref: document.getElementById(`set_btnHref_${k}`).value.trim(),
+          };
+        });
+
+        try{
+          await setDoc(SETTINGS_REF, {
+            ...next,
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+
+          siteSettings = next;
+          applySettingsToUI();
+          closeSettings();
+        }catch(err){
+          console.error(err);
+          alert('No se pudo guardar ajustes. Mira consola.');
+        }
+      }
+
+      function resetSettings(){
+        if (!IS_ADMIN) return;
+        siteSettings = structuredClone(DEFAULT_SETTINGS);
+        applySettingsToUI();
+        openSettings(); // reopen with defaults
+      }
+
+      // ===== Promo codes (discounts / free days) =====
+      const PROMOS_COL = collection(db, 'promo_codes');
+      let PROMO_CACHE = [];
+
+      async function loadPromoCodes(){
+        try{
+          const snap = await getDocs(PROMOS_COL);
+          PROMO_CACHE = [];
+          snap.forEach(d=>{
+            PROMO_CACHE.push({ id:d.id, ...d.data() });
+          });
+          // sort: newest first if timestamps present
+          PROMO_CACHE.sort((a,b)=>{
+            const ta = (a.updatedAt?.seconds || a.createdAt?.seconds || 0);
+            const tb = (b.updatedAt?.seconds || b.createdAt?.seconds || 0);
+            return tb - ta;
+          });
+          renderPromoCodes();
+        }catch(err){
+          console.error(err);
+        }
+      }
+
+      function renderPromoCodes(){
+        const wrap = document.getElementById('promoList');
+        if (!wrap) return;
+        if (!PROMO_CACHE.length){
+          wrap.innerHTML = '<div class="mini" style="margin-top:10px; opacity:.85;">Brak kodów.</div>';
+          return;
+        }
+        wrap.innerHTML = PROMO_CACHE.map(p=>{
+          const code = p.code || p.id;
+          const pct = Number(p.pct || p.percentOff || 0) || 0;
+          const days = Number(p.days || p.freeDays || 0) || 0;
+          const active = (p.active !== false);
+          const note = p.note ? String(p.note) : '';
+          return `
+            <div class="promoItem">
+              <div>
+                <strong>${code}</strong> ${active ? '<span class="pill" style="margin-left:8px; background:rgba(34,197,94,.18); border:1px solid rgba(34,197,94,.45);">activo</span>' : '<span class="pill" style="margin-left:8px; background:rgba(239,68,68,.18); border:1px solid rgba(239,68,68,.45);">off</span>'}
+                <div class="meta">Rabat: <b>${pct}%</b> • Dni gratis: <b>${days}</b>${note ? ` • ${note}` : ''}</div>
+              </div>
+              <div class="btns">
+                <button class="btn-white-outline" type="button" onclick="editPromo('${code.replace(/'/g,"&#39;")}')">✏️ Editar</button>
+                <button class="btn-white-outline" type="button" onclick="togglePromo('${code.replace(/'/g,"&#39;")}')">${active ? '⏸ Desactivar' : '▶ Activar'}</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function editPromo(code){
+        const p = PROMO_CACHE.find(x => (x.code || x.id) === code);
+        if (!p) return;
+        document.getElementById('promo_code').value = (p.code || p.id || '').toUpperCase();
+        document.getElementById('promo_pct').value = String(p.pct ?? p.percentOff ?? 0);
+        document.getElementById('promo_days').value = String(p.days ?? p.freeDays ?? 0);
+        document.getElementById('promo_active').value = String(p.active !== false);
+        document.getElementById('promo_note').value = p.note || '';
+        switchSettingsTab('tabPromos');
+      }
+
+      async function togglePromo(code){
+        if (!IS_ADMIN) return;
+        const p = PROMO_CACHE.find(x => (x.code || x.id) === code);
+        if (!p) return;
+        const nextActive = !(p.active !== false);
+        try{
+          await setDoc(doc(db, 'promo_codes', code), {
+            code,
+            active: nextActive,
+            updatedAt: serverTimestamp(),
+          }, { merge:true });
+          await loadPromoCodes();
+        }catch(err){
+          console.error(err);
+          alert('No se pudo actualizar promo. Mira consola.');
+        }
+      }
+
+      async function upsertPromo(){
+        if (!IS_ADMIN) return;
+        const code = (document.getElementById('promo_code').value || '').trim().toUpperCase();
+        if (!code){
+          alert('Escribe un código.');
+          return;
+        }
+        const pct = Math.max(0, Math.min(100, Number(document.getElementById('promo_pct').value || 0) || 0));
+        const days = Math.max(0, Math.min(365, Number(document.getElementById('promo_days').value || 0) || 0));
+        const active = (document.getElementById('promo_active').value === 'true');
+        const note = (document.getElementById('promo_note').value || '').trim();
+
+        try{
+          await setDoc(doc(db, 'promo_codes', code), {
+            code,
+            pct,
+            days,
+            note,
+            active,
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+          }, { merge: true });
+          // clear
+          document.getElementById('promo_code').value = '';
+          document.getElementById('promo_pct').value = '';
+          document.getElementById('promo_days').value = '';
+          document.getElementById('promo_note').value = '';
+          document.getElementById('promo_active').value = 'true';
+          await loadPromoCodes();
+        }catch(err){
+          console.error(err);
+          alert('No se pudo guardar código. Mira consola.');
+        }
+      }
+
       window.__isAdmin = false;
 
+
+      
+
+      // (legacy admin settings removed — duplicated declarations)
+
 </script>
-    <script>
+<script>
       // Enlazar el banner amarillo a course.html
       const banner = document.querySelector('.yellow-banner');
       if (banner) {
@@ -1226,7 +1824,279 @@ function activeCard(lvl) {
         });
       }
     </script>
+<script src="assets/js/layout.js"></script>
 
-    <script src="assets/js/layout.js"></script>
-  </body>
+  <!-- ===== Admin: Edit course tiles (only title/subtitle) ===== -->
+  <div id="metaModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="metaModalTitle">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <h3 id="metaModalTitle" style="margin:0; font-size:20px; font-weight:900;">✏️ Editar tarjeta</h3>
+        <button id="metaClose" class="btn-white-outline" style="padding:10px 14px;">✕</button>
+      </div>
+
+      <div style="margin-top:14px; opacity:.85;">Nivel: <strong id="metaLevel">—</strong></div>
+
+      <label style="display:block; margin-top:14px; font-weight:800;">Título</label>
+      <input id="metaTitle" class="input" placeholder="Título del curso" />
+
+      <label style="display:block; margin-top:12px; font-weight:800;">Subtítulo</label>
+      <textarea id="metaSubtitle" class="input" rows="3" placeholder="Subtítulo / descripción corta"></textarea>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:14px;">
+        <div>
+          <label style="display:block; font-weight:800;">Color fondo (kafelek)</label>
+          <input id="metaTileBg" class="input" placeholder="#ffffff" />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Color texto (kafelek)</label>
+          <input id="metaTileText" class="input" placeholder="#111111" />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Texto botón principal</label>
+          <input id="metaPrimaryLabel" class="input" placeholder="Entrar / Comprar / ..." />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Link botón principal (opcional)</label>
+          <input id="metaPrimaryHref" class="input" placeholder="course.html?level=A1 o https://..." />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Color botón (fondo)</label>
+          <input id="metaBtnBg" class="input" placeholder="#FCD34D" />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Color botón (texto)</label>
+          <input id="metaBtnText" class="input" placeholder="#111111" />
+        </div>
+      </div>
+
+      <div style="margin-top:10px; font-size:12px; opacity:.75; line-height:1.35;">
+        Tips: wpisuj kolory w formacie <strong>#RRGGBB</strong>. Jeśli zostawisz puste — zostaną domyślne style.
+      </div>
+
+      <div id="metaDeleteWrap" style="margin-top:12px; display:none; padding:12px 12px; border-radius:14px; border:1px solid rgba(206,17,38,0.40); background:rgba(206,17,38,0.14);">
+        <div style="font-weight:900;">🗑️ Eliminar curso</div>
+        <label style="display:flex; gap:10px; align-items:flex-start; margin-top:10px; font-weight:700;">
+          <input type="checkbox" id="metaDeleteWithData" style="margin-top:3px;" />
+          <span>Eliminar también <b>temas (courses)</b> y <b>ejercicios (exercises)</b> de este nivel.</span>
+        </label>
+        <div style="margin-top:8px; font-size:12px; opacity:.92; line-height:1.35;">
+          Si no estás segura: elimina solo la tarjeta. El contenido se puede borrar después.
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap;">
+        <button id="metaDelete" class="btn-white-outline" style="display:none; border-color: rgba(206,17,38,0.55);">🗑️ Eliminar</button>
+        <div style="display:flex; gap:10px; margin-left:auto;">
+          <button id="metaCancel" class="btn-white-outline">Cancelar</button>
+          <button id="metaSave" class="btn-yellow">💾 Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== Admin: Add new course (course_meta doc) ===== -->
+  <div id="addCourseModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="addCourseModalTitle">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <h3 id="addCourseModalTitle" style="margin:0; font-size:20px; font-weight:900;">➕ Nuevo curso</h3>
+        <button id="addCourseClose" class="btn-white-outline" style="padding:10px 14px;">✕</button>
+      </div>
+
+      <p style="margin:10px 0 0; opacity:.8; line-height:1.35;">
+        Esto crea un documento en <strong>course_meta</strong>. Los temas se añaden después (en <strong>courses</strong>).
+      </p>
+
+      <label style="display:block; margin-top:14px; font-weight:800;">Nivel / ID (ej.: A1, A2, B1, B2, C1)</label>
+      <input id="newCourseLevel" class="input" placeholder="Ej.: C1" />
+
+      <label style="display:block; margin-top:12px; font-weight:800;">Título</label>
+      <input id="newCourseTitle" class="input" placeholder="Título del curso" />
+
+      <label style="display:block; margin-top:12px; font-weight:800;">Subtítulo</label>
+      <textarea id="newCourseSubtitle" class="input" rows="3" placeholder="Subtítulo / descripción corta"></textarea>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:14px;">
+        <div>
+          <label style="display:block; font-weight:800;">Color fondo (kafelek)</label>
+          <input id="newCourseTileBg" class="input" placeholder="#ffffff" />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Color texto (kafelek)</label>
+          <input id="newCourseTileText" class="input" placeholder="#111111" />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Texto botón principal</label>
+          <input id="newCoursePrimaryLabel" class="input" placeholder="Entrar / Comprar / ..." />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Link botón principal (opcional)</label>
+          <input id="newCoursePrimaryHref" class="input" placeholder="course.html?level=A1 o https://..." />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Color botón (fondo)</label>
+          <input id="newCourseBtnBg" class="input" placeholder="#FCD34D" />
+        </div>
+        <div>
+          <label style="display:block; font-weight:800;">Color botón (texto)</label>
+          <input id="newCourseBtnText" class="input" placeholder="#111111" />
+        </div>
+      </div>
+
+      <div style="margin-top:10px; font-size:12px; opacity:.75; line-height:1.35;">
+        Tips: wpisuj kolory w formacie <strong>#RRGGBB</strong>. Jeśli zostawisz puste — zostaną domyślne style.
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+        <button id="addCourseCancel" class="btn-white-outline">Cancelar</button>
+        <button id="addCourseCreate" class="btn-yellow">✅ Crear</button>
+      </div>
+    </div>
+  </div>
+
+
+<!-- ===== Admin Settings Modal (Planes y precios + Promos) ===== -->
+<div id="settingsModal" aria-hidden="true">
+  <div class="modalBox">
+    <div class="modalHead">
+      <h3>⚙️ Ajustes (Planes, precios, botones, promos)</h3>
+      <button class="btn-white-outline" id="closeSettingsBtn" type="button">✕ Cerrar</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tabBtn active" type="button" data-tab="tabPlans">Planes y precios</button>
+      <button class="tabBtn" type="button" data-tab="tabPromos">Descuentos y días gratis</button>
+    </div>
+
+    <div class="modalBody">
+      <!-- Plans -->
+      <div id="tabPlans">
+        <div class="mini">Editas el contenido y el estilo de los bloques de “Planes y precios”. Se guarda en <code>site_settings/panel_es</code>.</div>
+
+        <div class="hr"></div>
+
+        <h4 style="margin:0 0 10px; font-size:16px;">A1–A2</h4>
+        <div class="grid3">
+          <div>
+            <label>Precio (texto)</label>
+            <input id="set_price_A1A2" placeholder="180 zł / 3 meses" />
+          </div>
+          <div>
+            <label>Texto botón</label>
+            <input id="set_btnLabel_A1A2" placeholder="Comprar acceso" />
+          </div>
+          <div>
+            <label>Link botón</label>
+            <input id="set_btnHref_A1A2" placeholder="Contacto.html o link de pago" />
+          </div>
+        </div>
+        <div class="grid2 row">
+          <div>
+            <label>Color tile (bg) #RRGGBB</label>
+            <input id="set_tileBg_A1A2" placeholder="#003893" />
+          </div>
+          <div>
+            <label>Color texto tile #RRGGBB</label>
+            <input id="set_tileText_A1A2" placeholder="#FFFFFF" />
+          </div>
+        </div>
+        <div class="grid2 row">
+          <div>
+            <label>Color botón (bg) #RRGGBB</label>
+            <input id="set_btnBg_A1A2" placeholder="#FCD116" />
+          </div>
+          <div>
+            <label>Color botón (texto) #RRGGBB</label>
+            <input id="set_btnText_A1A2" placeholder="#0B1B3A" />
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h4 style="margin:0 0 10px; font-size:16px;">B1</h4>
+        <div class="grid3">
+          <div><label>Precio (texto)</label><input id="set_price_B1" placeholder="250 zł / 3 meses" /></div>
+          <div><label>Texto botón</label><input id="set_btnLabel_B1" placeholder="Comprar acceso" /></div>
+          <div><label>Link botón</label><input id="set_btnHref_B1" placeholder="Contacto.html o link de pago" /></div>
+        </div>
+        <div class="grid2 row">
+          <div><label>Color tile (bg)</label><input id="set_tileBg_B1" placeholder="#003893" /></div>
+          <div><label>Color texto tile</label><input id="set_tileText_B1" placeholder="#FFFFFF" /></div>
+        </div>
+        <div class="grid2 row">
+          <div><label>Color botón (bg)</label><input id="set_btnBg_B1" placeholder="#FCD116" /></div>
+          <div><label>Color botón (texto)</label><input id="set_btnText_B1" placeholder="#0B1B3A" /></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h4 style="margin:0 0 10px; font-size:16px;">B2</h4>
+        <div class="grid3">
+          <div><label>Precio (texto)</label><input id="set_price_B2" placeholder="350 zł / 3 meses" /></div>
+          <div><label>Texto botón</label><input id="set_btnLabel_B2" placeholder="Comprar acceso" /></div>
+          <div><label>Link botón</label><input id="set_btnHref_B2" placeholder="Contacto.html o link de pago" /></div>
+        </div>
+        <div class="grid2 row">
+          <div><label>Color tile (bg)</label><input id="set_tileBg_B2" placeholder="#003893" /></div>
+          <div><label>Color texto tile</label><input id="set_tileText_B2" placeholder="#FFFFFF" /></div>
+        </div>
+        <div class="grid2 row">
+          <div><label>Color botón (bg)</label><input id="set_btnBg_B2" placeholder="#FCD116" /></div>
+          <div><label>Color botón (texto)</label><input id="set_btnText_B2" placeholder="#0B1B3A" /></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-white-outline" type="button" id="resetSettingsBtn">↩︎ Reset</button>
+          <button class="btn-yellow" type="button" id="saveSettingsBtn" style="font-weight:900;">💾 Guardar</button>
+        </div>
+      </div>
+
+      <!-- Promos -->
+      <div id="tabPromos" style="display:none;">
+        <div class="mini">Tu “checkout” może użyć tego samego kodu. Tu zapisujemy kody do Firestore w kolekcji <code>promo_codes</code>.</div>
+
+        <div class="hr"></div>
+
+        <div class="grid3">
+          <div>
+            <label>Kod rabatowy (ID)</label>
+            <input id="promo_code" placeholder="NP. AQUI10" />
+          </div>
+          <div>
+            <label>Rabat % (0–100)</label>
+            <input id="promo_pct" placeholder="10" inputmode="numeric" />
+          </div>
+          <div>
+            <label>Dni gratis (trial)</label>
+            <input id="promo_days" placeholder="7" inputmode="numeric" />
+          </div>
+        </div>
+        <div class="grid2 row">
+          <div>
+            <label>Aktywny?</label>
+            <select id="promo_active">
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+          <div>
+            <label>Opis (opcjonalnie)</label>
+            <input id="promo_note" placeholder="np. campaña enero / IG / etc." />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-yellow" type="button" id="addPromoBtn" style="font-weight:900;">➕ Guardar código</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <h4 style="margin:0; font-size:16px;">Lista kodów</h4>
+        <div id="promoList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
 </html>
