@@ -46,8 +46,7 @@
     }
     .name{ font-family:"Playfair Display", serif; font-weight:900; font-size:24px; color:#fff; letter-spacing:.2px; }
     .nav-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
-
-    .btn{
+.btn{
       display:inline-flex; align-items:center; justify-content:center; gap:10px;
       padding: 12px 16px; border-radius:999px; font-weight:900;
       cursor:pointer; text-decoration:none; white-space:nowrap;
@@ -69,17 +68,6 @@
       border-color: rgba(206, 17, 38, 0.8);
       color: #fff;
     }
-
-    .sessionBar{
-      background: var(--yellow);
-      padding: 8px 0;
-      text-align: center;
-      font-size: 12px;
-      color: var(--blue);
-      font-weight: 800;
-      letter-spacing: 0.2px;
-    }
-    .sessionBar strong{ font-weight: 900; }
 
     .container{ max-width: 1100px; margin: 0 auto; padding: 18px 16px 60px; }
     h1{
@@ -282,17 +270,13 @@
       </div>
 
       <div class="nav-actions">
-        <a class="btn" id="btnBackCourse" href="#">← Volver al curso</a>
-        <a class="btn" id="btnLevels" href="espanel.html">📚 Niveles</a>
-        <a class="btn btn-yellow" id="btnGoExercises" href="#">🧩 Ir a ejercicios</a>
-        <button class="btn btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesión</button>
-      </div>
+        <a class="btn" id="btnBackCourse" href="#">⬅️ ATRÁS</a>
+        <a class="btn" id="btnHome" href="index.html">🏠 INICIO</a>
+<button class="btn btn-red" id="btnLogout" type="button" style="display:none;">Wyloguj</button>
+</div>
     </div>
   </nav>
-
-  <div class="sessionBar">Sesión activa: <strong id="sessionEmail">Cargando…</strong></div>
-
-  <main class="page">
+<main class="page">
     <div class="container">
       <h1>AquiVivo — Lekcja</h1>
       <p class="subtitle" id="subTitle">Cargando…</p>
@@ -388,7 +372,16 @@
 
               <div class="editorTools">
                 <div class="toolRow">
-                  <button class="mini" id="btnTemplate" type="button">✨ Szablon</button>
+                  
+<select id="templateSelect" class="mini">
+  <option value="">— Elegir plantilla —</option>
+  <option value="grammar">📘 Gramática</option>
+  <option value="vocab">📗 Vocabulario</option>
+  <option value="dialog">🗣️ Diálogo</option>
+  <option value="review">📝 Repaso / Test</option>
+</select>
+<button class="mini" id="btnInsertTemplate" type="button">➕ Insertar plantilla</button>
+<button class="mini" id="btnTemplate" type="button">✨ Szablon</button>
                   <button class="mini" id="btnLoadDraft" type="button">🧠 Wczytaj draft</button>
                   <button class="mini mini-red" id="btnClearDraft" type="button">🧹 Usuń draft</button>
                 </div>
@@ -455,8 +448,7 @@
     const $ = (id) => document.getElementById(id);
 
     // Elements
-    const sessionEmailEl = $("sessionEmail");
-    const subTitleEl = $("subTitle");
+const subTitleEl = $("subTitle");
     const pillLevel = $("pillLevel");
     const pillTopic = $("pillTopic");
     const pillDoc = $("pillDoc");
@@ -464,9 +456,7 @@
     const pillPubOk = $("pillPubOk");
     const btnLogout = $("btnLogout");
     const btnBackCourse = $("btnBackCourse");
-    const btnGoExercises = $("btnGoExercises");
-
-    const errorBox = $("errorBox");
+const errorBox = $("errorBox");
     const lessonContent = $("lessonContent");
     const lessonEmpty = $("lessonEmpty");
     const studentHint = $("studentHint");
@@ -508,15 +498,23 @@
     const TOPIC_ID = (params.get("id") || "").trim();
     const DOC_ID = `${LEVEL}__${TOPIC_ID}`;
 
-    let currentUser = null;
+    // Links (navigation)
+    const btnHome = $("btnHome");
+    btnBackCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+    if(btnHome) btnHome.href = "index.html";
+
+    // Some browsers/extensions block dynamic href updates on cached pages; this makes it bulletproof.
+    btnBackCourse.addEventListener("click", (e)=>{
+      e.preventDefault();
+      location.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+    });
+let currentUser = null;
     let adminMode = false;
     let previewOn = false;
     let dirty = false;
 
     // Links + meta
-    btnGoExercises.href = `lesson.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
-    btnBackCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-    pillLevel.textContent = `Nivel ${LEVEL || "—"}`;
+pillLevel.textContent = `Nivel ${LEVEL || "—"}`;
     pillTopic.textContent = `Tema: ${TOPIC_ID || "—"}`;
     pillDoc.textContent = `docId: ${DOC_ID}`;
     docInfo.textContent = `docId: ${DOC_ID}`;
@@ -702,6 +700,8 @@
         return;
       }
       const data = collectForm(forcePublished);
+      data.html = ensureCompletionFooter(data.html || "");
+
       const ref = doc(db, "course_meta", DOC_ID);
       const now = new Date();
 
@@ -783,6 +783,15 @@
             updatedInfo.textContent = "Brak dokumentu — utwórz pierwszą wersję i kliknij Guardar.";
             await loadHistory();
           }
+          // New lesson (no document yet) — apply default template if editor is empty and no local draft
+          try{
+            const ld = loadLocalDraft();
+            if(adminMode && !(ld?.data?.html || "").trim() && !htmlArea.value.trim()){
+              // Use user-selected default from dropdown/localStorage
+              if(typeof applyTemplate === "function") applyTemplate(templateSelectEl?.value || getDefaultTemplateKey());
+            }
+          }catch(e){}
+
           return;
         }
 
@@ -809,7 +818,7 @@
 
     // Events
     btnLogout.addEventListener("click", async ()=>{
-      try{ await signOut(auth); location.href = "eslogin.html"; }catch(e){}
+      try{ await signOut(auth); location.href = "login.html"; }catch(e){}
     });
 
     publishedToggle.addEventListener("change", ()=>{
@@ -888,12 +897,229 @@
       });
     });
 
+
+    // ===== AquiVivo templates (ES) + default template + footer =====
+    const DEFAULT_TEMPLATE_KEY = "grammar"; // default for new lessons
+    const TEMPLATE_SELECT_KEY = "aquivivo_template_default"; // localStorage key
+
+    const COMPLETION_FOOTER = `
+<hr style="border:0;border-top:1px solid rgba(255,255,255,0.18); margin:18px 0;">
+<p style="font-size:18px; font-weight:900; color:white; margin:0;">
+  ✅ Lección completada. ¡Excelente trabajo! 🎉
+</p>
+`.trim();
+
+    function ensureCompletionFooter(htmlStr){
+      const s = (htmlStr || "").trim();
+      if(!s) return s;
+      // Prevent duplicates
+      if(s.includes("Lección completada")) return s;
+      return (s + "\n\n" + COMPLETION_FOOTER).trim();
+    }
+
+    const TEMPLATES = {
+      grammar: `
+<div style="color:white; font-size:17px; line-height:1.75;">
+<h2 style="font-size:28px;">📘 Gramática — Objetivo</h2>
+<ul>
+  <li>Hoy aprenderás a: …</li>
+  <li>Usar correctamente: …</li>
+  <li>Evitar el error típico: …</li>
+</ul>
+
+<h2 style="font-size:28px;">🧠 Regla</h2>
+<p>Explica la regla en 3–6 frases. Resalta lo clave con <b>negrita</b>.</p>
+
+<h3 style="font-size:22px;">✅ Estructura</h3>
+<ul>
+  <li><b>Patrón:</b> …</li>
+  <li><b>Cuándo se usa:</b> …</li>
+  <li><b>Cuándo NO:</b> …</li>
+</ul>
+
+<div style="background: rgba(252,209,22,0.95); color:#0b1b3f; padding:16px 18px; border-radius:14px; margin:18px 0; font-weight:900;">
+  ⚠️ <b>Atención:</b> … (una advertencia corta)
+</div>
+
+<h2 style="font-size:28px;">🔎 Comparación español – polaco</h2>
+<ul>
+  <li><b>ES:</b> …</li>
+  <li><b>PL:</b> …</li>
+  <li><b>Clave:</b> …</li>
+</ul>
+
+<h2 style="font-size:28px;">✍️ Práctica</h2>
+<h3 style="font-size:22px;">1) Completa</h3>
+<ul><li>…</li></ul>
+<h3 style="font-size:22px;">2) Elige la opción correcta</h3>
+<ul><li>…</li></ul>
+
+<h2 style="font-size:28px;">🏅 Resumen</h2>
+<ul>
+  <li>Regla clave: …</li>
+  <li>Ejemplo modelo: …</li>
+</ul>
+</div>`.trim(),
+
+      vocab: `
+<div style="color:white; font-size:17px; line-height:1.75;">
+<h2 style="font-size:28px;">📗 Vocabulario — Objetivo</h2>
+<ul>
+  <li>Aprenderás: …</li>
+  <li>Podrás usarlo en: …</li>
+</ul>
+
+<h2 style="font-size:28px;">📌 Lista de vocabulario</h2>
+<ul>
+  <li><b>palabra</b> — traducción / explicación breve</li>
+  <li><b>expresión</b> — ejemplo breve</li>
+</ul>
+
+<h2 style="font-size:28px;">✅ Ejemplos</h2>
+<ul>
+  <li><b>Frase 1:</b> …</li>
+  <li><b>Frase 2:</b> …</li>
+</ul>
+
+<h2 style="font-size:28px;">🎯 Práctica</h2>
+<h3 style="font-size:22px;">1) Empareja</h3>
+<ul><li>…</li></ul>
+<h3 style="font-size:22px;">2) Completa</h3>
+<ul><li>…</li></ul>
+
+<h2 style="font-size:28px;">🏅 Resumen</h2>
+<ul>
+  <li>Palabras clave: …</li>
+  <li>Expresión útil: …</li>
+</ul>
+</div>`.trim(),
+
+      dialog: `
+<div style="color:white; font-size:17px; line-height:1.75;">
+<h2 style="font-size:28px;">🗣️ Comunicación — Objetivo</h2>
+<ul>
+  <li>Hoy aprenderás a comunicarte en: …</li>
+  <li>Podrás pedir, preguntar y responder.</li>
+</ul>
+
+<h2 style="font-size:28px;">🧭 Situación</h2>
+<p>Contexto: …</p>
+
+<h2 style="font-size:28px;">🗨️ Diálogo principal</h2>
+<p>
+  <b>A:</b> …<br/>
+  <b>B:</b> …<br/>
+  <b>A:</b> …<br/>
+  <b>B:</b> …
+</p>
+
+<div style="background: rgba(252,209,22,0.95); color:#0b1b3f; padding:16px 18px; border-radius:14px; margin:18px 0; font-weight:900;">
+  ⭐ <b>Frase clave:</b> …
+</div>
+
+<h2 style="font-size:28px;">🎭 Práctica (role-play)</h2>
+<ul>
+  <li>Responde: …</li>
+  <li>Cambia una palabra: …</li>
+</ul>
+
+<h2 style="font-size:28px;">🏅 Resumen</h2>
+<ul>
+  <li>Situación: …</li>
+  <li>Frase clave: …</li>
+</ul>
+</div>`.trim(),
+
+      review: `
+<div style="color:white; font-size:17px; line-height:1.75;">
+<h2 style="font-size:28px;">📝 Repaso / Mini-test — Objetivo</h2>
+<ul>
+  <li>Repasar lo aprendido en esta unidad.</li>
+  <li>Comprobar tu progreso con un mini-examen.</li>
+</ul>
+
+<h2 style="font-size:28px;">📌 Recordatorio rápido</h2>
+<ul>
+  <li><b>Regla 1:</b> …</li>
+  <li><b>Regla 2:</b> …</li>
+  <li><b>Vocabulario clave:</b> …</li>
+</ul>
+
+<h2 style="font-size:28px;">✅ Parte A — Opción múltiple (5)</h2>
+<ol>
+  <li>… (A / B / C)</li>
+  <li>… (A / B / C)</li>
+  <li>… (A / B / C)</li>
+  <li>… (A / B / C)</li>
+  <li>… (A / B / C)</li>
+</ol>
+
+<h2 style="font-size:28px;">✍️ Parte B — Completa (5)</h2>
+<ol>
+  <li>Yo ____ …</li>
+  <li>Ella ____ …</li>
+  <li>Nosotros ____ …</li>
+  <li>…</li>
+  <li>…</li>
+</ol>
+
+<h2 style="font-size:28px;">🗣️ Parte C — Producción (2)</h2>
+<ul>
+  <li>Escribe 5–7 frases sobre: …</li>
+  <li>Escribe un mini-diálogo (6 líneas) en la situación: …</li>
+</ul>
+
+<h2 style="font-size:28px;">🎯 Autoevaluación</h2>
+<ul>
+  <li>☐ Lo entiendo</li>
+  <li>☐ Lo puedo usar</li>
+  <li>☐ Necesito más práctica</li>
+</ul>
+</div>`.trim()
+    };
+
+    const templateSelectEl = document.getElementById("templateSelect");
+    const btnInsertTemplateEl = document.getElementById("btnInsertTemplate");
+
+    function getDefaultTemplateKey(){
+      return (localStorage.getItem(TEMPLATE_SELECT_KEY) || "").trim() || DEFAULT_TEMPLATE_KEY;
+    }
+    function setDefaultTemplateKey(k){
+      localStorage.setItem(TEMPLATE_SELECT_KEY, k);
+    }
+
+    if(templateSelectEl){
+      // Set default selection
+      templateSelectEl.value = getDefaultTemplateKey();
+      templateSelectEl.addEventListener("change", ()=>{
+        if(templateSelectEl.value) setDefaultTemplateKey(templateSelectEl.value);
+      });
+    }
+
+    function applyTemplate(key){
+      const k = key || getDefaultTemplateKey();
+      const tpl = TEMPLATES[k] || TEMPLATES[DEFAULT_TEMPLATE_KEY];
+      htmlArea.value = ensureCompletionFooter(tpl);
+      setDirty(true);
+      saveLocalDraft();
+      if(previewOn) renderLesson({ published: publishedToggle.checked, html: htmlArea.value });
+    }
+
+    if(btnInsertTemplateEl){
+      btnInsertTemplateEl.addEventListener("click", ()=>{
+        const key = templateSelectEl?.value || getDefaultTemplateKey();
+        if(htmlArea.value.trim() !== ""){
+          if(!confirm("¿Reemplazar el contenido actual con la plantilla?")) return;
+        }
+        applyTemplate(key);
+      });
+    }
+
+
     onAuthStateChanged(auth, async (user)=>{
       currentUser = user || null;
       const email = user?.email || "—";
-      sessionEmailEl.textContent = email;
-
-      adminMode = isAdmin(email);
+adminMode = isAdmin(email);
       adminWrap.style.display = adminMode ? "block" : "none";
       btnLogout.style.display = user ? "inline-flex" : "none";
 
@@ -902,6 +1128,13 @@
       }
       await initLoad();
     });
-  </script>
+if(htmlArea.value.trim() !== ""){
+          if(!confirm("¿Reemplazar el contenido actual con la plantilla?")) return;
+        }
+        htmlArea.value = TEMPLATES[key].trim();
+      });
+    }
+
+</script>
 </body>
 </html>

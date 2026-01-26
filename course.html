@@ -76,55 +76,34 @@
     }
 
     /* Header like "Panel del estudiante" */
-    #levelSubtitle{ font-size: 16px !important; }
-      .heroIcon{ font-size: 46px; }
-      .heroBanner{ padding: 18px 16px; }
-    }
-
-
-    /* Header like "Panel del estudiante" (PL style) */
     .heroBanner{
-      margin: 6px 0 26px;
-      padding: 28px 32px;
-      border-radius: 28px;
-      background: linear-gradient(135deg, #234f9a, #1b3f7c);
-      border: 1px solid rgba(255,255,255,0.22);
-      box-shadow: 0 25px 80px rgba(0,0,0,0.28);
-      position: relative;
-      overflow: hidden;
-    }
-    .heroBanner::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 60%);
-      pointer-events:none;
+      margin: 6px 0 18px;
+      padding: 22px 22px;
+      border-radius: 22px;
+      background: rgba(0, 26, 77, 0.26);
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 70px rgba(0,0,0,0.18);
     }
     .heroTitleRow{
       display:flex;
       align-items:center;
-      gap:22px;
-      position: relative;
-      z-index: 1;
+      gap:18px;
     }
-    .heroIcon{
-      font-size: 64px;
-      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.35));
-    }
+    .heroIcon{ font-size: 56px; line-height:1; }
     #levelTitle{
       font-family:'Playfair Display', serif !important;
       font-weight: 900 !important;
       font-size: 64px !important;
       line-height: 1.05 !important;
       margin: 0 !important;
-      color: #ffffff !important;
-      text-shadow: 0 12px 30px rgba(0,0,0,0.45);
+      color: #fff !important;
+      text-shadow: 0 10px 28px rgba(0,0,0,0.35);
     }
     #levelSubtitle{
-      margin: 12px 0 0 0 !important;
-      font-size: 20px !important;
-      color: rgba(255,255,255,0.92) !important;
-      font-weight: 600;
+      margin: 10px 0 0 0 !important;
+      font-size: 18px !important;
+      color: rgba(255,255,255,0.90) !important;
       opacity: 1 !important;
     }
     @media (max-width: 720px){
@@ -136,54 +115,71 @@
 
     /* Filters */
     .filtersSection{
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.18);
-      backdrop-filter: blur(12px);
-      border-radius: 16px;
-      padding: 18px;
-      margin: 20px 0;
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-      align-items:center;
+      background: rgba(255,255,255,0.10) !important;
+      border: 1px solid rgba(255,255,255,0.20) !important;
+      backdrop-filter: blur(14px) !important;
+      border-radius: 22px !important;
+      padding: 18px 18px !important;
+      margin: 22px 0 18px !important;
+      display:flex !important;
+      gap:16px !important;
+      flex-wrap:wrap !important;
+      align-items:center !important;
+      box-shadow: 0 18px 70px rgba(0,0,0,0.18) !important;
     }
-    .filterGroup{ display:flex; gap:10px; align-items:center; }
+    .filterGroup{
+      display:flex !important;
+      gap:10px !important;
+      align-items:center !important;
+      min-width: 280px;
+    }
     .filterLabel{
-      font-size: 13px;
-      opacity: 0.90;
-      font-weight: 800;
-      letter-spacing: 0.3px;
-      white-space: nowrap;
+      font-size: 14px !important;
+      color: rgba(255,255,255,0.92) !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.2px !important;
+      white-space: nowrap !important;
+      text-shadow: 0 8px 18px rgba(0,0,0,0.35) !important;
+      opacity: 1 !important;
     }
+
     #searchInput{
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 10px;
-      padding: 10px 14px;
-      color: #fff;
-      font-size: 14px;
-      width: 240px;
+      background: rgba(255,255,255,0.14) !important;
+      border: 1px solid rgba(255,255,255,0.28) !important;
+      border-radius: 14px !important;
+      padding: 12px 14px !important;
+      color: #fff !important;
+      font-size: 14px !important;
+      width: 260px !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
     }
     #searchInput:focus{
-      outline:none;
-      background: rgba(255,255,255,0.18);
-      border-color: rgba(252,209,22,0.5);
-      box-shadow: 0 0 8px rgba(252,209,22,0.2);
+      outline:none !important;
+      background: rgba(255,255,255,0.18) !important;
+      border-color: rgba(252,209,22,0.55) !important;
+      box-shadow: 0 0 0 4px rgba(252,209,22,0.10) !important;
     }
-    #searchInput::placeholder{ color: rgba(255,255,255,0.6); }
+    #searchInput::placeholder{ color: rgba(255,255,255,0.72) !important; }
 
     #typeFilter, #taskFilter{
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 10px;
-      padding: 10px 14px;
-      color:#fff;
-      font-size: 14px;
-      cursor:pointer;
+      background: rgba(255,255,255,0.14) !important;
+      border: 1px solid rgba(255,255,255,0.28) !important;
+      border-radius: 14px !important;
+      padding: 12px 14px !important;
+      color:#fff !important;
+      font-size: 14px !important;
+      cursor:pointer !important;
+      min-width: 220px;
     }
     #typeFilter option, #taskFilter option{
-      background: var(--blue);
-      color:#fff;
+      background: #003893 !important;
+      color:#fff !important;
+    }
+
+    @media (max-width: 720px){
+      .filterGroup{ min-width: 100%; }
+      #searchInput{ width: 100% !important; }
+      #typeFilter, #taskFilter{ width: 100% !important; }
     }
 
     /* Course tools */
@@ -259,18 +255,18 @@
       align-items:center;
       gap:10px;
       letter-spacing:0.3px;
+      color: rgba(255,255,255,0.95) !important;
+      text-shadow: 0 10px 26px rgba(0,0,0,0.45);
     }
-
-    /* Topic cards */
+/* Topic cards */
     .card{
       position: relative;
-      background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(240,245,255,0.92));
+      background: #ffffff;
       color: #001a4d;
-      border-radius: 22px;
-      padding: 20px 22px;
-      box-shadow: 0 18px 60px rgba(0,0,0,0.25);
-      margin: 14px 0;
-      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin: 10px 0;
     }
     .topic{
       position: relative;
@@ -278,26 +274,25 @@
       cursor: pointer;
     }
     .topic:hover{
-      transform: translateY(-6px);
-      box-shadow: 0 28px 80px rgba(0,0,0,0.35);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.28);
     }
     .topic strong{
       display:block;
-      margin-bottom: 8px;
-      font-size: 20px;
+      margin-bottom: 6px;
+      font-size: 18px;
       font-weight: 900;
-      color: #1b3f7c;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      color: var(--blue);
       word-break: break-word;
     }
     .topic p{
       margin: 0;
-      font-size: 15px;
+      font-size: 14px;
       color: #445066;
-      line-height: 1.6;
+      line-height: 1.5;
       word-break: break-word;
     }
-.topic-head{
+    .topic-head{
       display:flex;
       align-items:flex-start;
       justify-content: space-between;
@@ -428,7 +423,7 @@
     <div style="display:flex; gap:10px; align-items:center">
       <button class="btnNav" id="btnBack" type="button" onclick="window.location.href='ESPANEL.html'">⬅️ ATRÁS</button>
       <button class="btnNav" id="btnHome" type="button" onclick="window.location.href='index.html'">🏠 INICIO</button>
-      <button class="btnLogout" id="btnLogout" type="button">Wyloguj</button>
+      <button class="btnLogout" id="btnLogout" type="button">Cerrar sesión</button>
     </div>
   </div>
 
@@ -439,25 +434,25 @@
         <div class="heroTitleRow">
           <div class="heroIcon">🎓</div>
           <div style="flex:1">
-            <h1 id="levelTitle">Poziom</h1>
-            <p id="levelSubtitle">Ładowanie…</p>
+            <h1 id="levelTitle">Nivel</h1>
+            <p id="levelSubtitle">Cargando…</p>
 
             <!-- ADMIN BUTTONS (hidden for students) -->
             <div class="adminBar" id="adminBar">
-              <button type="button" onclick="editCourseMeta()">✏️ Edytuj opis kursu</button>
-              <button type="button" onclick="dedupeLevel()">🧹 Usuń duplikaty (ten poziom)</button>
+              <button type="button" onclick="editCourseMeta()">✏️ Editar descripción del curso</button>
+              <button type="button" onclick="dedupeLevel()">🧹 Eliminar duplicados (nivel actual)</button>
             </div>
 
             <div class="course-tools" id="courseTools">
               <div class="progressCard">
                 <div class="progressTop">
                   <div>
-                    <div class="progressLabel">📈 Postęp (lokalnie)</div>
+                    <div class="progressLabel">📈 Progreso (local)</div>
                     <div class="progressText">
-                      <span id="progressText">0%</span> · <span id="progressCount">0/0</span> odwiedzonych tematów
+                      <span id="progressText">0%</span> · <span id="progressCount">0/0</span> temas visitados
                     </div>
                   </div>
-                  <button class="statBtn" id="btnContinue" style="display:none" type="button">▶️ Kontynuuj</button>
+                  <button class="statBtn" id="btnContinue" style="display:none" type="button">▶️ Continuar</button>
                 </div>
 
                 <div class="progressBar" aria-hidden="true">
@@ -465,14 +460,14 @@
                 </div>
 
                 <div class="progressHint">
-                  Zapisywane w Twojej przeglądarce (localStorage).
+                  Se guarda en tu navegador (localStorage).
                 </div>
               </div>
 
               <div class="statsRow">
-                <div class="statPill">📚 Razem: <strong id="statTotal">0</strong></div>
-                <div class="statPill">🔎 Pokazane: <strong id="statShowing">0</strong></div>
-                <button class="statBtn" id="btnClearFilters" type="button">🧼 Wyczyść filtry</button>
+                <div class="statPill">📚 Total: <strong id="statTotal">0</strong></div>
+                <div class="statPill">🔎 Mostrando: <strong id="statShowing">0</strong></div>
+                <button class="statBtn" id="btnClearFilters" type="button">🧼 Limpiar filtros</button>
               </div>
             </div>
 
@@ -483,23 +478,23 @@
       <!-- FILTERS -->
       <div class="filtersSection">
         <div class="filterGroup">
-          <span class="filterLabel">🔍 Szukaj:</span>
-          <input id="searchInput" type="text" placeholder="Wpisz nazwę tematu..." />
+          <span class="filterLabel">🔍 Buscar:</span>
+          <input id="searchInput" type="text" placeholder="Escribe el nombre del tema..." />
         </div>
 
         <div class="filterGroup">
-          <span class="filterLabel">📂 Typ:</span>
+          <span class="filterLabel">📂 Tipo:</span>
           <select id="typeFilter">
-            <option value="">Wszystkie</option>
-            <option value="grammar">Gramatyka</option>
-            <option value="vocabulary">Słownictwo</option>
+            <option value="">Todos</option>
+            <option value="grammar">Gramática</option>
+            <option value="vocabulary">Vocabulario</option>
           </select>
         </div>
 
         <div class="filterGroup">
-          <span class="filterLabel">✅ Ćwiczenie:</span>
+          <span class="filterLabel">✅ Tarea:</span>
           <select id="taskFilter">
-            <option value="">Wszystkie ćwiczenia</option>
+            <option value="">Todas las tareas</option>
             <option value="Rellenar los espacios">Rellenar los espacios</option>
             <option value="Relacionar palabra con imagen">Relacionar palabra con imagen</option>
             <option value="Relacionar palabra con traducción">Relacionar palabra con traducción</option>
@@ -548,15 +543,15 @@
         </div>
       </div>
 
-      <div class="sectionTitle">📘 Gramatyka</div>
+      <div class="sectionTitle">📘 Gramática</div>
       <div id="grammarList"></div>
 
-      <div class="sectionTitle">📗 Słownictwo</div>
+      <div class="sectionTitle">📗 Vocabulario</div>
       <div id="vocabList"></div>
 
       <!-- ADMIN add topic -->
       <div class="card adminPanel" id="adminPanel">
-        <h3 style="margin:0 0 10px 0">👑 Panel Admin – dodaj temat</h3>
+        <h3 style="margin:0 0 10px 0">👑 Panel Admin – agregar tema</h3>
         <div class="row">
           <select id="adminType">
             <option value="grammar">gramática</option>
@@ -564,10 +559,10 @@
           </select>
           <input id="adminTitle" placeholder="Título (ES)" />
           <input id="adminDesc" placeholder="Descripción (ES)" />
-          <button type="button" onclick="addTopic()">➕ Dodaj</button>
+          <button type="button" onclick="addTopic()">➕ Agregar</button>
         </div>
         <p style="font-size:12px; color:#6b7280; margin:10px 0 0 0">
-          Jeśli kliknęłaś import kilka razy – użyj „Usuń duplikaty”. To usunie powtórki w Firestore.
+          Si hiciste clic en importar varias veces – usa "Eliminar duplicados". Esto eliminará las repeticiones en Firestore.
         </p>
       </div>
 
@@ -679,10 +674,10 @@
       const metaSnap = await getDoc(metaRef);
       if (metaSnap.exists()){
         const m = metaSnap.data();
-        levelTitle.textContent = m.title || `Poziom ${LEVEL}`;
+        levelTitle.textContent = m.title || `Nivel ${LEVEL}`;
         levelSubtitle.textContent = m.subtitle || '';
       } else {
-        levelTitle.textContent = `Poziom ${LEVEL}`;
+        levelTitle.textContent = `Nivel ${LEVEL}`;
         levelSubtitle.textContent = '';
       }
     }
@@ -690,23 +685,23 @@
     window.editCourseMeta = async function(){
       if (!isAdmin) return;
 
-      const currentTitle = levelTitle.textContent || `Poziom ${LEVEL}`;
+      const currentTitle = levelTitle.textContent || `Nivel ${LEVEL}`;
       const currentSub = levelSubtitle.textContent || '';
 
-      const newTitle = prompt('Nowy tytuł kursu (nagłówek):', currentTitle);
+      const newTitle = prompt('Nuevo título del curso (encabezado):', currentTitle);
       if (newTitle === null) return;
 
-      const newSub = prompt('Nowy opis kursu (pod tytułem):', currentSub);
+      const newSub = prompt('Nueva descripción del curso (debajo del título):', currentSub);
       if (newSub === null) return;
 
       const metaRef = doc(db, 'course_meta', LEVEL);
       await setDoc(metaRef, {
-        title: newTitle.trim() || `Poziom ${LEVEL}`,
+        title: newTitle.trim() || `Nivel ${LEVEL}`,
         subtitle: newSub.trim() || ''
       }, { merge: true });
 
       await loadCourseMeta();
-      toast('✅ Opis kursu zapisany');
+      toast('✅ Descripción del curso guardada');
     };
 
     async function loadTopics(){
@@ -745,8 +740,8 @@
         </div>` : '';
 
       const badge = t.type === 'grammar'
-        ? `<span class="badge badge-grammar">Gramatyka</span>`
-        : `<span class="badge badge-vocab">Słownictwo</span>`;
+        ? `<span class="badge badge-grammar">Gramática</span>`
+        : `<span class="badge badge-vocab">Vocabulario</span>`;
 
       const orderChip = Number.isFinite(t.order) && t.order !== 9999
         ? `<span class="chip">#${t.order}</span>`
@@ -798,11 +793,11 @@
 
       grammarList.innerHTML = grammar.length
         ? grammar.map(renderTopicCard).join('')
-        : `<div class="card noResults">Brak wyników w gramatyce</div>`;
+        : `<div class="card noResults">No hay resultados en gramática</div>`;
 
       vocabList.innerHTML = vocab.length
         ? vocab.map(renderTopicCard).join('')
-        : `<div class="card noResults">Brak wyników w słownictwie</div>`;
+        : `<div class="card noResults">No hay resultados en vocabulario</div>`;
 
       updateStatsAndProgress(grammar.length + vocab.length);
     }
@@ -827,7 +822,7 @@
       const desc = document.getElementById('adminDesc').value.trim();
 
       if (!title || !desc){
-        alert('Uzupełnij tytuł i opis');
+        alert('Completa el título y la descripción');
         return;
       }
 
@@ -851,12 +846,12 @@
       document.getElementById('adminDesc').value = '';
 
       await loadTopics();
-      toast('✅ Temat dodany');
+      toast('✅ Tema agregado');
     };
 
     window.deleteTopic = async function(id){
       if (!isAdmin) return;
-      if (!confirm('Usunąć ten temat?')) return;
+      if (!confirm('¿Eliminar este tema?')) return;
       await deleteDoc(doc(db,'courses', id));
       await loadTopics();
     };
@@ -867,20 +862,20 @@
       const ref = doc(db,'courses', id);
       const snap = await getDoc(ref);
       if (!snap.exists()){
-        alert('Nie znaleziono tematu');
+        alert('Tema no encontrado');
         return;
       }
 
       const cur = snap.data();
-      const newTitle = prompt('Nowy tytuł:', cur.title || '');
+      const newTitle = prompt('Nuevo título:', cur.title || '');
       if (newTitle === null) return;
-      const newDesc = prompt('Nowy opis:', cur.desc || '');
+      const newDesc = prompt('Nueva descripción:', cur.desc || '');
       if (newDesc === null) return;
 
       const t = newTitle.trim();
       const d = newDesc.trim();
       if (!t || !d){
-        alert('Tytuł i opis nie mogą być puste');
+        alert('El título y la descripción no pueden estar vacíos');
         return;
       }
 
@@ -890,7 +885,7 @@
 
     window.dedupeLevel = async function(){
       if (!isAdmin) return;
-      if (!confirm('Usunąć duplikaty tematów dla poziomu ' + LEVEL + '?')) return;
+      if (!confirm('¿Eliminar temas duplicados para el nivel ' + LEVEL + '?')) return;
 
       const q = query(collection(db,'courses'), where('level','==', LEVEL));
       const snap = await getDocs(q);
@@ -915,7 +910,7 @@
         await deleteDoc(doc(db,'courses', id));
       }
 
-      toast(`✅ Usunięte duplikaty: ${toDelete.length}`);
+      toast(`✅ Duplicados eliminados: ${toDelete.length}`);
       await loadTopics();
     };
 
