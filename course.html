@@ -1,1695 +1,973 @@
 <!doctype html>
-
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <title>Curso | AquiVivo</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap"
-      rel="stylesheet"
-    />
-    <link href="assets/css/styles.css" rel="stylesheet" />
-    <style>
-      :root {
-        --yellow: #fcd116;
-        --blue: #003893;
-        --red: #ce1126;
-      }
+<head>
+  <meta charset="utf-8" />
+  <title>Curso | AquiVivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-      body {
-        margin: 0;
-        font-family: Montserrat, Arial, sans-serif;
-        min-height: 100vh;
-        background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
-        color: white;
-      }
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 
-      main.page {
-        padding: 22px 0 70px;
-      }
-      .container {
-        max-width: 1180px;
-        margin: 0 auto;
-        padding: 28px 16px;
-      }
+  <style>
+    :root{
+      --yellow:#fcd116;
+      --blue:#003893;
+      --red:#ce1126;
+    }
 
-      /* Navigation */
-      .nav-glass {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        background: rgba(0, 56, 147, 0.78);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-      }
+    body{
+      margin:0;
+      font-family: Montserrat, Arial, sans-serif;
+      min-height:100vh;
+      background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
+      color:#fff;
+    }
 
-      .nav-glass::after {
-        content: '';
-        display: block;
-        height: 3px;
-        background: linear-gradient(
-          90deg,
-          var(--yellow),
-          var(--blue),
-          var(--red)
-        );
-        opacity: 0.85;
-      }
+    main.page{ padding: 22px 0 70px; }
+    .container{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 16px;
+    }
 
-      .nav-inner {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        padding: 14px 16px;
-        max-width: 1180px;
-        margin: 0 auto;
-      }
+    /* Top bar */
+    .topActionBar{
+      position: sticky;
+      top:0;
+      z-index:50;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap:14px;
+      padding: 14px 18px;
+      background: rgba(0,56,147,0.92);
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+      backdrop-filter: blur(10px);
+    }
+    .topActionLeft{ display:flex; gap:12px; align-items:center; }
+    .btnLogout{
+      background: var(--red);
+      color:#fff;
+      border:none;
+      border-radius:999px;
+      padding: 12px 22px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor:pointer;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.18);
+    }
+    .btnLogout:hover{ filter: brightness(0.95); transform: translateY(-1px); }
 
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
+    .btnNav{
+      background: rgba(255,255,255,0.15);
+      color:#fff;
+      border: 1px solid rgba(255,255,255,0.30);
+      border-radius:999px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor:pointer;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.12);
+    }
+    .btnNav:hover{
+      background: rgba(255,255,255,0.25);
+      transform: translateY(-1px);
+    }
 
-      .logo-flag {
-        width: 42px;
-        height: 42px;
-        border-radius: 999px;
-        background: linear-gradient(
-          180deg,
-          var(--yellow) 0 33.33%,
-          var(--blue) 33.33% 66.66%,
-          var(--red) 66.66% 100%
-        );
-        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.25);
-      }
-
-      .name {
-        font-family: 'Playfair Display', serif;
-        font-weight: 900;
-        font-size: 24px;
-        letter-spacing: 0.2px;
-        color: white;
-      }
-
-      .nav-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .btn-nav {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 12px 16px;
-        border-radius: 999px;
-        font-weight: 900;
-        cursor: pointer;
-        text-decoration: none;
-        border: none;
-        user-select: none;
-        transition:
-          transform 0.12s ease,
-          filter 0.12s ease;
-      }
-
-      .btn-nav:hover {
-        transform: translateY(-2px);
-        filter: brightness(1.03);
-      }
-
-      .btn-yellow {
-        background: rgba(252, 209, 22, 0.95);
-        color: #0b1b3f;
-        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
-      }
-
-      .wrap {
-        max-width: 980px;
-        margin: 0 auto;
-        padding: 36px 16px;
-      }
-
-      .titleRow {
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
-      }
-      h1 {
-        color: var(--yellow);
-        font-family: 'Playfair Display', serif;
-        font-size: 46px;
-        margin: 0;
-        line-height: 1.05;
-      }
-
-      .subtitle {
-        opacity: 0.85;
-        margin: 6px 0 0 0;
-      }
-
-      /* Filters Section */
-      .filtersSection {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        backdrop-filter: blur(12px);
-        border-radius: 16px;
-        padding: 18px;
-        margin: 20px 0;
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-
-      .filterGroup {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
-
-      .filterLabel {
-        font-size: 13px;
-        opacity: 0.85;
-        font-weight: 700;
-        letter-spacing: 0.3px;
-      }
-
-      #searchInput {
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 10px;
-        padding: 10px 14px;
-        color: white;
-        font-size: 14px;
-        width: 220px;
-        transition: all 0.2s ease;
-      }
-
-      #searchInput:focus {
-        outline: none;
-        background: rgba(255, 255, 255, 0.18);
-        border-color: rgba(252, 209, 22, 0.5);
-        box-shadow: 0 0 8px rgba(252, 209, 22, 0.2);
-      }
-
-      #searchInput::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-      }
-
-      #typeFilter,
-      #taskFilter {
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 10px;
-        padding: 10px 14px;
-        color: white;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      #typeFilter:hover,
-      #taskFilter:hover {
-        background: rgba(255, 255, 255, 0.18);
-        border-color: rgba(252, 209, 22, 0.5);
-      }
-
-      #typeFilter option,
-      #taskFilter option {
-        background: var(--blue);
-        color: white;
-      }
-
-      .sectionTitle {
-        margin: 26px 0 16px 0;
-        font-size: 18px;
-        font-weight: 900;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        letter-spacing: 0.3px;
-      }
-
-      .card {
-        position: relative;
-        background: white;
-        color: var(--blue);
-        border-radius: 16px;
-        padding: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        margin: 10px 0;
-      }
-
-      .topic {
-        position: relative;
-        transition: 0.25s ease;
-        cursor: pointer;
-        background: white;
-        border-radius: 16px;
-        padding: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        margin: 10px 0;
-      }
-
-      .topic:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
-      }
-
-      .topic strong {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 18px;
-        font-weight: 900;
-        color: var(--blue);
-      }
-
-      .topic p {
-        margin: 0;
-        font-size: 14px;
-        color: #6b7280;
-        line-height: 1.5;
-      }
-
-      .admin-tools {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        display: flex;
-        gap: 6px;
-      }
-      .admin-tools button {
-        border: none;
-        padding: 6px 10px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 700;
-      }
-      .btn-edit {
-        background: var(--yellow);
-        color: #111827;
-      }
-      .btn-del {
-        background: var(--red);
-        color: white;
-      }
-
-      .backlink {
-        color: white;
-        opacity: 0.9;
-        text-decoration: underline;
-        display: inline-block;
-        margin-bottom: 14px;
-      }
-
-      .adminPanel {
-        display: none;
-        margin-top: 20px;
-      }
-      .row {
-        display: grid;
-        grid-template-columns: 160px 1fr 1fr auto;
-        gap: 10px;
-        align-items: center;
-      }
-      .row input,
-      .row select {
-        padding: 10px;
-        border-radius: 10px;
-        border: 1px solid #d1d5db;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .row button {
-        padding: 10px 14px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 800;
-        background: var(--blue);
-        color: white;
-      }
-
-      .adminBar {
-        display: none;
-        margin-top: 14px;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .adminBar button {
-        padding: 10px 12px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 800;
-        background: rgba(255, 255, 255, 0.12);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-      }
-      .adminBar button:hover {
-        opacity: 0.9;
-      }
-
-      .noResults {
-        text-align: center;
-        padding: 20px;
-        opacity: 0.7;
-        font-style: italic;
-      }
-
-      /* --- Enhancements --- */
-      .course-tools {
-        margin: 14px 0 8px;
-        display: grid;
-        gap: 12px;
-      }
-      .progressCard {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        backdrop-filter: blur(12px);
-        border-radius: 18px;
-        padding: 16px;
-      }
-      .progressTop {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .progressLabel {
-        font-weight: 900;
-        letter-spacing: 0.2px;
-      }
-      .progressText {
-        opacity: 0.9;
-        font-size: 13px;
-        margin-top: 4px;
-      }
-      .progressBar {
-        height: 10px;
-        border-radius: 999px;
-        overflow: hidden;
-        background: rgba(255, 255, 255, 0.16);
-        margin-top: 10px;
-      }
-      .progressFill {
-        height: 100%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--yellow), var(--red));
-        transition: width 0.25s ease;
-      }
-      .progressHint {
-        font-size: 12px;
-        opacity: 0.75;
-        margin-top: 8px;
-      }
-
-      .statsRow {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .statPill {
-        background: rgba(0, 0, 0, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 999px;
-        padding: 10px 12px;
-        font-size: 13px;
-        display: flex;
-        gap: 6px;
-        align-items: center;
-      }
-      .statBtn {
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        color: white;
-        border-radius: 999px;
-        padding: 10px 12px;
-        font-weight: 800;
-        cursor: pointer;
-      }
-      .statBtn:hover {
-        filter: brightness(1.05);
-        transform: translateY(-1px);
-      }
-
-      .topic-head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 10px;
-      }
-      .topic-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 0;
-      }
-      .chip {
-        font-size: 12px;
-        font-weight: 900;
-        border-radius: 999px;
-        padding: 4px 10px;
-        background: rgba(0, 56, 147, 0.1);
-        border: 1px solid rgba(0, 56, 147, 0.18);
-        color: var(--blue);
-        flex: 0 0 auto;
-      }
-      .chip-muted {
-        opacity: 0.65;
-      }
-      .badge {
-        font-size: 12px;
-        font-weight: 900;
-        border-radius: 999px;
-        padding: 6px 10px;
-        color: white;
-        flex: 0 0 auto;
-      }
-      .badge-grammar {
-        background: rgba(0, 56, 147, 0.92);
-      }
-      .badge-vocab {
-        background: rgba(206, 17, 38, 0.92);
-      }
-
-      .toast {
-        position: fixed;
-        left: 50%;
-        bottom: 18px;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.75);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        padding: 12px 14px;
-        border-radius: 14px;
-        max-width: min(720px, calc(100% - 24px));
-        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35);
-        opacity: 0;
-        pointer-events: none;
-        transition:
-          opacity 0.18s ease,
-          transform 0.18s ease;
-        z-index: 9999;
-        font-weight: 700;
-      }
-      .toast.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(-2px);
-      }
-
-      .topic.topic-done {
-        outline: 2px solid rgba(34, 197, 94, 0.35);
-        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
-      }
-      .readMark {
-        position: absolute;
-        top: 12px;
-        right: 54px;
-        width: 34px;
-        height: 34px;
-        border-radius: 999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        color: white;
-        font-weight: 900;
-        backdrop-filter: blur(10px);
-      }
-      .topic.topic-read {
-        outline: 2px solid rgba(255, 255, 255, 0.18);
-      }
-
-      .doneMark {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        width: 34px;
-        height: 34px;
-        border-radius: 999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(34, 197, 94, 0.16);
-        border: 1px solid rgba(34, 197, 94, 0.28);
-        color: white;
-        font-weight: 900;
-        backdrop-filter: blur(10px);
-      }
-    
-/* --- FIX: topic card text visibility + buttons --- */
-.card.topic, .topic { color: #001a4d !important; }
-.card.topic strong, .topic strong { color: #003893 !important; }
-.card.topic p, .topic p { color: #445066 !important; }
-.badge { color: #001a4d !important; }
-.chip { color: #001a4d !important; background: rgba(0,26,77,0.08) !important; border: 1px solid rgba(0,26,77,0.18) !important; }
-.admin-tools .btn-edit { background: #fcd116 !important; color: #111827 !important; }
-.admin-tools .btn-del { background: #ce1126 !important; color: #fff !important; }
-/* Ensure global styles.css can't turn text white-on-white */
-.card, .card * { text-shadow: none; }
-
-</style>
-  
-<style>
-/* Top action bar */
-.topActionBar{
-  position: sticky; top: 0; z-index: 50;
-  display:flex; align-items:center; justify-content:space-between;
-  padding: 14px 18px;
-  background: rgba(0,56,147,0.95);
-  border-bottom: 3px solid rgba(252,209,22,0.35);
-  backdrop-filter: blur(10px);
-}
-.topActionLeft{display:flex; gap:12px; align-items:center;}
-.navBtn{
-  background: rgba(255,255,255,0.10);
-  color: #fff;
-  border: 2px solid rgba(255,255,255,0.35);
-  border-radius: 999px;
-  padding: 10px 18px;
-  font-weight: 700;
-  cursor:pointer;
-}
-.navBtn:hover{background: rgba(255,255,255,0.16);}
-
-/* Red logout button */
-.btnLogout{
-  background:#CE1126; color:#fff;
-  border:none; border-radius:999px;
-  padding: 12px 26px;
-  font-size: 18px;
-  font-weight: 800;
-  cursor:pointer;
-}
-.btnLogout:hover{background:#a80e1f;}
-
-/* Certificate banner */
-.certBanner{
-  margin: 18px auto 8px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(0,26,77,0.55);
-  border: 2px solid rgba(252,209,22,0.35);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 14px;
-}
-.certText{color:#fff; font-size: 16px;}
-.certText strong{color:#FCD116;}
-
-/* Locked + completed topics */
-.card.topic.locked{
-  opacity: 0.55;
-  filter: grayscale(0.15);
-  pointer-events: none;
-}
-.badgeLock{
-  display:none;
-  margin-left: 10px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.14);
-  border: 1px solid rgba(255,255,255,0.25);
-  color:#fff;
-  font-weight: 800;
-  font-size: 12px;
-}
-.card.topic.locked .badgeLock{display:inline-flex;}
-
-.card.topic.completed{
-  background: #FCD116 !important;
-  color: #001a4d !important;
-  border-color: rgba(0,0,0,0.15) !important;
-}
-.card.topic.completed *{color:#001a4d !important;}
-.card.topic.completed .btn,
-.card.topic.completed button{
-  background:#003893 !important;
-  color:#fff !important;
-}
-
-/* Teacher panel */
-.teacherPanel{
-  margin: 26px auto 18px;
-  padding: 18px 16px;
-  border-radius: 18px;
-  background: rgba(0,26,77,0.40);
-  border: 1px solid rgba(255,255,255,0.18);
-  color: #fff;
-}
-.teacherPanel h3{margin:0 0 10px; color:#FCD116;}
-.teacherPanel .muted{opacity:0.85; margin:0 0 10px;}
-.teacherRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-.teacherRow .textInput{
-  min-width: 260px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.22);
-  background: rgba(255,255,255,0.10);
-  color:#fff;
-  outline:none;
-}
-.teacherRow .textInput::placeholder{color: rgba(255,255,255,0.65);}
-.studentOut{margin-top:12px; font-size:14px;}
-.studentOut .row{display:flex; justify-content:space-between; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.12);}
-
-/* Improve filter label readability */
-.filters label, .filters span, .filters small { color: #fff !important; }
-</style>
+    /* Header like "Panel del estudiante" */
+    #levelSubtitle{ font-size: 16px !important; }
+      .heroIcon{ font-size: 46px; }
+      .heroBanner{ padding: 18px 16px; }
+    }
 
 
-<style>
-/* --- HEADER LAYOUT FIX --- */
-.topBar, .headerBar, .navBar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    /* Header like "Panel del estudiante" (PL style) */
+    .heroBanner{
+      margin: 6px 0 26px;
+      padding: 28px 32px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #234f9a, #1b3f7c);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 25px 80px rgba(0,0,0,0.28);
+      position: relative;
+      overflow: hidden;
+    }
+    .heroBanner::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 60%);
+      pointer-events:none;
+    }
+    .heroTitleRow{
+      display:flex;
+      align-items:center;
+      gap:22px;
+      position: relative;
+      z-index: 1;
+    }
+    .heroIcon{
+      font-size: 64px;
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.35));
+    }
+    #levelTitle{
+      font-family:'Playfair Display', serif !important;
+      font-weight: 900 !important;
+      font-size: 64px !important;
+      line-height: 1.05 !important;
+      margin: 0 !important;
+      color: #ffffff !important;
+      text-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+    #levelSubtitle{
+      margin: 12px 0 0 0 !important;
+      font-size: 20px !important;
+      color: rgba(255,255,255,0.92) !important;
+      font-weight: 600;
+      opacity: 1 !important;
+    }
+    @media (max-width: 720px){
+      #levelTitle{ font-size: 44px !important; }
+      #levelSubtitle{ font-size: 16px !important; }
+      .heroIcon{ font-size: 46px; }
+      .heroBanner{ padding: 18px 16px; }
+    }
 
-.rightActions {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-}
+    /* Filters */
+    .filtersSection{
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 18px;
+      margin: 20px 0;
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .filterGroup{ display:flex; gap:10px; align-items:center; }
+    .filterLabel{
+      font-size: 13px;
+      opacity: 0.90;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    #searchInput{
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 14px;
+      width: 240px;
+    }
+    #searchInput:focus{
+      outline:none;
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(252,209,22,0.5);
+      box-shadow: 0 0 8px rgba(252,209,22,0.2);
+    }
+    #searchInput::placeholder{ color: rgba(255,255,255,0.6); }
 
-/* --- FORCE WHITE TEXT (REMOVE BLACK TEXT) --- */
-body, label, span, strong, h1, h2, h3, h4, h5, h6 {
-  color: white;
-}
+    #typeFilter, #taskFilter{
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color:#fff;
+      font-size: 14px;
+      cursor:pointer;
+    }
+    #typeFilter option, #taskFilter option{
+      background: var(--blue);
+      color:#fff;
+    }
 
-.filters, .filters *, .progressBox, .progressBox * {
-  color: white !important;
-}
+    /* Course tools */
+    .course-tools{ margin: 12px 0 8px; display:grid; gap:12px; }
+    .progressCard{
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(12px);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .progressTop{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .progressLabel{ font-weight: 900; letter-spacing: 0.2px; }
+    .progressText{ opacity: 0.90; font-size: 13px; margin-top: 4px; }
+    .progressBar{
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.16);
+      margin-top: 10px;
+    }
+    .progressFill{
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--yellow), var(--red));
+      transition: width 0.25s ease;
+      width: 0%;
+    }
+    .progressHint{
+      font-size: 12px;
+      opacity: 0.75;
+      margin-top: 8px;
+    }
+    .statsRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .statPill{
+      background: rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 13px;
+      display:flex;
+      gap: 6px;
+      align-items:center;
+    }
+    .statBtn{
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      color:#fff;
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 900;
+      cursor:pointer;
+    }
+    .statBtn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
 
-select, input {
-  color: black;
-  background: #ffffff;
-}
-</style>
+    /* Sections */
+    .sectionTitle{
+      margin: 26px 0 16px 0;
+      font-size: 18px;
+      font-weight: 900;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      letter-spacing:0.3px;
+    }
 
+    /* Topic cards */
+    .card{
+      position: relative;
+      background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(240,245,255,0.92));
+      color: #001a4d;
+      border-radius: 22px;
+      padding: 20px 22px;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.25);
+      margin: 14px 0;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    .topic{
+      position: relative;
+      transition: 0.25s ease;
+      cursor: pointer;
+    }
+    .topic:hover{
+      transform: translateY(-6px);
+      box-shadow: 0 28px 80px rgba(0,0,0,0.35);
+    }
+    .topic strong{
+      display:block;
+      margin-bottom: 8px;
+      font-size: 20px;
+      font-weight: 900;
+      color: #1b3f7c;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      word-break: break-word;
+    }
+    .topic p{
+      margin: 0;
+      font-size: 15px;
+      color: #445066;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+.topic-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap:10px;
+    }
+    .topic-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 0;
+    }
+    .chip{
+      font-size: 12px;
+      font-weight: 900;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: rgba(0, 26, 77, 0.08);
+      border: 1px solid rgba(0, 26, 77, 0.18);
+      color: #001a4d;
+      flex: 0 0 auto;
+    }
+    .chip-muted{ opacity: 0.65; }
+    .badge{
+      font-size: 12px;
+      font-weight: 900;
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: #fff;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+    .badge-grammar{ background: rgba(0,56,147,0.92); }
+    .badge-vocab{ background: rgba(206,17,38,0.92); }
 
-<style>
-/* --- FORCE WHITE TEXT EVERYWHERE (UI CONSISTENCY) --- */
-body, label, span, strong, h1, h2, h3, h4, h5, h6, p, small {
-  color: white !important;
-}
+    /* Admin tools on card */
+    .admin-tools{
+      position:absolute;
+      top:10px;
+      right:10px;
+      display:flex;
+      gap:6px;
+      z-index:2;
+    }
+    .admin-tools button{
+      border:none;
+      padding: 6px 10px;
+      border-radius: 10px;
+      cursor:pointer;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .btn-edit{ background: var(--yellow); color:#111827; }
+    .btn-del{ background: var(--red); color:#fff; }
 
-/* inputs still readable */
-input, select, textarea {
-  color: black !important;
-  background: #ffffff !important;
-}
+    /* Admin panels */
+    .adminBar{ display:none; margin-top: 12px; gap:10px; flex-wrap:wrap; }
+    .adminBar button{
+      padding: 10px 12px;
+      border:none;
+      border-radius: 10px;
+      cursor:pointer;
+      font-weight: 900;
+      background: rgba(255,255,255,0.12);
+      color:#fff;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .adminPanel{ display:none; margin-top: 20px; }
+    .row{
+      display:grid;
+      grid-template-columns: 160px 1fr 1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .row input, .row select{
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .row button{
+      padding: 10px 14px;
+      border:none;
+      border-radius: 10px;
+      cursor:pointer;
+      font-weight: 900;
+      background: var(--blue);
+      color:#fff;
+    }
 
-/* right header buttons layout */
-.rightActions {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-}
-</style>
+    .noResults{
+      text-align:center;
+      padding: 20px;
+      opacity: 0.75;
+      font-style: italic;
+    }
 
-
-<style>
-/* --- CERT BANNER --- */
-.certBanner{
-  max-width: 1100px;
-  margin: 16px auto 10px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.18);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 14px;
-}
-.certTitle{font-weight:800; font-size:18px;}
-.certSub{opacity:.9; font-size:14px; margin-top:4px;}
-.certLeft{display:flex; flex-direction:column;}
-/* --- TEACHER PANEL --- */
-.teacherPanel{
-  max-width: 1100px;
-  margin: 16px auto 22px;
-  padding: 18px;
-  border-radius: 18px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.16);
-}
-.teacherHead{display:flex; flex-direction:column; gap:4px; margin-bottom:14px;}
-.teacherTitle{font-weight:900; font-size:18px;}
-.teacherSub{opacity:.9; font-size:13px;}
-.teacherControls{display:flex; gap:10px; align-items:center; margin-bottom:12px;}
-.teacherControls .textInput{flex:1; min-width: 240px;}
-.teacherTableWrap{overflow:auto; border-radius: 14px; border:1px solid rgba(255,255,255,.14);}
-.teacherTable{width:100%; border-collapse:collapse; min-width: 820px;}
-.teacherTable th, .teacherTable td{padding: 10px 12px; border-bottom:1px solid rgba(255,255,255,.10); vertical-align:middle;}
-.teacherTable th{font-size:12px; text-transform:uppercase; letter-spacing:.06em; opacity:.95;}
-.teacherTable td{font-size:14px;}
-.teacherTable tr:hover td{background: rgba(255,255,255,.05);}
-.teacherBadge{display:inline-block; padding:3px 10px; border-radius:999px; background: rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); font-size:12px;}
-.gradeInput{width:80px; padding:8px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,.18); background:#fff; color:#000;}
-.btnMini{padding: 8px 12px; border-radius: 999px; font-weight: 800; border: 0; cursor:pointer;}
-.btnSave{background:#FCD116;}
-.btnSave:hover{filter:brightness(.95);}
-.teacherHint{margin-top:10px; font-size:12px; opacity:.88;}
-</style>
-
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color:#fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 12px 14px;
+      border-radius: 14px;
+      max-width: min(720px, calc(100% - 24px));
+      box-shadow: 0 18px 44px rgba(0,0,0,0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      z-index: 9999;
+      font-weight: 800;
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(-2px);
+    }
+  </style>
 </head>
-  <body>
 
-  <div id="topActionBar" class="topActionBar">
-    <div class="topActionLeft">
-      
-      
+<body>
+  <div class="topActionBar" id="topActionBar">
+    <div class="topActionLeft"></div>
+
+    <div style="display:flex; gap:10px; align-items:center">
+      <button class="btnNav" id="btnBack" type="button" onclick="window.location.href='ESPANEL.html'">⬅️ ATRÁS</button>
+      <button class="btnNav" id="btnHome" type="button" onclick="window.location.href='index.html'">🏠 INICIO</button>
+      <button class="btnLogout" id="btnLogout" type="button">Wyloguj</button>
     </div>
-    <button class="btnLogout" id="btnLogout">Cerrar sesión</button>
   </div>
 
-    <div id="appHeader"></div>
-    
-<!-- CERTIFICATE (shown when course completed) -->
-<div id="certBanner" class="certBanner" style="display:none;">
-  <div class="certLeft">
-    <div class="certTitle">🏅 Certificado</div>
-    <div class="certSub">Has completado el curso. Puedes descargar tu certificado en PDF.</div>
-  </div>
-  <button id="btnCert" class="btn btn-yellow">Descargar certificado</button>
-</div>
+  <main class="page">
+    <div class="container">
 
+      <div class="heroBanner">
+        <div class="heroTitleRow">
+          <div class="heroIcon">🎓</div>
+          <div style="flex:1">
+            <h1 id="levelTitle">Poziom</h1>
+            <p id="levelSubtitle">Ładowanie…</p>
 
-<!-- TEACHER PANEL (admin only) -->
-    <div class="teacherSub">Lista de alumnos + progreso del curso + nota (guardada en Firestore).</div>
-  </div>
-
-  <div class="teacherControls">
-    <input id="teacherSearch" class="textInput" placeholder="Buscar por email o nombre..." />
-    <button id="btnReloadStudents" class="btn btn-blue">Recargar</button>
-  </div>
-
-  <div class="teacherTableWrap">
-    <table class="teacherTable">
-      <thead>
-        <tr>
-          <th>Alumno</th>
-          <th>Email</th>
-          <th>Progreso</th>
-          <th>Nota</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="teacherTbody">
-        <tr><td colspan="5" style="opacity:.85;">Cargando...</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="teacherHint">
-    Para ver progreso y poner nota, el alumno debe haber iniciado sesión al menos una vez.
-  </div>
-</div>
-
-<main class="page">
-      <div class="container">
-      <div id="certBanner" class="certBanner" style="display:none">
-        <div class="certText">
-          ✅ <strong>¡Curso completado!</strong> Ya puedes descargar tu certificado.
-        </div>
-        <button class="btn btn-yellow" id="btnCert">Descargar certificado</button>
-      </div>
-
-        <div class="titleRow">
-          <div style="font-size: 44px; line-height: 1">📘</div>
-          <div style="flex: 1">
-            <h1 id="levelTitle">Nivel</h1>
-            <p class="subtitle" id="levelSubtitle">Cargando…</p>
-            <!-- ADMIN BUTTONS (escondidos para estudiantes) -->
+            <!-- ADMIN BUTTONS (hidden for students) -->
             <div class="adminBar" id="adminBar">
-              <button onclick="editCourseMeta()">
-                ✏️ Editar descripción del curso
-              </button>
-              <button onclick="dedupeLevel()">
-                🧹 Eliminar duplicados (nivel actual)
-              </button>
+              <button type="button" onclick="editCourseMeta()">✏️ Edytuj opis kursu</button>
+              <button type="button" onclick="dedupeLevel()">🧹 Usuń duplikaty (ten poziom)</button>
             </div>
+
             <div class="course-tools" id="courseTools">
               <div class="progressCard">
                 <div class="progressTop">
                   <div>
-                    <div class="progressLabel">📈 Progreso (local)</div>
+                    <div class="progressLabel">📈 Postęp (lokalnie)</div>
                     <div class="progressText">
-                      <span id="progressText">0%</span> ·
-                      <span id="progressCount">0/0</span> temas visitados
+                      <span id="progressText">0%</span> · <span id="progressCount">0/0</span> odwiedzonych tematów
                     </div>
                   </div>
-                  <button
-                    class="btn-nav btn-yellow"
-                    id="btnContinue"
-                    style="display: none"
-                    type="button"
-                  >
-                    ▶️ Continuar
-                  </button>
+                  <button class="statBtn" id="btnContinue" style="display:none" type="button">▶️ Kontynuuj</button>
                 </div>
-                <div aria-hidden="true" class="progressBar">
-                  <div
-                    class="progressFill"
-                    id="progressFill"
-                    style="width: 0%"
-                  ></div>
+
+                <div class="progressBar" aria-hidden="true">
+                  <div class="progressFill" id="progressFill"></div>
                 </div>
+
                 <div class="progressHint">
-                  Se guarda en tu navegador (localStorage). En el próximo paso
-                  podemos pasar esto a Firestore.
+                  Zapisywane w Twojej przeglądarce (localStorage).
                 </div>
               </div>
+
               <div class="statsRow">
-                <div class="statPill">
-                  📚 Total: <strong id="statTotal">0</strong>
-                </div>
-                <div class="statPill">
-                  🔎 Mostrando: <strong id="statShowing">0</strong>
-                </div>
-                <button class="statBtn" id="btnClearFilters" type="button">
-                  🧼 Limpiar filtros
-                </button>
+                <div class="statPill">📚 Razem: <strong id="statTotal">0</strong></div>
+                <div class="statPill">🔎 Pokazane: <strong id="statShowing">0</strong></div>
+                <button class="statBtn" id="btnClearFilters" type="button">🧼 Wyczyść filtry</button>
               </div>
             </div>
+
           </div>
-        </div>
-        <!-- FILTERS SECTION -->
-        <div class="filtersSection">
-          <div class="filterGroup">
-            <span class="filterLabel">🔍 Buscar:</span>
-            <input
-              id="searchInput"
-              placeholder="Escribe el nombre del tema..."
-              type="text"
-            />
-          </div>
-          <div class="filterGroup">
-            <span class="filterLabel">📂 Tipo:</span>
-            <select id="typeFilter">
-              <option value="">Todos</option>
-              <option value="grammar">Gramática</option>
-              <option value="vocabulary">Vocabulario</option>
-            </select>
-          </div>
-          <div class="filterGroup">
-            <span class="filterLabel">✅ Tarea:</span>
-            <select id="taskFilter">
-              <option value="">Todas las tareas</option>
-              <option value="Rellenar los espacios">
-                Rellenar los espacios
-              </option>
-              <option value="Relacionar palabra con imagen">
-                Relacionar palabra con imagen
-              </option>
-              <option value="Relacionar palabra con traducción">
-                Relacionar palabra con traducción
-              </option>
-              <option value="Elegir la palabra correcta">
-                Elegir la palabra correcta
-              </option>
-              <option value="Tarjetas interactivas">
-                Tarjetas interactivas
-              </option>
-              <option value="Agrupar palabras">Agrupar palabras</option>
-              <option value="Verdadero o falso">Verdadero o falso</option>
-              <option value="Completar la frase con una imagen">
-                Completar la frase con una imagen
-              </option>
-              <option value="Juego de memoria (pares)">
-                Juego de memoria (pares)
-              </option>
-              <option value="Opción múltiple">Opción múltiple</option>
-              <option value="Completar la forma correcta">
-                Completar la forma correcta
-              </option>
-              <option value="Elegir la forma correcta">
-                Elegir la forma correcta
-              </option>
-              <option value="Transformaciones">Transformaciones</option>
-              <option value="Relacionar pregunta con respuesta">
-                Relacionar pregunta con respuesta
-              </option>
-              <option value="Ordenar palabras para formar una frase">
-                Ordenar palabras para formar una frase
-              </option>
-              <option value="Corregir errores">Corregir errores</option>
-              <option value="Unir dos partes de la frase">
-                Unir dos partes de la frase
-              </option>
-              <option value="Completar con preposición o terminación">
-                Completar con preposición o terminación
-              </option>
-              <option value="Opción única">Opción única</option>
-              <option value="Escribir tu propia respuesta">
-                Escribir tu propia respuesta
-              </option>
-              <option value="Repetir después del narrador">
-                Repetir después del narrador
-              </option>
-              <option value="Completar la frase con tu voz">
-                Completar la frase con tu voz
-              </option>
-              <option value="Responder a una pregunta">
-                Responder a una pregunta
-              </option>
-              <option value="Describir una imagen">Describir una imagen</option>
-              <option value="Juego de roles">Juego de roles</option>
-              <option value="Mini-monólogo">Mini-monólogo</option>
-              <option value="Diálogo semiabierto">Diálogo semiabierto</option>
-              <option value="Decirlo de otra manera">
-                Decirlo de otra manera
-              </option>
-              <option value="Escuchar y elegir la respuesta">
-                Escuchar y elegir la respuesta
-              </option>
-              <option value="Escuchar y completar los espacios">
-                Escuchar y completar los espacios
-              </option>
-              <option value="Escuchar y marcar verdadero o falso">
-                Escuchar y marcar verdadero o falso
-              </option>
-              <option value="Escuchar y relacionar personas">
-                Escuchar y relacionar personas
-              </option>
-              <option value="Escuchar y ordenar la secuencia">
-                Escuchar y ordenar la secuencia
-              </option>
-              <option value="Dictado con audio">Dictado con audio</option>
-              <option value="Escuchar y repetir">Escuchar y repetir</option>
-              <option value="Diálogo interactivo">Diálogo interactivo</option>
-              <option value="Misión del día">Misión del día</option>
-              <option value="Quiz situacional">Quiz situacional</option>
-              <option value="Video con preguntas">Video con preguntas</option>
-              <option value="Test final del tema">Test final del tema</option>
-              <option value="Debate grabado">Debate grabado</option>
-              <option value="Contar una historia">Contar una historia</option>
-              <option value="Simulación de entrevista de trabajo">
-                Simulación de entrevista de trabajo
-              </option>
-              <option value="Retroalimentación por voz">
-                Retroalimentación por voz
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="sectionTitle">📘 Gramática</div>
-        <div id="grammarList"></div>
-        <div class="sectionTitle">📗 Vocabulario</div>
-        <div id="vocabList"></div>
-        <!-- ADMIN (agregar tema) -->
-        <div class="card adminPanel" id="adminPanel">
-          <h3 style="margin: 0 0 10px 0">👑 Panel Admin – agregar tema <span class="badgeLock">🔒 Bloqueado</span></h3>
-          <div class="row">
-            <select id="adminType">
-              <option value="grammar">gramática</option>
-              <option value="vocabulary">vocabulario</option>
-            </select>
-            <input id="adminTitle" placeholder="Título (ES)" />
-            <input id="adminDesc" placeholder="Descripción (ES)" />
-            <button onclick="addTopic()">➕ Agregar</button>
-          </div>
-          <p style="font-size: 12px; color: #6b7280; margin: 10px 0 0 0">
-            Si hiciste clic en importar varias veces – usa "Eliminar
-            duplicados". Esto eliminará las repeticiones en Firestore.
-          </p>
         </div>
       </div>
-    
-      
-        <p class="muted">Introduce el UID del alumno para ver su progreso en este curso.</p>
-        <div class="teacherRow">
-          <input id="teacherUid" class="textInput" placeholder="UID del alumno..." />
-          <button id="btnViewStudent" class="btn btn-white">Ver progreso</button>
+
+      <!-- FILTERS -->
+      <div class="filtersSection">
+        <div class="filterGroup">
+          <span class="filterLabel">🔍 Szukaj:</span>
+          <input id="searchInput" type="text" placeholder="Wpisz nazwę tematu..." />
         </div>
-        
-      </section>
 
-</main>
-    <!-- 🔥 Firebase -->
-    <script type="module">
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
-      import {
-        getAuth,
-        onAuthStateChanged,
-        signOut,
-      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-      import {
-        getFirestore,
-        collection,
-        query,
-        where,
-        getDocs,
-        addDoc,
-        deleteDoc,
-        updateDoc,
-        doc,
-        getDoc,
-        setDoc,
-      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
-
-      // ✅ Firebase config
-      const firebaseConfig = {
-        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
-        authDomain: 'aquivivo-platform.firebaseapp.com',
-        projectId: 'aquivivo-platform',
-        storageBucket: 'aquivivo-platform.firebasestorage.app',
-        messagingSenderId: '116115622011',
-        appId: '1:116115622011:web:33a4a583eba4368071bade',
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
-
-      // 👑 correo de admin
-      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
-      let isAdmin = false;
-
-      // nivel de URL: course.html?level=A1
-      const params = new URLSearchParams(window.location.search);
-      const LEVEL = (params.get('level') || 'A1').toUpperCase();
-
-      // Referencias de UI
-      const levelTitle = document.getElementById('levelTitle');
-      const levelSubtitle = document.getElementById('levelSubtitle');
-      const grammarList = document.getElementById('grammarList');
-      const vocabList = document.getElementById('vocabList');
-      const adminPanel = document.getElementById('adminPanel');
-      const adminBar = document.getElementById('adminBar');
-      const searchInput = document.getElementById('searchInput');
-      const typeFilter = document.getElementById('typeFilter');
-      const taskFilter = document.getElementById('taskFilter');
-
-      // Guardar todos los temas para filtrar
-      let allTopics = [];
-
-      levelTitle.textContent = `Nivel ${LEVEL}`;
-      levelSubtitle.textContent = 'Cargando…';
-
-      // 🔐 Autenticación
-      onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-          window.location.href = 'login.html';
-          return;
-        }
-
-        isAdmin = user.email === ADMIN_EMAIL;
-        window.__isAdminUser = isAdmin;
-        window.__currentLevel = LEVEL;
-
-        if (isAdmin) {
-          adminPanel.style.display = 'block';
-          adminBar.style.display = 'flex';
-        } else {
-          adminPanel.style.display = 'none';
-          adminBar.style.display = 'none';
-        }
-
-        await loadCourseMeta();
-        await loadTopics();
-      });
-
-      // 🚪 cerrar sesión
-      window.logout = function () {
-        signOut(auth).then(() => (window.location.href = 'login.html'));
-      };
-
-      // --- helpers
-      function normType(t) {
-        return String(t || '')
-          .toLowerCase()
-          .trim();
-      }
-
-      function escapeHtml(s) {
-        return String(s)
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;')
-          .replaceAll('"', '&quot;')
-          .replaceAll("'", '&#039;');
-        }
-
-      function toast(msg) {
-          const el = document.getElementById('toast');
-          if (!el) return;
-          el.textContent = msg;
-          el.classList.add('show');
-          clearTimeout(window.__toastTimer);
-          window.__toastTimer = setTimeout(
-            () => el.classList.remove('show'),
-            2200,
-          );
-        }
-
-        window.goBack = function () {
-          window.history.back();
-        };
-
-        // --- progreso local (sin Firestore) ---
-        const LS_VISITED_KEY = `aquivivo_visited_${LEVEL}`;
-        const LS_LAST_KEY = `aquivivo_lastLesson_${LEVEL}`;
-        const LS_DONE_KEY = `aquivivo_done_${LEVEL}`;
-        const LS_READ_KEY = `aquivivo_read_${LEVEL}`;
-
-        function getVisitedSet() {
-          try {
-            const arr = JSON.parse(
-              localStorage.getItem(LS_VISITED_KEY) || '[]',
-            );
-            return new Set(Array.isArray(arr) ? arr : []);
-          } catch {
-            return new Set();
-          }
-        }
-
-        function setVisitedSet(set) {
-          try {
-            localStorage.setItem(
-              LS_VISITED_KEY,
-              JSON.stringify(Array.from(set)),
-            );
-          } catch {}
-        }
-
-        function getReadSet() {
-          try {
-            const arr = JSON.parse(localStorage.getItem(LS_READ_KEY) || '[]');
-            return new Set(Array.isArray(arr) ? arr : []);
-          } catch {
-            return new Set();
-          }
-        }
-
-        function isRead(topicId) {
-          return getReadSet().has(topicId);
-        }
-
-        function getDoneSet() {
-          try {
-            const arr = JSON.parse(localStorage.getItem(LS_DONE_KEY) || '[]');
-            return new Set(Array.isArray(arr) ? arr : []);
-          } catch {
-            return new Set();
-          }
-        }
-
-        function isDone(topicId) {
-          return getDoneSet().has(topicId);
-        }
-
-        function updateStatsAndProgress(showingCount) {
-          const total = allTopics.length;
-          const visited = getVisitedSet();
-          const visitedCount = Array.from(visited).filter((id) =>
-            allTopics.some((t) => t.id === id),
-          ).length;
-
-          document.getElementById('statTotal').textContent = String(total);
-          document.getElementById('statShowing').textContent =
-            String(showingCount);
-
-          const pct = total ? Math.round((visitedCount / total) * 100) : 0;
-          document.getElementById('progressText').textContent = `${pct}%`;
-          document.getElementById('progressCount').textContent =
-            `${visitedCount}/${total}`;
-          document.getElementById('progressFill').style.width = `${pct}%`;
-
-          const last = localStorage.getItem(LS_LAST_KEY);
-          const btn = document.getElementById('btnContinue');
-          if (btn) {
-            if (last && allTopics.some((t) => t.id === last)) {
-              btn.style.display = 'inline-flex';
-              btn.onclick = () => openLesson(last);
-            } else {
-              btn.style.display = 'none';
-            }
-          }
-        }
-
-      // ✅ 1) metadatos del curso: course_meta/A1 (título + subtítulo)
-      async function loadCourseMeta() {
-        const metaRef = doc(db, 'course_meta', LEVEL);
-        const metaSnap = await getDoc(metaRef);
-
-        if (metaSnap.exists()) {
-          const m = metaSnap.data();
-          levelTitle.textContent = m.title || `Nivel ${LEVEL}`;
-          levelSubtitle.textContent = m.subtitle || 'Listo ✅';
-        } else {
-          levelTitle.textContent = `Nivel ${LEVEL}`;
-          levelSubtitle.textContent = 'Listo ✅';
-        }
-      }
-
-      // Admin: editar metadatos
-      window.editCourseMeta = async function () {
-        if (!isAdmin) return;
-
-        const currentTitle = levelTitle.textContent;
-        const currentSub = levelSubtitle.textContent;
-
-        const newTitle = prompt(
-          'Nuevo título del curso (encabezado):',
-          currentTitle,
-        );
-        if (newTitle === null) return;
-
-        const newSub = prompt(
-          'Nueva descripción del curso (debajo del título):',
-          currentSub,
-        );
-        if (newSub === null) return;
-
-        const metaRef = doc(db, 'course_meta', LEVEL);
-        await setDoc(
-          metaRef,
-          {
-            title: newTitle.trim() || `Nivel ${LEVEL}`,
-            subtitle: newSub.trim() || '',
-          },
-          { merge: true },
-        );
-
-        await loadCourseMeta();
-        toast('✅ Descripción del curso guardada');
-      };
-
-      // ✅ 2) cargar temas desde cursos donde level==LEVEL
-      async function loadTopics() {
-        grammarList.innerHTML = '';
-        vocabList.innerHTML = '';
-
-        const q = query(collection(db, 'courses'), where('level', '==', LEVEL));
-        const snap = await getDocs(q);
-
-        allTopics = [];
-
-        snap.forEach((d) => {
-          const data = d.data();
-          const t = normType(data.type);
-
-          const item = {
-            id: d.id,
-            title: data.title || '',
-            desc: data.desc || '',
-            order: Number(data.order ?? 9999),
-            type: t,
-          };
-
-          allTopics.push(item);
-        });
-
-        // Ordenar por tipo (grammar primero, luego vocabulary) y luego por orden
-        allTopics.sort((a, b) => {
-          if (a.type !== b.type) {
-            return a.type === 'grammar' ? -1 : 1;
-          }
-          return a.order - b.order;
-        });
-
-        renderFiltered();
-        updateStatsAndProgress(allTopics.length);
-
-        if (levelSubtitle.textContent.toLowerCase().includes('cargando')) {
-          levelSubtitle.textContent = 'Listo ✅';
-        }
-      }
-
-      // FILTRAR Y RENDERIZAR
-      function renderFiltered() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedType = typeFilter.value;
-        const selectedTask = taskFilter.value;
-
-        const grammar = [];
-        const vocab = [];
-
-        allTopics.forEach((item) => {
-          // Aplicar filtro de búsqueda
-          if (
-            searchTerm &&
-            !item.title.toLowerCase().includes(searchTerm) &&
-            !item.desc.toLowerCase().includes(searchTerm)
-          ) {
-            return;
-          }
-
-          // Aplicar filtro de tipo
-          if (selectedType && item.type !== selectedType) {
-            return;
-          }
-
-          // Aplicar filtro de tarea - comprobar si la descripción del tema contiene el nombre de la tarea
-          if (
-            selectedTask &&
-            !item.desc.toLowerCase().includes(selectedTask.toLowerCase())
-          ) {
-            return;
-          }
-
-          if (item.type === 'grammar') grammar.push(item);
-          if (item.type === 'vocabulary') vocab.push(item);
-        });
-
-        grammar.sort((a, b) => a.order - b.order);
-        vocab.sort((a, b) => a.order - b.order);
-
-        grammarList.innerHTML = grammar.length
-          ? grammar.map(renderTopicCard).join('')
-          : `<div class="card noResults">No hay resultados en gramática</div>`;
-
-        vocabList.innerHTML = vocab.length
-          ? vocab.map(renderTopicCard).join('')
-          : `<div class="card noResults">No hay resultados en vocabulario</div>`;
-
-        updateStatsAndProgress(grammar.length + vocab.length);
-        try {
-          const courseTitle = document.getElementById('levelTitle')?.textContent || document.title || '';
-          if (window.__applyLockingAndCert) {
-            window.__applyLockingAndCert({ level: LEVEL, topics: [...grammar, ...vocab], courseTitle });
-          }
-        } catch (e) { console.warn(e); }
-      }
-
-      function renderTopicCard(t) {
-        const adminButtons = isAdmin
-          ? `<div class="admin-tools">
-               <button class="btn-edit" title="Editar" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
-               <button class="btn-del" title="Eliminar" onclick="event.stopPropagation(); deleteTopic('${t.id}')">❌</button>
-             </div>`
-          : '';
-
-        const badge =
-          t.type === 'grammar'
-            ? `<span class="badge badge-grammar">Gramática</span>`
-            : `<span class="badge badge-vocab">Vocabulario</span>`;
-
-        const orderChip =
-          Number.isFinite(t.order) && t.order !== 9999
-            ? `<span class="chip">#${t.order}</span>`
-            : `<span class="chip chip-muted">#—</span>`;
-
-        return `
-          <div class="card topic ${(typeof isDone === 'function' && isDone(t.id) ? 'topic-done' : '') + (typeof isRead === 'function' && isRead(t.id) ? ' topic-read' : '')}" data-topic-slug="${t.topicSlug || t.slug || t.id}" role="button" tabindex="0" onclick="openLesson('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openLesson('${t.id}') }">
-            ${adminButtons}
-            ${typeof isRead === 'function' && isRead(t.id) ? `<div class="readMark" title="Lekcja przeczytana">📘</div>` : ``}
-            ${typeof isDone === 'function' && isDone(t.id) ? `<div class="doneMark" title="Terminado">✅</div>` : ``}
-            <div class="topic-head">
-              <div class="topic-title">
-                ${orderChip}
-                <strong>${escapeHtml(t.title)}</strong>
-              </div>
-              ${badge}
-            </div>
-            <p>${escapeHtml(t.desc)}</p>
-          </div>
-        `;
-      }
-
-      // 🔜 próximo paso: lesson.html?id=...
-      window.openLesson = function (id) {
-        try {
-          localStorage.setItem(LS_LAST_KEY, id);
-          const visited = getVisitedSet();
-          visited.add(id);
-          setVisitedSet(visited);
-        } catch {}
-
-        const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(id)}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-        updateStatsAndProgress(
-          Number(document.getElementById('statShowing')?.textContent || 0),
-        );
-      };
-
-      // ✅ Admin: agregar tema
-      window.addTopic = async function () {
-        if (!isAdmin) return;
-
-        const type = document.getElementById('adminType').value;
-        const title = document.getElementById('adminTitle').value.trim();
-        const desc = document.getElementById('adminDesc').value.trim();
-
-        if (!title || !desc)
-          return alert('Completa el título y la descripción');
-
-        const q = query(collection(db, 'courses'), where('level', '==', LEVEL));
-        const snap = await getDocs(q);
-        let maxOrder = 0;
-        snap.forEach((d) => {
-          const o = Number(d.data().order ?? 0);
-          if (o > maxOrder) maxOrder = o;
-        });
-
-        await addDoc(collection(db, 'courses'), {
-          level: LEVEL,
-          type,
-          title,
-          desc,
-          order: maxOrder + 1,
-        });
-
-        document.getElementById('adminTitle').value = '';
-        document.getElementById('adminDesc').value = '';
-
-        await loadTopics();
-        toast('✅ Tema agregado');
-      };
-
-      window.deleteTopic = async function (id) {
-        if (!isAdmin) return;
-        if (!confirm('¿Eliminar este tema?')) return;
-
-        await deleteDoc(doc(db, 'courses', id));
-        await loadTopics();
-      };
-
-      window.editTopic = async function (id) {
-        if (!isAdmin) return;
-
-        const ref = doc(db, 'courses', id);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) return alert('Tema no encontrado');
-
-        const cur = snap.data();
-        const newTitle = prompt('Nuevo título:', cur.title || '');
-        if (newTitle === null) return;
-        const newDesc = prompt('Nueva descripción:', cur.desc || '');
-        if (newDesc === null) return;
-
-        const t = newTitle.trim();
-        const d = newDesc.trim();
-        if (!t || !d)
-          return alert('El título y la descripción no pueden estar vacíos');
-
-        await updateDoc(ref, { title: t, desc: d });
-        await loadTopics();
-      };
-
-      // ✅ 3) ELIMINAR DUPLICADOS
-      window.dedupeLevel = async function () {
-        if (!isAdmin) return;
-        if (!confirm('¿Eliminar temas duplicados para el nivel ' + LEVEL + '?'))
-          return;
-
-        const q = query(collection(db, 'courses'), where('level', '==', LEVEL));
-        const snap = await getDocs(q);
-
-        const seen = new Map();
-        const toDelete = [];
-
-        snap.forEach((d) => {
-          const data = d.data();
-          const key = [
-            (data.level || '').toString().toUpperCase(),
-            normType(data.type),
-            (data.title || '').trim(),
-            (data.desc || '').trim(),
-          ].join('||');
-
-          if (!seen.has(key)) {
-            seen.set(key, d.id);
-          } else {
-            toDelete.push(d.id);
-          }
-        });
-
-        for (const id of toDelete) {
-          await deleteDoc(doc(db, 'courses', id));
-        }
-
-        toast(`✅ Duplicados eliminados: ${toDelete.length}`);
-        await loadTopics();
-      };
-
-      // ESCUCHADORES DE EVENTOS PARA FILTRADO
-      searchInput.addEventListener('input', renderFiltered);
-      typeFilter.addEventListener('change', renderFiltered);
-      taskFilter.addEventListener('change', renderFiltered);
-
-      // Limpiar filtros
-      const btnClearFilters = document.getElementById('btnClearFilters');
-      btnClearFilters.addEventListener('click', () => {
-        searchInput.value = '';
-        typeFilter.value = '';
-        taskFilter.value = '';
-        renderFiltered();
-        toast('🧼 Filtros limpiados');
-      });
-
-      // Atajos: "/" enfoca búsqueda, "Esc" limpia búsqueda
-      window.addEventListener('keydown', (e) => {
-        if (e.key === '/' && document.activeElement !== searchInput) {
-          e.preventDefault();
-          searchInput.focus();
-        }
-        if (e.key === 'Escape' && document.activeElement === searchInput) {
-          searchInput.value = '';
-          renderFiltered();
-        }
-      });
-    </script>
-    <div
-      aria-atomic="true"
-      aria-live="polite"
-      class="toast"
-      id="toast"
-      role="status"
-    ></div>
-  
-<script>
-(function(){
-  // Nav buttons
-  const btnAtras = document.getElementById("btnAtras");
-  const btnInicio = document.getElementById("btnInicio");
-  const btnLogout = document.getElementById("btnLogout");
-  if (btnAtras) btnAtras.addEventListener("click", () => history.back());
-  if (btnInicio) btnInicio.addEventListener("click", () => window.location.href = "index.html");
-  if (btnLogout) btnLogout.addEventListener("click", async () => {
-    try { if (window.auth && auth.signOut) await auth.signOut(); } catch(e){}
-    window.location.href = "index.html";
-  });
-
-  function calcPct(prog){
-    const done = Array.isArray(prog?.doneIds) ? prog.doneIds.length : (Number(prog?.completedExercises)||0);
-    const total = Number(prog?.totalExercises)||0;
-    if (!total) return 0;
-    return Math.min(100, Math.round((done/total)*100));
-  }
-
-  async function loadUserProgressMap(level){
-    const map = new Map(); // slug -> data
-    try{
-      if (!window.auth || !auth.currentUser) return map;
-      const uid = auth.currentUser.uid;
-      const colRef = window.collection(window.db, "user_progress", uid, "topics");
-      const snap = await window.getDocs(colRef);
-      snap.forEach(d=>{
-        if (!d.id.startsWith(level + "__")) return;
-        const slug = d.id.slice((level + "__").length);
-        map.set(slug, d.data() || {});
-      });
-    }catch(e){
-      console.warn("progress load", e);
+        <div class="filterGroup">
+          <span class="filterLabel">📂 Typ:</span>
+          <select id="typeFilter">
+            <option value="">Wszystkie</option>
+            <option value="grammar">Gramatyka</option>
+            <option value="vocabulary">Słownictwo</option>
+          </select>
+        </div>
+
+        <div class="filterGroup">
+          <span class="filterLabel">✅ Ćwiczenie:</span>
+          <select id="taskFilter">
+            <option value="">Wszystkie ćwiczenia</option>
+            <option value="Rellenar los espacios">Rellenar los espacios</option>
+            <option value="Relacionar palabra con imagen">Relacionar palabra con imagen</option>
+            <option value="Relacionar palabra con traducción">Relacionar palabra con traducción</option>
+            <option value="Elegir la palabra correcta">Elegir la palabra correcta</option>
+            <option value="Tarjetas interactivas">Tarjetas interactivas</option>
+            <option value="Agrupar palabras">Agrupar palabras</option>
+            <option value="Verdadero o falso">Verdadero o falso</option>
+            <option value="Completar la frase con una imagen">Completar la frase con una imagen</option>
+            <option value="Juego de memoria (pares)">Juego de memoria (pares)</option>
+            <option value="Opción múltiple">Opción múltiple</option>
+            <option value="Completar la forma correcta">Completar la forma correcta</option>
+            <option value="Elegir la forma correcta">Elegir la forma correcta</option>
+            <option value="Transformaciones">Transformaciones</option>
+            <option value="Relacionar pregunta con respuesta">Relacionar pregunta con respuesta</option>
+            <option value="Ordenar palabras para formar una frase">Ordenar palabras para formar una frase</option>
+            <option value="Corregir errores">Corregir errores</option>
+            <option value="Unir dos partes de la frase">Unir dos partes de la frase</option>
+            <option value="Completar con preposición o terminación">Completar con preposición o terminación</option>
+            <option value="Opción única">Opción única</option>
+            <option value="Escribir tu propia respuesta">Escribir tu propia respuesta</option>
+            <option value="Repetir después del narrador">Repetir después del narrador</option>
+            <option value="Completar la frase con tu voz">Completar la frase con tu voz</option>
+            <option value="Responder a una pregunta">Responder a una pregunta</option>
+            <option value="Describir una imagen">Describir una imagen</option>
+            <option value="Juego de roles">Juego de roles</option>
+            <option value="Mini-monólogo">Mini-monólogo</option>
+            <option value="Diálogo semiabierto">Diálogo semiabierto</option>
+            <option value="Decirlo de otra manera">Decirlo de otra manera</option>
+            <option value="Escuchar y elegir la respuesta">Escuchar y elegir la respuesta</option>
+            <option value="Escuchar y completar los espacios">Escuchar y completar los espacios</option>
+            <option value="Escuchar y marcar verdadero o falso">Escuchar y marcar verdadero o falso</option>
+            <option value="Escuchar y relacionar personas">Escuchar y relacionar personas</option>
+            <option value="Escuchar y ordenar la secuencia">Escuchar y ordenar la secuencia</option>
+            <option value="Dictado con audio">Dictado con audio</option>
+            <option value="Escuchar y repetir">Escuchar y repetir</option>
+            <option value="Diálogo interactivo">Diálogo interactivo</option>
+            <option value="Misión del día">Misión del día</option>
+            <option value="Quiz situacional">Quiz situacional</option>
+            <option value="Video con preguntas">Video con preguntas</option>
+            <option value="Test final del tema">Test final del tema</option>
+            <option value="Debate grabado">Debate grabado</option>
+            <option value="Contar una historia">Contar una historia</option>
+            <option value="Simulación de entrevista de trabajo">Simulación de entrevista de trabajo</option>
+            <option value="Retroalimentación por voz">Retroalimentación por voz</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sectionTitle">📘 Gramatyka</div>
+      <div id="grammarList"></div>
+
+      <div class="sectionTitle">📗 Słownictwo</div>
+      <div id="vocabList"></div>
+
+      <!-- ADMIN add topic -->
+      <div class="card adminPanel" id="adminPanel">
+        <h3 style="margin:0 0 10px 0">👑 Panel Admin – dodaj temat</h3>
+        <div class="row">
+          <select id="adminType">
+            <option value="grammar">gramática</option>
+            <option value="vocabulary">vocabulario</option>
+          </select>
+          <input id="adminTitle" placeholder="Título (ES)" />
+          <input id="adminDesc" placeholder="Descripción (ES)" />
+          <button type="button" onclick="addTopic()">➕ Dodaj</button>
+        </div>
+        <p style="font-size:12px; color:#6b7280; margin:10px 0 0 0">
+          Jeśli kliknęłaś import kilka razy – użyj „Usuń duplikaty”. To usunie powtórki w Firestore.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+    import {
+      getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, updateDoc,
+      doc, getDoc, setDoc
+    } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+      authDomain: 'aquivivo-platform.firebaseapp.com',
+      projectId: 'aquivivo-platform',
+      storageBucket: 'aquivivo-platform.firebasestorage.app',
+      messagingSenderId: '116115622011',
+      appId: '1:116115622011:web:33a4a583eba4368071bade',
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+    let isAdmin = false;
+
+    const params = new URLSearchParams(window.location.search);
+    const LEVEL = (params.get('level') || 'A1').toUpperCase();
+
+    const levelTitle = document.getElementById('levelTitle');
+    const levelSubtitle = document.getElementById('levelSubtitle');
+    const grammarList = document.getElementById('grammarList');
+    const vocabList = document.getElementById('vocabList');
+    const adminPanel = document.getElementById('adminPanel');
+    const adminBar = document.getElementById('adminBar');
+
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const taskFilter = document.getElementById('taskFilter');
+
+    let allTopics = [];
+
+    // --- local progress keys
+    const LS_VISITED_KEY = `aquivivo_visited_${LEVEL}`;
+    const LS_LAST_KEY = `aquivivo_lastLesson_${LEVEL}`;
+
+    function toast(msg){
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(()=> el.classList.remove('show'), 2200);
     }
-    return map;
-  }
 
-    // --- Certificate (clean + safe) ---
-  function escapeHtml(str) {
-    return String(str || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+    function getVisitedSet(){
+      try{
+        const arr = JSON.parse(localStorage.getItem(LS_VISITED_KEY) || '[]');
+        return new Set(Array.isArray(arr) ? arr : []);
+      }catch{ return new Set(); }
+    }
+    function setVisitedSet(set){
+      try{ localStorage.setItem(LS_VISITED_KEY, JSON.stringify(Array.from(set))); }catch{}
+    }
 
-  function openCertificate({ level, courseTitle, studentName, studentEmail }) {
-    const now = new Date();
-    const dateStr = now.toLocaleDateString("es-ES");
-    const name = (studentName || "").trim() || (studentEmail || "").trim() || "Estudiante";
+    function escapeHtml(s){
+      return String(s || '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
 
-    const html = `<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Certificado - ${escapeHtml(level)}</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  body{margin:0;background:#f5f6f8;font-family:Montserrat,Arial,sans-serif;}
-  .page{max-width:900px;margin:26px auto;background:white;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.10);overflow:hidden;}
-  .top{padding:28px 34px;background:linear-gradient(135deg,#001a4d,#003893);color:white;}
-  .brand{font-weight:900;letter-spacing:.04em}
-  .mid{padding:38px 42px;text-align:center;}
-  .h1{font-family:"Playfair Display",serif;font-size:44px;margin:10px 0 6px;}
-  .h2{font-size:16px;opacity:.9;margin:0 0 28px;}
-  .name{font-family:"Playfair Display",serif;font-size:38px;margin:0;color:#001a4d}
-  .line{width:240px;height:2px;background:#FCD116;margin:18px auto 18px;border-radius:2px;}
-  .desc{font-size:16px;max-width:680px;margin:0 auto;line-height:1.45;color:#1f2a44}
-  .footer{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;margin-top:34px;font-size:13px;color:#3a4662}
-  .sig{padding-top:34px;border-top:1px solid #e6e8ef;min-width:240px;text-align:left}
-  .sig b{display:block;margin-bottom:6px}
-  .btns{display:flex;gap:10px;justify-content:center;margin:18px 0 0}
-  .btn{border:0;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer}
-  .print{background:#FCD116}
-  .close{background:#e7eaf3}
-  @media print{
-    body{background:white}
-    .btns{display:none}
-    .page{box-shadow:none;margin:0;border-radius:0}
-  }
-</style>
-</head>
-<body>
-  <div class="page">
-    <div class="top">
-      <div class="brand">AquiVivo</div>
-    </div>
-    <div class="mid">
-      <div class="h1">Certificado</div>
-      <div class="h2">Se otorga a</div>
-      <h3 class="name">${escapeHtml(name)}</h3>
-      <div class="line"></div>
-      <p class="desc">
-        Por haber completado satisfactoriamente el curso <b>${escapeHtml(level)}</b> — ${escapeHtml(courseTitle || "")}.
-      </p>
-      <div class="footer">
-        <div><b>Fecha</b> ${escapeHtml(dateStr)}</div>
-        <div class="sig">
-          <b>Firma</b>
-          Magdalena (AquiVivo)
+    function normType(t){
+      return String(t || '').toLowerCase().trim();
+    }
+
+    function updateStatsAndProgress(showingCount){
+      const total = allTopics.length;
+      const visited = getVisitedSet();
+      const visitedCount = Array.from(visited).filter(id => allTopics.some(t => t.id === id)).length;
+
+      document.getElementById('statTotal').textContent = String(total);
+      document.getElementById('statShowing').textContent = String(showingCount);
+
+      const pct = total ? Math.round((visitedCount / total) * 100) : 0;
+      document.getElementById('progressText').textContent = `${pct}%`;
+      document.getElementById('progressCount').textContent = `${visitedCount}/${total}`;
+      document.getElementById('progressFill').style.width = `${pct}%`;
+
+      const last = localStorage.getItem(LS_LAST_KEY);
+      const btn = document.getElementById('btnContinue');
+      if (last && allTopics.some(t => t.id === last)){
+        btn.style.display = 'inline-flex';
+        btn.onclick = () => openLesson(last);
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
+    async function loadCourseMeta(){
+      const metaRef = doc(db, 'course_meta', LEVEL);
+      const metaSnap = await getDoc(metaRef);
+      if (metaSnap.exists()){
+        const m = metaSnap.data();
+        levelTitle.textContent = m.title || `Poziom ${LEVEL}`;
+        levelSubtitle.textContent = m.subtitle || '';
+      } else {
+        levelTitle.textContent = `Poziom ${LEVEL}`;
+        levelSubtitle.textContent = '';
+      }
+    }
+
+    window.editCourseMeta = async function(){
+      if (!isAdmin) return;
+
+      const currentTitle = levelTitle.textContent || `Poziom ${LEVEL}`;
+      const currentSub = levelSubtitle.textContent || '';
+
+      const newTitle = prompt('Nowy tytuł kursu (nagłówek):', currentTitle);
+      if (newTitle === null) return;
+
+      const newSub = prompt('Nowy opis kursu (pod tytułem):', currentSub);
+      if (newSub === null) return;
+
+      const metaRef = doc(db, 'course_meta', LEVEL);
+      await setDoc(metaRef, {
+        title: newTitle.trim() || `Poziom ${LEVEL}`,
+        subtitle: newSub.trim() || ''
+      }, { merge: true });
+
+      await loadCourseMeta();
+      toast('✅ Opis kursu zapisany');
+    };
+
+    async function loadTopics(){
+      grammarList.innerHTML = '';
+      vocabList.innerHTML = '';
+
+      const q = query(collection(db, 'courses'), where('level', '==', LEVEL));
+      const snap = await getDocs(q);
+
+      allTopics = [];
+      snap.forEach((d) => {
+        const data = d.data();
+        allTopics.push({
+          id: d.id,
+          title: data.title || '',
+          desc: data.desc || '',
+          order: Number(data.order ?? 9999),
+          type: normType(data.type)
+        });
+      });
+
+      allTopics.sort((a,b) => {
+        if (a.type !== b.type) return a.type === 'grammar' ? -1 : 1;
+        return a.order - b.order;
+      });
+
+      renderFiltered();
+      updateStatsAndProgress(allTopics.length);
+    }
+
+    function renderTopicCard(t){
+      const adminButtons = isAdmin ? `
+        <div class="admin-tools">
+          <button class="btn-edit" title="Editar" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
+          <button class="btn-del" title="Eliminar" onclick="event.stopPropagation(); deleteTopic('${t.id}')">❌</button>
+        </div>` : '';
+
+      const badge = t.type === 'grammar'
+        ? `<span class="badge badge-grammar">Gramatyka</span>`
+        : `<span class="badge badge-vocab">Słownictwo</span>`;
+
+      const orderChip = Number.isFinite(t.order) && t.order !== 9999
+        ? `<span class="chip">#${t.order}</span>`
+        : `<span class="chip chip-muted">#—</span>`;
+
+      return `
+        <div class="card topic" role="button" tabindex="0"
+          onclick="openLesson('${t.id}')"
+          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openLesson('${t.id}') }">
+          ${adminButtons}
+          <div class="topic-head">
+            <div class="topic-title">
+              ${orderChip}
+              <strong>${escapeHtml(t.title)}</strong>
+            </div>
+            ${badge}
+          </div>
+          <p>${escapeHtml(t.desc)}</p>
         </div>
-      </div>
-      <div class="btns">
-        <button class="btn print" onclick="window.print()">Guardar / imprimir PDF</button>
-        <button class="btn close" onclick="window.close()">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
+      `;
+    }
 
-    const w = window.open("", "_blank");
-    if (!w) return;
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
-  }
+    function renderFiltered(){
+      const searchTerm = (searchInput.value || '').toLowerCase().trim();
+      const selectedType = typeFilter.value;
+      const selectedTask = taskFilter.value;
+
+      const grammar = [];
+      const vocab = [];
+
+      for (const item of allTopics){
+        if (searchTerm){
+          const inTitle = item.title.toLowerCase().includes(searchTerm);
+          const inDesc = item.desc.toLowerCase().includes(searchTerm);
+          if (!inTitle && !inDesc) continue;
+        }
+
+        if (selectedType && item.type !== selectedType) continue;
+
+        // task filter: simple "contains" in desc (kept as in your current logic)
+        if (selectedTask && !item.desc.toLowerCase().includes(selectedTask.toLowerCase())) continue;
+
+        if (item.type === 'grammar') grammar.push(item);
+        if (item.type === 'vocabulary') vocab.push(item);
+      }
+
+      grammar.sort((a,b)=>a.order-b.order);
+      vocab.sort((a,b)=>a.order-b.order);
+
+      grammarList.innerHTML = grammar.length
+        ? grammar.map(renderTopicCard).join('')
+        : `<div class="card noResults">Brak wyników w gramatyce</div>`;
+
+      vocabList.innerHTML = vocab.length
+        ? vocab.map(renderTopicCard).join('')
+        : `<div class="card noResults">Brak wyników w słownictwie</div>`;
+
+      updateStatsAndProgress(grammar.length + vocab.length);
+    }
+
+    window.openLesson = function(id){
+      try{
+        localStorage.setItem(LS_LAST_KEY, id);
+        const visited = getVisitedSet();
+        visited.add(id);
+        setVisitedSet(visited);
+      }catch{}
+
+      const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(id)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    };
+
+    window.addTopic = async function(){
+      if (!isAdmin) return;
+
+      const type = document.getElementById('adminType').value;
+      const title = document.getElementById('adminTitle').value.trim();
+      const desc = document.getElementById('adminDesc').value.trim();
+
+      if (!title || !desc){
+        alert('Uzupełnij tytuł i opis');
+        return;
+      }
+
+      const q = query(collection(db, 'courses'), where('level', '==', LEVEL));
+      const snap = await getDocs(q);
+      let maxOrder = 0;
+      snap.forEach((d)=>{
+        const o = Number(d.data().order ?? 0);
+        if (o > maxOrder) maxOrder = o;
+      });
+
+      await addDoc(collection(db,'courses'), {
+        level: LEVEL,
+        type,
+        title,
+        desc,
+        order: maxOrder + 1
+      });
+
+      document.getElementById('adminTitle').value = '';
+      document.getElementById('adminDesc').value = '';
+
+      await loadTopics();
+      toast('✅ Temat dodany');
+    };
+
+    window.deleteTopic = async function(id){
+      if (!isAdmin) return;
+      if (!confirm('Usunąć ten temat?')) return;
+      await deleteDoc(doc(db,'courses', id));
+      await loadTopics();
+    };
+
+    window.editTopic = async function(id){
+      if (!isAdmin) return;
+
+      const ref = doc(db,'courses', id);
+      const snap = await getDoc(ref);
+      if (!snap.exists()){
+        alert('Nie znaleziono tematu');
+        return;
+      }
+
+      const cur = snap.data();
+      const newTitle = prompt('Nowy tytuł:', cur.title || '');
+      if (newTitle === null) return;
+      const newDesc = prompt('Nowy opis:', cur.desc || '');
+      if (newDesc === null) return;
+
+      const t = newTitle.trim();
+      const d = newDesc.trim();
+      if (!t || !d){
+        alert('Tytuł i opis nie mogą być puste');
+        return;
+      }
+
+      await updateDoc(ref, { title: t, desc: d });
+      await loadTopics();
+    };
+
+    window.dedupeLevel = async function(){
+      if (!isAdmin) return;
+      if (!confirm('Usunąć duplikaty tematów dla poziomu ' + LEVEL + '?')) return;
+
+      const q = query(collection(db,'courses'), where('level','==', LEVEL));
+      const snap = await getDocs(q);
+
+      const seen = new Map();
+      const toDelete = [];
+
+      snap.forEach((d)=>{
+        const data = d.data();
+        const key = [
+          (data.level || '').toString().toUpperCase(),
+          normType(data.type),
+          (data.title || '').trim(),
+          (data.desc || '').trim()
+        ].join('||');
+
+        if (!seen.has(key)) seen.set(key, d.id);
+        else toDelete.push(d.id);
+      });
+
+      for (const id of toDelete){
+        await deleteDoc(doc(db,'courses', id));
+      }
+
+      toast(`✅ Usunięte duplikaty: ${toDelete.length}`);
+      await loadTopics();
+    };
+
+    // auth + init
+    onAuthStateChanged(auth, async (user)=>{
+      if (!user){
+        window.location.href = 'login.html';
+        return;
+      }
+
+      isAdmin = user.email === ADMIN_EMAIL;
+
+      // show/hide admin UI
+      adminPanel.style.display = isAdmin ? 'block' : 'none';
+      adminBar.style.display = isAdmin ? 'flex' : 'none';
+
+      // header
+      await loadCourseMeta();
+      await loadTopics();
+    });
+
+    // logout
+    document.getElementById('btnLogout').addEventListener('click', async ()=>{
+      try{ await signOut(auth); }catch{}
+      window.location.href = 'login.html';
+    });
+
+    // filters events
+    searchInput.addEventListener('input', renderFiltered);
+    typeFilter.addEventListener('change', renderFiltered);
+    taskFilter.addEventListener('change', renderFiltered);
+
+    // clear filters
+    document.getElementById('btnClearFilters').addEventListener('click', ()=>{
+      searchInput.value = '';
+      typeFilter.value = '';
+      taskFilter.value = '';
+      renderFiltered();
+      toast('🧼 Filtros limpiados');
+    });
+
+    // shortcuts
+    window.addEventListener('keydown', (e)=>{
+      if (e.key === '/' && document.activeElement !== searchInput){
+        e.preventDefault();
+        searchInput.focus();
+      }
+      if (e.key === 'Escape' && document.activeElement === searchInput){
+        searchInput.value = '';
+        renderFiltered();
+      }
+    });
+  </script>
+</body>
+</html>
