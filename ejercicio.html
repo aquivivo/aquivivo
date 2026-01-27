@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Lección | AquiVivo</title>
+    <title>Ejercicios | AquiVivo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link
@@ -116,6 +116,7 @@
       }
 
       .sessionBar {
+        display: none !important;
         background: var(--yellow);
         padding: 8px 0;
         text-align: center;
@@ -595,7 +596,7 @@
         <div class="lessonContentTitle">
           <h3>📘 Lección — materiales del tema</h3>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-            <a class="btn" id="btnOpenLessonPage" href="#" target="_blank" rel="noopener noreferrer">📖 Abrir lección (página)</a>
+            <a class="btn" id="btnOpenLessonPage" href="#">📖 Abrir lección (página)</a>
           </div>
         </div>
 
@@ -655,189 +656,8 @@
         </div>
       </div>
 
-      <!-- Admin -->
-      <div id="adminWrap" class="card adminWrap">
-        
-        <div id="lessonMetaWrap" class="card" style="margin-top:0; margin-bottom:14px;">
-          <div class="sectionTitle">📘 Admin – agregar/editar lección</div>
-          <div class="smallNote" style="margin-top:-6px">
-            Esto guarda el contenido de la lección (título, objetivos, diálogo, etc.) para <b>este</b> tema.
-          </div>
-
-          <div class="adminGrid" style="margin-top:12px">
-            <div>
-              <label>Título de la lección (ES)</label>
-              <input id="lessonTitleEs" placeholder="Ej: Presentarse: Soy, me llamo..." />
-            </div>
-
-            <div>
-              <label>Descripción corta</label>
-              <input id="lessonDescEs" placeholder="1–2 frases sobre la lección" />
-            </div>
-
-            <div>
-              <label>Imagen (URL) — opcional</label>
-              <input id="lessonImageUrl" placeholder="https://.../imagen.jpg" />
-              <div class="smallNote">Tip: możesz wkleić link do obrazka z Canva/Drive/Hosting.</div>
-            </div>
-
-            <div>
-              <label>Contenido extra (HTML) — opcional</label>
-              <textarea id="lessonHtml" placeholder="Możesz wkleić HTML: nagłówki, listy, <img>, tabelki..."></textarea>
-              <div class="smallNote">To pole wyświetla się uczniowi jako dodatkowa treść pod lekcją.</div>
-            </div>
-
-            <div>
-              <label>Objetivos (uno por línea)</label>
-              <textarea id="lessonObjectives" placeholder="Ej:
-- Presentarme
-- Preguntar el nombre
-- Decir de dónde soy"></textarea>
-            </div>
-
-            <div>
-              <label>Gramática clave (uno por línea)</label>
-              <textarea id="lessonGrammar" placeholder="Ej:
-- być (ser)
-- pronombres personales
-- preguntas: kto?"></textarea>
-            </div>
-
-            <div>
-              <label>Vocabulario (uno por línea)</label>
-              <textarea id="lessonVocab" placeholder="Ej:
-cześć — hola
-mam na imię — me llamo"></textarea>
-            </div>
-
-            <div>
-              <label>Diálogo</label>
-              <textarea id="lessonDialog" placeholder="Escribe un diálogo corto..."></textarea>
-            </div>
-
-            <div>
-              <label>Práctica oral (prompt)</label>
-              <textarea id="lessonSpeaking" placeholder="Ej: Preséntate en 5 frases..."></textarea>
-            </div>
-
-            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-              <button class="btn" id="btnSaveLessonMeta" type="button">💾 Guardar lección</button>
-              <button class="btn" id="btnClearLessonMeta" type="button">🧽 Limpiar</button>
-              <span class="smallNote" id="lessonMetaStatus" style="margin-left:auto"></span>
-            </div>
-          </div>
-        </div>
-
-<div class="sectionTitle">👑 Admin – agregar ejercicio</div>
-
-        <div class="card" style="margin-top:10px">
-          <div class="sectionTitle" style="margin-top:0">⚡ Producción rápida</div>
-
-          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-            <button class="btn" id="btnTplFill" type="button">+ Plantilla: rellenar</button>
-            <button class="btn" id="btnTplChoice" type="button">+ Plantilla: choice</button>
-            <button class="btn" id="btnTplTF" type="button">+ Plantilla: true/false</button>
-          </div>
-
-          <div style="margin-top:12px">
-            <label style="display:block; font-weight:800; margin-bottom:6px">Import JSON (array de ejercicios)</label>
-            <textarea id="importJsonArea" placeholder='[
-  {"type":"Opción múltiple","prompt":"...","options":["A) ...","B) ..."],"answer":"A","category":"grammar","order":1},
-  {"type":"Rellenar los espacios","prompt":"...","answer":"...","category":"vocab"}
-]'></textarea>
-            <div class="smallNote" style="margin-top:8px">
-              - Wklej <b>tablicę</b> ćwiczeń. Jeśli element nie ma <b>order</b>, dostanie automatycznie kolejny numer.<br/>
-              - Obsługiwane pola: <b>type, prompt, options[], answer, category, tags, notes, imageUrl, order</b>.
-            </div>
-
-            <div class="adminActions" style="margin-top:10px">
-              <button class="btn btn-yellow" id="btnImportJson" type="button">📥 Importuj i zapisz</button>
-              <button class="btn" id="btnClearImport" type="button">🧽 Wyczyść</button>
-              <span class="smallNote" id="importStatus" style="margin-left:auto"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="adminGrid">
-          <div>
-            <label>Tipo de ejercicio</label>
-            <select id="exType"></select>
-          </div>
-
-          <div>
-            <label>Pregunta / enunciado</label>
-            <input id="exPrompt" placeholder="Escribe el enunciado..." />
-          </div>
-
-          <div>
-            <label>Imagen (URL) — opcional</label>
-            <input id="exImageUrl" placeholder="https://.../imagen.png" />
-            <div class="smallNote">Jeśli dodasz obrazek, pokaże się nad odpowiedziami.</div>
-          </div>
-
-          <div>
-            <label>Opciones (solo si aplica)</label>
-            <textarea
-              id="exOptions"
-              placeholder="Una opción por línea&#10;Ej:&#10;A) ...&#10;B) ...&#10;C) ..."
-            ></textarea>
-            <div class="smallNote">
-              Para ejercicios de selección, añade al menos 2 opciones (una por línea).
-            </div>
-          </div>
-
-          <div>
-            <label>Respuesta correcta</label>
-            <input id="exAnswer" placeholder="Ej: B   |   true   |   palabra_correcta" />
-            <div class="smallNote">
-              - Opción múltiple: letra (A/B/C/D) o texto exacto.<br />
-              - Verdadero o falso: <b>true</b> / <b>false</b>.<br />
-              - Campo abierto: wpisz poprawne słowo/odpowiedź (dokładnie).
-            </div>
-          </div>
-
-          <div>
-            <label>Kategoria</label>
-            <select id="exCategory">
-              <option value="grammar">Gramática</option>
-              <option value="vocab">Vocabulario</option>
-              <option value="both">Gramática + vocabulario</option>
-            </select>
-          </div>
-
-          <div>
-            <label>Tagi (opcjonalnie)</label>
-            <input id="exTags" placeholder="np. przypadki, czasowniki, kolokacje (oddziel przecinkami)" />
-          </div>
-
-          <div>
-            <label>Orden</label>
-            <input id="exOrder" type="number" min="1" placeholder="np. 1" />
-          </div>
-
-          <div>
-            <label>Estado</label>
-            <select id="exStatus">
-              <option value="published">Publicado</option>
-              <option value="draft">Borrador</option>
-            </select>
-          </div>
-
-          <div>
-            <label>Notas (opcjonalnie)</label>
-            <input id="exNotes" placeholder="np. wskazówka / komentarz" />
-          </div>
-        </div>
-
-        <div class="adminActions">
-          <button class="btn btn-yellow" id="btnAddExercise" type="button">➕ Guardar ejercicio</button>
-          <button class="btn" id="btnAutoOrder" type="button">✨ Ustaw kolejny numer</button>
-        </div>
-
-        <div class="smallNote" style="margin-top:10px">
-          Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level, topicSlug, order, type, prompt, options[], answer, notes.
-        </div>
-      </div>
+      <!-- Admin moved to ejercicioadmin.html -->
+      <div id="adminWrap" class="card adminWrap" style="display:none"></div>
     </main>
 
     
@@ -1287,6 +1107,234 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
         "Retroalimentación por voz",
       ];
 
+      // ===== Plantillas (1:1 con TASK_OPTIONS) =====
+      // Uwaga: nie zmieniamy struktury Firestore. Szablony wypełniają istniejące pola formularza.
+      const TEMPLATE_GROUPS = {
+        choice: new Set([
+          "Opción múltiple",
+          "Opción única",
+          "Elegir la palabra correcta",
+          "Elegir la forma correcta",
+          "Escuchar y elegir la respuesta",
+          "Video con preguntas",
+          "Quiz situacional",
+          "Test final del tema",
+        ]),
+        trueFalse: new Set([
+          "Verdadero o falso",
+          "Escuchar y marcar verdadero o falso",
+        ]),
+        fill: new Set([
+          "Rellenar los espacios",
+          "Completar la forma correcta",
+          "Completar con preposición o terminación",
+          "Escuchar y completar los espacios",
+          "Dictado con audio",
+        ]),
+        matching: new Set([
+          "Relacionar palabra con imagen",
+          "Relacionar palabra con traducción",
+          "Relacionar pregunta con respuesta",
+          "Escuchar y relacionar personas",
+          "Unir dos partes de la frase",
+        ]),
+        ordering: new Set([
+          "Ordenar palabras para formar una frase",
+          "Escuchar y ordenar la secuencia",
+        ]),
+        speaking: new Set([
+          "Escribir tu propia respuesta",
+          "Repetir después del narrador",
+          "Completar la frase con tu voz",
+          "Responder a una pregunta",
+          "Juego de roles",
+          "Mini-monólogo",
+          "Diálogo semiabierto",
+          "Diálogo interactivo",
+          "Debate grabado",
+          "Contar una historia",
+          "Simulación de entrevista de trabajo",
+          "Retroalimentación por voz",
+          "Escuchar y repetir",
+          "Misión del día",
+          "Describir una imagen",
+          "Decirlo de otra manera",
+        ]),
+        memory: new Set(["Juego de memoria (pares)"]),
+        grouping: new Set(["Agrupar palabras"]),
+        cards: new Set(["Tarjetas interactivas"]),
+        imageSentence: new Set(["Completar la frase con una imagen"]),
+        transform: new Set(["Transformaciones", "Corregir errores"]),
+      };
+
+      function templateForType(type) {
+        // Default scaffold
+        const base = { prompt: "", optionsText: "", answer: "", category: "both", notes: "" };
+
+        // Helpers
+        const opt = (...lines) => lines.filter(Boolean).join("\n");
+        const noteAudio = "AUDIO_URL: https://...  (pon aquí URL del audio)";
+
+        if (TEMPLATE_GROUPS.trueFalse.has(type)) {
+          return {
+            ...base,
+            prompt: "Lee/Escucha y marca: ¿verdadero o falso?",
+            optionsText: opt("true", "false"),
+            answer: "true",
+            category: "both",
+            notes: type.startsWith("Escuchar") ? noteAudio : "",
+          };
+        }
+
+        if (TEMPLATE_GROUPS.choice.has(type)) {
+          return {
+            ...base,
+            prompt: "Elige la respuesta correcta:",
+            optionsText: opt("A) ...", "B) ...", "C) ...", "D) ..."),
+            answer: "B",
+            category: "both",
+            notes: type.startsWith("Escuchar") || type === "Video con preguntas" ? noteAudio : "",
+          };
+        }
+
+        if (TEMPLATE_GROUPS.fill.has(type)) {
+          return {
+            ...base,
+            prompt: "Completa: ___",
+            optionsText: "",
+            answer: "respuesta_correcta",
+            category: "both",
+            notes: type.startsWith("Escuchar") || type === "Dictado con audio" ? noteAudio : "",
+          };
+        }
+
+        if (TEMPLATE_GROUPS.matching.has(type)) {
+          return {
+            ...base,
+            prompt: "Relaciona los elementos (usa opciones como pares A=...):",
+            optionsText: opt("A) ... = 1) ...", "B) ... = 2) ...", "C) ... = 3) ..."),
+            answer: "A-1, B-2, C-3",
+            category: "both",
+            notes: type.startsWith("Escuchar") ? noteAudio : "Formato sugerido: A-1, B-2, C-3",
+          };
+        }
+
+        if (TEMPLATE_GROUPS.ordering.has(type)) {
+          return {
+            ...base,
+            prompt: "Ordena los elementos en el orden correcto:",
+            optionsText: opt("1) ...", "2) ...", "3) ...", "4) ..."),
+            answer: "1-2-3-4",
+            category: "both",
+            notes: type.startsWith("Escuchar") ? noteAudio : "Respuesta: números en orden, ej. 2-4-1-3",
+          };
+        }
+
+        if (TEMPLATE_GROUPS.memory.has(type)) {
+          return {
+            ...base,
+            prompt: "Encuentra los pares:",
+            optionsText: opt("A) palabra = traducción", "B) palabra = traducción", "C) palabra = traducción"),
+            answer: "pares correctos",
+            category: "vocab",
+            notes: "Usa opciones como pares: 'polaco = español'",
+          };
+        }
+
+        if (TEMPLATE_GROUPS.grouping.has(type)) {
+          return {
+            ...base,
+            prompt: "Agrupa las palabras en categorías:",
+            optionsText: opt("Categoría 1: ..., ...", "Categoría 2: ..., ..."),
+            answer: "agrupación",
+            category: "vocab",
+            notes: "Sugerencia: wpisz kategorie + słowa w jednej linii",
+          };
+        }
+
+        if (TEMPLATE_GROUPS.cards.has(type)) {
+          return {
+            ...base,
+            prompt: "Tarjetas: (frente → reverso)",
+            optionsText: opt("1) PL: ... | ES: ...", "2) PL: ... | ES: ...", "3) PL: ... | ES: ..."),
+            answer: "",
+            category: "vocab",
+            notes: "Możesz dodać AUDIO_URL w Notas dla kart.",
+          };
+        }
+
+        if (TEMPLATE_GROUPS.imageSentence.has(type)) {
+          return {
+            ...base,
+            prompt: "Completa la frase usando la imagen:",
+            optionsText: "",
+            answer: "respuesta",
+            category: "both",
+            notes: "Dodaj URL obrazka w polu Imagen.",
+          };
+        }
+
+        if (TEMPLATE_GROUPS.transform.has(type)) {
+          return {
+            ...base,
+            prompt: type === "Corregir errores" ? "Popraw zdanie:" : "Przekształć zdanie według wzoru:",
+            optionsText: "",
+            answer: "respuesta_correcta",
+            category: "grammar",
+            notes: "Możesz podać przykład w Notas.",
+          };
+        }
+
+        if (type === "Responder a una pregunta") {
+          return { ...base, prompt: "Responde con una frase completa:", answer: "respuesta", category: "both" };
+        }
+
+        if (type === "Describir una imagen") {
+          return { ...base, prompt: "Describe la imagen en 2–3 frases:", answer: "", category: "both", notes: "Dodaj URL obrazka." };
+        }
+
+        // Fallback
+        return { ...base, prompt: `Actividad: ${type}`, answer: "", category: "both" };
+      }
+
+      function setOptionsVisibility(type) {
+        // Ukryj opcje dla typów otwartych / voice itd.
+        const needsOptions =
+          TEMPLATE_GROUPS.choice.has(type) ||
+          TEMPLATE_GROUPS.trueFalse.has(type) ||
+          TEMPLATE_GROUPS.matching.has(type) ||
+          TEMPLATE_GROUPS.ordering.has(type) ||
+          TEMPLATE_GROUPS.memory.has(type) ||
+          TEMPLATE_GROUPS.grouping.has(type) ||
+          TEMPLATE_GROUPS.cards.has(type);
+
+        const optWrap = document.getElementById("exOptions")?.closest("div");
+        if (optWrap) optWrap.style.display = needsOptions ? "" : "none";
+      }
+
+      function applyTemplateForSelectedType(overwrite = false) {
+        const type = String(exType.value || "");
+        if (!type) return;
+
+        const tpl = templateForType(type);
+
+        // Only fill empty fields unless overwrite=true
+        const setVal = (el, val) => {
+          if (!el) return;
+          const cur = String(el.value || "");
+          if (overwrite || cur.trim() === "") el.value = val;
+        };
+
+        setOptionsVisibility(type);
+        setVal(exPrompt, tpl.prompt);
+        setVal(exOptions, tpl.optionsText);
+        setVal(exAnswer, tpl.answer);
+        setVal(exNotes, tpl.notes);
+        if (exCategory && (overwrite || !exCategory.value)) exCategory.value = tpl.category || "both";
+      }
+
+
+
       function fillExerciseTypes() {
         exType.innerHTML = TASK_OPTIONS.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
         const saved = localStorage.getItem("lastExerciseType");
@@ -1482,9 +1530,6 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
         const options = Array.isArray(ex.options) ? ex.options : [];
         const order = Number(ex.order || idx + 1);
 
-        const status = String(ex.status || "published");
-        const isDraft = status === "draft";
-
         const isChoice = options.length >= 2;
         const isFill = type === "Rellenar los espacios" || !isChoice;
 
@@ -1503,21 +1548,11 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
             </div>
           `;
 
-        const adminControls = isAdmin
-          ? `
-              <div style="display:flex; gap:8px; align-items:center">
-                <button class="btn" id="pv-${ex.id}" type="button" title="Podgląd (uczeń)">👀</button>
-                <button class="btn" id="dup-${ex.id}" type="button" title="Duplicar (como borrador)">🧩</button>
-                <button class="btn" id="st-${ex.id}" type="button" title="Cambiar estado draft/published">${isDraft ? "📤" : "📝"}</button>
-                <button class="dangerMini" id="del-${ex.id}" type="button" title="Eliminar">🗑</button>
-              </div>
-            `
-          : "";
-
-        return `
+        const adminControls = ""; // admin moved to ejercicioadmin.html
+return `
           <div class="exercise ${REORDER_MODE && IS_ADMIN ? "dragHint" : ""}" id="ex-${ex.id}" data-id="${ex.id}" ${REORDER_MODE && IS_ADMIN ? "draggable=\"true\"" : ""}>
             ${adminControls}
-            <div class="type">${escapeHtml(type)} · #${order} ${isAdmin && isDraft ? ` · <span class="pill pill-red" style="padding:2px 8px; font-size:12px">DRAFT</span>` : ""} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ""}</div>
+            <div class="type">${escapeHtml(type)} · #${order} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ""}</div>
             <h3>${escapeHtml(prompt)}</h3>
             ${ex.imageUrl ? `<img src="${escapeHtml(ex.imageUrl)}" alt="" style="max-width:100%; border-radius:14px; border:1px solid rgba(0,0,0,0.08); margin: 10px 0 12px;" />` : ""}
             ${optionsHtml}
@@ -1540,7 +1575,7 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
         // delete
         if (isAdmin) {
         document.getElementById('btnStudentPreview')?.addEventListener('click', ()=>{
-          const url = `lesson.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}&preview=1`;
+          const url = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}&preview=1`;
           window.open(url, '_blank', 'noopener,noreferrer');
         });
           const delBtn = document.getElementById(`del-${ex.id}`);
@@ -1555,68 +1590,6 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
               } catch (e) {
                 console.error(e);
                 showToast("❌ Błąd usuwania (sprawdź konsolę)", "bad", 3200);
-              }
-            };
-          }
-        }
-
-        // duplicate
-        if (isAdmin) {
-          const dupBtn = document.getElementById(`dup-${ex.id}`);
-          if (dupBtn) {
-            dupBtn.onclick = async (ev) => {
-              ev.stopPropagation();
-              try {
-                const newPrompt = prompt("Nowy enunciado (prompt):", String(ex.prompt || "")); 
-                if (newPrompt === null) return;
-
-                const newAnswer = prompt("Nowa respuesta (answer):", String(ex.answer || "")); 
-                if (newAnswer === null) return;
-
-                const nextOrder = getNextOrder();
-                const baseSlug = String(currentTopic?.slug || currentTopic?.id || ex.topicSlug || "");
-                const payload = {
-                  level: LEVEL,
-                  topicSlug: baseSlug,
-                  topicId: currentTopic?.id || ex.topicId || null,
-                  type: ex.type || "Ejercicio",
-                  prompt: String(newPrompt).trim(),
-                  imageUrl: String(ex.imageUrl || "").trim(),
-                  options: Array.isArray(ex.options) ? ex.options.slice() : [],
-                  answer: normalizeAnswer(String(newAnswer)),
-                  notes: String(ex.notes || "").trim(),
-                  category: String(ex.category || "grammar"),
-                  tags: Array.isArray(ex.tags) ? ex.tags.slice() : [],
-                  order: nextOrder,
-                  status: "draft",
-                  createdAt: serverTimestamp(),
-                  updatedAt: serverTimestamp(),
-                };
-
-                await addDoc(collection(db, "exercises"), payload);
-                showToast("🧩 Zduplikowano jako DRAFT", "ok", 1800);
-                await loadExercises(currentTopic);
-              } catch (e) {
-                console.error(e);
-                showToast("❌ Błąd duplikowania (sprawdź konsolę)", "bad", 3200);
-              }
-            };
-          }
-
-          // toggle status draft/published
-          const stBtn = document.getElementById(`st-${ex.id}`);
-          if (stBtn) {
-            stBtn.onclick = async (ev) => {
-              ev.stopPropagation();
-              try {
-                const cur = String(ex.status || "published");
-                const next = cur === "draft" ? "published" : "draft";
-                await updateDoc(doc(db, "exercises", ex.id), { status: next, updatedAt: serverTimestamp() });
-                showToast(next === "draft" ? "📝 Ustawiono: DRAFT" : "📤 Ustawiono: PUBLISHED", "ok", 1600);
-                await loadExercises(currentTopic);
-              } catch (e) {
-                console.error(e);
-                showToast("❌ Błąd zmiany statusu", "bad", 3200);
               }
             };
           }
@@ -1735,11 +1708,6 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
 
         snap.forEach((d) => cachedExercises.push({ id: d.id, ...d.data() }));
 
-        // hide drafts for students (backward compatible: missing status => published)
-        if (!isAdmin) {
-          cachedExercises = cachedExercises.filter((e) => (String(e.status || "published") !== "draft"));
-        }
-
         // state for filters/reorder
         ALL_EXERCISES = cachedExercises.slice();
         TOTAL_EXERCISES = Array.isArray(ALL_EXERCISES) ? ALL_EXERCISES.length : 0;
@@ -1767,11 +1735,40 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
 
         sessionEmail.textContent = user.email || "(sin correo)";
         CURRENT_UID = user.uid || null;
-        isAdmin = (user.email || "") === ADMIN_EMAIL;
-        IS_ADMIN = isAdmin;
-        adminWrap.style.display = isAdmin ? "block" : "none";
+        isAdmin = false; // admin moved to ejercicioadmin.html
+        IS_ADMIN = false; // admin moved to ejercicioadmin.html
+        adminWrap.style.display = "none";
 
         fillExerciseTypes();
+
+      // ===== Plantilla UI wiring =====
+      const btnApplyTemplate = document.getElementById("btnApplyTemplate");
+      const tplOverwrite = document.getElementById("tplOverwrite");
+
+      // Apply on type change (fills only empty fields)
+      exType.addEventListener("change", () => applyTemplateForSelectedType(false));
+
+      if (btnApplyTemplate) {
+        btnApplyTemplate.addEventListener("click", () => applyTemplateForSelectedType(!!tplOverwrite?.checked));
+      }
+
+      // Upgrade quick buttons: set type + apply
+      const wireQuick = (id, type) => {
+        const b = document.getElementById(id);
+        if (!b) return;
+        b.addEventListener("click", () => {
+          exType.value = type;
+          localStorage.setItem("lastExerciseType", type);
+          applyTemplateForSelectedType(!!tplOverwrite?.checked);
+          exPrompt?.focus?.();
+        });
+      };
+      wireQuick("btnTplFill", "Rellenar los espacios");
+      wireQuick("btnTplChoice", "Opción múltiple");
+      wireQuick("btnTplTF", "Verdadero o falso");
+
+      // First paint: ensure options visibility matches current type
+      setOptionsVisibility(exType.value);
 
         // UI wiring
         if (filterType) {
@@ -1977,8 +1974,7 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
               category,
               tags,
               order,
-              status: (exStatus?.value || "published"),
-            createdAt: serverTimestamp(),
+              createdAt: serverTimestamp(),
               updatedAt: serverTimestamp(),
             });
 
@@ -2052,8 +2048,7 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
             category: (exCategory?.value || "grammar"),
             tags: toTagsArray(exTags?.value),
             order,
-            status: "published",
-              createdAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
           });
 
@@ -2065,8 +2060,6 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
           exNotes.value = "";
           if (exTags) exTags.value = "";
           exOrder.value = String(order + 1);
-
-          if (exStatus) exStatus.value = "published";
 
           await loadExercises(currentTopic);
           showToast("✅ Ejercicio guardado", "ok", 2200);

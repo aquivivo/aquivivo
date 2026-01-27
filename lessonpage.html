@@ -21,7 +21,7 @@
       color:#fff;
     }
 
-    /* === NAV + UI (spójne z lesson.html) === */
+    /* Nav (spójne) */
     .nav-glass{
       position: sticky; top: 0; z-index: 50;
       background: rgba(0, 56, 147, 0.78);
@@ -46,7 +46,8 @@
     }
     .name{ font-family:"Playfair Display", serif; font-weight:900; font-size:24px; color:#fff; letter-spacing:.2px; }
     .nav-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
-.btn{
+
+    .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:10px;
       padding: 12px 16px; border-radius:999px; font-weight:900;
       cursor:pointer; text-decoration:none; white-space:nowrap;
@@ -70,21 +71,50 @@
     }
 
     .container{ max-width: 1100px; margin: 0 auto; padding: 18px 16px 60px; }
-    
+
+    /* Hero jak w course */
+    .heroBanner{
+      margin: 6px 0 18px;
+      padding: 22px 22px;
+      border-radius: 22px;
+      background: rgba(0, 26, 77, 0.26);
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 70px rgba(0,0,0,0.18);
+    }
+    .heroTitleRow{
+      display:flex;
+      align-items:flex-start;
+      gap:18px;
+    }
+    .heroIcon{
+      font-size: 56px;
+      line-height: 1;
+      filter: drop-shadow(0 14px 30px rgba(0,0,0,0.25));
+    }
     h1{
       font-family:"Playfair Display", serif;
       font-weight: 900;
-      font-size: 56px;
-      margin: 18px 0 8px 0;
+      font-size: 46px;
+      margin: 0 0 8px 0;
       line-height: 1.05;
       color: #ffffff;
       text-shadow: 0 12px 30px rgba(0,0,0,0.45);
     }
-    @media (max-width: 860px){
-      h1{ font-size: 42px; }
-    }
+    @media (max-width: 860px){ h1{ font-size: 38px; } }
 
-    .subtitle{ opacity:0.9; margin: 0 0 12px 0; line-height: 1.6; max-width: 980px; }
+    .subtitle{ opacity:0.9; margin: 0; line-height: 1.6; max-width: 980px; }
+
+    .metaRow{ display:flex; gap:10px; flex-wrap: wrap; align-items:center; margin-top: 14px; }
+    .pill{
+      font-size: 12px; font-weight: 900; border-radius: 999px; padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+    .pill-yellow{ background: rgba(252, 209, 22, 0.95); color: var(--ink); border-color: rgba(252, 209, 22, 0.7); }
+    .pill-green{ background: rgba(34,197,94,.14); border:1px solid rgba(34,197,94,.25); color:#eafff1; }
+    .pill-red{ background: rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.22); color:#ffecec; }
 
     .card{
       background: rgba(255,255,255,0.10);
@@ -94,18 +124,6 @@
       padding: 16px;
       margin: 14px 0;
     }
-
-    .metaRow{ display:flex; gap:10px; flex-wrap: wrap; align-items:center; margin-top: 8px; }
-    .pill{
-      font-size: 12px; font-weight: 900; border-radius: 999px; padding: 6px 10px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.12);
-      color: #fff;
-    }
-    .pill-yellow{ background: rgba(252, 209, 22, 0.95); color: var(--ink); border-color: rgba(252, 209, 22, 0.7); }
-    .pill-green{ background: rgba(34,197,94,.14); border:1px solid rgba(34,197,94,.25); color:#eafff1; }
-    .pill-red{ background: rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.22); color:#ffecec; }
-
     .sectionTitle{
       margin: 22px 0 10px;
       font-size: 16px;
@@ -116,7 +134,6 @@
       gap:10px;
     }
 
-    /* === Lesson content === */
     .lessonHtml{ line-height: 1.65; font-size: 15px; opacity: .97; white-space: normal; }
     .lessonHtml h2, .lessonHtml h3{ color: var(--yellow); margin: 18px 0 10px; }
     .lessonHtml img{
@@ -127,119 +144,7 @@
       margin: 14px auto;
     }
     .empty{ opacity:.78; font-size: 14px; padding: 10px 0; }
-    .errorBox{
-      background: rgba(239,68,68,.14);
-      border: 1px solid rgba(239,68,68,.30);
-      border-radius: 16px;
-      padding: 12px 14px;
-      color: #ffecec;
-      font-weight: 800;
-      line-height: 1.45;
-      display:none;
-      margin-top: 10px;
-    }
-
-    /* === Admin CMS === */
-    .adminWrap{ display:none; }
-    .adminHead{
-      display:flex; align-items:center; justify-content: space-between;
-      gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
-    }
-    .badge{
-      display:inline-flex; align-items:center; gap:8px;
-      padding: 8px 12px; border-radius: 999px;
-      background: rgba(0,0,0,0.20);
-      border: 1px solid rgba(255,255,255,0.12);
-      font-weight: 900; font-size: 12px;
-    }
-    .adminRight{ display:flex; gap:10px; flex-wrap: wrap; align-items:center; justify-content:flex-end; }
-
-    .toggle{
-      display:inline-flex; align-items:center; gap:10px;
-      padding: 8px 12px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.10);
-      font-weight: 900; cursor:pointer; user-select:none;
-    }
-    .toggle input{ width: 16px; height: 16px; }
-
-    .mini{
-      padding: 10px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.10);
-      color:#fff;
-      cursor:pointer;
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .mini:hover{ filter:brightness(1.06); transform: translateY(-1px); }
-    .mini-yellow{ background: rgba(252,209,22,.95); border-color: rgba(252,209,22,.70); color: var(--ink); }
-    .mini-red{ background: rgba(206,17,38,.20); border-color: rgba(206,17,38,.35); color:#fff; }
-
-    .twoCols{ display:grid; gap: 12px; grid-template-columns: 1fr 1fr; align-items:start; }
-    @media (max-width: 980px){ .twoCols{ grid-template-columns: 1fr; } }
-
-    .formGrid{ display:grid; gap: 10px; grid-template-columns: repeat(2, minmax(0,1fr)); align-items:start; }
-    @media (max-width: 860px){ .formGrid{ grid-template-columns: 1fr; } }
-    .field{ display:grid; gap:6px; }
-    .field label{ font-size: 12px; font-weight: 900; opacity:.92; letter-spacing:.2px; }
-    .input, .select, textarea{
-      width: 100%;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.12);
-      color:#fff;
-      padding: 10px 12px;
-      font-size: 14px;
-      outline: none;
-      font-family: Montserrat, Arial, sans-serif;
-      font-weight: 700;
-    }
-    textarea{
-      min-height: 260px;
-      resize: vertical;
-      line-height: 1.5;
-      background: rgba(0,0,0,0.18);
-      border-color: rgba(255,255,255,0.18);
-    }
-    .input::placeholder, textarea::placeholder{ color: rgba(255,255,255,0.55); }
-    .select{
-      cursor:pointer;
-      appearance:none; -webkit-appearance:none; -moz-appearance:none;
-      padding-right: 42px;
-      background-image:
-        linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.92) 50%),
-        linear-gradient(135deg, rgba(255,255,255,0.92) 50%, transparent 50%);
-      background-position:
-        calc(100% - 18px) calc(50% - 3px),
-        calc(100% - 12px) calc(50% - 3px);
-      background-size: 6px 6px, 6px 6px;
-      background-repeat: no-repeat;
-    }
-    .select option{ background: var(--blue); color: #fff; }
-
-    .editorTools{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-top:10px; }
-    .toolRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .muted{ opacity:.85; }
-    .hintSmall{ font-size: 12px; opacity: .78; margin-top: 8px; line-height: 1.35; }
-
-    .historyList{ display:grid; gap: 10px; }
-    .historyItem{
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 16px;
-      padding: 12px;
-      display:flex;
-      align-items:flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .historyMeta{ font-size: 12px; opacity:.9; line-height:1.35; }
-    .historyMeta b{ color: var(--yellow); }
-    .historyActions{ display:flex; gap: 8px; flex-wrap: wrap; }
-
+    .hintSmall{ font-size: 12px; opacity: .78; margin-top: 10px; line-height: 1.35; }
 
     /* TOC */
     .tocLink{
@@ -257,8 +162,7 @@
     .tocLink:hover{ filter:brightness(1.06); transform: translateY(-1px); }
     .tocSub{ margin-left:14px; opacity:.92; font-weight:800; }
 
-    
-    /* === Reading progress + exercise links === */
+    /* Reading progress */
     .readTools{
       margin-top: 12px;
       display:flex;
@@ -279,27 +183,6 @@
     .readProgressFill{ height:100%; background: var(--yellow); width:0%; transition: width .18s ease; }
     .readProgressText{ font-size: 12px; font-weight: 900; opacity: .92; }
     .exerciseLinks{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
-    .btn-ex{
-      display:inline-flex; align-items:center; justify-content:center; gap:10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 900;
-      cursor:pointer; text-decoration:none; white-space:nowrap;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.12);
-      color:#fff;
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .btn-ex:hover{ transform: translateY(-1px); filter: brightness(1.03); }
-    .btn-ex-yellow{ background: rgba(252, 209, 22, 0.95); border-color: rgba(252, 209, 22, 0.7); color: var(--ink); }
-    .btn-ex-ghost{ background: rgba(255,255,255,0.10); }
-    .textareaSmall{
-      min-height: 96px;
-      resize: vertical;
-      line-height: 1.5;
-      background: rgba(0,0,0,0.18);
-      border-color: rgba(255,255,255,0.18);
-    }
 
     /* Toast */
     #toast{
@@ -322,800 +205,67 @@
     .toast-ok{ background: rgba(6, 95, 70, 0.92); color: #fff; }
     .toast-bad{ background: rgba(185, 28, 28, 0.92); color: #fff; }
     .toast-warn{ background: rgba(252, 209, 22, 0.94); color: var(--ink); border-color: rgba(252, 209, 22, 0.7); }
-  /* === Admin editor UX improvements === */
-.tabRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin: 6px 0 10px; }
-.tabBtn{
-  padding: 10px 12px;
-  border-radius: 999px;
-  font-weight: 900;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.10);
-  color:#fff;
-  cursor:pointer;
-  transition: transform .12s ease, filter .12s ease;
-}
-.tabBtn:hover{ filter:brightness(1.06); transform: translateY(-1px); }
-.tabBtn.active{
-  background: rgba(252,209,22,.95);
-  border-color: rgba(252,209,22,.70);
-  color: var(--ink);
-}
-.builderWrap{ display:none; }
-.builderGrid{ display:grid; grid-template-columns: 1fr; gap:10px; }
-.builderGrid textarea{
-  min-height: 110px;
-  background: rgba(0,0,0,0.18);
-  border-color: rgba(255,255,255,0.18);
-}
-.builderGrid .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-@media (max-width: 980px){ .builderGrid .row2{ grid-template-columns: 1fr; } }
-.helperRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top: 10px; }
-.mini-ghost{ background: rgba(255,255,255,0.08); }
-
-    /* === Completeness (Admin) === */
-    .completeSummary{
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 16px;
-      padding: 12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-    .completeBar{
-      width: 260px;
-      max-width: 100%;
-      height: 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.10);
-      overflow: hidden;
-    }
-    .completeBar > div{
-      height: 100%;
-      background: rgba(252,209,22,0.95);
-      width: 0%;
-    }
-    .completePct{
-      font-weight: 900;
-      letter-spacing: .2px;
-    }
-    .completeList{ display:grid; gap:8px; }
-    .checkItem{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.06);
-    }
-    .checkLeft{ display:flex; gap:10px; align-items:flex-start; }
-    .checkDot{
-      width: 22px; height: 22px; border-radius: 999px;
-      display:inline-flex; align-items:center; justify-content:center;
-      font-weight: 900;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.10);
-      flex: 0 0 auto;
-    }
-    .ok .checkDot{ background: rgba(34,197,94,.18); border-color: rgba(34,197,94,.30); }
-    .warn .checkDot{ background: rgba(252,209,22,.18); border-color: rgba(252,209,22,.30); color: var(--yellow); }
-    .bad .checkDot{ background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.26); }
-    .checkText b{ color: var(--yellow); }
-    .checkHint{ opacity:.82; font-size: 12px; line-height: 1.35; margin-top: 2px; }
-
-  
-.heroSubTitle{
-  margin-top: 10px;
-  font-size: 22px;
-  font-weight: 600;
-  color: #FCD116;
-  opacity: 0.95;
-}
-
-
-/* ===== HERO TYPOGRAPHY UPGRADE ===== */
-.heroTitle{
-  text-shadow: 0 6px 26px rgba(0,0,0,.35);
-}
-.heroSubTitle{
-  margin-top: 12px;
-  font-size: clamp(16px, 1.8vw, 24px);
-  font-weight: 700;
-  color: #FCD116;
-  opacity: 0.98;
-  text-shadow: 0 3px 16px rgba(0,0,0,.35);
-  letter-spacing: .2px;
-}
-.heroBadges{
-  margin-top: 10px;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-.heroBadge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-weight: 900;
-  font-size: 13px;
-  letter-spacing: .3px;
-  border: 1px solid rgba(255,255,255,.20);
-  background: rgba(255,255,255,.12);
-  box-shadow: 0 10px 22px rgba(0,0,0,.12);
-}
-.heroBadge-level{
-  background: rgba(252,209,22,.95);
-  color: #0b1b3f;
-  border-color: rgba(252,209,22,.95);
-}
-.heroBadge-premium{
-  background: rgba(206,17,38,.92);
-  color: #fff;
-  border-color: rgba(206,17,38,.92);
-}
-.heroBadge-type{
-  background: rgba(0,56,147,.75);
-  color:#fff;
-}
-.heroBadge .badgeIcon{
-  display:inline-flex;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  align-items:center;
-  justify-content:center;
-  background: rgba(0,0,0,.14);
-  font-size: 13px;
-}
-@media (max-width: 520px){
-  .heroBadge{ font-size: 12px; padding: 7px 10px; }
-}
-/* ===== END HERO TYPOGRAPHY UPGRADE ===== */
-
-
-/* ===== HERO POSITION UPGRADE ===== */
-.hero{
-  padding-top: 70px !important;
-  padding-bottom: 40px !important;
-}
-.heroInner{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-align:center;
-}
-.heroTitle{
-  font-size: clamp(42px, 6vw, 72px);
-  margin-bottom: 6px;
-}
-.heroSubTitle{
-  margin-top: 6px;
-}
-.heroBadges{
-  justify-content:center;
-}
-/* Hide old top pills bar completely */
-.topPills{
-  display:none !important;
-}
-/* ===== END HERO POSITION UPGRADE ===== */
-
-
-/* ===== COURSERA/DUOLINGO HERO LAYOUT ===== */
-.hero{
-  padding-top: 64px !important;
-  padding-bottom: 34px !important;
-}
-.heroInner{
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-.heroGrid{
-  display:grid;
-  grid-template-columns: 1.25fr 0.95fr;
-  gap: 22px;
-  align-items: stretch;
-}
-.heroLeft{
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  text-align:left;
-}
-.heroTitle{
-  font-size: clamp(44px, 5.6vw, 78px);
-  line-height: 1.02;
-  margin: 0;
-  text-shadow: 0 8px 28px rgba(0,0,0,.35);
-}
-.heroSubTitle{
-  margin-top: 12px;
-  font-size: clamp(16px, 1.7vw, 24px);
-  font-weight: 800;
-  color: #FCD116;
-  text-shadow: 0 4px 18px rgba(0,0,0,.35);
-}
-.heroBadges{
-  margin-top: 12px;
-  justify-content:flex-start;
-}
-.topicCard{
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 22px;
-  padding: 16px 16px 14px;
-  box-shadow: 0 20px 44px rgba(0,0,0,.18);
-  backdrop-filter: blur(6px);
-}
-.topicKicker{
-  font-weight: 900;
-  opacity: .92;
-  font-size: 12px;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-}
-.topicTitle{
-  margin-top: 8px;
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 1.15;
-  letter-spacing: .2px;
-}
-.topicMeta{
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px dashed rgba(255,255,255,0.22);
-}
-.metaRow{
-  display:flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items:center;
-}
-.metaChip{
-  display:inline-flex;
-  align-items:center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-weight: 900;
-  font-size: 12px;
-  border: 1px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.10);
-}
-.metaChipPremium{
-  background: rgba(206,17,38,.92);
-  border-color: rgba(206,17,38,.92);
-}
-.metaRowSecondary{
-  margin-top: 10px;
-  opacity: .95;
-}
-.metaMini{
-  display:inline-flex;
-  align-items:center;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.10);
-  font-weight: 800;
-  font-size: 12px;
-}
-.topicActions{
-  margin-top: 14px;
-  display:flex;
-  gap: 10px;
-  flex-wrap:wrap;
-}
-.topicHint{
-  margin-top: 10px;
-  font-size: 12px;
-  opacity: .85;
-}
-@media (max-width: 900px){
-  .heroGrid{
-    grid-template-columns: 1fr;
-  }
-  .heroLeft{
-    text-align:center;
-    align-items:center;
-  }
-  .heroBadges{
-    justify-content:center;
-  }
-  .topicCard{
-    max-width: 760px;
-    margin: 0 auto;
-  }
-}
-@media (max-width: 520px){
-  .hero{
-    padding-top: 44px !important;
-    padding-bottom: 22px !important;
-  }
-  .heroInner{ padding: 0 14px; }
-  .topicTitle{ font-size: 18px; }
-  .topicActions .mini{ width: 100%; justify-content:center; }
-}
-/* Mobile-only polish: make content cards tighter */
-@media (max-width: 520px){
-  .card{ border-radius: 16px; }
-  .adminHead{ gap: 10px; }
-  .twoCols{ grid-template-columns: 1fr !important; }
-}
-/* ===== END HERO LAYOUT ===== */
-
-</style>
+  </style>
 </head>
 
 <body>
   <div id="appHeader"></div>
 
-  <nav class="nav-glass">
+  <div class="nav-glass">
     <div class="nav-inner">
-      <div class="brand">
+      <div class="brand" aria-label="AquiVivo">
         <div class="logo-flag" aria-hidden="true"></div>
         <div class="name">AquiVivo</div>
       </div>
 
       <div class="nav-actions">
-        <a class="btn" id="btnBackCourse" href="#">⬅️ ATRÁS</a>
-        <a class="btn" id="btnHome" href="index.html">🏠 INICIO</a>
-<button class="btn btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesión</button>
-</div>
+        <a class="btn" id="btnBackCourse" href="#">⬅️ Curso</a>
+        <a class="btn btn-yellow" id="btnGoExercises" href="#">🧩 Ejercicios</a>
+        <button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
+      </div>
     </div>
-  </nav>
-<main class="page">
+  </div>
+
+  <main class="page">
     <div class="container">
-      <section class="hero">
-        <div class="heroInner">
-          <div class="heroGrid">
-            <div class="heroLeft">
-              <h1 class="heroTitle" id="heroTitle">AquiVivo — Lección</h1>
-              <div class="heroSubTitle" id="heroSubTitle">Nivel — • Tema —</div>
 
-              <div class="heroBadges" aria-label="Meta de la lección">
-                <span class="heroBadge heroBadge-level" id="badgeLevel"><span class="badgeIcon">🎓</span> <span id="badgeLevelText">—</span></span>
-                <span class="heroBadge heroBadge-type" id="badgeType" style="display:none;"></span>
-                <span class="heroBadge heroBadge-premium" id="badgePremium" style="display:none;"><span class="badgeIcon">💎</span> Premium</span>
-              </div>
+      <div class="heroBanner">
+        <div class="heroTitleRow">
+          <div class="heroIcon">📖</div>
+          <div style="flex:1">
+            <h1 id="lessonTitle">Cargando…</h1>
+            <p class="subtitle" id="lessonDesc">Cargando…</p>
 
-              <div class="topicActions">
-                <button class="mini mini-yellow" id="btnScrollContent" type="button">📘 Ver contenido</button>
-                <button class="mini" id="btnCopyLink2" type="button">🔗 Copiar enlace</button>
-                <a class="mini" id="btnGoExercises" href="#">🧩 Ejercicios</a>
-              </div>
-
-              <div class="topicHint">Después de leer, pasa a los ejercicios para practicar.</div>
+            <div class="metaRow">
+              <span class="pill pill-yellow" id="pillLevel">Nivel: —</span>
+              <span class="pill" id="pillTopic">Tema: —</span>
+              <span class="pill" id="pillType" style="display:none"></span>
+              <span class="pill" id="pillDuration" style="display:none"></span>
+              <span class="pill" id="pillPub" style="display:none"></span>
+              <a class="pill" id="pillAdminLink" href="#" style="display:none; text-decoration:none;">🛠 Admin lección</a>
             </div>
 
-            <div class="topicCard">
-              <div class="topicKicker">TEMA</div>
-              <div class="topicTitle" id="topicTitle">—</div>
-
-              <div class="topicMeta">
-                <div class="metaRow">
-                  <span class="metaChip" id="chipLevel">🎓 —</span>
-                  <span class="metaChip" id="chipType" style="display:none;"></span>
-                  <span class="metaChip metaChipPremium" id="chipPremium" style="display:none;">💎 Premium</span>
-                </div>
-
-                <div class="metaRow metaRowSecondary">
-                  <span class="metaMini" id="miniDuration" style="display:none;"></span>
-                  <span class="metaMini" id="miniComm" style="display:none;"></span>
-                </div>
+            <div class="readTools" id="readTools" style="display:none;">
+              <div class="readProgress">
+                <div class="readProgressBar"><div class="readProgressFill" id="readProgressFill" style="width:0%"></div></div>
+                <div class="readProgressText" id="readProgressText">📖 Progreso de lectura: 0%</div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <p class="subtitle" id="subTitle">Cargando…</p>
-
-      <div class="card">
-        <div class="metaRow">
-          <span class="pill" id="pillLevel">Nivel —</span>
-          <span class="pill" id="pillTopic">Tema —</span>
-          <span class="pill" id="pillDoc">docId —</span>
-          <span class="pill pill-red" id="pillPub" style="display:none;">No publicado</span>
-          <span class="pill pill-green" id="pillPubOk" style="display:none;">Publicado</span>
-        </div>
-
-        <div class="sectionTitle">📘 Contenido de la lección</div>
-        <div id="errorBox" class="errorBox"></div>
-
-        <div class="readTools" id="readTools" style="display:none;">
-          <div class="readProgress">
-            <div class="readProgressBar"><div class="readProgressFill" id="readProgressFill" style="width:0%"></div></div>
-            <div class="readProgressText" id="readProgressText">📖 Progreso de lectura: 0%</div>
-          </div>
-          <div class="exerciseLinks" id="exerciseLinksWrap"></div>
-        </div>
-
-        <div id="tocWrap" style="display:none; margin-top:12px;">
-          <div class="sectionTitle">📌 En esta lección</div>
-          <div id="tocList" class="card" style="padding:12px; margin:0;"></div>
-        </div>
-<div id="lessonContent" class="lessonHtml" style="display:none;"></div>
-        <div id="lessonEmpty" class="empty" style="display:none;"></div>
-
-        <div class="hintSmall" id="studentHint" style="display:none;">
-          Esta lección todavía no está publicada. Vuelve más tarde.
-        </div>
-      </div>
-
-      <div class="adminWrap" id="adminWrap">
-        <div class="card">
-          <div class="adminHead">
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-              <div class="badge">🛠 Admin — edición de lección</div>
-              <div class="badge" id="dirtyBadge" style="display:none;">⚠️ Cambios sin guardar</div>
-              <div class="badge" id="savedBadge" style="display:none;">✅ Guardado</div>
+              <div class="exerciseLinks" id="exerciseLinksWrap"></div>
             </div>
 
-            <div class="adminRight">
-              <label class="toggle" title="Opublikuj / Borrador">
-                <input type="checkbox" id="publishedToggle" />
-                <span id="publishedLabel">Borrador</span>
-              </label>
-              <button class="mini" id="btnPreview" type="button">👁️ Vista previa</button>
-              <button class="mini mini-yellow" id="btnSaveDraft" type="button">💾 Guardar</button>
-              <button class="mini" id="btnPublish" type="button">🚀 Opublikuj</button>
-              <button class="mini mini-red" id="btnUnpublish" type="button">↩️ Ukryj</button>
-            </div>
-          </div>
-
-          <div class="twoCols">
-            <div>
-              <div class="sectionTitle">🧩 Meta</div>
-              <div class="formGrid">
-                <div class="field">
-                  <label for="titleInput">Tytuł</label>
-                  <input class="input" id="titleInput" placeholder="p. ej. Caso nominativo — podstawy" />
-                </div>
-                <div class="field">
-                  <label for="typeSelect">Typ</label>
-                  <select class="select" id="typeSelect">
-                    <option value="">—</option>
-                    <option value="grammar">Gramática</option>
-                    <option value="vocab">Vocabulario</option>
-                    <option value="practice">Práctica</option>
-                    <option value="mixed">Mixto</option>
-                  </select>
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="descInput">Krótki opis</label>
-                  <input class="input" id="descInput" placeholder="1–2 frases: qué podrá hacer el alumno después de esta lección" />
-                </div>
-                <div class="field">
-                  <label for="durationInput">Czas (min)</label>
-                  <input class="input" id="durationInput" type="number" min="0" step="5" placeholder="p. ej. 60" />
-                </div>
-                <div class="field">
-                  <label for="commTopicInput">Temat komunikacyjny</label>
-                  <input class="input" id="commTopicInput" placeholder="p. ej. En el restaurante / En la oficina" />
-                </div>
-
-
-                <div class="field">
-                  <label for="orderInput">Order</label>
-                  <input class="input" id="orderInput" type="number" min="0" step="1" placeholder="p. ej. 10" />
-                </div>
-                <div class="field">
-                  <label for="tagsInput">Tags (comma)</label>
-                  <input class="input" id="tagsInput" placeholder="p. ej. casos, A1, diálogo" />
-                </div>
-              
-              <div class="sectionTitle">💎 Premium</div>
-              <div class="formGrid">
-                <div class="field">
-                  <label for="isPremiumToggle">Lekcja premium</label>
-                  <select class="select" id="isPremiumToggle">
-                    <option value="false">No (gratis)</option>
-                    <option value="true">Sí (premium)</option>
-                  </select>
-                </div>
-
-                <div class="field">
-                  <label for="allowPreviewToggle">Podgląd gratis (bez premium)</label>
-                  <select class="select" id="allowPreviewToggle" title="Permite ver la lección (sin ejercicios/materiales) sin premium">
-                    <option value="true">Sí</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="premiumTeaserInput">Tekst blokady (dla osób bez premium)</label>
-                  <textarea class="input textareaSmall" id="premiumTeaserInput" placeholder="Escribe 2–4 frases: qué obtendrá con Premium…"></textarea>
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="paywallUrlInput">Link do zakupu / cennika (CTA)</label>
-                  <input class="input" id="paywallUrlInput" placeholder="p. ej. pricing.html o https://..." />
-                </div>
-              </div>
-</div>
-<div class="field" style="grid-column: 1 / -1;">
-                  <label for="exerciseLinksInput">Links de ejercicios (uno por línea)</label>
-                  <textarea class="input textareaSmall" id="exerciseLinksInput" placeholder="Etiqueta | URL
-Ejercicios – práctica | lesson.html?level=A1&id=TU_ID
-Quiz del tema | https://..."></textarea>
-                  <div class="hint">Formato: <b>Etiqueta | URL</b> (o solo URL). Se mostrarán como botones en esta lección.</div>
-                </div>
-
-
-              <div class="sectionTitle">🖼️ Imagen</div>
-              <div class="formGrid">
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="imgUrl">URL de la imagen</label>
-                  <input class="input" id="imgUrl" placeholder="https://..." />
-                </div>
-                <div class="field">
-                  <label for="imgAlt">Alt</label>
-                  <input class="input" id="imgAlt" placeholder="descripción de la imagen" />
-                </div>
-                <div class="field" style="display:flex; align-items:end;">
-                  <button class="mini mini-yellow" id="btnInsertImg" type="button" style="width:100%;">➕ Insertar en HTML</button>
-                </div>
-              </div>
-
-              <div class="sectionTitle">✅ Estado de completitud</div>
-              <div id="completeSummary" class="completeSummary">—</div>
-              <div id="completeList" class="completeList"></div>
-
-
-              <div class="editorTools">
-                <div class="toolRow">
-                  
-<select id="templateSelect" class="mini" title="Elegir plantilla">
-  <option value="">— Elegir plantilla —</option>
-  <option value="grammar">📘 Gramática</option>
-  <option value="vocab">📗 Vocabulario</option>
-  <option value="dialog">🗣️ Diálogo</option>
-  <option value="review">📝 Repaso / Test</option>
-</select>
-<button class="mini" id="btnInsertTemplate" type="button" title="Insertar plantilla">➕ Insertar</button>
-<button class="mini" id="btnTemplate" type="button">✨ Plantilla</button>
-                  <button class="mini" id="btnLoadDraft" type="button">🧠 Cargar borrador</button>
-                  <button class="mini mini-red" id="btnClearDraft" type="button">🧹 Usuń borrador</button>
-                </div>
-                <div class="toolRow">
-                  <span class="muted" id="docInfo">docId: —</span>
-                </div>
-              </div>
-
-              <div class="hintSmall">
-                • Cada guardado crea un snapshot w <code>course_meta/{docId}/history</code> (se muestran los últimos 10 a la derecha).<br>
-                • El borrador también se guarda automáticamente en local (localStorage).
-              </div>
-            </div>
-
-            <div>
-              <div class="sectionTitle">✍️ Editor</div>
-
-<div class="tabRow">
-  <button class="tabBtn active" id="tabEasy" type="button">🧩 Editor fácil</button>
-  <button class="tabBtn" id="tabHtml" type="button">💻 HTML</button>
-</div>
-
-<!-- EASY EDITOR -->
-<div class="builderWrap" id="builderWrap" style="display:block;">
-  <div class="builderGrid">
-    <div class="field">
-      <label for="bObjective">🎯 Objetivo (una idea por línea)</label>
-      <textarea id="bObjective" placeholder="• ...&#10;• ..."></textarea>
-    </div>
-
-    <div class="field">
-      <label for="bRule">🧠 Explicación / Regla</label>
-      <textarea id="bRule" placeholder="Explica la regla en 3–6 frases..."></textarea>
-    </div>
-
-    <div class="row2">
-      <div class="field">
-        <label for="bExamples">✅ Ejemplos (uno por línea)</label>
-        <textarea id="bExamples" placeholder="Ejemplo 1...&#10;Ejemplo 2..."></textarea>
-      </div>
-      <div class="field">
-        <label for="bPractice">✍️ Práctica (instrucciones / tareas)</label>
-        <textarea id="bPractice" placeholder="1) ...&#10;2) ..."></textarea>
-      </div>
-    </div>
-
-    <div class="row2">
-      <div class="field">
-        <label for="bDialog">🗣️ Mini-diálogo (A:/B:)</label>
-        <textarea id="bDialog" placeholder="A: ...&#10;B: ...&#10;A: ..."></textarea>
-      </div>
-      <div class="field">
-        <label for="bSummary">🏅 Resumen (puntos clave)</label>
-        <textarea id="bSummary" placeholder="• ...&#10;• ..."></textarea>
-      </div>
-    </div>
-
-    <div class="helperRow">
-      <button class="mini mini-yellow" id="btnBuildHtml" type="button">⚡ Generar HTML</button>
-      <button class="mini mini-ghost" id="btnInsertRuleBox" type="button">➕ Bloque “Atención”</button>
-      <button class="mini mini-ghost" id="btnInsertTipBox" type="button">➕ Bloque “Tip”</button>
-      <span class="muted" style="font-size:12px;">Genera una estructura limpia y luego puedes afinar en la pestaña HTML.</span>
-    </div>
-
-    <div class="hintSmall">
-      • Consejo: escribe normal (sin HTML). Yo lo convierto en una lección lista. <br>
-      • Si ya editas en HTML, cambia a la pestaña 💻 HTML.
-    </div>
-  </div>
-</div>
-
-<!-- HTML EDITOR -->
-<div id="htmlWrap" style="display:none;">
-  <textarea id="htmlArea" placeholder="<h2>...</h2>"></textarea>
-
-  <div class="helperRow">
-    <button class="mini mini-ghost" id="btnInsH2" type="button">➕ H2</button>
-    <button class="mini mini-ghost" id="btnInsH3" type="button">➕ H3</button>
-    <button class="mini mini-ghost" id="btnInsList" type="button">➕ Lista</button>
-    <button class="mini mini-ghost" id="btnInsExampleBox" type="button">➕ Ejemplo</button>
-  </div>
-</div>
-
-              <div class="editorTools">
-                <div class="toolRow">
-                  <button class="mini" id="btnFormatHint" type="button">ℹ️ Format</button>
-                  <button class="mini" id="btnCopyLink" type="button">🔗 Copiar enlace</button>
-                </div>
-                <div class="toolRow">
-                  <span class="muted" id="updatedInfo">—</span>
-                </div>
-              </div>
-
-              <div class="sectionTitle">🕘 Historia wersji</div>
-              <div id="historyList" class="historyList"></div>
-            </div>
           </div>
         </div>
       </div>
 
-
-      <!-- ===== PREMIUM: materiales + speaking/writing (Admin) ===== -->
-      <div class="adminWrap" id="adminExtras" style="display:none;">
-        <div class="card">
-          <div class="adminHead" style="margin-bottom:12px;">
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-              <div class="badge">💎 Premium — materiały i produkcja</div>
-              <div class="badge" id="premiumStatusBadge" style="display:none;">Premium</div>
-            </div>
-            <div class="adminRight">
-              <button class="mini" id="btnReloadPremium" type="button">🔄 Odśwież</button>
-            </div>
-          </div>
-
-          <div class="twoCols">
-            <!-- Materials -->
-            <div>
-              <div class="sectionTitle">📎 Materiały (PDF / audio / wideo)</div>
-              <div class="formGrid">
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="matTitle">Tytuł</label>
-                  <input class="input" id="matTitle" placeholder="p. ej. PDF — Cheat sheet" />
-                </div>
-
-                <div class="field">
-                  <label for="matType">Typ</label>
-                  <select class="select" id="matType">
-                    <option value="pdf">PDF</option>
-                    <option value="audio">Audio</option>
-                    <option value="video">Vídeo</option>
-                    <option value="cheatsheet">Cheat-sheet</option>
-                    <option value="slides">Slides</option>
-                    <option value="link">Link</option>
-                  </select>
-                </div>
-
-                <div class="field">
-                  <label for="matOrder">Kolejność</label>
-                  <input class="input" id="matOrder" type="number" min="0" step="1" placeholder="1" />
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="matUrl">URL</label>
-                  <input class="input" id="matUrl" placeholder="https://... / assets/..." />
-                </div>
-
-                <div class="field">
-                  <label for="matPremiumOnly">Solo premium</label>
-                  <select class="select" id="matPremiumOnly">
-                    <option value="true">Sí</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
-
-                <div class="field" style="display:flex; align-items:end;">
-                  <button class="mini mini-yellow" id="btnAddMaterial" type="button" style="width:100%;">➕ Dodaj</button>
-                </div>
-              </div>
-
-              <div class="hintSmall">Se guarda en <code>course_meta/{docId}/materials</code>. Puedes editar / borrar desde la lista.</div>
-              <div id="materialsList" class="historyList" style="margin-top:10px;"></div>
-            </div>
-
-            <!-- Production -->
-            <div>
-              <div class="sectionTitle">🗣️ Produkcja (mówienie / pisanie)</div>
-              <div class="formGrid">
-                <div class="field">
-                  <label for="prodType">Typ</label>
-                  <select class="select" id="prodType">
-                    <option value="speaking">Speaking</option>
-                    <option value="writing">Writing</option>
-                  </select>
-                </div>
-
-                <div class="field">
-                  <label for="prodOrder">Kolejność</label>
-                  <input class="input" id="prodOrder" type="number" min="0" step="1" placeholder="1" />
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="prodInstrPl">Instrukcja PL</label>
-                  <textarea class="input textareaSmall" id="prodInstrPl" placeholder="Napisz / powiedz..."></textarea>
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="prodInstrEs">Instrucción ES</label>
-                  <textarea class="input textareaSmall" id="prodInstrEs" placeholder="Escribe / di..."></textarea>
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="prodSamplePl">Ejemplo PL (opcional)</label>
-                  <textarea class="input textareaSmall" id="prodSamplePl" placeholder="Przykład odpowiedzi..."></textarea>
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="prodSampleEs">Ejemplo ES (opcional)</label>
-                  <textarea class="input textareaSmall" id="prodSampleEs" placeholder="Ejemplo de respuesta..."></textarea>
-                </div>
-
-                <div class="field">
-                  <label for="prodAllowAudio">Audio</label>
-                  <select class="select" id="prodAllowAudio">
-                    <option value="true">Sí</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
-
-                <div class="field">
-                  <label for="prodSendTeacher">Enviar al profesor</label>
-                  <select class="select" id="prodSendTeacher">
-                    <option value="true">Sí</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <button class="mini mini-yellow" id="btnAddProduction" type="button" style="width:100%;">➕ Dodaj producción</button>
-                </div>
-              </div>
-
-              <div class="hintSmall">Se guarda en <code>course_meta/{docId}/production</code>.</div>
-              <div id="productionList" class="historyList" style="margin-top:10px;"></div>
-            </div>
-          </div>
-        </div>
+      <div id="tocWrap" style="display:none; margin-top:12px;">
+        <div class="sectionTitle">📌 En esta lección</div>
+        <div id="tocList" class="card" style="padding:12px; margin:0;"></div>
       </div>
-      <!-- ===== END PREMIUM ===== -->
+
+      <div id="lessonContent" class="lessonHtml" style="display:none;"></div>
+      <div id="lessonEmpty" class="empty" style="display:none;"></div>
+
+      <div class="hintSmall" id="studentHint" style="display:none;"></div>
 
       <div id="toast"></div>
     </div>
@@ -1124,10 +274,7 @@ Quiz del tema | https://..."></textarea>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-    import {
-      getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
-      collection, addDoc, getDocs, query, orderBy, limit, where, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
@@ -1147,654 +294,56 @@ Quiz del tema | https://..."></textarea>
 
     const $ = (id) => document.getElementById(id);
 
-    // Elements
-const subTitleEl = $("subTitle");
-    const pillLevel = $("pillLevel");
-    const pillTopic = $("pillTopic");
-    const pillDoc = $("pillDoc");
-    const pillPub = $("pillPub");
-    const pillPubOk = $("pillPubOk");
+    const toast = $("toast");
     const btnLogout = $("btnLogout");
     const btnBackCourse = $("btnBackCourse");
-const errorBox = $("errorBox");
+    const btnGoExercises = $("btnGoExercises");
+    const pillAdminLink = $("pillAdminLink");
+
+    const lessonTitleEl = $("lessonTitle");
+    const lessonDescEl = $("lessonDesc");
+    const pillLevel = $("pillLevel");
+    const pillTopic = $("pillTopic");
+    const pillType = $("pillType");
+    const pillDuration = $("pillDuration");
+    const pillPub = $("pillPub");
+
+    const tocWrap = $("tocWrap");
+    const tocList = $("tocList");
+    const readTools = $("readTools");
+    const readProgressFill = $("readProgressFill");
+    const readProgressText = $("readProgressText");
+    const exerciseLinksWrap = $("exerciseLinksWrap");
+
     const lessonContent = $("lessonContent");
     const lessonEmpty = $("lessonEmpty");
     const studentHint = $("studentHint");
 
-
-    const tocWrap = document.getElementById("tocWrap");
-    const tocList = document.getElementById("tocList");
-    const readTools = document.getElementById("readTools");
-    const readProgressFill = document.getElementById("readProgressFill");
-    const readProgressText = document.getElementById("readProgressText");
-    const exerciseLinksWrap = document.getElementById("exerciseLinksWrap");
-    const exerciseLinksInput = document.getElementById("exerciseLinksInput");
-    const adminWrap = $("adminWrap");
-    const dirtyBadge = $("dirtyBadge");
-    const savedBadge = $("savedBadge");
-    const publishedToggle = $("publishedToggle");
-    const publishedLabel = $("publishedLabel");
-    const btnPreview = $("btnPreview");
-    const btnSaveDraft = $("btnSaveDraft");
-    const btnPublish = $("btnPublish");
-    const btnUnpublish = $("btnUnpublish");
-
-    const titleInput = $("titleInput");
-    const typeSelect = $("typeSelect");
-    const descInput = $("descInput");
-    const durationInput = $("durationInput");
-    const commTopicInput = $("commTopicInput");
-    const orderInput = $("orderInput");
-    const tagsInput = $("tagsInput");
-    const imgUrl = $("imgUrl");
-    const imgAlt = $("imgAlt");
-    const btnInsertImg = $("btnInsertImg");
-
-    const btnTemplate = $("btnTemplate");
-    const btnLoadDraft = $("btnLoadDraft");
-    const btnClearDraft = $("btnClearDraft");
-    const docInfo = $("docInfo");
-
-    const htmlArea = $("htmlArea");
-    const completeSummary = $("completeSummary");
-    const completeList = $("completeList");
-
-
-// Premium fields (Meta)
-const isPremiumToggle = document.getElementById("isPremiumToggle");
-const allowPreviewToggle = document.getElementById("allowPreviewToggle");
-const premiumTeaserInput = document.getElementById("premiumTeaserInput");
-const paywallUrlInput = document.getElementById("paywallUrlInput");
-
-// Premium managers (subcollections)
-const adminExtras = document.getElementById("adminExtras");
-const premiumStatusBadge = document.getElementById("premiumStatusBadge");
-const btnReloadPremium = document.getElementById("btnReloadPremium");
-
-const matTitle = document.getElementById("matTitle");
-const matType = document.getElementById("matType");
-const matOrder = document.getElementById("matOrder");
-const matUrl = document.getElementById("matUrl");
-const matPremiumOnly = document.getElementById("matPremiumOnly");
-const btnAddMaterial = document.getElementById("btnAddMaterial");
-const materialsList = document.getElementById("materialsList");
-
-const prodType = document.getElementById("prodType");
-const prodOrder = document.getElementById("prodOrder");
-const prodInstrPl = document.getElementById("prodInstrPl");
-const prodInstrEs = document.getElementById("prodInstrEs");
-const prodSamplePl = document.getElementById("prodSamplePl");
-const prodSampleEs = document.getElementById("prodSampleEs");
-const prodAllowAudio = document.getElementById("prodAllowAudio");
-const prodSendTeacher = document.getElementById("prodSendTeacher");
-const btnAddProduction = document.getElementById("btnAddProduction");
-const productionList = document.getElementById("productionList");
-
-const topicTitleEl = document.getElementById("topicTitle");
-const chipLevel = document.getElementById("chipLevel");
-const chipType = document.getElementById("chipType");
-const chipPremium = document.getElementById("chipPremium");
-const miniDuration = document.getElementById("miniDuration");
-const miniComm = document.getElementById("miniComm");
-const btnScrollContent = document.getElementById("btnScrollContent");
-const btnCopyLink2 = document.getElementById("btnCopyLink2");
-const btnGoExercises = document.getElementById("btnGoExercises");
-const badgeLevelText = document.getElementById("badgeLevelText");
-
-// Editor UX
-const tabEasy = document.getElementById("tabEasy");
-const tabHtml = document.getElementById("tabHtml");
-const builderWrap = document.getElementById("builderWrap");
-const htmlWrap = document.getElementById("htmlWrap");
-
-const bObjective = document.getElementById("bObjective");
-const bRule = document.getElementById("bRule");
-const bExamples = document.getElementById("bExamples");
-const bPractice = document.getElementById("bPractice");
-const bDialog = document.getElementById("bDialog");
-const bSummary = document.getElementById("bSummary");
-
-const btnBuildHtml = document.getElementById("btnBuildHtml");
-const btnInsertRuleBox = document.getElementById("btnInsertRuleBox");
-const btnInsertTipBox = document.getElementById("btnInsertTipBox");
-
-const btnInsH2 = document.getElementById("btnInsH2");
-const btnInsH3 = document.getElementById("btnInsH3");
-const btnInsList = document.getElementById("btnInsList");
-const btnInsExampleBox = document.getElementById("btnInsExampleBox");
-
-    // ===== AquiVivo TEMPLATE SYSTEM START =====
-    const TEMPLATE_STORAGE_KEY = "aquivivo_default_template";
-    const COMPLETION_FOOTER = `
-<hr style="border:0;border-top:1px solid rgba(255,255,255,0.18); margin:18px 0;">
-<p style="font-size:18px; font-weight:900; color:white; margin:0;">
-  ✅ Lección completada. ¡Excelente trabajo! 🎉
-</p>
-`.trim();
-
-    function ensureCompletionFooter(htmlStr){
-      const s = (htmlStr || "").trim();
-      if(!s) return s;
-      if(s.includes("Lección completada")) return s;
-      return (s + "\n\n" + COMPLETION_FOOTER).trim();
-    }
-
-    const TEMPLATES = {
-      grammar: `
-<div style="color:white; font-size:17px; line-height:1.75;">
-<h2 style="font-size:28px;">📘 Gramática — Objetivo</h2>
-<ul>
-  <li>Hoy aprenderás a: …</li>
-  <li>Usar correctamente: …</li>
-  <li>Evitar el error típico: …</li>
-</ul>
-
-<h2 style="font-size:28px;">🧠 Regla</h2>
-<p>Explica la regla en 3–6 frases. Resalta lo clave con <b>negrita</b>.</p>
-
-<h3 style="font-size:22px;">✅ Estructura</h3>
-<ul>
-  <li><b>Patrón:</b> …</li>
-  <li><b>Cuándo se usa:</b> …</li>
-  <li><b>Cuándo NO:</b> …</li>
-</ul>
-
-<div style="background: rgba(252,209,22,0.95); color:#0b1b3f; padding:16px 18px; border-radius:14px; margin:18px 0; font-weight:900;">
-  ⚠️ <b>Atención:</b> …
-</div>
-
-<h2 style="font-size:28px;">🔎 Comparación español – polaco</h2>
-<ul>
-  <li><b>ES:</b> …</li>
-  <li><b>PL:</b> …</li>
-  <li><b>Clave:</b> …</li>
-</ul>
-
-<h2 style="font-size:28px;">✍️ Práctica</h2>
-<h3 style="font-size:22px;">1) Completa</h3>
-<ul><li>…</li></ul>
-<h3 style="font-size:22px;">2) Elige la opción correcta</h3>
-<ul><li>…</li></ul>
-
-<h2 style="font-size:28px;">🏅 Resumen</h2>
-<ul>
-  <li>Regla clave: …</li>
-  <li>Ejemplo modelo: …</li>
-</ul>
-</div>`.trim(),
-
-      vocab: `
-<div style="color:white; font-size:17px; line-height:1.75;">
-<h2 style="font-size:28px;">📗 Vocabulario — Objetivo</h2>
-<ul>
-  <li>Aprenderás: …</li>
-  <li>Podrás usarlo en: …</li>
-</ul>
-
-<h2 style="font-size:28px;">📌 Lista de vocabulario</h2>
-<ul>
-  <li><b>palabra</b> — traducción / explicación breve</li>
-  <li><b>expresión</b> — ejemplo breve</li>
-</ul>
-
-<h2 style="font-size:28px;">✅ Ejemplos</h2>
-<ul>
-  <li><b>Frase 1:</b> …</li>
-  <li><b>Frase 2:</b> …</li>
-</ul>
-
-<h2 style="font-size:28px;">🎯 Práctica</h2>
-<ul>
-  <li>Empareja / completa / produce: …</li>
-</ul>
-
-<h2 style="font-size:28px;">🏅 Resumen</h2>
-<ul>
-  <li>Palabras clave: …</li>
-  <li>Expresión útil: …</li>
-</ul>
-</div>`.trim(),
-
-      dialog: `
-<div style="color:white; font-size:17px; line-height:1.75;">
-<h2 style="font-size:28px;">🗣️ Comunicación — Objetivo</h2>
-<ul>
-  <li>Hoy aprenderás a comunicarte en: …</li>
-  <li>Podrás pedir, preguntar y responder.</li>
-</ul>
-
-<h2 style="font-size:28px;">🗨️ Diálogo principal</h2>
-<p>
-  <b>A:</b> …<br/>
-  <b>B:</b> …<br/>
-  <b>A:</b> …<br/>
-  <b>B:</b> …
-</p>
-
-<div style="background: rgba(252,209,22,0.95); color:#0b1b3f; padding:16px 18px; border-radius:14px; margin:18px 0; font-weight:900;">
-  ⭐ <b>Frase clave:</b> …
-</div>
-
-<h2 style="font-size:28px;">🎭 Práctica (role-play)</h2>
-<ul>
-  <li>Responde: …</li>
-  <li>Cambia una palabra: …</li>
-</ul>
-
-<h2 style="font-size:28px;">🏅 Resumen</h2>
-<ul>
-  <li>Situación: …</li>
-  <li>Frase clave: …</li>
-</ul>
-</div>`.trim(),
-
-      review: `
-<div style="color:white; font-size:17px; line-height:1.75;">
-<h2 style="font-size:28px;">📝 Repaso / Mini-test</h2>
-<ul>
-  <li>Repasar lo aprendido en esta unidad.</li>
-  <li>Comprobar tu progreso con un mini-examen.</li>
-</ul>
-
-<h2 style="font-size:28px;">📌 Recordatorio rápido</h2>
-<ul>
-  <li><b>Regla 1:</b> …</li>
-  <li><b>Regla 2:</b> …</li>
-  <li><b>Vocabulario clave:</b> …</li>
-</ul>
-
-<h2 style="font-size:28px;">✅ Parte A — Opción múltiple (5)</h2>
-<ol>
-  <li>… (A / B / C)</li>
-  <li>… (A / B / C)</li>
-  <li>… (A / B / C)</li>
-  <li>… (A / B / C)</li>
-  <li>… (A / B / C)</li>
-</ol>
-
-<h2 style="font-size:28px;">✍️ Parte B — Completa (5)</h2>
-<ol>
-  <li>Yo ____ …</li>
-  <li>Ella ____ …</li>
-  <li>Nosotros ____ …</li>
-  <li>…</li>
-  <li>…</li>
-</ol>
-
-<h2 style="font-size:28px;">🗣️ Parte C — Producción</h2>
-<ul>
-  <li>Escribe 5–7 frases sobre: …</li>
-  <li>Escribe un mini-diálogo (6 líneas) en la situación: …</li>
-</ul>
-
-<h2 style="font-size:28px;">🎯 Autoevaluación</h2>
-<ul>
-  <li>☐ Lo entiendo</li>
-  <li>☐ Lo puedo usar</li>
-  <li>☐ Necesito más práctica</li>
-</ul>
-</div>`.trim()
-    };
-
-    function getDefaultTemplateKey(){
-      return (localStorage.getItem(TEMPLATE_STORAGE_KEY) || "grammar").trim();
-    }
-    function setDefaultTemplateKey(k){
-      localStorage.setItem(TEMPLATE_STORAGE_KEY, k);
-    }
-
-    function applyTemplate(key){
-      const k = key || getDefaultTemplateKey();
-      const tpl = TEMPLATES[k] || TEMPLATES.grammar;
-      htmlArea.value = ensureCompletionFooter(tpl);
-      try{ setDirty(true); }catch(e){}
-      try{ saveLocalDraft(); }catch(e){}
-      try{ if(previewOn) renderLesson({ published: publishedToggle.checked, html: htmlArea.value }); }catch(e){}
-    }
-
-    const templateSelectEl = document.getElementById("templateSelect");
-    const btnInsertTemplateEl = document.getElementById("btnInsertTemplate");
-
-    if(templateSelectEl){
-      templateSelectEl.value = getDefaultTemplateKey();
-      templateSelectEl.addEventListener("change", ()=>{
-        if(templateSelectEl.value) setDefaultTemplateKey(templateSelectEl.value);
-      });
-    }
-    if(btnInsertTemplateEl){
-      btnInsertTemplateEl.addEventListener("click", ()=>{
-        const key = templateSelectEl?.value || getDefaultTemplateKey();
-        if(htmlArea.value.trim()){
-          if(!confirm("¿Reemplazar el contenido actual con la plantilla?")) return;
-        }
-        applyTemplate(key);
-      });
-    }
-    // ===== AquiVivo TEMPLATE SYSTEM END =====
-
-    const btnFormatHint = $("btnFormatHint");
-    const btnCopyLink = $("btnCopyLink");
-    const updatedInfo = $("updatedInfo");
-    const historyList = $("historyList");
-    const toast = $("toast");
-
-    // State
     const params = new URLSearchParams(location.search);
     const LEVEL = (params.get("level") || "").toUpperCase();
     const TOPIC_ID = (params.get("id") || "").trim();
     const DOC_ID = `${LEVEL}__${TOPIC_ID}`;
 
-    // Links (navigation)
-    const btnHome = $("btnHome");
     btnBackCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-    if(btnHome) btnHome.href = "index.html";
+    btnGoExercises.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
 
-    // Default "Ejercicios" link (go to exercises page)
-    if(btnGoExercises){
-      const t = encodeURIComponent(TOPIC_ID);
-      const l = encodeURIComponent(LEVEL);
-      btnGoExercises.href = `lesson.html?level=${l}&topicSlug=${t}&id=${t}`;
-    }
-    if(badgeLevelText){ badgeLevelText.textContent = (LEVEL || "—").toUpperCase(); }
-
-
-    // Some browsers/extensions block dynamic href updates on cached pages; this makes it bulletproof.
-    btnBackCourse.addEventListener("click", (e)=>{
-      e.preventDefault();
-      location.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-    });
-let currentUser = null;
-    let adminMode = false;
-    let previewOn = false;
-    let dirty = false;
-
-    // Links + meta
-pillLevel.textContent = `Nivel ${LEVEL || "—"}`;
-    pillTopic.textContent = `Tema: ${TOPIC_ID || "—"}`;
-    pillDoc.textContent = `docId: ${DOC_ID}`;
-    docInfo.textContent = `docId: ${DOC_ID}`;
-    const hero = document.getElementById("heroSubTitle"); if(hero){ hero.textContent = `Nivel ${LEVEL || "—"} • Tema: ${TOPIC_ID || "—"}`; }
-    if(topicTitleEl && (TOPIC_ID||"").trim()) topicTitleEl.textContent = TOPIC_ID;
-
-
-    // Fetch topic title from `courses` collection (so we show the real title instead of the docId)
-    function pickTopicTitle(d){
-      if(!d) return "";
-      const candidates = [
-        d.title, d.name, d.topicTitle, d.topicName,
-        d.titleEs, d.titleES, d.esTitle, d.es,
-        (d.titles && (d.titles.es || d.titles.pl || d.titles.en)),
-        (d.title && typeof d.title === "object" ? (d.title.es || d.title.pl || d.title.en) : null)
-      ].filter(Boolean);
-
-      for(const c of candidates){
-        if(typeof c === "string" && c.trim()) return c.trim();
-      }
-      return "";
-    }
-
-    async function loadTopicTitle(){
-      try{
-        if(!TOPIC_ID) return;
-        const snap = await getDoc(doc(db, "courses", TOPIC_ID));
-        if(!snap.exists()) return;
-        const t = pickTopicTitle(snap.data());
-        if(!t) return;
-        pillTopic.textContent = `Tema: ${t}`;
-        if(topicTitleEl) topicTitleEl.textContent = t;
-        const hero = document.getElementById("heroSubTitle"); if(hero){ hero.textContent = `Nivel ${LEVEL || "—"} • Tema: ${t}`; }
-        try{ document.title = `${t} | AquiVivo`; }catch(e){}
-      }catch(e){
-        // ignore: title fallback remains TOPIC_ID
-      }
-    }
-
-
-
-
-    function formatType(t){
-      const x = (t || "").toString().toLowerCase().trim();
-      if(!x) return "";
-      if(x === "grammar") return "Grammar";
-      if(x === "vocab" || x === "vocabulary") return "Vocab";
-      if(x === "dialog" || x === "dialogue") return "Dialog";
-      if(x === "mixed") return "Mixed";
-      return x.charAt(0).toUpperCase() + x.slice(1);
-    }
-
-    function setHeroBadges(docData){
-      const badgePremium = document.getElementById("badgePremium");
-      const badgeType = document.getElementById("badgeType");
-
-      // Premium
-      const isPrem = !!docData?.isPremium;
-      if(badgePremium){
-        badgePremium.style.display = isPrem ? "inline-flex" : "none";
-      }
-
-      // Type
-      const t = formatType(docData?.type);
-      if(badgeType){
-        if(t){
-          const icon = (t === "Grammar") ? "🧠" : (t === "Vocab") ? "📗" : (t === "Dialog") ? "🗣️" : "🧩";
-          badgeType.style.display = "inline-flex";
-          badgeType.innerHTML = `<span class="badgeIcon">${icon}</span> ${escapeHtml(t)}`;
-        }else{
-          badgeType.style.display = "none";
-        }
-      }
-    
-      // Chips in topic card
-      try{
-        const lvl = (LEVEL || "—").toUpperCase();
-        if(chipLevel) chipLevel.textContent = `🎓 ${lvl}`;
-
-        const isPrem2 = !!docData?.isPremium;
-        if(chipPremium) chipPremium.style.display = isPrem2 ? "inline-flex" : "none";
-
-        const t2 = formatType(docData?.type);
-        if(chipType){
-          if(t2){
-            const icon2 = (t2 === "Grammar") ? "🧠" : (t2 === "Vocab") ? "📗" : (t2 === "Dialog") ? "🗣️" : "🧩";
-            chipType.style.display = "inline-flex";
-            chipType.textContent = `${icon2} ${t2}`;
-          }else{
-            chipType.style.display = "none";
-          }
-        }
-
-        const dur = docData?.durationMin;
-        if(miniDuration){
-          if(Number.isFinite(Number(dur)) && Number(dur) > 0){
-            miniDuration.style.display = "inline-flex";
-            miniDuration.textContent = `⏱️ ${Number(dur)} min`;
-          }else{
-            miniDuration.style.display = "none";
-          }
-        }
-
-        const comm = (docData?.commTopic || "").toString().trim();
-        if(miniComm){
-          if(comm){
-            miniComm.style.display = "inline-flex";
-            miniComm.textContent = `💬 ${comm}`;
-          }else{
-            miniComm.style.display = "none";
-          }
-        }
-      }catch(e){}
-
-    }
-    // Trigger once on load
-    loadTopicTitle();
-
-    function showToast(type, msg){
-      toast.className = "";
-      toast.style.display = "block";
+    function showToast(msg, kind="toast-ok"){
+      if(!toast) return;
+      toast.className = kind;
       toast.textContent = msg;
-      toast.classList.add(type);
-      setTimeout(()=>{ toast.style.display = "none"; }, 2600);
-    }
-
-    function setDirty(v){
-      dirty = v;
-      dirtyBadge.style.display = dirty ? "inline-flex" : "none";
-      if(dirty) savedBadge.style.display = "none";
-    }
-
-    function setError(msg){
-      errorBox.style.display = "block";
-      errorBox.textContent = msg;
+      toast.style.display = "block";
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=>{ toast.style.display = "none"; }, 2500);
     }
 
     function escapeHtml(s){
-      return (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
     }
-
-    function parseTags(s){
-      return (s||"").split(",").map(x=>x.trim()).filter(Boolean).slice(0, 20);
-    }
-
-
-    function parseExerciseLinks(text){
-      const lines = (text||"").split("\n").map(x=>x.trim()).filter(Boolean);
-      const out = [];
-      for(const line of lines){
-        const parts = line.split("|").map(x=>x.trim()).filter(Boolean);
-        if(parts.length >= 2){
-          const label = parts[0];
-          const url = parts.slice(1).join(" | ").trim();
-          if(url) out.push({ label, url });
-        }else{
-          const url = line;
-          if(url) out.push({ label: "Ejercicios", url });
-        }
-      }
-      return out.slice(0, 12);
-    }
-    function exerciseLinksToText(arr){
-      if(!Array.isArray(arr) || !arr.length) return "";
-      return arr.map(x=>{
-        if(typeof x === "string") return x;
-        const label = (x && x.label) ? String(x.label).trim() : "Ejercicios";
-        const url = (x && x.url) ? String(x.url).trim() : "";
-        return url ? `${label} | ${url}` : "";
-      }).filter(Boolean).join("\n");
-    }
-
-
-    function toIntOrNull(v){
-      const n = Number(v);
-      return Number.isFinite(n) ? n : null;
-    }
-
-    function draftKey(){ return `aquivivo_lessonpage_draft__${DOC_ID}`; }
-
-    function collectForm(forcePublished){
-      return {
-        level: LEVEL || null,
-        topicSlug: TOPIC_ID || null,
-        title: (titleInput.value||"").trim() || null,
-        description: (descInput.value||"").trim() || null,
-        durationMin: toIntOrNull(durationInput?.value),
-        commTopic: (commTopicInput?.value||"").trim() || null,
-        type: (typeSelect.value||"").trim() || null,
-        order: toIntOrNull(orderInput.value),
-        tags: parseTags(tagsInput.value),
-        exerciseLinks: parseExerciseLinks(exerciseLinksInput ? exerciseLinksInput.value : ""),
-        isPremium: (isPremiumToggle?.value || "false") === "true",
-        allowPreview: (allowPreviewToggle?.value || "true") === "true",
-        premiumTeaser: (premiumTeaserInput?.value || "").trim() || null,
-        paywallUrl: (paywallUrlInput?.value || "").trim() || null,
-        html: htmlArea.value || "",
-        published: forcePublished ? true : !!publishedToggle.checked,
-      };
-    }
-
-    function setPublishedUI(isPub){
-      publishedToggle.checked = !!isPub;
-      publishedLabel.textContent = isPub ? "Publicado" : "Borrador";
-    }
-
-    function saveLocalDraft(){
-      const data = collectForm(false);
-      localStorage.setItem(draftKey(), JSON.stringify({ ts: Date.now(), data }));
-    }
-    function loadLocalDraft(){
-      const raw = localStorage.getItem(draftKey());
-      if(!raw) return null;
-      try{ return JSON.parse(raw); }catch(e){ return null; }
-    }
-    function clearLocalDraft(){ localStorage.removeItem(draftKey()); }
-
-    function insertAtCursor(text){
-      const start = htmlArea.selectionStart ?? htmlArea.value.length;
-      const end = htmlArea.selectionEnd ?? htmlArea.value.length;
-      htmlArea.value = htmlArea.value.slice(0, start) + text + htmlArea.value.slice(end);
-      const pos = start + text.length;
-      htmlArea.setSelectionRange(pos, pos);
-      htmlArea.focus();
-      setDirty(true);
-    }
-
-function setEditorTab(mode){
-  const easy = mode === "easy";
-  if(tabEasy && tabHtml){
-    tabEasy.classList.toggle("active", easy);
-    tabHtml.classList.toggle("active", !easy);
-  }
-  if(builderWrap) builderWrap.style.display = easy ? "block" : "none";
-  if(htmlWrap) htmlWrap.style.display = easy ? "none" : "block";
-}
-
-function linesToListItems(txt){
-  return (txt || "")
-    .split("\n")
-    .map(x => x.replace(/^[-•\s]+/, "").trim())
-    .filter(Boolean)
-    .slice(0, 50)
-    .map(x => `<li>${escapeHtml(x)}</li>`)
-    .join("\n");
-}
-
-function dialogToHtml(txt){
-  const lines = (txt || "").split("\n").map(x => x.trim()).filter(Boolean).slice(0, 30);
-  if(!lines.length) return "";
-  return lines.map(line=>{
-    const m = line.match(/^([A-Za-zÁÉÍÓÚÜÑ]):\s*(.*)$/);
-    if(m) return `<b>${escapeHtml(m[1])}:</b> ${escapeHtml(m[2]||"")}<br/>`;
-    return `${escapeHtml(line)}<br/>`;
-  }).join("\n");
-}
-
-function buildHtmlFromEasy(){
-  const obj = linesToListItems(bObjective?.value || "");
-  const exs = linesToListItems(bExamples?.value || "");
-  const prac = linesToListItems(bPractice?.value || "");
-  const sum = linesToListItems(bSummary?.value || "");
-  const rule = (bRule?.value || "").trim();
-  const dialog = dialogToHtml(bDialog?.value || "");
-
-  const parts = [];
-  if(obj) parts.push(`<h2>🎯 Objetivo</h2>\n<ul>\n${obj}\n</ul>`);
-  if(rule) parts.push(`<h2>🧠 Explicación</h2>\n<p>${escapeHtml(rule).replace(/\n\n+/g,'</p><p>').replace(/\n/g,'<br/>')}</p>`);
-  if(exs) parts.push(`<h2>✅ Ejemplos</h2>\n<ul>\n${exs}\n</ul>`);
-  if(dialog) parts.push(`<h2>🗣️ Mini-diálogo</h2>\n<p>${dialog}</p>`);
-  if(prac) parts.push(`<h2>✍️ Práctica</h2>\n<ul>\n${prac}\n</ul>`);
-  if(sum) parts.push(`<h2>🏅 Resumen</h2>\n<ul>\n${sum}\n</ul>`);
-
-  const base = parts.join("\n\n").trim();
-  return ensureCompletionFooter(base);
-}
-
-function insertHtmlBlock(blockHtml){
-  // Ensure we are in HTML tab, then insert at cursor
-  setEditorTab("html");
-  insertAtCursor("\n" + blockHtml.trim() + "\n");
-  saveLocalDraft();
-  if(previewOn) renderLesson({ published: publishedToggle.checked, html: htmlArea.value });
-}
-
 
     function slugifyHeading(text){
       return (text || "")
@@ -1808,9 +357,7 @@ function insertHtmlBlock(blockHtml){
     function buildTOC(){
       if(!tocWrap || !tocList) return;
 
-      // reset
       tocList.innerHTML = "";
-
       const root = lessonContent;
       if(!root || root.style.display === "none"){
         tocWrap.style.display = "none";
@@ -1823,7 +370,6 @@ function insertHtmlBlock(blockHtml){
         return;
       }
 
-      // Ensure IDs
       const used = new Set();
       headings.forEach(h => {
         if(h.id) { used.add(h.id); return; }
@@ -1838,7 +384,6 @@ function insertHtmlBlock(blockHtml){
         h.id = id;
       });
 
-      // Build links
       headings.forEach(h => {
         const a = document.createElement("a");
         a.href = `#${h.id}`;
@@ -1855,114 +400,79 @@ function insertHtmlBlock(blockHtml){
       tocWrap.style.display = "block";
     }
 
-    function normalizeUrl(url){
-      const u = String(url || "").trim();
-      if(!u) return "";
-      // Allow relative URLs (lesson.html?...), absolute, and hash links
-      return u;
+    let _rpScheduled = false;
+    function updateReadProgress(){
+      if(!lessonContent || lessonContent.style.display === "none") return;
+      const docEl = document.documentElement;
+      const scrollTop = docEl.scrollTop || document.body.scrollTop || 0;
+      const scrollHeight = (docEl.scrollHeight || document.body.scrollHeight || 0) - (docEl.clientHeight || window.innerHeight || 0);
+      const pct = scrollHeight <= 0 ? 100 : Math.max(0, Math.min(100, Math.round((scrollTop / scrollHeight) * 100)));
+      readProgressFill.style.width = `${pct}%`;
+      readProgressText.textContent = `📖 Progreso de lectura: ${pct}%`;
     }
+    function scheduleReadProgress(){
+      if(_rpScheduled) return;
+      _rpScheduled = true;
+      requestAnimationFrame(()=>{
+        _rpScheduled = false;
+        try{ updateReadProgress(); }catch(e){}
+      });
+    }
+    window.addEventListener("scroll", scheduleReadProgress, { passive: true });
+    window.addEventListener("resize", scheduleReadProgress);
 
     function buildExerciseLinks(docData){
-      if(!exerciseLinksWrap || !readTools) return;
+      if(!exerciseLinksWrap) return;
+      exerciseLinksWrap.innerHTML = "";
 
-      const links = [];
-      // default: link to exercises page
-      const defaultUrl = `lesson.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
-      links.push({ label: "🧩 Ejercicios", url: defaultUrl, primary: true });
-
-      const extra = docData?.exerciseLinks;
-      if(Array.isArray(extra)){
-        for(const item of extra){
-          if(typeof item === "string"){
-            links.push({ label: "Ejercicios", url: item });
-          }else if(item && (item.url || item.href)){
-            links.push({ label: item.label || item.title || "Ejercicios", url: item.url || item.href });
-          }
-        }
-      }
-
-      // de-dupe by url
-      const seen = new Set();
-      const finalLinks = [];
-      for(const l of links){
-        const url = normalizeUrl(l.url);
-        if(!url) continue;
-        if(seen.has(url)) continue;
-        seen.add(url);
-        finalLinks.push({ label: String(l.label || "Ejercicios"), url, primary: !!l.primary });
-      }
-
-      exerciseLinksWrap.innerHTML = finalLinks.map(l => {
-        const cls = l.primary ? "btn-ex btn-ex-yellow" : "btn-ex btn-ex-ghost";
-        return `<a class="${cls}" href="${escapeHtml(l.url)}">${escapeHtml(l.label)}</a>`;
-      }).join("");
+      // Minimal: one button to exercises page (keeps UI consistent)
+      const a = document.createElement("a");
+      a.className = "btn btn-yellow";
+      a.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
+      a.textContent = "🧩 Ir a ejercicios";
+      exerciseLinksWrap.appendChild(a);
 
       readTools.style.display = "flex";
     }
 
-    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
-
-    function updateReadProgress(){
-      if(!readProgressFill || !readProgressText) return;
-      if(!lessonContent || lessonContent.style.display === "none") return;
-
-      const rect = lessonContent.getBoundingClientRect();
-      const viewportH = window.innerHeight || document.documentElement.clientHeight || 1;
-
-      // If content is shorter than viewport, it's 100% once it enters view.
-      const contentTopDoc = window.scrollY + rect.top;
-      const contentHeight = lessonContent.scrollHeight || rect.height || 1;
-
-      const maxScroll = Math.max(1, contentHeight - viewportH * 0.35);
-      const scrolled = (window.scrollY - contentTopDoc) + viewportH * 0.25;
-
-      const pct = Math.round(clamp01(scrolled / maxScroll) * 100);
-
-      readProgressFill.style.width = `${pct}%`;
-      readProgressText.textContent = `📖 Progreso de lectura: ${pct}%`;
-    }
-
-    let _readTick = false;
-    function scheduleReadProgress(){
-      if(_readTick) return;
-      _readTick = true;
-      requestAnimationFrame(()=>{
-        _readTick = false;
-        updateReadProgress();
-      });
-    }
-
-
-
     function renderLesson(docData){
-      errorBox.style.display = "none";
+      pillLevel.textContent = `Nivel: ${LEVEL || "—"}`;
+      pillTopic.textContent = `Tema: ${TOPIC_ID || "—"}`;
+
+      const title = (docData?.title || "").trim();
+      const desc = (docData?.desc || "").trim();
+      const type = (docData?.type || "").trim();
+      const dur = Number(docData?.durationMin || 0);
       const pub = !!docData?.published;
 
-      pillPubOk.style.display = pub ? "inline-flex" : "none";
-      pillPub.style.display = pub ? "none" : "inline-flex";
+      lessonTitleEl.textContent = title || `Lección — ${TOPIC_ID || "tema"}`;
+      lessonDescEl.textContent = desc || "—";
 
-      if(!adminMode && !pub){
-        lessonContent.style.display = "none";
-        lessonEmpty.style.display = "none";
-        studentHint.style.display = "block";
-        if(tocWrap) tocWrap.style.display = "none";
-        if(readTools) readTools.style.display = "none";
-        return;
+      if(type){
+        pillType.style.display = "inline-flex";
+        pillType.textContent = `Tipo: ${type}`;
+      }else{
+        pillType.style.display = "none";
       }
-      studentHint.style.display = "none";
+      if(dur > 0){
+        pillDuration.style.display = "inline-flex";
+        pillDuration.textContent = `Duración: ${dur} min`;
+      }else{
+        pillDuration.style.display = "none";
+      }
 
-      // Premium paywall (basic)
-      const isPrem = !!docData?.isPremium;
-      const allowPrev = docData?.allowPreview !== false; // default true
-      if(!adminMode && pub && isPrem && !allowPrev){
+      pillPub.style.display = "inline-flex";
+      pillPub.className = "pill " + (pub ? "pill-green" : "pill-red");
+      pillPub.textContent = pub ? "Publicado" : "Borrador";
+
+      // Publication gating for students (if not published: show hint)
+      if(!pub){
+        studentHint.style.display = "block";
+        studentHint.textContent = "Esta lección todavía no está publicada. Vuelve más tarde.";
         lessonContent.style.display = "none";
         lessonEmpty.style.display = "none";
-        studentHint.style.display = "block";
-        const teaser = docData?.premiumTeaser ? escapeHtml(docData.premiumTeaser) : "Para ver esta lección necesitas acceso Premium.";
-        const btn = docData?.paywallUrl ? `<a class="btn btn-yellow" style="margin-top:10px; display:inline-flex;" href="${escapeHtml(docData.paywallUrl)}">⭐ Obtener Premium</a>` : "";
-        studentHint.innerHTML = `<div style="margin-top:10px;"><b>💎 Contenido Premium.</b><br/>${teaser}<br/>${btn}</div>`;
-        if(tocWrap) tocWrap.style.display = "none";
-        if(readTools) readTools.style.display = "none";
+        tocWrap.style.display = "none";
+        readTools.style.display = "none";
         return;
       }
 
@@ -1970,891 +480,65 @@ function insertHtmlBlock(blockHtml){
       if(!html){
         lessonContent.style.display = "none";
         lessonEmpty.style.display = "block";
-        lessonEmpty.textContent = "No hay contenido de la lección. (El admin puede añadirlo abajo.)";
-        if(tocWrap) tocWrap.style.display = "none";
-        if(readTools) readTools.style.display = "none";
+        lessonEmpty.textContent = "Todavía no hay contenido de la lección.";
+        studentHint.style.display = "none";
+        tocWrap.style.display = "none";
+        readTools.style.display = "none";
         return;
       }
+
+      studentHint.style.display = "none";
       lessonEmpty.style.display = "none";
       lessonContent.style.display = "block";
       lessonContent.innerHTML = html;
+
       setTimeout(buildTOC, 0);
       buildExerciseLinks(docData);
       updateReadProgress();
     }
 
-    // Reading progress listeners
-    window.addEventListener("scroll", scheduleReadProgress, { passive: true });
-    window.addEventListener("resize", scheduleReadProgress);
-
-    
-    // ===== Completeness (Admin checklist) =====
-    function norm(s){ return (s||"").toLowerCase(); }
-
-    function htmlHasAny(words){
-      const h = norm(htmlArea?.value || "");
-      return words.some(w => h.includes(norm(w)));
-    }
-
-    function hasH2Like(words){
-      const h = (htmlArea?.value || "");
-      // look for headings or plain markers
-      const reList = words.map(w => new RegExp(`<h2[^>]*>[^<]*${w}[^<]*</h2>`, "i"));
-      return reList.some(r => r.test(h)) || htmlHasAny(words);
-    }
-
-    function computeCompleteness(){
-      if(!adminMode || !completeSummary || !completeList) return;
-
-      const items = [];
-
-      items.push({
-        key: "title",
-        label: "Tytuł de la lección",
-        ok: () => (titleInput?.value || "").trim().length >= 4,
-        hint: "Añade un título claro."
-      });
-
-      items.push({
-        key: "desc",
-        label: "Krótki opis (1–2 frases)",
-        ok: () => (descInput?.value || "").trim().length >= 10,
-        hint: "Explica qué logrará el alumno."
-      });
-
-      items.push({
-        key: "duration",
-        label: "Duración estimada",
-        ok: () => Number(durationInput?.value || 0) > 0,
-        hint: "p. ej. 45–90 min."
-      });
-
-      items.push({
-        key: "commTopic",
-        label: "Temat komunikacyjny",
-        ok: () => (commTopicInput?.value || "").trim().length >= 3,
-        hint: "p. ej. En el restaurante / En la oficina."
-      });
-
-      items.push({
-        key: "goals",
-        label: "Objetivos (Po tej lekcji potrafisz…)",
-        ok: () => {
-          const b = document.getElementById("bObjective")?.value || "";
-          return b.trim().length >= 10 || hasH2Like(["Objetivo","Objetivos","Cel","Cele"]);
-        },
-        hint: "3–5 puntos, una idea por línea."
-      });
-
-      items.push({
-        key: "warmup",
-        label: "Warm-up (Rozgrzewka)",
-        ok: () => hasH2Like(["Warm-up","Rozgrzewka","Calentamiento"]),
-        hint: "2–3 preguntas abiertas / mini-situación."
-      });
-
-      items.push({
-        key: "vocab",
-        label: "Vocabulario temático",
-        ok: () => hasH2Like(["Vocabulario","Słownictwo","Vocab Core"]),
-        hint: "Lista 10–25 + (idealnie) kategorie / błędy."
-      });
-
-      items.push({
-        key: "input",
-        label: "Diálogo / Texto principal (Input)",
-        ok: () => {
-          const b = document.getElementById("bDialog")?.value || "";
-          return b.trim().length >= 10 || hasH2Like(["Diálogo","Dialog","Texto","Input"]);
-        },
-        hint: "Dialog/tekst sytuacyjny (opcjonalnie PL+ES)."
-      });
-
-      items.push({
-        key: "grammar",
-        label: "Grammar Focus / análisis",
-        ok: () => {
-          const b = document.getElementById("bRule")?.value || "";
-          return b.trim().length >= 10 || hasH2Like(["Gramática","Regla","Analiza","Análisis"]);
-        },
-        hint: "Reguła + (idealnie) tabela końcówek + PL–ES."
-      });
-
-      items.push({
-        key: "practice",
-        label: "Ćwiczenia kontrolowane (Practice)",
-        ok: () => {
-          const b = document.getElementById("bPractice")?.value || "";
-          return b.trim().length >= 10 || hasH2Like(["Práctica","Ćwiczenia","Practice"]);
-        },
-        hint: "Wybór / luki / dopasowanie / transformacje…"
-      });
-
-      items.push({
-        key: "production",
-        label: "Produkcja (Speaking/Writing)",
-        ok: () => hasH2Like(["Producción","Speaking","Writing","Mówienie","Pisanie","Role-play"]),
-        hint: "Pytania do mówienia / scenki / zadanie pisemne."
-      });
-
-      items.push({
-        key: "culture",
-        label: "Kultura / Real Polish",
-        ok: () => hasH2Like(["Cultura","Real Polish","Kultura"]),
-        hint: "Zwroty potoczne vs oficjalne + mini-notka."
-      });
-
-      items.push({
-        key: "exam",
-        label: "Mini-Exam / test końcowy",
-        ok: () => hasH2Like(["Mini-Exam","Mini test","Test","Examen"]),
-        hint: "10–20 pytań + wynik %."
-      });
-
-      items.push({
-        key: "premium",
-        label: "Premium Zone (materiały dodatkowe)",
-        ok: () => hasH2Like(["Materiales","Premium","PDF","Cheat","Fiszki","Flashcards","Audio","Video"]),
-        hint: "PDF / ściąga / audio / fiszki / wideo."
-      });
-
-      items.push({
-        key: "exerciseLinks",
-        label: "Linki do ćwiczeń",
-        ok: () => true, // base button always exists
-        hint: "Dodaj dodatkowe linki w polu ‘Links de ejercicios’ jeśli potrzeba."
-      });
-
-      items.push({
-        key: "published",
-        label: "Publicación",
-        ok: () => !!publishedToggle?.checked,
-        hint: "Włącz ‘Publicado’, gdy lekcja gotowa."
-      });
-
-      const okCount = items.filter(it => it.ok()).length;
-      const pct = Math.round((okCount / items.length) * 100);
-
-      completeSummary.innerHTML = `
-        <div>
-          <div style="font-weight:900;">📋 Completitud: <span class="completePct">${pct}%</span></div>
-          <div class="hintSmall" style="margin:6px 0 0;">${okCount}/${items.length} elementos listos</div>
-        </div>
-        <div class="completeBar" aria-label="Completitud"><div style="width:${pct}%"></div></div>
-      `;
-
-      completeList.innerHTML = "";
-      for(const it of items){
-        const ok = it.ok();
-        const row = document.createElement("div");
-        row.className = "checkItem " + (ok ? "ok" : "bad");
-        row.innerHTML = `
-          <div class="checkLeft">
-            <div class="checkDot">${ok ? "✓" : "!"}</div>
-            <div class="checkText">
-              <div style="font-weight:900;">${escapeHtml(it.label)}</div>
-              ${ok ? "" : `<div class="checkHint">${escapeHtml(it.hint || "")}</div>`}
-            </div>
-          </div>
-          <div class="muted" style="font-size:12px; font-weight:900;">${ok ? "OK" : "Falta"}</div>
-        `;
-        completeList.appendChild(row);
-      }
-    }
-
-    function scheduleCompleteness(){
-      if(!adminMode) return;
-      clearTimeout(window.__compTimer);
-      window.__compTimer = setTimeout(computeCompleteness, 120);
-    }
-async function saveSnapshot(data){
-      try{
-        await addDoc(collection(db, "course_meta", DOC_ID, "history"), {
-          ...data,
-          savedAt: serverTimestamp(),
-          savedBy: currentUser?.email || null
-        });
-      }catch(e){ /* snapshot failure shouldn't block save */ }
-    }
-
-    async function loadHistory(){
-      historyList.innerHTML = `<div class="muted">Cargando…</div>`;
-      try{
-        const q = query(collection(db, "course_meta", DOC_ID, "history"), orderBy("savedAt", "desc"), limit(10));
-        const snap = await getDocs(q);
-        if(snap.empty){
-          historyList.innerHTML = `<div class="muted">Brak historii.</div>`;
-          return;
-        }
-        const items = [];
-        snap.forEach(docu => items.push({ id: docu.id, ...(docu.data()||{}) }));
-        historyList.innerHTML = "";
-        for(const it of items){
-          const ts = it.savedAt?.toDate ? it.savedAt.toDate() : null;
-          const when = ts ? ts.toLocaleString() : "—";
-          const pub = it.published ? "Publicado" : "Borrador";
-          const title = it.title || "—";
-          const by = it.savedBy || "—";
-          const row = document.createElement("div");
-          row.className = "historyItem";
-          row.innerHTML = `
-            <div class="historyMeta">
-              <div><b>${escapeHtml(title)}</b> <span class="muted">(${escapeHtml(pub)})</span></div>
-              <div class="muted">🕘 ${escapeHtml(when)} • 👤 ${escapeHtml(by)}</div>
-            </div>
-            <div class="historyActions">
-              <button class="mini" type="button" data-restore="${escapeHtml(it.id)}">↩️ Restaurar</button>
-            </div>
-          `;
-          historyList.appendChild(row);
-        }
-        historyList.querySelectorAll("button[data-restore]").forEach(btn=>{
-          btn.addEventListener("click", async ()=>{
-            const id = btn.getAttribute("data-restore");
-            if(!id) return;
-            try{
-              const hRef = doc(db, "course_meta", DOC_ID, "history", id);
-              const s = await getDoc(hRef);
-              if(!s.exists()){
-                showToast("toast-bad", "No se encontró la versión.");
-                return;
-              }
-              const d = s.data() || {};
-              titleInput.value = d.title || "";
-              descInput.value = d.description || "";
-          if(durationInput) durationInput.value = (d.durationMin ?? "") === null ? "" : (d.durationMin ?? "");
-          if(commTopicInput) commTopicInput.value = d.commTopic || "";
-              if(durationInput) durationInput.value = (d.durationMin ?? "") === null ? "" : (d.durationMin ?? "");
-              if(commTopicInput) commTopicInput.value = d.commTopic || "";
-              typeSelect.value = d.type || "";
-              orderInput.value = (d.order ?? "") === null ? "" : (d.order ?? "");
-              tagsInput.value = Array.isArray(d.tags) ? d.tags.join(", ") : "";
-              if(exerciseLinksInput) exerciseLinksInput.value = exerciseLinksToText(d.exerciseLinks);
-              if(isPremiumToggle) isPremiumToggle.value = d.isPremium ? "true" : "false";
-              if(allowPreviewToggle) allowPreviewToggle.value = (d.allowPreview === false) ? "false" : "true";
-              if(premiumTeaserInput) premiumTeaserInput.value = d.premiumTeaser || "";
-              if(paywallUrlInput) paywallUrlInput.value = d.paywallUrl || "";
-              htmlArea.value = d.html || "";
-              setPublishedUI(!!d.published);
-              setDirty(true);
-              showToast("toast-warn", "Versión cargada en el editor (no guardada).");
-              if(previewOn) renderLesson({ ...d, html: ensureCompletionFooter(htmlArea.value), published: publishedToggle.checked });
-              scheduleCompleteness();
-            }catch(e){
-              showToast("toast-bad", "No se pudo restaurar la versión.");
-            }
-          });
-        });
-      }catch(e){
-        historyList.innerHTML = `<div class="muted">No se pudo cargar el historial.</div>`;
-      }
-    }
-
-    async function saveLesson({ forcePublished=false } = {}){
+    async function loadLesson(){
       if(!LEVEL || !TOPIC_ID){
-        setError("Faltan parámetros en la URL. Abre por ejemplo: lessonpage.html?level=A1&id=tuTopicSlug");
+        lessonTitleEl.textContent = "Error";
+        lessonDescEl.textContent = "Faltan parámetros en la URL (level, id).";
+        lessonEmpty.style.display = "block";
+        lessonEmpty.textContent = "Abre por ejemplo: lessonpage.html?level=A1&id=tuTopicSlug";
         return;
       }
-      const data = collectForm(forcePublished);
+
       const ref = doc(db, "course_meta", DOC_ID);
-      const now = new Date();
-
-      const payload = { ...data, updatedAt: serverTimestamp() };
-      if(payload.published) payload.publishedAt = serverTimestamp();
-
-      try{
-        await setDoc(ref, payload, { merge: true });
-        await saveSnapshot(payload);
-
-        setDirty(false);
-        savedBadge.style.display = "inline-flex";
-        updatedInfo.textContent = `Guardado: ${now.toLocaleString()}`;
-        showToast("toast-ok", payload.published ? "Publicado ✅" : "Guardado ✅");
-
-        setHeroBadges(payload);
-        renderLesson(payload);
-        await loadHistory();
-      }catch(e){
-        showToast("toast-bad", "Error al guardar: " + (e?.message || String(e)));
-      }
-    }
-
-    async function unpublish(){
-      try{
-        await updateDoc(doc(db, "course_meta", DOC_ID), { published: false, updatedAt: serverTimestamp() });
-        setPublishedUI(false);
-        showToast("toast-ok", "Ukryto (szkic).");
-        try{ await loadTopicTitle(); }catch(e){}
-      await initLoad();
-      }catch(e){
-        showToast("toast-bad", "No se pudo ocultar.");
-      }
-    }
-
-    
-    const PRESET_TEMPLATES = {
-      grammar_basic: `
-<h2>🎯 Cel lekcji</h2>
-<ul>
-  <li>Uczeń potrafi…</li>
-  <li>Uczeń rozumie…</li>
-</ul>
-
-<h2>🔥 Rozgrzewka (Warm‑up)</h2>
-<p>2–3 pytania wprowadzające + mini zadanie.</p>
-
-<h2>🧠 Gramatyka — zasada</h2>
-<div style="background: rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18); padding:16px 18px; border-radius:14px; margin:18px 0;">
-  <b>Zasada:</b> opisz krótko i jasno + 1–2 przykłady.
-</div>
-
-<h2>✅ Przykłady</h2>
-<ul>
-  <li><b>Ja</b> …</li>
-  <li><b>Ty</b> …</li>
-</ul>
-
-<h2>🗣️ Mini‑dialog</h2>
-<p><b>A:</b> …<br><b>B:</b> …</p>
-
-<h2>✍️ Praktyka</h2>
-<ul>
-  <li>Ćwiczenie 1 (łatwe)</li>
-  <li>Ćwiczenie 2 (średnie)</li>
-</ul>
-
-<h2>🧾 Podsumowanie</h2>
-<ul>
-  <li>Najważniejsze punkty…</li>
-</ul>
-`.trim(),
-
-      grammar_premium: `
-<h2>🎯 Cel lekcji</h2>
-<ul>
-  <li>Uczeń potrafi…</li>
-  <li>Uczeń rozumie…</li>
-  <li>Uczeń zastosuje w mowie i piśmie…</li>
-</ul>
-
-<h2>🔥 Rozgrzewka (Warm‑up)</h2>
-<p>Krótka sytuacja + pytania otwarte.</p>
-
-<h2>🧠 Gramatyka — wyjaśnienie (PREMIUM)</h2>
-<div style="background: rgba(252,209,22,0.95); color:#0b1b3f; padding:16px 18px; border-radius:14px; margin:18px 0; font-weight:900;">
-  ⚠️ <b>Najczęstsze błędy:</b> wypisz 3 błędy + poprawna wersja.
-</div>
-
-<h3>📌 Tabela / końcówki</h3>
-<table style="width:100%; border-collapse:collapse;">
-  <tr><th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,0.18);">Forma</th><th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,0.18);">Przykład</th></tr>
-  <tr><td style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.12);">…</td><td style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.12);">…</td></tr>
-</table>
-
-<h2>✅ Praktyka kontrolowana</h2>
-<ul>
-  <li>Ćwiczenie 1</li>
-  <li>Ćwiczenie 2</li>
-  <li>Ćwiczenie 3</li>
-</ul>
-
-<h2>🗣️ Produkcja (Speaking/Writing)</h2>
-<p>Dodaj zadanie do mówienia/pisania (opcjonalnie nagranie + wysyłka do nauczyciela).</p>
-
-<h2>🇵🇱 Real Polish / kultura</h2>
-<p>Zwrot potoczny vs oficjalny + przykład użycia.</p>
-
-<h2>📝 Mini test</h2>
-<ul>
-  <li>10 krótkich pytań podsumowujących</li>
-</ul>
-
-<h2>💎 Materiały premium</h2>
-<ul>
-  <li>PDF — ściąga</li>
-  <li>Audio — dialog</li>
-</ul>
-
-<h2>🧾 Podsumowanie</h2>
-<ul>
-  <li>Najważniejsze punkty…</li>
-</ul>
-`.trim(),
-
-      vocab_basic: `
-<h2>🎯 Cel lekcji</h2>
-<ul><li>Uczeń pozna słownictwo z tematu…</li></ul>
-
-<h2>📗 Słownictwo (lista)</h2>
-<ul>
-  <li><b>słowo</b> — tłumaczenie</li>
-  <li><b>słowo</b> — tłumaczenie</li>
-</ul>
-
-<h2>🔗 Kolokacje / gotowe zwroty</h2>
-<ul>
-  <li>…</li>
-</ul>
-
-<h2>🗣️ Mini‑dialog</h2>
-<p><b>A:</b> …<br><b>B:</b> …</p>
-
-<h2>✍️ Praktyka</h2>
-<ul>
-  <li>Ćwiczenie 1 (dopasuj)</li>
-  <li>Ćwiczenie 2 (uzupełnij)</li>
-</ul>
-
-<h2>🧾 Podsumowanie</h2>
-<ul><li>Najważniejsze zwroty…</li></ul>
-`.trim(),
-
-      vocab_premium: `
-<h2>🎯 Cel lekcji</h2>
-<ul>
-  <li>Uczeń pozna słownictwo z tematu…</li>
-  <li>Uczeń użyje słów w zdaniach i dialogu…</li>
-</ul>
-
-<h2>📗 Słownictwo (PREMIUM)</h2>
-<p>Dodaj 15–25 słów + kategorie.</p>
-
-<h3>✅ Lista + przykłady</h3>
-<table style="width:100%; border-collapse:collapse;">
-  <tr><th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,0.18);">PL</th><th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,0.18);">ES</th><th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,0.18);">Przykład</th></tr>
-  <tr><td style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.12);">…</td><td style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.12);">…</td><td style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.12);">…</td></tr>
-</table>
-
-<h2>🔎 Najczęstsze błędy</h2>
-<div style="background: rgba(252,209,22,0.95); color:#0b1b3f; padding:16px 18px; border-radius:14px; margin:18px 0; font-weight:900;">
-  ⚠️ <b>Uwaga:</b> fałszywi przyjaciele / typowe pomyłki.
-</div>
-
-<h2>🗣️ Produkcja (Speaking)</h2>
-<p>Role‑play + pytania otwarte.</p>
-
-<h2>📝 Mini test</h2>
-<ul><li>10 pytań</li></ul>
-
-<h2>💎 Materiały premium</h2>
-<ul>
-  <li>PDF — fiszki</li>
-  <li>Audio — wymowa</li>
-</ul>
-
-<h2>🧾 Podsumowanie</h2>
-<ul><li>Najważniejsze zwroty…</li></ul>
-`.trim(),
-    };
-
-    function templateHtml(){
-      return `
-<h2>Objetivo de la lección</h2>
-<ul>
-  <li>…</li>
-</ul>
-
-<h2>Explicación</h2>
-<p>Explica de forma breve y clara…</p>
-
-<h3>Ejemplos</h3>
-<ul>
-  <li><b>Yo</b> …</li>
-  <li><b>Tú</b> …</li>
-</ul>
-
-<h2>Mini-diálogo</h2>
-<p><b>A:</b> …<br><b>B:</b> …</p>
-
-<h2>Resumen</h2>
-<ul>
-  <li>…</li>
-</ul>
-      `.trim();
-    }
-
-    async function initLoad(){
-      // reset
-      errorBox.style.display = "none";
-      lessonContent.style.display = "none";
-      lessonEmpty.style.display = "none";
-      studentHint.style.display = "none";
-
-      // Premium paywall (basic)
-      const isPrem = !!docData?.isPremium;
-      const allowPrev = docData?.allowPreview !== false; // default true
-      if(!adminMode && pub && isPrem && !allowPrev){
-        lessonContent.style.display = "none";
-        lessonEmpty.style.display = "none";
-        studentHint.style.display = "block";
-        const teaser = docData?.premiumTeaser ? escapeHtml(docData.premiumTeaser) : "Para ver esta lección necesitas acceso Premium.";
-        const btn = docData?.paywallUrl ? `<a class="btn btn-yellow" style="margin-top:10px; display:inline-flex;" href="${escapeHtml(docData.paywallUrl)}">⭐ Obtener Premium</a>` : "";
-        studentHint.innerHTML = `<div style="margin-top:10px;"><b>💎 Contenido Premium.</b><br/>${teaser}<br/>${btn}</div>`;
-        if(tocWrap) tocWrap.style.display = "none";
-        if(readTools) readTools.style.display = "none";
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        renderLesson({ published:false, html:"" });
+        lessonEmpty.style.display = "block";
+        lessonEmpty.textContent = "No existe esta lección todavía.";
         return;
       }
-
-      if(!LEVEL || !TOPIC_ID){
-        setError("Faltan parámetros en la URL. Abre por ejemplo: lessonpage.html?level=A1&id=tuTopicSlug");
-        return;
-      }
-
-      try{
-        const snap = await getDoc(doc(db, "course_meta", DOC_ID));
-
-        if(!snap.exists()){
-          setPublishedUI(false);
-          renderLesson({ published:false, html:"" });
-          if(adminMode){
-            updatedInfo.textContent = "No hay documento todavía — inserta una plantilla o escribe contenido y pulsa Guardar.";
-            await loadHistory();
-          }
-          
-            try{
-              const ld = loadLocalDraft();
-              const hasLocal = ((ld?.data?.html || "").trim().length > 0);
-              if(!hasLocal && !htmlArea.value.trim()){
-                // Apply default template for a brand-new lesson
-                applyTemplate(templateSelectEl?.value || getDefaultTemplateKey());
-              }
-            }catch(e){}
-          return;
-        }
-
-        const d = snap.data() || {};
-        setHeroBadges(d);
-        renderLesson(d);
-
-        if(adminMode){
-          titleInput.value = d.title || "";
-          descInput.value = d.description || "";
-          if(durationInput) durationInput.value = (d.durationMin ?? "") === null ? "" : (d.durationMin ?? "");
-          if(commTopicInput) commTopicInput.value = d.commTopic || "";
-          typeSelect.value = d.type || "";
-          orderInput.value = (d.order ?? "") === null ? "" : (d.order ?? "");
-          tagsInput.value = Array.isArray(d.tags) ? d.tags.join(", ") : "";
-          if(exerciseLinksInput) exerciseLinksInput.value = exerciseLinksToText(d.exerciseLinks);
-
-          if(isPremiumToggle) isPremiumToggle.value = d.isPremium ? "true" : "false";
-          if(allowPreviewToggle) allowPreviewToggle.value = (d.allowPreview === false) ? "false" : "true";
-          if(premiumTeaserInput) premiumTeaserInput.value = d.premiumTeaser || "";
-          if(paywallUrlInput) paywallUrlInput.value = d.paywallUrl || "";
-
-          htmlArea.value = d.html || "";
-          setPublishedUI(!!d.published);
-
-          const updated = d.updatedAt?.toDate ? d.updatedAt.toDate().toLocaleString() : "—";
-          updatedInfo.textContent = `Última actualización: ${updated}`;
-          await loadHistory();
-          scheduleCompleteness();
-
-          if(adminExtras) adminExtras.style.display = "block";
-          if(premiumStatusBadge) premiumStatusBadge.style.display = d.isPremium ? "inline-flex" : "none";
-          await loadPremiumManagers();
-        }
-      }catch(e){
-        setError("No se pudo cargar el contenido de la lección. " + (e?.message || String(e)));
-      }
+      renderLesson(snap.data() || {});
     }
-
-    // Events
-// Editor tabs
-if(tabEasy && tabHtml){
-  tabEasy.addEventListener("click", ()=> setEditorTab("easy"));
-  tabHtml.addEventListener("click", ()=> setEditorTab("html"));
-}
-
-if(btnBuildHtml){
-  btnBuildHtml.addEventListener("click", ()=>{
-    const built = buildHtmlFromEasy();
-    if(htmlArea.value.trim()){
-      if(!confirm("¿Reemplazar el HTML actual con el contenido del Editor fácil?")) return;
-    }
-    htmlArea.value = built;
-    setDirty(true);
-    saveLocalDraft();
-    showToast("toast-ok", "HTML generado ✅");
-    if(previewOn) renderLesson({ published: publishedToggle.checked, html: htmlArea.value });
-    setTimeout(buildTOC, 0);
-  });
-}
-
-if(btnInsertRuleBox){
-  btnInsertRuleBox.addEventListener("click", ()=>{
-    insertHtmlBlock(`<div style="background: rgba(252,209,22,0.95); color:#0b1b3f; padding:16px 18px; border-radius:14px; margin:18px 0; font-weight:900;">⚠️ <b>Atención:</b> ...</div>`);
-  });
-}
-if(btnInsertTipBox){
-  btnInsertTipBox.addEventListener("click", ()=>{
-    insertHtmlBlock(`<div style="background: rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18); padding:16px 18px; border-radius:14px; margin:18px 0; font-weight:900;">💡 <b>Tip:</b> ...</div>`);
-  });
-}
-
-// HTML helper buttons
-if(btnInsH2) btnInsH2.addEventListener("click", ()=> insertHtmlBlock(`<h2>🧩 Tytuł de sección</h2>`));
-if(btnInsH3) btnInsH3.addEventListener("click", ()=> insertHtmlBlock(`<h3>Subtítulo</h3>`));
-if(btnInsList) btnInsList.addEventListener("click", ()=> insertHtmlBlock(`<ul>\n  <li>...</li>\n</ul>`));
-if(btnInsExampleBox) btnInsExampleBox.addEventListener("click", ()=> insertHtmlBlock(`<div style="background: rgba(34,197,94,.14); border:1px solid rgba(34,197,94,.25); padding:16px 18px; border-radius:14px; margin:18px 0;">✅ <b>Ejemplo:</b> ...</div>`));
 
     btnLogout.addEventListener("click", async ()=>{
-      try{ await signOut(auth); location.href = "login.html"; }catch(e){}
-    });
-
-    if(isPremiumToggle){
-      isPremiumToggle.addEventListener("change", ()=>{
-        if(premiumStatusBadge) premiumStatusBadge.style.display = (isPremiumToggle.value === "true") ? "inline-flex" : "none";
-        setDirty(true); saveLocalDraft(); scheduleCompleteness();
-      });
-    }
-    if(allowPreviewToggle){
-      allowPreviewToggle.addEventListener("change", ()=>{ setDirty(true); saveLocalDraft(); scheduleCompleteness(); });
-    }
-
-    publishedToggle.addEventListener("change", ()=>{
-      setPublishedUI(publishedToggle.checked);
-      setDirty(true);
-      saveLocalDraft();
-      scheduleCompleteness();
-    });
-
-    btnPreview.addEventListener("click", ()=>{
-      previewOn = !previewOn;
-      showToast("toast-warn", previewOn ? "Podgląd ON" : "Podgląd OFF");
-      if(previewOn) renderLesson({ published: publishedToggle.checked, html: htmlArea.value });
-      else initLoad();
-    });
-
-    btnSaveDraft.addEventListener("click", ()=> saveLesson({ forcePublished:false }));
-    btnPublish.addEventListener("click", ()=> saveLesson({ forcePublished:true }));
-    btnUnpublish.addEventListener("click", ()=> unpublish());
-
-
-    const templatePreset = document.getElementById("templatePreset");
-    const btnApplyPreset = document.getElementById("btnApplyPreset");
-    const btnAppendPreset = document.getElementById("btnAppendPreset");
-
-    function applyPreset(mode="replace"){
-      const key = templatePreset?.value || "grammar_basic";
-      const tpl = PRESET_TEMPLATES[key] || PRESET_TEMPLATES.grammar_basic;
-      if(mode === "replace"){
-        if(htmlArea.value.trim()){
-          if(!confirm("Zastąpić obecną treść wybranym schematem?")) return;
-        }
-        htmlArea.value = ensureCompletionFooter(tpl);
-      }else{
-        const current = htmlArea.value || "";
-        const add = "\n\n" + tpl + "\n";
-        htmlArea.value = ensureCompletionFooter((current.trim() ? (current + add) : tpl));
-      }
-      setDirty(true);
-      saveLocalDraft();
-      showToast("toast-ok", "Schemat wstawiony ✅");
-      if(previewOn) renderLesson({ published: publishedToggle.checked, html: htmlArea.value });
-      setTimeout(buildTOC, 0);
-      scheduleCompleteness();
-    }
-
-    if(btnApplyPreset) btnApplyPreset.addEventListener("click", ()=> applyPreset("replace"));
-    if(btnAppendPreset) btnAppendPreset.addEventListener("click", ()=> applyPreset("append"));
-
-    btnTemplate.addEventListener("click", ()=>{
-      if(htmlArea.value.trim()){
-        if(!confirm("¿Reemplazar el contenido actual con la plantilla?")) return;
-      }
-      htmlArea.value = templateHtml();
-      setDirty(true);
-      saveLocalDraft();
-      if(previewOn) renderLesson({ published: publishedToggle.checked, html: htmlArea.value });
-      scheduleCompleteness();
-    });
-
-    btnLoadDraft.addEventListener("click", ()=>{
-      const d = loadLocalDraft();
-      if(!d?.data){ showToast("toast-bad", "No hay borrador."); return; }
-      const x = d.data;
-      titleInput.value = x.title || "";
-      descInput.value = x.description || "";
-      if(durationInput) durationInput.value = (x.durationMin ?? "") === null ? "" : (x.durationMin ?? "");
-      if(commTopicInput) commTopicInput.value = x.commTopic || "";
-      typeSelect.value = x.type || "";
-      orderInput.value = (x.order ?? "") === null ? "" : (x.order ?? "");
-      tagsInput.value = Array.isArray(x.tags) ? x.tags.join(", ") : "";
-      if(exerciseLinksInput) exerciseLinksInput.value = exerciseLinksToText(x.exerciseLinks);
-      if(isPremiumToggle) isPremiumToggle.value = x.isPremium ? "true" : "false";
-      if(allowPreviewToggle) allowPreviewToggle.value = (x.allowPreview === false) ? "false" : "true";
-      if(premiumTeaserInput) premiumTeaserInput.value = x.premiumTeaser || "";
-      if(paywallUrlInput) paywallUrlInput.value = x.paywallUrl || "";
-      htmlArea.value = x.html || "";
-      setPublishedUI(!!x.published);
-      setDirty(true);
-      showToast("toast-warn", "Borrador cargado.");
-      if(previewOn) renderLesson({ published: publishedToggle.checked, html: htmlArea.value });
-    });
-
-    btnClearDraft.addEventListener("click", ()=>{
-      clearLocalDraft();
-      showToast("toast-ok", "Borrador eliminado.");
-    });
-
-    btnInsertImg.addEventListener("click", ()=>{
-      const url = (imgUrl.value || "").trim();
-      if(!url){ showToast("toast-bad", "Pega la URL de la imagen."); return; }
-      const alt = (imgAlt.value || "").trim().replaceAll('"','&quot;');
-      insertAtCursor(`\n<img src="${url}" alt="${alt}" />\n`);
-      if(previewOn) renderLesson({ published: publishedToggle.checked, html: htmlArea.value });
-      saveLocalDraft();
-    });
-
-    btnFormatHint.addEventListener("click", ()=>{
-      showToast("toast-warn", "Tip: usa <h2>, <h3>, <p>, <ul><li>. Imágenes: <img src=\"...\" alt=\"...\" />");
-    });
-
-
-    if(btnScrollContent){
-      btnScrollContent.addEventListener("click", ()=>{
-        const target = document.getElementById("lessonContent") || document.querySelector(".lessonWrap") || document.querySelector("main");
-        if(target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    }
-
-    if(btnCopyLink2){
-      btnCopyLink2.addEventListener("click", async ()=>{
-        try{ await navigator.clipboard.writeText(location.href); showToast("toast-ok", "Enlace copiado."); }
-        catch(e){ showToast("toast-bad", "No se pudo copiar el enlace."); }
-      });
-    }
-
-    btnCopyLink.addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText(location.href); showToast("toast-ok", "Enlace copiado."); }
-      catch(e){ showToast("toast-bad", "No se pudo copiar el enlace."); }
-    });
-
-
-
-
-    // Premium managers events
-    if(btnReloadPremium) btnReloadPremium.addEventListener("click", ()=> loadPremiumManagers());
-
-    if(btnAddMaterial){
-      btnAddMaterial.addEventListener("click", async ()=>{
-        try{
-          const title = (matTitle?.value || "").trim();
-          const url = (matUrl?.value || "").trim();
-          if(!title || !url){ showToast("toast-bad", "Faltan título o URL."); return; }
-          const payload = {
-            title,
-            type: (matType?.value || "pdf"),
-            order: toNum(matOrder?.value, 0),
-            premiumOnly: (matPremiumOnly?.value || "true") === "true",
-            fileUrl: url,
-            updatedAt: serverTimestamp(),
-            createdAt: serverTimestamp()
-          };
-          const editingId = btnAddMaterial.dataset.editingId;
-          if(editingId){
-            await setDoc(doc(db, "course_meta", DOC_ID, "materials", editingId), payload, { merge: true });
-            btnAddMaterial.dataset.editingId = "";
-            showToast("toast-ok", "Material actualizado ✅");
-          }else{
-            await addDoc(collection(db, "course_meta", DOC_ID, "materials"), payload);
-            showToast("toast-ok", "Material añadido ✅");
-          }
-          matTitle.value = ""; matUrl.value = ""; matOrder.value = "";
-          await loadMaterials();
-        }catch(e){
-          showToast("toast-bad", "No se pudo guardar material.");
-        }
-      });
-    }
-
-    if(btnAddProduction){
-      btnAddProduction.addEventListener("click", async ()=>{
-        try{
-          const pl = (prodInstrPl?.value || "").trim();
-          const es = (prodInstrEs?.value || "").trim();
-          if(!pl && !es){ showToast("toast-bad", "Añade instrucción (PL o ES)."); return; }
-          const payload = {
-            type: (prodType?.value || "speaking"),
-            order: toNum(prodOrder?.value, 0),
-            instructionPl: pl || null,
-            instructionEs: es || null,
-            samplePl: (prodSamplePl?.value || "").trim() || null,
-            sampleEs: (prodSampleEs?.value || "").trim() || null,
-            allowAudio: (prodAllowAudio?.value || "true") === "true",
-            sendToTeacher: (prodSendTeacher?.value || "false") === "true",
-            updatedAt: serverTimestamp(),
-            createdAt: serverTimestamp()
-          };
-          const editingId = btnAddProduction.dataset.editingId;
-          if(editingId){
-            await setDoc(doc(db, "course_meta", DOC_ID, "production", editingId), payload, { merge: true });
-            btnAddProduction.dataset.editingId = "";
-            showToast("toast-ok", "Producción actualizada ✅");
-          }else{
-            await addDoc(collection(db, "course_meta", DOC_ID, "production"), payload);
-            showToast("toast-ok", "Producción añadida ✅");
-          }
-          prodInstrPl.value=""; prodInstrEs.value=""; prodSamplePl.value=""; prodSampleEs.value=""; prodOrder.value="";
-          await loadProductions();
-        }catch(e){
-          showToast("toast-bad", "No se pudo guardar producción.");
-        }
-      });
-    }
-
-    [titleInput, descInput, durationInput, commTopicInput, typeSelect, orderInput, tagsInput, isPremiumToggle, allowPreviewToggle, premiumTeaserInput, paywallUrlInput, htmlArea, bObjective, bRule, bExamples, bPractice, bDialog, bSummary].filter(Boolean).forEach(el=>{
-      el.addEventListener("input", ()=>{
-        setDirty(true);
-        saveLocalDraft();
-        if(previewOn && el === htmlArea){
-          renderLesson({ published: publishedToggle.checked, html: htmlArea.value });
-        }
-        scheduleCompleteness();
-      });
+      try{
+        await signOut(auth);
+      }catch(e){}
+      location.href = "login.html";
     });
 
     onAuthStateChanged(auth, async (user)=>{
-      currentUser = user || null;
-      const email = user?.email || "—";
-adminMode = isAdmin(email);
-      adminWrap.style.display = adminMode ? "block" : "none";
-      if(adminExtras) adminExtras.style.display = adminMode ? "block" : "none";
-      btnLogout.style.display = user ? "inline-flex" : "none";
-
-      if(adminMode && loadLocalDraft()?.ts){
-        showToast("toast-warn", "Tienes un borrador zapisany lokalnie (🧠 Cargar borrador).");
+      if(!user){
+        location.href = "login.html";
+        return;
       }
-      await initLoad();
-      scheduleCompleteness();
+      // show admin link only for admin
+      if(isAdmin(user.email)){
+        pillAdminLink.style.display = "inline-flex";
+        pillAdminLink.href = `lessonadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
+      }
+      try{ await loadLesson(); }catch(e){
+        console.error(e);
+        showToast("Error cargando la lección.", "toast-bad");
+      }
     });
   </script>
-
-<script data-aquivivo-no-new-tab="1">
-  // Force same-tab navigation (prevents accidental new tabs)
-  (function () {
-    try {
-      document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('a[target="_blank"]').forEach(function (a) {
-          a.removeAttribute('target');
-          var rel = (a.getAttribute('rel') || '').split(/\s+/).filter(Boolean);
-          rel = rel.filter(function (x) { return !(/^noopener$/i.test(x) || /^noreferrer$/i.test(x)); });
-          if (rel.length) a.setAttribute('rel', rel.join(' '));
-          else a.removeAttribute('rel');
-        });
-      });
-
-      var _open = window.open;
-      window.open = function (url, target) {
-        if (target && String(target).toLowerCase() === '_blank' && url) {
-          window.location.assign(url);
-          return null;
-        }
-        return _open.apply(window, arguments);
-      };
-    } catch (e) {}
-  })();
-</script>
-
 </body>
 </html>
