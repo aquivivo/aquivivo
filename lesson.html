@@ -816,6 +816,14 @@ mam na imię — me llamo"></textarea>
           </div>
 
           <div>
+            <label>Estado</label>
+            <select id="exStatus">
+              <option value="published">Publicado</option>
+              <option value="draft">Borrador</option>
+            </select>
+          </div>
+
+          <div>
             <label>Notas (opcjonalnie)</label>
             <input id="exNotes" placeholder="np. wskazówka / komentarz" />
           </div>
@@ -1474,6 +1482,9 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
         const options = Array.isArray(ex.options) ? ex.options : [];
         const order = Number(ex.order || idx + 1);
 
+        const status = String(ex.status || "published");
+        const isDraft = status === "draft";
+
         const isChoice = options.length >= 2;
         const isFill = type === "Rellenar los espacios" || !isChoice;
 
@@ -1496,6 +1507,8 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
           ? `
               <div style="display:flex; gap:8px; align-items:center">
                 <button class="btn" id="pv-${ex.id}" type="button" title="Podgląd (uczeń)">👀</button>
+                <button class="btn" id="dup-${ex.id}" type="button" title="Duplicar (como borrador)">🧩</button>
+                <button class="btn" id="st-${ex.id}" type="button" title="Cambiar estado draft/published">${isDraft ? "📤" : "📝"}</button>
                 <button class="dangerMini" id="del-${ex.id}" type="button" title="Eliminar">🗑</button>
               </div>
             `
@@ -1504,7 +1517,7 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
         return `
           <div class="exercise ${REORDER_MODE && IS_ADMIN ? "dragHint" : ""}" id="ex-${ex.id}" data-id="${ex.id}" ${REORDER_MODE && IS_ADMIN ? "draggable=\"true\"" : ""}>
             ${adminControls}
-            <div class="type">${escapeHtml(type)} · #${order} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ""}</div>
+            <div class="type">${escapeHtml(type)} · #${order} ${isAdmin && isDraft ? ` · <span class="pill pill-red" style="padding:2px 8px; font-size:12px">DRAFT</span>` : ""} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ""}</div>
             <h3>${escapeHtml(prompt)}</h3>
             ${ex.imageUrl ? `<img src="${escapeHtml(ex.imageUrl)}" alt="" style="max-width:100%; border-radius:14px; border:1px solid rgba(0,0,0,0.08); margin: 10px 0 12px;" />` : ""}
             ${optionsHtml}
@@ -1542,6 +1555,68 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
               } catch (e) {
                 console.error(e);
                 showToast("❌ Błąd usuwania (sprawdź konsolę)", "bad", 3200);
+              }
+            };
+          }
+        }
+
+        // duplicate
+        if (isAdmin) {
+          const dupBtn = document.getElementById(`dup-${ex.id}`);
+          if (dupBtn) {
+            dupBtn.onclick = async (ev) => {
+              ev.stopPropagation();
+              try {
+                const newPrompt = prompt("Nowy enunciado (prompt):", String(ex.prompt || "")); 
+                if (newPrompt === null) return;
+
+                const newAnswer = prompt("Nowa respuesta (answer):", String(ex.answer || "")); 
+                if (newAnswer === null) return;
+
+                const nextOrder = getNextOrder();
+                const baseSlug = String(currentTopic?.slug || currentTopic?.id || ex.topicSlug || "");
+                const payload = {
+                  level: LEVEL,
+                  topicSlug: baseSlug,
+                  topicId: currentTopic?.id || ex.topicId || null,
+                  type: ex.type || "Ejercicio",
+                  prompt: String(newPrompt).trim(),
+                  imageUrl: String(ex.imageUrl || "").trim(),
+                  options: Array.isArray(ex.options) ? ex.options.slice() : [],
+                  answer: normalizeAnswer(String(newAnswer)),
+                  notes: String(ex.notes || "").trim(),
+                  category: String(ex.category || "grammar"),
+                  tags: Array.isArray(ex.tags) ? ex.tags.slice() : [],
+                  order: nextOrder,
+                  status: "draft",
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp(),
+                };
+
+                await addDoc(collection(db, "exercises"), payload);
+                showToast("🧩 Zduplikowano jako DRAFT", "ok", 1800);
+                await loadExercises(currentTopic);
+              } catch (e) {
+                console.error(e);
+                showToast("❌ Błąd duplikowania (sprawdź konsolę)", "bad", 3200);
+              }
+            };
+          }
+
+          // toggle status draft/published
+          const stBtn = document.getElementById(`st-${ex.id}`);
+          if (stBtn) {
+            stBtn.onclick = async (ev) => {
+              ev.stopPropagation();
+              try {
+                const cur = String(ex.status || "published");
+                const next = cur === "draft" ? "published" : "draft";
+                await updateDoc(doc(db, "exercises", ex.id), { status: next, updatedAt: serverTimestamp() });
+                showToast(next === "draft" ? "📝 Ustawiono: DRAFT" : "📤 Ustawiono: PUBLISHED", "ok", 1600);
+                await loadExercises(currentTopic);
+              } catch (e) {
+                console.error(e);
+                showToast("❌ Błąd zmiany statusu", "bad", 3200);
               }
             };
           }
@@ -1659,6 +1734,11 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
         }
 
         snap.forEach((d) => cachedExercises.push({ id: d.id, ...d.data() }));
+
+        // hide drafts for students (backward compatible: missing status => published)
+        if (!isAdmin) {
+          cachedExercises = cachedExercises.filter((e) => (String(e.status || "published") !== "draft"));
+        }
 
         // state for filters/reorder
         ALL_EXERCISES = cachedExercises.slice();
@@ -1897,7 +1977,8 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
               category,
               tags,
               order,
-              createdAt: serverTimestamp(),
+              status: (exStatus?.value || "published"),
+            createdAt: serverTimestamp(),
               updatedAt: serverTimestamp(),
             });
 
@@ -1971,7 +2052,8 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
             category: (exCategory?.value || "grammar"),
             tags: toTagsArray(exTags?.value),
             order,
-            createdAt: serverTimestamp(),
+            status: "published",
+              createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
           });
 
@@ -1983,6 +2065,8 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
           exNotes.value = "";
           if (exTags) exTags.value = "";
           exOrder.value = String(order + 1);
+
+          if (exStatus) exStatus.value = "published";
 
           await loadExercises(currentTopic);
           showToast("✅ Ejercicio guardado", "ok", 2200);

@@ -559,7 +559,11 @@
           </select>
           <input id="adminTitle" placeholder="Título (ES)" />
           <input id="adminDesc" placeholder="Descripción (ES)" />
-          <button type="button" onclick="addTopic()">➕ Agregar</button>
+                    <select id="adminStatus" title="Estado">
+            <option value="published">Publicado</option>
+            <option value="draft">Borrador</option>
+          </select>
+<button type="button" onclick="addTopic()">➕ Agregar</button>
         </div>
         <p style="font-size:12px; color:#6b7280; margin:10px 0 0 0">
           Si hiciste clic en importar varias veces – usa "Eliminar duplicados". Esto eliminará las repeticiones en Firestore.
@@ -719,7 +723,8 @@
           title: data.title || '',
           desc: data.desc || '',
           order: Number(data.order ?? 9999),
-          type: normType(data.type)
+          type: normType(data.type),
+          status: (data.status || 'published')
         });
       });
 
@@ -736,12 +741,17 @@
       const adminButtons = isAdmin ? `
         <div class="admin-tools">
           <button class="btn-edit" title="Editar" onclick="event.stopPropagation(); editTopic('${t.id}')">✏️</button>
+          <button class="btn-edit" title="Duplicar" onclick="event.stopPropagation(); duplicateTopic('${t.id}')">🧩</button>
           <button class="btn-del" title="Eliminar" onclick="event.stopPropagation(); deleteTopic('${t.id}')">❌</button>
         </div>` : '';
 
       const badge = t.type === 'grammar'
         ? `<span class="badge badge-grammar">Gramática</span>`
         : `<span class="badge badge-vocab">Vocabulario</span>`;
+
+      const statusChip = (isAdmin && (t.status || 'published') === 'draft')
+        ? `<span class="chip chip-muted">Draft</span>`
+        : '';
 
       const orderChip = Number.isFinite(t.order) && t.order !== 9999
         ? `<span class="chip">#${t.order}</span>`
@@ -755,6 +765,7 @@
           <div class="topic-head">
             <div class="topic-title">
               ${orderChip}
+              ${statusChip}
               <strong>${escapeHtml(t.title)}</strong>
             </div>
             ${badge}
@@ -773,6 +784,7 @@
       const vocab = [];
 
       for (const item of allTopics){
+        if (!isAdmin && (item.status || 'published') !== 'published') continue;
         if (searchTerm){
           const inTitle = item.title.toLowerCase().includes(searchTerm);
           const inDesc = item.desc.toLowerCase().includes(searchTerm);
@@ -811,7 +823,7 @@
       }catch{}
 
       const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(id)}`;
-      window.open(url, '_blank', 'noopener,noreferrer');
+      window.location.href = url;
     };
 
     window.addTopic = async function(){
@@ -820,6 +832,7 @@
       const type = document.getElementById('adminType').value;
       const title = document.getElementById('adminTitle').value.trim();
       const desc = document.getElementById('adminDesc').value.trim();
+      const status = (document.getElementById('adminStatus')?.value || 'published').toLowerCase();
 
       if (!title || !desc){
         alert('Completa el título y la descripción');
@@ -839,7 +852,10 @@
         type,
         title,
         desc,
-        order: maxOrder + 1
+        status: (status === 'draft' ? 'draft' : 'published'),
+        order: maxOrder + 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
 
       document.getElementById('adminTitle').value = '';
@@ -879,10 +895,60 @@
         return;
       }
 
-      await updateDoc(ref, { title: t, desc: d });
+      const curStatus = (cur.status || 'published');
+      const st = prompt("Estado (published/draft):", curStatus);
+      if (st === null) return;
+      const nextStatus = (String(st).toLowerCase().trim() === 'draft') ? 'draft' : 'published';
+
+      await updateDoc(ref, { title: t, desc: d, status: nextStatus, updatedAt: new Date().toISOString() });
       await loadTopics();
     };
 
+
+    window.duplicateTopic = async function(id){
+      if (!isAdmin) return;
+
+      const ref = doc(db,'courses', id);
+      const snap = await getDoc(ref);
+      if (!snap.exists()){
+        alert('Tema no encontrado');
+        return;
+      }
+      const cur = snap.data() || {};
+      const baseTitle = (cur.title || '').toString();
+      const baseDesc = (cur.desc || '').toString();
+      const newTitle = prompt('Título para la copia:', `Copia: ${baseTitle}`) ;
+      if (newTitle === null) return;
+      const newDesc = prompt('Descripción para la copia:', baseDesc);
+      if (newDesc === null) return;
+
+      // default: draft unless you confirm publish
+      const publishNow = confirm('¿Publicar la copia ahora? (Cancelar = borrador)');
+      const status = publishNow ? 'published' : 'draft';
+
+      // compute next order
+      const q = query(collection(db, 'courses'), where('level', '==', LEVEL));
+      const all = await getDocs(q);
+      let maxOrder = 0;
+      all.forEach((d)=>{
+        const o = Number(d.data().order ?? 0);
+        if (o > maxOrder) maxOrder = o;
+      });
+
+      await addDoc(collection(db,'courses'), {
+        level: LEVEL,
+        type: normType(cur.type),
+        title: newTitle.trim(),
+        desc: newDesc.trim(),
+        status,
+        order: maxOrder + 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      await loadTopics();
+      toast('✅ Copia creada');
+    };
     window.dedupeLevel = async function(){
       if (!isAdmin) return;
       if (!confirm('¿Eliminar temas duplicados para el nivel ' + LEVEL + '?')) return;
@@ -964,5 +1030,32 @@
       }
     });
   </script>
+
+<script data-aquivivo-no-new-tab="1">
+  // Force same-tab navigation (prevents accidental new tabs)
+  (function () {
+    try {
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('a[target="_blank"]').forEach(function (a) {
+          a.removeAttribute('target');
+          var rel = (a.getAttribute('rel') || '').split(/\s+/).filter(Boolean);
+          rel = rel.filter(function (x) { return !(/^noopener$/i.test(x) || /^noreferrer$/i.test(x)); });
+          if (rel.length) a.setAttribute('rel', rel.join(' '));
+          else a.removeAttribute('rel');
+        });
+      });
+
+      var _open = window.open;
+      window.open = function (url, target) {
+        if (target && String(target).toLowerCase() === '_blank' && url) {
+          window.location.assign(url);
+          return null;
+        }
+        return _open.apply(window, arguments);
+      };
+    } catch (e) {}
+  })();
+</script>
+
 </body>
 </html>
