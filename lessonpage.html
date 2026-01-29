@@ -219,8 +219,10 @@
       </div>
 
       <div class="nav-actions">
-        <a class="btn" id="btnBackCourse" href="#">⬅️ Curso</a>
-        <a class="btn btn-yellow" id="btnGoExercises" href="#">🧩 Ejercicios</a>
+        <a class="btn" id="btnPanel" href="espanel.html">Panel</a>
+        <a class="btn btn-yellow" id="btnEjercicios" href="#">Ejercicios</a>
+        <a class="btn" id="btnInicio" href="#">Inicio</a>
+        <button class="btn" id="btnAtras" type="button">Atrás</button>
         <button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
       </div>
     </div>
@@ -274,7 +276,15 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      query,
+      where,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
@@ -296,8 +306,10 @@
 
     const toast = $("toast");
     const btnLogout = $("btnLogout");
-    const btnBackCourse = $("btnBackCourse");
-    const btnGoExercises = $("btnGoExercises");
+    const btnPanel = $("btnPanel");
+    const btnEjercicios = $("btnEjercicios");
+    const btnInicio = $("btnInicio");
+    const btnAtras = $("btnAtras");
     const pillAdminLink = $("pillAdminLink");
 
     const lessonTitleEl = $("lessonTitle");
@@ -322,10 +334,49 @@
     const params = new URLSearchParams(location.search);
     const LEVEL = (params.get("level") || "").toUpperCase();
     const TOPIC_ID = (params.get("id") || "").trim();
-    const DOC_ID = `${LEVEL}__${TOPIC_ID}`;
+    let TOPIC_INFO = null;
 
-    btnBackCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-    btnGoExercises.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
+    function getLessonDocId(topicInfo){
+      const slug = (topicInfo?.slug || TOPIC_ID || "").toString().trim();
+      return `${LEVEL}__${slug}`;
+    }
+
+    async function loadTopicInfo(){
+      const fallback = { title: "", desc: "", slug: TOPIC_ID };
+      if(!LEVEL || !TOPIC_ID) return fallback;
+      try{
+        // 1) treat TOPIC_ID as Firestore doc id
+        const byId = await getDoc(doc(db, "courses", TOPIC_ID));
+        if(byId.exists()){
+          const d = byId.data() || {};
+          return {
+            title: (d.title || d.name || d.topic || "").toString(),
+            desc: (d.desc || d.description || "").toString(),
+            slug: (d.slug || TOPIC_ID || "").toString()
+          };
+        }
+      }catch(e){ /* ignore and try slug query */ }
+
+      try{
+        // 2) treat TOPIC_ID as slug
+        const qy = query(collection(db, "courses"), where("level", "==", LEVEL), where("slug", "==", TOPIC_ID));
+        const snap = await getDocs(qy);
+        if(!snap.empty){
+          const d = snap.docs[0].data() || {};
+          return {
+            title: (d.title || d.name || d.topic || "").toString(),
+            desc: (d.desc || d.description || "").toString(),
+            slug: (d.slug || TOPIC_ID || "").toString()
+          };
+        }
+      }catch(e){ /* ignore */ }
+
+      return fallback;
+    }
+
+    if(btnInicio) btnInicio.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+    // btnEjercicios href is set after we resolve TOPIC_INFO (slug vs id)
+    if(btnAtras) btnAtras.addEventListener("click", () => history.back());
 
     function showToast(msg, kind="toast-ok"){
       if(!toast) return;
@@ -421,23 +472,26 @@
     window.addEventListener("scroll", scheduleReadProgress, { passive: true });
     window.addEventListener("resize", scheduleReadProgress);
 
-    function buildExerciseLinks(docData){
+    function buildExerciseLinks(docData, topicInfo){
       if(!exerciseLinksWrap) return;
       exerciseLinksWrap.innerHTML = "";
 
       // Minimal: one button to exercises page (keeps UI consistent)
       const a = document.createElement("a");
       a.className = "btn btn-yellow";
-      a.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
+      const eff = (topicInfo?.slug || TOPIC_ID || "").toString();
+      a.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
       a.textContent = "🧩 Ir a ejercicios";
       exerciseLinksWrap.appendChild(a);
 
       readTools.style.display = "flex";
     }
 
-    function renderLesson(docData){
+    function renderLesson(docData, topicInfo){
       pillLevel.textContent = `Nivel: ${LEVEL || "—"}`;
-      pillTopic.textContent = `Tema: ${TOPIC_ID || "—"}`;
+      const tName = (topicInfo?.title || "").trim();
+      const tDesc = (topicInfo?.desc || "").trim();
+      pillTopic.textContent = `Tema: ${tName || TOPIC_ID || "—"}`;
 
       const title = (docData?.title || "").trim();
       const desc = (docData?.desc || "").trim();
@@ -445,8 +499,8 @@
       const dur = Number(docData?.durationMin || 0);
       const pub = !!docData?.published;
 
-      lessonTitleEl.textContent = title || `Lección — ${TOPIC_ID || "tema"}`;
-      lessonDescEl.textContent = desc || "—";
+      lessonTitleEl.textContent = title || `Lección — ${tName || TOPIC_ID || "tema"}`;
+      lessonDescEl.textContent = desc || tDesc || "—";
 
       if(type){
         pillType.style.display = "inline-flex";
@@ -493,11 +547,11 @@
       lessonContent.innerHTML = html;
 
       setTimeout(buildTOC, 0);
-      buildExerciseLinks(docData);
+      buildExerciseLinks(docData, topicInfo);
       updateReadProgress();
     }
 
-    async function loadLesson(){
+    async function loadLesson(topicInfo){
       if(!LEVEL || !TOPIC_ID){
         lessonTitleEl.textContent = "Error";
         lessonDescEl.textContent = "Faltan parámetros en la URL (level, id).";
@@ -506,15 +560,15 @@
         return;
       }
 
-      const ref = doc(db, "course_meta", DOC_ID);
+      const ref = doc(db, "course_meta", getLessonDocId(topicInfo));
       const snap = await getDoc(ref);
       if(!snap.exists()){
-        renderLesson({ published:false, html:"" });
+        renderLesson({ published:false, html:"" }, topicInfo);
         lessonEmpty.style.display = "block";
         lessonEmpty.textContent = "No existe esta lección todavía.";
         return;
       }
-      renderLesson(snap.data() || {});
+      renderLesson(snap.data() || {}, topicInfo);
     }
 
     btnLogout.addEventListener("click", async ()=>{
@@ -529,12 +583,18 @@
         location.href = "login.html";
         return;
       }
+
+      // Resolve topic title/desc + slug (so we don't show random IDs)
+      TOPIC_INFO = await loadTopicInfo();
+      const eff = (TOPIC_INFO?.slug || TOPIC_ID || "").toString();
+      if(btnEjercicios) btnEjercicios.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
+
       // show admin link only for admin
       if(isAdmin(user.email)){
         pillAdminLink.style.display = "inline-flex";
-        pillAdminLink.href = `lessonadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
+        pillAdminLink.href = `lessonadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
       }
-      try{ await loadLesson(); }catch(e){
+      try{ await loadLesson(TOPIC_INFO); }catch(e){
         console.error(e);
         showToast("Error cargando la lección.", "toast-bad");
       }

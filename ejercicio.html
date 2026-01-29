@@ -557,10 +557,11 @@
         </div>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-          <a id="backToCourse" class="btn" href="course.html?level=A1">⬅️ Volver al curso</a>
-          <a class="btn" id="levelsBtn" href="course.html?level=A1">📚 Niveles</a>
-          <button class="btn btn-yellow" id="btnCopyLink" type="button">🔗 Copiar enlace</button>
-          <button class="btn" id="btnReload" type="button">🔄 Recargar</button>
+          <a class="btn" id="btnPanel" href="#">🧩 Panel</a>
+          <a class="btn btn-yellow" id="btnLeccion" href="#">📖 Lección</a>
+          <a class="btn" id="btnInicio" href="#">🏠 Inicio</a>
+          <button class="btn" id="btnAtras" type="button">⬅️ Atrás</button>
+          <button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
         </div>
       </div>
     </header>
@@ -685,7 +686,7 @@
 
 <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-      import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+      import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
       import {
         getFirestore,
         collection,
@@ -728,10 +729,11 @@
       // UI refs
       const toast = document.getElementById("toast");
       const sessionEmail = document.getElementById("sessionEmail");
-      const backToCourse = document.getElementById("backToCourse");
-      const levelsBtn = document.getElementById("levelsBtn");
-      const btnCopyLink = document.getElementById("btnCopyLink");
-      const btnReload = document.getElementById("btnReload");
+      const btnPanel = document.getElementById("btnPanel");
+      const btnLeccion = document.getElementById("btnLeccion");
+      const btnInicio = document.getElementById("btnInicio");
+      const btnAtras = document.getElementById("btnAtras");
+      const btnLogout = document.getElementById("btnLogout");
 
       const pillLevel = document.getElementById("pillLevel");
       const pillType = document.getElementById("pillType");
@@ -1039,25 +1041,28 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
       }
 
       function setSaving(isSaving) {
-        btnAddExercise.disabled = isSaving;
-        btnAutoOrder.disabled = isSaving;
-        btnAddExercise.textContent = isSaving ? "⏳ Guardando..." : "➕ Guardar ejercicio";
+        if (btnAddExercise) {
+          btnAddExercise.disabled = isSaving;
+          btnAddExercise.textContent = isSaving ? "⏳ Guardando..." : "➕ Guardar ejercicio";
+        }
+        if (btnAutoOrder) {
+          btnAutoOrder.disabled = isSaving;
+        }
       }
 
       // ===== UX buttons =====
-      backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-      levelsBtn.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
       pillLevel.textContent = `Nivel ${LEVEL}`;
 
-      btnCopyLink.onclick = async () => {
-        try {
-          await navigator.clipboard.writeText(window.location.href);
-          showToast("✅ Enlace copiado", "ok", 1800);
-        } catch {
-          showToast("⚠️ No se pudo copiar (bloqueado por navegador)", "warn", 2600);
-        }
-      };
-      btnReload.onclick = () => window.location.reload();
+      // ===== Top navigation =====
+      if (btnPanel) btnPanel.href = "espanel.html";
+      if (btnInicio) btnInicio.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+      if (btnLeccion) btnLeccion.href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent((idParam || slugParam) || "")}`;
+      if (btnAtras) btnAtras.addEventListener("click", () => history.back());
+      if (btnLogout) {
+        btnLogout.addEventListener("click", async () => {
+          try { await signOut(auth); } finally { window.location.href = "login.html"; }
+        });
+      }
 
       // ===== Exercise types (Twoja lista) =====
       const TASK_OPTIONS = [
@@ -1336,10 +1341,11 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
 
 
       function fillExerciseTypes() {
+        if (!exType) return;
         exType.innerHTML = TASK_OPTIONS.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
         const saved = localStorage.getItem("lastExerciseType");
         if (saved && TASK_OPTIONS.includes(saved)) exType.value = saved;
-        exType.addEventListener("change", () => localStorage.setItem("lastExerciseType", exType.value));
+        if (exType) exType.addEventListener("change", () => localStorage.setItem("lastExerciseType", exType.value));
       }
 
       // ===== Safe "no params" screen =====
@@ -1349,6 +1355,8 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
           "Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).";
         pillType.textContent = "—";
         pillSlug.textContent = "slug: —";
+        // keep nav "Lección" pointing to lesson page (no topic selected)
+        if (btnLeccion) btnLeccion.href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}`;
         pillCount.textContent = "Ejercicios: —";
         exerciseList.innerHTML = "";
         emptyExercises.style.display = "block";
@@ -1357,6 +1365,9 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
       // ===== Topic loading =====
       let currentTopic = null;
       let isAdmin = false;
+      // NOTE: use `var` to avoid temporal-dead-zone issues if referenced before declaration.
+      // Admin UI is moved to ejercicioadmin.html, so this stays false here.
+      var IS_ADMIN = false; // compat: admin moved to ejercicioadmin.html
       let cachedExercises = [];
       // ===== User progress (Firestore) =====
       let CURRENT_TOPIC_KEY = null; // `${LEVEL}__${slug}`
@@ -1741,12 +1752,15 @@ return `
 
         fillExerciseTypes();
 
-      // ===== Plantilla UI wiring =====
+
+        if (exType) {
+
+        // ===== Plantilla UI wiring =====
       const btnApplyTemplate = document.getElementById("btnApplyTemplate");
       const tplOverwrite = document.getElementById("tplOverwrite");
 
       // Apply on type change (fills only empty fields)
-      exType.addEventListener("change", () => applyTemplateForSelectedType(false));
+      if (exType) exType.addEventListener("change", () => applyTemplateForSelectedType(false));
 
       if (btnApplyTemplate) {
         btnApplyTemplate.addEventListener("click", () => applyTemplateForSelectedType(!!tplOverwrite?.checked));
@@ -1769,6 +1783,7 @@ return `
 
       // First paint: ensure options visibility matches current type
       setOptionsVisibility(exType.value);
+        }
 
         // UI wiring
         if (filterType) {
@@ -1995,12 +2010,12 @@ return `
         }
       });
 
-      btnAutoOrder.onclick = () => {
+      if (btnAutoOrder && exOrder) btnAutoOrder.onclick = () => {
         exOrder.value = String(getNextOrder());
         showToast("✨ Ustawiono order", "ok", 1400);
       };
 
-      btnAddExercise.onclick = async () => {
+      if (btnAddExercise) btnAddExercise.onclick = async () => {
         if (!isAdmin || !currentTopic) return;
 
         // reset validation
@@ -2072,15 +2087,16 @@ return `
       };
 
       // Enter on answer = save (admin)
-      exAnswer.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && isAdmin) btnAddExercise.click();
-      });
+      if (exAnswer && btnAddExercise) {
+        exAnswer.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && isAdmin) btnAddExercise.click();
+        });
+      }
    
 
       // ===== state =====
       let ALL_EXERCISES = [];
       let VIEW_EXERCISES = [];
-      let IS_ADMIN = false;
       let REORDER_MODE = false;
       let HAS_ORDER_CHANGES = false;
       let DRAG_ID = null;
@@ -2171,7 +2187,7 @@ return `
         body += `</div>`;
         previewBody.innerHTML = body;
 
-        btnCheckPreview.onclick = () => {
+		if (btnCheckPreview) btnCheckPreview.onclick = () => {
           let userAnswer = "";
           const picked = previewBody.querySelector('input[name="pv"]:checked');
           if (picked) userAnswer = picked.value;
@@ -2185,11 +2201,11 @@ return `
           previewResult.classList.toggle("pill-yellow", ok);
           previewResult.classList.toggle("pill-red", !ok);
           previewResult.textContent = ok ? "✅ OK" : `❌ Nie. Poprawna: ${ex.answer || ""}`;
-        };
+		};
 
-        previewBackdrop.onclick = () => (previewModal.style.display = "none");
-        btnClosePreview.onclick = () => (previewModal.style.display = "none");
-        previewModal.style.display = "block";
+		if (previewBackdrop) previewBackdrop.onclick = () => (previewModal && (previewModal.style.display = "none"));
+		if (btnClosePreview) btnClosePreview.onclick = () => (previewModal && (previewModal.style.display = "none"));
+		if (previewModal) previewModal.style.display = "block";
       }
  </script>
   </body>
