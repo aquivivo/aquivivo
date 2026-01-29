@@ -552,7 +552,487 @@
       .progressText{ font-size:12px; font-weight:900; opacity:.92; }
 
 </style>
-  </head>
+  <style>
+    :root{
+      --yellow:#fcd116;
+      --blue:#003893;
+      --red:#ce1126;
+    }
+
+    body{
+      margin:0;
+      font-family: Montserrat, Arial, sans-serif;
+      min-height:100vh;
+      background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
+      color:#fff;
+    }
+
+    main.page{ padding: 22px 0 70px; }
+    .container{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 16px;
+    }
+
+    /* Top bar (nav-glass style) */
+    .topActionBar{
+      position: sticky;
+      top:0;
+      z-index:50;
+      background: rgba(0, 56, 147, 0.78);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .topActionBar::after{
+      content:"";
+      display:block;
+      height:3px;
+      background: linear-gradient(90deg, var(--yellow), var(--blue), var(--red));
+      opacity:.85;
+    }
+    .topActionInner{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap:14px;
+      padding: 14px 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+    .topActionLeft{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      min-width: 180px;
+    }
+    .logo-flag{
+      width:42px; height:42px; border-radius:999px;
+      background: linear-gradient(180deg, var(--yellow) 0 33.33%, var(--blue) 33.33% 66.66%, var(--red) 66.66% 100%);
+      box-shadow: 0 12px 26px rgba(0,0,0,0.25);
+    }
+    .brandName{
+      font-family:"Playfair Display", serif;
+      font-weight:900;
+      font-size:24px;
+      color:#fff;
+      letter-spacing:.2px;
+    }
+    .topActionRight{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+
+    .btnLogout{
+      background: var(--red);
+      color:#fff;
+      border:none;
+      border-radius:999px;
+      padding: 12px 22px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor:pointer;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.18);
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .btnLogout:hover{ filter: brightness(0.95); transform: translateY(-1px); }
+
+    .btnNav{
+      background: rgba(255,255,255,0.12);
+      color:#fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius:999px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor:pointer;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.12);
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .btnNav:hover{
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    /* Header like "Panel del estudiante" */
+    .heroBanner{
+      margin: 6px 0 18px;
+      padding: 22px 22px;
+      border-radius: 22px;
+      background: rgba(0, 26, 77, 0.26);
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 70px rgba(0,0,0,0.18);
+    }
+    .heroTitleRow{
+      display:flex;
+      align-items:center;
+      gap:18px;
+    }
+    .heroIcon{ font-size: 56px; line-height:1; }
+    #levelTitle{
+      font-family:'Playfair Display', serif !important;
+      font-weight: 900 !important;
+      font-size: 64px !important;
+      line-height: 1.05 !important;
+      margin: 0 !important;
+      color: #fff !important;
+      text-shadow: 0 10px 28px rgba(0,0,0,0.35);
+    }
+    #levelSubtitle{
+      margin: 10px 0 0 0 !important;
+      font-size: 18px !important;
+      color: rgba(255,255,255,0.90) !important;
+      opacity: 1 !important;
+    }
+    @media (max-width: 720px){
+      #levelTitle{ font-size: 44px !important; }
+      #levelSubtitle{ font-size: 16px !important; }
+      .heroIcon{ font-size: 46px; }
+      .heroBanner{ padding: 18px 16px; }
+    }
+
+    /* Filters */
+    .filtersSection{
+      background: rgba(255,255,255,0.10) !important;
+      border: 1px solid rgba(255,255,255,0.20) !important;
+      backdrop-filter: blur(14px) !important;
+      border-radius: 22px !important;
+      padding: 18px 18px !important;
+      margin: 22px 0 18px !important;
+      display:flex !important;
+      gap:16px !important;
+      flex-wrap:wrap !important;
+      align-items:center !important;
+      box-shadow: 0 18px 70px rgba(0,0,0,0.18) !important;
+    }
+    .filterGroup{
+      display:flex !important;
+      gap:10px !important;
+      align-items:center !important;
+      min-width: 280px;
+    }
+    .filterLabel{
+      font-size: 14px !important;
+      color: rgba(255,255,255,0.92) !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.2px !important;
+      white-space: nowrap !important;
+      text-shadow: 0 8px 18px rgba(0,0,0,0.35) !important;
+      opacity: 1 !important;
+    }
+
+    #searchInput{
+      background: rgba(255,255,255,0.14) !important;
+      border: 1px solid rgba(255,255,255,0.28) !important;
+      border-radius: 14px !important;
+      padding: 12px 14px !important;
+      color: #fff !important;
+      font-size: 14px !important;
+      width: 260px !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+    #searchInput:focus{
+      outline:none !important;
+      background: rgba(255,255,255,0.18) !important;
+      border-color: rgba(252,209,22,0.55) !important;
+      box-shadow: 0 0 0 4px rgba(252,209,22,0.10) !important;
+    }
+    #searchInput::placeholder{ color: rgba(255,255,255,0.72) !important; }
+
+    #typeFilter, #taskFilter{
+      background: rgba(255,255,255,0.14) !important;
+      border: 1px solid rgba(255,255,255,0.28) !important;
+      border-radius: 14px !important;
+      padding: 12px 14px !important;
+      color:#fff !important;
+      font-size: 14px !important;
+      cursor:pointer !important;
+      min-width: 220px;
+    }
+    #typeFilter option, #taskFilter option{
+      background: #003893 !important;
+      color:#fff !important;
+    }
+
+    @media (max-width: 720px){
+      .filterGroup{ min-width: 100%; }
+      #searchInput{ width: 100% !important; }
+      #typeFilter, #taskFilter{ width: 100% !important; }
+    }
+
+    /* Course tools */
+    .course-tools{ margin: 12px 0 8px; display:grid; gap:12px; }
+    .progressCard{
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(12px);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .progressTop{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .progressLabel{ font-weight: 900; letter-spacing: 0.2px; }
+    .progressText{ opacity: 0.90; font-size: 13px; margin-top: 4px; }
+    .progressBar{
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.16);
+      margin-top: 10px;
+    }
+    .progressFill{
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--yellow), var(--red));
+      transition: width 0.25s ease;
+      width: 0%;
+    }
+    .progressHint{
+      font-size: 12px;
+      opacity: 0.75;
+      margin-top: 8px;
+    }
+    .statsRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .statPill{
+      background: rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 13px;
+      display:flex;
+      gap: 6px;
+      align-items:center;
+    }
+    .statBtn{
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      color:#fff;
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 900;
+      cursor:pointer;
+    }
+    .statBtn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+
+    /* Sections */
+    .sectionTitle{
+      margin: 26px 0 16px 0;
+      font-size: 18px;
+      font-weight: 900;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      letter-spacing:0.3px;
+      color: rgba(255,255,255,0.95) !important;
+      text-shadow: 0 10px 26px rgba(0,0,0,0.45);
+    }
+/* Topic cards */
+    .card{
+      position: relative;
+      background: #ffffff;
+      color: #001a4d;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin: 10px 0;
+    }
+    .topic{
+      position: relative;
+      transition: 0.25s ease;
+      cursor: pointer;
+    }
+    .topic:hover{
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.28);
+    }
+    .topic strong{
+      display:block;
+      margin-bottom: 6px;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--blue);
+      word-break: break-word;
+    }
+    .topic p{
+      margin: 0;
+      font-size: 14px;
+      color: #445066;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .topic-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap:10px;
+    }
+    .topic-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 0;
+    }
+    .chip{
+      font-size: 12px;
+      font-weight: 900;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: rgba(0, 26, 77, 0.08);
+      border: 1px solid rgba(0, 26, 77, 0.18);
+      color: #001a4d;
+      flex: 0 0 auto;
+    }
+    .chip-muted{ opacity: 0.65; }
+    .badge{
+      font-size: 12px;
+      font-weight: 900;
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: #fff;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+    .badge-grammar{ background: rgba(0,56,147,0.92); }
+    .badge-vocab{ background: rgba(206,17,38,0.92); }
+
+    /* Admin tools on card */
+    .admin-tools{
+      position:absolute;
+      top:10px;
+      right:10px;
+      display:flex;
+      gap:6px;
+      z-index:2;
+    }
+    .admin-tools button{
+      border:none;
+      padding: 6px 10px;
+      border-radius: 10px;
+      cursor:pointer;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .btn-edit{ background: var(--yellow); color:#111827; }
+    .btn-del{ background: var(--red); color:#fff; }
+
+    /* Admin panels */
+    .adminBar{ display:none; margin-top: 12px; gap:10px; flex-wrap:wrap; }
+    .adminBar button{
+      padding: 10px 12px;
+      border:none;
+      border-radius: 10px;
+      cursor:pointer;
+      font-weight: 900;
+      background: rgba(255,255,255,0.12);
+      color:#fff;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .adminPanel{ display:none; margin-top: 20px; }
+    .row{
+      display:grid;
+      grid-template-columns: 160px 1fr 1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .row input, .row select{
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .row button{
+      padding: 10px 14px;
+      border:none;
+      border-radius: 10px;
+      cursor:pointer;
+      font-weight: 900;
+      background: var(--blue);
+      color:#fff;
+    }
+
+    .noResults{
+      text-align:center;
+      padding: 20px;
+      opacity: 0.75;
+      font-style: italic;
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color:#fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 12px 14px;
+      border-radius: 14px;
+      max-width: min(720px, calc(100% - 24px));
+      box-shadow: 0 18px 44px rgba(0,0,0,0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      z-index: 9999;
+      font-weight: 800;
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(-2px);
+    }
+  
+    /* === Topic markers (lesson / exercises) === */
+    .markRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .markChip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.2px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.10);
+      color:#fff;
+    }
+    .markLesson{
+      background: rgba(34,197,94,.14);
+      border-color: rgba(34,197,94,.28);
+      color:#eafff1;
+    }
+    .markEx{
+      background: rgba(252,209,22,.18);
+      border-color: rgba(252,209,22,.35);
+      color:#fff;
+    }
+    .markNone{
+      opacity:.75;
+    }
+
+</style>
+</head>
 
   <body>
     <header class="nav-glass">

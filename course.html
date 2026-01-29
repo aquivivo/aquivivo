@@ -413,10 +413,58 @@
       opacity: 1;
       transform: translateX(-50%) translateY(-2px);
     }
-  </style>
+  
+    /* === Topic markers (lesson / exercises) === */
+    .markRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .markChip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.2px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.10);
+      color:#fff;
+    }
+    .markLesson{
+      background: rgba(34,197,94,.14);
+      border-color: rgba(34,197,94,.28);
+      color:#eafff1;
+    }
+    .markEx{
+      background: rgba(252,209,22,.18);
+      border-color: rgba(252,209,22,.35);
+      color:#fff;
+    }
+    .markNone{
+      opacity:.75;
+    }
+
+</style>
+
+<style>
+/* === STRONG COMPACT MODE === */
+.ui-scale-wrapper{
+  transform: scale(0.82);
+  transform-origin: top center;
+}
+body{
+  overflow-x:hidden;
+}
+</style>
+
 </head>
 
 <body>
+<div class="ui-scale-wrapper">
   <div class="topActionBar" id="topActionBar">
     <div class="topActionLeft"></div>
 
@@ -580,7 +628,7 @@
     import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
     import {
       getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, updateDoc,
-      doc, getDoc, setDoc
+      doc, getDoc, setDoc, limit
     } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -768,12 +816,85 @@
               ${statusChip}
               <strong>${escapeHtml(t.title)}</strong>
             </div>
-            ${badge}
+          ${badge}
           </div>
+          <div class=\"markRow\" id=\"marks-${t.id}\"></div>
           <p>${escapeHtml(t.desc)}</p>
         </div>
       `;
     }
+
+    const marksCache = new Map(); // topicId -> {lesson:boolean, exercises:boolean, done:boolean}
+
+    function renderMarksChips(state){
+      if(!state || !state.done){
+        return `<span class="markChip markNone">⏳ Comprobando…</span>`;
+      }
+      const chips = [];
+      if(state.lesson) chips.push(`<span class="markChip markLesson">📘 Lección</span>`);
+      if(state.exercises) chips.push(`<span class="markChip markEx">🧩 Ejercicios</span>`);
+      if(!state.lesson && !state.exercises) chips.push(`<span class="markChip markNone">— Sin contenido</span>`);
+      return chips.join('');
+    }
+
+    function updateMarksDOM(topicId){
+      const el = document.getElementById(`marks-${topicId}`);
+      if(!el) return;
+      const st = marksCache.get(topicId);
+      el.innerHTML = renderMarksChips(st);
+    }
+
+    async function computeMarks(topicId){
+      const st = { lesson:false, exercises:false, done:false };
+      try{
+        // lesson (course_meta docId: LEVEL__topicId)
+        const metaId = `${LEVEL}__${topicId}`;
+        const metaSnap = await getDoc(doc(db, 'course_meta', metaId));
+        if(metaSnap.exists()){
+          const d = metaSnap.data() || {};
+          const hasAny =
+            !!(String(d.html || '').trim()) ||
+            !!(String(d.titleEs || '').trim()) ||
+            !!(String(d.descEs || '').trim()) ||
+            !!(String(d.grammar || '').trim()) ||
+            !!(String(d.vocab || '').trim()) ||
+            !!(String(d.dialog || '').trim()) ||
+            !!(String(d.imageUrl || '').trim()) ||
+            (Array.isArray(d.objectives) && d.objectives.length) ||
+            (Array.isArray(d.examples) && d.examples.length);
+          st.lesson = !!hasAny;
+        }
+      }catch{}
+
+      try{
+        // exercises (at least 1 exercise exists for this topic)
+        const qx = query(
+          collection(db, 'exercises'),
+          where('level', '==', LEVEL),
+          where('topicSlug', '==', topicId),
+          limit(1)
+        );
+        const snap = await getDocs(qx);
+        st.exercises = !snap.empty;
+      }catch{}
+
+      st.done = true;
+      marksCache.set(topicId, st);
+      updateMarksDOM(topicId);
+    }
+
+    function ensureMarks(topicId){
+      if(marksCache.has(topicId) && marksCache.get(topicId)?.done){
+        updateMarksDOM(topicId);
+        return;
+      }
+      if(!marksCache.has(topicId)){
+        marksCache.set(topicId, {done:false});
+      }
+      updateMarksDOM(topicId);
+      computeMarks(topicId);
+    }
+
 
     function renderFiltered(){
       const searchTerm = (searchInput.value || '').toLowerCase().trim();
@@ -810,6 +931,9 @@
       vocabList.innerHTML = vocab.length
         ? vocab.map(renderTopicCard).join('')
         : `<div class="card noResults">No hay resultados en vocabulario</div>`;
+
+      // update markers for visible topics
+      [...grammar, ...vocab].forEach(t => ensureMarks(t.id));
 
       updateStatsAndProgress(grammar.length + vocab.length);
     }
@@ -1057,5 +1181,6 @@
   })();
 </script>
 
+</div>
 </body>
 </html>
