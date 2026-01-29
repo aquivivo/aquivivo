@@ -6,7 +6,8 @@
     <title>Panel del estudiante | AquiVivo</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap"
+      rel="stylesheet"
     />
     <!-- ✅ consistente con login/admin -->
     <link href="assets/css/styles.css" rel="stylesheet" />
@@ -376,7 +377,6 @@
         <section class="panel-grid">
           <div class="hero-card">
             <h1 class="hero-title glow-text">Panel del estudiante 🎓</h1>
-            <p class="hero-subtitle">Mis cursos</p>
             <div
               style="
                 margin-top: 12px;
@@ -471,48 +471,9 @@
               </p>
             </div>
           </div>
-          <div class="stats">
-            <div class="stat">
-              <div class="big">📘</div>
-              <div class="label">Cursos</div>
-            </div>
-            <div class="stat">
-              <div class="big">⏳</div>
-              <div class="label">Acceso</div>
-            </div>
-            <div class="stat">
-              <div class="big">🎓</div>
-              <div class="label">Aprendizaje</div>
-            </div>
-          </div>
         </section>
         <!-- Big section header (style like landing title) -->
-        <div style="margin-top: 10px">
-          <div
-            style="
-              width: 100%;
-              padding: 14px 18px;
-              border-radius: 18px;
-              background: rgba(13, 36, 92, 0.35);
-              border: 1px solid rgba(255, 255, 255, 0.14);
-              backdrop-filter: blur(10px);
-            "
-          >
-            <div
-              style="
-                font-family: 'Playfair Display', serif;
-                font-weight: 900;
-                font-size: 56px;
-                line-height: 1;
-                letter-spacing: 0.5px;
-                color: #fcd116;
-                text-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
-              "
-            >
-              Mis cursos
-            </div>
-          </div>
-        </div>
+        <div style="margin-top: 10px"></div>
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 28px">
           <!-- LEFT: courses -->
           <div class="courses-grid" id="coursesCards"></div>
@@ -794,125 +755,6 @@
             </svg>
           </div>
           <section id="pricingSection" style="margin-top: 60px">
-            <h2
-              data-editable-key="pricing_title"
-              style="
-                font-family: 'Playfair Display', serif;
-                font-size: 46px;
-                color: #fcd116;
-              "
-            >
-              Planes y precios
-            </h2>
-            <div
-              style="
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                gap: 24px;
-                margin-top: 30px;
-              "
-            >
-              <div class="course-tile tile-blue" data-plan="A1A2">
-                <div
-                  class="tile-title"
-                  contenteditable="false"
-                  data-editable="true"
-                >
-                  Nivel A1–A2
-                </div>
-                <div
-                  class="tile-subtitle"
-                  contenteditable="false"
-                  data-editable="true"
-                >
-                  Fundamentos de la vida en Polonia
-                </div>
-                <div
-                  class="tile-meta"
-                  contenteditable="false"
-                  data-editable="true"
-                  id="price_A1A2"
-                >
-                  180 zł / 3 meses
-                </div>
-                <div class="tile-actions">
-                  <a
-                    class="btn-yellow"
-                    data-buy-btn="1"
-                    data-editable-key="buy_label"
-                    href="Contacto.html"
-                    >Comprar acceso</a
-                  >
-                </div>
-              </div>
-              <div class="course-tile tile-white" data-plan="B1">
-                <div
-                  class="tile-title"
-                  contenteditable="false"
-                  data-editable="true"
-                >
-                  Nivel B1
-                </div>
-                <div
-                  class="tile-subtitle"
-                  contenteditable="false"
-                  data-editable="true"
-                >
-                  Vida independiente en Polonia
-                </div>
-                <div
-                  class="tile-meta"
-                  contenteditable="false"
-                  data-editable="true"
-                  id="price_B1"
-                >
-                  250 zł / 3 meses
-                </div>
-                <div class="tile-actions">
-                  <a
-                    class="btn-yellow"
-                    data-buy-btn="1"
-                    data-editable-key="buy_label"
-                    href="Contacto.html"
-                    >Comprar acceso</a
-                  >
-                </div>
-              </div>
-              <div class="course-tile tile-red" data-plan="B2">
-                <div
-                  class="tile-title"
-                  contenteditable="false"
-                  data-editable="true"
-                >
-                  Nivel B2
-                </div>
-                <div
-                  class="tile-subtitle"
-                  contenteditable="false"
-                  data-editable="true"
-                >
-                  Integración total
-                </div>
-                <div
-                  class="tile-meta"
-                  contenteditable="false"
-                  data-editable="true"
-                  id="price_B2"
-                >
-                  350 zł / 3 meses
-                </div>
-                <div class="tile-actions">
-                  <a
-                    class="btn-yellow"
-                    data-buy-btn="1"
-                    data-editable-key="buy_label"
-                    href="Contacto.html"
-                    >Comprar acceso</a
-                  >
-                </div>
-              </div>
-            </div>
-          </section>
           <!-- ADMIN MODAL -->
           <div
             id="adminModal"
@@ -1949,7 +1791,7 @@
 
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
-          window.location.href = 'eslogin.html';
+          window.location.href = 'login.html';
           return;
         }
 
@@ -2043,7 +1885,7 @@
       });
 
       window.logout = function () {
-        signOut(auth).then(() => (window.location.href = 'eslogin.html'));
+        signOut(auth).then(() => (window.location.href = 'login.html'));
       };
 
       // ===== SITE SETTINGS (Firestore) =====
@@ -3267,32 +3109,37 @@
         </div>
       </div>
     </div>
-  
-<script data-aquivivo-no-new-tab="1">
-  // Force same-tab navigation (prevents accidental new tabs)
-  (function () {
-    try {
-      document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('a[target="_blank"]').forEach(function (a) {
-          a.removeAttribute('target');
-          var rel = (a.getAttribute('rel') || '').split(/\s+/).filter(Boolean);
-          rel = rel.filter(function (x) { return !(/^noopener$/i.test(x) || /^noreferrer$/i.test(x)); });
-          if (rel.length) a.setAttribute('rel', rel.join(' '));
-          else a.removeAttribute('rel');
-        });
-      });
 
-      var _open = window.open;
-      window.open = function (url, target) {
-        if (target && String(target).toLowerCase() === '_blank' && url) {
-          window.location.assign(url);
-          return null;
-        }
-        return _open.apply(window, arguments);
-      };
-    } catch (e) {}
-  })();
-</script>
+    <script data-aquivivo-no-new-tab="1">
+      // Force same-tab navigation (prevents accidental new tabs)
+      (function () {
+        try {
+          document.addEventListener('DOMContentLoaded', function () {
+            document
+              .querySelectorAll('a[target="_blank"]')
+              .forEach(function (a) {
+                a.removeAttribute('target');
+                var rel = (a.getAttribute('rel') || '')
+                  .split(/\s+/)
+                  .filter(Boolean);
+                rel = rel.filter(function (x) {
+                  return !(/^noopener$/i.test(x) || /^noreferrer$/i.test(x));
+                });
+                if (rel.length) a.setAttribute('rel', rel.join(' '));
+                else a.removeAttribute('rel');
+              });
+          });
 
-</body>
+          var _open = window.open;
+          window.open = function (url, target) {
+            if (target && String(target).toLowerCase() === '_blank' && url) {
+              window.location.assign(url);
+              return null;
+            }
+            return _open.apply(window, arguments);
+          };
+        } catch (e) {}
+      })();
+    </script>
+  </body>
 </html>
