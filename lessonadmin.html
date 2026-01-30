@@ -1,16 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin lección | AquiVivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
-
-  <style>
+<meta charset="utf-8"/>
+<title>Admin lección | AquiVivo</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&amp;family=Playfair+Display:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="assets/css/styles.css" rel="stylesheet"/>
+<style>
     :root{ --yellow:#FCD116; --blue:#003893; --red:#CE1126; --ink:#0b1b3f; }
     *{ box-sizing:border-box; }
     body{
@@ -291,138 +290,121 @@
       .dockGrid{ grid-template-columns: 1fr 1fr 1fr; }
     }
 </style>
-</head>
-
+<script defer="True" src="assets/js/layout.js"></script><link href="assets/img/logo.png" rel="icon"/></head>
 <body>
-  <div id="appHeader"></div>
+<div id="appHeader"></div>
 
-  <div class="name">AquiVivo</div>
-      </div>
-      <div class="nav-actions">
-        <button class="btn btn-yellow" id="btnPublish" type="button">🚀 Publicar</button>
-        <a class="btn" id="btnBackCourse" href="#">⬅️ Curso</a>
-        <a class="btn btn-yellow" id="btnOpenLesson" href="#">📖 Ver lección</a>
-        <a class="btn" id="btnOpenExercises" href="#">🧩 Admin ejercicios</a>
-        <button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
-      </div>
-    </div>
-  </div>
-
-  <main class="page">
-    <div class="container">
-
-      <div class="card">
-        <h1>Admin — Lección</h1>
-        <p class="subtitle">Aquí editas el contenido de la lección (HTML) y sus metadatos. Los ejercicios se gestionan en la página de ejercicios.</p>
-        <div class="metaRow">
-          <span class="pill pill-yellow" id="pillLevel">Nivel: —</span>
-          <span class="pill" id="pillTopic">Tema: —</span>
-          <span class="pill" id="pillDoc">Doc: —</span>
-          <span class="pill" id="pillPub">—</span>
-        </div>
-      </div>
-
-      <div class="card" id="adminOnly" style="display:none;">
-        <div class="sectionTitle">🧩 Meta</div>
-        <div class="formGrid">
-          <div class="field">
-            <label for="titleInput">Título</label>
-            <input class="input" id="titleInput" placeholder="p. ej. Caso nominativo — podstawy" />
-          </div>
-          <div class="field">
-            <label for="typeSelect">Tipo</label>
-            <select class="select" id="typeSelect">
-              <option value="">—</option>
-              <option value="grammar">Gramática</option>
-              <option value="vocab">Vocabulario</option>
-              <option value="practice">Práctica</option>
-              <option value="mixed">Mixto</option>
-            </select>
-          </div>
-          <div class="field" style="grid-column: 1 / -1;">
-            <label for="descInput">Descripción corta</label>
-            <input class="input" id="descInput" placeholder="1–2 frases sobre la lección" />
-          </div>
-          <div class="field">
-            <label for="durationInput">Duración (min)</label>
-            <input class="input" id="durationInput" type="number" min="0" placeholder="p. ej. 45" />
-          </div>
-          <div class="field">
-            <label for="publishedToggle">Publicado</label>
-            <select class="select" id="publishedToggle">
-              <option value="false">Borrador</option>
-              <option value="true">Publicado</option>
-            </select>
-          </div>
-
-          <!-- ===== BUILDER (step 1) ===== -->
-          <div class="field" style="grid-column: 1 / -1;">
-            <div class="sectionTitle" style="margin-top:6px;">✨ Constructor por bloques (recomendado)</div>
-            <div class="builderTop">
-              <div class="builderBtns">
-                <button class="miniBtn yellow" id="btnTplGrammar" type="button">📚 Plantilla: Gramática</button>
-                <button class="miniBtn yellow" id="btnTplVocab" type="button">🧠 Plantilla: Vocabulario</button>
-                <button class="miniBtn" id="btnTplPremium" type="button">💎 Premium</button>
-                <button class="miniBtn" id="btnTplRepaso" type="button">🔁 Repaso/Test</button>
-                <button class="miniBtn red" id="btnClearBlocks" type="button">🗑 Limpiar</button>
-              </div>
-            </div>
-            <div class="mutedTiny">Ordena con ⬆️⬇️. Cada bloque permite <b>tamaño</b> y <b>color</b>. Imágenes por URL (por ahora).</div>
-
-            <div id="blocksList" class="blocksList"></div>
-
-            <div class="hrLine"></div>
-            <div class="inlineRow">
-              <div class="field" style="min-width: 220px; flex:2;">
-                <label>Modo HTML</label>
-                <div class="mutedTiny">Si usas bloques, el HTML se genera solo. Si prefieres, puedes editar el HTML manualmente.</div>
-              </div>
-              <div class="field" style="min-width: 220px; flex:1;">
-                <label for="htmlMode">Fuente</label>
-                <select class="select" id="htmlMode">
-                  <option value="auto">Auto (desde bloques)</option>
-                  <option value="manual">Manual (editar HTML)</option>
-                </select>
-              </div>
-              <div class="field" style="min-width: 220px; flex:1;">
-                <label>&nbsp;</label>
-                <button class="miniBtn" id="btnWrapHtml" type="button">📦 Convertir HTML → 1 bloque</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="field" style="grid-column: 1 / -1;">
-            <label for="htmlArea">Contenido (HTML)</label>
-            <textarea id="htmlArea" placeholder="<h2>...</h2>"></textarea>
-            <div class="hintSmall">Tip: puedes pegar HTML con <code>&lt;h2&gt;</code>, listas, imágenes, tablas. Esto se mostrará en <b>lessonpage.html</b>.</div>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="btn" id="btnLoad" type="button">🔄 Recargar</button>
-          <button class="btn btn-yellow" id="btnSave" type="button">💾 Guardar</button>
-        </div>
-      </div>
-
-      <div class="card" id="noAdmin" style="display:none;">
-        <div class="sectionTitle">⛔ Acceso denegado</div>
-        <div class="hintSmall">Este panel es solo para admin.</div>
-      </div>
-
-      <div class="card">
-        <div class="sectionTitle">👁️ Vista previa</div>
-        <div class="previewBox">
-          <div id="previewTitle" style="font-weight:900; font-size:18px; margin-bottom:8px;">—</div>
-          <div id="previewDesc" style="opacity:.9; margin-bottom:10px;">—</div>
-          <div id="previewBody" class="lessonHtml"></div>
-        </div>
-      </div>
-
-      <div id="toast"></div>
-    </div>
-  </main>
-
-  <script type="module">
+<div class="nav-actions">
+<button class="btn btn-yellow" id="btnPublish" type="button">🚀 Publicar</button>
+<a class="btn" href="#" id="btnBackCourse">⬅️ Curso</a>
+<a class="btn btn-yellow" href="#" id="btnOpenLesson">📖 Ver lección</a>
+<a class="btn" href="#" id="btnOpenExercises">🧩 Admin ejercicios</a>
+<button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
+</div>
+<main class="page">
+<div class="container">
+<div class="card">
+<h1>Admin — Lección</h1>
+<p class="subtitle">Aquí editas el contenido de la lección (HTML) y sus metadatos. Los ejercicios se gestionan en la página de ejercicios.</p>
+<div class="metaRow">
+<span class="pill pill-yellow" id="pillLevel">Nivel: —</span>
+<span class="pill" id="pillTopic">Tema: —</span>
+<span class="pill" id="pillDoc">Doc: —</span>
+<span class="pill" id="pillPub">—</span>
+</div>
+</div>
+<div class="card" id="adminOnly" style="display:none;">
+<div class="sectionTitle">🧩 Meta</div>
+<div class="formGrid">
+<div class="field">
+<label for="titleInput">Título</label>
+<input class="input" id="titleInput" placeholder="p. ej. Caso nominativo — podstawy"/>
+</div>
+<div class="field">
+<label for="typeSelect">Tipo</label>
+<select class="select" id="typeSelect">
+<option value="">—</option>
+<option value="grammar">Gramática</option>
+<option value="vocab">Vocabulario</option>
+<option value="practice">Práctica</option>
+<option value="mixed">Mixto</option>
+</select>
+</div>
+<div class="field" style="grid-column: 1 / -1;">
+<label for="descInput">Descripción corta</label>
+<input class="input" id="descInput" placeholder="1–2 frases sobre la lección"/>
+</div>
+<div class="field">
+<label for="durationInput">Duración (min)</label>
+<input class="input" id="durationInput" min="0" placeholder="p. ej. 45" type="number"/>
+</div>
+<div class="field">
+<label for="publishedToggle">Publicado</label>
+<select class="select" id="publishedToggle">
+<option value="false">Borrador</option>
+<option value="true">Publicado</option>
+</select>
+</div>
+<!-- ===== BUILDER (step 1) ===== -->
+<div class="field" style="grid-column: 1 / -1;">
+<div class="sectionTitle" style="margin-top:6px;">✨ Constructor por bloques (recomendado)</div>
+<div class="builderTop">
+<div class="builderBtns">
+<button class="miniBtn yellow" id="btnTplGrammar" type="button">📚 Plantilla: Gramática</button>
+<button class="miniBtn yellow" id="btnTplVocab" type="button">🧠 Plantilla: Vocabulario</button>
+<button class="miniBtn" id="btnTplPremium" type="button">💎 Premium</button>
+<button class="miniBtn" id="btnTplRepaso" type="button">🔁 Repaso/Test</button>
+<button class="miniBtn red" id="btnClearBlocks" type="button">🗑 Limpiar</button>
+</div>
+</div>
+<div class="mutedTiny">Ordena con ⬆️⬇️. Cada bloque permite <b>tamaño</b> y <b>color</b>. Imágenes por URL (por ahora).</div>
+<div class="blocksList" id="blocksList"></div>
+<div class="hrLine"></div>
+<div class="inlineRow">
+<div class="field" style="min-width: 220px; flex:2;">
+<label>Modo HTML</label>
+<div class="mutedTiny">Si usas bloques, el HTML se genera solo. Si prefieres, puedes editar el HTML manualmente.</div>
+</div>
+<div class="field" style="min-width: 220px; flex:1;">
+<label for="htmlMode">Fuente</label>
+<select class="select" id="htmlMode">
+<option value="auto">Auto (desde bloques)</option>
+<option value="manual">Manual (editar HTML)</option>
+</select>
+</div>
+<div class="field" style="min-width: 220px; flex:1;">
+<label> </label>
+<button class="miniBtn" id="btnWrapHtml" type="button">📦 Convertir HTML → 1 bloque</button>
+</div>
+</div>
+</div>
+<div class="field" style="grid-column: 1 / -1;">
+<label for="htmlArea">Contenido (HTML)</label>
+<textarea id="htmlArea" placeholder="&lt;h2&gt;...&lt;/h2&gt;"></textarea>
+<div class="hintSmall">Tip: puedes pegar HTML con <code>&lt;h2&gt;</code>, listas, imágenes, tablas. Esto se mostrará en <b>lessonpage.html</b>.</div>
+</div>
+</div>
+<div class="actions">
+<button class="btn" id="btnLoad" type="button">🔄 Recargar</button>
+<button class="btn btn-yellow" id="btnSave" type="button">💾 Guardar</button>
+</div>
+</div>
+<div class="card" id="noAdmin" style="display:none;">
+<div class="sectionTitle">⛔ Acceso denegado</div>
+<div class="hintSmall">Este panel es solo para admin.</div>
+</div>
+<div class="card">
+<div class="sectionTitle">👁️ Vista previa</div>
+<div class="previewBox">
+<div id="previewTitle" style="font-weight:900; font-size:18px; margin-bottom:8px;">—</div>
+<div id="previewDesc" style="opacity:.9; margin-bottom:10px;">—</div>
+<div class="lessonHtml" id="previewBody"></div>
+</div>
+</div>
+<div id="toast"></div>
+</div>
+</main>
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
@@ -1144,55 +1126,46 @@ btnSave.addEventListener("click", async ()=>{
       try{ await loadDoc(); }catch(e){ console.error(e); showToast("Error cargando doc.", "toast-bad"); }
     });
   </script>
-
-  <!-- Right dock: add blocks + defaults -->
-  <div class="addDock" id="addDock">
-    <div class="addDockTitle">➕ Añadir bloque <span style="opacity:.75;">(siempre visible)</span></div>
-
-    <div class="dockGrid">
-      <button class="dockBtn" id="btnAddHeading" type="button">➕ Título</button>
-      <button class="dockBtn" id="btnAddText" type="button">➕ Texto</button>
-      <button class="dockBtn" id="btnAddImage" type="button">➕ Imagen</button>
-      <button class="dockBtn" id="btnAddTip" type="button">➕ Tip</button>
-      <button class="dockBtn" id="btnAddExample" type="button">➕ Ejemplo</button>
-      <button class="dockBtn" id="btnAddDivider" type="button">➕ Separador</button>
-    </div>
-
-    <div class="dockDivider"></div>
-    <div class="addDockTitle">🎨 Estilo por defecto</div>
-
-    <label style="font-weight:900; font-size:12px; opacity:.9;">Color de texto</label>
-    <select class="dockSelect" id="defaultTextColor">
-      <option value="muted">Blanco / por defecto</option>
-      <option value="yellow">Amarillo</option>
-      <option value="blue">Azul</option>
-      <option value="red">Rojo</option>
-    </select>
-
-    <label style="font-weight:900; font-size:12px; opacity:.9;">Tamaño de texto</label>
-    <select class="dockSelect" id="defaultTextSize">
-      <option value="xs">XS</option>
-      <option value="sm">S</option>
-      <option value="md" selected>M</option>
-      <option value="lg">L</option>
-      <option value="xl">XL</option>
-    </select>
-
-    <label style="font-weight:900; font-size:12px; opacity:.9;">Color del bloque</label>
-    <select class="dockSelect" id="defaultBlockBg">
-      <option value="none" selected>Sin fondo</option>
-      <option value="white">Blanco</option>
-      <option value="yellow">Amarillo</option>
-      <option value="blue">Azul</option>
-      <option value="red">Rojo</option>
-    </select>
-
-    <div style="font-size:12px; opacity:.8; line-height:1.35;">
+<!-- Right dock: add blocks + defaults -->
+<div class="addDock" id="addDock">
+<div class="addDockTitle">➕ Añadir bloque <span style="opacity:.75;">(siempre visible)</span></div>
+<div class="dockGrid">
+<button class="dockBtn" id="btnAddHeading" type="button">➕ Título</button>
+<button class="dockBtn" id="btnAddText" type="button">➕ Texto</button>
+<button class="dockBtn" id="btnAddImage" type="button">➕ Imagen</button>
+<button class="dockBtn" id="btnAddTip" type="button">➕ Tip</button>
+<button class="dockBtn" id="btnAddExample" type="button">➕ Ejemplo</button>
+<button class="dockBtn" id="btnAddDivider" type="button">➕ Separador</button>
+</div>
+<div class="dockDivider"></div>
+<div class="addDockTitle">🎨 Estilo por defecto</div>
+<label style="font-weight:900; font-size:12px; opacity:.9;">Color de texto</label>
+<select class="dockSelect" id="defaultTextColor">
+<option value="muted">Blanco / por defecto</option>
+<option value="yellow">Amarillo</option>
+<option value="blue">Azul</option>
+<option value="red">Rojo</option>
+</select>
+<label style="font-weight:900; font-size:12px; opacity:.9;">Tamaño de texto</label>
+<select class="dockSelect" id="defaultTextSize">
+<option value="xs">XS</option>
+<option value="sm">S</option>
+<option selected="" value="md">M</option>
+<option value="lg">L</option>
+<option value="xl">XL</option>
+</select>
+<label style="font-weight:900; font-size:12px; opacity:.9;">Color del bloque</label>
+<select class="dockSelect" id="defaultBlockBg">
+<option selected="" value="none">Sin fondo</option>
+<option value="white">Blanco</option>
+<option value="yellow">Amarillo</option>
+<option value="blue">Azul</option>
+<option value="red">Rojo</option>
+</select>
+<div style="font-size:12px; opacity:.8; line-height:1.35;">
       Estos valores se aplican automáticamente a los nuevos bloques (Texto/Título/Imagen).
     </div>
-  </div>
-
-
+</div>
 <script src="assets/js/layout.js"></script>
-</body>
+<div id="appFooter"></div></body>
 </html>

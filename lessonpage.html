@@ -1,16 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Lección | AquiVivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
-
-  <style>
+<meta charset="utf-8"/>
+<title>Lección | AquiVivo</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&amp;family=Playfair+Display:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="assets/css/styles.css" rel="stylesheet"/>
+<style>
     :root{ --yellow:#FCD116; --blue:#003893; --red:#CE1126; --ink:#0b1b3f; }
     *{ box-sizing:border-box; }
     body{
@@ -206,70 +205,54 @@
     .toast-bad{ background: rgba(185, 28, 28, 0.92); color: #fff; }
     .toast-warn{ background: rgba(252, 209, 22, 0.94); color: var(--ink); border-color: rgba(252, 209, 22, 0.7); }
   </style>
-</head>
-
+<script defer="True" src="assets/js/layout.js"></script><link href="assets/img/logo.png" rel="icon"/></head>
 <body>
-  <div id="appHeader"></div>
+<div id="appHeader"></div>
 
-  <div class="name">AquiVivo</div>
-      </div>
-
-      <div class="nav-actions">
-        <a class="btn" id="btnPanel" href="espanel.html">Panel</a>
-        <a class="btn btn-yellow" id="btnEjercicios" href="#">Ejercicios</a>
-        <a class="btn" id="btnInicio" href="#">Inicio</a>
-        <button class="btn" id="btnAtras" type="button">Atrás</button>
-        <button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
-      </div>
-    </div>
-  </div>
-
-  <main class="page">
-    <div class="container">
-
-      <div class="heroBanner">
-        <div class="heroTitleRow">
-          <div class="heroIcon">📖</div>
-          <div style="flex:1">
-            <h1 id="lessonTitle">Cargando…</h1>
-            <p class="subtitle" id="lessonDesc">Cargando…</p>
-
-            <div class="metaRow">
-              <span class="pill pill-yellow" id="pillLevel">Nivel: —</span>
-              <span class="pill" id="pillTopic">Tema: —</span>
-              <span class="pill" id="pillType" style="display:none"></span>
-              <span class="pill" id="pillDuration" style="display:none"></span>
-              <span class="pill" id="pillPub" style="display:none"></span>
-              <a class="pill" id="pillAdminLink" href="#" style="display:none; text-decoration:none;">🛠 Admin lección</a>
-            </div>
-
-            <div class="readTools" id="readTools" style="display:none;">
-              <div class="readProgress">
-                <div class="readProgressBar"><div class="readProgressFill" id="readProgressFill" style="width:0%"></div></div>
-                <div class="readProgressText" id="readProgressText">📖 Progreso de lectura: 0%</div>
-              </div>
-              <div class="exerciseLinks" id="exerciseLinksWrap"></div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <div id="tocWrap" style="display:none; margin-top:12px;">
-        <div class="sectionTitle">📌 En esta lección</div>
-        <div id="tocList" class="card" style="padding:12px; margin:0;"></div>
-      </div>
-
-      <div id="lessonContent" class="lessonHtml" style="display:none;"></div>
-      <div id="lessonEmpty" class="empty" style="display:none;"></div>
-
-      <div class="hintSmall" id="studentHint" style="display:none;"></div>
-
-      <div id="toast"></div>
-    </div>
-  </main>
-
-  <script type="module">
+<div class="nav-actions">
+<a class="btn" href="espanel.html" id="btnPanel">Panel</a>
+<a class="btn btn-yellow" href="#" id="btnEjercicios">Ejercicios</a>
+<a class="btn" href="#" id="btnInicio">Inicio</a>
+<button class="btn" id="btnAtras" type="button">Atrás</button>
+<button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
+</div>
+<main class="page">
+<div class="container">
+<div class="heroBanner">
+<div class="heroTitleRow">
+<div class="heroIcon">📖</div>
+<div style="flex:1">
+<h1 id="lessonTitle">Cargando…</h1>
+<p class="subtitle" id="lessonDesc">Cargando…</p>
+<div class="metaRow">
+<span class="pill pill-yellow" id="pillLevel">Nivel: —</span>
+<span class="pill" id="pillTopic">Tema: —</span>
+<span class="pill" id="pillType" style="display:none"></span>
+<span class="pill" id="pillDuration" style="display:none"></span>
+<span class="pill" id="pillPub" style="display:none"></span>
+<a class="pill" href="#" id="pillAdminLink" style="display:none; text-decoration:none;">🛠 Admin lección</a>
+</div>
+<div class="readTools" id="readTools" style="display:none;">
+<div class="readProgress">
+<div class="readProgressBar"><div class="readProgressFill" id="readProgressFill" style="width:0%"></div></div>
+<div class="readProgressText" id="readProgressText">📖 Progreso de lectura: 0%</div>
+</div>
+<div class="exerciseLinks" id="exerciseLinksWrap"></div>
+</div>
+</div>
+</div>
+</div>
+<div id="tocWrap" style="display:none; margin-top:12px;">
+<div class="sectionTitle">📌 En esta lección</div>
+<div class="card" id="tocList" style="padding:12px; margin:0;"></div>
+</div>
+<div class="lessonHtml" id="lessonContent" style="display:none;"></div>
+<div class="empty" id="lessonEmpty" style="display:none;"></div>
+<div class="hintSmall" id="studentHint" style="display:none;"></div>
+<div id="toast"></div>
+</div>
+</main>
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
     import {
@@ -596,7 +579,6 @@
       }
     });
   </script>
-
 <script src="assets/js/layout.js"></script>
-</body>
+<div id="appFooter"></div></body>
 </html>

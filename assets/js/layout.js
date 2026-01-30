@@ -1,161 +1,263 @@
-
-function removeLegacyHeaders(){
-  const selectors = [
-    '.topActionBar',
-    'header.siteHeader',
-    'header',
-    '.nav-glass',
-    '.headerBar',
-    '.navbar',
-    '#topbar',
-    '#header',
-    '[data-legacy-header]'
-  ];
-  selectors.forEach(sel => {
-    document.querySelectorAll(sel).forEach(el => {
-      // Do not remove the injected header itself
-      if (el && !el.hasAttribute('data-av-header')) el.remove();
-    });
-  });
-}
-
-
+/* AquiVivo Layout — unified header/footer (FINAL)
+   - Uses logo: assets/img/logo.png
+   - Normalizes header width + colored stripe
+   - Avoids duplicate legacy headers
+*/
 (function(){
-  const path = (location.pathname.split('/').pop() || '').toLowerCase();
+  const LOGO_SRC = "assets/img/logo.png";
 
-  function el(tag, attrs={}, children=[]){
-    const n=document.createElement(tag);
-    for (const [k,v] of Object.entries(attrs)){
-      if (k === 'class') n.className = v;
-      else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2), v);
-      else n.setAttribute(k, v);
-    }
-    children.forEach(c=>{
-      if (c == null) return;
-      if (typeof c === 'string') n.appendChild(document.createTextNode(c));
-      else n.appendChild(c);
-    });
-    return n;
-  }
+  function qs(sel, root=document){ return root.querySelector(sel); }
+  function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
 
-  function goBack(){
-    if (window.history.length > 1) window.history.back();
-    else window.location.href = 'index.html';
-  }
-  window.goBack = window.goBack || goBack;
-
-  function safeLogout(){
+  function getPageName(){
     try{
-      if (typeof window.logout === 'function') return window.logout();
-    }catch(e){}
-    window.location.href = 'eslogin.html';
+      const p = location.pathname.split("/").pop() || "";
+      return p.toLowerCase();
+    }catch(e){ return ""; }
   }
 
-  function getQS(name){
-    const u=new URL(location.href);
-    return u.searchParams.get(name);
+  function getParams(){
+    const sp = new URLSearchParams(location.search || "");
+    return {
+      level: sp.get("level") || "",
+      id: sp.get("id") || "",
+      topic: sp.get("topic") || ""
+    };
   }
 
-  function buildHeader(){
-    const header = el('header', {class:'nav-glass av-layout'});
-    const inner = el('div', {class:'container nav-inner'});
-    const brand = el('div', {class:'brand'}, [
-      el('div', {class:'brandLogoWrap'}, [
-        el('img', {src:'assets/img/logo.png', class:'brandLogo', alt:'AquiVivo'})
-      ])
-    ]);
+  function withParams(url, params){
+    const u = new URL(url, location.origin);
+    if(params.level) u.searchParams.set("level", params.level);
+    if(params.id) u.searchParams.set("id", params.id);
+    if(params.topic) u.searchParams.set("topic", params.topic);
+    return u.pathname + (u.search ? u.search : "");
+  }
 
-    const actions = el('div', {class:'nav-actions'});
-    // Lesson-specific (Option B)
-    const isLesson = (path === 'lesson.html' || path === 'lessonpage.html');
-    if (isLesson){
-      const level = getQS('level') || 'A1';
-      // Prefer returning to course filtered by level
-      actions.appendChild(el('a', {class:'btn-white-outline', href:`course.html?level=${encodeURIComponent(level)}`}, ['⬅️ Volver al curso']));
-      actions.appendChild(el('a', {class:'btn-white-outline', href:`course.html?level=${encodeURIComponent(level)}`}, ['📚 Niveles']));
+  function removeLegacyHeaders(){
+    // Remove known old headers/toolbars to prevent duplicates.
+    const legacySelectors = [
+      "div.topActionBar",
+      "header.siteHeader",
+      "header.headerBar",
+      "header.nav-glass:not([data-av-header])",
+      "nav.nav-glass:not([data-av-header])",
+      "#topbar",
+      "#header",
+      "div.navbar"
+    ];
+    legacySelectors.forEach(sel => {
+      qsa(sel).forEach(el => {
+        // never remove our injected header
+        if(el && el.getAttribute && el.getAttribute("data-av-header")==="1") return;
+        el.remove();
+      });
+    });
+  }
+
+  function buildButtons(){
+    const page = getPageName();
+    const p = getParams();
+
+    const btn = (label, options={}) => ({
+      label,
+      href: options.href || null,
+      onClick: options.onClick || null,
+      variant: options.variant || "blue",
+      icon: options.icon || ""
+    });
+
+    // Common
+    const goHome = () => { location.href = "espanel.html"; };
+    const goBack = () => { history.back(); };
+    const doReload = () => { location.reload(); };
+    const copyLink = async () => {
+      try{
+        await navigator.clipboard.writeText(location.href);
+        toast("Enlace copiado ✅");
+      }catch(e){
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = location.href; document.body.appendChild(ta);
+        ta.select(); document.execCommand("copy"); ta.remove();
+        toast("Enlace copiado ✅");
+      }
+    };
+
+    // Decide per page
+    if(page.includes("lessonpage")){
+      return [
+        btn("Panel", { href: "espanel.html", icon:"🧩" }),
+        btn("Ejercicios", { href: withParams("ejercicio.html", p), icon:"🧩" , variant:"yellow"}),
+        btn("Inicio", { href: "espanel.html", icon:"🏠" }),
+        btn("Atrás", { onClick: goBack, icon:"⬅️" }),
+        btn("Cerrar sesión", { href: "login.html", variant:"red" })
+      ];
     }
 
-    actions.appendChild(el('a', {class:'btn-white-outline', href:'index.html'}, ['Inicio']));
-    actions.appendChild(el('button', {class:'btn-white-outline', type:'button', onclick:goBack}, ['Atrás']));
-
-    // Helpful utilities only on lesson
-    if (isLesson){
-      actions.appendChild(el('button', {class:'btn-yellow', type:'button', onclick: async ()=> {
-        try{
-          await navigator.clipboard.writeText(location.href);
-          toast('✅ Enlace copiado');
-        }catch(e){
-          toast('⚠️ No se pudo copiar');
-        }
-      }}, ['🔗 Copiar enlace']));
-      actions.appendChild(el('button', {class:'btn-white-outline', type:'button', onclick: ()=>location.reload()}, ['🔄 Recargar']));
+    if(page.includes("ejercicio.html")){
+      return [
+        btn("Panel", { href: "espanel.html", icon:"🧩" }),
+        btn("Lección", { href: withParams("lessonpage.html", p), icon:"📖", variant:"yellow" }),
+        btn("Inicio", { href: "espanel.html", icon:"🏠" }),
+        btn("Atrás", { onClick: goBack, icon:"⬅️" }),
+        btn("Cerrar sesión", { href: "login.html", variant:"red" })
+      ];
     }
 
-    // Show logout on pages that usually need auth (panel/admin/lesson/course)
-    const showLogout = ['espanel.html','esadmin.html','lesson.html','lessonpage.html','course.html'].includes(path);
-    if (showLogout){
-      actions.appendChild(el('button', {class:'btn-red', type:'button', onclick:safeLogout}, ['Cerrar sesión']));
+    if(page.includes("ejercicioadmin")){
+      return [
+        btn("Volver al curso", { href: withParams("course.html", p), icon:"⬅️" }),
+        btn("Niveles", { href: "espanel.html", icon:"📚" }),
+        btn("Copiar enlace", { onClick: copyLink, icon:"🔗", variant:"yellow" }),
+        btn("Vista alumno", { href: withParams("ejercicio.html", p), icon:"👀" }),
+        btn("Admin lección", { href: withParams("lessonadmin.html", p), icon:"🛠️" }),
+        btn("Recargar", { onClick: doReload, icon:"🔄" }),
+        btn("Cerrar sesión", { href: "login.html", variant:"red" })
+      ];
     }
 
-    inner.appendChild(brand);
-    inner.appendChild(actions);
-    header.appendChild(inner);
+    if(page.includes("lessonadmin")){
+      return [
+        btn("Curso", { href: withParams("course.html", p), icon:"⬅️" }),
+        btn("Vista alumno", { href: withParams("lessonpage.html", p), icon:"👀" }),
+        btn("Ejercicios", { href: withParams("ejercicioadmin.html", p), icon:"🧩" }),
+        btn("Inicio", { href: "espanel.html", icon:"🏠" }),
+        btn("Atrás", { onClick: goBack, icon:"⬅️" }),
+        btn("Cerrar sesión", { href: "login.html", variant:"red" })
+      ];
+    }
 
-    return header;
-  }
+    if(page.includes("course")){
+      return [
+        btn("Atrás", { onClick: goBack, icon:"⬅️" }),
+        btn("Inicio", { href: "espanel.html", icon:"🏠" }),
+        btn("Cerrar sesión", { href: "login.html", variant:"red" })
+      ];
+    }
 
-  function buildFooter(){
-    const foot = el('footer', {class:'av-footer'});
-    const inner = el('div', {class:'container av-footer__inner'});
-    inner.appendChild(el('div', {class:'av-footer__left'}, [`© ${new Date().getFullYear()} AquiVivo`]));
-    const right = el('div', {class:'av-footer__right'});
-    right.appendChild(el('a', {href:'index.html'}, ['Inicio']));
-    right.appendChild(el('button', {type:'button', class:'av-linklike', onclick:goBack}, ['Atrás']));
-    inner.appendChild(right);
-    foot.appendChild(inner);
-    return foot;
-  }
+    if(page.includes("espanel") || page.includes("esadmin") || page.includes("ebooks")){
+      return [
+        btn("Inicio", { href: "espanel.html", icon:"🏠" }),
+        btn("Atrás", { onClick: goBack, icon:"⬅️" }),
+        btn("Cerrar sesión", { href: "login.html", variant:"red" })
+      ];
+    }
 
-  function injectStyles(){
-    if (document.getElementById('avLayoutStyle')) return;
-    const css = `
-      .av-footer{margin-top:24px;padding:18px 0;border-top:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.08)}
-      .av-footer__inner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-      .av-footer a,.av-linklike{color:rgba(255,255,255,.92);text-decoration:none;font-weight:800;font-size:14px}
-      .av-footer a:hover,.av-linklike:hover{text-decoration:underline}
-      .av-linklike{background:none;border:none;padding:0;cursor:pointer}
-      .av-layout .nav-actions{gap:10px;flex-wrap:wrap}
-      .brand{display:flex;align-items:center;gap:12px;min-width:180px}
-      .brandLogo{width:56px;height:56px;object-fit:contain;display:block;filter:drop-shadow(0 10px 20px rgba(0,0,0,.25))}
-      .btn-yellow{background:#f7d34a;color:#0b1a44;border:none;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
-      .btn-yellow:hover{filter:brightness(0.98)}
-      .av-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:rgba(10,15,30,.9);color:#fff;
-        padding:10px 14px;border-radius:14px;font-weight:800;z-index:99999;border:1px solid rgba(255,255,255,.12)}
-    `;
-    const style=document.createElement('style');
-    style.id='avLayoutStyle';
-    style.textContent=css;
-    document.head.appendChild(style);
+    // login or any other page: logo only
+    return [];
   }
 
   function toast(msg){
-    const t=document.createElement('div');
-    t.className='av-toast';
-    t.textContent=msg;
-    document.body.appendChild(t);
-    setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .25s'; }, 1400);
-    setTimeout(()=>t.remove(), 1800);
+    let t = qs("#avToast");
+    if(!t){
+      t = document.createElement("div");
+      t.id = "avToast";
+      t.style.position="fixed";
+      t.style.right="14px";
+      t.style.bottom="14px";
+      t.style.zIndex="99999";
+      t.style.padding="10px 12px";
+      t.style.borderRadius="14px";
+      t.style.background="rgba(15, 26, 51, .95)";
+      t.style.color="rgba(255,255,255,.92)";
+      t.style.border="1px solid rgba(255,255,255,.18)";
+      t.style.boxShadow="0 10px 30px rgba(0,0,0,.35)";
+      t.style.fontSize="14px";
+      t.style.opacity="0";
+      t.style.transform="translateY(8px)";
+      t.style.transition="opacity .18s ease, transform .18s ease";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity="1";
+    t.style.transform="translateY(0)";
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(()=>{
+      t.style.opacity="0";
+      t.style.transform="translateY(8px)";
+    }, 1800);
   }
-  window.toast = window.toast || toast;
+
+  function makeBtnEl(b){
+    const a = document.createElement("a");
+    a.className = "btn";
+    if(b.variant==="yellow") a.classList.add("btn-yellow");
+    if(b.variant==="red") a.classList.add("btn-red");
+    if(b.variant==="blue") a.classList.add("btn-blue");
+    a.href = b.href || "#";
+    a.innerHTML = (b.icon ? `<span class="btnIcon">${b.icon}</span>` : "") + `<span class="btnText">${escapeHtml(b.label)}</span>`;
+    if(b.onClick){
+      a.addEventListener("click", (e)=>{ e.preventDefault(); b.onClick(); });
+    }
+    return a;
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function renderHeader(){
+    const host = qs("#appHeader") || document.body;
+    const header = document.createElement("header");
+    header.className = "nav-glass av-layout";
+    header.setAttribute("data-av-header","1");
+
+    const inner = document.createElement("div");
+    inner.className = "navInner";
+
+    const brand = document.createElement("div");
+    brand.className = "brand";
+    const wrap = document.createElement("div");
+    wrap.className = "brandLogoWrap";
+    const img = document.createElement("img");
+    img.className = "brandLogo";
+    img.alt = "AquiVivo";
+    img.src = LOGO_SRC;
+    wrap.appendChild(img);
+    brand.appendChild(wrap);
+
+    const nav = document.createElement("nav");
+    nav.className = "navButtons";
+    const buttons = buildButtons();
+    buttons.forEach(b => nav.appendChild(makeBtnEl(b)));
+
+    inner.appendChild(brand);
+    inner.appendChild(nav);
+
+    header.appendChild(inner);
+
+    // stripe
+    const stripe = document.createElement("div");
+    stripe.className = "navStripe";
+    header.appendChild(stripe);
+
+    if(host === document.body){
+      document.body.insertBefore(header, document.body.firstChild);
+    }else{
+      host.innerHTML = "";
+      host.appendChild(header);
+    }
+  }
+
+  function normalizePageScale(){
+    // Makes the whole UI slightly smaller (requested), without affecting header height.
+    document.documentElement.style.setProperty("--ui-scale", "0.94");
+  }
 
   function init(){
-    injectStyles();
-    const h=document.getElementById('appHeader');
-    const f=document.getElementById('appFooter');
-    if (h) { h.innerHTML=''; h.appendChild(buildHeader()); }
-    if (f) { f.innerHTML=''; f.appendChild(buildFooter()); }
+    removeLegacyHeaders();
+    normalizePageScale();
+    renderHeader();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  }else{
+    init();
+  }
 })();

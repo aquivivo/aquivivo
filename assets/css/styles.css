@@ -647,3 +647,58 @@ body {
 /* Header logo visibility */
 .brandLogoWrap{display:flex;align-items:center;justify-content:center;padding:8px;border-radius:16px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);box-shadow:0 10px 24px rgba(0,0,0,.22)}
 .brandLogo{width:72px;height:72px;object-fit:contain;display:block;filter:drop-shadow(0 10px 20px rgba(0,0,0,.25))}
+
+
+
+/* === AquiVivo unified header (FINAL) === */
+:root{ --ui-scale: 0.94; }
+body{ transform: scale(var(--ui-scale)); transform-origin: top center; }
+@media (max-width: 720px){
+  body{ transform: none; }
+}
+
+/* Header layout */
+.nav-glass.av-layout{ width:100%; }
+.navInner{
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 16px;
+}
+.navButtons{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
+
+/* Logo block (same position/size everywhere) */
+.brand{ display:flex; align-items:center; gap:12px; }
+.brandLogoWrap{
+  width: 84px;
+  height: 84px;
+  border-radius: 18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 10px 25px rgba(0,0,0,.25);
+}
+.brandLogo{
+  width: 72px;
+  height: auto;
+  display:block;
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,.35));
+}
+
+/* Stripe under header */
+.navStripe{
+  height: 4px;
+  background: linear-gradient(90deg, var(--yellow), var(--cyan), var(--pink), var(--red));
+  opacity: .9;
+}
