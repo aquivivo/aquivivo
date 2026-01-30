@@ -1,13 +1,17 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Admin | AquiVivo</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
-<link href="assets/css/styles.css" rel="stylesheet"/>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | AquiVivo</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <style>
       :root {
         --yellow: #fcd116;
         --blue: #003893;
@@ -243,47 +247,55 @@
       .userSummary .right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
       .detailsBody { margin-top:12px; }
 </style>
-<script defer="True" src="assets/js/layout.js"></script><link href="assets/img/logo.png" rel="icon"/></head>
-<body>
-<div id="appHeader"></div>
-<div class="wrap">
-<a class="back" href="espanel.html">← Volver al panel</a>
-<h1>Admin</h1>
-<p class="sub">
+  </head>
+
+  <body>
+    <div id="appHeader"></div>
+    <div class="wrap">
+      <a class="back" href="espanel.html">← Volver al panel</a>
+
+      <h1>Admin</h1>
+      <p class="sub">
         Buscar usuarios y gestionar acceso (días gratis, extender, revocar, curso activo).
       </p>
-<div class="toolbar">
-<input id="search" placeholder="Buscar por correo / UID…"/>
-<select class="filterSelect" id="filter" title="Filtrar usuarios">
-<option value="all">Todos</option>
-<option value="active">Con acceso activo</option>
-<option value="expiring7">Caduca en 7 días</option>
-<option value="expired">Acceso caducado</option>
-</select>
-<span class="muted" id="status"></span>
-</div>
-<div class="summaryBar" id="summary">
-<div class="sumCard">
-<div class="sumNum" id="cntActive">0</div>
-<div class="sumLabel">Activos</div>
-</div>
-<div class="sumCard">
-<div class="sumNum" id="cntExpiring7">0</div>
-<div class="sumLabel">Caducan en 7 días</div>
-</div>
-<div class="sumCard">
-<div class="sumNum" id="cntExpired">0</div>
-<div class="sumLabel">Caducados</div>
-</div>
-</div>
-<div id="usersList"></div>
-<div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-<button class="btn btnGray" id="btnLoadMore">Cargar más</button>
-<div class="mutedSmall" id="loadInfo"></div>
-</div>
-</div>
-<!-- Firebase -->
-<script type="module">
+
+      <div class="toolbar">
+        <input id="search" placeholder="Buscar por correo / UID…" />
+        
+        <select id="filter" class="filterSelect" title="Filtrar usuarios">
+          <option value="all">Todos</option>
+          <option value="active">Con acceso activo</option>
+          <option value="expiring7">Caduca en 7 días</option>
+          <option value="expired">Acceso caducado</option>
+        </select>
+        <span id="status" class="muted"></span>
+      </div>
+
+
+      <div id="summary" class="summaryBar">
+        <div class="sumCard">
+          <div class="sumNum" id="cntActive">0</div>
+          <div class="sumLabel">Activos</div>
+        </div>
+        <div class="sumCard">
+          <div class="sumNum" id="cntExpiring7">0</div>
+          <div class="sumLabel">Caducan en 7 días</div>
+        </div>
+        <div class="sumCard">
+          <div class="sumNum" id="cntExpired">0</div>
+          <div class="sumLabel">Caducados</div>
+        </div>
+      </div>
+
+      <div id="usersList"></div>
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="btn btnGray" id="btnLoadMore">Cargar más</button>
+        <div class="mutedSmall" id="loadInfo"></div>
+      </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
       import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
       import {
@@ -777,8 +789,10 @@ function renderUserCard(u) {
       searchInput.addEventListener('input', renderUsers);
       filterEl.addEventListener('change', renderUsers);
     </script>
-<script src="assets/js/layout.js"></script>
-<script data-aquivivo-no-new-tab="1">
+
+    <script src="assets/js/layout.js"></script>
+
+    <script data-aquivivo-no-new-tab="1">
       // Force same-tab navigation (prevents accidental new tabs)
       (function () {
         try {
@@ -807,5 +821,5 @@ function renderUserCard(u) {
         } catch (e) {}
       })();
     </script>
-<div id="appFooter"></div></body>
+  </body>
 </html>

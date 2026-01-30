@@ -1,14 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 
 <html lang="es">
-<head>
-<meta charset="utf-8"/>
-<title>Panel del estudiante | AquiVivo</title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
-<!-- ✅ consistente con login/admin -->
-<link href="assets/css/styles.css" rel="stylesheet"/>
-<style>
+  <head>
+    <meta charset="utf-8" />
+    <title>Panel del estudiante | AquiVivo</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- ✅ consistente con login/admin -->
+    <link href="assets/css/styles.css" rel="stylesheet" />
+    <style>
             .panel-grid {
               display: grid;
               grid-template-columns: 1.2fr 0.8fr;
@@ -366,15 +369,16 @@
             @media (max-width: 760px){ #settingsModal .grid2, #settingsModal .grid3 { grid-template-columns: 1fr; } }
             #settingsModal, #settingsModal * { color:#fff; }
     </style>
-<script defer="True" src="assets/js/layout.js"></script><link href="assets/img/logo.png" rel="icon"/></head>
-<body>
-<div id="appHeader"></div>
-<main class="page">
-<div class="container">
-<section class="panel-grid">
-<div class="hero-card">
-<h1 class="hero-title glow-text">Panel del estudiante 🎓</h1>
-<div style="
+  </head>
+  <body>
+    <div id="appHeader"></div>
+    <main class="page">
+      <div class="container">
+        <section class="panel-grid">
+          <div class="hero-card">
+            <h1 class="hero-title glow-text">Panel del estudiante 🎓</h1>
+            <div
+              style="
                 margin-top: 12px;
                 display: inline-flex;
                 gap: 10px;
@@ -384,61 +388,99 @@
                 background: rgba(255, 255, 255, 0.1);
                 border: 1px solid rgba(255, 255, 255, 0.18);
                 backdrop-filter: blur(10px);
-              ">
-<div style="font-weight: 900">👤</div>
-<div style="font-weight: 800">
+              "
+            >
+              <div style="font-weight: 900">👤</div>
+              <div style="font-weight: 800">
                 Iniciada sesión como:
-                <span id="userEmail" style="font-weight: 700; opacity: 0.95">...</span><span id="adminBadge" style="margin-left: 10px; font-weight: 900; opacity: 0.95">(admin: —)</span>
-</div>
-</div>
-<div class="card glass-card last-activity" id="lastActivityCard" style="padding: 12px 14px; border-radius: 16px">
-<div style="
+                <span id="userEmail" style="font-weight: 700; opacity: 0.95"
+                  >...</span
+                ><span
+                  id="adminBadge"
+                  style="margin-left: 10px; font-weight: 900; opacity: 0.95"
+                  >(admin: —)</span
+                >
+              </div>
+            </div>
+            <div
+              class="card glass-card last-activity"
+              id="lastActivityCard"
+              style="padding: 12px 14px; border-radius: 16px"
+            >
+              <div
+                style="
                   display: flex;
                   align-items: center;
                   justify-content: space-between;
                   gap: 10px;
-                ">
-<div style="font-weight: 900">🕒 Última actividad</div>
-<div id="lastActivityWhen" style="font-weight: 900; opacity: 0.9"></div>
-</div>
-<div id="lastActivityTitle" style="margin-top: 6px; font-weight: 900; font-size: 16px">
+                "
+              >
+                <div style="font-weight: 900">🕒 Última actividad</div>
+                <div
+                  id="lastActivityWhen"
+                  style="font-weight: 900; opacity: 0.9"
+                ></div>
+              </div>
+              <div
+                id="lastActivityTitle"
+                style="margin-top: 6px; font-weight: 900; font-size: 16px"
+              >
                 —
               </div>
-<div style="margin-top: 10px">
-<a class="btn-yellow" href="#" id="lastActivityLink">Continuar →</a>
-</div>
-</div>
-<div class="adminLinkWrap" id="adminLinkWrap">
-<div style="
+              <div style="margin-top: 10px">
+                <a class="btn-yellow" href="#" id="lastActivityLink"
+                  >Continuar →</a
+                >
+              </div>
+            </div>
+            <div class="adminLinkWrap" id="adminLinkWrap">
+              <div
+                style="
                   margin-top: 12px;
                   display: flex;
                   gap: 12px;
                   flex-wrap: wrap;
-                ">
-<a class="btn-white-outline" href="esadmin.html">⚙️ Admin</a>
-<button class="btn-white-outline" id="openSettingsBtn" type="button">
+                "
+              >
+                <a class="btn-white-outline" href="esadmin.html">⚙️ Admin</a>
+                <button
+                  class="btn-white-outline"
+                  id="openSettingsBtn"
+                  type="button"
+                >
                   ⚙️ Ajustes
                 </button>
-<button class="btn-yellow" id="addCourseBtn" style="
+                <button
+                  class="btn-yellow"
+                  id="addCourseBtn"
+                  type="button"
+                  style="
                     padding: 12px 16px;
                     border-radius: 999px;
                     font-weight: 900;
-                  " type="button">
+                  "
+                >
                   ➕ Nuevo curso
                 </button>
-</div>
-<p class="small-muted" style="margin-top: 8px; color: rgba(255, 255, 255, 0.8)">
+              </div>
+              <p
+                class="small-muted"
+                style="margin-top: 8px; color: rgba(255, 255, 255, 0.8)"
+              >
                 Solo visible para administradores.
               </p>
-</div>
-</div>
-</section>
-<!-- Big section header (style like landing title) -->
-<div style="margin-top: 10px"></div>
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 28px">
-<!-- LEFT: courses -->
-<div class="courses-grid" id="coursesCards"></div>
-<div aria-hidden="true" id="coffeeFloat" style="
+            </div>
+          </div>
+        </section>
+        <!-- Big section header (style like landing title) -->
+        <div style="margin-top: 10px"></div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 28px">
+          <!-- LEFT: courses -->
+          <div class="courses-grid" id="coursesCards"></div>
+          <div
+            aria-hidden="true"
+            id="coffeeFloat"
+            style="
               position: absolute;
               right: -40px;
               top: 120px;
@@ -447,59 +489,276 @@
               pointer-events: none;
               opacity: 0.9;
               filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.35));
-            ">
-<svg class="w-72 h-72 mx-auto drop-shadow-2xl" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<lineargradient id="cupGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" style="stop-color: #8b4513; stop-opacity: 1"></stop>
-<stop offset="100%" style="stop-color: #654321; stop-opacity: 1"></stop>
-</lineargradient>
-<lineargradient id="coffeeGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" style="stop-color: #6f4e37; stop-opacity: 1"></stop>
-<stop offset="100%" style="stop-color: #3e2723; stop-opacity: 1"></stop>
-</lineargradient>
-</defs>
-<ellipse cx="100" cy="55" fill="#FCD116" opacity="0.3" rx="70" ry="15"></ellipse>
-<ellipse cx="100" cy="55" fill="#003893" opacity="0.3" rx="60" ry="12"></ellipse>
-<ellipse cx="100" cy="55" fill="#FCD116" opacity="0.3" rx="50" ry="10"></ellipse>
-<rect fill="#FCD116" height="25" opacity="0.3" rx="5" width="30" x="85" y="55"></rect>
-<path d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z" fill="url(#cupGradient)" stroke="#654321" stroke-width="2"></path>
-<ellipse cx="100" cy="120" fill="url(#coffeeGradient)" rx="35" ry="8"></ellipse>
-<path d="M 140 130 Q 155 130 155 145 Q 155 160 140 160" fill="none" stroke="url(#cupGradient)" stroke-linecap="round" stroke-width="8"></path>
-<rect fill="#FCD116" height="8" opacity="0.6" rx="2" width="60" x="70" y="135"></rect>
-<rect fill="#003893" height="5" opacity="0.6" rx="1" width="60" x="70" y="145"></rect>
-<rect fill="#CE1126" height="5" opacity="0.6" rx="1" width="60" x="70" y="152"></rect>
-<path d="M 85 110 Q 80 95 85 85" fill="none" opacity="0.7" stroke="#FCD116" stroke-linecap="round" stroke-width="3">
-<animate attributename="opacity" dur="2s" repeatcount="indefinite" values="0.7;0.3;0.7"></animate>
-<animate attributename="d" dur="2s" repeatcount="indefinite" values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85"></animate>
-</path>
-<path d="M 100 108 Q 100 90 105 80" fill="none" opacity="0.8" stroke="#FCD116" stroke-linecap="round" stroke-width="4">
-<animate attributename="opacity" dur="2.5s" repeatcount="indefinite" values="0.8;0.4;0.8"></animate>
-<animate attributename="d" dur="2.5s" repeatcount="indefinite" values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80"></animate>
-</path>
-<path d="M 115 110 Q 120 95 115 85" fill="none" opacity="0.7" stroke="#FCD116" stroke-linecap="round" stroke-width="3">
-<animate attributename="opacity" dur="2.2s" repeatcount="indefinite" values="0.7;0.3;0.7"></animate>
-<animate attributename="d" dur="2.2s" repeatcount="indefinite" values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85"></animate>
-</path>
-<ellipse cx="50" cy="140" fill="#3E2723" rx="8" ry="10" transform="rotate(-20 50 140)">
-<animate attributename="opacity" dur="3s" repeatcount="indefinite" values="1;0.7;1"></animate>
-</ellipse>
-<path d="M 50 135 Q 50 140 50 145" stroke="#654321" stroke-width="1.5"></path>
-<ellipse cx="150" cy="135" fill="#3E2723" rx="8" ry="10" transform="rotate(20 150 135)">
-<animate attributename="opacity" dur="3s" repeatcount="indefinite" values="0.7;1;0.7"></animate>
-</ellipse>
-<path d="M 150 130 Q 150 135 150 140" stroke="#654321" stroke-width="1.5"></path>
-<rect fill="#FCD116" height="8" opacity="0.9" rx="1" width="60" x="70" y="175"></rect>
-<rect fill="#FFFFFF" height="8" opacity="0.8" rx="1" width="50" x="75" y="178"></rect>
-<rect fill="#FCD116" height="8" opacity="0.7" rx="1" width="40" x="80" y="181"></rect>
-<path d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z" fill="#CE1126" opacity="0.8">
-<animate attributename="transform" dur="1.5s" repeatcount="indefinite" values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)"></animate>
-</path>
-</svg>
-</div>
-<section id="pricingSection" style="margin-top: 60px">
-<!-- ADMIN MODAL -->
-<div id="adminModal" style="
+            "
+          >
+            <svg
+              class="w-72 h-72 mx-auto drop-shadow-2xl"
+              viewbox="0 0 200 200"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <lineargradient
+                  id="cupGradient"
+                  x1="0%"
+                  x2="0%"
+                  y1="0%"
+                  y2="100%"
+                >
+                  <stop
+                    offset="0%"
+                    style="stop-color: #8b4513; stop-opacity: 1"
+                  ></stop>
+                  <stop
+                    offset="100%"
+                    style="stop-color: #654321; stop-opacity: 1"
+                  ></stop>
+                </lineargradient>
+                <lineargradient
+                  id="coffeeGradient"
+                  x1="0%"
+                  x2="0%"
+                  y1="0%"
+                  y2="100%"
+                >
+                  <stop
+                    offset="0%"
+                    style="stop-color: #6f4e37; stop-opacity: 1"
+                  ></stop>
+                  <stop
+                    offset="100%"
+                    style="stop-color: #3e2723; stop-opacity: 1"
+                  ></stop>
+                </lineargradient>
+              </defs>
+              <ellipse
+                cx="100"
+                cy="55"
+                fill="#FCD116"
+                opacity="0.3"
+                rx="70"
+                ry="15"
+              ></ellipse>
+              <ellipse
+                cx="100"
+                cy="55"
+                fill="#003893"
+                opacity="0.3"
+                rx="60"
+                ry="12"
+              ></ellipse>
+              <ellipse
+                cx="100"
+                cy="55"
+                fill="#FCD116"
+                opacity="0.3"
+                rx="50"
+                ry="10"
+              ></ellipse>
+              <rect
+                fill="#FCD116"
+                height="25"
+                opacity="0.3"
+                rx="5"
+                width="30"
+                x="85"
+                y="55"
+              ></rect>
+              <path
+                d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z"
+                fill="url(#cupGradient)"
+                stroke="#654321"
+                stroke-width="2"
+              ></path>
+              <ellipse
+                cx="100"
+                cy="120"
+                fill="url(#coffeeGradient)"
+                rx="35"
+                ry="8"
+              ></ellipse>
+              <path
+                d="M 140 130 Q 155 130 155 145 Q 155 160 140 160"
+                fill="none"
+                stroke="url(#cupGradient)"
+                stroke-linecap="round"
+                stroke-width="8"
+              ></path>
+              <rect
+                fill="#FCD116"
+                height="8"
+                opacity="0.6"
+                rx="2"
+                width="60"
+                x="70"
+                y="135"
+              ></rect>
+              <rect
+                fill="#003893"
+                height="5"
+                opacity="0.6"
+                rx="1"
+                width="60"
+                x="70"
+                y="145"
+              ></rect>
+              <rect
+                fill="#CE1126"
+                height="5"
+                opacity="0.6"
+                rx="1"
+                width="60"
+                x="70"
+                y="152"
+              ></rect>
+              <path
+                d="M 85 110 Q 80 95 85 85"
+                fill="none"
+                opacity="0.7"
+                stroke="#FCD116"
+                stroke-linecap="round"
+                stroke-width="3"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="2s"
+                  repeatcount="indefinite"
+                  values="0.7;0.3;0.7"
+                ></animate>
+                <animate
+                  attributename="d"
+                  dur="2s"
+                  repeatcount="indefinite"
+                  values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85"
+                ></animate>
+              </path>
+              <path
+                d="M 100 108 Q 100 90 105 80"
+                fill="none"
+                opacity="0.8"
+                stroke="#FCD116"
+                stroke-linecap="round"
+                stroke-width="4"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="2.5s"
+                  repeatcount="indefinite"
+                  values="0.8;0.4;0.8"
+                ></animate>
+                <animate
+                  attributename="d"
+                  dur="2.5s"
+                  repeatcount="indefinite"
+                  values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80"
+                ></animate>
+              </path>
+              <path
+                d="M 115 110 Q 120 95 115 85"
+                fill="none"
+                opacity="0.7"
+                stroke="#FCD116"
+                stroke-linecap="round"
+                stroke-width="3"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="2.2s"
+                  repeatcount="indefinite"
+                  values="0.7;0.3;0.7"
+                ></animate>
+                <animate
+                  attributename="d"
+                  dur="2.2s"
+                  repeatcount="indefinite"
+                  values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85"
+                ></animate>
+              </path>
+              <ellipse
+                cx="50"
+                cy="140"
+                fill="#3E2723"
+                rx="8"
+                ry="10"
+                transform="rotate(-20 50 140)"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="3s"
+                  repeatcount="indefinite"
+                  values="1;0.7;1"
+                ></animate>
+              </ellipse>
+              <path
+                d="M 50 135 Q 50 140 50 145"
+                stroke="#654321"
+                stroke-width="1.5"
+              ></path>
+              <ellipse
+                cx="150"
+                cy="135"
+                fill="#3E2723"
+                rx="8"
+                ry="10"
+                transform="rotate(20 150 135)"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="3s"
+                  repeatcount="indefinite"
+                  values="0.7;1;0.7"
+                ></animate>
+              </ellipse>
+              <path
+                d="M 150 130 Q 150 135 150 140"
+                stroke="#654321"
+                stroke-width="1.5"
+              ></path>
+              <rect
+                fill="#FCD116"
+                height="8"
+                opacity="0.9"
+                rx="1"
+                width="60"
+                x="70"
+                y="175"
+              ></rect>
+              <rect
+                fill="#FFFFFF"
+                height="8"
+                opacity="0.8"
+                rx="1"
+                width="50"
+                x="75"
+                y="178"
+              ></rect>
+              <rect
+                fill="#FCD116"
+                height="8"
+                opacity="0.7"
+                rx="1"
+                width="40"
+                x="80"
+                y="181"
+              ></rect>
+              <path
+                d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z"
+                fill="#CE1126"
+                opacity="0.8"
+              >
+                <animate
+                  attributename="transform"
+                  dur="1.5s"
+                  repeatcount="indefinite"
+                  values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)"
+                ></animate>
+              </path>
+            </svg>
+          </div>
+          <section id="pricingSection" style="margin-top: 60px">
+          <!-- ADMIN MODAL -->
+          <div
+            id="adminModal"
+            style="
               display: none;
               position: fixed;
               inset: 0;
@@ -507,8 +766,10 @@
               z-index: 9999;
               padding: 22px;
               overflow: auto;
-            ">
-<div style="
+            "
+          >
+            <div
+              style="
                 max-width: 860px;
                 margin: 0 auto;
                 background: #0b1a3a;
@@ -516,238 +777,325 @@
                 border-radius: 22px;
                 padding: 18px 18px 14px;
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
-              ">
-<div style="
+              "
+            >
+              <div
+                style="
                   display: flex;
                   align-items: center;
                   justify-content: space-between;
                   gap: 12px;
-                ">
-<div style="
+                "
+              >
+                <div
+                  style="
                     font-family: 'Playfair Display', serif;
                     font-size: 34px;
                     font-weight: 900;
                     color: #fcd116;
-                  ">
+                  "
+                >
                   Panel Admin
                 </div>
-<div style="display: flex; gap: 10px; align-items: center">
-<button class="btn-white-outline" onclick="closeAdminPanel()">
+                <div style="display: flex; gap: 10px; align-items: center">
+                  <button class="btn-white-outline" onclick="closeAdminPanel()">
                     Cerrar
                   </button>
-</div>
-</div>
-<div style="
+                </div>
+              </div>
+              <div
+                style="
                   margin-top: 14px;
                   display: grid;
                   grid-template-columns: 1fr 1fr;
                   gap: 16px;
-                ">
-<div style="
+                "
+              >
+                <div
+                  style="
                     background: rgba(255, 255, 255, 0.06);
                     border: 1px solid rgba(255, 255, 255, 0.12);
                     border-radius: 16px;
                     padding: 14px;
-                  ">
-<div style="font-weight: 900; margin-bottom: 10px">
+                  "
+                >
+                  <div style="font-weight: 900; margin-bottom: 10px">
                     💳 Precios
                   </div>
-<label style="display: block; font-weight: 800; opacity: 0.9">A1–A2</label>
-<input id="adm_price_A1A2" style="
+                  <label style="display: block; font-weight: 800; opacity: 0.9"
+                    >A1–A2</label
+                  >
+                  <input
+                    id="adm_price_A1A2"
+                    style="
                       width: 100%;
                       padding: 10px 12px;
                       border-radius: 12px;
                       border: 1px solid rgba(255, 255, 255, 0.18);
                       background: rgba(255, 255, 255, 0.08);
                       color: white;
-                    "/>
-<div style="height: 10px"></div>
-<label style="display: block; font-weight: 800; opacity: 0.9">B1</label>
-<input id="adm_price_B1" style="
+                    "
+                  />
+                  <div style="height: 10px"></div>
+                  <label style="display: block; font-weight: 800; opacity: 0.9"
+                    >B1</label
+                  >
+                  <input
+                    id="adm_price_B1"
+                    style="
                       width: 100%;
                       padding: 10px 12px;
                       border-radius: 12px;
                       border: 1px solid rgba(255, 255, 255, 0.18);
                       background: rgba(255, 255, 255, 0.08);
                       color: white;
-                    "/>
-<div style="height: 10px"></div>
-<label style="display: block; font-weight: 800; opacity: 0.9">B2</label>
-<input id="adm_price_B2" style="
+                    "
+                  />
+                  <div style="height: 10px"></div>
+                  <label style="display: block; font-weight: 800; opacity: 0.9"
+                    >B2</label
+                  >
+                  <input
+                    id="adm_price_B2"
+                    style="
                       width: 100%;
                       padding: 10px 12px;
                       border-radius: 12px;
                       border: 1px solid rgba(255, 255, 255, 0.18);
                       background: rgba(255, 255, 255, 0.08);
                       color: white;
-                    "/>
-</div>
-<div style="
+                    "
+                  />
+                </div>
+                <div
+                  style="
                     background: rgba(255, 255, 255, 0.06);
                     border: 1px solid rgba(255, 255, 255, 0.12);
                     border-radius: 16px;
                     padding: 14px;
-                  ">
-<div style="font-weight: 900; margin-bottom: 10px">
+                  "
+                >
+                  <div style="font-weight: 900; margin-bottom: 10px">
                     🎛️ Trial / acceso gratis
                   </div>
-<label style="display: block; font-weight: 800; opacity: 0.9">Días de trial (por nivel)</label>
-<div style="
+                  <label style="display: block; font-weight: 800; opacity: 0.9"
+                    >Días de trial (por nivel)</label
+                  >
+                  <div
+                    style="
                       display: grid;
                       grid-template-columns: repeat(4, 1fr);
                       gap: 10px;
-                    ">
-<input id="adm_trial_A1" placeholder="A1" style="
+                    "
+                  >
+                    <input
+                      id="adm_trial_A1"
+                      placeholder="A1"
+                      style="
                         padding: 10px 12px;
                         border-radius: 12px;
                         border: 1px solid rgba(255, 255, 255, 0.18);
                         background: rgba(255, 255, 255, 0.08);
                         color: white;
-                      "/>
-<input id="adm_trial_A2" placeholder="A2" style="
+                      "
+                    />
+                    <input
+                      id="adm_trial_A2"
+                      placeholder="A2"
+                      style="
                         padding: 10px 12px;
                         border-radius: 12px;
                         border: 1px solid rgba(255, 255, 255, 0.18);
                         background: rgba(255, 255, 255, 0.08);
                         color: white;
-                      "/>
-<input id="adm_trial_B1" placeholder="B1" style="
+                      "
+                    />
+                    <input
+                      id="adm_trial_B1"
+                      placeholder="B1"
+                      style="
                         padding: 10px 12px;
                         border-radius: 12px;
                         border: 1px solid rgba(255, 255, 255, 0.18);
                         background: rgba(255, 255, 255, 0.08);
                         color: white;
-                      "/>
-<input id="adm_trial_B2" placeholder="B2" style="
+                      "
+                    />
+                    <input
+                      id="adm_trial_B2"
+                      placeholder="B2"
+                      style="
                         padding: 10px 12px;
                         border-radius: 12px;
                         border: 1px solid rgba(255, 255, 255, 0.18);
                         background: rgba(255, 255, 255, 0.08);
                         color: white;
-                      "/>
-</div>
-<div style="height: 12px"></div>
-<div style="font-weight: 900; margin-bottom: 8px">
+                      "
+                    />
+                  </div>
+                  <div style="height: 12px"></div>
+                  <div style="font-weight: 900; margin-bottom: 8px">
                     🏷️ Código de descuento
                   </div>
-<div style="
+                  <div
+                    style="
                       display: grid;
                       grid-template-columns: 1.2fr 0.8fr 1fr;
                       gap: 10px;
-                    ">
-<input id="adm_promo_code" placeholder="CODIGO (ej. BIENVENIDA10)" style="
+                    "
+                  >
+                    <input
+                      id="adm_promo_code"
+                      placeholder="CODIGO (ej. BIENVENIDA10)"
+                      style="
                         padding: 10px 12px;
                         border-radius: 12px;
                         border: 1px solid rgba(255, 255, 255, 0.18);
                         background: rgba(255, 255, 255, 0.08);
                         color: white;
-                      "/>
-<input id="adm_promo_pct" placeholder="% (ej. 10)" style="
+                      "
+                    />
+                    <input
+                      id="adm_promo_pct"
+                      placeholder="% (ej. 10)"
+                      style="
                         padding: 10px 12px;
                         border-radius: 12px;
                         border: 1px solid rgba(255, 255, 255, 0.18);
                         background: rgba(255, 255, 255, 0.08);
                         color: white;
-                      "/>
-<input id="adm_promo_days" placeholder="días gratis (opcional)" style="
+                      "
+                    />
+                    <input
+                      id="adm_promo_days"
+                      placeholder="días gratis (opcional)"
+                      style="
                         padding: 10px 12px;
                         border-radius: 12px;
                         border: 1px solid rgba(255, 255, 255, 0.18);
                         background: rgba(255, 255, 255, 0.08);
                         color: white;
-                      "/>
-</div>
-<div style="
+                      "
+                    />
+                  </div>
+                  <div
+                    style="
                       margin-top: 10px;
                       display: flex;
                       gap: 10px;
                       flex-wrap: wrap;
-                    ">
-<button class="btn-yellow" onclick="addPromo()">
+                    "
+                  >
+                    <button class="btn-yellow" onclick="addPromo()">
                       Añadir código
                     </button>
-<button class="btn-white-outline" onclick="clearPromos()">
+                    <button class="btn-white-outline" onclick="clearPromos()">
                       Borrar lista
                     </button>
-</div>
-<div id="promoList" style="margin-top: 12px; font-size: 13px; opacity: 0.95"></div>
-</div>
-</div>
-<div style="
+                  </div>
+                  <div
+                    id="promoList"
+                    style="margin-top: 12px; font-size: 13px; opacity: 0.95"
+                  ></div>
+                </div>
+              </div>
+              <div
+                style="
                   margin-top: 16px;
                   background: rgba(255, 255, 255, 0.06);
                   border: 1px solid rgba(255, 255, 255, 0.12);
                   border-radius: 16px;
                   padding: 14px;
-                ">
-<div style="font-weight: 900; margin-bottom: 10px">
+                "
+              >
+                <div style="font-weight: 900; margin-bottom: 10px">
                   ➕ Botones extra (sección precios)
                 </div>
-<div style="
+                <div
+                  style="
                     display: grid;
                     grid-template-columns: 1fr 1fr 0.6fr;
                     gap: 10px;
-                  ">
-<input id="adm_btn_text" placeholder="Texto del botón" style="
+                  "
+                >
+                  <input
+                    id="adm_btn_text"
+                    placeholder="Texto del botón"
+                    style="
                       padding: 10px 12px;
                       border-radius: 12px;
                       border: 1px solid rgba(255, 255, 255, 0.18);
                       background: rgba(255, 255, 255, 0.08);
                       color: white;
-                    "/>
-<input id="adm_btn_href" placeholder="Link (ej. Contacto.html)" style="
+                    "
+                  />
+                  <input
+                    id="adm_btn_href"
+                    placeholder="Link (ej. Contacto.html)"
+                    style="
                       padding: 10px 12px;
                       border-radius: 12px;
                       border: 1px solid rgba(255, 255, 255, 0.18);
                       background: rgba(255, 255, 255, 0.08);
                       color: white;
-                    "/>
-<select id="adm_btn_style" style="
+                    "
+                  />
+                  <select
+                    id="adm_btn_style"
+                    style="
                       padding: 10px 12px;
                       border-radius: 12px;
                       border: 1px solid rgba(255, 255, 255, 0.18);
                       background: rgba(255, 255, 255, 0.08);
                       color: white;
-                    ">
-<option value="yellow">Amarillo</option>
-<option value="outline">Outline</option>
-</select>
-</div>
-<div style="
+                    "
+                  >
+                    <option value="yellow">Amarillo</option>
+                    <option value="outline">Outline</option>
+                  </select>
+                </div>
+                <div
+                  style="
                     margin-top: 10px;
                     display: flex;
                     gap: 10px;
                     flex-wrap: wrap;
-                  ">
-<button class="btn-yellow" onclick="addExtraButton()">
+                  "
+                >
+                  <button class="btn-yellow" onclick="addExtraButton()">
                     Añadir botón
                   </button>
-<button class="btn-white-outline" onclick="clearExtraButtons()">
+                  <button
+                    class="btn-white-outline"
+                    onclick="clearExtraButtons()"
+                  >
                     Borrar botones
                   </button>
-</div>
-<div id="extraButtonsPreview" style="margin-top: 12px"></div>
-</div>
-<div style="
+                </div>
+                <div id="extraButtonsPreview" style="margin-top: 12px"></div>
+              </div>
+              <div
+                style="
                   margin-top: 14px;
                   display: flex;
                   justify-content: flex-end;
                   gap: 10px;
                   flex-wrap: wrap;
-                ">
-<button class="btn-white-outline" onclick="reloadSettings()">
+                "
+              >
+                <button class="btn-white-outline" onclick="reloadSettings()">
                   Revertir
                 </button>
-<button class="btn-yellow" onclick="saveSettingsLegacy()">
+                <button class="btn-yellow" onclick="saveSettingsLegacy()">
                   Guardar en Firestore
                 </button>
-</div>
-</div>
-</div>
-</section></div>
-</div>
-</main>
-<script type="module">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script type="module">
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
       import {
         getAuth,
@@ -2194,7 +2542,7 @@
 
       // (legacy admin settings removed — duplicated declarations)
     </script>
-<script>
+    <script>
       // Enlazar el banner amarillo a course.html
       const banner = document.querySelector('.yellow-banner');
       if (banner) {
@@ -2204,371 +2552,565 @@
         });
       }
     </script>
-<script src="assets/js/layout.js"></script>
-<!-- ===== Admin: Edit course tiles (only title/subtitle) ===== -->
-<div class="modal-backdrop" id="metaModal" style="display: none">
-<div aria-labelledby="metaModalTitle" aria-modal="true" class="modal-card" role="dialog">
-<div style="
+    <script src="assets/js/layout.js"></script>
+
+    <!-- ===== Admin: Edit course tiles (only title/subtitle) ===== -->
+    <div id="metaModal" class="modal-backdrop" style="display: none">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="metaModalTitle"
+      >
+        <div
+          style="
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-          ">
-<h3 id="metaModalTitle" style="margin: 0; font-size: 20px; font-weight: 900">
+          "
+        >
+          <h3
+            id="metaModalTitle"
+            style="margin: 0; font-size: 20px; font-weight: 900"
+          >
             ✏️ Editar tarjeta
           </h3>
-<button class="btn-white-outline" id="metaClose" style="padding: 10px 14px">
+          <button
+            id="metaClose"
+            class="btn-white-outline"
+            style="padding: 10px 14px"
+          >
             ✕
           </button>
-</div>
-<div style="margin-top: 14px; opacity: 0.85">
+        </div>
+
+        <div style="margin-top: 14px; opacity: 0.85">
           Nivel: <strong id="metaLevel">—</strong>
-</div>
-<label style="display: block; margin-top: 14px; font-weight: 800">Título</label>
-<input class="input" id="metaTitle" placeholder="Título del curso"/>
-<label style="display: block; margin-top: 12px; font-weight: 800">Subtítulo</label>
-<textarea class="input" id="metaSubtitle" placeholder="Subtítulo / descripción corta" rows="3"></textarea>
-<div style="
+        </div>
+
+        <label style="display: block; margin-top: 14px; font-weight: 800"
+          >Título</label
+        >
+        <input id="metaTitle" class="input" placeholder="Título del curso" />
+
+        <label style="display: block; margin-top: 12px; font-weight: 800"
+          >Subtítulo</label
+        >
+        <textarea
+          id="metaSubtitle"
+          class="input"
+          rows="3"
+          placeholder="Subtítulo / descripción corta"
+        ></textarea>
+
+        <div
+          style="
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-top: 14px;
-          ">
-<div>
-<label style="display: block; font-weight: 800">Color fondo (kafelek)</label>
-<input class="input" id="metaTileBg" placeholder="#ffffff"/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Color texto (kafelek)</label>
-<input class="input" id="metaTileText" placeholder="#111111"/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Texto botón principal</label>
-<input class="input" id="metaPrimaryLabel" placeholder="Entrar / Comprar / ..."/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Link botón principal (opcional)</label>
-<input class="input" id="metaPrimaryHref" placeholder="course.html?level=A1 o https://..."/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Color botón (fondo)</label>
-<input class="input" id="metaBtnBg" placeholder="#FCD34D"/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Color botón (texto)</label>
-<input class="input" id="metaBtnText" placeholder="#111111"/>
-</div>
-</div>
-<div style="
+          "
+        >
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Color fondo (kafelek)</label
+            >
+            <input id="metaTileBg" class="input" placeholder="#ffffff" />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Color texto (kafelek)</label
+            >
+            <input id="metaTileText" class="input" placeholder="#111111" />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Texto botón principal</label
+            >
+            <input
+              id="metaPrimaryLabel"
+              class="input"
+              placeholder="Entrar / Comprar / ..."
+            />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Link botón principal (opcional)</label
+            >
+            <input
+              id="metaPrimaryHref"
+              class="input"
+              placeholder="course.html?level=A1 o https://..."
+            />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Color botón (fondo)</label
+            >
+            <input id="metaBtnBg" class="input" placeholder="#FCD34D" />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Color botón (texto)</label
+            >
+            <input id="metaBtnText" class="input" placeholder="#111111" />
+          </div>
+        </div>
+
+        <div
+          style="
             margin-top: 10px;
             font-size: 12px;
             opacity: 0.75;
             line-height: 1.35;
-          ">
+          "
+        >
           Tips: wpisuj kolory w formacie <strong>#RRGGBB</strong>. Jeśli
           zostawisz puste — zostaną domyślne style.
         </div>
-<div id="metaDeleteWrap" style="
+
+        <div
+          id="metaDeleteWrap"
+          style="
             margin-top: 12px;
             display: none;
             padding: 12px 12px;
             border-radius: 14px;
             border: 1px solid rgba(206, 17, 38, 0.4);
             background: rgba(206, 17, 38, 0.14);
-          ">
-<div style="font-weight: 900">🗑️ Eliminar curso</div>
-<label style="
+          "
+        >
+          <div style="font-weight: 900">🗑️ Eliminar curso</div>
+          <label
+            style="
               display: flex;
               gap: 10px;
               align-items: flex-start;
               margin-top: 10px;
               font-weight: 700;
-            ">
-<input id="metaDeleteWithData" style="margin-top: 3px" type="checkbox"/>
-<span>Eliminar también <b>temas (courses)</b> y
-              <b>ejercicios (exercises)</b> de este nivel.</span>
-</label>
-<div style="
+            "
+          >
+            <input
+              type="checkbox"
+              id="metaDeleteWithData"
+              style="margin-top: 3px"
+            />
+            <span
+              >Eliminar también <b>temas (courses)</b> y
+              <b>ejercicios (exercises)</b> de este nivel.</span
+            >
+          </label>
+          <div
+            style="
               margin-top: 8px;
               font-size: 12px;
               opacity: 0.92;
               line-height: 1.35;
-            ">
+            "
+          >
             Si no estás segura: elimina solo la tarjeta. El contenido se puede
             borrar después.
           </div>
-</div>
-<div style="
+        </div>
+
+        <div
+          style="
             display: flex;
             gap: 10px;
             justify-content: space-between;
             align-items: center;
             margin-top: 16px;
             flex-wrap: wrap;
-          ">
-<button class="btn-white-outline" id="metaDelete" style="display: none; border-color: rgba(206, 17, 38, 0.55)">
+          "
+        >
+          <button
+            id="metaDelete"
+            class="btn-white-outline"
+            style="display: none; border-color: rgba(206, 17, 38, 0.55)"
+          >
             🗑️ Eliminar
           </button>
-<div style="display: flex; gap: 10px; margin-left: auto">
-<button class="btn-white-outline" id="metaCancel">Cancelar</button>
-<button class="btn-yellow" id="metaSave">💾 Guardar</button>
-</div>
-</div>
-</div>
-</div>
-<!-- ===== Admin: Add new course (course_meta doc) ===== -->
-<div class="modal-backdrop" id="addCourseModal" style="display: none">
-<div aria-labelledby="addCourseModalTitle" aria-modal="true" class="modal-card" role="dialog">
-<div style="
+          <div style="display: flex; gap: 10px; margin-left: auto">
+            <button id="metaCancel" class="btn-white-outline">Cancelar</button>
+            <button id="metaSave" class="btn-yellow">💾 Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Admin: Add new course (course_meta doc) ===== -->
+    <div id="addCourseModal" class="modal-backdrop" style="display: none">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="addCourseModalTitle"
+      >
+        <div
+          style="
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-          ">
-<h3 id="addCourseModalTitle" style="margin: 0; font-size: 20px; font-weight: 900">
+          "
+        >
+          <h3
+            id="addCourseModalTitle"
+            style="margin: 0; font-size: 20px; font-weight: 900"
+          >
             ➕ Nuevo curso
           </h3>
-<button class="btn-white-outline" id="addCourseClose" style="padding: 10px 14px">
+          <button
+            id="addCourseClose"
+            class="btn-white-outline"
+            style="padding: 10px 14px"
+          >
             ✕
           </button>
-</div>
-<p style="margin: 10px 0 0; opacity: 0.8; line-height: 1.35">
+        </div>
+
+        <p style="margin: 10px 0 0; opacity: 0.8; line-height: 1.35">
           Esto crea un documento en <strong>course_meta</strong>. Los temas se
           añaden después (en <strong>courses</strong>).
         </p>
-<label style="display: block; margin-top: 14px; font-weight: 800">Nivel / ID (ej.: A1, A2, B1, B2, C1)</label>
-<input class="input" id="newCourseLevel" placeholder="Ej.: C1"/>
-<label style="display: block; margin-top: 12px; font-weight: 800">Título</label>
-<input class="input" id="newCourseTitle" placeholder="Título del curso"/>
-<label style="display: block; margin-top: 12px; font-weight: 800">Subtítulo</label>
-<textarea class="input" id="newCourseSubtitle" placeholder="Subtítulo / descripción corta" rows="3"></textarea>
-<div style="
+
+        <label style="display: block; margin-top: 14px; font-weight: 800"
+          >Nivel / ID (ej.: A1, A2, B1, B2, C1)</label
+        >
+        <input id="newCourseLevel" class="input" placeholder="Ej.: C1" />
+
+        <label style="display: block; margin-top: 12px; font-weight: 800"
+          >Título</label
+        >
+        <input
+          id="newCourseTitle"
+          class="input"
+          placeholder="Título del curso"
+        />
+
+        <label style="display: block; margin-top: 12px; font-weight: 800"
+          >Subtítulo</label
+        >
+        <textarea
+          id="newCourseSubtitle"
+          class="input"
+          rows="3"
+          placeholder="Subtítulo / descripción corta"
+        ></textarea>
+
+        <div
+          style="
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-top: 14px;
-          ">
-<div>
-<label style="display: block; font-weight: 800">Color fondo (kafelek)</label>
-<input class="input" id="newCourseTileBg" placeholder="#ffffff"/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Color texto (kafelek)</label>
-<input class="input" id="newCourseTileText" placeholder="#111111"/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Texto botón principal</label>
-<input class="input" id="newCoursePrimaryLabel" placeholder="Entrar / Comprar / ..."/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Link botón principal (opcional)</label>
-<input class="input" id="newCoursePrimaryHref" placeholder="course.html?level=A1 o https://..."/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Color botón (fondo)</label>
-<input class="input" id="newCourseBtnBg" placeholder="#FCD34D"/>
-</div>
-<div>
-<label style="display: block; font-weight: 800">Color botón (texto)</label>
-<input class="input" id="newCourseBtnText" placeholder="#111111"/>
-</div>
-</div>
-<div style="
+          "
+        >
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Color fondo (kafelek)</label
+            >
+            <input id="newCourseTileBg" class="input" placeholder="#ffffff" />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Color texto (kafelek)</label
+            >
+            <input id="newCourseTileText" class="input" placeholder="#111111" />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Texto botón principal</label
+            >
+            <input
+              id="newCoursePrimaryLabel"
+              class="input"
+              placeholder="Entrar / Comprar / ..."
+            />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Link botón principal (opcional)</label
+            >
+            <input
+              id="newCoursePrimaryHref"
+              class="input"
+              placeholder="course.html?level=A1 o https://..."
+            />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Color botón (fondo)</label
+            >
+            <input id="newCourseBtnBg" class="input" placeholder="#FCD34D" />
+          </div>
+          <div>
+            <label style="display: block; font-weight: 800"
+              >Color botón (texto)</label
+            >
+            <input id="newCourseBtnText" class="input" placeholder="#111111" />
+          </div>
+        </div>
+
+        <div
+          style="
             margin-top: 10px;
             font-size: 12px;
             opacity: 0.75;
             line-height: 1.35;
-          ">
+          "
+        >
           Tips: wpisuj kolory w formacie <strong>#RRGGBB</strong>. Jeśli
           zostawisz puste — zostaną domyślne style.
         </div>
-<div style="
+
+        <div
+          style="
             display: flex;
             gap: 10px;
             justify-content: flex-end;
             margin-top: 16px;
-          ">
-<button class="btn-white-outline" id="addCourseCancel">
+          "
+        >
+          <button id="addCourseCancel" class="btn-white-outline">
             Cancelar
           </button>
-<button class="btn-yellow" id="addCourseCreate">✅ Crear</button>
-</div>
-</div>
-</div>
-<!-- ===== Admin Settings Modal (Planes y precios + Promos) ===== -->
-<div aria-hidden="true" id="settingsModal">
-<div class="modalBox">
-<div class="modalHead">
-<h3>⚙️ Ajustes (Planes, precios, botones, promos)</h3>
-<button class="btn-white-outline" id="closeSettingsBtn" type="button">
+          <button id="addCourseCreate" class="btn-yellow">✅ Crear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Admin Settings Modal (Planes y precios + Promos) ===== -->
+    <div id="settingsModal" aria-hidden="true">
+      <div class="modalBox">
+        <div class="modalHead">
+          <h3>⚙️ Ajustes (Planes, precios, botones, promos)</h3>
+          <button class="btn-white-outline" id="closeSettingsBtn" type="button">
             ✕ Cerrar
           </button>
-</div>
-<div class="tabs">
-<button class="tabBtn active" data-tab="tabPlans" type="button">
+        </div>
+
+        <div class="tabs">
+          <button class="tabBtn active" type="button" data-tab="tabPlans">
             Planes y precios
           </button>
-<button class="tabBtn" data-tab="tabPromos" type="button">
+          <button class="tabBtn" type="button" data-tab="tabPromos">
             Descuentos y días gratis
           </button>
-</div>
-<div class="modalBody">
-<!-- Plans -->
-<div id="tabPlans">
-<div class="mini">
+        </div>
+
+        <div class="modalBody">
+          <!-- Plans -->
+          <div id="tabPlans">
+            <div class="mini">
               Editas el contenido y el estilo de los bloques de “Planes y
               precios”. Se guarda en <code>site_settings/panel_es</code>.
             </div>
-<div class="hr"></div>
-<h4 style="margin: 0 0 10px; font-size: 16px">A1–A2</h4>
-<div class="grid3">
-<div>
-<label>Precio (texto)</label>
-<input id="set_price_A1A2" placeholder="180 zł / 3 meses"/>
-</div>
-<div>
-<label>Texto botón</label>
-<input id="set_btnLabel_A1A2" placeholder="Comprar acceso"/>
-</div>
-<div>
-<label>Link botón</label>
-<input id="set_btnHref_A1A2" placeholder="Contacto.html o link de pago"/>
-</div>
-</div>
-<div class="grid2 row">
-<div>
-<label>Color tile (bg) #RRGGBB</label>
-<input id="set_tileBg_A1A2" placeholder="#003893"/>
-</div>
-<div>
-<label>Color texto tile #RRGGBB</label>
-<input id="set_tileText_A1A2" placeholder="#FFFFFF"/>
-</div>
-</div>
-<div class="grid2 row">
-<div>
-<label>Color botón (bg) #RRGGBB</label>
-<input id="set_btnBg_A1A2" placeholder="#FCD116"/>
-</div>
-<div>
-<label>Color botón (texto) #RRGGBB</label>
-<input id="set_btnText_A1A2" placeholder="#0B1B3A"/>
-</div>
-</div>
-<div class="hr"></div>
-<h4 style="margin: 0 0 10px; font-size: 16px">B1</h4>
-<div class="grid3">
-<div>
-<label>Precio (texto)</label><input id="set_price_B1" placeholder="250 zł / 3 meses"/>
-</div>
-<div>
-<label>Texto botón</label><input id="set_btnLabel_B1" placeholder="Comprar acceso"/>
-</div>
-<div>
-<label>Link botón</label><input id="set_btnHref_B1" placeholder="Contacto.html o link de pago"/>
-</div>
-</div>
-<div class="grid2 row">
-<div>
-<label>Color tile (bg)</label><input id="set_tileBg_B1" placeholder="#003893"/>
-</div>
-<div>
-<label>Color texto tile</label><input id="set_tileText_B1" placeholder="#FFFFFF"/>
-</div>
-</div>
-<div class="grid2 row">
-<div>
-<label>Color botón (bg)</label><input id="set_btnBg_B1" placeholder="#FCD116"/>
-</div>
-<div>
-<label>Color botón (texto)</label><input id="set_btnText_B1" placeholder="#0B1B3A"/>
-</div>
-</div>
-<div class="hr"></div>
-<h4 style="margin: 0 0 10px; font-size: 16px">B2</h4>
-<div class="grid3">
-<div>
-<label>Precio (texto)</label><input id="set_price_B2" placeholder="350 zł / 3 meses"/>
-</div>
-<div>
-<label>Texto botón</label><input id="set_btnLabel_B2" placeholder="Comprar acceso"/>
-</div>
-<div>
-<label>Link botón</label><input id="set_btnHref_B2" placeholder="Contacto.html o link de pago"/>
-</div>
-</div>
-<div class="grid2 row">
-<div>
-<label>Color tile (bg)</label><input id="set_tileBg_B2" placeholder="#003893"/>
-</div>
-<div>
-<label>Color texto tile</label><input id="set_tileText_B2" placeholder="#FFFFFF"/>
-</div>
-</div>
-<div class="grid2 row">
-<div>
-<label>Color botón (bg)</label><input id="set_btnBg_B2" placeholder="#FCD116"/>
-</div>
-<div>
-<label>Color botón (texto)</label><input id="set_btnText_B2" placeholder="#0B1B3A"/>
-</div>
-</div>
-<div class="actions">
-<button class="btn-white-outline" id="resetSettingsBtn" type="button">
+
+            <div class="hr"></div>
+
+            <h4 style="margin: 0 0 10px; font-size: 16px">A1–A2</h4>
+            <div class="grid3">
+              <div>
+                <label>Precio (texto)</label>
+                <input id="set_price_A1A2" placeholder="180 zł / 3 meses" />
+              </div>
+              <div>
+                <label>Texto botón</label>
+                <input id="set_btnLabel_A1A2" placeholder="Comprar acceso" />
+              </div>
+              <div>
+                <label>Link botón</label>
+                <input
+                  id="set_btnHref_A1A2"
+                  placeholder="Contacto.html o link de pago"
+                />
+              </div>
+            </div>
+            <div class="grid2 row">
+              <div>
+                <label>Color tile (bg) #RRGGBB</label>
+                <input id="set_tileBg_A1A2" placeholder="#003893" />
+              </div>
+              <div>
+                <label>Color texto tile #RRGGBB</label>
+                <input id="set_tileText_A1A2" placeholder="#FFFFFF" />
+              </div>
+            </div>
+            <div class="grid2 row">
+              <div>
+                <label>Color botón (bg) #RRGGBB</label>
+                <input id="set_btnBg_A1A2" placeholder="#FCD116" />
+              </div>
+              <div>
+                <label>Color botón (texto) #RRGGBB</label>
+                <input id="set_btnText_A1A2" placeholder="#0B1B3A" />
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <h4 style="margin: 0 0 10px; font-size: 16px">B1</h4>
+            <div class="grid3">
+              <div>
+                <label>Precio (texto)</label
+                ><input id="set_price_B1" placeholder="250 zł / 3 meses" />
+              </div>
+              <div>
+                <label>Texto botón</label
+                ><input id="set_btnLabel_B1" placeholder="Comprar acceso" />
+              </div>
+              <div>
+                <label>Link botón</label
+                ><input
+                  id="set_btnHref_B1"
+                  placeholder="Contacto.html o link de pago"
+                />
+              </div>
+            </div>
+            <div class="grid2 row">
+              <div>
+                <label>Color tile (bg)</label
+                ><input id="set_tileBg_B1" placeholder="#003893" />
+              </div>
+              <div>
+                <label>Color texto tile</label
+                ><input id="set_tileText_B1" placeholder="#FFFFFF" />
+              </div>
+            </div>
+            <div class="grid2 row">
+              <div>
+                <label>Color botón (bg)</label
+                ><input id="set_btnBg_B1" placeholder="#FCD116" />
+              </div>
+              <div>
+                <label>Color botón (texto)</label
+                ><input id="set_btnText_B1" placeholder="#0B1B3A" />
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <h4 style="margin: 0 0 10px; font-size: 16px">B2</h4>
+            <div class="grid3">
+              <div>
+                <label>Precio (texto)</label
+                ><input id="set_price_B2" placeholder="350 zł / 3 meses" />
+              </div>
+              <div>
+                <label>Texto botón</label
+                ><input id="set_btnLabel_B2" placeholder="Comprar acceso" />
+              </div>
+              <div>
+                <label>Link botón</label
+                ><input
+                  id="set_btnHref_B2"
+                  placeholder="Contacto.html o link de pago"
+                />
+              </div>
+            </div>
+            <div class="grid2 row">
+              <div>
+                <label>Color tile (bg)</label
+                ><input id="set_tileBg_B2" placeholder="#003893" />
+              </div>
+              <div>
+                <label>Color texto tile</label
+                ><input id="set_tileText_B2" placeholder="#FFFFFF" />
+              </div>
+            </div>
+            <div class="grid2 row">
+              <div>
+                <label>Color botón (bg)</label
+                ><input id="set_btnBg_B2" placeholder="#FCD116" />
+              </div>
+              <div>
+                <label>Color botón (texto)</label
+                ><input id="set_btnText_B2" placeholder="#0B1B3A" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button
+                class="btn-white-outline"
+                type="button"
+                id="resetSettingsBtn"
+              >
                 ↩︎ Reset
               </button>
-<button class="btn-yellow" id="saveSettingsBtn" style="font-weight: 900" type="button">
+              <button
+                class="btn-yellow"
+                type="button"
+                id="saveSettingsBtn"
+                style="font-weight: 900"
+              >
                 💾 Guardar
               </button>
-</div>
-</div>
-<!-- Promos -->
-<div id="tabPromos" style="display: none">
-<div class="mini">
+            </div>
+          </div>
+
+          <!-- Promos -->
+          <div id="tabPromos" style="display: none">
+            <div class="mini">
               Tu “checkout” może użyć tego samego kodu. Tu zapisujemy kody do
               Firestore w kolekcji <code>promo_codes</code>.
             </div>
-<div class="hr"></div>
-<div class="grid3">
-<div>
-<label>Kod rabatowy (ID)</label>
-<input id="promo_code" placeholder="NP. AQUI10"/>
-</div>
-<div>
-<label>Rabat % (0–100)</label>
-<input id="promo_pct" inputmode="numeric" placeholder="10"/>
-</div>
-<div>
-<label>Dni gratis (trial)</label>
-<input id="promo_days" inputmode="numeric" placeholder="7"/>
-</div>
-</div>
-<div class="grid2 row">
-<div>
-<label>Aktywny?</label>
-<select id="promo_active">
-<option value="true">Sí</option>
-<option value="false">No</option>
-</select>
-</div>
-<div>
-<label>Opis (opcjonalnie)</label>
-<input id="promo_note" placeholder="np. campaña enero / IG / etc."/>
-</div>
-</div>
-<div class="actions">
-<button class="btn-yellow" id="addPromoBtn" style="font-weight: 900" type="button">
+
+            <div class="hr"></div>
+
+            <div class="grid3">
+              <div>
+                <label>Kod rabatowy (ID)</label>
+                <input id="promo_code" placeholder="NP. AQUI10" />
+              </div>
+              <div>
+                <label>Rabat % (0–100)</label>
+                <input id="promo_pct" placeholder="10" inputmode="numeric" />
+              </div>
+              <div>
+                <label>Dni gratis (trial)</label>
+                <input id="promo_days" placeholder="7" inputmode="numeric" />
+              </div>
+            </div>
+            <div class="grid2 row">
+              <div>
+                <label>Aktywny?</label>
+                <select id="promo_active">
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+              <div>
+                <label>Opis (opcjonalnie)</label>
+                <input
+                  id="promo_note"
+                  placeholder="np. campaña enero / IG / etc."
+                />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button
+                class="btn-yellow"
+                type="button"
+                id="addPromoBtn"
+                style="font-weight: 900"
+              >
                 ➕ Guardar código
               </button>
-</div>
-<div class="hr"></div>
-<h4 style="margin: 0; font-size: 16px">Lista kodów</h4>
-<div id="promoList"></div>
-</div>
-</div>
-</div>
-</div>
-<script data-aquivivo-no-new-tab="1">
+            </div>
+
+            <div class="hr"></div>
+
+            <h4 style="margin: 0; font-size: 16px">Lista kodów</h4>
+            <div id="promoList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script data-aquivivo-no-new-tab="1">
       // Force same-tab navigation (prevents accidental new tabs)
       (function () {
         try {
@@ -2599,5 +3141,5 @@
         } catch (e) {}
       })();
     </script>
-<div id="appFooter"></div></body>
+  </body>
 </html>

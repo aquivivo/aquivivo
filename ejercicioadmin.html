@@ -1,12 +1,22 @@
-<!DOCTYPE html>
 
+      // Extra admin nav links (no new tab)
+      const btnStudentView = document.getElementById("btnStudentView");
+      const btnLessonAdmin = document.getElementById("btnLessonAdmin");
+      if (btnStudentView) btnStudentView.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
+      if (btnLessonAdmin) btnLessonAdmin.href = `lessonadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8"/>
-<title>Admin | Ejercicios | AquiVivo</title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin | Ejercicios | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
       :root {
         --yellow: #fcd116;
         --blue: #003893;
@@ -542,200 +552,260 @@
       .progressText{ font-size:12px; font-weight:900; opacity:.92; }
 
 </style>
-<script defer="True" src="assets/js/layout.js"></script><link href="assets/img/logo.png" rel="icon"/></head>
-<body><div id="appHeader"></div>
-<div class="sessionBar">
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+  <body>
+  <div id=\"appHeader\"></div>
+    <header class="nav-glass">
+      <div class="nav-inner">
+        <div class="brand">
+          <div class="logo-flag" aria-hidden="true"></div>
+          <div class="name">Aqui vivo</div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+          <a id="backToCourse" class="btn" href="course.html?level=A1">⬅️ Volver al curso</a>
+          <a class="btn" id="levelsBtn" href="course.html?level=A1">📚 Niveles</a>
+          <button class="btn btn-yellow" id="btnCopyLink" type="button">🔗 Copiar enlace</button>
+          <a class="btn" id="btnStudentView" href="#">👀 Vista alumno</a>
+          <a class="btn" id="btnLessonAdmin" href="#">🛠 Admin lección</a>
+          <button class="btn" id="btnReload" type="button">🔄 Recargar</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="sessionBar">
       Sesión activa: <strong id="sessionEmail">Cargando...</strong>
-</div>
-<main class="container">
-<div id="toast"></div>
-<div class="card">
-<div class="metaRow">
-<span class="pill pill-yellow" id="pillLevel">Nivel</span>
-<span class="pill pill-blue" id="pillType">Tipo</span>
-<span class="pill" id="pillSlug">slug</span>
-<span class="pill" id="pillCount">Ejercicios: 0</span><span class="pill pill-yellow">ADMIN</span>
-<span class="pill" id="pillProgress" style="background: rgba(252,209,22,0.16); border-color: rgba(252,209,22,0.35);">Progreso: 0%</span>
-</div>
-<div class="progressWrap" style="margin-top:10px">
-<div class="progressBar"><div class="progressFill" id="progressFill" style="width:0%"></div></div>
-<div class="progressText" id="progressText">0 / 0 completados</div>
-</div>
-<h1 id="topicTitle">Cargando…</h1>
-<p class="subtitle" id="topicDesc">Cargando…</p>
-<div class="metaRow" id="taskChips"></div>
-</div>
-<!-- Lesson content (from course_meta docId: LEVEL__topicSlug) -->
-<div class="lessonContentCard" id="lessonContentCard" style="display:none">
-<div class="lessonContentTitle">
-<h3>📘 Lección — materiales del tema</h3>
-<div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-<a class="btn" href="#" id="btnOpenLessonPage">📖 Abrir lección (página)</a>
-</div>
-</div>
-<div class="lessonText" id="lessonContentBody"></div>
-<div class="lessonEmpty" id="lessonContentEmpty" style="display:none">Todavía no hay contenido de lección para este tema.</div>
-</div>
-<div class="sectionTitle">🧩 Ejercicios</div>
-<div class="card" id="filtersCard" style="padding:14px 14px 12px; margin-bottom:14px">
-<div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end">
-<div style="flex:1; min-width:220px">
-<label style="display:block; font-weight:700; margin-bottom:6px">Buscar</label>
-<input id="filterSearch" placeholder="Szukaj po treści / odpowiedzi…"/>
-</div>
-<div style="min-width:190px">
-<label style="display:block; font-weight:700; margin-bottom:6px">Typ</label>
-<select id="filterType"></select>
-</div>
-<div style="min-width:190px">
-<label style="display:block; font-weight:700; margin-bottom:6px">Kategoria</label>
-<select id="filterCategory">
-<option value="">Wszystko</option>
-<option value="grammar">Gramática</option>
-<option value="vocab">Vocabulario</option>
-<option value="both">Gramática + vocabulario</option>
-</select>
-</div>
-<button class="btn" id="btnClearFilters" type="button">🧹 Wyczyść</button>
-<div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-<label style="display:flex; gap:8px; align-items:center; user-select:none; font-weight:700">
-<input id="toggleReorder" style="transform:scale(1.15)" type="checkbox"/>
-              Tryb sortowania (drag&amp;drop)
+    </div>
+
+    <main class="container">
+      <div id="toast"></div>
+
+      <div class="card">
+        <div class="metaRow">
+          <span class="pill pill-yellow" id="pillLevel">Nivel</span>
+          <span class="pill pill-blue" id="pillType">Tipo</span>
+          <span class="pill" id="pillSlug">slug</span>
+          <span class="pill" id="pillCount">Ejercicios: 0</span><span class="pill pill-yellow">ADMIN</span>
+          <span class="pill" id="pillProgress" style="background: rgba(252,209,22,0.16); border-color: rgba(252,209,22,0.35);">Progreso: 0%</span>
+        </div>
+        <div class="progressWrap" style="margin-top:10px">
+          <div class="progressBar"><div class="progressFill" id="progressFill" style="width:0%"></div></div>
+          <div class="progressText" id="progressText">0 / 0 completados</div>
+        </div>
+
+        <h1 id="topicTitle">Cargando…</h1>
+        <p class="subtitle" id="topicDesc">Cargando…</p>
+
+        <div class="metaRow" id="taskChips"></div>
+      </div>
+
+      <!-- Lesson content (from course_meta docId: LEVEL__topicSlug) -->
+      <div id="lessonContentCard" class="lessonContentCard" style="display:none">
+        <div class="lessonContentTitle">
+          <h3>📘 Lección — materiales del tema</h3>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <a class="btn" id="btnOpenLessonPage" href="#">📖 Abrir lección (página)</a>
+          </div>
+        </div>
+
+        <div id="lessonContentBody" class="lessonText"></div>
+        <div id="lessonContentEmpty" class="lessonEmpty" style="display:none">Todavía no hay contenido de lección para este tema.</div>
+      </div>
+
+
+      <div class="sectionTitle">🧩 Ejercicios</div>
+
+      <div class="card" id="filtersCard" style="padding:14px 14px 12px; margin-bottom:14px">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end">
+          <div style="flex:1; min-width:220px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Buscar</label>
+            <input id="filterSearch" placeholder="Szukaj po treści / odpowiedzi…" />
+          </div>
+
+          <div style="min-width:190px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Typ</label>
+            <select id="filterType"></select>
+          </div>
+
+          <div style="min-width:190px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Kategoria</label>
+            <select id="filterCategory">
+              <option value="">Wszystko</option>
+              <option value="grammar">Gramática</option>
+              <option value="vocab">Vocabulario</option>
+              <option value="both">Gramática + vocabulario</option>
+            </select>
+          </div>
+
+          <button class="btn" id="btnClearFilters" type="button">🧹 Wyczyść</button>
+
+          <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+            <label style="display:flex; gap:8px; align-items:center; user-select:none; font-weight:700">
+              <input id="toggleReorder" type="checkbox" style="transform:scale(1.15)" />
+              Tryb sortowania (drag&drop)
             </label>
-<button class="btn btn-yellow" id="btnSaveOrder" style="display:none" type="button">💾 Zapisz kolejność</button>
-</div>
-</div>
-<div class="smallNote" style="margin-top:8px; opacity:.95">
+            <button class="btn btn-yellow" id="btnSaveOrder" type="button" style="display:none">💾 Zapisz kolejność</button>
+          </div>
+        </div>
+
+        <div class="smallNote" style="margin-top:8px; opacity:.95">
           Tip: w trybie sortowania przeciągaj kafelki. Zapis kolejności aktualizuje pole <b>order</b> w Firestore.
         </div>
-</div>
-<div id="exerciseList"></div>
-<div class="card" id="emptyExercises" style="display:none; opacity:0.95">
-<div class="muted">
+      </div>
+
+      <div id="exerciseList"></div>
+
+      <div id="emptyExercises" class="card" style="display:none; opacity:0.95">
+        <div class="muted">
           Todavía no hay ejercicios para este tema.
         </div>
-<div class="smallNote" style="margin-top:10px">
+        <div class="smallNote" style="margin-top:10px">
           Si eres admin, agrega el primero abajo 👇
         </div>
-</div>
-<!-- Admin -->
-<div class="card" id="noAdminCard" style="display:none">
-<div class="sectionTitle">⛔ Acceso restringido</div>
-<div class="muted">Esta página es solo para admin.</div>
-</div>
-<div class="card adminWrap" id="adminWrap">
-<div class="sectionTitle">👑 Admin – agregar ejercicio</div>
-<div class="card" style="margin-top:10px">
-<div class="sectionTitle" style="margin-top:0">⚡ Producción rápida</div>
-<div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-<button class="btn" id="btnTplFill" type="button">+ Plantilla: rellenar</button>
-<button class="btn" id="btnTplChoice" type="button">+ Plantilla: choice</button>
-<button class="btn" id="btnTplTF" type="button">+ Plantilla: true/false</button>
-</div>
-<div style="margin-top:12px">
-<label style="display:block; font-weight:800; margin-bottom:6px">Import JSON (array de ejercicios)</label>
-<textarea id="importJsonArea" placeholder='[
+      </div>
+
+      <!-- Admin -->
+      <div id="noAdminCard" class="card" style="display:none">
+        <div class="sectionTitle">⛔ Acceso restringido</div>
+        <div class="muted">Esta página es solo para admin.</div>
+      </div>
+      <div id="adminWrap" class="card adminWrap">
+        
+        <div class="sectionTitle">👑 Admin – agregar ejercicio</div>
+
+        <div class="card" style="margin-top:10px">
+          <div class="sectionTitle" style="margin-top:0">⚡ Producción rápida</div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <button class="btn" id="btnTplFill" type="button">+ Plantilla: rellenar</button>
+            <button class="btn" id="btnTplChoice" type="button">+ Plantilla: choice</button>
+            <button class="btn" id="btnTplTF" type="button">+ Plantilla: true/false</button>
+          </div>
+
+          <div style="margin-top:12px">
+            <label style="display:block; font-weight:800; margin-bottom:6px">Import JSON (array de ejercicios)</label>
+            <textarea id="importJsonArea" placeholder='[
   {"type":"Opción múltiple","prompt":"...","options":["A) ...","B) ..."],"answer":"A","category":"grammar","order":1},
   {"type":"Rellenar los espacios","prompt":"...","answer":"...","category":"vocab"}
 ]'></textarea>
-<div class="smallNote" style="margin-top:8px">
+            <div class="smallNote" style="margin-top:8px">
               - Wklej <b>tablicę</b> ćwiczeń. Jeśli element nie ma <b>order</b>, dostanie automatycznie kolejny numer.<br/>
               - Obsługiwane pola: <b>type, prompt, options[], answer, category, tags, notes, imageUrl, order</b>.
             </div>
-<div class="adminActions" style="margin-top:10px">
-<button class="btn btn-yellow" id="btnImportJson" type="button">📥 Importuj i zapisz</button>
-<button class="btn" id="btnClearImport" type="button">🧽 Wyczyść</button>
-<span class="smallNote" id="importStatus" style="margin-left:auto"></span>
-</div>
-</div>
-</div>
-<div class="adminGrid">
-<div>
-<label>Tipo de ejercicio</label>
-<select id="exType"></select>
-</div>
-<div>
-<label>Pregunta / enunciado</label>
-<input id="exPrompt" placeholder="Escribe el enunciado..."/>
-</div>
-<div>
-<label>Imagen (URL) — opcional</label>
-<input id="exImageUrl" placeholder="https://.../imagen.png"/>
-<div class="smallNote">Jeśli dodasz obrazek, pokaże się nad odpowiedziami.</div>
-</div>
-<div>
-<label>Opciones (solo si aplica)</label>
-<textarea id="exOptions" placeholder="Una opción por línea
-Ej:
-A) ...
-B) ...
-C) ..."></textarea>
-<div class="smallNote">
+
+            <div class="adminActions" style="margin-top:10px">
+              <button class="btn btn-yellow" id="btnImportJson" type="button">📥 Importuj i zapisz</button>
+              <button class="btn" id="btnClearImport" type="button">🧽 Wyczyść</button>
+              <span class="smallNote" id="importStatus" style="margin-left:auto"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="adminGrid">
+          <div>
+            <label>Tipo de ejercicio</label>
+            <select id="exType"></select>
+          </div>
+
+          <div>
+            <label>Pregunta / enunciado</label>
+            <input id="exPrompt" placeholder="Escribe el enunciado..." />
+          </div>
+
+          <div>
+            <label>Imagen (URL) — opcional</label>
+            <input id="exImageUrl" placeholder="https://.../imagen.png" />
+            <div class="smallNote">Jeśli dodasz obrazek, pokaże się nad odpowiedziami.</div>
+          </div>
+
+          <div>
+            <label>Opciones (solo si aplica)</label>
+            <textarea
+              id="exOptions"
+              placeholder="Una opción por línea&#10;Ej:&#10;A) ...&#10;B) ...&#10;C) ..."
+            ></textarea>
+            <div class="smallNote">
               Para ejercicios de selección, añade al menos 2 opciones (una por línea).
             </div>
-</div>
-<div>
-<label>Respuesta correcta</label>
-<input id="exAnswer" placeholder="Ej: B   |   true   |   palabra_correcta"/>
-<div class="smallNote">
-              - Opción múltiple: letra (A/B/C/D) o texto exacto.<br/>
-              - Verdadero o falso: <b>true</b> / <b>false</b>.<br/>
+          </div>
+
+          <div>
+            <label>Respuesta correcta</label>
+            <input id="exAnswer" placeholder="Ej: B   |   true   |   palabra_correcta" />
+            <div class="smallNote">
+              - Opción múltiple: letra (A/B/C/D) o texto exacto.<br />
+              - Verdadero o falso: <b>true</b> / <b>false</b>.<br />
               - Campo abierto: wpisz poprawne słowo/odpowiedź (dokładnie).
             </div>
-</div>
-<div>
-<label>Kategoria</label>
-<select id="exCategory">
-<option value="grammar">Gramática</option>
-<option value="vocab">Vocabulario</option>
-<option value="both">Gramática + vocabulario</option>
-</select>
-</div>
-<div>
-<label>Tagi (opcjonalnie)</label>
-<input id="exTags" placeholder="np. przypadki, czasowniki, kolokacje (oddziel przecinkami)"/>
-</div>
-<div>
-<label>Orden</label>
-<input id="exOrder" min="1" placeholder="np. 1" type="number"/>
-</div>
-<div>
-<label>Notas (opcjonalnie)</label>
-<input id="exNotes" placeholder="np. wskazówka / komentarz"/>
-</div>
-</div>
-<div class="adminActions">
-<button class="btn btn-yellow" id="btnAddExercise" type="button">➕ Guardar ejercicio</button>
-<button class="btn" id="btnAutoOrder" type="button">✨ Ustaw kolejny numer</button>
-<label class="smallNote" style="display:flex; align-items:center; gap:8px; margin-left:auto">
-<input id="tplOverwrite" type="checkbox"/>
-<span>Sobrescribir</span>
-</label>
-<button class="btn" id="btnApplyTemplate" type="button">🧩 Plantilla (tipo)</button>
-</div>
-<div class="smallNote" style="margin-top:10px">
+          </div>
+
+          <div>
+            <label>Kategoria</label>
+            <select id="exCategory">
+              <option value="grammar">Gramática</option>
+              <option value="vocab">Vocabulario</option>
+              <option value="both">Gramática + vocabulario</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Tagi (opcjonalnie)</label>
+            <input id="exTags" placeholder="np. przypadki, czasowniki, kolokacje (oddziel przecinkami)" />
+          </div>
+
+          <div>
+            <label>Orden</label>
+            <input id="exOrder" type="number" min="1" placeholder="np. 1" />
+          </div>
+
+          <div>
+            <label>Notas (opcjonalnie)</label>
+            <input id="exNotes" placeholder="np. wskazówka / komentarz" />
+          </div>
+        </div>
+
+        <div class="adminActions">
+          <button class="btn btn-yellow" id="btnAddExercise" type="button">➕ Guardar ejercicio</button>
+          <button class="btn" id="btnAutoOrder" type="button">✨ Ustaw kolejny numer</button>
+
+          <label class="smallNote" style="display:flex; align-items:center; gap:8px; margin-left:auto">
+            <input type="checkbox" id="tplOverwrite" />
+            <span>Sobrescribir</span>
+          </label>
+          <button class="btn" id="btnApplyTemplate" type="button">🧩 Plantilla (tipo)</button>
+        </div>
+
+        <div class="smallNote" style="margin-top:10px">
           Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level, topicSlug, order, type, prompt, options[], answer, notes.
         </div>
-</div>
-</main>
-<!-- Preview modal -->
-<div class="modal" id="previewModal" style="display:none">
-<div class="modalBackdrop" id="previewBackdrop"></div>
-<div class="modalBox card">
-<div style="display:flex; gap:10px; align-items:center; justify-content:space-between">
-<div class="sectionTitle" style="margin:0">👀 Podgląd (uczeń)</div>
-<button class="btn" id="btnClosePreview" type="button">✖</button>
-</div>
-<div id="previewBody" style="margin-top:10px"></div>
-<div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center">
-<button class="btn btn-yellow" id="btnCheckPreview" type="button">✅ Sprawdź</button>
-<span class="pill" id="previewResult" style="display:none"></span>
-</div>
-<div class="smallNote" style="margin-top:10px; opacity:.95">
+      </div>
+    </main>
+
+    
+    <!-- Preview modal -->
+    <div id="previewModal" class="modal" style="display:none">
+      <div class="modalBackdrop" id="previewBackdrop"></div>
+      <div class="modalBox card">
+        <div style="display:flex; gap:10px; align-items:center; justify-content:space-between">
+          <div class="sectionTitle" style="margin:0">👀 Podgląd (uczeń)</div>
+          <button class="btn" id="btnClosePreview" type="button">✖</button>
+        </div>
+
+        <div id="previewBody" style="margin-top:10px"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center">
+          <button class="btn btn-yellow" id="btnCheckPreview" type="button">✅ Sprawdź</button>
+          <span id="previewResult" class="pill" style="display:none"></span>
+        </div>
+
+        <div class="smallNote" style="margin-top:10px; opacity:.95">
           Ten podgląd jest po to, żeby szybko sprawdzić czy treść i odpowiedź są spójne.
         </div>
-</div>
-</div>
+      </div>
+    </div>
+
 <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
       import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
@@ -2257,6 +2327,6 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
         previewModal.style.display = "block";
       }
  </script>
-<script src="assets/js/layout.js"></script>
-<div id="appFooter"></div></body>
+    <script src="assets/js/layout.js"></script>
+</body>
 </html>

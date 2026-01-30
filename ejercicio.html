@@ -1,12 +1,16 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8"/>
-<title>Ejercicios | AquiVivo</title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ejercicios | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
       :root {
         --yellow: #fcd116;
         --blue: #003893;
@@ -542,103 +546,146 @@
       .progressText{ font-size:12px; font-weight:900; opacity:.92; }
 
 </style>
-<script defer="True" src="assets/js/layout.js"></script><link href="assets/img/logo.png" rel="icon"/></head>
-<body><div id="appHeader"></div>
-<div class="sessionBar">
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+  <body>
+  <div id=\"appHeader\"></div>
+    <header class="nav-glass">
+      <div class="nav-inner">
+        <div class="brand">
+          <div class="logo-flag" aria-hidden="true"></div>
+          <div class="name">Aqui vivo</div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+          <a class="btn" id="btnPanel" href="#">🧩 Panel</a>
+          <a class="btn btn-yellow" id="btnLeccion" href="#">📖 Lección</a>
+          <a class="btn" id="btnInicio" href="#">🏠 Inicio</a>
+          <button class="btn" id="btnAtras" type="button">⬅️ Atrás</button>
+          <button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="sessionBar">
       Sesión activa: <strong id="sessionEmail">Cargando...</strong>
-</div>
-<main class="container">
-<div id="toast"></div>
-<div class="card">
-<div class="metaRow">
-<span class="pill pill-yellow" id="pillLevel">Nivel</span>
-<span class="pill pill-blue" id="pillType">Tipo</span>
-<span class="pill" id="pillSlug">slug</span>
-<span class="pill" id="pillCount">Ejercicios: 0</span>
-<span class="pill" id="pillProgress" style="background: rgba(252,209,22,0.16); border-color: rgba(252,209,22,0.35);">Progreso: 0%</span>
-</div>
-<div class="progressWrap" style="margin-top:10px">
-<div class="progressBar"><div class="progressFill" id="progressFill" style="width:0%"></div></div>
-<div class="progressText" id="progressText">0 / 0 completados</div>
-</div>
-<h1 id="topicTitle">Cargando…</h1>
-<p class="subtitle" id="topicDesc">Cargando…</p>
-<div class="metaRow" id="taskChips"></div>
-</div>
-<!-- Lesson content (from course_meta docId: LEVEL__topicSlug) -->
-<div class="lessonContentCard" id="lessonContentCard" style="display:none">
-<div class="lessonContentTitle">
-<h3>📘 Lección — materiales del tema</h3>
-<div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-<a class="btn" href="#" id="btnOpenLessonPage">📖 Abrir lección (página)</a>
-</div>
-</div>
-<div class="lessonText" id="lessonContentBody"></div>
-<div class="lessonEmpty" id="lessonContentEmpty" style="display:none">Todavía no hay contenido de lección para este tema.</div>
-</div>
-<div class="sectionTitle">🧩 Ejercicios</div>
-<div class="card" id="filtersCard" style="padding:14px 14px 12px; margin-bottom:14px">
-<div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end">
-<div style="flex:1; min-width:220px">
-<label style="display:block; font-weight:700; margin-bottom:6px">Buscar</label>
-<input id="filterSearch" placeholder="Szukaj po treści / odpowiedzi…"/>
-</div>
-<div style="min-width:190px">
-<label style="display:block; font-weight:700; margin-bottom:6px">Typ</label>
-<select id="filterType"></select>
-</div>
-<div style="min-width:190px">
-<label style="display:block; font-weight:700; margin-bottom:6px">Kategoria</label>
-<select id="filterCategory">
-<option value="">Wszystko</option>
-<option value="grammar">Gramática</option>
-<option value="vocab">Vocabulario</option>
-<option value="both">Gramática + vocabulario</option>
-</select>
-</div>
-<button class="btn" id="btnClearFilters" type="button">🧹 Wyczyść</button>
-<div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-<label style="display:flex; gap:8px; align-items:center; user-select:none; font-weight:700">
-<input id="toggleReorder" style="transform:scale(1.15)" type="checkbox"/>
-              Tryb sortowania (drag&amp;drop)
+    </div>
+
+    <main class="container">
+      <div id="toast"></div>
+
+      <div class="card">
+        <div class="metaRow">
+          <span class="pill pill-yellow" id="pillLevel">Nivel</span>
+          <span class="pill pill-blue" id="pillType">Tipo</span>
+          <span class="pill" id="pillSlug">slug</span>
+          <span class="pill" id="pillCount">Ejercicios: 0</span>
+          <span class="pill" id="pillProgress" style="background: rgba(252,209,22,0.16); border-color: rgba(252,209,22,0.35);">Progreso: 0%</span>
+        </div>
+        <div class="progressWrap" style="margin-top:10px">
+          <div class="progressBar"><div class="progressFill" id="progressFill" style="width:0%"></div></div>
+          <div class="progressText" id="progressText">0 / 0 completados</div>
+        </div>
+
+        <h1 id="topicTitle">Cargando…</h1>
+        <p class="subtitle" id="topicDesc">Cargando…</p>
+
+        <div class="metaRow" id="taskChips"></div>
+      </div>
+
+      <!-- Lesson content (from course_meta docId: LEVEL__topicSlug) -->
+      <div id="lessonContentCard" class="lessonContentCard" style="display:none">
+        <div class="lessonContentTitle">
+          <h3>📘 Lección — materiales del tema</h3>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <a class="btn" id="btnOpenLessonPage" href="#">📖 Abrir lección (página)</a>
+          </div>
+        </div>
+
+        <div id="lessonContentBody" class="lessonText"></div>
+        <div id="lessonContentEmpty" class="lessonEmpty" style="display:none">Todavía no hay contenido de lección para este tema.</div>
+      </div>
+
+
+      <div class="sectionTitle">🧩 Ejercicios</div>
+
+      <div class="card" id="filtersCard" style="padding:14px 14px 12px; margin-bottom:14px">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end">
+          <div style="flex:1; min-width:220px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Buscar</label>
+            <input id="filterSearch" placeholder="Szukaj po treści / odpowiedzi…" />
+          </div>
+
+          <div style="min-width:190px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Typ</label>
+            <select id="filterType"></select>
+          </div>
+
+          <div style="min-width:190px">
+            <label style="display:block; font-weight:700; margin-bottom:6px">Kategoria</label>
+            <select id="filterCategory">
+              <option value="">Wszystko</option>
+              <option value="grammar">Gramática</option>
+              <option value="vocab">Vocabulario</option>
+              <option value="both">Gramática + vocabulario</option>
+            </select>
+          </div>
+
+          <button class="btn" id="btnClearFilters" type="button">🧹 Wyczyść</button>
+
+          <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+            <label style="display:flex; gap:8px; align-items:center; user-select:none; font-weight:700">
+              <input id="toggleReorder" type="checkbox" style="transform:scale(1.15)" />
+              Tryb sortowania (drag&drop)
             </label>
-<button class="btn btn-yellow" id="btnSaveOrder" style="display:none" type="button">💾 Zapisz kolejność</button>
-</div>
-</div>
-<div class="smallNote" style="margin-top:8px; opacity:.95">
+            <button class="btn btn-yellow" id="btnSaveOrder" type="button" style="display:none">💾 Zapisz kolejność</button>
+          </div>
+        </div>
+
+        <div class="smallNote" style="margin-top:8px; opacity:.95">
           Tip: w trybie sortowania przeciągaj kafelki. Zapis kolejności aktualizuje pole <b>order</b> w Firestore.
         </div>
-</div>
-<div id="exerciseList"></div>
-<div class="card" id="emptyExercises" style="display:none; opacity:0.95">
-<div class="muted">
+      </div>
+
+      <div id="exerciseList"></div>
+
+      <div id="emptyExercises" class="card" style="display:none; opacity:0.95">
+        <div class="muted">
           Todavía no hay ejercicios para este tema.
         </div>
-<div class="smallNote" style="margin-top:10px">
+        <div class="smallNote" style="margin-top:10px">
           Si eres admin, agrega el primero abajo 👇
         </div>
-</div>
-<!-- Admin moved to ejercicioadmin.html -->
-<div class="card adminWrap" id="adminWrap" style="display:none"></div>
-</main>
-<!-- Preview modal -->
-<div class="modal" id="previewModal" style="display:none">
-<div class="modalBackdrop" id="previewBackdrop"></div>
-<div class="modalBox card">
-<div style="display:flex; gap:10px; align-items:center; justify-content:space-between">
-<div class="sectionTitle" style="margin:0">👀 Podgląd (uczeń)</div>
-<button class="btn" id="btnClosePreview" type="button">✖</button>
-</div>
-<div id="previewBody" style="margin-top:10px"></div>
-<div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center">
-<button class="btn btn-yellow" id="btnCheckPreview" type="button">✅ Sprawdź</button>
-<span class="pill" id="previewResult" style="display:none"></span>
-</div>
-<div class="smallNote" style="margin-top:10px; opacity:.95">
+      </div>
+
+      <!-- Admin moved to ejercicioadmin.html -->
+      <div id="adminWrap" class="card adminWrap" style="display:none"></div>
+    </main>
+
+    
+    <!-- Preview modal -->
+    <div id="previewModal" class="modal" style="display:none">
+      <div class="modalBackdrop" id="previewBackdrop"></div>
+      <div class="modalBox card">
+        <div style="display:flex; gap:10px; align-items:center; justify-content:space-between">
+          <div class="sectionTitle" style="margin:0">👀 Podgląd (uczeń)</div>
+          <button class="btn" id="btnClosePreview" type="button">✖</button>
+        </div>
+
+        <div id="previewBody" style="margin-top:10px"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center">
+          <button class="btn btn-yellow" id="btnCheckPreview" type="button">✅ Sprawdź</button>
+          <span id="previewResult" class="pill" style="display:none"></span>
+        </div>
+
+        <div class="smallNote" style="margin-top:10px; opacity:.95">
           Ten podgląd jest po to, żeby szybko sprawdzić czy treść i odpowiedź są spójne.
         </div>
-</div>
-</div>
+      </div>
+    </div>
+
 <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
       import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
@@ -2163,6 +2210,6 @@ return `
 		if (previewModal) previewModal.style.display = "block";
       }
  </script>
-<script src="assets/js/layout.js"></script>
-<div id="appFooter"></div></body>
+    <script src="assets/js/layout.js"></script>
+</body>
 </html>

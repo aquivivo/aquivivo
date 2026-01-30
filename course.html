@@ -1,13 +1,14 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<title>Curso | AquiVivo</title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Playfair+Display:wght@700;900&amp;display=swap" rel="stylesheet"/>
-<link href="assets/css/styles.css" rel="stylesheet"/>
-<style>
+  <meta charset="utf-8" />
+  <title>Curso | AquiVivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <style>
     :root{
       --yellow:#fcd116;
       --blue:#003893;
@@ -448,6 +449,7 @@
     }
 
 </style>
+
 <style>
 /* === STRONG COMPACT MODE === */
 .ui-scale-wrapper{
@@ -458,148 +460,168 @@ body{
   overflow-x:hidden;
 }
 </style>
-<script defer="True" src="assets/js/layout.js"></script><link href="assets/img/logo.png" rel="icon"/></head>
-<body><div id="appHeader"></div>
+
+</head>
+
+<body>
+  <div id=\"appHeader\"></div>
 <div class="ui-scale-wrapper">
-<div style="display:flex; gap:10px; align-items:center">
-<button class="btnNav" id="btnBack" onclick="window.location.href='ESPANEL.html'" type="button">⬅️ ATRÁS</button>
-<button class="btnNav" id="btnHome" onclick="window.location.href='index.html'" type="button">🏠 INICIO</button>
-<button class="btnLogout" id="btnLogout" type="button">Cerrar sesión</button>
-</div>
-</div>
-<main class="page">
-<div class="container">
-<div class="heroBanner">
-<div class="heroTitleRow">
-<div class="heroIcon">🎓</div>
-<div style="flex:1">
-<h1 id="levelTitle">Nivel</h1>
-<p id="levelSubtitle">Cargando…</p>
-<!-- ADMIN BUTTONS (hidden for students) -->
-<div class="adminBar" id="adminBar">
-<button onclick="editCourseMeta()" type="button">✏️ Editar descripción del curso</button>
-<button onclick="dedupeLevel()" type="button">🧹 Eliminar duplicados (nivel actual)</button>
-</div>
-<div class="course-tools" id="courseTools">
-<div class="progressCard">
-<div class="progressTop">
-<div>
-<div class="progressLabel">📈 Progreso (local)</div>
-<div class="progressText">
-<span id="progressText">0%</span> · <span id="progressCount">0/0</span> temas visitados
+  <div style="display:flex; gap:10px; align-items:center">
+      <button class="btnNav" id="btnBack" type="button" onclick="window.location.href='ESPANEL.html'">⬅️ ATRÁS</button>
+      <button class="btnNav" id="btnHome" type="button" onclick="window.location.href='index.html'">🏠 INICIO</button>
+      <button class="btnLogout" id="btnLogout" type="button">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <div class="container">
+
+      <div class="heroBanner">
+        <div class="heroTitleRow">
+          <div class="heroIcon">🎓</div>
+          <div style="flex:1">
+            <h1 id="levelTitle">Nivel</h1>
+            <p id="levelSubtitle">Cargando…</p>
+
+            <!-- ADMIN BUTTONS (hidden for students) -->
+            <div class="adminBar" id="adminBar">
+              <button type="button" onclick="editCourseMeta()">✏️ Editar descripción del curso</button>
+              <button type="button" onclick="dedupeLevel()">🧹 Eliminar duplicados (nivel actual)</button>
+            </div>
+
+            <div class="course-tools" id="courseTools">
+              <div class="progressCard">
+                <div class="progressTop">
+                  <div>
+                    <div class="progressLabel">📈 Progreso (local)</div>
+                    <div class="progressText">
+                      <span id="progressText">0%</span> · <span id="progressCount">0/0</span> temas visitados
                     </div>
-</div>
-<button class="statBtn" id="btnContinue" style="display:none" type="button">▶️ Continuar</button>
-</div>
-<div aria-hidden="true" class="progressBar">
-<div class="progressFill" id="progressFill"></div>
-</div>
-<div class="progressHint">
+                  </div>
+                  <button class="statBtn" id="btnContinue" style="display:none" type="button">▶️ Continuar</button>
+                </div>
+
+                <div class="progressBar" aria-hidden="true">
+                  <div class="progressFill" id="progressFill"></div>
+                </div>
+
+                <div class="progressHint">
                   Se guarda en tu navegador (localStorage).
                 </div>
-</div>
-<div class="statsRow">
-<div class="statPill">📚 Total: <strong id="statTotal">0</strong></div>
-<div class="statPill">🔎 Mostrando: <strong id="statShowing">0</strong></div>
-<button class="statBtn" id="btnClearFilters" type="button">🧼 Limpiar filtros</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- FILTERS -->
-<div class="filtersSection">
-<div class="filterGroup">
-<span class="filterLabel">🔍 Buscar:</span>
-<input id="searchInput" placeholder="Escribe el nombre del tema..." type="text"/>
-</div>
-<div class="filterGroup">
-<span class="filterLabel">📂 Tipo:</span>
-<select id="typeFilter">
-<option value="">Todos</option>
-<option value="grammar">Gramática</option>
-<option value="vocabulary">Vocabulario</option>
-</select>
-</div>
-<div class="filterGroup">
-<span class="filterLabel">✅ Tarea:</span>
-<select id="taskFilter">
-<option value="">Todas las tareas</option>
-<option value="Rellenar los espacios">Rellenar los espacios</option>
-<option value="Relacionar palabra con imagen">Relacionar palabra con imagen</option>
-<option value="Relacionar palabra con traducción">Relacionar palabra con traducción</option>
-<option value="Elegir la palabra correcta">Elegir la palabra correcta</option>
-<option value="Tarjetas interactivas">Tarjetas interactivas</option>
-<option value="Agrupar palabras">Agrupar palabras</option>
-<option value="Verdadero o falso">Verdadero o falso</option>
-<option value="Completar la frase con una imagen">Completar la frase con una imagen</option>
-<option value="Juego de memoria (pares)">Juego de memoria (pares)</option>
-<option value="Opción múltiple">Opción múltiple</option>
-<option value="Completar la forma correcta">Completar la forma correcta</option>
-<option value="Elegir la forma correcta">Elegir la forma correcta</option>
-<option value="Transformaciones">Transformaciones</option>
-<option value="Relacionar pregunta con respuesta">Relacionar pregunta con respuesta</option>
-<option value="Ordenar palabras para formar una frase">Ordenar palabras para formar una frase</option>
-<option value="Corregir errores">Corregir errores</option>
-<option value="Unir dos partes de la frase">Unir dos partes de la frase</option>
-<option value="Completar con preposición o terminación">Completar con preposición o terminación</option>
-<option value="Opción única">Opción única</option>
-<option value="Escribir tu propia respuesta">Escribir tu propia respuesta</option>
-<option value="Repetir después del narrador">Repetir después del narrador</option>
-<option value="Completar la frase con tu voz">Completar la frase con tu voz</option>
-<option value="Responder a una pregunta">Responder a una pregunta</option>
-<option value="Describir una imagen">Describir una imagen</option>
-<option value="Juego de roles">Juego de roles</option>
-<option value="Mini-monólogo">Mini-monólogo</option>
-<option value="Diálogo semiabierto">Diálogo semiabierto</option>
-<option value="Decirlo de otra manera">Decirlo de otra manera</option>
-<option value="Escuchar y elegir la respuesta">Escuchar y elegir la respuesta</option>
-<option value="Escuchar y completar los espacios">Escuchar y completar los espacios</option>
-<option value="Escuchar y marcar verdadero o falso">Escuchar y marcar verdadero o falso</option>
-<option value="Escuchar y relacionar personas">Escuchar y relacionar personas</option>
-<option value="Escuchar y ordenar la secuencia">Escuchar y ordenar la secuencia</option>
-<option value="Dictado con audio">Dictado con audio</option>
-<option value="Escuchar y repetir">Escuchar y repetir</option>
-<option value="Diálogo interactivo">Diálogo interactivo</option>
-<option value="Misión del día">Misión del día</option>
-<option value="Quiz situacional">Quiz situacional</option>
-<option value="Video con preguntas">Video con preguntas</option>
-<option value="Test final del tema">Test final del tema</option>
-<option value="Debate grabado">Debate grabado</option>
-<option value="Contar una historia">Contar una historia</option>
-<option value="Simulación de entrevista de trabajo">Simulación de entrevista de trabajo</option>
-<option value="Retroalimentación por voz">Retroalimentación por voz</option>
-</select>
-</div>
-</div>
-<div class="sectionTitle">📘 Gramática</div>
-<div id="grammarList"></div>
-<div class="sectionTitle">📗 Vocabulario</div>
-<div id="vocabList"></div>
-<!-- ADMIN add topic -->
-<div class="card adminPanel" id="adminPanel">
-<h3 style="margin:0 0 10px 0">👑 Panel Admin – agregar tema</h3>
-<div class="row">
-<select id="adminType">
-<option value="grammar">gramática</option>
-<option value="vocabulary">vocabulario</option>
-</select>
-<input id="adminTitle" placeholder="Título (ES)"/>
-<input id="adminDesc" placeholder="Descripción (ES)"/>
-<select id="adminStatus" title="Estado">
-<option value="published">Publicado</option>
-<option value="draft">Borrador</option>
-</select>
-<button onclick="addTopic()" type="button">➕ Agregar</button>
-</div>
-<p style="font-size:12px; color:#6b7280; margin:10px 0 0 0">
+              </div>
+
+              <div class="statsRow">
+                <div class="statPill">📚 Total: <strong id="statTotal">0</strong></div>
+                <div class="statPill">🔎 Mostrando: <strong id="statShowing">0</strong></div>
+                <button class="statBtn" id="btnClearFilters" type="button">🧼 Limpiar filtros</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filtersSection">
+        <div class="filterGroup">
+          <span class="filterLabel">🔍 Buscar:</span>
+          <input id="searchInput" type="text" placeholder="Escribe el nombre del tema..." />
+        </div>
+
+        <div class="filterGroup">
+          <span class="filterLabel">📂 Tipo:</span>
+          <select id="typeFilter">
+            <option value="">Todos</option>
+            <option value="grammar">Gramática</option>
+            <option value="vocabulary">Vocabulario</option>
+          </select>
+        </div>
+
+        <div class="filterGroup">
+          <span class="filterLabel">✅ Tarea:</span>
+          <select id="taskFilter">
+            <option value="">Todas las tareas</option>
+            <option value="Rellenar los espacios">Rellenar los espacios</option>
+            <option value="Relacionar palabra con imagen">Relacionar palabra con imagen</option>
+            <option value="Relacionar palabra con traducción">Relacionar palabra con traducción</option>
+            <option value="Elegir la palabra correcta">Elegir la palabra correcta</option>
+            <option value="Tarjetas interactivas">Tarjetas interactivas</option>
+            <option value="Agrupar palabras">Agrupar palabras</option>
+            <option value="Verdadero o falso">Verdadero o falso</option>
+            <option value="Completar la frase con una imagen">Completar la frase con una imagen</option>
+            <option value="Juego de memoria (pares)">Juego de memoria (pares)</option>
+            <option value="Opción múltiple">Opción múltiple</option>
+            <option value="Completar la forma correcta">Completar la forma correcta</option>
+            <option value="Elegir la forma correcta">Elegir la forma correcta</option>
+            <option value="Transformaciones">Transformaciones</option>
+            <option value="Relacionar pregunta con respuesta">Relacionar pregunta con respuesta</option>
+            <option value="Ordenar palabras para formar una frase">Ordenar palabras para formar una frase</option>
+            <option value="Corregir errores">Corregir errores</option>
+            <option value="Unir dos partes de la frase">Unir dos partes de la frase</option>
+            <option value="Completar con preposición o terminación">Completar con preposición o terminación</option>
+            <option value="Opción única">Opción única</option>
+            <option value="Escribir tu propia respuesta">Escribir tu propia respuesta</option>
+            <option value="Repetir después del narrador">Repetir después del narrador</option>
+            <option value="Completar la frase con tu voz">Completar la frase con tu voz</option>
+            <option value="Responder a una pregunta">Responder a una pregunta</option>
+            <option value="Describir una imagen">Describir una imagen</option>
+            <option value="Juego de roles">Juego de roles</option>
+            <option value="Mini-monólogo">Mini-monólogo</option>
+            <option value="Diálogo semiabierto">Diálogo semiabierto</option>
+            <option value="Decirlo de otra manera">Decirlo de otra manera</option>
+            <option value="Escuchar y elegir la respuesta">Escuchar y elegir la respuesta</option>
+            <option value="Escuchar y completar los espacios">Escuchar y completar los espacios</option>
+            <option value="Escuchar y marcar verdadero o falso">Escuchar y marcar verdadero o falso</option>
+            <option value="Escuchar y relacionar personas">Escuchar y relacionar personas</option>
+            <option value="Escuchar y ordenar la secuencia">Escuchar y ordenar la secuencia</option>
+            <option value="Dictado con audio">Dictado con audio</option>
+            <option value="Escuchar y repetir">Escuchar y repetir</option>
+            <option value="Diálogo interactivo">Diálogo interactivo</option>
+            <option value="Misión del día">Misión del día</option>
+            <option value="Quiz situacional">Quiz situacional</option>
+            <option value="Video con preguntas">Video con preguntas</option>
+            <option value="Test final del tema">Test final del tema</option>
+            <option value="Debate grabado">Debate grabado</option>
+            <option value="Contar una historia">Contar una historia</option>
+            <option value="Simulación de entrevista de trabajo">Simulación de entrevista de trabajo</option>
+            <option value="Retroalimentación por voz">Retroalimentación por voz</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sectionTitle">📘 Gramática</div>
+      <div id="grammarList"></div>
+
+      <div class="sectionTitle">📗 Vocabulario</div>
+      <div id="vocabList"></div>
+
+      <!-- ADMIN add topic -->
+      <div class="card adminPanel" id="adminPanel">
+        <h3 style="margin:0 0 10px 0">👑 Panel Admin – agregar tema</h3>
+        <div class="row">
+          <select id="adminType">
+            <option value="grammar">gramática</option>
+            <option value="vocabulary">vocabulario</option>
+          </select>
+          <input id="adminTitle" placeholder="Título (ES)" />
+          <input id="adminDesc" placeholder="Descripción (ES)" />
+                    <select id="adminStatus" title="Estado">
+            <option value="published">Publicado</option>
+            <option value="draft">Borrador</option>
+          </select>
+<button type="button" onclick="addTopic()">➕ Agregar</button>
+        </div>
+        <p style="font-size:12px; color:#6b7280; margin:10px 0 0 0">
           Si hiciste clic en importar varias veces – usa "Eliminar duplicados". Esto eliminará las repeticiones en Firestore.
         </p>
-</div>
-</div>
-</main>
-<div aria-atomic="true" aria-live="polite" class="toast" id="toast" role="status"></div>
-<script type="module">
+      </div>
+
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
     import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
     import {
@@ -1130,6 +1152,7 @@ body{
       }
     });
   </script>
+
 <script data-aquivivo-no-new-tab="1">
   // Force same-tab navigation (prevents accidental new tabs)
   (function () {
@@ -1155,6 +1178,8 @@ body{
     } catch (e) {}
   })();
 </script>
-<script src="assets/js/layout.js"></script>
-<div id="appFooter"></div></body>
+
+</div>
+  <script src="assets/js/layout.js"></script>
+</body>
 </html>

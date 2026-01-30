@@ -640,65 +640,89 @@ body {
 
 
 
-/* LOGO (global header) */
-.brandLogo{width:56px;height:56px;object-fit:contain;display:block;filter:drop-shadow(0 10px 20px rgba(0,0,0,.25))}
-
-
-/* Header logo visibility */
-.brandLogoWrap{display:flex;align-items:center;justify-content:center;padding:8px;border-radius:16px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);box-shadow:0 10px 24px rgba(0,0,0,.22)}
-.brandLogo{width:72px;height:72px;object-fit:contain;display:block;filter:drop-shadow(0 10px 20px rgba(0,0,0,.25))}
-
-
-
-/* === AquiVivo unified header (FINAL) === */
-:root{ --ui-scale: 0.94; }
-body{ transform: scale(var(--ui-scale)); transform-origin: top center; }
-@media (max-width: 720px){
-  body{ transform: none; }
+/* ==== AquiVivo unified header (override) ==== */
+:root{
+  --header-h: 92px;
+  --brand-w: 150px;
+  --brand-h: 64px;
 }
-
-/* Header layout */
-.nav-glass.av-layout{ width:100%; }
-.navInner{
-  max-width: 1180px;
+#appHeader{ position: relative; z-index: 999; }
+.av-header{
+  width:100%;
+  background: linear-gradient(180deg, rgba(10,40,120,.92), rgba(8,28,88,.92));
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 14px 30px rgba(0,0,0,.22);
+}
+.av-header-inner{
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 14px 18px;
+  height: var(--header-h);
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap: 16px;
+  padding: 12px 18px;
+  gap: 14px;
 }
-.navButtons{
+.av-brand{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  text-decoration:none;
+  min-width: var(--brand-w);
+}
+.av-brandLogo{
+  width: var(--brand-w);
+  height: var(--brand-h);
+  object-fit: contain;
+  display:block;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+}
+.av-nav{
   display:flex;
   align-items:center;
   gap: 12px;
   flex-wrap: wrap;
   justify-content:flex-end;
 }
-
-/* Logo block (same position/size everywhere) */
-.brand{ display:flex; align-items:center; gap:12px; }
-.brandLogoWrap{
-  width: 84px;
-  height: 84px;
-  border-radius: 18px;
-  display:flex;
+.av-btn{
+  display:inline-flex;
   align-items:center;
-  justify-content:center;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow: 0 10px 25px rgba(0,0,0,.25);
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  border: 2px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.92);
+  font-weight: 800;
+  letter-spacing:.2px;
+  text-decoration:none;
+  user-select:none;
+  cursor:pointer;
+  white-space:nowrap;
+  transition: transform .08s ease, background .12s ease, border-color .12s ease;
 }
-.brandLogo{
-  width: 72px;
-  height: auto;
-  display:block;
-  filter: drop-shadow(0 10px 22px rgba(0,0,0,.35));
+.av-btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.30); }
+.av-btn:active{ transform: translateY(0px); }
+.av-btn.yellow{
+  background: #ffd54a;
+  border-color: rgba(0,0,0,.12);
+  color: rgba(0,0,0,.86);
+}
+.av-btn.red{
+  background: #d11b2a;
+  border-color: rgba(255,255,255,.10);
+  color: rgba(255,255,255,.95);
+}
+.av-stripe{
+  height: 4px;
+  background: linear-gradient(90deg, #ffd54a 0%, #2d7cff 50%, #ff3b4e 100%);
+  opacity:.95;
 }
 
-/* Stripe under header */
-.navStripe{
-  height: 4px;
-  background: linear-gradient(90deg, var(--yellow), var(--cyan), var(--pink), var(--red));
-  opacity: .9;
+/* Hide legacy header bars if present */
+.topActionBar, .topbar, .legacyTopBar, header.siteHeader, header.header, .header, .navTop, .navBarTop{
+  display:none !important;
 }
+
+/* Make sure scaled UI does NOT scale the header */
+.ui-scale-wrapper{ transform-origin: top center; }
