@@ -549,7 +549,23 @@
   </head>
 
   <body>
-  <div id="appHeader"></div>
+    <header class="nav-glass">
+      <div class="nav-inner">
+        <div class="brand">
+          <div class="logo-flag" aria-hidden="true"></div>
+          <div class="name">Aqui vivo</div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+          <a class="btn" id="btnPanel" href="#">🧩 Panel</a>
+          <a class="btn btn-yellow" id="btnLeccion" href="#">📖 Lección</a>
+          <a class="btn" id="btnInicio" href="#">🏠 Inicio</a>
+          <button class="btn" id="btnAtras" type="button">⬅️ Atrás</button>
+          <button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
     <div class="sessionBar">
       Sesión activa: <strong id="sessionEmail">Cargando...</strong>
     </div>
@@ -2192,6 +2208,7 @@ return `
 		if (previewModal) previewModal.style.display = "block";
       }
  </script>
-    <script src="assets/js/layout.js"></script>
+  
+<script src="assets/js/layout.js"></script>
 </body>
 </html>

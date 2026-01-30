@@ -1,4 +1,25 @@
 
+function removeLegacyHeaders(){
+  const selectors = [
+    '.topActionBar',
+    'header.siteHeader',
+    'header',
+    '.nav-glass',
+    '.headerBar',
+    '.navbar',
+    '#topbar',
+    '#header',
+    '[data-legacy-header]'
+  ];
+  selectors.forEach(sel => {
+    document.querySelectorAll(sel).forEach(el => {
+      // Do not remove the injected header itself
+      if (el && !el.hasAttribute('data-av-header')) el.remove();
+    });
+  });
+}
+
+
 (function(){
   const path = (location.pathname.split('/').pop() || '').toLowerCase();
 
@@ -39,7 +60,9 @@
     const header = el('header', {class:'nav-glass av-layout'});
     const inner = el('div', {class:'container nav-inner'});
     const brand = el('div', {class:'brand'}, [
-      el('img', {src:'assets/img/logo.png', class:'brandLogo', alt:'AquiVivo'})
+      el('div', {class:'brandLogoWrap'}, [
+        el('img', {src:'assets/img/logo.png', class:'brandLogo', alt:'AquiVivo'})
+      ])
     ]);
 
     const actions = el('div', {class:'nav-actions'});
