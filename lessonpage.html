@@ -206,10 +206,28 @@
     .toast-bad{ background: rgba(185, 28, 28, 0.92); color: #fff; }
     .toast-warn{ background: rgba(252, 209, 22, 0.94); color: var(--ink); border-color: rgba(252, 209, 22, 0.7); }
   </style>
+  <script src="assets/js/layout.js" defer></script>
 </head>
 
 <body>
   <div id="appHeader"></div>
+
+  <div class="nav-glass">
+    <div class="nav-inner">
+      <div class="brand" aria-label="AquiVivo">
+        <div class="logo-flag" aria-hidden="true"></div>
+        <div class="name">AquiVivo</div>
+      </div>
+
+      <div class="nav-actions">
+        <a class="btn" id="btnPanel" href="espanel.html">Panel</a>
+        <a class="btn btn-yellow" id="btnEjercicios" href="#">Ejercicios</a>
+        <a class="btn" id="btnInicio" href="#">Inicio</a>
+        <button class="btn" id="btnAtras" type="button">Atrás</button>
+        <button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
+      </div>
+    </div>
+  </div>
 
   <main class="page">
     <div class="container">
@@ -260,6 +278,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
     import {
+
+window.addEventListener('DOMContentLoaded', async () => {
       getFirestore,
       doc,
       getDoc,
@@ -582,6 +602,7 @@
         showToast("Error cargando la lección.", "toast-bad");
       }
     });
-  </script>
-</body>
+  
+});
+</script></body>
 </html>

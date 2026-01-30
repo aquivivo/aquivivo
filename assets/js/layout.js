@@ -38,8 +38,8 @@
   function buildHeader(){
     const header = el('header', {class:'nav-glass av-layout'});
     const inner = el('div', {class:'container nav-inner'});
-    const brand = el('a', {class:'brand', href:'index.html', 'aria-label':'AquiVivo'}, [
-      el('img', {class:'brand-logo', src:'assets/img/logo.png', alt:'AquiVivo'})
+    const brand = el('div', {class:'brand'}, [
+      el('img', {class:'av-logo', src:'assets/img/logo.png', alt:'AquiVivo'})
     ]);
 
     const actions = el('div', {class:'nav-actions'});

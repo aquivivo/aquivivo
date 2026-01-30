@@ -120,17 +120,6 @@ body {
   align-items: center;
   gap: 12px;
 }
-
-.brand{
-  text-decoration:none;
-}
-.brand-logo{
-  height:54px;
-  width:auto;
-  display:block;
-  object-fit:contain;
-  filter: drop-shadow(0 10px 22px rgba(0,0,0,.25));
-}
 .logo-flag {
   width: 42px;
   height: 42px;
@@ -647,5 +636,19 @@ body {
 @media (max-width: 720px){
   #levelTitle{ font-size: 44px !important; }
   #levelSubtitle{ font-size: 16px !important; }
+}
+
+
+
+/* Unified header logo */
+.topbar .brand .av-logo{
+  width:92px;
+  height:92px;
+  object-fit:contain;
+  display:block;
+}
+@media (max-width:720px){
+  .topbar .brand .av-logo{ width:72px;
+  height:72px; }
 }
 
