@@ -1,359 +1,246 @@
 /* ================================
-   AQUIVIVO APP UI  —  🇨🇴💙💛❤️
-   Autor: OpenAI / Magdalena
+   AquiVivo — Unified UI (🇨🇴)
+   One stylesheet for all pages
    ================================ */
 
-/* RESET & TYPOGRAPHY */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-body {
-  font-family: 'Montserrat', sans-serif;
-  background: linear-gradient(180deg, #0033a0 0%, #00236b 100%);
-  color: #ffffff;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-h1,
-h2,
-h3 {
-  font-family: 'Playfair Display', serif;
-  margin-bottom: 0.5em;
-}
-h1 {
-  font-size: 2em;
-}
-a {
-  color: #ffd100;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
+:root{
+  --yellow:#FCD116;
+  --blue:#003893;
+  --red:#CE1126;
+
+  --bg1:#06122a;
+  --bg2:#04102a;
+
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.72);
+  --line: rgba(255,255,255,.14);
+
+  --card: rgba(255,255,255,.10);
+  --card2: rgba(255,255,255,.08);
+  --shadow: 0 18px 60px rgba(0,0,0,.35);
 }
 
-/* HEADER */
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-}
-.logo {
-  width: 150px;
-  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3));
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
+  min-height:100vh;
+  background: radial-gradient(1200px 600px at 20% 0%, rgba(0,56,147,.45), transparent 60%),
+              radial-gradient(900px 520px at 90% 10%, rgba(252,209,22,.25), transparent 55%),
+              linear-gradient(180deg, #03102b, #041a48 45%, #03102b);
 }
 
-/* CONTAINERS */
-.container {
-  width: 100%;
-  max-width: 1100px;
+a{ color: inherit; }
+img{ max-width:100%; display:block; }
+
+main.page{ padding: 22px 0 70px; }
+.container{
+  width:100%;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 2rem;
-}
-main.page {
-  flex: 1;
+  padding: 0 16px;
 }
 
-/* HERO SECTIONS */
-.hero {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-.hero h1 {
-  color: #ffd100;
-  font-size: 2.2em;
-}
-.hero p {
-  color: #fafafa;
-  font-size: 1.1em;
-  margin-top: 0.5rem;
+/* ===== Top navigation injected by layout.js ===== */
+.nav-glass{
+  position: sticky;
+  top:0;
+  z-index: 999;
+  background: rgba(4, 16, 42, .72);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,.12);
 }
 
-/* BUTTONS */
-.btn-primary,
-.btn-secondary,
-.btn-glass {
-  display: inline-block;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 0.5rem;
-  padding: 0.7em 1.4em;
-  transition: all 0.25s ease-in-out;
+.nav-line{
+  height: 4px;
+  background: linear-gradient(90deg, var(--yellow), var(--blue), var(--red), var(--yellow));
+  opacity: .92;
 }
 
-/* PRIMARY YELLOW BUTTON */
-.btn-primary {
-  background-color: #ffd100;
-  color: #0033a0;
-}
-.btn-primary:hover {
-  background-color: #ffda26;
-  transform: scale(1.03);
+.nav-inner{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
 }
 
-/* SECONDARY WHITE / BLUE */
-.btn-secondary {
-  background-color: #ffffff;
-  color: #0033a0;
+.brand{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  min-width: 200px;
 }
-.btn-secondary:hover {
-  background-color: #ececec;
-  transform: scale(1.03);
+.brand img{
+  width: 160px;
+  height: auto;
+  filter: drop-shadow(0 12px 28px rgba(0,0,0,.35));
 }
-
-/* GLASS BUTTON */
-.btn-glass {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.btn-glass:hover {
-  background: rgba(255, 255, 255, 0.25);
+.brand .brand-sub{
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .3px;
+  opacity: .78;
 }
 
-/* FORMS */
-input,
-select {
-  width: 100%;
-  max-width: 360px;
-  display: block;
-  padding: 0.7em;
-  margin: 0.5em auto;
-  border: none;
-  border-radius: 6px;
-  font-size: 1em;
-}
-input:focus,
-select:focus {
-  outline: 2px solid #ffd100;
-}
-
-/* FOOTER */
-.footer {
-  text-align: center;
-  padding: 1rem;
-  font-size: 0.9em;
-  opacity: 0.8;
-}
-
-/* HERO PANEL - Student Dashboard */
-.hero-panel h1 {
-  color: #ffd100;
-  font-size: 2.4em;
-}
-.hero-panel p {
-  color: #fff;
-  font-size: 1.1em;
-}
-
-/* CARD GRIDS */
-.courses-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
-}
-.price-cards {
-  display: flex;
+.nav-actions{
+  display:flex;
+  align-items:center;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
-}
-.price-card {
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-  transition: transform 0.25s;
-}
-.price-card:hover {
-  transform: translateY(-5px);
+  justify-content:flex-end;
 }
 
-/* Colombian Colors per Card */
-.price-card.yellow {
-  background-color: #ffd100;
-  color: #0033a0;
-}
-.price-card.white {
-  background-color: #ffffff;
-  color: #0033a0;
-}
-.price-card.red {
-  background-color: #ce1126;
+/* ===== Buttons ===== */
+.btn, .btn-white-outline, .btn-yellow, .btn-red{
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
   color: #fff;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 900;
+  font-size: 14px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap: 10px;
+  text-decoration:none;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+}
+.btn:hover, .btn-white-outline:hover, .btn-yellow:hover, .btn-red:hover{
+  transform: translateY(-1px);
+  filter: brightness(.98);
 }
 
-/* COURSE PAGE ELEMENTS */
-.progress-card {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 2rem;
+.btn-white-outline{
+  background: transparent;
+  border-color: rgba(255,255,255,.55);
 }
-.progress-bar {
-  width: 100%;
-  background-color: rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
-  height: 10px;
-  overflow: hidden;
-  margin: 0.7rem 0;
+.btn-yellow{
+  background: rgba(252,209,22,.92);
+  color: #111827;
+  border-color: rgba(252,209,22,.95);
 }
-#progressFill {
-  background-color: #ffd100;
-  height: 100%;
-  width: 0%;
-  transition: width 0.4s ease;
+.btn-red{
+  background: rgba(206,17,38,.92);
+  color:#fff;
+  border-color: rgba(206,17,38,.95);
 }
 
-.filters {
-  display: flex;
+/* ===== Cards / typography ===== */
+.card{
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 22px;
+  padding: 16px 16px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+.sectionTitle{
+  margin: 18px 0 10px;
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+.subtitle, .hintSmall, .smallNote, .muted{
+  color: var(--muted);
+}
+.hintSmall{
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Pills & meta rows */
+.metaRow{
+  display:flex;
+  gap:10px;
   flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-bottom: 2rem;
-  justify-content: center;
+  align-items:center;
 }
-.course-lists h3 {
-  color: #ffd100;
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.08);
 }
-.card-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.2rem;
-  margin-top: 1rem;
+.pill-yellow{
+  background: rgba(252,209,22,.18);
+  border-color: rgba(252,209,22,.42);
 }
-.card-list .card {
-  background-color: #fff;
-  color: #0033a0;
-  border-radius: 10px;
-  padding: 1rem;
-  transition: transform 0.2s;
-}
-.card-list .card:hover {
-  transform: translateY(-4px);
+.pill-blue{
+  background: rgba(0,56,147,.18);
+  border-color: rgba(0,56,147,.42);
 }
 
-/* ADMIN FORMS */
-.admin-only {
-  margin-top: 2rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 1rem;
-  border-radius: 10px;
+/* Session bar */
+.sessionBar{
+  margin: 14px auto 0;
+  max-width: 1180px;
+  padding: 0 16px;
+  color: rgba(255,255,255,.85);
+  font-weight: 800;
+  font-size: 13px;
+  opacity: .95;
 }
 
-/* COFFEE FLOAT (logo de taza) */
-#coffeeFloat {
+/* Hero banner used on course/lesson pages */
+.heroBanner{
+  margin: 8px 0 18px;
+  padding: 20px 18px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+}
+.heroTitleRow{
+  display:flex;
+  align-items:flex-start;
+  gap: 14px;
+}
+.heroIcon{ font-size: 44px; line-height:1; }
+.glow-text{
+  text-shadow: 0 16px 40px rgba(0,0,0,.35);
+}
+
+/* Inputs */
+.input, input, select, textarea{
+  font-family: inherit;
+}
+input, select{
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  color:#fff;
+  border-radius: 14px;
+  padding: 12px 12px;
+  outline:none;
+}
+input::placeholder{ color: rgba(255,255,255,.65); }
+input:focus, select:focus, textarea:focus{
+  border-color: rgba(252,209,22,.55);
+  box-shadow: 0 0 0 4px rgba(252,209,22,.12);
+}
+
+/* ===== Coffee (optional, controlled by layout.js) ===== */
+#coffeeFloat{
   position: fixed;
-  bottom: 15px;
-  right: 15px;
-  width: 80px;
-  height: 80px;
-  background: url('../img/coffeeFloat.svg') no-repeat center/contain;
-  opacity: 0.8;
-  z-index: 9999;
-  transition: transform 0.3s;
+  right: -26px;
+  bottom: 84px;
+  width: 160px;
+  height: 160px;
+  pointer-events:none;
+  opacity: .95;
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,.35));
+  z-index: 5;
 }
-#coffeeFloat:hover {
-  transform: scale(1.1);
-  opacity: 1;
+#coffeeFloat img{ width:100%; height:100%; }
+@media (max-width: 980px){
+  #coffeeFloat{ display:none; }
 }
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .container {
-    padding: 1.2rem;
-  }
-  .hero h1 {
-    font-size: 1.8em;
-  }
-  .price-cards {
-    flex-direction: column;
-  }
-}
-/* ===============================
-   UPDATE – wizualny "efekt WOW" 🇨🇴
-   =============================== */
-
-/* HERO – gradient z lekkim światłem */
-.hero {
-  background: linear-gradient(180deg, #0041c2 0%, #001f5b 100%);
-  padding: 3rem 1.5rem;
-  border-radius: 16px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.3);
-}
-.hero h1 {
-  font-size: 2.4em;
-  text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-.hero p {
-  font-size: 1.3em;
-  opacity: 0.9;
-}
-
-/* INPUTY – większe, bardziej appowe */
-input, select {
-  width: 80%;
-  max-width: 500px;
-  font-size: 1.05em;
-  background: #fff;
-  color: #0033A0;
-  border: 2px solid #FFD100;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-input::placeholder {
-  color: #999;
-}
-input:focus, select:focus {
-  outline: none;
-  border-color: #CE1126;
-  box-shadow: 0 0 6px rgba(206, 17, 38, 0.7);
-}
-
-/* SEKCJE/FORMA – card styl */
-section {
-  margin-bottom: 2rem;
-}
-section.progress-card,
-section.admin-only {
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.07);
-}
-
-/* PRZYCISKI – cień i podświetlenie */
-button, .btn-primary, .btn-secondary {
-  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-}
-button:hover {
-  filter: brightness(1.1);
-}
-
-/* Teksty sekcji (Gramatyka/Vocab) */
-.topics h3 {
-  font-size: 1.4em;
-  color: #FFD100;
-  margin-top: 1rem;
-  border-left: 5px solid #FFD100;
-  padding-left: .5rem;
-}
-
-/* Admin Panel – karty jak formularze bloczkowe */
-.admin-only form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .5rem;
-  background-color: rgba(255,255,255,0.05);
-  padding: 1rem;
-  border-radius: 8px;
-}
-.admin-only form input,
-.admin-only form select,
-.admin

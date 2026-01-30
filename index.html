@@ -1,35 +1,44 @@
-
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AquiVivo</title>
-<link rel="stylesheet" href="assets/css/styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AquiVivo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
-<body>
 
-<header class="topbar">
-  <div class="brand">
-    <img src="assets/img/logo.png" class="logo">
-    <div class="title">
-      AquiVivo
-      <small>Aprende idiomas con café ☕</small>
+<body data-page="index">
+  <div id="appHeader"></div>
+
+  <main class="page">
+    <div class="container">
+      <div class="heroBanner">
+        <div class="heroTitleRow">
+          <div class="heroIcon">☕</div>
+          <div style="flex:1">
+            <h1 class="glow-text" style="margin:0; font-family:'Playfair Display',serif; font-weight:900; font-size:48px; line-height:1.05;">Bienvenida a AquiVivo</h1>
+            <p class="subtitle" style="margin:10px 0 0; font-weight:700;">Tu plataforma de aprendizaje de idiomas — organizada, clara y lista para crecer.</p>
+
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+              <a class="btn-yellow" href="login.html">🔐 Inicia sesión</a>
+              <a class="btn-white-outline" href="course.html?level=A1">📚 Ver cursos</a>
+              <a class="btn" href="espanel.html">🏠 Ir al panel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sectionTitle" style="margin-top:0">📌 Sugerencia rápida</div>
+        <div class="hintSmall">Si es tu primera vez, entra en <b>Login</b>, inicia sesión y luego abre un curso desde el panel.</div>
+      </div>
     </div>
-  </div>
+  </main>
 
-  <nav>
-    <button class="btn" onclick="location.href='course.html'">Cursos</button>
-  </nav>
-</header>
-
-<main>
-  <div class="card">
-    <h1>Bienvenida a AquiVivo</h1>
-    <p>Tu plataforma de aprendizaje de idiomas.</p>
-  </div>
-</main>
-
-<script src="assets/js/app.js"></script>
+  <script src="assets/js/layout.js" defer></script>
 </body>
 </html>

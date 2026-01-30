@@ -73,74 +73,7 @@
     </div>
   </main>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword,
-      sendPasswordResetEmail
-    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-    const firebaseConfig = {
-      apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
-      authDomain: "aquivivo-platform.firebaseapp.com",
-      projectId: "aquivivo-platform",
-      storageBucket: "aquivivo-platform.firebasestorage.app",
-      messagingSenderId: "116115622011",
-      appId: "1:116115622011:web:33a4a583eba4368071bade"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const registerBtn = document.getElementById("registerBtn");
-    const loginBtn = document.getElementById("loginBtn");
-    const messageEl = document.getElementById("message");
-    const toggleBtn = document.getElementById("togglePassword");
-    const resetBtn = document.getElementById("resetPasswordBtn");
-    function setMsg(text, type){ messageEl.textContent = text || ""; messageEl.className = "msg" + (type ? (" " + type) : ""); }
-    document.addEventListener("keydown", (e) => { if (e.key === "Enter") loginBtn.click(); });
-    if (toggleBtn) {
-      toggleBtn.addEventListener("click", () => {
-        const hidden = passwordInput.type === "password";
-        passwordInput.type = hidden ? "text" : "password";
-        toggleBtn.textContent = hidden ? "🙈" : "👁️";
-      });
-    }
-    loginBtn.addEventListener("click", async () => {
-      setMsg("");
-      try {
-        await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
-        setMsg("¡Iniciada sesión! ✅", "ok");
-        window.location.href = "espanel.html";
-      } catch (error) {
-        setMsg("Error de inicio de sesión: " + error.message, "error");
-      }
-    });
-    registerBtn.addEventListener("click", async () => {
-      setMsg("");
-      try {
-        await createUserWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
-        setMsg("¡Cuenta creada! 🎉", "ok");
-        window.location.href = "espanel.html";
-      } catch (error) {
-        setMsg("Error de registro: " + error.message, "error");
-      }
-    });
-    resetBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      if (!email) {
-        setMsg("Ingresa tu correo para restablecer tu contraseña.", "error");
-        return;
-      }
-      try {
-        await sendPasswordResetEmail(auth, email);
-        setMsg("📩 Se envió un correo para restablecer tu contraseña.", "ok");
-      } catch (error) {
-        setMsg("Error al restablecer contraseña: " + error.message, "error");
-      }
-    });
-  </script>
+  <script type="module" src="assets/js/auth.js"></script>
   <script src="assets/js/layout.js" defer></script>
 </body>
 </html>
