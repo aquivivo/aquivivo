@@ -1,608 +1,850 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Lección | AquiVivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lección | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
 
-  <style>
-    :root{ --yellow:#FCD116; --blue:#003893; --red:#CE1126; --ink:#0b1b3f; }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: Montserrat, Arial, sans-serif;
-      min-height:100vh;
-      background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
-      color:#fff;
-    }
+    <style>
+      :root {
+        --yellow: #fcd116;
+        --blue: #003893;
+        --red: #ce1126;
+        --ink: #0b1b3f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Montserrat, Arial, sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
+        color: #fff;
+      }
 
-    /* Nav (spójne) */
-    .nav-glass{
-      position: sticky; top: 0; z-index: 50;
-      background: rgba(0, 56, 147, 0.78);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    }
-    .nav-glass::after{
-      content:""; display:block; height:3px;
-      background: linear-gradient(90deg, var(--yellow), var(--blue), var(--red));
-      opacity:.85;
-    }
-    .nav-inner{
-      display:flex; align-items:center; justify-content:space-between; gap:14px;
-      padding: 14px 16px; max-width: 1100px; margin: 0 auto;
-      flex-wrap: wrap;
-    }
-    .brand{ display:flex; align-items:center; gap:12px; min-width: 180px; }
-    .logo-flag{
-      width:42px; height:42px; border-radius:999px;
-      background: linear-gradient(180deg, var(--yellow) 0 33.33%, var(--blue) 33.33% 66.66%, var(--red) 66.66% 100%);
-      box-shadow: 0 12px 26px rgba(0,0,0,.25);
-    }
-    .name{ font-family:"Playfair Display", serif; font-weight:900; font-size:24px; color:#fff; letter-spacing:.2px; }
-    .nav-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
+      /* Nav (spójne) */
+      .nav-glass {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(0, 56, 147, 0.78);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      }
+      .nav-glass::after {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--yellow),
+          var(--blue),
+          var(--red)
+        );
+        opacity: 0.85;
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 2px 16px;
+        max-width: 1100px;
+        margin: 0 auto;
+        flex-wrap: wrap;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 180px;
+      }
+      .logo-flag {
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        background: linear-gradient(
+          180deg,
+          var(--yellow) 0 33.33%,
+          var(--blue) 33.33% 66.66%,
+          var(--red) 66.66% 100%
+        );
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.25);
+      }
+      .name {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 24px;
+        color: #fff;
+        letter-spacing: 0.2px;
+      }
+      .nav-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+      }
 
-    .btn{
-      display:inline-flex; align-items:center; justify-content:center; gap:10px;
-      padding: 12px 16px; border-radius:999px; font-weight:900;
-      cursor:pointer; text-decoration:none; white-space:nowrap;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.12);
-      color:#fff;
-      user-select:none;
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .btn:hover{ transform: translateY(-2px); filter: brightness(1.03); }
-    .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
-    .btn-yellow{
-      background: rgba(252, 209, 22, 0.95);
-      border-color: rgba(252, 209, 22, 0.7);
-      color: var(--ink);
-    }
-    .btn-red{
-      background: rgba(206, 17, 38, 0.92);
-      border-color: rgba(206, 17, 38, 0.8);
-      color: #fff;
-    }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: 999px;
+        font-weight: 900;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        user-select: none;
+        transition:
+          transform 0.12s ease,
+          filter 0.12s ease;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.03);
+      }
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .btn-yellow {
+        background: rgba(252, 209, 22, 0.95);
+        border-color: rgba(252, 209, 22, 0.7);
+        color: var(--ink);
+      }
+      .btn-red {
+        background: rgba(206, 17, 38, 0.92);
+        border-color: rgba(206, 17, 38, 0.8);
+        color: #fff;
+      }
 
-    .container{ max-width: 1100px; margin: 0 auto; padding: 18px 16px 60px; }
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 18px 16px 60px;
+      }
 
-    /* Hero jak w course */
-    .heroBanner{
-      margin: 6px 0 18px;
-      padding: 22px 22px;
-      border-radius: 22px;
-      background: rgba(0, 26, 77, 0.26);
-      border: 1px solid rgba(255,255,255,0.16);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 18px 70px rgba(0,0,0,0.18);
-    }
-    .heroTitleRow{
-      display:flex;
-      align-items:flex-start;
-      gap:18px;
-    }
-    .heroIcon{
-      font-size: 56px;
-      line-height: 1;
-      filter: drop-shadow(0 14px 30px rgba(0,0,0,0.25));
-    }
-    h1{
-      font-family:"Playfair Display", serif;
-      font-weight: 900;
-      font-size: 46px;
-      margin: 0 0 8px 0;
-      line-height: 1.05;
-      color: #ffffff;
-      text-shadow: 0 12px 30px rgba(0,0,0,0.45);
-    }
-    @media (max-width: 860px){ h1{ font-size: 38px; } }
+      /* Hero jak w course */
+      .heroBanner {
+        margin: 6px 0 18px;
+        padding: 22px 22px;
+        border-radius: 22px;
+        background: rgba(0, 26, 77, 0.26);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 18px 70px rgba(0, 0, 0, 0.18);
+      }
+      .heroTitleRow {
+        display: flex;
+        align-items: flex-start;
+        gap: 18px;
+      }
+      .heroIcon {
+        font-size: 56px;
+        line-height: 1;
+        filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.25));
+      }
+      h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 46px;
+        margin: 0 0 8px 0;
+        line-height: 1.05;
+        color: #ffffff;
+        text-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+      }
+      @media (max-width: 860px) {
+        h1 {
+          font-size: 38px;
+        }
+      }
 
-    .subtitle{ opacity:0.9; margin: 0; line-height: 1.6; max-width: 980px; }
+      .subtitle {
+        opacity: 0.9;
+        margin: 0;
+        line-height: 1.6;
+        max-width: 980px;
+      }
 
-    .metaRow{ display:flex; gap:10px; flex-wrap: wrap; align-items:center; margin-top: 14px; }
-    .pill{
-      font-size: 12px; font-weight: 900; border-radius: 999px; padding: 8px 12px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.12);
-      color: #fff;
-    }
-    .pill-yellow{ background: rgba(252, 209, 22, 0.95); color: var(--ink); border-color: rgba(252, 209, 22, 0.7); }
-    .pill-green{ background: rgba(34,197,94,.14); border:1px solid rgba(34,197,94,.25); color:#eafff1; }
-    .pill-red{ background: rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.22); color:#ffecec; }
+      .metaRow {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 14px;
+      }
+      .pill {
+        font-size: 12px;
+        font-weight: 900;
+        border-radius: 999px;
+        padding: 8px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+      }
+      .pill-yellow {
+        background: rgba(252, 209, 22, 0.95);
+        color: var(--ink);
+        border-color: rgba(252, 209, 22, 0.7);
+      }
+      .pill-green {
+        background: rgba(34, 197, 94, 0.14);
+        border: 1px solid rgba(34, 197, 94, 0.25);
+        color: #eafff1;
+      }
+      .pill-red {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.22);
+        color: #ffecec;
+      }
 
-    .card{
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.18);
-      backdrop-filter: blur(12px);
-      border-radius: 18px;
-      padding: 16px;
-      margin: 14px 0;
-    }
-    .sectionTitle{
-      margin: 22px 0 10px;
-      font-size: 16px;
-      font-weight: 900;
-      letter-spacing: 0.3px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
+      .card {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(12px);
+        border-radius: 18px;
+        padding: 16px;
+        margin: 14px 0;
+      }
+      .sectionTitle {
+        margin: 22px 0 10px;
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.3px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-    .lessonHtml{ line-height: 1.65; font-size: 15px; opacity: .97; white-space: normal; }
-    .lessonHtml h2, .lessonHtml h3{ color: var(--yellow); margin: 18px 0 10px; }
-    .lessonHtml img{
-      max-width:100%;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.14);
-      display:block;
-      margin: 14px auto;
-    }
-    .empty{ opacity:.78; font-size: 14px; padding: 10px 0; }
-    .hintSmall{ font-size: 12px; opacity: .78; margin-top: 10px; line-height: 1.35; }
+      .lessonHtml {
+        line-height: 1.65;
+        font-size: 15px;
+        opacity: 0.97;
+        white-space: normal;
+      }
+      .lessonHtml h2,
+      .lessonHtml h3 {
+        color: var(--yellow);
+        margin: 18px 0 10px;
+      }
+      .lessonHtml img {
+        max-width: 100%;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        display: block;
+        margin: 14px auto;
+      }
+      .empty {
+        opacity: 0.78;
+        font-size: 14px;
+        padding: 10px 0;
+      }
+      .hintSmall {
+        font-size: 12px;
+        opacity: 0.78;
+        margin-top: 10px;
+        line-height: 1.35;
+      }
 
-    /* TOC */
-    .tocLink{
-      display:block;
-      padding:10px 12px;
-      border-radius:12px;
-      text-decoration:none;
-      color:#fff;
-      border:1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.08);
-      margin:8px 0;
-      font-weight:900;
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .tocLink:hover{ filter:brightness(1.06); transform: translateY(-1px); }
-    .tocSub{ margin-left:14px; opacity:.92; font-weight:800; }
+      /* TOC */
+      .tocLink {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.08);
+        margin: 8px 0;
+        font-weight: 900;
+        transition:
+          transform 0.12s ease,
+          filter 0.12s ease;
+      }
+      .tocLink:hover {
+        filter: brightness(1.06);
+        transform: translateY(-1px);
+      }
+      .tocSub {
+        margin-left: 14px;
+        opacity: 0.92;
+        font-weight: 800;
+      }
 
-    /* Reading progress */
-    .readTools{
-      margin-top: 12px;
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content: space-between;
-    }
-    .readProgress{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-    .readProgressBar{
-      width: min(360px, 100%);
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.18);
-      overflow:hidden;
-    }
-    .readProgressFill{ height:100%; background: var(--yellow); width:0%; transition: width .18s ease; }
-    .readProgressText{ font-size: 12px; font-weight: 900; opacity: .92; }
-    .exerciseLinks{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
+      /* Reading progress */
+      .readTools {
+        margin-top: 12px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .readProgress {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .readProgressBar {
+        width: min(360px, 100%);
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+      }
+      .readProgressFill {
+        height: 100%;
+        background: var(--yellow);
+        width: 0%;
+        transition: width 0.18s ease;
+      }
+      .readProgressText {
+        font-size: 12px;
+        font-weight: 900;
+        opacity: 0.92;
+      }
+      .exerciseLinks {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+      }
 
-    /* Toast */
-    #toast{
-      display:none;
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      z-index: 9999;
-      padding: 12px 14px;
-      border-radius: 999px;
-      font-weight: 900;
-      letter-spacing: 0.2px;
-      box-shadow: 0 14px 30px rgba(0,0,0,0.28);
-      border: 1px solid rgba(255,255,255,0.18);
-      backdrop-filter: blur(10px);
-      max-width: min(920px, calc(100% - 24px));
-      text-align:center;
-    }
-    .toast-ok{ background: rgba(6, 95, 70, 0.92); color: #fff; }
-    .toast-bad{ background: rgba(185, 28, 28, 0.92); color: #fff; }
-    .toast-warn{ background: rgba(252, 209, 22, 0.94); color: var(--ink); border-color: rgba(252, 209, 22, 0.7); }
-  </style>
-  <script src="assets/js/layout.js" defer></script>
-</head>
+      /* Toast */
+      #toast {
+        display: none;
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        z-index: 9999;
+        padding: 12px 14px;
+        border-radius: 999px;
+        font-weight: 900;
+        letter-spacing: 0.2px;
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(10px);
+        max-width: min(920px, calc(100% - 24px));
+        text-align: center;
+      }
+      .toast-ok {
+        background: rgba(6, 95, 70, 0.92);
+        color: #fff;
+      }
+      .toast-bad {
+        background: rgba(185, 28, 28, 0.92);
+        color: #fff;
+      }
+      .toast-warn {
+        background: rgba(252, 209, 22, 0.94);
+        color: var(--ink);
+        border-color: rgba(252, 209, 22, 0.7);
+      }
+    </style>
+    <script src="assets/js/layout.js" defer></script>
+  </head>
 
-<body>
-  <div id="appHeader"></div>
+  <body>
+    <div id="appHeader"></div>
 
-  <div class="nav-glass">
-    <div class="nav-inner">
-      <div class="brand" aria-label="AquiVivo">
-        <div class="logo-flag" aria-hidden="true"></div>
-        <div class="name">AquiVivo</div>
-      </div>
+    <main class="page">
+      <div class="container">
+        <div class="heroBanner">
+          <div class="heroTitleRow">
+            <div class="heroIcon">📖</div>
+            <div style="flex: 1">
+              <h1 id="lessonTitle">Cargando…</h1>
+              <p class="subtitle" id="lessonDesc">Cargando…</p>
 
-      <div class="nav-actions">
-        <a class="btn" id="btnPanel" href="espanel.html">Panel</a>
-        <a class="btn btn-yellow" id="btnEjercicios" href="#">Ejercicios</a>
-        <a class="btn" id="btnInicio" href="#">Inicio</a>
-        <button class="btn" id="btnAtras" type="button">Atrás</button>
-        <button class="btn btn-red" id="btnLogout" type="button">Cerrar sesión</button>
-      </div>
-    </div>
-  </div>
-
-  <main class="page">
-    <div class="container">
-
-      <div class="heroBanner">
-        <div class="heroTitleRow">
-          <div class="heroIcon">📖</div>
-          <div style="flex:1">
-            <h1 id="lessonTitle">Cargando…</h1>
-            <p class="subtitle" id="lessonDesc">Cargando…</p>
-
-            <div class="metaRow">
-              <span class="pill pill-yellow" id="pillLevel">Nivel: —</span>
-              <span class="pill" id="pillTopic">Tema: —</span>
-              <span class="pill" id="pillType" style="display:none"></span>
-              <span class="pill" id="pillDuration" style="display:none"></span>
-              <span class="pill" id="pillPub" style="display:none"></span>
-              <a class="pill" id="pillAdminLink" href="#" style="display:none; text-decoration:none;">🛠 Admin lección</a>
-            </div>
-
-            <div class="readTools" id="readTools" style="display:none;">
-              <div class="readProgress">
-                <div class="readProgressBar"><div class="readProgressFill" id="readProgressFill" style="width:0%"></div></div>
-                <div class="readProgressText" id="readProgressText">📖 Progreso de lectura: 0%</div>
+              <div class="metaRow">
+                <span class="pill pill-yellow" id="pillLevel">Nivel: —</span>
+                <span class="pill" id="pillTopic">Tema: —</span>
+                <span class="pill" id="pillType" style="display: none"></span>
+                <span
+                  class="pill"
+                  id="pillDuration"
+                  style="display: none"
+                ></span>
+                <span class="pill" id="pillPub" style="display: none"></span>
+                <a
+                  class="pill"
+                  id="pillAdminLink"
+                  href="#"
+                  style="display: none; text-decoration: none"
+                  >🛠 Admin lección</a
+                >
               </div>
-              <div class="exerciseLinks" id="exerciseLinksWrap"></div>
-            </div>
 
+              <div class="readTools" id="readTools" style="display: none">
+                <div class="readProgress">
+                  <div class="readProgressBar">
+                    <div
+                      class="readProgressFill"
+                      id="readProgressFill"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                  <div class="readProgressText" id="readProgressText">
+                    📖 Progreso de lectura: 0%
+                  </div>
+                </div>
+                <div class="exerciseLinks" id="exerciseLinksWrap"></div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <div id="tocWrap" style="display: none; margin-top: 12px">
+          <div class="sectionTitle">📌 En esta lección</div>
+          <div id="tocList" class="card" style="padding: 12px; margin: 0"></div>
+        </div>
+
+        <div id="lessonContent" class="lessonHtml" style="display: none"></div>
+        <div id="lessonEmpty" class="empty" style="display: none"></div>
+
+        <div class="hintSmall" id="studentHint" style="display: none"></div>
+
+        <div id="toast"></div>
       </div>
+    </main>
 
-      <div id="tocWrap" style="display:none; margin-top:12px;">
-        <div class="sectionTitle">📌 En esta lección</div>
-        <div id="tocList" class="card" style="padding:12px; margin:0;"></div>
-      </div>
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        collection,
+        query,
+        where,
+        getDocs,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-      <div id="lessonContent" class="lessonHtml" style="display:none;"></div>
-      <div id="lessonEmpty" class="empty" style="display:none;"></div>
+      window.addEventListener('DOMContentLoaded', async () => {
+        const firebaseConfig = {
+          apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+          authDomain: 'aquivivo-platform.firebaseapp.com',
+          projectId: 'aquivivo-platform',
+          storageBucket: 'aquivivo-platform.firebasestorage.app',
+          messagingSenderId: '116115622011',
+          appId: '1:116115622011:web:33a4a583eba4368071bade',
+        };
 
-      <div class="hintSmall" id="studentHint" style="display:none;"></div>
+        const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
+        const isAdmin = (email) =>
+          ADMIN_EMAILS.some(
+            (a) => (a || '').toLowerCase() === (email || '').toLowerCase(),
+          );
 
-      <div id="toast"></div>
-    </div>
-  </main>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-    import {
+        const $ = (id) => document.getElementById(id);
 
-window.addEventListener('DOMContentLoaded', async () => {
-      getFirestore,
-      doc,
-      getDoc,
-      collection,
-      query,
-      where,
-      getDocs
-    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        const toast = $('toast');
+        const btnLogout = $('btnLogout');
+        const btnPanel = $('btnPanel');
+        const btnEjercicios = $('btnEjercicios');
+        const btnInicio = $('btnInicio');
+        const btnAtras = $('btnAtras');
+        const pillAdminLink = $('pillAdminLink');
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
-      authDomain: "aquivivo-platform.firebaseapp.com",
-      projectId: "aquivivo-platform",
-      storageBucket: "aquivivo-platform.firebasestorage.app",
-      messagingSenderId: "116115622011",
-      appId: "1:116115622011:web:33a4a583eba4368071bade"
-    };
+        const lessonTitleEl = $('lessonTitle');
+        const lessonDescEl = $('lessonDesc');
+        const pillLevel = $('pillLevel');
+        const pillTopic = $('pillTopic');
+        const pillType = $('pillType');
+        const pillDuration = $('pillDuration');
+        const pillPub = $('pillPub');
 
-    const ADMIN_EMAILS = ["aquivivo.pl@gmail.com"];
-    const isAdmin = (email) => ADMIN_EMAILS.some(a => (a||"").toLowerCase() === (email||"").toLowerCase());
+        const tocWrap = $('tocWrap');
+        const tocList = $('tocList');
+        const readTools = $('readTools');
+        const readProgressFill = $('readProgressFill');
+        const readProgressText = $('readProgressText');
+        const exerciseLinksWrap = $('exerciseLinksWrap');
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        const lessonContent = $('lessonContent');
+        const lessonEmpty = $('lessonEmpty');
+        const studentHint = $('studentHint');
 
-    const $ = (id) => document.getElementById(id);
+        const params = new URLSearchParams(location.search);
+        let LEVEL = (params.get('level') || '').toUpperCase();
+        let TOPIC_ID = (params.get('id') || '').trim();
+        let TOPIC_INFO = null;
 
-    const toast = $("toast");
-    const btnLogout = $("btnLogout");
-    const btnPanel = $("btnPanel");
-    const btnEjercicios = $("btnEjercicios");
-    const btnInicio = $("btnInicio");
-    const btnAtras = $("btnAtras");
-    const pillAdminLink = $("pillAdminLink");
-
-    const lessonTitleEl = $("lessonTitle");
-    const lessonDescEl = $("lessonDesc");
-    const pillLevel = $("pillLevel");
-    const pillTopic = $("pillTopic");
-    const pillType = $("pillType");
-    const pillDuration = $("pillDuration");
-    const pillPub = $("pillPub");
-
-    const tocWrap = $("tocWrap");
-    const tocList = $("tocList");
-    const readTools = $("readTools");
-    const readProgressFill = $("readProgressFill");
-    const readProgressText = $("readProgressText");
-    const exerciseLinksWrap = $("exerciseLinksWrap");
-
-    const lessonContent = $("lessonContent");
-    const lessonEmpty = $("lessonEmpty");
-    const studentHint = $("studentHint");
-
-    const params = new URLSearchParams(location.search);
-    const LEVEL = (params.get("level") || "").toUpperCase();
-    const TOPIC_ID = (params.get("id") || "").trim();
-    let TOPIC_INFO = null;
-
-    function getLessonDocId(topicInfo){
-      const slug = (topicInfo?.slug || TOPIC_ID || "").toString().trim();
-      return `${LEVEL}__${slug}`;
-    }
-
-    async function loadTopicInfo(){
-      const fallback = { title: "", desc: "", slug: TOPIC_ID };
-      if(!LEVEL || !TOPIC_ID) return fallback;
-      try{
-        // 1) treat TOPIC_ID as Firestore doc id
-        const byId = await getDoc(doc(db, "courses", TOPIC_ID));
-        if(byId.exists()){
-          const d = byId.data() || {};
-          return {
-            title: (d.title || d.name || d.topic || "").toString(),
-            desc: (d.desc || d.description || "").toString(),
-            slug: (d.slug || TOPIC_ID || "").toString()
-          };
+        function getLastLessonFromStorage() {
+          try {
+            const global = localStorage.getItem('aquivivo_lastLesson_global');
+            if (global) {
+              const parsed = JSON.parse(global);
+              if (parsed?.level && parsed?.id) {
+                return {
+                  level: String(parsed.level).toUpperCase(),
+                  id: String(parsed.id),
+                };
+              }
+            }
+            let fallback = null;
+            for (let i = 0; i < localStorage.length; i += 1) {
+              const k = localStorage.key(i);
+              if (!k || !k.startsWith('aquivivo_lastLesson_')) continue;
+              const level = k.replace('aquivivo_lastLesson_', '').toUpperCase();
+              const id = localStorage.getItem(k);
+              if (level && id) fallback = { level, id };
+            }
+            return fallback;
+          } catch (e) {
+            return null;
+          }
         }
-      }catch(e){ /* ignore and try slug query */ }
 
-      try{
-        // 2) treat TOPIC_ID as slug
-        const qy = query(collection(db, "courses"), where("level", "==", LEVEL), where("slug", "==", TOPIC_ID));
-        const snap = await getDocs(qy);
-        if(!snap.empty){
-          const d = snap.docs[0].data() || {};
-          return {
-            title: (d.title || d.name || d.topic || "").toString(),
-            desc: (d.desc || d.description || "").toString(),
-            slug: (d.slug || TOPIC_ID || "").toString()
-          };
+        if (!LEVEL || !TOPIC_ID) {
+          const last = getLastLessonFromStorage();
+          if (last?.level && last?.id) {
+            LEVEL = last.level;
+            TOPIC_ID = last.id;
+            const url = new URL(location.href);
+            url.searchParams.set('level', LEVEL);
+            url.searchParams.set('id', TOPIC_ID);
+            history.replaceState(null, '', url.toString());
+          }
         }
-      }catch(e){ /* ignore */ }
 
-      return fallback;
-    }
-
-    if(btnInicio) btnInicio.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-    // btnEjercicios href is set after we resolve TOPIC_INFO (slug vs id)
-    if(btnAtras) btnAtras.addEventListener("click", () => history.back());
-
-    function showToast(msg, kind="toast-ok"){
-      if(!toast) return;
-      toast.className = kind;
-      toast.textContent = msg;
-      toast.style.display = "block";
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(()=>{ toast.style.display = "none"; }, 2500);
-    }
-
-    function escapeHtml(s){
-      return String(s ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    function slugifyHeading(text){
-      return (text || "")
-        .toLowerCase()
-        .trim()
-        .replace(/[^\p{L}\p{N}\s-]/gu, "")
-        .replace(/\s+/g, "-")
-        .slice(0, 60);
-    }
-
-    function buildTOC(){
-      if(!tocWrap || !tocList) return;
-
-      tocList.innerHTML = "";
-      const root = lessonContent;
-      if(!root || root.style.display === "none"){
-        tocWrap.style.display = "none";
-        return;
-      }
-
-      const headings = root.querySelectorAll("h2, h3");
-      if(!headings.length){
-        tocWrap.style.display = "none";
-        return;
-      }
-
-      const used = new Set();
-      headings.forEach(h => {
-        if(h.id) { used.add(h.id); return; }
-        let id = slugifyHeading(h.textContent);
-        if(!id) id = "section";
-        const base = id;
-        let i = 2;
-        while(used.has(id) || document.getElementById(id)){
-          id = `${base}-${i++}`;
+        function getLessonDocId(topicInfo) {
+          const slug = (topicInfo?.slug || TOPIC_ID || '').toString().trim();
+          return `${LEVEL}__${slug}`;
         }
-        used.add(id);
-        h.id = id;
-      });
 
-      headings.forEach(h => {
-        const a = document.createElement("a");
-        a.href = `#${h.id}`;
-        a.className = "tocLink" + (h.tagName === "H3" ? " tocSub" : "");
-        a.textContent = (h.textContent || "").trim() || (h.tagName === "H3" ? "Subsección" : "Sección");
-        a.addEventListener("click", (e)=>{
-          e.preventDefault();
-          document.getElementById(h.id)?.scrollIntoView({ behavior:"smooth", block:"start" });
-          history.replaceState(null, "", `#${h.id}`);
+        async function loadTopicInfo() {
+          const fallback = { title: '', desc: '', slug: TOPIC_ID };
+          if (!LEVEL || !TOPIC_ID) return fallback;
+          try {
+            // 1) treat TOPIC_ID as Firestore doc id
+            const byId = await getDoc(doc(db, 'courses', TOPIC_ID));
+            if (byId.exists()) {
+              const d = byId.data() || {};
+              return {
+                title: (d.title || d.name || d.topic || '').toString(),
+                desc: (d.desc || d.description || '').toString(),
+                slug: (d.slug || TOPIC_ID || '').toString(),
+              };
+            }
+          } catch (e) {
+            /* ignore and try slug query */
+          }
+
+          try {
+            // 2) treat TOPIC_ID as slug
+            const qy = query(
+              collection(db, 'courses'),
+              where('level', '==', LEVEL),
+              where('slug', '==', TOPIC_ID),
+            );
+            const snap = await getDocs(qy);
+            if (!snap.empty) {
+              const d = snap.docs[0].data() || {};
+              return {
+                title: (d.title || d.name || d.topic || '').toString(),
+                desc: (d.desc || d.description || '').toString(),
+                slug: (d.slug || TOPIC_ID || '').toString(),
+              };
+            }
+          } catch (e) {
+            /* ignore */
+          }
+
+          return fallback;
+        }
+
+        if (btnInicio)
+          btnInicio.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+        // btnEjercicios href is set after we resolve TOPIC_INFO (slug vs id)
+        if (btnAtras) btnAtras.addEventListener('click', () => history.back());
+
+        function showToast(msg, kind = 'toast-ok') {
+          if (!toast) return;
+          toast.className = kind;
+          toast.textContent = msg;
+          toast.style.display = 'block';
+          clearTimeout(showToast._t);
+          showToast._t = setTimeout(() => {
+            toast.style.display = 'none';
+          }, 2500);
+        }
+
+        function escapeHtml(s) {
+          return String(s ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+        }
+
+        function slugifyHeading(text) {
+          return (text || '')
+            .toLowerCase()
+            .trim()
+            .replace(/[^\p{L}\p{N}\s-]/gu, '')
+            .replace(/\s+/g, '-')
+            .slice(0, 60);
+        }
+
+        function buildTOC() {
+          if (!tocWrap || !tocList) return;
+
+          tocList.innerHTML = '';
+          const root = lessonContent;
+          if (!root || root.style.display === 'none') {
+            tocWrap.style.display = 'none';
+            return;
+          }
+
+          const headings = root.querySelectorAll('h2, h3');
+          if (!headings.length) {
+            tocWrap.style.display = 'none';
+            return;
+          }
+
+          const used = new Set();
+          headings.forEach((h) => {
+            if (h.id) {
+              used.add(h.id);
+              return;
+            }
+            let id = slugifyHeading(h.textContent);
+            if (!id) id = 'section';
+            const base = id;
+            let i = 2;
+            while (used.has(id) || document.getElementById(id)) {
+              id = `${base}-${i++}`;
+            }
+            used.add(id);
+            h.id = id;
+          });
+
+          headings.forEach((h) => {
+            const a = document.createElement('a');
+            a.href = `#${h.id}`;
+            a.className = 'tocLink' + (h.tagName === 'H3' ? ' tocSub' : '');
+            a.textContent =
+              (h.textContent || '').trim() ||
+              (h.tagName === 'H3' ? 'Subsección' : 'Sección');
+            a.addEventListener('click', (e) => {
+              e.preventDefault();
+              document
+                .getElementById(h.id)
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              history.replaceState(null, '', `#${h.id}`);
+            });
+            tocList.appendChild(a);
+          });
+
+          tocWrap.style.display = 'block';
+        }
+
+        let _rpScheduled = false;
+        function updateReadProgress() {
+          if (!lessonContent || lessonContent.style.display === 'none') return;
+          const docEl = document.documentElement;
+          const scrollTop = docEl.scrollTop || document.body.scrollTop || 0;
+          const scrollHeight =
+            (docEl.scrollHeight || document.body.scrollHeight || 0) -
+            (docEl.clientHeight || window.innerHeight || 0);
+          const pct =
+            scrollHeight <= 0
+              ? 100
+              : Math.max(
+                  0,
+                  Math.min(100, Math.round((scrollTop / scrollHeight) * 100)),
+                );
+          readProgressFill.style.width = `${pct}%`;
+          readProgressText.textContent = `📖 Progreso de lectura: ${pct}%`;
+        }
+        function scheduleReadProgress() {
+          if (_rpScheduled) return;
+          _rpScheduled = true;
+          requestAnimationFrame(() => {
+            _rpScheduled = false;
+            try {
+              updateReadProgress();
+            } catch (e) {}
+          });
+        }
+        window.addEventListener('scroll', scheduleReadProgress, {
+          passive: true,
         });
-        tocList.appendChild(a);
+        window.addEventListener('resize', scheduleReadProgress);
+
+        function buildExerciseLinks(docData, topicInfo) {
+          if (!exerciseLinksWrap) return;
+          exerciseLinksWrap.innerHTML = '';
+
+          // Minimal: one button to exercises page (keeps UI consistent)
+          const a = document.createElement('a');
+          a.className = 'btn btn-yellow';
+          const eff = (topicInfo?.slug || TOPIC_ID || '').toString();
+          a.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
+          a.textContent = '🧩 Ir a ejercicios';
+          exerciseLinksWrap.appendChild(a);
+
+          readTools.style.display = 'flex';
+        }
+
+        function renderLesson(docData, topicInfo) {
+          pillLevel.textContent = `Nivel: ${LEVEL || '—'}`;
+          const tName = (topicInfo?.title || '').trim();
+          const tDesc = (topicInfo?.desc || '').trim();
+          pillTopic.textContent = `Tema: ${tName || TOPIC_ID || '—'}`;
+
+          const title = (docData?.title || '').trim();
+          const desc = (docData?.desc || '').trim();
+          const type = (docData?.type || '').trim();
+          const dur = Number(docData?.durationMin || 0);
+          const pub = !!docData?.published;
+
+          lessonTitleEl.textContent =
+            title || `Lección — ${tName || TOPIC_ID || 'tema'}`;
+          lessonDescEl.textContent = desc || tDesc || '—';
+
+          if (type) {
+            pillType.style.display = 'inline-flex';
+            pillType.textContent = `Tipo: ${type}`;
+          } else {
+            pillType.style.display = 'none';
+          }
+          if (dur > 0) {
+            pillDuration.style.display = 'inline-flex';
+            pillDuration.textContent = `Duración: ${dur} min`;
+          } else {
+            pillDuration.style.display = 'none';
+          }
+
+          pillPub.style.display = 'inline-flex';
+          pillPub.className = 'pill ' + (pub ? 'pill-green' : 'pill-red');
+          pillPub.textContent = pub ? 'Publicado' : 'Borrador';
+
+          // Publication gating for students (if not published: show hint)
+          if (!pub) {
+            studentHint.style.display = 'block';
+            studentHint.textContent =
+              'Esta lección todavía no está publicada. Vuelve más tarde.';
+            lessonContent.style.display = 'none';
+            lessonEmpty.style.display = 'none';
+            tocWrap.style.display = 'none';
+            readTools.style.display = 'none';
+            return;
+          }
+
+          const html = (docData?.html || '').trim();
+          if (!html) {
+            lessonContent.style.display = 'none';
+            lessonEmpty.style.display = 'block';
+            lessonEmpty.textContent = 'Todavía no hay contenido de la lección.';
+            studentHint.style.display = 'none';
+            tocWrap.style.display = 'none';
+            readTools.style.display = 'none';
+            return;
+          }
+
+          studentHint.style.display = 'none';
+          lessonEmpty.style.display = 'none';
+          lessonContent.style.display = 'block';
+          lessonContent.innerHTML = html;
+
+          setTimeout(buildTOC, 0);
+          buildExerciseLinks(docData, topicInfo);
+          updateReadProgress();
+        }
+
+        async function loadLesson(topicInfo) {
+          if (!LEVEL || !TOPIC_ID) {
+            lessonTitleEl.textContent = 'Error';
+            lessonDescEl.textContent =
+              'Faltan parámetros en la URL (level, id).';
+            lessonEmpty.style.display = 'block';
+            lessonEmpty.textContent =
+              'Abre por ejemplo: lessonpage.html?level=A1&id=tuTopicSlug';
+            return;
+          }
+
+          const ref = doc(db, 'course_meta', getLessonDocId(topicInfo));
+          const snap = await getDoc(ref);
+          if (!snap.exists()) {
+            renderLesson({ published: false, html: '' }, topicInfo);
+            lessonEmpty.style.display = 'block';
+            lessonEmpty.textContent = 'No existe esta lección todavía.';
+            return;
+          }
+          renderLesson(snap.data() || {}, topicInfo);
+        }
+
+        window.logout = async () => {
+          try {
+            await signOut(auth);
+          } catch (e) {}
+          location.href = 'login.html';
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) {
+            location.href = 'login.html';
+            return;
+          }
+
+          // Resolve topic title/desc + slug (so we don't show random IDs)
+          TOPIC_INFO = await loadTopicInfo();
+          const eff = (TOPIC_INFO?.slug || TOPIC_ID || '').toString();
+          if (btnEjercicios)
+            btnEjercicios.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
+
+          try {
+            localStorage.setItem(
+              'aquivivo_lastLesson_global',
+              JSON.stringify({ level: LEVEL, id: eff, ts: Date.now() }),
+            );
+          } catch (e) {}
+
+          // show admin link only for admin
+          if (isAdmin(user.email)) {
+            pillAdminLink.style.display = 'inline-flex';
+            pillAdminLink.href = `lessonadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
+          }
+          try {
+            await loadLesson(TOPIC_INFO);
+          } catch (e) {
+            console.error(e);
+            showToast('Error cargando la lección.', 'toast-bad');
+          }
+        });
       });
-
-      tocWrap.style.display = "block";
-    }
-
-    let _rpScheduled = false;
-    function updateReadProgress(){
-      if(!lessonContent || lessonContent.style.display === "none") return;
-      const docEl = document.documentElement;
-      const scrollTop = docEl.scrollTop || document.body.scrollTop || 0;
-      const scrollHeight = (docEl.scrollHeight || document.body.scrollHeight || 0) - (docEl.clientHeight || window.innerHeight || 0);
-      const pct = scrollHeight <= 0 ? 100 : Math.max(0, Math.min(100, Math.round((scrollTop / scrollHeight) * 100)));
-      readProgressFill.style.width = `${pct}%`;
-      readProgressText.textContent = `📖 Progreso de lectura: ${pct}%`;
-    }
-    function scheduleReadProgress(){
-      if(_rpScheduled) return;
-      _rpScheduled = true;
-      requestAnimationFrame(()=>{
-        _rpScheduled = false;
-        try{ updateReadProgress(); }catch(e){}
-      });
-    }
-    window.addEventListener("scroll", scheduleReadProgress, { passive: true });
-    window.addEventListener("resize", scheduleReadProgress);
-
-    function buildExerciseLinks(docData, topicInfo){
-      if(!exerciseLinksWrap) return;
-      exerciseLinksWrap.innerHTML = "";
-
-      // Minimal: one button to exercises page (keeps UI consistent)
-      const a = document.createElement("a");
-      a.className = "btn btn-yellow";
-      const eff = (topicInfo?.slug || TOPIC_ID || "").toString();
-      a.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
-      a.textContent = "🧩 Ir a ejercicios";
-      exerciseLinksWrap.appendChild(a);
-
-      readTools.style.display = "flex";
-    }
-
-    function renderLesson(docData, topicInfo){
-      pillLevel.textContent = `Nivel: ${LEVEL || "—"}`;
-      const tName = (topicInfo?.title || "").trim();
-      const tDesc = (topicInfo?.desc || "").trim();
-      pillTopic.textContent = `Tema: ${tName || TOPIC_ID || "—"}`;
-
-      const title = (docData?.title || "").trim();
-      const desc = (docData?.desc || "").trim();
-      const type = (docData?.type || "").trim();
-      const dur = Number(docData?.durationMin || 0);
-      const pub = !!docData?.published;
-
-      lessonTitleEl.textContent = title || `Lección — ${tName || TOPIC_ID || "tema"}`;
-      lessonDescEl.textContent = desc || tDesc || "—";
-
-      if(type){
-        pillType.style.display = "inline-flex";
-        pillType.textContent = `Tipo: ${type}`;
-      }else{
-        pillType.style.display = "none";
-      }
-      if(dur > 0){
-        pillDuration.style.display = "inline-flex";
-        pillDuration.textContent = `Duración: ${dur} min`;
-      }else{
-        pillDuration.style.display = "none";
-      }
-
-      pillPub.style.display = "inline-flex";
-      pillPub.className = "pill " + (pub ? "pill-green" : "pill-red");
-      pillPub.textContent = pub ? "Publicado" : "Borrador";
-
-      // Publication gating for students (if not published: show hint)
-      if(!pub){
-        studentHint.style.display = "block";
-        studentHint.textContent = "Esta lección todavía no está publicada. Vuelve más tarde.";
-        lessonContent.style.display = "none";
-        lessonEmpty.style.display = "none";
-        tocWrap.style.display = "none";
-        readTools.style.display = "none";
-        return;
-      }
-
-      const html = (docData?.html || "").trim();
-      if(!html){
-        lessonContent.style.display = "none";
-        lessonEmpty.style.display = "block";
-        lessonEmpty.textContent = "Todavía no hay contenido de la lección.";
-        studentHint.style.display = "none";
-        tocWrap.style.display = "none";
-        readTools.style.display = "none";
-        return;
-      }
-
-      studentHint.style.display = "none";
-      lessonEmpty.style.display = "none";
-      lessonContent.style.display = "block";
-      lessonContent.innerHTML = html;
-
-      setTimeout(buildTOC, 0);
-      buildExerciseLinks(docData, topicInfo);
-      updateReadProgress();
-    }
-
-    async function loadLesson(topicInfo){
-      if(!LEVEL || !TOPIC_ID){
-        lessonTitleEl.textContent = "Error";
-        lessonDescEl.textContent = "Faltan parámetros en la URL (level, id).";
-        lessonEmpty.style.display = "block";
-        lessonEmpty.textContent = "Abre por ejemplo: lessonpage.html?level=A1&id=tuTopicSlug";
-        return;
-      }
-
-      const ref = doc(db, "course_meta", getLessonDocId(topicInfo));
-      const snap = await getDoc(ref);
-      if(!snap.exists()){
-        renderLesson({ published:false, html:"" }, topicInfo);
-        lessonEmpty.style.display = "block";
-        lessonEmpty.textContent = "No existe esta lección todavía.";
-        return;
-      }
-      renderLesson(snap.data() || {}, topicInfo);
-    }
-
-    btnLogout.addEventListener("click", async ()=>{
-      try{
-        await signOut(auth);
-      }catch(e){}
-      location.href = "login.html";
-    });
-
-    onAuthStateChanged(auth, async (user)=>{
-      if(!user){
-        location.href = "login.html";
-        return;
-      }
-
-      // Resolve topic title/desc + slug (so we don't show random IDs)
-      TOPIC_INFO = await loadTopicInfo();
-      const eff = (TOPIC_INFO?.slug || TOPIC_ID || "").toString();
-      if(btnEjercicios) btnEjercicios.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
-
-      // show admin link only for admin
-      if(isAdmin(user.email)){
-        pillAdminLink.style.display = "inline-flex";
-        pillAdminLink.href = `lessonadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
-      }
-      try{ await loadLesson(TOPIC_INFO); }catch(e){
-        console.error(e);
-        showToast("Error cargando la lección.", "toast-bad");
-      }
-    });
-  
-});
-</script></body>
+    </script>
+  </body>
 </html>
