@@ -1,96 +1,359 @@
+/* ================================
+   AQUIVIVO APP UI  —  🇨🇴💙💛❤️
+   Autor: OpenAI / Magdalena
+   ================================ */
 
-:root{
-  --yellow:#fcd116;
-  --blue:#003893;
-  --red:#ce1126;
-  --text:#0b1b3f;
+/* RESET & TYPOGRAPHY */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-
-/* ===== BASE ===== */
-*{box-sizing:border-box;}
-body{
-  margin:0;
-  font-family:Montserrat, Arial, sans-serif;
-  min-height:100vh;
-  background:linear-gradient(180deg,#001b57 0%,#003893 35%,#0b2f7a 70%,#001b57 100%);
-  color:white;
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(180deg, #0033a0 0%, #00236b 100%);
+  color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
-
-/* ===== LAYOUT ===== */
-.container{max-width:1180px;margin:0 auto;padding:28px 16px;}
-.page{padding:22px 0 70px;}
-
-/* ===== NAV ===== */
-.nav-glass{
-  position:sticky;top:0;z-index:50;
-  background:rgba(0,56,147,0.78);
-  backdrop-filter:blur(10px);
-  border-bottom:1px solid rgba(255,255,255,0.14);
+h1,
+h2,
+h3 {
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 0.5em;
 }
-.nav-inner{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:14px;padding:14px 16px;
+h1 {
+  font-size: 2em;
 }
-.brand{display:flex;align-items:center;gap:12px;}
-.logo-flag{
-  width:42px;height:42px;border-radius:999px;
-  background:linear-gradient(180deg,var(--yellow) 0 33%,var(--blue) 33% 66%,var(--red) 66% 100%);
+a {
+  color: #ffd100;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
 }
 
-/* ===== BUTTONS ===== */
-.btn-yellow,.btn-red,.btn-white-outline{
-  display:inline-flex;align-items:center;justify-content:center;
-  padding:12px 16px;border-radius:999px;font-weight:900;
-  cursor:pointer;text-decoration:none;border:none;
+/* HEADER */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
 }
-.btn-yellow{background:rgba(252,209,22,.95);color:#0b1b3f;}
-.btn-red{background:rgba(206,17,38,.95);color:white;}
-.btn-white-outline{
-  background:transparent;color:white;
-  border:2px solid rgba(255,255,255,.65);
-}
-
-/* ===== CARDS (GLOBAL) ===== */
-.card{
-  background:rgba(255,255,255,0.95);
-  border-radius:22px;
-  padding:16px;
-  box-shadow:0 18px 70px rgba(0,0,0,.22);
-  color:#0b1b3f;
+.logo {
+  width: 150px;
+  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3));
 }
 
-/* =====================================================
-   EJERCICIO / EJERCICIO ADMIN — GRANAT GLASS CARDS
-   ===================================================== */
-
-body[data-av-page="ejercicio"] .card,
-body[data-av-page="ejercicioadmin"] .card{
-  background:rgba(15,28,70,0.55) !important;
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  border:1px solid rgba(255,255,255,0.14) !important;
-  box-shadow:0 20px 60px rgba(0,0,0,0.35) !important;
-  color:rgba(255,255,255,0.92) !important;
+/* CONTAINERS */
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+main.page {
+  flex: 1;
 }
 
-/* HERO / GÓRNE PANELE */
-body[data-av-page="ejercicio"] .hero-card,
-body[data-av-page="ejercicioadmin"] .hero-card{
-  background:rgba(0,26,77,0.28) !important;
-  border:1px solid rgba(255,255,255,0.12) !important;
+/* HERO SECTIONS */
+.hero {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.hero h1 {
+  color: #ffd100;
+  font-size: 2.2em;
+}
+.hero p {
+  color: #fafafa;
+  font-size: 1.1em;
+  margin-top: 0.5rem;
 }
 
-/* TEKSTY W KARTACH */
-body[data-av-page="ejercicio"] .card h1,
-body[data-av-page="ejercicio"] .card h2,
-body[data-av-page="ejercicio"] .card h3,
-body[data-av-page="ejercicioadmin"] .card h1,
-body[data-av-page="ejercicioadmin"] .card h2,
-body[data-av-page="ejercicioadmin"] .card h3{
-  color:white !important;
+/* BUTTONS */
+.btn-primary,
+.btn-secondary,
+.btn-glass {
+  display: inline-block;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 0.5rem;
+  padding: 0.7em 1.4em;
+  transition: all 0.25s ease-in-out;
 }
 
-body[data-av-page="ejercicio"] .card p,
-body[data-av-page="ejercicioadmin"] .card p{
-  color:rgba(255,255,255,0.85) !important;
+/* PRIMARY YELLOW BUTTON */
+.btn-primary {
+  background-color: #ffd100;
+  color: #0033a0;
 }
+.btn-primary:hover {
+  background-color: #ffda26;
+  transform: scale(1.03);
+}
+
+/* SECONDARY WHITE / BLUE */
+.btn-secondary {
+  background-color: #ffffff;
+  color: #0033a0;
+}
+.btn-secondary:hover {
+  background-color: #ececec;
+  transform: scale(1.03);
+}
+
+/* GLASS BUTTON */
+.btn-glass {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* FORMS */
+input,
+select {
+  width: 100%;
+  max-width: 360px;
+  display: block;
+  padding: 0.7em;
+  margin: 0.5em auto;
+  border: none;
+  border-radius: 6px;
+  font-size: 1em;
+}
+input:focus,
+select:focus {
+  outline: 2px solid #ffd100;
+}
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* HERO PANEL - Student Dashboard */
+.hero-panel h1 {
+  color: #ffd100;
+  font-size: 2.4em;
+}
+.hero-panel p {
+  color: #fff;
+  font-size: 1.1em;
+}
+
+/* CARD GRIDS */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+.price-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+}
+.price-card {
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.25s;
+}
+.price-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Colombian Colors per Card */
+.price-card.yellow {
+  background-color: #ffd100;
+  color: #0033a0;
+}
+.price-card.white {
+  background-color: #ffffff;
+  color: #0033a0;
+}
+.price-card.red {
+  background-color: #ce1126;
+  color: #fff;
+}
+
+/* COURSE PAGE ELEMENTS */
+.progress-card {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+}
+.progress-bar {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  height: 10px;
+  overflow: hidden;
+  margin: 0.7rem 0;
+}
+#progressFill {
+  background-color: #ffd100;
+  height: 100%;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+.course-lists h3 {
+  color: #ffd100;
+}
+.card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+.card-list .card {
+  background-color: #fff;
+  color: #0033a0;
+  border-radius: 10px;
+  padding: 1rem;
+  transition: transform 0.2s;
+}
+.card-list .card:hover {
+  transform: translateY(-4px);
+}
+
+/* ADMIN FORMS */
+.admin-only {
+  margin-top: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+/* COFFEE FLOAT (logo de taza) */
+#coffeeFloat {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  width: 80px;
+  height: 80px;
+  background: url('../img/coffeeFloat.svg') no-repeat center/contain;
+  opacity: 0.8;
+  z-index: 9999;
+  transition: transform 0.3s;
+}
+#coffeeFloat:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.2rem;
+  }
+  .hero h1 {
+    font-size: 1.8em;
+  }
+  .price-cards {
+    flex-direction: column;
+  }
+}
+/* ===============================
+   UPDATE – wizualny "efekt WOW" 🇨🇴
+   =============================== */
+
+/* HERO – gradient z lekkim światłem */
+.hero {
+  background: linear-gradient(180deg, #0041c2 0%, #001f5b 100%);
+  padding: 3rem 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+}
+.hero h1 {
+  font-size: 2.4em;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.hero p {
+  font-size: 1.3em;
+  opacity: 0.9;
+}
+
+/* INPUTY – większe, bardziej appowe */
+input, select {
+  width: 80%;
+  max-width: 500px;
+  font-size: 1.05em;
+  background: #fff;
+  color: #0033A0;
+  border: 2px solid #FFD100;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+input::placeholder {
+  color: #999;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: #CE1126;
+  box-shadow: 0 0 6px rgba(206, 17, 38, 0.7);
+}
+
+/* SEKCJE/FORMA – card styl */
+section {
+  margin-bottom: 2rem;
+}
+section.progress-card,
+section.admin-only {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* PRZYCISKI – cień i podświetlenie */
+button, .btn-primary, .btn-secondary {
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+button:hover {
+  filter: brightness(1.1);
+}
+
+/* Teksty sekcji (Gramatyka/Vocab) */
+.topics h3 {
+  font-size: 1.4em;
+  color: #FFD100;
+  margin-top: 1rem;
+  border-left: 5px solid #FFD100;
+  padding-left: .5rem;
+}
+
+/* Admin Panel – karty jak formularze bloczkowe */
+.admin-only form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  background-color: rgba(255,255,255,0.05);
+  padding: 1rem;
+  border-radius: 8px;
+}
+.admin-only form input,
+.admin-only form select,
+.admin

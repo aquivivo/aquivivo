@@ -10,570 +10,306 @@
       rel="stylesheet"
     />
 
-    <style>
-      :root {
-        --yellow: #fcd116;
-        --blue: #003893;
-        --red: #ce1126;
-        --ink: #0b1b3f;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family: Montserrat, Arial, sans-serif;
-        min-height: 100vh;
-        background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
-        color: white;
-      }
-
-      .sessionBar {
-        display: none !important;
-        background: var(--yellow);
-        padding: 8px 0;
-        text-align: center;
-        font-size: 12px;
-        color: var(--blue);
-        font-weight: 800;
-        letter-spacing: 0.2px;
-      }
-      .sessionBar strong {
-        font-weight: 900;
-      }
-
-      h1 {
-        font-family: 'Playfair Display', serif;
-        font-weight: 900;
-        font-size: 44px;
-        margin: 18px 0 6px 0;
-        line-height: 1.05;
-        color: var(--yellow);
-      }
-      .subtitle {
-        opacity: 0.9;
-        margin: 0 0 16px 0;
-        max-width: 900px;
-        line-height: 1.6;
-      }
-
-      .metaRow {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-        margin-top: 10px;
-      }
-      .pill {
-        font-size: 12px;
-        font-weight: 900;
-        border-radius: 999px;
-        padding: 6px 10px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        background: rgba(255, 255, 255, 0.12);
-        color: white;
-      }
-      .pill-blue {
-        border-color: rgba(0, 56, 147, 0.35);
-      }
-      .pill-yellow {
-        background: rgba(252, 209, 22, 0.95);
-        color: var(--ink);
-        border-color: rgba(252, 209, 22, 0.7);
-      }
-
-      .sectionTitle {
-        margin: 22px 0 12px;
-        font-size: 16px;
-        font-weight: 900;
-        letter-spacing: 0.3px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      /* Exercises */
-      .exercise {
-        background: white;
-        color: var(--ink);
-        border-radius: 16px;
-        padding: 16px;
-        margin: 10px 0;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
-        position: relative;
-      }
-      .exercise h3 {
-        margin: 0 0 8px;
-        font-size: 16px;
-        font-weight: 900;
-        color: var(--blue);
-      }
-      .exercise .type {
-        display: inline-flex;
-        font-size: 12px;
-        font-weight: 900;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: rgba(0, 56, 147, 0.08);
-        color: var(--blue);
-        border: 1px solid rgba(0, 56, 147, 0.16);
-        margin-bottom: 10px;
-      }
-      .exercise .prompt {
-        margin: 0 0 12px;
-        color: #374151;
-        line-height: 1.55;
-      }
-      .opts {
-        display: grid;
-        gap: 10px;
-      }
-      .optBtn {
-        text-align: left;
-        padding: 12px 12px;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-        background: #f9fafb;
-        cursor: pointer;
-        font-weight: 800;
-        transition:
-          transform 0.08s ease,
-          filter 0.08s ease;
-      }
-      .optBtn:hover {
-        filter: brightness(0.99);
-        transform: translateY(-1px);
-      }
-      .optBtn[disabled] {
-        opacity: 0.75;
-        cursor: not-allowed;
-        transform: none;
-      }
-
-      .inputRow {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .textInput {
-        width: min(520px, 100%);
-        padding: 12px 12px;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-        font-size: 14px;
-      }
-      .smallNote {
-        font-size: 12px;
-        color: #6b7280;
-        margin-top: 8px;
-      }
-      .result {
-        margin-top: 10px;
-        font-weight: 900;
-      }
-      .ok {
-        color: #065f46;
-      }
-      .bad {
-        color: #b91c1c;
-      }
-
-      /* Admin */
-      .adminWrap {
-        display: none;
-      }
-      .adminGrid {
-        display: grid;
-        gap: 10px;
-        /* Each cell already contains label + control.
-           Use a true 2-column form grid (fix: narrow left column + misaligned fields). */
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        align-items: start;
-      }
-      @media (max-width: 860px) {
-        .adminGrid {
-          grid-template-columns: 1fr;
-        }
-        h1 {
-          font-size: 36px;
-        }
-      }
-      .adminGrid label {
-        font-size: 12px;
-        opacity: 0.9;
-        font-weight: 800;
-        letter-spacing: 0.2px;
-      }
-      .adminGrid input,
-      .adminGrid textarea,
-      .adminGrid select {
-        width: 100%;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        background: rgba(255, 255, 255, 0.12);
-        color: white;
-        padding: 10px 12px;
-        font-size: 14px;
-        outline: none;
-      }
-      /* Better select UX (fix: hard-to-use dropdowns) */
-      .adminGrid select {
-        cursor: pointer;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        padding-right: 42px;
-        background-image:
-          linear-gradient(
-            45deg,
-            transparent 50%,
-            rgba(255, 255, 255, 0.92) 50%
-          ),
-          linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.92) 50%,
-            transparent 50%
-          );
-        background-position:
-          calc(100% - 18px) calc(50% - 3px),
-          calc(100% - 12px) calc(50% - 3px);
-        background-size:
-          6px 6px,
-          6px 6px;
-        background-repeat: no-repeat;
-      }
-      .adminGrid textarea {
-        min-height: 92px;
-        resize: vertical;
-      }
-      .adminGrid input::placeholder,
-      .adminGrid textarea::placeholder {
-        color: rgba(255, 255, 255, 0.55);
-      }
-      .adminGrid option {
-        background: var(--blue);
-        color: white;
-      }
-
-      .adminActions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 10px;
-      }
-
-      .dangerMini {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        border: none;
-        border-radius: 10px;
-        padding: 8px 10px;
-        font-weight: 900;
-        cursor: pointer;
-        background: var(--red);
-        color: white;
-      }
-
-      /* Toast + validation */
-      #toast {
-        display: none;
-        position: fixed;
-        left: 50%;
-        bottom: 18px;
-        transform: translateX(-50%);
-        z-index: 999;
-        padding: 12px 14px;
-        border-radius: 999px;
-        font-weight: 900;
-        letter-spacing: 0.2px;
-        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        backdrop-filter: blur(10px);
-      }
-      .toast-ok {
-        background: rgba(6, 95, 70, 0.92);
-        color: white;
-      }
-      .toast-bad {
-        background: rgba(185, 28, 28, 0.92);
-        color: white;
-      }
-      .toast-warn {
-        background: rgba(252, 209, 22, 0.94);
-        color: var(--ink);
-        border-color: rgba(252, 209, 22, 0.7);
-      }
-
-      .field-bad {
-        outline: 2px solid rgba(206, 17, 38, 0.95);
-        outline-offset: 2px;
-      }
-      .muted {
-        opacity: 0.9;
-      }
-
-      .modal {
-        position: fixed;
-        inset: 0;
-        z-index: 200;
-      }
-      .modalBackdrop {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.55);
-      }
-      .modalBox {
-        position: relative;
-        width: min(760px, calc(100vw - 28px));
-        max-height: calc(100vh - 28px);
-        overflow: auto;
-        margin: 14px auto;
-        padding: 16px 16px 14px;
-        border: 1px solid rgba(255, 255, 255, 0.16);
-      }
-      .dragHint {
-        cursor: grab;
-      }
-      .dragging {
-        opacity: 0.6;
-        transform: scale(0.99);
-      }
-
-      /* --- Lesson navigation + completion --- */
-      .lessonTopTools {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        margin: 10px 0 14px;
-      }
-      .lessonNavRow {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .btnGhost {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        color: white;
-        border-radius: 999px;
-        padding: 10px 12px;
-        font-weight: 800;
-        cursor: pointer;
-      }
-      .btnGhost:hover {
-        filter: brightness(1.05);
-        transform: translateY(-1px);
-      }
-      .btnPrimary {
-        background: var(--yellow);
-        border: none;
-        color: #111827;
-        border-radius: 999px;
-        padding: 10px 12px;
-        font-weight: 900;
-        cursor: pointer;
-      }
-      .btnPrimary:hover {
-        filter: brightness(1.02);
-        transform: translateY(-1px);
-      }
-      .pillDone {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 12px;
-        border-radius: 999px;
-        background: rgba(34, 197, 94, 0.14);
-        border: 1px solid rgba(34, 197, 94, 0.25);
-        color: #eafff1;
-        font-weight: 900;
-      }
-      .pillNotDone {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 12px;
-        border-radius: 999px;
-        background: rgba(239, 68, 68, 0.12);
-        border: 1px solid rgba(239, 68, 68, 0.22);
-        color: #ffecec;
-        font-weight: 900;
-      }
-      .hintSmall {
-        font-size: 12px;
-        opacity: 0.78;
-        margin-top: 8px;
-      }
-
-      /* --- Lesson content block --- */
-      .lessonContentCard {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        backdrop-filter: blur(12px);
-        border-radius: 18px;
-        padding: 16px;
-        margin: 12px 0 14px;
-      }
-      .lessonContentTitle {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 10px;
-      }
-      .lessonContentTitle h3 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 900;
-      }
-      .lessonText {
-        line-height: 1.55;
-        font-size: 14px;
-        opacity: 0.95;
-        white-space: normal;
-      }
-      .lessonEmpty {
-        opacity: 0.75;
-        font-size: 13px;
-      }
-      .adminEditor {
-        display: grid;
-        gap: 10px;
-        margin-top: 10px;
-      }
-      .adminEditor textarea {
-        width: 100%;
-        min-height: 180px;
-        resize: vertical;
-        border-radius: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        background: rgba(0, 0, 0, 0.18);
-        color: white;
-        padding: 12px;
-        font-size: 13px;
-        outline: none;
-      }
-      .adminEditor .row {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-
-      /* === PATCH UI: unified glass inputs (filters + common inputs) === */
-      #filtersCard input,
-      #filtersCard select,
-      #filtersCard textarea,
-      #importJsonArea,
-      .inputRow .textInput {
-        font-family: Montserrat, Arial, sans-serif;
-        font-weight: 700;
-        font-size: 14px;
-
-        background: rgba(255, 255, 255, 0.12);
-        color: white;
-
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-
-        padding: 10px 14px;
-        outline: none;
-
-        transition:
-          background 0.15s ease,
-          border-color 0.15s ease,
-          box-shadow 0.15s ease;
-      }
-
-      /* extra: fix misaligned form fields + make selects clickable everywhere */
-      #filtersCard input,
-      #filtersCard select,
-      #filtersCard textarea,
-      .adminGrid input,
-      .adminGrid select,
-      .adminGrid textarea {
-        box-sizing: border-box;
-      }
-
-      .adminGrid > div {
-        min-width: 0;
-      }
-
-      /* Make selects more obvious + consistent */
-      select {
-        font-family: Montserrat, Arial, sans-serif;
-      }
-
-      #filtersCard textarea,
-      #importJsonArea {
-        border-radius: 16px;
-        font-weight: 600;
-      }
-
-      #filtersCard input:focus,
-      #filtersCard select:focus,
-      #filtersCard textarea:focus,
-      #importJsonArea:focus,
-      .inputRow .textInput:focus {
-        background: rgba(255, 255, 255, 0.18);
-        border-color: rgba(252, 209, 22, 0.6);
-        box-shadow: 0 0 0 3px rgba(252, 209, 22, 0.22);
-      }
-
-      #filtersCard input::placeholder,
-      #filtersCard textarea::placeholder,
-      #importJsonArea::placeholder,
-      .inputRow .textInput::placeholder {
-        color: rgba(255, 255, 255, 0.6);
-        font-weight: 600;
-      }
-
-      #filtersCard select option {
-        background: var(--blue);
-        color: white;
-        font-weight: 600;
-      }
-
-      /* --- Progress --- */
-      .progressWrap {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .progressBar {
-        width: min(520px, 100%);
-        height: 12px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.14);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        overflow: hidden;
-      }
-      .progressFill {
-        height: 100%;
-        background: var(--yellow);
-        width: 0%;
-        transition: width 0.25s ease;
-      }
-      .progressText {
-        font-size: 12px;
-        font-weight: 900;
-        opacity: 0.92;
-      }
-    </style>
-    <link rel="stylesheet" href="assets/css/styles.css" />
-  </head>
+    
+    <style id="coffeeFloatStyle">
+/* ☕ Floating coffee (global) */
+#coffeeFloat{
+  position: absolute;
+  right: -40px;
+  top: 360px;
+  width: 420px;
+  height: 420px;
+  pointer-events: none;
+  opacity: 0.9;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35));
+  animation: coffeeFloat 7s ease-in-out infinite;
+  transform-origin: 50% 60%;
+  z-index: 1;
+}
+#coffeeFloat svg{ width:100%; height:100%; display:block; }
+@keyframes coffeeFloat{
+  0%   { transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1); }
+  50%  { transform: translateY(-18px) translateX(-6px) rotate(1deg) scale(1.02); }
+  100% { transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1); }
+}
+@media (max-width: 980px){
+  #coffeeFloat{ display:none; }
+}
+</style>
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
 
   <body data-page="ejercicioadmin">
     <div id="appHeader"></div>
+<div
+            aria-hidden="true"
+            id="coffeeFloat"
+           
+          >
+            <svg
+              class="w-72 h-72 mx-auto drop-shadow-2xl"
+              viewbox="0 0 200 200"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <lineargradient
+                  id="cupGradient"
+                  x1="0%"
+                  x2="0%"
+                  y1="0%"
+                  y2="100%"
+                >
+                  <stop
+                    offset="0%"
+                    style="stop-color: #8b4513; stop-opacity: 1"
+                  ></stop>
+                  <stop
+                    offset="100%"
+                    style="stop-color: #654321; stop-opacity: 1"
+                  ></stop>
+                </lineargradient>
+                <lineargradient
+                  id="coffeeGradient"
+                  x1="0%"
+                  x2="0%"
+                  y1="0%"
+                  y2="100%"
+                >
+                  <stop
+                    offset="0%"
+                    style="stop-color: #6f4e37; stop-opacity: 1"
+                  ></stop>
+                  <stop
+                    offset="100%"
+                    style="stop-color: #3e2723; stop-opacity: 1"
+                  ></stop>
+                </lineargradient>
+              </defs>
+              <ellipse
+                cx="100"
+                cy="55"
+                fill="#FCD116"
+                opacity="0.3"
+                rx="70"
+                ry="15"
+              ></ellipse>
+              <ellipse
+                cx="100"
+                cy="55"
+                fill="#003893"
+                opacity="0.3"
+                rx="60"
+                ry="12"
+              ></ellipse>
+              <ellipse
+                cx="100"
+                cy="55"
+                fill="#FCD116"
+                opacity="0.3"
+                rx="50"
+                ry="10"
+              ></ellipse>
+              <rect
+                fill="#FCD116"
+                height="25"
+                opacity="0.3"
+                rx="5"
+                width="30"
+                x="85"
+                y="55"
+              ></rect>
+              <path
+                d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z"
+                fill="url(#cupGradient)"
+                stroke="#654321"
+                stroke-width="2"
+              ></path>
+              <ellipse
+                cx="100"
+                cy="120"
+                fill="url(#coffeeGradient)"
+                rx="35"
+                ry="8"
+              ></ellipse>
+              <path
+                d="M 140 130 Q 155 130 155 145 Q 155 160 140 160"
+                fill="none"
+                stroke="url(#cupGradient)"
+                stroke-linecap="round"
+                stroke-width="8"
+              ></path>
+              <rect
+                fill="#FCD116"
+                height="8"
+                opacity="0.6"
+                rx="2"
+                width="60"
+                x="70"
+                y="135"
+              ></rect>
+              <rect
+                fill="#003893"
+                height="5"
+                opacity="0.6"
+                rx="1"
+                width="60"
+                x="70"
+                y="145"
+              ></rect>
+              <rect
+                fill="#CE1126"
+                height="5"
+                opacity="0.6"
+                rx="1"
+                width="60"
+                x="70"
+                y="152"
+              ></rect>
+              <path
+                d="M 85 110 Q 80 95 85 85"
+                fill="none"
+                opacity="0.7"
+                stroke="#FCD116"
+                stroke-linecap="round"
+                stroke-width="3"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="2s"
+                  repeatcount="indefinite"
+                  values="0.7;0.3;0.7"
+                ></animate>
+                <animate
+                  attributename="d"
+                  dur="2s"
+                  repeatcount="indefinite"
+                  values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85"
+                ></animate>
+              </path>
+              <path
+                d="M 100 108 Q 100 90 105 80"
+                fill="none"
+                opacity="0.8"
+                stroke="#FCD116"
+                stroke-linecap="round"
+                stroke-width="4"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="2.5s"
+                  repeatcount="indefinite"
+                  values="0.8;0.4;0.8"
+                ></animate>
+                <animate
+                  attributename="d"
+                  dur="2.5s"
+                  repeatcount="indefinite"
+                  values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80"
+                ></animate>
+              </path>
+              <path
+                d="M 115 110 Q 120 95 115 85"
+                fill="none"
+                opacity="0.7"
+                stroke="#FCD116"
+                stroke-linecap="round"
+                stroke-width="3"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="2.2s"
+                  repeatcount="indefinite"
+                  values="0.7;0.3;0.7"
+                ></animate>
+                <animate
+                  attributename="d"
+                  dur="2.2s"
+                  repeatcount="indefinite"
+                  values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85"
+                ></animate>
+              </path>
+              <ellipse
+                cx="50"
+                cy="140"
+                fill="#3E2723"
+                rx="8"
+                ry="10"
+                transform="rotate(-20 50 140)"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="3s"
+                  repeatcount="indefinite"
+                  values="1;0.7;1"
+                ></animate>
+              </ellipse>
+              <path
+                d="M 50 135 Q 50 140 50 145"
+                stroke="#654321"
+                stroke-width="1.5"
+              ></path>
+              <ellipse
+                cx="150"
+                cy="135"
+                fill="#3E2723"
+                rx="8"
+                ry="10"
+                transform="rotate(20 150 135)"
+              >
+                <animate
+                  attributename="opacity"
+                  dur="3s"
+                  repeatcount="indefinite"
+                  values="0.7;1;0.7"
+                ></animate>
+              </ellipse>
+              <path
+                d="M 150 130 Q 150 135 150 140"
+                stroke="#654321"
+                stroke-width="1.5"
+              ></path>
+              <rect
+                fill="#FCD116"
+                height="8"
+                opacity="0.9"
+                rx="1"
+                width="60"
+                x="70"
+                y="175"
+              ></rect>
+              <rect
+                fill="#FFFFFF"
+                height="8"
+                opacity="0.8"
+                rx="1"
+                width="50"
+                x="75"
+                y="178"
+              ></rect>
+              <rect
+                fill="#FCD116"
+                height="8"
+                opacity="0.7"
+                rx="1"
+                width="40"
+                x="80"
+                y="181"
+              ></rect>
+              <path
+                d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z"
+                fill="#CE1126"
+                opacity="0.8"
+              >
+                <animate
+                  attributename="transform"
+                  dur="1.5s"
+                  repeatcount="indefinite"
+                  values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)"
+                ></animate>
+              </path>
+            </svg>
+          </div>
+
     <div class="sessionBar">
       Sesión activa: <strong id="sessionEmail">Cargando...</strong>
     </div>
@@ -2649,5 +2385,112 @@
       }
     </script>
     <script src="assets/js/layout.js"></script>
-  </body>
+  
+<script>
+(function(){
+  const GLOBAL_KEY = "AV_COFFEE_CFG_GLOBAL";
+  const PREFIX = "AV_COFFEE_CFG::";
+
+  const el = document.getElementById("coffeeFloat");
+  if(!el) return;
+
+  const defaults = {
+    enabled: true,
+    anchor: "right",     // "right" or "left"
+    x: -40,              // right/left (px)
+    y: 360,              // top (px)
+    size: 420,           // px
+    opacity: 0.9,        // 0..1
+    z: 1,                // z-index
+    hideMobile: true
+  };
+
+  function clamp(n,min,max){ n=Number(n); if(Number.isNaN(n)) return min; return Math.min(max, Math.max(min, n)); }
+  function safePath(){
+    try{
+      const p = (location && location.pathname) ? location.pathname : "";
+      return p.replace(/[^a-z0-9_\-./]/gi,"_");
+    }catch(e){ return ""; }
+  }
+  function pageKey(){ return PREFIX + safePath(); }
+
+  function readJSON(key){
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){ return null; }
+  }
+
+  function loadCfg(){
+    const g = readJSON(GLOBAL_KEY) || {};
+    const p = readJSON(pageKey()) || {};
+    return { ...defaults, ...g, ...p };
+  }
+
+  function applyCfg(cfg){
+    cfg = { ...defaults, ...cfg };
+
+    if(!cfg.enabled){
+      el.style.display = "none";
+      return;
+    }else{
+      el.style.display = "";
+    }
+
+    el.style.top = (Number(cfg.y)||defaults.y) + "px";
+
+    const x = Number(cfg.x);
+    if(cfg.anchor === "left"){
+      el.style.left = (Number.isFinite(x)?x:defaults.x) + "px";
+      el.style.right = "auto";
+    }else{
+      el.style.right = (Number.isFinite(x)?x:defaults.x) + "px";
+      el.style.left = "auto";
+    }
+
+    const size = clamp(cfg.size, 120, 900);
+    el.style.width = size + "px";
+    el.style.height = size + "px";
+    el.style.opacity = clamp(cfg.opacity, 0.05, 1);
+    el.style.zIndex = String(Number(cfg.z)||defaults.z);
+
+    // hide mobile toggle (overrides CSS media query)
+    if(cfg.hideMobile === false){
+      el.style.setProperty("display","", "important");
+    }
+  }
+
+  function saveCfg(cfg, scope){
+    const key = (scope === "page") ? pageKey() : GLOBAL_KEY;
+    localStorage.setItem(key, JSON.stringify(cfg));
+  }
+
+  function clearCfg(scope){
+    const key = (scope === "page") ? pageKey() : GLOBAL_KEY;
+    localStorage.removeItem(key);
+  }
+
+  // expose for admin page
+  window.AV_Coffee = {
+    GLOBAL_KEY,
+    PREFIX,
+    defaults,
+    safePath,
+    pageKey,
+    load: loadCfg,
+    apply: applyCfg,
+    save: saveCfg,
+    clear: clearCfg
+  };
+
+  applyCfg(loadCfg());
+
+  window.addEventListener("storage", (e)=>{
+    if(!e || !e.key) return;
+    if(e.key === GLOBAL_KEY || e.key === pageKey()) applyCfg(loadCfg());
+  });
+})();
+</script>
+</body>
 </html>
