@@ -1,22 +1,26 @@
-import {
-        onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-      import {
 import { auth, db } from "../firebase-init.js";
-        collection,
-        query,
-        where,
-        getDocs,
-        addDoc,
-        deleteDoc,
-        doc,
-        getDoc,
-        setDoc,
-        orderBy,
-        serverTimestamp,
-        arrayUnion,
-        updateDoc} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+  arrayUnion,
+  deleteField,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-      // ✅ Firebase config (Twoje)
+// ✅ Firebase config (Twoje)
       const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
 
       // URL params

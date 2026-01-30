@@ -38,17 +38,27 @@
             ${showCourse ? `<a class="btn-white-outline" id="btnLeccion" href="${hrefCourse}">📚 Curso</a>` : ``}
             ${showPanel ? `<a class="btn-white-outline" id="btnPanel" href="${hrefPanel}">🏠 Panel</a>` : ``}
             <a class="btn-white-outline" id="btnInicio" href="${hrefInicio}">✨ Inicio</a>
-            ${showBack ? `<button class="btn" id="btnAtras" type="button">⬅️ Atrás</button>` : ``}
+            ${showBack ? `<button class="btn-white-outline" id="btnAtras" type="button">⬅️ Atrás</button>` : ``}
             ${showLogout ? `<button class="btn-red" id="btnLogout" type="button">Cerrar sesión</button>` : ``}
           </div>
         </div>
       </div>
     `;
 
-    // Back button behavior
+    // Back button behavior ("prawdziwy back")
+    // 1) try history.back()
+    // 2) if the browser can't go back (direct entry), fall back to Panel
     const backBtn = document.getElementById("btnAtras");
     if (backBtn) {
-      backBtn.addEventListener("click", () => history.length > 1 ? history.back() : (location.href = hrefPanel));
+      backBtn.addEventListener("click", () => {
+        const before = location.href;
+        history.back();
+        // If nothing happened (no history), we stay on the same URL.
+        // Give the browser a tick and then fallback.
+        setTimeout(() => {
+          if (location.href === before) location.href = hrefPanel;
+        }, 350);
+      });
     }
 
     // Optional coffee (enabled per-page)
@@ -65,8 +75,8 @@
   }
 
   if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", buildHeader);
-} else {
-  buildHeader();
-}
+    document.addEventListener("DOMContentLoaded", buildHeader);
+  } else {
+    buildHeader();
+  }
 })();

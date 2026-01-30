@@ -1,20 +1,26 @@
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-      import {
 import { auth, db } from "../firebase-init.js";
-        collection,
-        getDocs,
-        doc,
-        getDoc,
-        setDoc,
-        updateDoc,
-        serverTimestamp,
-        deleteField,
-        query,
-        orderBy,
-        limit,
-        startAfter} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+  arrayUnion,
+  deleteField,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-      // ✅ Configuración de Firebase
+// ✅ Configuración de Firebase
       const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
       const LEVELS = ['A1', 'A2', 'B1', 'B2'];
       const PAID_LEVELS = ['A2', 'B1', 'B2'];

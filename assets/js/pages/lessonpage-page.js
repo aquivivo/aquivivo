@@ -1,16 +1,26 @@
-import {
-        onAuthStateChanged,
-        signOut} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-      import {
 import { auth, db } from "../firebase-init.js";
-        doc,
-        getDoc,
-        collection,
-        query,
-        where,
-        getDocs} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+  arrayUnion,
+  deleteField,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-      window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', async () => {
         const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
         const isAdmin = (email) =>
           ADMIN_EMAILS.some(
