@@ -36,7 +36,7 @@
   }
 
   function buildHeader() {
-    const header = el('header', { class: 'nav-glass av-layout' });
+    const header = el('header', { class: `nav-glass av-layout${path === 'ejercicioadmin.html' ? ' av-admin' : ''}` });
     const inner = el('div', { class: 'container nav-inner' });
     const brand = el('div', { class: 'brand' }, [
       el('img', {
@@ -109,35 +109,17 @@
   const level = getQS('level') || 'A1';
   const id = getQS('id') || '';
   actions.appendChild(
-    el(
-      'a',
-      { class: 'btn-white-outline', href: `course.html?level=${encodeURIComponent(level)}` },
-      ['⬅️ Volver al curso'],
-    ),
+    el('a', { class: 'btn-white-outline', id: 'btnPanel', href: 'espanel.html' }, ['Panel']),
   );
   actions.appendChild(
     el(
       'a',
-      { class: 'btn-white-outline', href: `course.html?level=${encodeURIComponent(level)}` },
-      ['📚 Niveles'],
-    ),
-  );
-  actions.appendChild(
-    el(
-      'button',
       {
         class: 'btn-yellow',
-        type: 'button',
-        onclick: async () => {
-          try {
-            await navigator.clipboard.writeText(location.href);
-            toast('✅ Enlace copiado');
-          } catch (e) {
-            toast('⚠️ No se pudo copiar');
-          }
-        },
+        id: 'btnLeccion',
+        href: `lessonpage.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(id)}`,
       },
-      ['🔗 Copiar enlace'],
+      ['Lección'],
     ),
   );
   actions.appendChild(
@@ -145,45 +127,78 @@
       'a',
       {
         class: 'btn-white-outline',
-        id: 'btnStudentView',
-        href: `ejercicio.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(id)}`,
+        id: 'btnInicio',
+        href: `course.html?level=${encodeURIComponent(level)}`,
       },
-      ['👀 Vista alumno'],
-    ),
-  );
-  actions.appendChild(
-    el(
-      'a',
-      {
-        class: 'btn-white-outline',
-        id: 'btnLessonAdmin',
-        href: `lessonadmin.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(id)}`,
-      },
-      ['🛠 Admin lección'],
+      ['Inicio'],
     ),
   );
   actions.appendChild(
     el(
       'button',
-      {
-        class: 'btn-white-outline',
-        type: 'button',
-        onclick: () => location.reload(),
-      },
-      ['🔄 Recargar'],
+      { class: 'btn-white-outline', id: 'btnAtras', type: 'button', onclick: goBack },
+      ['Atrás'],
     ),
   );
   actions.appendChild(
     el(
       'button',
-      {
-        class: 'btn-red',
-        type: 'button',
-        onclick: safeLogout,
-      },
+      { class: 'btn-red', id: 'btnLogout', type: 'button', onclick: safeLogout },
       ['Cerrar sesión'],
     ),
   );
+} else if (path === 'ejercicio.html') {
+      const level = getQS('level') || 'A1';
+      const id = getQS('id') || '';
+      actions.appendChild(
+        el('a', { class: 'btn-white-outline', id: 'btnPanel', href: 'espanel.html' }, ['Panel']),
+      );
+      actions.appendChild(
+        el(
+          'a',
+          {
+            class: 'btn-yellow',
+            id: 'btnLeccion',
+            href: `lessonpage.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(id)}`,
+          },
+          ['Lección'],
+        ),
+      );
+      actions.appendChild(
+        el(
+          'a',
+          {
+            class: 'btn-white-outline',
+            id: 'btnInicio',
+            href: `course.html?level=${encodeURIComponent(level)}`,
+          },
+          ['Inicio'],
+        ),
+      );
+      actions.appendChild(
+        el(
+          'button',
+          {
+            class: 'btn-white-outline',
+            id: 'btnAtras',
+            type: 'button',
+            onclick: goBack,
+          },
+          ['Atrás'],
+        ),
+      );
+      actions.appendChild(
+        el(
+          'button',
+          {
+            class: 'btn-red',
+            id: 'btnLogout',
+            type: 'button',
+            onclick: safeLogout,
+          },
+          ['Cerrar sesión'],
+        ),
+      );
 } else {
       if (isLesson) {
         const level = getQS('level') || 'A1';
@@ -337,6 +352,7 @@
 
   function init() {
     injectStyles();
+    try { if (document.body) document.body.dataset.avPage = path.replace(/\.html$/,''); } catch(e) {}
     const h = document.getElementById('appHeader');
     const f = document.getElementById('appFooter');
     if (h) {

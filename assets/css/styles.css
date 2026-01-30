@@ -652,3 +652,36 @@ body {
   height:72px; }
 }
 
+/* ===== Admin page tweaks (ejercicioadmin) ===== */
+.av-layout.av-admin .nav-actions{
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.av-layout.av-admin .nav-actions::-webkit-scrollbar{ display:none; }
+/* keep buttons on one line without changing sizes */
+.av-layout.av-admin .nav-actions > *{ flex: 0 0 auto; }
+
+/* Match tile/card colors with rest of platform on ejercicioadmin */
+body[data-page="ejercicioadmin"] .card{
+  background: rgba(255,255,255,0.95) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  backdrop-filter: none !important;
+  color: #0b1b3f !important;
+}
+
+
+/* Page-scoped card color alignment (exercise pages) */
+body[data-av-page="ejercicio"] .card,
+body[data-av-page="ejercicioadmin"] .card{
+  background: rgba(17, 26, 51, 0.78) !important;
+  color: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(255,255,255,0.14);
+}
+body[data-av-page="ejercicio"] .card h1,
+body[data-av-page="ejercicio"] .card h2,
+body[data-av-page="ejercicioadmin"] .card h1,
+body[data-av-page="ejercicioadmin"] .card h2{
+  color: rgba(255,255,255,0.92) !important;
+}
