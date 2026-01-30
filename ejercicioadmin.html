@@ -555,24 +555,7 @@
   </head>
 
   <body>
-    <header class="nav-glass">
-      <div class="nav-inner">
-        <div class="brand">
-          <div class="logo-flag" aria-hidden="true"></div>
-          <div class="name">Aqui vivo</div>
-        </div>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-          <a id="backToCourse" class="btn" href="course.html?level=A1">⬅️ Volver al curso</a>
-          <a class="btn" id="levelsBtn" href="course.html?level=A1">📚 Niveles</a>
-          <button class="btn btn-yellow" id="btnCopyLink" type="button">🔗 Copiar enlace</button>
-          <a class="btn" id="btnStudentView" href="#">👀 Vista alumno</a>
-          <a class="btn" id="btnLessonAdmin" href="#">🛠 Admin lección</a>
-          <button class="btn" id="btnReload" type="button">🔄 Recargar</button>
-        </div>
-      </div>
-    </header>
-
+  <div id="appHeader"></div>
     <div class="sessionBar">
       Sesión activa: <strong id="sessionEmail">Cargando...</strong>
     </div>
@@ -2325,5 +2308,6 @@ const btnAutoOrder = document.getElementById("btnAutoOrder");
         previewModal.style.display = "block";
       }
  </script>
-  </body>
+    <script src="assets/js/layout.js"></script>
+</body>
 </html>
