@@ -1,166 +1,234 @@
-import { db } from '../firebase-init.js';
+// assets/js/pages/course-page.js
+// Course topics list (requires auth + verified email + access for level)
+
+import { auth, db } from "../firebase-init.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 import {
   collection,
   query,
   where,
   orderBy,
-  getDocs
-} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+  getDocs,
+  getDoc,
+  doc,
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-/**
- * course-page.js
- * Works with course.html (IDs: levelTitle, progressFill, progressText, totalCount, showCount,
- * searchInput, typeFilter, clearFilters, topicsGrid)
- *
- * Data source: Firestore collection 'courses'
- * Required fields: level (string), title (string), desc (string), order (number), type ('gramatica'|'vocabulario' or similar)
- */
+const $ = (id) => document.getElementById(id);
 
-function esc(s){ return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+const params = new URLSearchParams(window.location.search);
+const LEVEL = (params.get("level") || "A1").toUpperCase();
 
-function getLevel(){
-  const qs = new URLSearchParams(location.search);
-  return (qs.get('level') || 'A1').toUpperCase();
+const LS_VISITED_KEY = `aquivivo_visited_${LEVEL}`;
+const LS_LAST_KEY = `aquivivo_lastLesson_${LEVEL}`;
+
+// UI refs (must exist in course.html)
+const levelTitle = $("levelTitle");
+const levelSubtitle = $("levelSubtitle");
+const topicsGrid = $("topicsGrid");
+const searchInput = $("searchInput");
+const typeFilter = $("typeFilter");
+const taskFilter = $("taskFilter");
+const btnClearFilters = $("btnClearFilters");
+
+function toast(msg) {
+  const el = $("toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
 }
 
-function normType(v){
-  const s = String(v || '').toLowerCase();
-  if (s.startsWith('g')) return 'gramatica';
-  if (s.startsWith('v')) return 'vocabulario';
-  // allow legacy values
-  if (s === 'grammar') return 'gramatica';
-  if (s === 'vocab') return 'vocabulario';
-  return '';
-}
-
-function lsVisitedKey(level){ return `aquivivo_visited_${level}`; }
-
-function getVisited(level){
-  try{
-    const arr = JSON.parse(localStorage.getItem(lsVisitedKey(level)) || '[]');
+function getVisitedSet() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(LS_VISITED_KEY) || "[]");
     return new Set(Array.isArray(arr) ? arr : []);
-  }catch{ return new Set(); }
+  } catch {
+    return new Set();
+  }
 }
 
-function setVisited(level, set){
-  try{ localStorage.setItem(lsVisitedKey(level), JSON.stringify(Array.from(set))); }catch{}
+function setVisitedSet(set) {
+  try {
+    localStorage.setItem(LS_VISITED_KEY, JSON.stringify(Array.from(set)));
+  } catch {}
 }
 
-function updateProgress(level, total){
-  const visited = getVisited(level).size;
-  const pct = total > 0 ? Math.round((visited / total) * 100) : 0;
-
-  const fill = document.getElementById('progressFill');
-  const txt  = document.getElementById('progressText');
-
-  if (fill) fill.style.width = `${pct}%`;
-  if (txt) txt.textContent = `${pct}% · ${visited}/${total} temas visitados`;
+function escapeHtml(s) {
+  return String(s || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
-function openTopic(level, topicId){
-  const visited = getVisited(level);
-  visited.add(topicId);
-  setVisited(level, visited);
-  // go to lesson page
-  window.location.href = `lessonpage.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(topicId)}`;
+function hasActiveAccess(userData, level) {
+  const iso = userData?.access?.[level]?.freeUntil;
+  if (!iso) return false;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return false;
+  return d > new Date();
 }
 
-function render(topics){
-  const grid = document.getElementById('topicsGrid');
-  if (!grid) return;
-
-  grid.innerHTML = topics.map(t => `
-    <div class="card topicCard" role="button" tabindex="0"
-      data-id="${esc(t.id)}"
-      onclick="window.__openTopic('${esc(t.level)}','${esc(t.id)}')"
-      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); window.__openTopic('${esc(t.level)}','${esc(t.id)}')}">
-      <div class="metaRow">
-        ${t.type ? `<span class="pill pill-blue">${t.type === 'gramatica' ? '📘 Gramática' : '📗 Vocabulario'}</span>` : ``}
-        ${Number.isFinite(t.order) ? `<span class="pill pill-yellow">#${t.order}</span>` : ``}
-      </div>
-      <div style="margin-top:10px; font-weight:900; font-size:16px;">${esc(t.title)}</div>
-      <div class="hintSmall" style="margin-top:6px;">${esc(t.desc)}</div>
-    </div>
-  `).join('');
-}
-
-function applyFilters(allTopics){
-  const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-  const type = (document.getElementById('typeFilter')?.value || '').trim().toLowerCase();
-
-  const filtered = allTopics.filter(t => {
-    const matchQ = !q || (t.title.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q));
-    const matchT = !type || t.type === type;
-    return matchQ && matchT;
-  });
-
-  const showCount = document.getElementById('showCount');
-  if (showCount) showCount.textContent = String(filtered.length);
-
-  render(filtered);
-}
-
-async function loadTopics(level){
-  const q = query(
-    collection(db, 'courses'),
-    where('level', '==', level),
-    orderBy('order', 'asc')
-  );
-
-  const snap = await getDocs(q);
-  const topics = [];
-  snap.forEach(docu => {
-    const d = docu.data() || {};
-    topics.push({
-      id: docu.id,
-      level,
-      title: d.title || '—',
-      desc: d.desc || '',
-      order: (d.order === 0 || d.order) ? Number(d.order) : NaN,
-      type: normType(d.type)
-    });
-  });
-
-  // fallback sort if order missing
-  topics.sort((a,b) => (Number.isFinite(a.order)?a.order:99999) - (Number.isFinite(b.order)?b.order:99999));
-
-  const totalCount = document.getElementById('totalCount');
-  if (totalCount) totalCount.textContent = String(topics.length);
-
-  updateProgress(level, topics.length);
-
-  return topics;
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const level = getLevel();
-  const title = document.getElementById('levelTitle');
-  if (title) title.textContent = `Nivel ${level}`;
-
-  // expose for onclick in template (keeps file simple)
-  window.__openTopic = openTopic;
-
-  let allTopics = [];
-  try{
-    allTopics = await loadTopics(level);
-  }catch(e){
+async function loadCourseMeta() {
+  try {
+    const snap = await getDoc(doc(db, "course_meta", LEVEL));
+    const data = snap.exists() ? snap.data() : {};
+    if (levelTitle) levelTitle.textContent = data?.title || `Nivel ${LEVEL}`;
+    if (levelSubtitle) levelSubtitle.textContent = data?.subtitle || "";
+  } catch (e) {
     console.error(e);
-    const grid = document.getElementById('topicsGrid');
-    if (grid) grid.innerHTML = `<div class="card">No se pudo cargar el curso. Revisa la consola y tu conexión a Firestore.</div>`;
+  }
+}
+
+function openLesson(topicId) {
+  try {
+    localStorage.setItem(LS_LAST_KEY, topicId);
+  } catch {}
+  const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topicId)}`;
+  window.location.href = url;
+}
+
+let allTopics = [];
+
+function renderFiltered() {
+  const q = (searchInput?.value || "").toLowerCase().trim();
+  const t = (typeFilter?.value || "").toLowerCase().trim();
+  const task = (taskFilter?.value || "").toLowerCase().trim();
+
+  let list = allTopics.slice();
+
+  if (q) {
+    list = list.filter((x) => {
+      const s = `${x.title || ""} ${x.desc || ""}`.toLowerCase();
+      return s.includes(q);
+    });
+  }
+  if (t) list = list.filter((x) => (x.type || "").toLowerCase() === t);
+  if (task) {
+    list = list.filter((x) =>
+      Array.isArray(x.tasks)
+        ? x.tasks.map((z) => String(z).toLowerCase()).includes(task)
+        : String(x.task || "").toLowerCase() === task
+    );
+  }
+
+  const visited = getVisitedSet();
+  if (topicsGrid) {
+    topicsGrid.innerHTML = "";
+    list.forEach((x, idx) => {
+      const isVisited = visited.has(x.id);
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "topicCard card";
+      card.innerHTML = `
+        <div class="metaRow" style="justify-content:space-between;">
+          <span class="pill pill-blue">${escapeHtml(x.typeLabel || x.type || "Tema")}</span>
+          <span class="pill pill-yellow">#${escapeHtml(String(x.order ?? idx + 1))}</span>
+        </div>
+        <div class="sectionTitle" style="margin:10px 0 6px; text-align:left;">
+          ${escapeHtml(x.title || "")}
+        </div>
+        <div class="subtitle" style="text-align:left;">
+          ${escapeHtml(x.desc || "")}
+        </div>
+        ${isVisited ? `<div class="pill" style="margin-top:10px;">✅ Visitado</div>` : ``}
+      `;
+      card.addEventListener("click", () => {
+        const set = getVisitedSet();
+        set.add(x.id);
+        setVisitedSet(set);
+        openLesson(x.id);
+      });
+      topicsGrid.appendChild(card);
+    });
+  }
+
+  // stats
+  $("statTotal") && ($("statTotal").textContent = String(allTopics.length));
+  $("statShowing") && ($("statShowing").textContent = String(list.length));
+
+  // progress
+  const visitedCount = Array.from(visited).filter((id) => allTopics.some((t) => t.id === id)).length;
+  const total = allTopics.length;
+  const pct = total ? Math.round((visitedCount / total) * 100) : 0;
+  $("progressText") && ($("progressText").textContent = `${pct}%`);
+  $("progressCount") && ($("progressCount").textContent = `${visitedCount}/${total}`);
+  $("progressFill") && ($("progressFill").style.width = `${pct}%`);
+
+  // continue
+  const last = localStorage.getItem(LS_LAST_KEY);
+  const btn = $("btnContinue");
+  if (btn && last && allTopics.some((t) => t.id === last)) {
+    btn.style.display = "inline-flex";
+    btn.onclick = () => openLesson(last);
+  } else if (btn) {
+    btn.style.display = "none";
+  }
+}
+
+async function loadTopics() {
+  // courses where level == LEVEL orderBy order
+  const q = query(
+    collection(db, "courses"),
+    where("level", "==", LEVEL),
+    orderBy("order", "asc")
+  );
+  const snap = await getDocs(q);
+  allTopics = snap.docs.map((d) => {
+    const data = d.data() || {};
+    return {
+      id: d.id,
+      title: data.title || data.name || "",
+      desc: data.desc || data.description || "",
+      type: data.type || data.category || "gramatica",
+      typeLabel: data.typeLabel || (String(data.type || "Gramática").slice(0, 1).toUpperCase() + String(data.type || "gramática").slice(1)),
+      tasks: data.tasks || [],
+      order: data.order ?? 0,
+    };
+  });
+
+  // fill filters
+  if (typeFilter) {
+    const types = Array.from(new Set(allTopics.map((t) => (t.type || "").toLowerCase()).filter(Boolean)));
+    typeFilter.innerHTML = `<option value="">Todos</option>` + types.map((x) => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+  }
+  renderFiltered();
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return; // layout.js will redirect
+
+  // access control via users/{uid}
+  try {
+    const uSnap = await getDoc(doc(db, "users", user.uid));
+    const uData = uSnap.exists() ? uSnap.data() : null;
+
+    if (!uData || !hasActiveAccess(uData, LEVEL)) {
+      // no access → send to panel
+      toast("🔒 No tienes acceso a este nivel.");
+      setTimeout(() => (window.location.href = "espanel.html"), 600);
+      return;
+    }
+  } catch (e) {
+    console.error(e);
+    toast("No se pudo verificar el acceso. Revisa consola.");
     return;
   }
 
-  const searchInput = document.getElementById('searchInput');
-  const typeFilter  = document.getElementById('typeFilter');
-  const clearBtn    = document.getElementById('clearFilters');
+  await loadCourseMeta();
+  await loadTopics();
+});
 
-  if (searchInput) searchInput.addEventListener('input', () => applyFilters(allTopics));
-  if (typeFilter)  typeFilter.addEventListener('change', () => applyFilters(allTopics));
-  if (clearBtn)    clearBtn.addEventListener('click', () => {
-    if (searchInput) searchInput.value = '';
-    if (typeFilter) typeFilter.value = '';
-    applyFilters(allTopics);
-  });
-
-  applyFilters(allTopics);
+// UI events
+searchInput?.addEventListener("input", renderFiltered);
+typeFilter?.addEventListener("change", renderFiltered);
+taskFilter?.addEventListener("change", renderFiltered);
+btnClearFilters?.addEventListener("click", () => {
+  if (searchInput) searchInput.value = "";
+  if (typeFilter) typeFilter.value = "";
+  if (taskFilter) taskFilter.value = "";
+  renderFiltered();
+  toast("🧼 Filtros limpiados");
 });

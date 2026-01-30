@@ -1,405 +1,305 @@
 import { auth, db } from "../firebase-init.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 import {
+  doc,
+  getDoc,
   collection,
   query,
   where,
-  orderBy,
-  limit,
-  startAfter,
-  getDocs,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  setDoc,
-  doc,
-  serverTimestamp,
-  arrayUnion,
-  arrayRemove,
-  writeBatch,
-  increment,
-  onSnapshot
+  getDocs
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
-        const isAdmin = (email) =>
-          ADMIN_EMAILS.some(
-            (a) => (a || '').toLowerCase() === (email || '').toLowerCase(),
-          );
-        const $ = (id) => document.getElementById(id);
+const ADMIN_EMAILS = ["aquivivo.pl@gmail.com"];
+const isAdminEmail = (email) =>
+  ADMIN_EMAILS.some((a) => (a || "").toLowerCase() === (email || "").toLowerCase());
 
-        const toast = $('toast');
-        const btnLogout = $('btnLogout');
-        const btnPanel = $('btnPanel');
-        const btnEjercicios = $('btnEjercicios');
-        const btnInicio = $('btnInicio');
-        const btnAtras = $('btnAtras');
-        const pillAdminLink = $('pillAdminLink');
+const $ = (id) => document.getElementById(id);
 
-        const lessonTitleEl = $('lessonTitle');
-        const lessonDescEl = $('lessonDesc');
-        const pillLevel = $('pillLevel');
-        const pillTopic = $('pillTopic');
-        const pillType = $('pillType');
-        const pillDuration = $('pillDuration');
-        const pillPub = $('pillPub');
+function showToast(msg) {
+  const el = $("toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = "block";
+  el.style.position = "fixed";
+  el.style.left = "50%";
+  el.style.bottom = "18px";
+  el.style.transform = "translateX(-50%)";
+  el.style.padding = "10px 14px";
+  el.style.borderRadius = "999px";
+  el.style.background = "rgba(0,0,0,.55)";
+  el.style.border = "1px solid rgba(255,255,255,.18)";
+  el.style.backdropFilter = "blur(10px)";
+  el.style.zIndex = "9999";
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => {
+    el.style.display = "none";
+  }, 2200);
+}
 
-        const tocWrap = $('tocWrap');
-        const tocList = $('tocList');
-        const readTools = $('readTools');
-        const readProgressFill = $('readProgressFill');
-        const readProgressText = $('readProgressText');
-        const exerciseLinksWrap = $('exerciseLinksWrap');
+function safeText(v) {
+  return (v ?? "").toString().trim();
+}
 
-        const lessonContent = $('lessonContent');
-        const lessonEmpty = $('lessonEmpty');
-        const studentHint = $('studentHint');
+function lessonDocId(level, topic) {
+  // topic can be slug or id; keep it stable and URL-friendly
+  return `${level}__${topic}`;
+}
 
-        const params = new URLSearchParams(location.search);
-        let LEVEL = (params.get('level') || '').toUpperCase();
-        let TOPIC_ID = (params.get('id') || '').trim();
-        let TOPIC_INFO = null;
+function renderLesson(meta, topicInfo, level, topicKey, userEmail) {
+  const title = safeText(meta.title) || safeText(topicInfo.title) || "Lección";
+  const desc = safeText(meta.desc) || safeText(topicInfo.desc) || "";
 
-        function getLastLessonFromStorage() {
-          try {
-            const global = localStorage.getItem('aquivivo_lastLesson_global');
-            if (global) {
-              const parsed = JSON.parse(global);
-              if (parsed?.level && parsed?.id) {
-                return {
-                  level: String(parsed.level).toUpperCase(),
-                  id: String(parsed.id)};
-              }
-            }
-            let fallback = null;
-            for (let i = 0; i < localStorage.length; i += 1) {
-              const k = localStorage.key(i);
-              if (!k || !k.startsWith('aquivivo_lastLesson_')) continue;
-              const level = k.replace('aquivivo_lastLesson_', '').toUpperCase();
-              const id = localStorage.getItem(k);
-              if (level && id) fallback = { level, id };
-            }
-            return fallback;
-          } catch (e) {
-            return null;
-          }
-        }
+  $("lessonTitle").textContent = title || "Lección";
+  $("lessonDesc").textContent = desc || "";
 
-        if (!LEVEL || !TOPIC_ID) {
-          const last = getLastLessonFromStorage();
-          if (last?.level && last?.id) {
-            LEVEL = last.level;
-            TOPIC_ID = last.id;
-            const url = new URL(location.href);
-            url.searchParams.set('level', LEVEL);
-            url.searchParams.set('id', TOPIC_ID);
-            history.replaceState(null, '', url.toString());
-          }
-        }
+  $("pillLevel").textContent = `Nivel: ${level}`;
+  $("pillTopic").textContent = `Tema: ${safeText(topicInfo.title) || topicKey}`;
 
-        function getLessonDocId(topicInfo) {
-          const slug = (topicInfo?.slug || TOPIC_ID || '').toString().trim();
-          return `${LEVEL}__${slug}`;
-        }
+  // Optional pills
+  const pillType = $("pillType");
+  const pillDuration = $("pillDuration");
+  const pillPub = $("pillPub");
+  const studentHint = $("studentHint");
 
-        async function loadTopicInfo() {
-          const fallback = { title: '', desc: '', slug: TOPIC_ID };
-          if (!LEVEL || !TOPIC_ID) return fallback;
-          try {
-            // 1) treat TOPIC_ID as Firestore doc id
-            const byId = await getDoc(doc(db, 'courses', TOPIC_ID));
-            if (byId.exists()) {
-              const d = byId.data() || {};
-              return {
-                title: (d.title || d.name || d.topic || '').toString(),
-                desc: (d.desc || d.description || '').toString(),
-                slug: (d.slug || TOPIC_ID || '').toString()};
-            }
-          } catch (e) {
-            /* ignore and try slug query */
-          }
+  const type = safeText(meta.type);
+  if (type) {
+    pillType.style.display = "inline-flex";
+    pillType.textContent = `📌 ${type}`;
+  } else {
+    pillType.style.display = "none";
+  }
 
-          try {
-            // 2) treat TOPIC_ID as slug
-            const qy = query(
-              collection(db, 'courses'),
-              where('level', '==', LEVEL),
-              where('slug', '==', TOPIC_ID),
-            );
-            const snap = await getDocs(qy);
-            if (!snap.empty) {
-              const d = snap.docs[0].data() || {};
-              return {
-                title: (d.title || d.name || d.topic || '').toString(),
-                desc: (d.desc || d.description || '').toString(),
-                slug: (d.slug || TOPIC_ID || '').toString()};
-            }
-          } catch (e) {
-            /* ignore */
-          }
+  const dur = Number(meta.durationMin || 0);
+  if (dur > 0) {
+    pillDuration.style.display = "inline-flex";
+    pillDuration.textContent = `⏱ ${dur} min`;
+  } else {
+    pillDuration.style.display = "none";
+  }
 
-          return fallback;
-        }
+  const published = !!meta.published;
+  pillPub.style.display = "inline-flex";
+  pillPub.textContent = published ? "✅ Publicado" : "🟡 Borrador";
 
-        if (btnInicio)
-          btnInicio.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-        // btnEjercicios href is set after we resolve TOPIC_INFO (slug vs id)
-        if (btnAtras) btnAtras.addEventListener('click', () => history.back());
+  if (!published) {
+    studentHint.style.display = "block";
+    studentHint.textContent =
+      "Esta lección aún no está publicada. Si eres estudiante, puede que no veas el contenido final.";
+  } else {
+    studentHint.style.display = "none";
+  }
 
-        function showToast(msg, kind = 'toast-ok') {
-          if (!toast) return;
-          toast.className = kind;
-          toast.textContent = msg;
-          toast.style.display = 'block';
-          clearTimeout(showToast._t);
-          showToast._t = setTimeout(() => {
-            toast.style.display = 'none';
-          }, 2500);
-        }
+  // Admin link
+  const pillAdminLink = $("pillAdminLink");
+  if (userEmail && isAdminEmail(userEmail)) {
+    pillAdminLink.style.display = "inline-flex";
+    pillAdminLink.href = `lessonadmin.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(topicKey)}`;
+  } else {
+    pillAdminLink.style.display = "none";
+    pillAdminLink.href = "#";
+  }
 
-        function escapeHtml(s) {
-          return String(s ?? '')
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;')
-            .replaceAll('"', '&quot;')
-            .replaceAll("'", '&#039;');
-        }
+  // Content
+  const html = safeText(meta.html);
+  const content = $("lessonContent");
+  const empty = $("lessonEmpty");
 
-        function slugifyHeading(text) {
-          return (text || '')
-            .toLowerCase()
-            .trim()
-            .replace(/[^\p{L}\p{N}\s-]/gu, '')
-            .replace(/\s+/g, '-')
-            .slice(0, 60);
-        }
+  if (html) {
+    empty.style.display = "none";
+    content.style.display = "block";
+    content.innerHTML = html;
+  } else {
+    content.style.display = "none";
+    empty.style.display = "block";
+    empty.textContent = "No existe esta lección todavía.";
+  }
 
-        function buildTOC() {
-          if (!tocWrap || !tocList) return;
+  // TOC
+  buildTOC();
 
-          tocList.innerHTML = '';
-          const root = lessonContent;
-          if (!root || root.style.display === 'none') {
-            tocWrap.style.display = 'none';
-            return;
-          }
+  // Reading progress (optional)
+  enableReadingProgress();
+  // Exercise links
+  renderExerciseLinks(level, topicInfo, topicKey);
+}
 
-          const headings = root.querySelectorAll('h2, h3');
-          if (!headings.length) {
-            tocWrap.style.display = 'none';
-            return;
-          }
+function buildTOC() {
+  const content = $("lessonContent");
+  const tocWrap = $("tocWrap");
+  const tocList = $("tocList");
+  if (!content || !tocWrap || !tocList) return;
 
-          const used = new Set();
-          headings.forEach((h) => {
-            if (h.id) {
-              used.add(h.id);
-              return;
-            }
-            let id = slugifyHeading(h.textContent);
-            if (!id) id = 'section';
-            const base = id;
-            let i = 2;
-            while (used.has(id) || document.getElementById(id)) {
-              id = `${base}-${i++}`;
-            }
-            used.add(id);
-            h.id = id;
-          });
+  const headings = Array.from(content.querySelectorAll("h2, h3")).slice(0, 40);
+  if (!headings.length) {
+    tocWrap.style.display = "none";
+    tocList.innerHTML = "";
+    return;
+  }
 
-          headings.forEach((h) => {
-            const a = document.createElement('a');
-            a.href = `#${h.id}`;
-            a.className = 'tocLink' + (h.tagName === 'H3' ? ' tocSub' : '');
-            a.textContent =
-              (h.textContent || '').trim() ||
-              (h.tagName === 'H3' ? 'Subsección' : 'Sección');
-            a.addEventListener('click', (e) => {
-              e.preventDefault();
-              document
-                .getElementById(h.id)
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              history.replaceState(null, '', `#${h.id}`);
-            });
-            tocList.appendChild(a);
-          });
+  tocWrap.style.display = "block";
+  tocList.innerHTML = "";
 
-          tocWrap.style.display = 'block';
-        }
+  headings.forEach((h, idx) => {
+    if (!h.id) h.id = `sec_${idx}_${Math.random().toString(16).slice(2)}`;
+    const a = document.createElement("a");
+    a.href = `#${h.id}`;
+    a.textContent = h.textContent?.trim() || `Sección ${idx + 1}`;
+    a.style.display = "block";
+    a.style.padding = "8px 8px";
+    a.style.borderRadius = "12px";
+    a.style.textDecoration = "none";
+    a.style.border = "1px solid rgba(255,255,255,.10)";
+    a.style.margin = "6px 0";
+    a.style.background = "rgba(255,255,255,.06)";
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById(h.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    tocList.appendChild(a);
+  });
+}
 
-        let _rpScheduled = false;
-        function updateReadProgress() {
-          if (!lessonContent || lessonContent.style.display === 'none') return;
-          const docEl = document.documentElement;
-          const scrollTop = docEl.scrollTop || document.body.scrollTop || 0;
-          const scrollHeight =
-            (docEl.scrollHeight || document.body.scrollHeight || 0) -
-            (docEl.clientHeight || window.innerHeight || 0);
-          const pct =
-            scrollHeight <= 0
-              ? 100
-              : Math.max(
-                  0,
-                  Math.min(100, Math.round((scrollTop / scrollHeight) * 100)),
-                );
-          readProgressFill.style.width = `${pct}%`;
-          readProgressText.textContent = `📖 Progreso de lectura: ${pct}%`;
-        }
-        function scheduleReadProgress() {
-          if (_rpScheduled) return;
-          _rpScheduled = true;
-          requestAnimationFrame(() => {
-            _rpScheduled = false;
-            try {
-              updateReadProgress();
-            } catch (e) {}
-          });
-        }
-        window.addEventListener('scroll', scheduleReadProgress, {
-          passive: true});
-        window.addEventListener('resize', scheduleReadProgress);
+function enableReadingProgress() {
+  const tools = $("readTools");
+  const fill = $("readProgressFill");
+  const text = $("readProgressText");
+  if (!tools || !fill || !text) return;
 
-        function buildExerciseLinks(docData, topicInfo) {
-          if (!exerciseLinksWrap) return;
-          exerciseLinksWrap.innerHTML = '';
+  tools.style.display = "block";
 
-          // Minimal: one button to exercises page (keeps UI consistent)
-          const a = document.createElement('a');
-          a.className = 'btn btn-yellow';
-          const eff = (topicInfo?.slug || TOPIC_ID || '').toString();
-          a.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
-          a.textContent = '🧩 Ir a ejercicios';
-          exerciseLinksWrap.appendChild(a);
+  const calc = () => {
+    const docH = document.documentElement.scrollHeight;
+    const winH = window.innerHeight;
+    const y = window.scrollY || document.documentElement.scrollTop || 0;
+    const max = Math.max(1, docH - winH);
+    const pct = Math.min(100, Math.max(0, Math.round((y / max) * 100)));
+    fill.style.width = `${pct}%`;
+    text.textContent = `📖 Progreso de lectura: ${pct}%`;
+  };
 
-          readTools.style.display = 'flex';
-        }
+  calc();
+  window.addEventListener("scroll", calc, { passive: true });
+}
 
-        function renderLesson(docData, topicInfo) {
-          pillLevel.textContent = `Nivel: ${LEVEL || '—'}`;
-          const tName = (topicInfo?.title || '').trim();
-          const tDesc = (topicInfo?.desc || '').trim();
-          pillTopic.textContent = `Tema: ${tName || TOPIC_ID || '—'}`;
+function renderExerciseLinks(level, topicInfo, topicKey) {
+  const wrap = $("exerciseLinksWrap");
+  const tools = $("readTools");
+  if (!wrap || !tools) return;
 
-          const title = (docData?.title || '').trim();
-          const desc = (docData?.desc || '').trim();
-          const type = (docData?.type || '').trim();
-          const dur = Number(docData?.durationMin || 0);
-          const pub = !!docData?.published;
+  const slug = safeText(topicInfo.slug) || safeText(topicKey);
 
-          lessonTitleEl.textContent =
-            title || `Lección — ${tName || TOPIC_ID || 'tema'}`;
-          lessonDescEl.textContent = desc || tDesc || '—';
+  wrap.innerHTML = "";
+  const a = document.createElement("a");
+  a.className = "btn btn-white-outline";
+  a.href = `ejercicio.html?level=${encodeURIComponent(level)}&slug=${encodeURIComponent(slug)}`;
+  a.textContent = "🧩 Ir a ejercicios";
+  wrap.appendChild(a);
+}
 
-          if (type) {
-            pillType.style.display = 'inline-flex';
-            pillType.textContent = `Tipo: ${type}`;
-          } else {
-            pillType.style.display = 'none';
-          }
-          if (dur > 0) {
-            pillDuration.style.display = 'inline-flex';
-            pillDuration.textContent = `Duración: ${dur} min`;
-          } else {
-            pillDuration.style.display = 'none';
-          }
+async function loadTopicInfo(level, topicKey) {
+  const fallback = { title: "", desc: "", slug: topicKey };
 
-          pillPub.style.display = 'inline-flex';
-          pillPub.className = 'pill ' + (pub ? 'pill-green' : 'pill-red');
-          pillPub.textContent = pub ? 'Publicado' : 'Borrador';
+  if (!level || !topicKey) return fallback;
 
-          // Publication gating for students (if not published: show hint)
-          if (!pub) {
-            studentHint.style.display = 'block';
-            studentHint.textContent =
-              'Esta lección todavía no está publicada. Vuelve más tarde.';
-            lessonContent.style.display = 'none';
-            lessonEmpty.style.display = 'none';
-            tocWrap.style.display = 'none';
-            readTools.style.display = 'none';
-            return;
-          }
+  // 1) by document id
+  try {
+    const byId = await getDoc(doc(db, "courses", topicKey));
+    if (byId.exists()) {
+      const d = byId.data() || {};
+      return {
+        title: safeText(d.title || d.name || d.topic),
+        desc: safeText(d.desc || d.description),
+        slug: safeText(d.slug || d.topicSlug || topicKey)
+      };
+    }
+  } catch (_) {}
 
-          const html = (docData?.html || '').trim();
-          if (!html) {
-            lessonContent.style.display = 'none';
-            lessonEmpty.style.display = 'block';
-            lessonEmpty.textContent = 'Todavía no hay contenido de la lección.';
-            studentHint.style.display = 'none';
-            tocWrap.style.display = 'none';
-            readTools.style.display = 'none';
-            return;
-          }
+  // 2) by slug/topicSlug
+  try {
+    const qy = query(
+      collection(db, "courses"),
+      where("level", "==", level),
+      where("slug", "==", topicKey)
+    );
+    const snap = await getDocs(qy);
+    if (!snap.empty) {
+      const d = snap.docs[0].data() || {};
+      return {
+        title: safeText(d.title || d.name || d.topic),
+        desc: safeText(d.desc || d.description),
+        slug: safeText(d.slug || d.topicSlug || topicKey)
+      };
+    }
+  } catch (_) {}
 
-          studentHint.style.display = 'none';
-          lessonEmpty.style.display = 'none';
-          lessonContent.style.display = 'block';
-          lessonContent.innerHTML = html;
+  try {
+    const qy2 = query(
+      collection(db, "courses"),
+      where("level", "==", level),
+      where("topicSlug", "==", topicKey)
+    );
+    const snap2 = await getDocs(qy2);
+    if (!snap2.empty) {
+      const d = snap2.docs[0].data() || {};
+      return {
+        title: safeText(d.title || d.name || d.topic),
+        desc: safeText(d.desc || d.description),
+        slug: safeText(d.slug || d.topicSlug || topicKey)
+      };
+    }
+  } catch (_) {}
 
-          setTimeout(buildTOC, 0);
-          buildExerciseLinks(docData, topicInfo);
-          updateReadProgress();
-        }
+  return fallback;
+}
 
-        async function loadLesson(topicInfo) {
-          if (!LEVEL || !TOPIC_ID) {
-            lessonTitleEl.textContent = 'Error';
-            lessonDescEl.textContent =
-              'Faltan parámetros en la URL (level, id).';
-            lessonEmpty.style.display = 'block';
-            lessonEmpty.textContent =
-              'Abre por ejemplo: lessonpage.html?level=A1&id=tuTopicSlug';
-            return;
-          }
+async function loadLesson(level, topicKey, userEmail) {
+  const titleEl = $("lessonTitle");
+  const descEl = $("lessonDesc");
+  const empty = $("lessonEmpty");
+  const content = $("lessonContent");
 
-          const ref = doc(db, 'course_meta', getLessonDocId(topicInfo));
-          const snap = await getDoc(ref);
-          if (!snap.exists()) {
-            renderLesson({ published: false, html: '' }, topicInfo);
-            lessonEmpty.style.display = 'block';
-            lessonEmpty.textContent = 'No existe esta lección todavía.';
-            return;
-          }
-          renderLesson(snap.data() || {}, topicInfo);
-        }
+  if (!level || !topicKey) {
+    titleEl.textContent = "Faltan parámetros";
+    descEl.textContent = "Faltan parámetros en la URL (level, id).";
+    empty.style.display = "block";
+    empty.textContent = "Abre por ejemplo: lessonpage.html?level=A1&id=tuTopicId";
+    return;
+  }
 
-        window.logout = async () => {
-          try {
-            await signOut(auth);
-          } catch (e) {}
-          location.href = 'login.html';
-        };
+  const topicInfo = await loadTopicInfo(level, topicKey);
 
-        onAuthStateChanged(auth, async (user) => {
-          if (!user) {
-            location.href = 'login.html';
-            return;
-          }
+  // Lesson doc id: prefer slug to keep stable across copies, fallback to topicKey
+  const keyForDoc = safeText(topicInfo.slug) || safeText(topicKey);
+  const ref = doc(db, "course_meta", lessonDocId(level, keyForDoc));
 
-          // Resolve topic title/desc + slug (so we don't show random IDs)
-          TOPIC_INFO = await loadTopicInfo();
-          const eff = (TOPIC_INFO?.slug || TOPIC_ID || '').toString();
-          if (btnEjercicios)
-            btnEjercicios.href = `ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
+  try {
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      renderLesson({ published: false, html: "" }, topicInfo, level, topicKey, userEmail);
+      return;
+    }
+    renderLesson(snap.data() || {}, topicInfo, level, topicKey, userEmail);
+  } catch (e) {
+    console.error(e);
+    content.style.display = "none";
+    empty.style.display = "block";
+    empty.textContent = "No se pudo cargar la lección. Revisa la consola y tu conexión a Firestore.";
+    showToast("Error al cargar la lección");
+  }
+}
 
-          try {
-            localStorage.setItem(
-              'aquivivo_lastLesson_global',
-              JSON.stringify({ level: LEVEL, id: eff, ts: Date.now() }),
-            );
-          } catch (e) {}
+document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  const LEVEL = safeText(params.get("level")).toUpperCase();
+  const TOPIC_ID = safeText(params.get("id"));
 
-          // show admin link only for admin
-          if (isAdmin(user.email)) {
-            pillAdminLink.style.display = 'inline-flex';
-            pillAdminLink.href = `lessonadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(eff)}`;
-          }
-          try {
-            await loadLesson(TOPIC_INFO);
-          } catch (e) {
-            console.error(e);
-            showToast('Error cargando la lección.', 'toast-bad');
-          }
-        });
-      });
+  // Default placeholders
+  $("pillLevel").textContent = "Nivel: —";
+  $("pillTopic").textContent = "Tema: —";
+
+  // Load after auth state is known (for admin link)
+  onAuthStateChanged(auth, (user) => {
+    const email = user?.email || "";
+    loadLesson(LEVEL, TOPIC_ID, email);
+  });
+});
