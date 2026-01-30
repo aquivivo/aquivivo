@@ -36,7 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       await signInWithEmailAndPassword(auth, email, pass);
       setMsg("✅ Sesión iniciada.", "ok");
-      window.location.href = "espanel.html";
+
+      const qs = new URLSearchParams(window.location.search);
+      const nextUrl = qs.get("next") || "espanel.html";
+      window.location.href = nextUrl;
     } catch (err) {
       setMsg("Error: " + (err?.message || err), "error");
     }
@@ -49,7 +52,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       await createUserWithEmailAndPassword(auth, email, pass);
       setMsg("🎉 Cuenta creada.", "ok");
-      window.location.href = "espanel.html";
+
+      const qs = new URLSearchParams(window.location.search);
+      const nextUrl = qs.get("next") || "espanel.html";
+      window.location.href = nextUrl;
     } catch (err) {
       setMsg("Error: " + (err?.message || err), "error");
     }

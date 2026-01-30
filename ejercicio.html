@@ -11,7 +11,32 @@
     />
 
     
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <style id="coffeeFloatStyle">
+/* ☕ Floating coffee (global) */
+#coffeeFloat{
+  position: absolute;
+  right: -40px;
+  top: 360px;
+  width: 420px;
+  height: 420px;
+  pointer-events: none;
+  opacity: 0.9;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35));
+  animation: coffeeFloat 7s ease-in-out infinite;
+  transform-origin: 50% 60%;
+  z-index: 1;
+}
+#coffeeFloat svg{ width:100%; height:100%; display:block; }
+@keyframes coffeeFloat{
+  0%   { transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1); }
+  50%  { transform: translateY(-18px) translateX(-6px) rotate(1deg) scale(1.02); }
+  100% { transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1); }
+}
+@media (max-width: 980px){
+  #coffeeFloat{ display:none; }
+}
+</style>
+<link rel="stylesheet" href="assets/css/styles.css">
   <script src="assets/js/layout.js" type="module"></script>
 </head>
 
@@ -56,6 +81,7 @@
         <div id="lessonContentBody" class="lessonText"></div>
         <div id="lessonContentEmpty" class="lessonEmpty" style="display:none">Todavía no hay contenido de lección para este tema.</div>
       </div>
+
 
       <div class="sectionTitle">🧩 Ejercicios</div>
 
@@ -135,6 +161,7 @@
         </div>
       </div>
     </div>
+
 
   <script type="module" src="assets/js/pages/ejercicio-page.js"></script>
 </body>

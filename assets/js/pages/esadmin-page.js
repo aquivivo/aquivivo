@@ -479,35 +479,3 @@ function renderUserCard(u) {
       // search
       searchInput.addEventListener('input', renderUsers);
       filterEl.addEventListener('change', renderUsers);
-    </script>
-
-    <script src="assets/js/layout.js"></script>
-
-    <script data-aquivivo-no-new-tab="1">
-      // Force same-tab navigation (prevents accidental new tabs)
-      (function () {
-        try {
-          document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('a[target="_blank"]').forEach(function (a) {
-              a.removeAttribute('target');
-              var rel = (a.getAttribute('rel') || '')
-                .split(/\s+/)
-                .filter(Boolean)
-                .filter(function (x) {
-                  return !(/^noopener$/i.test(x) || /^noreferrer$/i.test(x));
-                });
-              if (rel.length) a.setAttribute('rel', rel.join(' '));
-              else a.removeAttribute('rel');
-            });
-          });
-
-          var _open = window.open;
-          window.open = function (url, target) {
-            if (target && String(target).toLowerCase() === '_blank' && url) {
-              window.location.assign(url);
-              return null;
-            }
-            return _open.apply(window, arguments);
-          };
-        } catch (e) {}
-      })();

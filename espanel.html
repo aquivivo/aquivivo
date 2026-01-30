@@ -75,6 +75,7 @@
               color: #fff;
             }
 
+
             .pill-expired {
               background: rgba(255, 80, 80, 0.25);
               color: #ff8080;
@@ -142,6 +143,7 @@
               margin-top: 12px;
               display:none;
             }
+
 
             /* Course tiles (match homepage pricing style) */
             .course-tile{
@@ -239,9 +241,17 @@
 
             /* Coffee cup forced white */
 
+
+
+
             /* Coffee cup forced white */
 
+
+
+
+
             /* Coffee cup correct + white */
+
 
             /* Floating coffee on background */
             #coffeeFloat {
@@ -259,6 +269,7 @@
             @media (max-width: 980px) {
               #coffeeFloat { display:none; }
             }
+
 
             /* Floating coffee (gentle, background) */
             #coffeeFloat {
@@ -331,6 +342,7 @@
             }
             .btn-icon:hover{ transform: translateY(-1px); }
 
+
             /* ===== Settings modal (Planes/Precios + Promos) ===== */
             #settingsModal { display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.55); }
             #settingsModal .modalBox { width:min(980px, 100%); max-height:90vh; overflow:auto; background:rgba(10,20,45,.98); border:1px solid rgba(255,255,255,.12); border-radius:22px; box-shadow: 0 18px 60px rgba(0,0,0,.45); }
@@ -358,7 +370,7 @@
     </style>
     <script src="assets/js/layout.js" type="module"></script>
 </head>
-  <body>
+  <body data-page="panel">
     <div id="appHeader"></div>
     <main class="page">
       <div class="container">
@@ -465,7 +477,38 @@
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 28px">
           <!-- LEFT: courses -->
           <div class="courses-grid" id="coursesCards"></div>
-          <stop
+          <div
+            aria-hidden="true"
+            id="coffeeFloat"
+            style="
+              position: absolute;
+              right: -40px;
+              top: 120px;
+              width: 420px;
+              height: 420px;
+              pointer-events: none;
+              opacity: 0.9;
+              filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.35));
+            "
+          >
+            <svg
+              class="w-72 h-72 mx-auto drop-shadow-2xl"
+              viewbox="0 0 200 200"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <lineargradient
+                  id="cupGradient"
+                  x1="0%"
+                  x2="0%"
+                  y1="0%"
+                  y2="100%"
+                >
+                  <stop
+                    offset="0%"
+                    style="stop-color: #8b4513; stop-opacity: 1"
+                  ></stop>
+                  <stop
                     offset="100%"
                     style="stop-color: #654321; stop-opacity: 1"
                   ></stop>
@@ -1609,7 +1652,7 @@
     </div>
 
     
-    <script type="module" src="assets/js/pages/panel-page.js"></script>
+  <script type="module" src="assets/js/pages/panel-page.js"></script>
 </body>
 </html>
 

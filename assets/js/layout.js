@@ -1,7 +1,31 @@
 import { auth } from './firebase-init.js';
-import { signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 
 (function () {
+  const protectedPages = new Set([
+    'course.html',
+    'espanel.html',
+    'lessonpage.html',
+    'lessonadmin.html',
+    'lesson.html',
+    'ejercicio.html',
+    'ejercicioadmin.html',
+    'esadmin.html',
+  ]);
+
+  function fileName() {
+    const p = (location.pathname || '').split('/').pop();
+    return p || 'index.html';
+  }
+
+  function ensureCoffee() {
+    if (document.getElementById('coffeeFloat')) return;
+    const div = document.createElement('div');
+    div.id = 'coffeeFloat';
+    div.innerHTML = '<img src="assets/img/coffeeFloat.svg" alt="" />';
+    document.body.appendChild(div);
+  }
+
   function buildHeader() {
     const host = document.getElementById('appHeader');
     if (!host) return;
@@ -12,7 +36,7 @@ import { signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth
 
     const showPanel = page !== 'login';
     const showCourse = page !== 'login';
-    const showBack = page !== 'index';
+    const showBack = page !== 'index' && page !== 'login';
     const showLogout = page !== 'login' && page !== 'index';
 
     const hrefInicio = 'index.html';
@@ -24,14 +48,14 @@ import { signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth
         <div class="nav-line"></div>
         <div class="nav-inner">
           <a class="brand" href="${hrefInicio}">
-            <img src="assets/img/logo.png" />
+            <img src="assets/img/logo.png" alt="AquiVivo" />
           </a>
           <div class="nav-actions">
             ${showCourse ? `<a class="btn-white-outline" href="${hrefCourse}">📚 Curso</a>` : ``}
             ${showPanel ? `<a class="btn-white-outline" href="${hrefPanel}">🏠 Panel</a>` : ``}
             <a class="btn-white-outline" href="${hrefInicio}">✨ Inicio</a>
-            ${showBack ? `<button class="btn-white-outline" id="btnAtras">⬅️ Atrás</button>` : ``}
-            ${showLogout ? `<button class="btn-red" id="btnLogout">Cerrar sesión</button>` : ``}
+            ${showBack ? `<button class="btn-white-outline" id="btnAtras" type="button">⬅️ Atrás</button>` : ``}
+            ${showLogout ? `<button class="btn-red" id="btnLogout" type="button">Cerrar sesión</button>` : ``}
           </div>
         </div>
       </div>
@@ -59,11 +83,30 @@ import { signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth
         window.location.href = 'login.html';
       });
     }
+
+    // coffee (optional; hidden on mobile by CSS)
+    if (page !== 'login') ensureCoffee();
+  }
+
+  function guardAuth() {
+    const current = fileName();
+    if (!protectedPages.has(current)) return;
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) return;
+      const next = encodeURIComponent(current + location.search + location.hash);
+      window.location.replace(`login.html?next=${next}`);
+    });
+  }
+
+  function init() {
+    buildHeader();
+    guardAuth();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', buildHeader);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    buildHeader();
+    init();
   }
 })();
