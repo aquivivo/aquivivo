@@ -25,9 +25,9 @@
     .reset-link:hover{ opacity:.9; }
   </style>
 </head>
-<body>
+<body data-page="login">
   <div id="appHeader"></div>
-<main class="page">
+  <main class="page">
     <div class="container">
       <div class="auth-wrap">
         <div class="hero-card">
@@ -69,7 +69,8 @@
             Al registrarte, aceptas nuestros <a href="TOS.html" target="_blank">Términos de Servicio</a> y <a href="Privacy.html" target="_blank">Política de Privacidad</a>
           </div>
         </div>
-      </div
+      </div>
+    </div>
   </main>
 
   <script type="module">
@@ -127,84 +128,19 @@
       }
     });
     resetBtn.addEventListener("click", async () => {
-                        <stop offset="50%" style="stop-color:#003893;stop-opacity:1" />
-                        <stop offset="75%" style="stop-color:#003893;stop-opacity:1" />
-                        <stop offset="75%" style="stop-color:#CE1126;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#CE1126;stop-opacity:1" />
-                      </lineargradient>
-                    </defs> <path d="M 40,85 L 45,80 L 52,75 L 60,72 L 70,70 L 82,68 L 95,67 L 110,67 L 125,68 L 140,69 L 155,71 L 170,74 L 185,78 L 198,83 L 210,89 L 220,96 L 228,104 L 234,113 L 238,123 L 240,133 L 241,145 L 240,158 L 238,172 L 234,186 L 230,200 L 225,214 L 218,228 L 210,241 L 200,253 L 188,263 L 174,271 L 158,277 L 140,281 L 120,283 L 100,283 L 80,280 L 62,275 L 46,268 L 32,259 L 22,248 L 15,236 L 10,223 L 7,210 L 5,197 L 5,184 L 6,171 L 8,158 L 11,145 L 15,132 L 20,120 L 26,108 L 33,97 Z" fill="url(#colombiaFlagFooter)" stroke="#FCD116" stroke-width="2.5" />
-                    </svg>
-                  </div>
-                  
-              </div>
-            </div>
-          </footer>
-          <script type="module">
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-            import {
-              getAuth,
-              createUserWithEmailAndPassword,
-              signInWithEmailAndPassword,
-              sendPasswordResetEmail
-            } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-            const firebaseConfig = {
-              apiKey: "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
-              authDomain: "aquivivo-platform.firebaseapp.com",
-              projectId: "aquivivo-platform",
-              storageBucket: "aquivivo-platform.firebasestorage.app",
-              messagingSenderId: "116115622011",
-              appId: "1:116115622011:web:33a4a583eba4368071bade"
-            };
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const emailInput = document.getElementById("email");
-            const passwordInput = document.getElementById("password");
-            const registerBtn = document.getElementById("registerBtn");
-            const loginBtn = document.getElementById("loginBtn");
-            const messageEl = document.getElementById("message");
-            const toggleBtn = document.getElementById("togglePassword");
-            const resetBtn = document.getElementById("resetPasswordBtn");
-            function setMsg(text, type){ messageEl.textContent = text || ""; messageEl.className = "msg" + (type ? (" " + type) : ""); }
-            document.addEventListener("keydown", (e) => { if (e.key === "Enter") loginBtn.click(); });
-            if (toggleBtn) {
-              toggleBtn.addEventListener("click", () => {
-                const hidden = passwordInput.type === "password";
-                passwordInput.type = hidden ? "text" : "password";
-                toggleBtn.textContent = hidden ? "🙈" : "👁️";
-              });
-            }
-            loginBtn.addEventListener("click", async () => {
-              setMsg("");
-              try {
-                await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
-                setMsg("¡Iniciada sesión! ✅", "ok");
-                window.location.href = "espanel.html";
-              } catch (error) {
-                setMsg("Error de inicio de sesión: " + error.message, "error");
-              }
-            });
-            registerBtn.addEventListener("click", async () => {
-              setMsg("");
-              try {
-                await createUserWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
-                setMsg("¡Cuenta creada! 🎉", "ok");
-                window.location.href = "espanel.html";
-              } catch (error) {
-                setMsg("Error de registro: " + error.message, "error");
-              }
-            });
-            resetBtn.addEventListener("click", async () => {
-              const email = emailInput.value.trim();
-              if (!email) {
-                setMsg("Ingresa tu correo para restablecer tu contraseña.", "error");
-                return;
-              }
-              try {
-                await sendPasswordResetEmail(auth, email);
-                setMsg("📩 Se envió un correo para restablecer tu contraseña.", "ok");
-              } catch (error) {
-                setMsg("Error al restablecer contraseña: " + error.message, "error");
-              }
-            });
-          </script>
-
+      const email = emailInput.value.trim();
+      if (!email) {
+        setMsg("Ingresa tu correo para restablecer tu contraseña.", "error");
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        setMsg("📩 Se envió un correo para restablecer tu contraseña.", "ok");
+      } catch (error) {
+        setMsg("Error al restablecer contraseña: " + error.message, "error");
+      }
+    });
+  </script>
+  <script src="assets/js/layout.js" defer></script>
+</body>
+</html>
