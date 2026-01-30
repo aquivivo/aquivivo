@@ -1,32 +1,32 @@
-
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lección | AquiVivo</title>
-<link rel="stylesheet" href="assets/css/styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lección | AquiVivo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <script src="assets/js/layout.js" type="module"></script>
 </head>
-<body>
 
-<header class="topbar">
-  <div class="brand">
-    <img src="assets/img/logo.png" class="logo">
-    <div class="title">AquiVivo</div>
-  </div>
+<body data-page="lesson">
+  <div id="appHeader"></div>
 
-  <nav>
-    <button class="btn" onclick="location.href='course.html'">Atrás</button>
-  </nav>
-</header>
-
-<main>
-  <div class="card">
-    <h2>Lección</h2>
-    <p>Contenido de la lección aquí.</p>
-  </div>
-</main>
-
-<script src="assets/js/app.js"></script>
+  <main class="page">
+    <div class="container">
+      <div class="card">
+        <h1 style="margin:0 0 6px;">Lección</h1>
+        <p class="subtitle" style="margin:0 0 12px;">Esta página es un contenedor. Abre la lección por:</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="btn-yellow" href="lessonpage.html?level=A1&id=TOPIC_ID">📖 Abrir lessonpage</a>
+          <a class="btn-white-outline" href="course.html?level=A1">⬅️ Volver al curso</a>
+        </div>
+      </div>
+    </div>
+  </main>
 </body>
 </html>

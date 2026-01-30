@@ -8,20 +8,21 @@ import {
   limit,
   startAfter,
   getDocs,
-  addDoc,
-  deleteDoc,
-  updateDoc,
-  doc,
   getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
   setDoc,
+  doc,
   serverTimestamp,
   arrayUnion,
-  deleteField,
-  writeBatch
+  arrayRemove,
+  writeBatch,
+  increment,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-// ✅ Configuración de Firebase
-      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
       const LEVELS = ['A1', 'A2', 'B1', 'B2'];
       const PAID_LEVELS = ['A2', 'B1', 'B2'];
       const usersList = document.getElementById('usersList');

@@ -8,20 +8,21 @@ import {
   limit,
   startAfter,
   getDocs,
-  addDoc,
-  deleteDoc,
-  updateDoc,
-  doc,
   getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
   setDoc,
+  doc,
   serverTimestamp,
   arrayUnion,
-  deleteField,
-  writeBatch
+  arrayRemove,
+  writeBatch,
+  increment,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-// ✅ Firebase config (Twoje)
-      const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
+const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
 
       // URL params
       const params = new URLSearchParams(window.location.search);

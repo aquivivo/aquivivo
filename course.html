@@ -1,648 +1,78 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <title>Curso | AquiVivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="utf-8" />
+    <title>Curso | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css" />
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    :root{
-      --yellow:#fcd116;
-      --blue:#003893;
-      --red:#ce1126;
-    }
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="assets/css/styles.css" />
 
-    body{
-      margin:0;
-      font-family: Montserrat, Arial, sans-serif;
-      min-height:100vh;
-      background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
-      color:#fff;
-    }
-
-    main.page{ padding: 22px 0 70px; }
-    .container{
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 28px 16px;
-    }
-
-    /* Top bar */
-    .topActionBar{
-      position: sticky;
-      top:0;
-      z-index:50;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap:14px;
-      padding: 14px 18px;
-      background: rgba(0,56,147,0.92);
-      border-bottom: 1px solid rgba(255,255,255,0.14);
-      backdrop-filter: blur(10px);
-    }
-    .topActionLeft{ display:flex; gap:12px; align-items:center; }
-    .btnLogout{
-      background: var(--red);
-      color:#fff;
-      border:none;
-      border-radius:999px;
-      padding: 12px 22px;
-      font-size: 16px;
-      font-weight: 900;
-      cursor:pointer;
-      box-shadow: 0 14px 36px rgba(0,0,0,0.18);
-    }
-    .btnLogout:hover{ filter: brightness(0.95); transform: translateY(-1px); }
-
-    .btnNav{
-      background: rgba(255,255,255,0.15);
-      color:#fff;
-      border: 1px solid rgba(255,255,255,0.30);
-      border-radius:999px;
-      padding: 12px 20px;
-      font-size: 15px;
-      font-weight: 900;
-      cursor:pointer;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 14px 36px rgba(0,0,0,0.12);
-    }
-    .btnNav:hover{
-      background: rgba(255,255,255,0.25);
-      transform: translateY(-1px);
-    }
-
-    /* Header like "Panel del estudiante" */
-    .heroBanner{
-      margin: 6px 0 18px;
-      padding: 22px 22px;
-      border-radius: 22px;
-      background: rgba(0, 26, 77, 0.26);
-      border: 1px solid rgba(255,255,255,0.16);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 18px 70px rgba(0,0,0,0.18);
-    }
-    .heroTitleRow{
-      display:flex;
-      align-items:center;
-      gap:18px;
-    }
-    .heroIcon{ font-size: 56px; line-height:1; }
-    #levelTitle{
-      font-family:'Playfair Display', serif !important;
-      font-weight: 900 !important;
-      font-size: 64px !important;
-      line-height: 1.05 !important;
-      margin: 0 !important;
-      color: #fff !important;
-      text-shadow: 0 10px 28px rgba(0,0,0,0.35);
-    }
-    #levelSubtitle{
-      margin: 10px 0 0 0 !important;
-      font-size: 18px !important;
-      color: rgba(255,255,255,0.90) !important;
-      opacity: 1 !important;
-    }
-    @media (max-width: 720px){
-      #levelTitle{ font-size: 44px !important; }
-      #levelSubtitle{ font-size: 16px !important; }
-      .heroIcon{ font-size: 46px; }
-      .heroBanner{ padding: 18px 16px; }
-    }
-
-    /* Filters */
-    .filtersSection{
-      background: rgba(255,255,255,0.10) !important;
-      border: 1px solid rgba(255,255,255,0.20) !important;
-      backdrop-filter: blur(14px) !important;
-      border-radius: 22px !important;
-      padding: 18px 18px !important;
-      margin: 22px 0 18px !important;
-      display:flex !important;
-      gap:16px !important;
-      flex-wrap:wrap !important;
-      align-items:center !important;
-      box-shadow: 0 18px 70px rgba(0,0,0,0.18) !important;
-    }
-    .filterGroup{
-      display:flex !important;
-      gap:10px !important;
-      align-items:center !important;
-      min-width: 280px;
-    }
-    .filterLabel{
-      font-size: 14px !important;
-      color: rgba(255,255,255,0.92) !important;
-      font-weight: 900 !important;
-      letter-spacing: 0.2px !important;
-      white-space: nowrap !important;
-      text-shadow: 0 8px 18px rgba(0,0,0,0.35) !important;
-      opacity: 1 !important;
-    }
-
-    #searchInput{
-      background: rgba(255,255,255,0.14) !important;
-      border: 1px solid rgba(255,255,255,0.28) !important;
-      border-radius: 14px !important;
-      padding: 12px 14px !important;
-      color: #fff !important;
-      font-size: 14px !important;
-      width: 260px !important;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-    }
-    #searchInput:focus{
-      outline:none !important;
-      background: rgba(255,255,255,0.18) !important;
-      border-color: rgba(252,209,22,0.55) !important;
-      box-shadow: 0 0 0 4px rgba(252,209,22,0.10) !important;
-    }
-    #searchInput::placeholder{ color: rgba(255,255,255,0.72) !important; }
-
-    #typeFilter, #taskFilter{
-      background: rgba(255,255,255,0.14) !important;
-      border: 1px solid rgba(255,255,255,0.28) !important;
-      border-radius: 14px !important;
-      padding: 12px 14px !important;
-      color:#fff !important;
-      font-size: 14px !important;
-      cursor:pointer !important;
-      min-width: 220px;
-    }
-    #typeFilter option, #taskFilter option{
-      background: #003893 !important;
-      color:#fff !important;
-    }
-
-    @media (max-width: 720px){
-      .filterGroup{ min-width: 100%; }
-      #searchInput{ width: 100% !important; }
-      #typeFilter, #taskFilter{ width: 100% !important; }
-    }
-
-    /* Course tools */
-    .course-tools{ margin: 12px 0 8px; display:grid; gap:12px; }
-    .progressCard{
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.18);
-      backdrop-filter: blur(12px);
-      border-radius: 18px;
-      padding: 16px;
-    }
-    .progressTop{
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .progressLabel{ font-weight: 900; letter-spacing: 0.2px; }
-    .progressText{ opacity: 0.90; font-size: 13px; margin-top: 4px; }
-    .progressBar{
-      height: 10px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: rgba(255,255,255,0.16);
-      margin-top: 10px;
-    }
-    .progressFill{
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--yellow), var(--red));
-      transition: width 0.25s ease;
-      width: 0%;
-    }
-    .progressHint{
-      font-size: 12px;
-      opacity: 0.75;
-      margin-top: 8px;
-    }
-    .statsRow{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .statPill{
-      background: rgba(0,0,0,0.15);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 999px;
-      padding: 10px 12px;
-      font-size: 13px;
-      display:flex;
-      gap: 6px;
-      align-items:center;
-    }
-    .statBtn{
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.18);
-      color:#fff;
-      border-radius: 999px;
-      padding: 10px 12px;
-      font-weight: 900;
-      cursor:pointer;
-    }
-    .statBtn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
-
-    /* Sections */
-    .sectionTitle{
-      margin: 26px 0 16px 0;
-      font-size: 18px;
-      font-weight: 900;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      letter-spacing:0.3px;
-      color: rgba(255,255,255,0.95) !important;
-      text-shadow: 0 10px 26px rgba(0,0,0,0.45);
-    }
-/* Topic cards */
-    .card{
-      position: relative;
-      background: #ffffff;
-      color: #001a4d;
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      margin: 10px 0;
-    }
-    .topic{
-      position: relative;
-      transition: 0.25s ease;
-      cursor: pointer;
-    }
-    .topic:hover{
-      transform: translateY(-4px);
-      box-shadow: 0 16px 48px rgba(0,0,0,0.28);
-    }
-    .topic strong{
-      display:block;
-      margin-bottom: 6px;
-      font-size: 18px;
-      font-weight: 900;
-      color: var(--blue);
-      word-break: break-word;
-    }
-    .topic p{
-      margin: 0;
-      font-size: 14px;
-      color: #445066;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .topic-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content: space-between;
-      gap:10px;
-    }
-    .topic-title{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width: 0;
-    }
-    .chip{
-      font-size: 12px;
-      font-weight: 900;
-      border-radius: 999px;
-      padding: 4px 10px;
-      background: rgba(0, 26, 77, 0.08);
-      border: 1px solid rgba(0, 26, 77, 0.18);
-      color: #001a4d;
-      flex: 0 0 auto;
-    }
-    .chip-muted{ opacity: 0.65; }
-    .badge{
-      font-size: 12px;
-      font-weight: 900;
-      border-radius: 999px;
-      padding: 6px 10px;
-      color: #fff;
-      flex: 0 0 auto;
-      white-space: nowrap;
-    }
-    .badge-grammar{ background: rgba(0,56,147,0.92); }
-    .badge-vocab{ background: rgba(206,17,38,0.92); }
-
-    /* Admin tools on card */
-    .admin-tools{
-      position:absolute;
-      top:10px;
-      right:10px;
-      display:flex;
-      gap:6px;
-      z-index:2;
-    }
-    .admin-tools button{
-      border:none;
-      padding: 6px 10px;
-      border-radius: 10px;
-      cursor:pointer;
-      font-size: 12px;
-      font-weight: 900;
-    }
-    .btn-edit{ background: var(--yellow); color:#111827; }
-    .btn-del{ background: var(--red); color:#fff; }
-
-    /* Admin panels */
-    .adminBar{ display:none; margin-top: 12px; gap:10px; flex-wrap:wrap; }
-    .adminBar button{
-      padding: 10px 12px;
-      border:none;
-      border-radius: 10px;
-      cursor:pointer;
-      font-weight: 900;
-      background: rgba(255,255,255,0.12);
-      color:#fff;
-      border: 1px solid rgba(255,255,255,0.18);
-    }
-    .adminPanel{ display:none; margin-top: 20px; }
-    .row{
-      display:grid;
-      grid-template-columns: 160px 1fr 1fr auto;
-      gap:10px;
-      align-items:center;
-    }
-    .row input, .row select{
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #d1d5db;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .row button{
-      padding: 10px 14px;
-      border:none;
-      border-radius: 10px;
-      cursor:pointer;
-      font-weight: 900;
-      background: var(--blue);
-      color:#fff;
-    }
-
-    .noResults{
-      text-align:center;
-      padding: 20px;
-      opacity: 0.75;
-      font-style: italic;
-    }
-
-    /* Toast */
-    .toast{
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.75);
-      color:#fff;
-      border: 1px solid rgba(255,255,255,0.18);
-      padding: 12px 14px;
-      border-radius: 14px;
-      max-width: min(720px, calc(100% - 24px));
-      box-shadow: 0 18px 44px rgba(0,0,0,0.35);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.18s ease, transform 0.18s ease;
-      z-index: 9999;
-      font-weight: 800;
-    }
-    .toast.show{
-      opacity: 1;
-      transform: translateX(-50%) translateY(-2px);
-    }
-  
-    /* === Topic markers (lesson / exercises) === */
-    .markRow{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-    .markChip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:7px 10px;
-      border-radius:999px;
-      font-weight:900;
-      font-size:12px;
-      letter-spacing:.2px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.10);
-      color:#fff;
-    }
-    .markLesson{
-      background: rgba(34,197,94,.14);
-      border-color: rgba(34,197,94,.28);
-      color:#eafff1;
-    }
-    .markEx{
-      background: rgba(252,209,22,.18);
-      border-color: rgba(252,209,22,.35);
-      color:#fff;
-    }
-    .markNone{
-      opacity:.75;
-    }
-
-</style>
-
-<style>
-/* === STRONG COMPACT MODE === */
-.ui-scale-wrapper{
-  transform: scale(0.82);
-  transform-origin: top center;
-}
-body{
-  overflow-x:hidden;
-}
-</style>
-
+    <!-- Header JS -->
+      <script src="assets/js/layout.js" type="module"></script>
 </head>
 
-<body data-page="course">
-  <div id="appHeader"></div>
+  <body data-page="course">
+    <!-- Wspólny Header -->
+    <div id="appHeader"></div>
 
-  <main class="page">
-    <div class="container">
-
-      <div class="heroBanner">
-        <div class="heroTitleRow">
-          <div class="heroIcon">🎓</div>
-          <div style="flex:1">
-            <h1 id="levelTitle">Nivel</h1>
-            <p id="levelSubtitle">Cargando…</p>
-
-            <!-- ADMIN BUTTONS (hidden for students) -->
-            <div class="adminBar" id="adminBar">
-              <button type="button" onclick="editCourseMeta()">✏️ Editar descripción del curso</button>
-              <button type="button" onclick="dedupeLevel()">🧹 Eliminar duplicados (nivel actual)</button>
+    <main class="page">
+      <div class="container">
+        <!-- HERO -->
+        <div class="heroBanner">
+          <div class="heroTitleRow">
+            <div class="heroIcon">🎓</div>
+            <div>
+              <h1 id="levelTitle">Nivel</h1>
+              <p class="subtitle">Cargando...</p>
             </div>
+          </div>
 
-            <div class="course-tools" id="courseTools">
-              <div class="progressCard">
-                <div class="progressTop">
-                  <div>
-                    <div class="progressLabel">📈 Progreso (local)</div>
-                    <div class="progressText">
-                      <span id="progressText">0%</span> · <span id="progressCount">0/0</span> temas visitados
-                    </div>
-                  </div>
-                  <button class="statBtn" id="btnContinue" style="display:none" type="button">▶️ Continuar</button>
-                </div>
-
-                <div class="progressBar" aria-hidden="true">
-                  <div class="progressFill" id="progressFill"></div>
-                </div>
-
-                <div class="progressHint">
-                  Se guarda en tu navegador (localStorage).
-                </div>
-              </div>
-
-              <div class="statsRow">
-                <div class="statPill">📚 Total: <strong id="statTotal">0</strong></div>
-                <div class="statPill">🔎 Mostrando: <strong id="statShowing">0</strong></div>
-                <button class="statBtn" id="btnClearFilters" type="button">🧼 Limpiar filtros</button>
-              </div>
+          <div class="progressCard">
+            <div class="progressTitle">📊 Progreso (local)</div>
+            <div class="progressBar">
+              <div
+                id="progressFill"
+                class="progressFill"
+                style="width: 0%"
+              ></div>
             </div>
+            <div class="progressText" id="progressText">
+              0% · 0/0 temas visitados
+            </div>
+          </div>
 
+          <div class="statsRow">
+            <span class="pill">📚 Total: <b id="totalCount">0</b></span>
+            <span class="pill">🔎 Mostrando: <b id="showCount">0</b></span>
+            <button id="clearFilters" class="btn-white-outline">
+              Limpiar filtros
+            </button>
           </div>
         </div>
-      </div>
 
-      <!-- FILTERS -->
-      <div class="filtersSection">
-        <div class="filterGroup">
-          <span class="filterLabel">🔍 Buscar:</span>
-          <input id="searchInput" type="text" placeholder="Escribe el nombre del tema..." />
-        </div>
-
-        <div class="filterGroup">
-          <span class="filterLabel">📂 Tipo:</span>
-          <select id="typeFilter">
+        <!-- FILTROS -->
+        <div class="filterCard">
+          <input id="searchInput" class="input" placeholder="Buscar tema..." />
+          <select id="typeFilter" class="input">
             <option value="">Todos</option>
-            <option value="grammar">Gramática</option>
-            <option value="vocabulary">Vocabulario</option>
+            <option value="gramatica">Gramática</option>
+            <option value="vocabulario">Vocabulario</option>
           </select>
         </div>
 
-        <div class="filterGroup">
-          <span class="filterLabel">✅ Tarea:</span>
-          <select id="taskFilter">
-            <option value="">Todas las tareas</option>
-            <option value="Rellenar los espacios">Rellenar los espacios</option>
-            <option value="Relacionar palabra con imagen">Relacionar palabra con imagen</option>
-            <option value="Relacionar palabra con traducción">Relacionar palabra con traducción</option>
-            <option value="Elegir la palabra correcta">Elegir la palabra correcta</option>
-            <option value="Tarjetas interactivas">Tarjetas interactivas</option>
-            <option value="Agrupar palabras">Agrupar palabras</option>
-            <option value="Verdadero o falso">Verdadero o falso</option>
-            <option value="Completar la frase con una imagen">Completar la frase con una imagen</option>
-            <option value="Juego de memoria (pares)">Juego de memoria (pares)</option>
-            <option value="Opción múltiple">Opción múltiple</option>
-            <option value="Completar la forma correcta">Completar la forma correcta</option>
-            <option value="Elegir la forma correcta">Elegir la forma correcta</option>
-            <option value="Transformaciones">Transformaciones</option>
-            <option value="Relacionar pregunta con respuesta">Relacionar pregunta con respuesta</option>
-            <option value="Ordenar palabras para formar una frase">Ordenar palabras para formar una frase</option>
-            <option value="Corregir errores">Corregir errores</option>
-            <option value="Unir dos partes de la frase">Unir dos partes de la frase</option>
-            <option value="Completar con preposición o terminación">Completar con preposición o terminación</option>
-            <option value="Opción única">Opción única</option>
-            <option value="Escribir tu propia respuesta">Escribir tu propia respuesta</option>
-            <option value="Repetir después del narrador">Repetir después del narrador</option>
-            <option value="Completar la frase con tu voz">Completar la frase con tu voz</option>
-            <option value="Responder a una pregunta">Responder a una pregunta</option>
-            <option value="Describir una imagen">Describir una imagen</option>
-            <option value="Juego de roles">Juego de roles</option>
-            <option value="Mini-monólogo">Mini-monólogo</option>
-            <option value="Diálogo semiabierto">Diálogo semiabierto</option>
-            <option value="Decirlo de otra manera">Decirlo de otra manera</option>
-            <option value="Escuchar y elegir la respuesta">Escuchar y elegir la respuesta</option>
-            <option value="Escuchar y completar los espacios">Escuchar y completar los espacios</option>
-            <option value="Escuchar y marcar verdadero o falso">Escuchar y marcar verdadero o falso</option>
-            <option value="Escuchar y relacionar personas">Escuchar y relacionar personas</option>
-            <option value="Escuchar y ordenar la secuencia">Escuchar y ordenar la secuencia</option>
-            <option value="Dictado con audio">Dictado con audio</option>
-            <option value="Escuchar y repetir">Escuchar y repetir</option>
-            <option value="Diálogo interactivo">Diálogo interactivo</option>
-            <option value="Misión del día">Misión del día</option>
-            <option value="Quiz situacional">Quiz situacional</option>
-            <option value="Video con preguntas">Video con preguntas</option>
-            <option value="Test final del tema">Test final del tema</option>
-            <option value="Debate grabado">Debate grabado</option>
-            <option value="Contar una historia">Contar una historia</option>
-            <option value="Simulación de entrevista de trabajo">Simulación de entrevista de trabajo</option>
-            <option value="Retroalimentación por voz">Retroalimentación por voz</option>
-          </select>
-        </div>
+        <!-- LISTA -->
+        <div id="topicsGrid" class="topicsGrid"></div>
       </div>
+    </main>
 
-      <div class="sectionTitle">📘 Gramática</div>
-      <div id="grammarList"></div>
-
-      <div class="sectionTitle">📗 Vocabulario</div>
-      <div id="vocabList"></div>
-
-      <!-- ADMIN add topic -->
-      <div class="card adminPanel" id="adminPanel">
-        <h3 style="margin:0 0 10px 0">👑 Panel Admin – agregar tema</h3>
-        <div class="row">
-          <select id="adminType">
-            <option value="grammar">gramática</option>
-            <option value="vocabulary">vocabulario</option>
-          </select>
-          <input id="adminTitle" placeholder="Título (ES)" />
-          <input id="adminDesc" placeholder="Descripción (ES)" />
-                    <select id="adminStatus" title="Estado">
-            <option value="published">Publicado</option>
-            <option value="draft">Borrador</option>
-          </select>
-<button type="button" onclick="addTopic()">➕ Agregar</button>
-        </div>
-        <p style="font-size:12px; color:#6b7280; margin:10px 0 0 0">
-          Si hiciste clic en importar varias veces – usa "Eliminar duplicados". Esto eliminará las repeticiones en Firestore.
-        </p>
-      </div>
-
-    </div>
-  </main>
-
-  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
-
-  <script type="module" src="assets/js/pages/course-page.js"></script>
-
-<script data-aquivivo-no-new-tab="1">
-  // Force same-tab navigation (prevents accidental new tabs)
-  (function () {
-    try {
-      document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('a[target="_blank"]').forEach(function (a) {
-          a.removeAttribute('target');
-          var rel = (a.getAttribute('rel') || '').split(/\s+/).filter(Boolean);
-          rel = rel.filter(function (x) { return !(/^noopener$/i.test(x) || /^noreferrer$/i.test(x)); });
-          if (rel.length) a.setAttribute('rel', rel.join(' '));
-          else a.removeAttribute('rel');
-        });
-      });
-
-      var _open = window.open;
-      window.open = function (url, target) {
-        if (target && String(target).toLowerCase() === '_blank' && url) {
-          window.location.assign(url);
-          return null;
-        }
-        return _open.apply(window, arguments);
-      };
-    } catch (e) {}
-  })();
-</script>
-
-</div>
-  <script src="assets/js/layout.js" defer></script>
+    <!-- JEDYNY SCRIPT STRONY -->
+      <script type="module" src="assets/js/pages/course-page.js"></script>
 </body>
 </html>

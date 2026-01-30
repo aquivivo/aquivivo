@@ -240,14 +240,14 @@
         .summaryBar{ grid-template-columns: 1fr; }
       }
 
-
             /* Admin perf: compact list + collapsible details */
       .userSummary { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
       .userSummary .left { display:flex; flex-direction:column; gap:2px; min-width:240px; }
       .userSummary .right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
       .detailsBody { margin-top:12px; }
 </style>
-  </head>
+    <script src="assets/js/layout.js" type="module"></script>
+</head>
 
   <body data-page="esadmin">
     <div id="appHeader"></div>
@@ -272,7 +272,6 @@
         </select>
         <span id="status" class="muted"></span>
       </div>
-
 
       <div id="summary" class="summaryBar">
         <div class="sumCard">
@@ -299,38 +298,6 @@
     </main>
 
     <!-- Firebase -->
-    <script type="module" src="assets/js/pages/esadmin-page.js"></script>
-
-    <script src="assets/js/layout.js"></script>
-
-    <script data-aquivivo-no-new-tab="1">
-      // Force same-tab navigation (prevents accidental new tabs)
-      (function () {
-        try {
-          document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('a[target="_blank"]').forEach(function (a) {
-              a.removeAttribute('target');
-              var rel = (a.getAttribute('rel') || '')
-                .split(/\s+/)
-                .filter(Boolean)
-                .filter(function (x) {
-                  return !(/^noopener$/i.test(x) || /^noreferrer$/i.test(x));
-                });
-              if (rel.length) a.setAttribute('rel', rel.join(' '));
-              else a.removeAttribute('rel');
-            });
-          });
-
-          var _open = window.open;
-          window.open = function (url, target) {
-            if (target && String(target).toLowerCase() === '_blank' && url) {
-              window.location.assign(url);
-              return null;
-            }
-            return _open.apply(window, arguments);
-          };
-        } catch (e) {}
-      })();
-    </script>
-  </body>
+      <script type="module" src="assets/js/pages/esadmin-page.js"></script>
+</body>
 </html>
