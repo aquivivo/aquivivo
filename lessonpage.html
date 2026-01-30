@@ -39,9 +39,7 @@
       flex-wrap: wrap;
     }
     .brand{ display:flex; align-items:center; gap:12px; min-width: 180px; }
-    
-      .brandLogo{ width:56px; height:56px; object-fit:contain; display:block; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.25)); }
-.logo-flag{
+    .logo-flag{
       width:42px; height:42px; border-radius:999px;
       background: linear-gradient(180deg, var(--yellow) 0 33.33%, var(--blue) 33.33% 66.66%, var(--red) 66.66% 100%);
       box-shadow: 0 12px 26px rgba(0,0,0,.25);
@@ -216,8 +214,8 @@
   <div class="nav-glass">
     <div class="nav-inner">
       <div class="brand" aria-label="AquiVivo">
-        <img src="logo.png" class="brandLogo" alt="AquiVivo">
-        
+        <div class="logo-flag" aria-hidden="true"></div>
+        <div class="name">AquiVivo</div>
       </div>
 
       <div class="nav-actions">

@@ -43,12 +43,7 @@
       background: rgba(0,56,147,0.92);
       border-bottom: 1px solid rgba(255,255,255,0.14);
       backdrop-filter: blur(10px);
-      position: relative;
     }
-    .topActionBar{ position: sticky; }
-    .topActionBar::after{ content:\"\"; display:block; height:3px; background: linear-gradient(90deg, var(--yellow), var(--blue), var(--red)); opacity:0.85; position:absolute; left:0; right:0; bottom:-1px; }
-    .topActionBar{ position:sticky; }
-
     .topActionLeft{ display:flex; gap:12px; align-items:center; }
     .btnLogout{
       background: var(--red);
@@ -453,8 +448,6 @@
       opacity:.75;
     }
 
-
-.brandLogo{ width:56px; height:56px; object-fit:contain; display:block; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.25)); }
 </style>
 
 <style>
@@ -466,8 +459,6 @@
 body{
   overflow-x:hidden;
 }
-
-.brandLogo{ width:56px; height:56px; object-fit:contain; display:block; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.25)); }
 </style>
 
 </head>
@@ -475,7 +466,7 @@ body{
 <body>
 <div class="ui-scale-wrapper">
   <div class="topActionBar" id="topActionBar">
-    <div class="topActionLeft"><a href="espanel.html" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:#fff;"><img src="logo.png" class="brandLogo" alt="AquiVivo"><span style="font-family:'Playfair Display',serif; font-weight:900; font-size:28px; letter-spacing:.2px;"></span></a></div>
+    <div class="topActionLeft"></div>
 
     <div style="display:flex; gap:10px; align-items:center">
       <button class="btnNav" id="btnBack" type="button" onclick="window.location.href='ESPANEL.html'">⬅️ ATRÁS</button>
@@ -827,7 +818,7 @@ body{
             </div>
           ${badge}
           </div>
-          ${isAdmin ? `<div class=\"markRow\" id=\"marks-${t.id}\"></div>` : ``}
+          <div class=\"markRow\" id=\"marks-${t.id}\"></div>
           <p>${escapeHtml(t.desc)}</p>
         </div>
       `;
@@ -942,7 +933,7 @@ body{
         : `<div class="card noResults">No hay resultados en vocabulario</div>`;
 
       // update markers for visible topics
-      if (isAdmin) { [...grammar, ...vocab].forEach(t => ensureMarks(t.id)); }
+      [...grammar, ...vocab].forEach(t => ensureMarks(t.id));
 
       updateStatsAndProgress(grammar.length + vocab.length);
     }

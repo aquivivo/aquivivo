@@ -39,8 +39,7 @@
     const header = el('header', {class:'nav-glass av-layout'});
     const inner = el('div', {class:'container nav-inner'});
     const brand = el('div', {class:'brand'}, [
-      el('div', {class:'logo-flag', 'aria-hidden':'true'}),
-      el('div', {class:'name'}, ['Aqui vivo'])
+      el('img', {src:'assets/img/logo.png', class:'brandLogo', alt:'AquiVivo'})
     ]);
 
     const actions = el('div', {class:'nav-actions'});
@@ -103,6 +102,8 @@
       .av-footer a:hover,.av-linklike:hover{text-decoration:underline}
       .av-linklike{background:none;border:none;padding:0;cursor:pointer}
       .av-layout .nav-actions{gap:10px;flex-wrap:wrap}
+      .brand{display:flex;align-items:center;gap:12px;min-width:180px}
+      .brandLogo{width:56px;height:56px;object-fit:contain;display:block;filter:drop-shadow(0 10px 20px rgba(0,0,0,.25))}
       .btn-yellow{background:#f7d34a;color:#0b1a44;border:none;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
       .btn-yellow:hover{filter:brightness(0.98)}
       .av-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:rgba(10,15,30,.9);color:#fff;
