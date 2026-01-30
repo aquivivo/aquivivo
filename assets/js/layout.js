@@ -1,112 +1,110 @@
 import { auth } from './firebase-init.js';
-import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 
-(function () {
-  const protectedPages = new Set([
-    'course.html',
-    'espanel.html',
-    'lessonpage.html',
-    'lessonadmin.html',
-    'lesson.html',
-    'ejercicio.html',
-    'ejercicioadmin.html',
-    'esadmin.html',
-  ]);
+/**
+ * layout.js (ONE for all pages)
+ * - injects header into #appHeader
+ * - handles logout (#btnLogout)
+ * - guards protected pages (redirect to login.html?next=...)
+ * - optional coffee float (assets/img/coffeeFloat.svg)
+ */
 
-  function fileName() {
-    const p = (location.pathname || '').split('/').pop();
-    return p || 'index.html';
-  }
+function isPublicPage(page) {
+  return page === 'login' || page === 'index';
+}
 
-  function ensureCoffee() {
-    if (document.getElementById('coffeeFloat')) return;
-    const div = document.createElement('div');
-    div.id = 'coffeeFloat';
-    div.innerHTML = '<img src="assets/img/coffeeFloat.svg" alt="" />';
-    document.body.appendChild(div);
-  }
+function currentPage() {
+  return (document.body && document.body.dataset && document.body.dataset.page) ? document.body.dataset.page : '';
+}
 
-  function buildHeader() {
-    const host = document.getElementById('appHeader');
-    if (!host) return;
+function buildHeader() {
+  const host = document.getElementById('appHeader');
+  if (!host) return;
 
-    const page = document.body?.dataset?.page || '';
-    const qs = new URLSearchParams(location.search);
-    const level = (qs.get('level') || 'A1').toUpperCase();
+  const page = currentPage();
+  const qs = new URLSearchParams(location.search);
+  const level = (qs.get('level') || 'A1').toUpperCase();
 
-    const showPanel = page !== 'login';
-    const showCourse = page !== 'login';
-    const showBack = page !== 'index' && page !== 'login';
-    const showLogout = page !== 'login' && page !== 'index';
+  const showNav = true;
+  const showBack = page !== 'index';
+  const showLogout = !isPublicPage(page);
 
-    const hrefInicio = 'index.html';
-    const hrefPanel = 'espanel.html';
-    const hrefCourse = `course.html?level=${encodeURIComponent(level)}`;
+  const hrefInicio = 'index.html';
+  const hrefPanel  = 'espanel.html';
+  const hrefCourse = `course.html?level=${encodeURIComponent(level)}`;
 
-    host.innerHTML = `
-      <div class="nav-glass">
-        <div class="nav-line"></div>
-        <div class="nav-inner">
-          <a class="brand" href="${hrefInicio}">
-            <img src="assets/img/logo.png" alt="AquiVivo" />
-          </a>
+  host.innerHTML = `
+    <div class="nav-glass">
+      <div class="nav-line"></div>
+      <div class="nav-inner">
+        <a class="brand" href="${hrefInicio}">
+          <img src="assets/img/logo.png" alt="AquiVivo" />
+        </a>
+        ${showNav ? `
           <div class="nav-actions">
-            ${showCourse ? `<a class="btn-white-outline" href="${hrefCourse}">📚 Curso</a>` : ``}
-            ${showPanel ? `<a class="btn-white-outline" href="${hrefPanel}">🏠 Panel</a>` : ``}
+            <a class="btn-white-outline" href="${hrefCourse}">📚 Curso</a>
+            <a class="btn-white-outline" href="${hrefPanel}">🏠 Panel</a>
             <a class="btn-white-outline" href="${hrefInicio}">✨ Inicio</a>
             ${showBack ? `<button class="btn-white-outline" id="btnAtras" type="button">⬅️ Atrás</button>` : ``}
             ${showLogout ? `<button class="btn-red" id="btnLogout" type="button">Cerrar sesión</button>` : ``}
           </div>
-        </div>
+        ` : ``}
       </div>
-    `;
+    </div>
+  `;
 
-    const backBtn = document.getElementById('btnAtras');
-    if (backBtn) {
-      backBtn.addEventListener('click', () => {
-        const before = location.href;
-        history.back();
-        setTimeout(() => {
-          if (location.href === before) location.href = hrefPanel;
-        }, 300);
-      });
-    }
-
-    const logoutBtn = document.getElementById('btnLogout');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        try {
-          await signOut(auth);
-        } catch (e) {
-          console.error(e);
-        }
-        window.location.href = 'login.html';
-      });
-    }
-
-    // coffee (optional; hidden on mobile by CSS)
-    if (page !== 'login') ensureCoffee();
-  }
-
-  function guardAuth() {
-    const current = fileName();
-    if (!protectedPages.has(current)) return;
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) return;
-      const next = encodeURIComponent(current + location.search + location.hash);
-      window.location.replace(`login.html?next=${next}`);
+  const backBtn = document.getElementById('btnAtras');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      const before = location.href;
+      history.back();
+      setTimeout(() => {
+        if (location.href === before) location.href = hrefPanel;
+      }, 300);
     });
   }
 
-  function init() {
-    buildHeader();
-    guardAuth();
+  const logoutBtn = document.getElementById('btnLogout');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try { await signOut(auth); } catch (e) { console.error(e); }
+      window.location.href = 'login.html';
+    });
   }
+}
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+function ensureCoffeeFloat() {
+  // optional decorative element; safe if CSS hides it on mobile
+  if (document.getElementById('coffeeFloat')) return;
+
+  // show on all pages except login
+  const page = currentPage();
+  if (page === 'login') return;
+
+  const el = document.createElement('div');
+  el.id = 'coffeeFloat';
+  el.innerHTML = `<img src="assets/img/coffeeFloat.svg" alt="" />`;
+  document.body.appendChild(el);
+}
+
+function guardAuth() {
+  const page = currentPage();
+
+  // if dataset missing -> treat as protected (safer)
+  const publicPage = isPublicPage(page);
+  if (publicPage) return;
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      const next = encodeURIComponent(location.pathname.split('/').pop() + location.search);
+      window.location.href = `login.html?next=${next}`;
+    }
+  });
+}
+
+(function initLayout(){
+  // build immediately
+  buildHeader();
+  ensureCoffeeFloat();
+  guardAuth();
 })();
