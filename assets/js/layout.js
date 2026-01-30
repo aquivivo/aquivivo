@@ -105,7 +105,86 @@
           ['Cerrar sesión'],
         ),
       );
-    } else {
+    } else if (path === 'ejercicioadmin.html') {
+  const level = getQS('level') || 'A1';
+  const id = getQS('id') || '';
+  actions.appendChild(
+    el(
+      'a',
+      { class: 'btn-white-outline', href: `course.html?level=${encodeURIComponent(level)}` },
+      ['⬅️ Volver al curso'],
+    ),
+  );
+  actions.appendChild(
+    el(
+      'a',
+      { class: 'btn-white-outline', href: `course.html?level=${encodeURIComponent(level)}` },
+      ['📚 Niveles'],
+    ),
+  );
+  actions.appendChild(
+    el(
+      'button',
+      {
+        class: 'btn-yellow',
+        type: 'button',
+        onclick: async () => {
+          try {
+            await navigator.clipboard.writeText(location.href);
+            toast('✅ Enlace copiado');
+          } catch (e) {
+            toast('⚠️ No se pudo copiar');
+          }
+        },
+      },
+      ['🔗 Copiar enlace'],
+    ),
+  );
+  actions.appendChild(
+    el(
+      'a',
+      {
+        class: 'btn-white-outline',
+        id: 'btnStudentView',
+        href: `ejercicio.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(id)}`,
+      },
+      ['👀 Vista alumno'],
+    ),
+  );
+  actions.appendChild(
+    el(
+      'a',
+      {
+        class: 'btn-white-outline',
+        id: 'btnLessonAdmin',
+        href: `lessonadmin.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(id)}`,
+      },
+      ['🛠 Admin lección'],
+    ),
+  );
+  actions.appendChild(
+    el(
+      'button',
+      {
+        class: 'btn-white-outline',
+        type: 'button',
+        onclick: () => location.reload(),
+      },
+      ['🔄 Recargar'],
+    ),
+  );
+  actions.appendChild(
+    el(
+      'button',
+      {
+        class: 'btn-red',
+        type: 'button',
+        onclick: safeLogout,
+      },
+      ['Cerrar sesión'],
+    ),
+  );
+} else {
       if (isLesson) {
         const level = getQS('level') || 'A1';
         // Prefer returning to course filtered by level
@@ -182,6 +261,8 @@
         'lesson.html',
         'lessonpage.html',
         'course.html',
+        'ejercicio.html',
+        'ejercicioadmin.html',
       ].includes(path);
       if (showLogout) {
         actions.appendChild(
