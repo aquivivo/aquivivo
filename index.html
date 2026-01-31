@@ -17,28 +17,158 @@
 
   <main class="page">
     <div class="container">
-      <div class="heroBanner">
-        <div class="heroTitleRow">
-          <div class="heroIcon">☕</div>
-          <div style="flex:1">
-            <h1 class="glow-text" style="margin:0; font-family:'Playfair Display',serif; font-weight:900; font-size:48px; line-height:1.05;">Bienvenida a AquiVivo</h1>
-            <p class="subtitle" style="margin:10px 0 0; font-weight:700;">Tu plataforma de aprendizaje de idiomas — organizada, clara y lista para crecer.</p>
 
-            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-              <a class="btn-yellow" href="login.html">🔐 Inicia sesión</a>
-              <a class="btn-white-outline" href="course.html?level=A1">📚 Ver cursos</a>
-              <a class="btn" href="espanel.html">🏠 Ir al panel</a>
+      <!-- HERO -->
+      <section class="heroBanner" style="padding:26px 22px;">
+        <div style="display:grid; grid-template-columns:1.15fr .85fr; gap:18px; align-items:center;">
+          <div>
+            <h1 class="glow-text" style="margin:0; font-family:'Playfair Display',serif; font-weight:900; font-size:clamp(40px,5vw,70px); line-height:1.02;">
+              Aprende Polaco<br>
+              <span style="color:var(--yellow);">con Alma Latina</span>
+            </h1>
+
+            <p class="subtitle" style="margin:14px 0 0; font-size:18px; line-height:1.6;">
+              Soy Magdalena — te ayudo a descubrir que el polaco puede ser ligero, agradable y realmente <b>alcanzable</b>.
+            </p>
+
+            <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+              <a class="btn-yellow" href="login.html">Reserva tu Clase Gratis</a>
+              <a class="btn-white-outline" href="#cursos">Ver Cursos</a>
+              <a class="btn" href="espanel.html">Ir al Panel</a>
+            </div>
+
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <span class="pill pill-yellow">🌎 Español latinoamericano</span>
+              <span class="pill">🇵🇱 Polaco práctico</span>
+              <span class="pill pill-blue">⚡ Resultados semanales</span>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:center;">
+            <div class="card" style="padding:18px; width:min(420px,100%);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-weight:900;">☕ AquiVivo</div>
+                <span class="pill pill-yellow">Nuevo</span>
+              </div>
+
+              <div style="margin-top:12px; display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+                <div class="card" style="padding:14px; text-align:center;">
+                  <div style="font-weight:900; font-size:34px; color:var(--yellow);">100+</div>
+                  <div class="muted">Estudiantes</div>
+                </div>
+                <div class="card" style="padding:14px; text-align:center;">
+                  <div style="font-weight:900; font-size:34px; color:#bcd3ff;">10</div>
+                  <div class="muted">años</div>
+                </div>
+                <div class="card" style="padding:14px; text-align:center;">
+                  <div style="font-weight:900; font-size:34px; color:var(--red);">4.9★</div>
+                  <div class="muted">valoración</div>
+                </div>
+              </div>
+
+              <div style="margin-top:12px; display:flex; gap:10px;">
+                <a class="btn-white-outline" href="login.html">🔐 Iniciar sesión</a>
+                <a class="btn-white-outline" href="course.html?level=A1">📚 Ver temas</a>
+              </div>
             </div>
           </div>
         </div>
+      </section>
+
+    </div><!-- /container -->
+
+    <!-- 3 KAFELKI: FULL WIDTH -->
+    <section style="margin-top:18px;">
+      <div style="width:100vw; margin-left:calc(50% - 50vw); padding:0 22px;">
+        <div style="max-width: 1280px; margin: 0 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+          <div class="card" style="padding:22px; border-left:8px solid var(--yellow); border-radius:28px;">
+            <div style="font-weight:900; font-size:22px;">🗣 Conversación Natural</div>
+            <div class="muted" style="margin-top:10px; font-size:18px; line-height:1.55;">Habla como un nativo desde el primer día.</div>
+          </div>
+
+          <div class="card" style="padding:22px; border-left:8px solid #bcd3ff; border-radius:28px;">
+            <div style="font-weight:900; font-size:22px;">📚 Material Exclusivo</div>
+            <div class="muted" style="margin-top:10px; font-size:18px; line-height:1.55;">Recursos creados para hispanohablantes.</div>
+          </div>
+
+          <div class="card" style="padding:22px; border-left:8px solid var(--red); border-radius:28px;">
+            <div style="font-weight:900; font-size:22px;">⚡ Resultados Rápidos</div>
+            <div class="muted" style="margin-top:10px; font-size:18px; line-height:1.55;">Progreso visible semana tras semana.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+
+      <!-- CURSOS -->
+      <section id="cursos" style="margin-top:22px;">
+        <div class="heroBanner" style="padding:18px;">
+          <div class="heroTitleRow">
+            <div class="heroIcon">📚</div>
+            <div style="flex:1">
+              <h2 class="glow-text" style="margin:0; font-family:'Playfair Display',serif; font-weight:900;">Cursos</h2>
+              <div class="subtitle" style="margin-top:6px;">Elige tu nivel y empieza hoy.</div>
+            </div>
+            <a class="btn-white-outline" href="espanel.html">Ir al Panel</a>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+          <a class="courseCard" href="course.html?level=A1" style="text-decoration:none; color:inherit;">
+            <div class="card" style="padding:18px; border-radius:24px;">
+              <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                <span class="pill pill-yellow" style="font-weight:900;">NIVEL A1</span>
+                <span class="pill">Entrar →</span>
+              </div>
+              <div class="courseTitle" style="margin-top:12px; font-family:'Playfair Display',serif; font-weight:900; font-size:28px;">A1 — Principiante</div>
+              <div class="muted" style="margin-top:8px; line-height:1.65;">Empieza desde cero con situaciones reales.</div>
+            </div>
+          </a>
+
+          <a class="courseCard" href="course.html?level=A2" style="text-decoration:none; color:inherit;">
+            <div class="card" style="padding:18px; border-radius:24px;">
+              <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                <span class="pill pill-yellow" style="font-weight:900;">NIVEL A2</span>
+                <span class="pill">Entrar →</span>
+              </div>
+              <div class="courseTitle" style="margin-top:12px; font-family:'Playfair Display',serif; font-weight:900; font-size:28px;">A2 — Básico</div>
+              <div class="muted" style="margin-top:8px; line-height:1.65;">Refuerza lo esencial y habla con más soltura.</div>
+            </div>
+          </a>
+
+          <a class="courseCard" href="course.html?level=B1" style="text-decoration:none; color:inherit;">
+            <div class="card" style="padding:18px; border-radius:24px;">
+              <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                <span class="pill pill-blue" style="font-weight:900;">NIVEL B1</span>
+                <span class="pill">Entrar →</span>
+              </div>
+              <div class="courseTitle" style="margin-top:12px; font-family:'Playfair Display',serif; font-weight:900; font-size:28px;">B1 — Intermedio</div>
+              <div class="muted" style="margin-top:8px; line-height:1.65;">Comunicación diaria y trabajo con confianza.</div>
+            </div>
+          </a>
+        </div>
+
+        <div style="margin-top:16px; display:grid; grid-template-columns:1fr; gap:16px;">
+          <a class="courseCard" href="course.html?level=B2" style="text-decoration:none; color:inherit;">
+            <div class="card" style="padding:18px; border-radius:24px; border-left:8px solid var(--red);">
+              <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                <span class="pill" style="background: rgba(206,17,38,.18); border-color: rgba(206,17,38,.30); font-weight:900;">NIVEL B2</span>
+                <span class="pill">Entrar →</span>
+              </div>
+              <div class="courseTitle" style="margin-top:12px; font-family:'Playfair Display',serif; font-weight:900; font-size:28px;">B2 — Avanzado</div>
+              <div class="muted" style="margin-top:8px; line-height:1.65;">Lenguaje natural, formal y profesional.</div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <div class="card" style="margin-top:18px;">
+        <div class="sectionTitle" style="margin-top:0;">📌 Empieza ahora</div>
+        <div class="hintSmall">Entra al <b>Panel</b> para activar tu acceso (código o plan) y abrir tu nivel.</div>
       </div>
 
-      <div class="card">
-        <div class="sectionTitle" style="margin-top:0">📌 Sugerencia rápida</div>
-        <div class="hintSmall">Si es tu primera vez, entra en <b>Login</b>, inicia sesión y luego abre un curso desde el panel.</div>
-      </div>
-    </div>
+    </div><!-- /container -->
   </main>
-
-  </body>
+</body>
 </html>

@@ -1,167 +1,108 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Ejercicios | AquiVivo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8" />
+  <title>Ejercicios | AquiVivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
-      rel="stylesheet"
-    />
-
-    
-    <style id="coffeeFloatStyle">
-/* ☕ Floating coffee (global) */
-#coffeeFloat{
-  position: absolute;
-  right: -40px;
-  top: 360px;
-  width: 420px;
-  height: 420px;
-  pointer-events: none;
-  opacity: 0.9;
-  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35));
-  animation: coffeeFloat 7s ease-in-out infinite;
-  transform-origin: 50% 60%;
-  z-index: 1;
-}
-#coffeeFloat svg{ width:100%; height:100%; display:block; }
-@keyframes coffeeFloat{
-  0%   { transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1); }
-  50%  { transform: translateY(-18px) translateX(-6px) rotate(1deg) scale(1.02); }
-  100% { transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1); }
-}
-@media (max-width: 980px){
-  #coffeeFloat{ display:none; }
-}
-</style>
-<link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
   <script src="assets/js/layout.js" type="module"></script>
 </head>
 
-  <body data-page="ejercicio">
+<body data-page="ejercicio">
   <div id="appHeader"></div>
-<div class="sessionBar">
-      Sesión activa: <strong id="sessionEmail">Cargando...</strong>
-    </div>
 
-    <main class="page">
-      <div class="container">
-      <div id="toast"></div>
+  <main class="page">
+    <div class="container">
 
-      <div class="card">
-        <div class="metaRow">
-          <span class="pill pill-yellow" id="pillLevel">Nivel</span>
-          <span class="pill pill-blue" id="pillType">Tipo</span>
-          <span class="pill" id="pillSlug">slug</span>
-          <span class="pill" id="pillCount">Ejercicios: 0</span>
-          <span class="pill" id="pillProgress" style="background: rgba(252,209,22,0.16); border-color: rgba(252,209,22,0.35);">Progreso: 0%</span>
-        </div>
-        <div class="progressWrap" style="margin-top:10px">
-          <div class="progressBar"><div class="progressFill" id="progressFill" style="width:0%"></div></div>
-          <div class="progressText" id="progressText">0 / 0 completados</div>
-        </div>
+      <section class="heroBanner" style="padding:22px 18px;">
+        <div class="heroTitleRow">
+          <div class="heroIcon">🧩</div>
+          <div style="flex:1">
+            <h1 class="glow-text" style="margin:0; font-family:'Playfair Display',serif; font-weight:900;">Ejercicios</h1>
+            <p class="subtitle" id="topicDesc" style="margin:8px 0 0;">Cargando…</p>
 
-        <h1 id="topicTitle">Cargando…</h1>
-        <p class="subtitle" id="topicDesc">Cargando…</p>
+            <div class="metaRow" style="margin-top:10px;">
+              <span class="pill pill-yellow" id="pillLevel">Nivel: —</span>
+              <span class="pill" id="pillType" style="display:none"></span>
+              <span class="pill" id="pillSlug" style="display:none"></span>
+              <span class="pill" id="pillCount">0</span>
+              <span class="pill pill-blue" id="pillProgress">0%</span>
+              <a class="pill" id="pillLessonLink" href="#" style="text-decoration:none;">📖 Lección</a>
+            </div>
 
-        <div class="metaRow" id="taskChips"></div>
-      </div>
-
-      <!-- Lesson content (from course_meta docId: LEVEL__topicSlug) -->
-      <div id="lessonContentCard" class="lessonContentCard" style="display:none">
-        <div class="lessonContentTitle">
-          <h3>📘 Lección — materiales del tema</h3>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-            <a class="btn" id="btnOpenLessonPage" href="#">📖 Abrir lección (página)</a>
+            <div class="readTools" id="readTools" style="margin-top:12px;">
+              <div class="readProgress">
+                <div class="readProgressBar">
+                  <div class="readProgressFill" id="readProgressFill" style="width:0%"></div>
+                </div>
+                <div class="readProgressText" id="readProgressText">🧩 Progreso: 0%</div>
+              </div>
+              <div class="exerciseLinks" id="exerciseLinksWrap">
+                <a class="btn-white-outline" id="btnBackLesson" href="#">← Volver a la lección</a>
+                <a class="btn-white-outline" id="btnBackCourse" href="#">📚 Temas</a>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div id="lessonContentBody" class="lessonText"></div>
-        <div id="lessonContentEmpty" class="lessonEmpty" style="display:none">Todavía no hay contenido de lección para este tema.</div>
-      </div>
-
-
-      <div class="sectionTitle">🧩 Ejercicios</div>
-
-      <div class="card" id="filtersCard" style="padding:14px 14px 12px; margin-bottom:14px">
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end">
-          <div style="flex:1; min-width:220px">
-            <label style="display:block; font-weight:700; margin-bottom:6px">Buscar</label>
-            <input id="filterSearch" placeholder="Szukaj po treści / odpowiedzi…" />
-          </div>
-
-          <div style="min-width:190px">
-            <label style="display:block; font-weight:700; margin-bottom:6px">Typ</label>
-            <select id="filterType"></select>
-          </div>
-
-          <div style="min-width:190px">
-            <label style="display:block; font-weight:700; margin-bottom:6px">Kategoria</label>
-            <select id="filterCategory">
-              <option value="">Wszystko</option>
-              <option value="grammar">Gramática</option>
-              <option value="vocab">Vocabulario</option>
-              <option value="both">Gramática + vocabulario</option>
+      <section class="card" style="margin-top:14px; padding:14px 16px;">
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <input id="searchInput" class="input" placeholder="Buscar…" style="min-width:220px;" />
+            <select id="filterType" class="select">
+              <option value="">Tipo: todos</option>
+              <option value="choice">Choice</option>
+              <option value="text">Text</option>
+              <option value="match">Match</option>
+              <option value="order">Order</option>
             </select>
+            <select id="filterTag" class="select">
+              <option value="">Tag: todos</option>
+            </select>
+            <button id="btnClearFilters" class="btn-white-outline">🧹 Limpiar</button>
           </div>
 
-          <button class="btn" id="btnClearFilters" type="button">🧹 Wyczyść</button>
-
-          <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-            <label style="display:flex; gap:8px; align-items:center; user-select:none; font-weight:700">
-              <input id="toggleReorder" type="checkbox" style="transform:scale(1.15)" />
-              Tryb sortowania (drag&drop)
-            </label>
-            <button class="btn btn-yellow" id="btnSaveOrder" type="button" style="display:none">💾 Zapisz kolejność</button>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <span class="pill" id="taskChips">—</span>
+            <span class="pill pill-blue"><span id="doneCount">0</span>/<span id="totalCount">0</span> hecho</span>
           </div>
         </div>
+      </section>
 
-        <div class="smallNote" style="margin-top:8px; opacity:.95">
-          Tip: w trybie sortowania przeciągaj kafelki. Zapis kolejności aktualizuje pole <b>order</b> w Firestore.
-        </div>
+      <section id="adminWrap" style="display:none; margin-top:12px;">
+        <!-- Admin UI injected by JS if needed -->
+      </section>
+
+      <section style="margin-top:14px;">
+        <div id="emptyExercises" class="empty" style="display:none;">No hay ejercicios todavía.</div>
+        <div id="exerciseList" class="exerciseList"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <div id="toast" class="toast" style="display:none;"></div>
+
+  <!-- Finish modal -->
+  <div id="finishModal" class="modalOverlay" style="display:none;">
+    <div class="modalCard">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div style="font-weight:900; font-size:18px;">🎉 ¡Listo!</div>
+        <button class="toolBtn" id="btnCloseFinish" title="Cerrar">✕</button>
       </div>
-
-      <div id="exerciseList"></div>
-
-      <div id="emptyExercises" class="card" style="display:none; opacity:0.95">
-        <div class="muted">
-          Todavía no hay ejercicios para este tema.
-        </div>
-        <div class="smallNote" style="margin-top:10px">
-          Si eres admin, agrega el primero abajo 👇
-        </div>
-      </div>
-
-      <!-- Admin moved to ejercicioadmin.html -->
-      <div id="adminWrap" class="card adminWrap" style="display:none"></div>
-      </div>
-    </main>
-
-    
-    <!-- Preview modal -->
-    <div id="previewModal" class="modal" style="display:none">
-      <div class="modalBackdrop" id="previewBackdrop"></div>
-      <div class="modalBox card">
-        <div style="display:flex; gap:10px; align-items:center; justify-content:space-between">
-          <div class="sectionTitle" style="margin:0">👀 Podgląd (uczeń)</div>
-          <button class="btn" id="btnClosePreview" type="button">✖</button>
-        </div>
-
-        <div id="previewBody" style="margin-top:10px"></div>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center">
-          <button class="btn btn-yellow" id="btnCheckPreview" type="button">✅ Sprawdź</button>
-          <span id="previewResult" class="pill" style="display:none"></span>
-        </div>
-
-        <div class="smallNote" style="margin-top:10px; opacity:.95">
-          Ten podgląd jest po to, żeby szybko sprawdzić czy treść i odpowiedź są spójne.
-        </div>
+      <div class="muted" style="margin-top:8px;" id="finishText">Has completado los ejercicios.</div>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn-yellow" id="btnFinishLesson" href="#">📖 Volver a la lección</a>
+        <a class="btn-white-outline" id="btnFinishCourse" href="#">📚 Ver temas</a>
+        <a class="btn" id="btnFinishPanel" href="espanel.html">🏠 Panel</a>
       </div>
     </div>
-
+  </div>
 
   <script type="module" src="assets/js/pages/ejercicio-page.js"></script>
 </body>

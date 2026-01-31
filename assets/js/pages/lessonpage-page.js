@@ -130,6 +130,8 @@ async function loadLesson(user) {
   const pillDuration = $('pillDuration');
   const pillPub = $('pillPub');
   const pillAdminLink = $('pillAdminLink');
+  const readTools = $('readTools');
+  const lessonSticky = $('lessonSticky');
   const exerciseLinksWrap = $('exerciseLinksWrap');
 
   setText('lessonTitle', 'Cargando…');
@@ -143,6 +145,17 @@ async function loadLesson(user) {
   }
 
   const flags = await getUserFlags(user.uid);
+
+  // Always show reading tools (progress + ejercicios link)
+  if (readTools) readTools.style.display = '';
+
+    // Exercise links
+  if (exerciseLinksWrap) {
+    exerciseLinksWrap.innerHTML = `
+      <a class="btn-white-outline" href="ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}">🧩 Ejercicios</a>
+      <a class="btn-white-outline" href="course.html?level=${encodeURIComponent(LEVEL)}">📚 Temas</a>
+    `;
+  }
 
   // Admin link
   if (pillAdminLink && flags.isAdmin) {
@@ -259,3 +272,38 @@ document.addEventListener('DOMContentLoaded', () => {
     loadLesson(user);
   });
 });
+
+
+// --- TOC highlight (simple) ---
+function wireTocHighlight() {
+  const wrap = document.getElementById('tocList');
+  const content = document.getElementById('lessonContent');
+  if (!wrap || !content) return;
+
+  const links = Array.from(wrap.querySelectorAll('a[href^="#"]'));
+  if (!links.length) return;
+
+  const map = new Map();
+  for (const a of links) {
+    const id = (a.getAttribute('href') || '').slice(1);
+    const el = id ? document.getElementById(id) : null;
+    if (el) map.set(el, a);
+  }
+  if (!map.size) return;
+
+  const setActive = (a) => {
+    for (const x of links) x.classList.remove('tocActive');
+    if (a) a.classList.add('tocActive');
+  };
+
+  const obs = new IntersectionObserver((entries) => {
+    const visible = entries.filter(e => e.isIntersecting).sort((a,b) => (b.intersectionRatio - a.intersectionRatio));
+    if (!visible.length) return;
+    const top = visible[0].target;
+    const a = map.get(top);
+    if (a) setActive(a);
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: [0.1, 0.2, 0.4, 0.6] });
+
+  for (const el of map.keys()) obs.observe(el);
+}
+window.addEventListener('DOMContentLoaded', () => setTimeout(wireTocHighlight, 800));

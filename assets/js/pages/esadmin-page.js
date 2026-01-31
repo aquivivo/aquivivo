@@ -19,7 +19,7 @@ import {
   getCountFromServer,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-console.log('✅ esadmin-page.js loaded: full-expand-v1');
+console.log('✅ esadmin-page.js loaded: full-expand-v2-visible-capture');
 const $ = (id) => document.getElementById(id);
 
 /* ----------------------- Guard: admin only ----------------------- */
@@ -717,6 +717,8 @@ umSave?.addEventListener('click', async () => {
     patch.blocked = umBlocked?.checked === true;
     patch.plan = String(umPlan?.value || 'free').toLowerCase() === 'premium' ? 'premium' : 'free';
 
+    patch.adminNote = String(umNote?.value || '').trim();
+
     const d = parseInputDatetimeLocal(umUntil?.value);
     if (d) patch.accessUntil = Timestamp.fromDate(d);
     else patch.accessUntil = deleteField();
@@ -960,39 +962,6 @@ async function loadTileDetails(type) {
 
 const tileCache = new Map();
 
-function wireDashboardTiles() {
-  const tiles = document.querySelectorAll('.statCard[data-expand]');
-  tiles.forEach(tile => {
-    tile.style.cursor = 'pointer';
-    tile.title = 'Click para ver detalles';
-    tile.addEventListener('click', async () => {
-      const type = tile.getAttribute('data-expand');
-      const detailsId = tile.getAttribute('data-details');
-      const box = detailsId ? document.getElementById(detailsId) : null;
-      if (!type || !box) return;
-
-      const isOpen = box.style.display === 'block';
-      if (isOpen) { box.style.display = 'none'; return; }
-
-      box.style.display = 'block';
-      if (box.dataset.loaded === '1') return;
-
-      box.innerHTML = '<div class="hintSmall">Cargando…</div>';
-      try {
-        let rows = tileCache.get(type);
-        if (!rows) {
-          rows = await loadTileDetails(type);
-          tileCache.set(type, rows);
-        }
-        renderDetails(box, rows);
-        box.dataset.loaded = '1';
-      } catch (err) {
-        console.error(err);
-        box.innerHTML = '<div class="hintSmall">Error cargando detalles.</div>';
-      }
-    });
-  });
-}
 
 /* ----------------------- SEGMENTACIÓN (lists + CSV) ----------------------- */
 const btnLoadExp0 = $('btnLoadExp0');
@@ -1316,3 +1285,73 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadStats();
   wireDashboardTiles();
 });
+
+
+
+/* ----------------------- DASHBOARD: expandable tiles (v2 robust) ----------------------- */
+function ensureDetailsBox(tile){
+  const detailsId = tile.getAttribute('data-details') || '';
+  if (!detailsId) return null;
+  let box = document.getElementById(detailsId);
+  if (!box) {
+    box = document.createElement('div');
+    box.id = detailsId;
+    box.className = 'statDetails';
+    tile.appendChild(box);
+  }
+  // strong visible styling
+  box.style.display = 'none';
+  box.style.marginTop = '12px';
+  box.style.padding = '10px 12px';
+  box.style.borderRadius = '14px';
+  box.style.border = '1px solid rgba(255,255,255,.14)';
+  box.style.background = 'rgba(0,0,0,.12)';
+  return box;
+}
+
+function wireDashboardTiles() {
+  const tiles = Array.from(document.querySelectorAll('.statCard[data-expand]'));
+  console.log('🔎 wireDashboardTiles tiles=', tiles.length);
+  tiles.forEach(t=>{
+    t.style.cursor='pointer';
+    t.style.userSelect='none';
+    t.addEventListener('mouseenter', ()=>{ t.style.outline='1px solid rgba(255,255,255,.18)'; });
+    t.addEventListener('mouseleave', ()=>{ t.style.outline=''; });
+  });
+
+  document.addEventListener('click', async (e) => {
+    const tile = e.target?.closest?.('.statCard[data-expand]');
+    if (!tile) return;
+
+    console.log('🟦 tile click', tile.getAttribute('data-expand'), tile);
+
+    const type = tile.getAttribute('data-expand');
+    console.log('🟦 tile click', type);
+
+    const box = ensureDetailsBox(tile);
+    if (!type || !box) return;
+
+    const isOpen = box.style.display === 'block';
+    if (isOpen) { box.style.display = 'none'; tile.classList.remove('open'); return; }
+    tile.classList.add('open');
+
+    box.style.display = 'block';
+    if (box.dataset.loaded === '1') return;
+
+    box.innerHTML = '<div class="hintSmall">Cargando…</div>';
+    try {
+      let rows = tileCache.get(type);
+      if (!rows) {
+        rows = await loadTileDetails(type);
+        tileCache.set(type, rows);
+      }
+      renderDetails(box, rows);
+      box.dataset.loaded = '1';
+      try{ box.scrollIntoView({block:'nearest', behavior:'smooth'}); }catch(_e){}
+    } catch (err) {
+      console.error(err);
+      box.innerHTML = '<div class="hintSmall">Error cargando detalles.</div>';
+    }
+  }, { capture:true });
+}
+

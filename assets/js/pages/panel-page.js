@@ -169,6 +169,108 @@ function renderCourses() {
     .join('');
 }
 
+
+function parseAccessLevels(userDoc) {
+  const raw = userDoc?.accessLevels;
+  if (Array.isArray(raw)) return raw.map((x) => String(x).toUpperCase()).filter(Boolean);
+
+  // backward compatibility: plan like "a1", "a2", "b1", "b2", "pack_a1a2", "pack_b1b2"
+  const p = String(userDoc?.plan || '').toLowerCase();
+  if (p === 'a1') return ['A1'];
+  if (p === 'a2') return ['A2'];
+  if (p === 'b1') return ['B1'];
+  if (p === 'b2') return ['B2'];
+  if (p === 'pack_a1a2') return ['A1', 'A2'];
+  if (p === 'pack_b1b2') return ['B1', 'B2'];
+  return [];
+}
+
+function hasLevelAccess(flags, userDoc, level) {
+  const lvl = String(level || '').toUpperCase();
+  if (flags?.isAdmin) return true;
+  if (flags?.hasAccess) return true; // premium/global access
+  const levels = parseAccessLevels(userDoc);
+  return levels.includes(lvl);
+}
+
+function renderPlans(userDoc, flags) {
+  const card = $('plansCard');
+  if (!card) return;
+
+  const subtitle = $('plansSubtitle');
+  const status = $('plansStatus');
+
+  const levels = parseAccessLevels(userDoc);
+  const hasAnyLevel = levels.length > 0;
+
+  const chunks = [];
+  if (flags?.isAdmin) chunks.push('admin');
+  if (flags?.hasAccess && !flags?.isAdmin && !hasAnyLevel) chunks.push('premium');
+  if (hasAnyLevel) chunks.push(`niveles: ${levels.join(', ')}`);
+  if (!chunks.length) chunks.push('sin acceso');
+
+  if (status) {
+    status.style.display = 'block';
+    status.textContent = `Estado: ${chunks.join(' · ')}`;
+  }
+  if (subtitle) {
+    subtitle.textContent =
+      'Elige un paquete. Las consultas son un add‑on (no desbloquean lecciones).';
+  }
+
+  // Visual pills per plan card
+  const setPill = (id, yes) => {
+    const el = $(id);
+    if (!el) return;
+    el.className = 'pill ' + (yes ? 'pill-green' : 'pill pill-yellow');
+    el.textContent = yes ? '✅ Tienes acceso' : 'Disponible';
+  };
+
+  setPill(
+    'pillPlanA1A2',
+    hasLevelAccess(flags, userDoc, 'A1') || hasLevelAccess(flags, userDoc, 'A2'),
+  );
+  setPill('pillPlanB1', hasLevelAccess(flags, userDoc, 'B1'));
+  setPill('pillPlanB2', hasLevelAccess(flags, userDoc, 'B2'));
+
+  // Consultations add-on (does NOT unlock lessons)
+  const included = Number(userDoc?.consultationsIncluded || 0);
+  const left = Number(
+    userDoc?.consultationsLeft ??
+      userDoc?.consultationsRemaining ??
+      included ??
+      0,
+  );
+
+  const c1 = $('consultIncluded');
+  const c2 = $('consultLeft');
+  if (c1) c1.textContent = `Incluidas: ${included}`;
+  if (c2) c2.textContent = `Restantes: ${left}`;
+
+  const consultCTA = $('btnConsultCTA');
+  if (consultCTA) {
+    // Configure your booking link here (Calendly / WhatsApp / your page)
+    const url = String(userDoc?.consultationsBookingUrl || '').trim();
+    consultCTA.href = url || '#';
+    consultCTA.onclick = (e) => {
+      if ((consultCTA.getAttribute('href') || '#') === '#') {
+        e.preventDefault();
+        setMsg('Configura el enlace de reserva en el admin.', 'warn');
+      }
+    };
+  }
+
+  // Scroll to promo input
+  card.querySelectorAll('[data-act="scrollPromo"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const box = $('adm_promo_code');
+      box?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+      box?.focus?.();
+    });
+  });
+}
+
+
 function renderPromoList(userDoc) {
   const host = $('promoList');
   if (!host) return;
@@ -312,6 +414,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAdminUI(isAdmin);
 
     renderPromoList(viewDoc);
+
+    const flags = computeFlags(viewDoc);
+    renderPlans(viewDoc, flags);
 
     if (btn) {
       btn.onclick = async () => {

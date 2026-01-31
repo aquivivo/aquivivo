@@ -1,3 +1,4 @@
+document.addEventListener('DOMContentLoaded', ()=>{document.body.classList.add('uiMotion');});
 
 async function trackTopicOpen(uid, courseId, level) {
   if (!uid || !courseId) return;
@@ -277,6 +278,7 @@ function computeProgress() {
 function setProgressUI() {
   const { done, total, pct } = computeProgress();
   if (pillProgress) pillProgress.textContent = `Progreso: ${pct}%`;
+    try{ maybeFinish(done, total, LEVEL, TOPIC_ID); }catch{}
   if (pillCount) pillCount.textContent = `Ejercicios: ${total}`;
   const doneEl = document.getElementById('doneCount');
   const totalEl = document.getElementById('totalCount');
@@ -610,3 +612,36 @@ sessionEmail.textContent = user.email || '(sin correo)';
     emptyExercises.textContent = 'No se pudo cargar. Revisa la consola.';
   }
 });
+
+
+// --- Finish modal helpers ---
+function showFinishModal(done, total, level, topicId){
+  const modal = document.getElementById('finishModal');
+  if(!modal) return;
+  const txt = document.getElementById('finishText');
+  if(txt){
+    txt.textContent = `Has completado ${done}/${total} ejercicios. ¡Buen trabajo!`;
+  }
+  const btnLesson = document.getElementById('btnFinishLesson');
+  const btnCourse = document.getElementById('btnFinishCourse');
+  const btnPanel = document.getElementById('btnFinishPanel');
+  if(btnLesson) btnLesson.href = `lessonpage.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(topicId)}`;
+  if(btnCourse) btnCourse.href = `course.html?level=${encodeURIComponent(level)}`;
+  if(btnPanel) btnPanel.href = 'espanel.html';
+
+  const close = () => { modal.style.display = 'none'; };
+  const closeBtn = document.getElementById('btnCloseFinish');
+  if(closeBtn) closeBtn.onclick = close;
+  modal.addEventListener('click', (e)=>{ if(e.target === modal) close(); }, { once:true });
+
+  modal.style.display = 'flex';
+}
+
+// Call when progress hits 100% (non-blocking)
+function maybeFinish(done, total, level, topicId){
+  if(!total) return;
+  if(done >= total){
+    // small delay so UI updates first
+    setTimeout(()=> showFinishModal(done, total, level, topicId), 450);
+  }
+}

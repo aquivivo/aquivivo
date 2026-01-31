@@ -37,13 +37,101 @@
       </div>
 
       <div class="panelGrid">
-        <div class="card">
+        
+      <div class="featureGrid" style="margin-top:16px;">
+        <div class="card featureCard">
+          <div style="font-weight:900; font-size:20px;">🗣 Conversación Natural</div>
+          <div class="muted" style="margin-top:6px;">Habla como un nativo desde el primer día.</div>
+        </div>
+        <div class="card featureCard blue">
+          <div style="font-weight:900; font-size:20px;">📚 Material Exclusivo</div>
+          <div class="muted" style="margin-top:6px;">Recursos creados para hispanohablantes.</div>
+        </div>
+        <div class="card featureCard red">
+          <div style="font-weight:900; font-size:20px;">⚡ Resultados Rápidos</div>
+          <div class="muted" style="margin-top:6px;">Progreso visible semana tras semana.</div>
+        </div>
+      </div>
+
+<div class="card">
           <div class="sectionTitle" style="margin-top:0;">📚 Cursos</div>
           <div class="muted">Selecciona un nivel para empezar.</div>
           <div id="coursesCards" class="coursesGrid" style="margin-top:12px;"></div>
         </div>
 
-        <div class="card" id="lastActivityCard">
+        
+        <div class="card" id="plansCard">
+          <div class="sectionTitle" style="margin-top:0;">💎 Planes</div>
+          <div class="muted" id="plansSubtitle">Elige un paquete. Las consultas son un add‑on (no desbloquean lecciones).</div>
+
+          <div id="plansGrid" class="coursesGrid" style="margin-top:12px; grid-template-columns: repeat(3, minmax(0,1fr));">
+            <!-- A1-A2 -->
+            <div class="courseCard" data-plan="pack_a1a2" data-levels="A1,A2" style="cursor:default;">
+              <div class="courseTop">
+                <div class="courseBadge">📘 NIVEL A1–A2</div>
+                <div class="pill pill-yellow" id="pillPlanA1A2">Oferta</div>
+              </div>
+              <div class="courseTitle" style="margin-top:10px;">Fundamentos</div>
+              <div class="muted" style="margin-top:6px;">Vida cotidiana en Polonia.</div>
+              <div style="margin-top:14px; font-weight:900; font-size:22px;">180 zł / 3 meses</div>
+              <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-yellow" type="button" data-act="scrollPromo">Activar con código</button>
+              </div>
+            </div>
+
+            <!-- B1 -->
+            <div class="courseCard" data-plan="b1" data-levels="B1" style="cursor:default;">
+              <div class="courseTop">
+                <div class="courseBadge">🚀 NIVEL B1</div>
+                <div class="pill" id="pillPlanB1">Especial</div>
+              </div>
+              <div class="courseTitle" style="margin-top:10px;">Vida independiente</div>
+              <div class="muted" style="margin-top:6px;">Trabajo, oficina y vida social.</div>
+              <div style="margin-top:14px; font-weight:900; font-size:22px;">250 zł / 3 meses</div>
+              <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-yellow" type="button" data-act="scrollPromo">Activar con código</button>
+              </div>
+            </div>
+
+            <!-- B2 -->
+            <div class="courseCard" data-plan="b2" data-levels="B2" style="cursor:default;">
+              <div class="courseTop">
+                <div class="courseBadge">👑 NIVEL B2</div>
+                <div class="pill pill-blue" id="pillPlanB2">Pro</div>
+              </div>
+              <div class="courseTitle" style="margin-top:10px;">Integración total</div>
+              <div class="muted" style="margin-top:6px;">Comunicación profesional y formal.</div>
+              <div style="margin-top:14px; font-weight:900; font-size:22px;">350 zł / 3 meses</div>
+              <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-yellow" type="button" data-act="scrollPromo">Activar con código</button>
+              </div>
+            </div>
+
+            <!-- Consultations add-on -->
+            <div class="courseCard" data-plan="consult_addon" style="cursor:default; grid-column: 1 / -1;">
+              <div class="courseTop">
+                <div class="courseBadge">💬 Consultas (add‑on)</div>
+                <div class="pill" id="pillConsult">Add‑on</div>
+              </div>
+              <div class="courseTitle" style="margin-top:10px;">Paquete de consultas</div>
+              <div class="muted" style="margin-top:6px;" id="consultSubtitle">Extra: sesiones 1:1 (no desbloquea lecciones).</div>
+
+              <div class="metaRow" style="margin-top:14px; gap:10px; flex-wrap:wrap;">
+                <div class="pill pill-yellow" id="consultIncluded">Incluidas: 0</div>
+                <div class="pill" id="consultLeft">Restantes: 0</div>
+              </div>
+
+              <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+                <a class="btn-white-outline" id="btnConsultCTA" href="#" target="_blank" rel="noopener">Reservar consulta</a>
+                <button class="btn-white-outline" type="button" data-act="scrollPromo">Aplicar código</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="plansStatus" class="hintSmall" style="margin-top:12px; display:none;"></div>
+        </div>
+
+<div class="card" id="lastActivityCard">
           <div class="sectionTitle" style="margin-top:0;">🕒 Última actividad</div>
           <div class="muted" id="lastActivityWhen">—</div>
           <div style="margin-top:10px; font-weight:900;" id="lastActivityTitle">—</div>

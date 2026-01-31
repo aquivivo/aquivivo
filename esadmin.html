@@ -23,167 +23,197 @@
         </div>
       </section>
 
-      
-      <section class="card">
-        <h2 class="sectionTitle">📊 Dashboard</h2>
-        <p class="subtitle">Resumen rápido (conteos en Firestore). Haz clic en una tarjeta para ver detalles.</p>
+      <!-- ✅ Quick actions (always visible) -->
+      <section class="card" id="quickActions">
+        <h2 class="sectionTitle">⚡ Acciones rápidas</h2>
+        <p class="subtitle">Lo esencial, sin buscar en el dashboard.</p>
 
         <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
-          <button id="btnRefreshStats" class="btn-white-outline" type="button">🔄 Actualizar</button>
-          <span id="statsStatus" class="hintSmall"></span>
-        </div>
-
-        <div class="panelGrid" style="margin-top:12px;">
-          <div class="card statCard" data-expand="users" data-details="statUsersDetails">
-            <div class="muted" style="font-weight:900;">👤 Usuarios</div>
-            <div id="statUsers" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
-            <div class="hintSmall">Total en users</div>
-            <div id="statUsersDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
-          </div>
-
-          <div class="card statCard" data-expand="premium" data-details="statPremiumPlanDetails">
-            <div class="muted" style="font-weight:900;">💎 Plan premium</div>
-            <div id="statPremiumPlan" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
-            <div class="hintSmall">users donde plan == "premium"</div>
-            <div id="statPremiumPlanDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
-          </div>
-
-          <div class="card statCard" data-expand="access" data-details="statAccessTrueDetails">
-            <div class="muted" style="font-weight:900;">🔓 access=true</div>
-            <div id="statAccessTrue" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
-            <div class="hintSmall">users donde access == true</div>
-            <div id="statAccessTrueDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
-          </div>
-
-          <div class="card statCard" data-expand="blocked" data-details="statBlockedDetails">
-            <div class="muted" style="font-weight:900;">⛔ Bloqueados</div>
-            <div id="statBlocked" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
-            <div class="hintSmall">users donde blocked == true</div>
-            <div id="statBlockedDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
-          </div>
-          <div class="card statCard" data-expand="oneTopic" data-details="statOneTopicDetails">
-            <div class="muted" style="font-weight:900;">🎯 1 tema abierto</div>
-            <div id="statOneTopic" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
-            <div class="hintSmall">users donde openedTopicsCount == 1</div>
-            <div id="statOneTopicDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
-          </div>
-
-
-          <div class="card statCard" data-expand="courses" data-details="statCoursesDetails">
-            <div class="muted" style="font-weight:900;">📚 Temas</div>
-            <div id="statCourses" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
-            <div class="hintSmall">docs en courses</div>
-            <div id="statCoursesDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
-          </div>
-
-          <div class="card statCard" data-expand="exercises" data-details="statExercisesDetails">
-            <div class="muted" style="font-weight:900;">🧩 Ejercicios</div>
-            <div id="statExercises" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
-            <div class="hintSmall">docs en exercises</div>
-            <div id="statExercisesDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2 class="sectionTitle">Contenido</h2>
-        <div class="metaRow">
           <a href="admin-select.html?type=lesson" class="btn-yellow">✏️ Admin lecciones</a>
           <a href="admin-select.html?type=exercise" class="btn-white-outline">🧪 Admin ejercicios</a>
-        </div>
-      </section>
-
-      
-      <section class="card">
-        <h2 class="sectionTitle">🎯 Segmentación (marketing)</h2>
-        <p class="subtitle">Listas rápidas: expirando pronto, premium activo, sin acceso (aprox.). Puedes exportar CSV.</p>
-
-        <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
-          <button id="btnLoadExp0" class="btn-white-outline" type="button">⏳ Expira hoy</button>
-          <button id="btnLoadExp3" class="btn-white-outline" type="button">⏳ Expira en 3 días</button>
-          <button id="btnLoadExp7" class="btn-white-outline" type="button">⏳ Expiran en 7 días</button>
-          <button id="btnLoadExp14" class="btn-white-outline" type="button">⏳ Expiran en 14 días</button>
-          <button id="btnLoadPremiumActive" class="btn-white-outline" type="button">💎 Premium activo (accessUntil)</button>
-          <button id="btnLoadFreeUsers" class="btn-white-outline" type="button">🔒 Sin acceso (aprox.)</button>
-          <button id="btnLoadOneTopic" class="btn-white-outline" type="button">🎯 Solo 1 tema</button>
-          <button id="btnLoadOneTopicInactive" class="btn-white-outline" type="button">🚶 1 tema · inactivo 7 días</button>
-          <button id="btnExportSegment" class="btn-yellow" type="button">⬇️ Exportar CSV</button>
-
-          <span id="segmentStatus" class="hintSmall" style="margin-left:auto;"></span>
+          <a href="#accUsers" class="btn-white-outline">👤 Usuarios</a>
+          <a href="#accPromo" class="btn-white-outline">🏷️ Códigos promo</a>
+          <a href="#accSegments" class="btn-white-outline">🎯 Segmentación</a>
         </div>
 
         <div class="hr"></div>
 
-        <div class="sectionTitle" style="margin-top:0;">Resultados</div>
-        <div id="segmentList" class="list"></div>
+        <div class="hintSmall">
+          Tip: el dashboard es para ver datos; las acciones rápidas son para trabajar.
+        </div>
       </section>
 
-      <section class="card">
-        <h2 class="sectionTitle">🏷️ Códigos promo</h2>
-        <p class="subtitle">Crea, activa y desactiva códigos. Los usuarios los aplican en el panel.</p>
+      <!-- ✅ Dashboard (accordion – open by default) -->
+      <details class="card" id="accDashboard" open>
+        <summary class="sectionTitle" style="cursor:pointer; list-style:none;">
+          📊 Dashboard <span class="hintSmall" style="font-weight:600; margin-left:8px;">(clic para abrir/cerrar)</span>
+        </summary>
+        <div style="margin-top:10px;">
+          <p class="subtitle">Resumen rápido (conteos en Firestore). Haz clic en una tarjeta para ver detalles.</p>
 
-        <div class="metaRow" style="flex-wrap:wrap; gap:10px; align-items:flex-end;">
-          <div style="min-width:220px;">
-            <label class="muted" style="font-weight:900;">Código (ID)</label>
-            <input id="promoCode" class="input" placeholder="Ej. START2026" />
+          <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+            <button id="btnRefreshStats" class="btn-white-outline" type="button">🔄 Actualizar</button>
+            <span id="statsStatus" class="hintSmall"></span>
           </div>
 
-          <div style="min-width:160px;">
-            <label class="muted" style="font-weight:900;">Días</label>
-            <input id="promoDays" class="input" type="number" min="0" step="1" placeholder="Ej. 30" />
+          <div class="panelGrid" style="margin-top:12px;">
+            <div class="card statCard" data-expand="users" data-details="statUsersDetails">
+              <div class="muted" style="font-weight:900;">👤 Usuarios</div>
+              <div id="statUsers" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+              <div class="hintSmall">Total en users</div>
+              <div id="statUsersDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+            </div>
+
+            <div class="card statCard" data-expand="premium" data-details="statPremiumPlanDetails">
+              <div class="muted" style="font-weight:900;">💎 Plan premium</div>
+              <div id="statPremiumPlan" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+              <div class="hintSmall">users donde plan == "premium"</div>
+              <div id="statPremiumPlanDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+            </div>
+
+            <div class="card statCard" data-expand="access" data-details="statAccessTrueDetails">
+              <div class="muted" style="font-weight:900;">🔓 access=true</div>
+              <div id="statAccessTrue" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+              <div class="hintSmall">users donde access == true</div>
+              <div id="statAccessTrueDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+            </div>
+
+            <div class="card statCard" data-expand="blocked" data-details="statBlockedDetails">
+              <div class="muted" style="font-weight:900;">⛔ Bloqueados</div>
+              <div id="statBlocked" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+              <div class="hintSmall">users donde blocked == true</div>
+              <div id="statBlockedDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+            </div>
+
+            <div class="card statCard" data-expand="oneTopic" data-details="statOneTopicDetails">
+              <div class="muted" style="font-weight:900;">🎯 1 tema abierto</div>
+              <div id="statOneTopic" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+              <div class="hintSmall">users donde openedTopicsCount == 1</div>
+              <div id="statOneTopicDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+            </div>
+
+            <div class="card statCard" data-expand="courses" data-details="statCoursesDetails">
+              <div class="muted" style="font-weight:900;">📚 Temas</div>
+              <div id="statCourses" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+              <div class="hintSmall">docs en courses</div>
+              <div id="statCoursesDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+            </div>
+
+            <div class="card statCard" data-expand="exercises" data-details="statExercisesDetails">
+              <div class="muted" style="font-weight:900;">🧩 Ejercicios</div>
+              <div id="statExercises" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+              <div class="hintSmall">docs en exercises</div>
+              <div id="statExercisesDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ✅ Segmentación (accordion – closed by default) -->
+      <details class="card" id="accSegments">
+        <summary class="sectionTitle" style="cursor:pointer; list-style:none;">
+          🎯 Segmentación (marketing) <span class="hintSmall" style="font-weight:600; margin-left:8px;">(clic para abrir/cerrar)</span>
+        </summary>
+        <div style="margin-top:10px;">
+          <p class="subtitle">Listas rápidas: expirando pronto, premium activo, sin acceso (aprox.). Puedes exportar CSV.</p>
+
+          <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+            <button id="btnLoadExp0" class="btn-white-outline" type="button">⏳ Expira hoy</button>
+            <button id="btnLoadExp3" class="btn-white-outline" type="button">⏳ Expira en 3 días</button>
+            <button id="btnLoadExp7" class="btn-white-outline" type="button">⏳ Expiran en 7 días</button>
+            <button id="btnLoadExp14" class="btn-white-outline" type="button">⏳ Expiran en 14 días</button>
+            <button id="btnLoadPremiumActive" class="btn-white-outline" type="button">💎 Premium activo (accessUntil)</button>
+            <button id="btnLoadFreeUsers" class="btn-white-outline" type="button">🔒 Sin acceso (aprox.)</button>
+            <button id="btnLoadOneTopic" class="btn-white-outline" type="button">🎯 Solo 1 tema</button>
+            <button id="btnLoadOneTopicInactive" class="btn-white-outline" type="button">🚶 1 tema · inactivo 7 días</button>
+            <button id="btnExportSegment" class="btn-yellow" type="button">⬇️ Exportar CSV</button>
+
+            <span id="segmentStatus" class="hintSmall" style="margin-left:auto;"></span>
           </div>
 
-          <div style="min-width:180px;">
-            <label class="muted" style="font-weight:900;">Plan</label>
-            <select id="promoPlan" class="select">
-              <option value="premium" selected>premium</option>
-              <option value="free">free</option>
+          <div class="hr"></div>
+
+          <div class="sectionTitle" style="margin-top:0;">Resultados</div>
+          <div id="segmentList" class="list"></div>
+        </div>
+      </details>
+
+      <!-- ✅ Promo codes (accordion – closed by default) -->
+      <details class="card" id="accPromo">
+        <summary class="sectionTitle" style="cursor:pointer; list-style:none;">
+          🏷️ Códigos promo <span class="hintSmall" style="font-weight:600; margin-left:8px;">(clic para abrir/cerrar)</span>
+        </summary>
+        <div style="margin-top:10px;">
+          <p class="subtitle">Crea, activa y desactiva códigos. Los usuarios los aplican en el panel.</p>
+
+          <div class="metaRow" style="flex-wrap:wrap; gap:10px; align-items:flex-end;">
+            <div style="min-width:220px;">
+              <label class="muted" style="font-weight:900;">Código (ID)</label>
+              <input id="promoCode" class="input" placeholder="Ej. START2026" />
+            </div>
+
+            <div style="min-width:160px;">
+              <label class="muted" style="font-weight:900;">Días</label>
+              <input id="promoDays" class="input" type="number" min="0" step="1" placeholder="Ej. 30" />
+            </div>
+
+            <div style="min-width:180px;">
+              <label class="muted" style="font-weight:900;">Plan</label>
+              <select id="promoPlan" class="select">
+                <option value="premium" selected>premium</option>
+                <option value="free">free</option>
+              </select>
+            </div>
+
+            <label class="pill" style="gap:10px; align-items:center;">
+              <input id="promoActive" type="checkbox" style="width:18px; height:18px; margin:0;" checked />
+              Activo
+            </label>
+
+            <button id="btnSavePromoCode" class="btn-yellow" type="button">💾 Guardar</button>
+            <button id="btnClearPromoForm" class="btn-white-outline" type="button">🧹 Limpiar</button>
+
+            <span id="promoStatus" class="hintSmall" style="margin-left:auto;"></span>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="sectionTitle" style="margin-top:0;">Lista de códigos</div>
+          <div id="promoListAdmin" class="list"></div>
+        </div>
+      </details>
+
+      <!-- ✅ Users (accordion – closed by default) -->
+      <details class="card" id="accUsers">
+        <summary class="sectionTitle" style="cursor:pointer; list-style:none;">
+          👤 Usuarios <span class="hintSmall" style="font-weight:600; margin-left:8px;">(clic para abrir/cerrar)</span>
+        </summary>
+        <div style="margin-top:10px;">
+          <p class="subtitle">Busca por email, abre el editor y gestiona acceso/plan/fechas.</p>
+
+          <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+            <button id="btnLoadUsers" class="btn-white-outline" type="button">Cargar usuarios</button>
+
+            <select id="roleFilter" class="select" style="min-width:200px;">
+              <option value="all">Todos</option>
+              <option value="admins">Solo admin</option>
+              <option value="premium">Con acceso</option>
+              <option value="free">Sin acceso</option>
             </select>
+
+            <input id="userSearch" class="input" placeholder="Buscar por email..." style="min-width:260px;" />
+            <button id="btnSearch" class="btn-white-outline" type="button">Buscar</button>
+            <button id="btnClear" class="btn-white-outline" type="button">Limpiar</button>
+
+            <span class="hintSmall" style="margin-left:auto;">Tip: click en usuario → editar acceso</span>
           </div>
 
-          <label class="pill" style="gap:10px; align-items:center;">
-            <input id="promoActive" type="checkbox" style="width:18px; height:18px; margin:0;" checked />
-            Activo
-          </label>
-
-          <button id="btnSavePromoCode" class="btn-yellow" type="button">💾 Guardar</button>
-          <button id="btnClearPromoForm" class="btn-white-outline" type="button">🧹 Limpiar</button>
-
-          <span id="promoStatus" class="hintSmall" style="margin-left:auto;"></span>
+          <div id="usersSection" style="display:none; margin-top:16px;">
+            <div id="usersList" class="list"></div>
+            <button id="btnLoadMore" class="btn-white-outline" style="margin-top:12px;">Cargar más</button>
+          </div>
         </div>
-
-        <div class="hr"></div>
-
-        <div class="sectionTitle" style="margin-top:0;">Lista de códigos</div>
-        <div id="promoListAdmin" class="list"></div>
-      </section>
-
-      <section class="card">
-        <h2 class="sectionTitle">👤 Usuarios</h2>
-        <p class="subtitle">Busca por email, abre el editor y gestiona acceso/plan/fechas.</p>
-
-        <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
-          <button id="btnLoadUsers" class="btn-white-outline" type="button">Cargar usuarios</button>
-
-          <select id="roleFilter" class="select" style="min-width:200px;">
-            <option value="all">Todos</option>
-            <option value="admins">Solo admin</option>
-            <option value="premium">Con acceso</option>
-            <option value="free">Sin acceso</option>
-          </select>
-
-          <input id="userSearch" class="input" placeholder="Buscar por email..." style="min-width:260px;" />
-          <button id="btnSearch" class="btn-white-outline" type="button">Buscar</button>
-          <button id="btnClear" class="btn-white-outline" type="button">Limpiar</button>
-
-          <span class="hintSmall" style="margin-left:auto;">Tip: click en usuario → editar acceso</span>
-        </div>
-
-        <div id="usersSection" style="display:none; margin-top:16px;">
-          <div id="usersList" class="list"></div>
-          <button id="btnLoadMore" class="btn-white-outline" style="margin-top:12px;">Cargar más</button>
-        </div>
-      </section>
+      </details>
 
     </div>
   </main>
@@ -259,10 +289,10 @@
         <button id="um_save" class="btn-yellow" type="button">💾 Guardar cambios</button>
         <button id="um_cancel" class="btn-white-outline" type="button">Cancelar</button>
       </div>
+
       <div class="hr"></div>
       <div class="sectionTitle" style="margin-top:0;">📝 Nota del admin</div>
       <textarea id="um_note" class="input" rows="3" placeholder="Nota interna (solo admin)…"></textarea>
-
 
       <div class="hr"></div>
       <div class="sectionTitle" style="margin-top:0;">📜 Historial de acceso</div>
