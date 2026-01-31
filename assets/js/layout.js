@@ -11,79 +11,12 @@ import {
 (function () {
   const ADMIN_HREF = 'esadmin.html';
 
-  function getLevelParam() {
-    const qs = new URLSearchParams(location.search);
-    const v = qs.get('level');
-    return v ? v.toUpperCase() : null;
-  }
-
-  function injectHeader() {
-    const host = document.getElementById('appHeader');
-    if (!host) return;
-
-    const page = (document.body?.dataset?.page || '').toLowerCase();
-    const levelParam = getLevelParam();
-    const level = (levelParam || 'A1').toUpperCase();
-
-    const showPanel = page !== 'login';
-    const showCourse = page !== 'login';
-    const showBack = page !== 'index';
-    const showLogout = page !== 'login' && page !== 'index';
-
-    const hrefInicio = 'index.html';
-    const hrefPanel = 'espanel.html';
-
-    // ✅ Jeśli nie ma level w URL -> najpierw Panel (wybór kursu)
-    // ✅ Jeśli level jest w URL -> deep link do listy tematów w tym levelu
-    const hrefCourse = levelParam
-      ? `course.html?level=${encodeURIComponent(level)}`
-      : 'espanel.html';
-
-    host.innerHTML = `
-      <div class="nav-glass">
-        <div class="nav-line"></div>
-        <div class="nav-inner">
-          <a class="brand" href="${hrefInicio}">
-            <img src="assets/img/logo.png" alt="AquiVivo" />
-          </a>
-
-          <div class="nav-actions">
-            <span id="navAdminSlot"></span>
-            ${showCourse ? `<a class="btn-white-outline" href="${hrefCourse}">📚 Curso</a>` : ``}
-            ${showPanel ? `<a class="btn-white-outline" href="${hrefPanel}">🏠 Panel</a>` : ``}
-            <a class="btn-white-outline" href="${hrefInicio}">✨ Inicio</a>
-            ${showBack ? `<button class="btn-white-outline" id="btnAtras" type="button">⬅️ Atrás</button>` : ``}
-            ${showLogout ? `<button class="btn-red" id="btnLogout" type="button">Cerrar sesión</button>` : ``}
-          </div>
-        </div>
-      </div>
-    `;
-
-    const btnBack = document.getElementById('btnAtras');
-    if (btnBack) btnBack.addEventListener('click', () => history.back());
-
-    const btnLogout = document.getElementById('btnLogout');
-    if (btnLogout) {
-      btnLogout.addEventListener('click', async () => {
-        try {
-          await signOut(auth);
-        } finally {
-          location.href = 'login.html';
-        }
-      });
-    }
-  }
-
   function pageType() {
     return (document.body?.dataset?.page || '').toLowerCase();
   }
 
   function isPublicPage(p) {
     return p === 'login' || p === 'index';
-  }
-
-  function isProtectedPage(p) {
-    return !isPublicPage(p);
   }
 
   function isAdminOnlyPage(p) {
@@ -119,9 +52,58 @@ import {
       : '';
   }
 
+  function injectHeader() {
+    const host = document.getElementById('appHeader');
+    if (!host) return;
+
+    const p = pageType();
+    const showBack = p !== 'index';
+    const showLogout = !isPublicPage(p);
+
+    // ✅ Najważniejsze: "Curso" zawsze do Panelu (wybór kursu)
+    const hrefCurso = 'espanel.html';
+    const hrefPanel = 'espanel.html';
+    const hrefInicio = 'index.html';
+
+    host.innerHTML = `
+      <div class="nav-glass">
+        <div class="nav-line"></div>
+        <div class="nav-inner">
+          <a class="brand" href="${hrefInicio}">
+            <img src="assets/img/logo.png" alt="AquiVivo" />
+          </a>
+
+          <div class="nav-actions">
+            <span id="navAdminSlot"></span>
+            <a class="btn-white-outline" href="${hrefCurso}">📚 Curso</a>
+            <a class="btn-white-outline" href="${hrefPanel}">🏠 Panel</a>
+            <a class="btn-white-outline" href="${hrefInicio}">✨ Inicio</a>
+            ${showBack ? `<button class="btn-white-outline" id="btnAtras" type="button">⬅️ Atrás</button>` : ``}
+            ${showLogout ? `<button class="btn-red" id="btnLogout" type="button">Cerrar sesión</button>` : ``}
+          </div>
+        </div>
+      </div>
+    `;
+
+    const btnBack = document.getElementById('btnAtras');
+    if (btnBack) btnBack.addEventListener('click', () => history.back());
+
+    const btnLogout = document.getElementById('btnLogout');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', async () => {
+        try {
+          await signOut(auth);
+        } finally {
+          location.href = 'login.html';
+        }
+      });
+    }
+  }
+
   async function guard(user) {
     const p = pageType();
 
+    // public pages
     if (isPublicPage(p)) {
       if (p === 'login' && user && user.emailVerified) {
         const next =
@@ -131,17 +113,19 @@ import {
       return;
     }
 
-    if (isProtectedPage(p) && !user) {
+    // protected pages require auth
+    if (!user) {
       location.replace('login.html?reason=auth');
       return;
     }
-    if (!user) return;
 
+    // require verified email
     if (!user.emailVerified) {
       location.replace('login.html?reason=verify');
       return;
     }
 
+    // admin-only pages require admin
     if (isAdminOnlyPage(p)) {
       const ok = await isAdmin(user.uid);
       if (!ok) {
@@ -151,8 +135,10 @@ import {
     }
   }
 
+  // render header immediately
   injectHeader();
 
+  // state + guards + admin button
   onAuthStateChanged(auth, async (user) => {
     await guard(user);
 

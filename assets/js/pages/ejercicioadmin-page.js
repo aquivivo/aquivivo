@@ -1,5 +1,16 @@
 import { auth, db } from "../firebase-init.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+async function getIsAdmin(uid) {
+  try {
+    const snap = await getDoc(doc(db, "users", uid));
+    return snap.exists() && snap.data()?.admin === true;
+  } catch (e) {
+    console.warn("Admin check failed", e);
+    return false;
+  }
+}
+
 import {
   collection,
   query,
@@ -22,12 +33,13 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
 
       // URL params
       const params = new URLSearchParams(window.location.search);
       const LEVEL = (params.get('level') || 'A1').toUpperCase();
-      const slugParam = params.get('slug') || '';
+      
+const COURSE_ID = String(params.get('id') || '').trim();
+const slugParam = params.get('slug') || '';
       const idParam = params.get('id') || '';
 
       // UI refs
@@ -1109,14 +1121,31 @@ const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
           return;
         }
 
-        const qx = query(
-          collection(db, 'exercises'),
-          where('level', '==', LEVEL),
-          where('topicSlug', '==', effectiveSlug),
-          orderBy('order', 'asc'),
-        );
+        // Prefer topicId (courses docId) — our canonical contract
+        let snap = null;
+        try {
+          const qx = query(
+            collection(db, 'exercises'),
+            where('level', '==', LEVEL),
+            where('topicId', '==', String(COURSE_ID || currentTopic.id || '').trim()),
+            orderBy('order', 'asc'),
+          );
+          snap = await getDocs(qx);
+        } catch (e) {
+          // Often means missing composite index or field mismatch — keep fallback below
+          console.warn('Primary exercises query failed', e);
+        }
 
-        const snap = await getDocs(qx);
+        // Fallback for legacy data that used topicSlug
+        if (!snap || snap.empty) {
+          const qx2 = query(
+            collection(db, 'exercises'),
+            where('level', '==', LEVEL),
+            where('topicSlug', '==', effectiveSlug),
+            orderBy('order', 'asc'),
+          );
+          snap = await getDocs(qx2);
+        }
         if (snap.empty) {
           emptyExercises.style.display = 'block';
           pillCount.textContent = 'Ejercicios: 0';
@@ -1154,7 +1183,7 @@ const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
 
         sessionEmail.textContent = user.email || '(sin correo)';
         CURRENT_UID = user.uid || null;
-        isAdmin = (user.email || '') === ADMIN_EMAIL;
+        isAdmin = await getIsAdmin(user.uid);
         IS_ADMIN = isAdmin;
         adminWrap.style.display = isAdmin ? 'block' : 'none';
         const noAdminCard = document.getElementById('noAdminCard');
@@ -1398,7 +1427,7 @@ const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
             await addDoc(collection(db, 'exercises'), {
               level: LEVEL,
               topicSlug: baseSlug,
-              topicId: currentTopic.id || null,
+              topicId: (String(COURSE_ID || currentTopic.id || '').trim() || null),
               type,
               prompt,
               imageUrl,
@@ -1478,6 +1507,7 @@ const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
           return;
         }
 
+        const imageUrl = (exImageUrl?.value || '').trim();
         try {
           setSaving(true);
           showToast('⏳ Guardando...', 'warn', 1200);
@@ -1485,7 +1515,7 @@ const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
           await addDoc(collection(db, 'exercises'), {
             level: LEVEL,
             topicSlug: String(currentTopic.slug || currentTopic.id || ''),
-            topicId: currentTopic.id || null,
+            topicId: (String(COURSE_ID || currentTopic.id || '').trim() || null),
             type,
             prompt,
             imageUrl,

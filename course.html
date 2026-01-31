@@ -5,76 +5,34 @@
     <title>Curso | AquiVivo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Fonts -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap"
       rel="stylesheet"
     />
-
-    <!-- Global CSS -->
     <link rel="stylesheet" href="assets/css/styles.css" />
-
-    <!-- Header JS -->
-      <script src="assets/js/layout.js" type="module"></script>
-</head>
+    <script src="assets/js/layout.js" type="module"></script>
+  </head>
 
   <body data-page="course">
-    <!-- Wspólny Header -->
     <div id="appHeader"></div>
 
     <main class="page">
       <div class="container">
-        <div id="toast"></div>
-        <!-- HERO -->
         <div class="heroBanner">
           <div class="heroTitleRow">
-            <div class="heroIcon">🎓</div>
-            <div>
-              <h1 id="levelTitle">Nivel</h1>
-              <p class="subtitle" id="levelSubtitle">Cargando...</p>
+            <div class="heroIcon">📚</div>
+            <div style="flex: 1">
+              <h1 class="glow-text" style="margin: 0">Curso</h1>
+              <p class="subtitle" id="levelSubtitle">Nivel</p>
             </div>
-          </div>
-
-          <div class="progressCard">
-            <div class="progressTitle">📊 Progreso (local)</div>
-            <div class="progressBar">
-              <div
-                id="progressFill"
-                class="progressFill"
-                style="width: 0%"
-              ></div>
-            </div>
-            <div class="progressText" id="progressText">
-              0% · 0/0 temas visitados
-            </div>
-          </div>
-
-          <div class="statsRow">
-            <span class="pill">📚 Total: <b id="totalCount">0</b></span>
-            <span class="pill">🔎 Mostrando: <b id="showCount">0</b></span>
-            <button id="clearFilters" class="btn-white-outline">
-              Limpiar filtros
-            </button>
           </div>
         </div>
 
-        <!-- FILTROS -->
-        <div class="filterCard">
-          <input id="searchInput" class="input" placeholder="Buscar tema..." />
-          <select id="typeFilter" class="input">
-            <option value="">Todos</option>
-            <option value="gramatica">Gramática</option>
-            <option value="vocabulario">Vocabulario</option>
-          </select>
-        </div>
-
-        <!-- LISTA -->
-        <div id="topicsGrid" class="topicsGrid"></div>
+        <!-- ✅ ważne: używamy klas istniejących w styles.css -->
+        <div id="topicsList" class="coursesGrid"></div>
       </div>
     </main>
 
-    <!-- JEDYNY SCRIPT STRONY -->
-    
-  <script type="module" src="assets/js/pages/course-page.js"></script>
-</body>
+    <script type="module" src="assets/js/pages/course-page.js"></script>
+  </body>
 </html>

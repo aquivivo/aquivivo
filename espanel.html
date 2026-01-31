@@ -24,8 +24,14 @@
           </div>
         </div>
 
-        <div class="metaRow" style="margin-top:14px;">
+        <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
           <span class="pill">👤 <b id="userEmail">...</b> <span id="adminBadge" style="margin-left:10px;">(admin: —)</span></span>
+
+          <!-- ✅ Access status pills (Krok 11) -->
+          <span id="accessPill" class="pill" style="display:none;"></span>
+          <span id="planPill" class="pill" style="display:none;"></span>
+          <span id="untilPill" class="pill" style="display:none;"></span>
+
           <span id="adminLinkWrap" class="metaRow" style="margin-left:auto;"></span>
         </div>
       </div>
@@ -52,8 +58,11 @@
             <input id="adm_promo_code" type="text" placeholder="Código..." style="max-width: 220px;">
             <button id="addPromoBtn" class="btn-white-outline" type="button">Aplicar</button>
           </div>
+
+          <div id="promoMsg" class="hintSmall" style="margin-top:10px; display:none;"></div>
+
           <div style="margin-top:12px;">
-            <div style="font-weight:900; margin-bottom:6px;">Lista códigos</div>
+            <div style="font-weight:900; margin-bottom:6px;">Tus códigos</div>
             <div id="promoList" class="muted"></div>
           </div>
         </div>
@@ -86,12 +95,14 @@
             </div>
 
             <div class="card">
-              <div class="sectionTitle" style="margin-top:0;">Promo</div>
-              <div class="metaRow">
+              <div class="sectionTitle" style="margin-top:0;">Promo (admin)</div>
+              <div class="muted" style="margin-top:6px;">Crea códigos en la colección <b>promo_codes</b>. (Se gestiona desde Firestore.)</div>
+              <div class="metaRow" style="margin-top:10px;">
                 <input id="adm_promo_pct" type="number" placeholder="% descuento" />
                 <input id="adm_promo_days" type="number" placeholder="días" />
                 <button id="btnSavePromo" class="btn-yellow" type="button">Guardar</button>
               </div>
+              <div class="hintSmall" style="margin-top:8px;">Nota: en este paso “Guardar” solo es placeholder (para mantener compatibilidad). Los códigos reales se aplican desde <b>promo_codes</b>.</div>
             </div>
           </div>
 
