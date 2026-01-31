@@ -268,3 +268,209 @@ input:focus, select:focus, textarea:focus{
   .brand{ min-width: 0; }
   .btn, .btn-white-outline, .btn-yellow, .btn-red{ padding: 10px 14px; font-size: 14px; }
 }
+
+
+/* ===== Auth (login/register) card inputs on light background ===== */
+.form-card .input,
+.form-card input,
+.form-card select,
+.form-card textarea{
+  background: rgba(0,0,0,.06);
+  color: #0b1020;
+  border: 1px solid rgba(0,0,0,.14);
+}
+.form-card .input::placeholder,
+.form-card input::placeholder,
+.form-card textarea::placeholder{
+  color: rgba(11,16,32,.55);
+}
+.form-card .input:focus,
+.form-card input:focus,
+.form-card select:focus,
+.form-card textarea:focus{
+  border-color: rgba(252,209,22,.85);
+  box-shadow: 0 0 0 4px rgba(252,209,22,.18);
+}
+
+
+/* ===== Admin helpers (lessonadmin) ===== */
+.toast{
+  position: fixed;
+  left: 50%;
+  top: 86px;
+  transform: translateX(-50%);
+  z-index: 2000;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 48px rgba(0,0,0,.28);
+}
+.toast-ok{ background: rgba(22,163,74,.20); border-color: rgba(22,163,74,.40); }
+.toast-warn{ background: rgba(252,209,22,.18); border-color: rgba(252,209,22,.45); }
+.toast-err{ background: rgba(206,17,38,.20); border-color: rgba(206,17,38,.45); }
+
+#blocksList .block{
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 18px;
+  padding: 12px 12px;
+  margin: 10px 0;
+  backdrop-filter: blur(10px);
+}
+#blocksList .blockHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+  font-weight: 900;
+}
+#blocksList textarea, #blocksList input, #blocksList select{
+  width: 100%;
+}
+
+
+/* ===== Modal / admin panels (shared) ===== */
+.modalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(6px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index: 1500;
+  padding: 18px;
+}
+.modalCard{
+  width: min(980px, 100%);
+  max-height: 86vh;
+  overflow:auto;
+  border-radius: 22px;
+  background: rgba(7, 18, 44, .88);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 26px 90px rgba(0,0,0,.45);
+  backdrop-filter: blur(14px);
+  padding: 16px;
+}
+.modalHead{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.modalTitle{
+  font-weight: 900;
+  letter-spacing:.2px;
+  font-size: 18px;
+}
+.hr{
+  height:1px;
+  background: rgba(255,255,255,.12);
+  margin: 12px 0;
+}
+
+/* ===== Panel layout (espanel) ===== */
+.panelGrid{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 860px){
+  .panelGrid{ grid-template-columns: 1fr; }
+}
+.coursesGrid{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 12px;
+}
+@media (max-width: 860px){
+  .coursesGrid{ grid-template-columns: 1fr; }
+}
+.courseCard{
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 22px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+.courseCard .courseTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.courseBadge{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+}
+.courseTitle{
+  font-family: "Playfair Display", serif;
+  font-size: 34px;
+  line-height: 1.05;
+  margin: 12px 0 6px;
+}
+.courseSub{ color: var(--muted); font-weight: 700; margin: 0 0 14px; }
+.progressLine{
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.12);
+  overflow:hidden;
+}
+.progressLine > div{
+  height:100%;
+  width:0%;
+  background: rgba(252,209,22,.92);
+}
+.smallRow{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  color: rgba(255,255,255,.84);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* ===== esadmin table-ish lists ===== */
+.list{
+  display:grid;
+  gap: 10px;
+}
+.listItem{
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 18px;
+  padding: 12px;
+  backdrop-filter: blur(10px);
+}
+.listItem .row{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Ensure selects/inputs are readable on admin pages */
+.card input, .card select, .card textarea{
+  width: 100%;
+}

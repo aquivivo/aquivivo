@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Seleccionar contenido | Admin | AquiVivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/layout.js" type="module"></script>
+</head>
+<body data-page="admin-select">
+  <div id="appHeader"></div>
+
+  <main class="page">
+    <div class="container">
+
+      <section class="heroBanner">
+        <div class="heroTitleRow">
+          <div class="heroIcon">🧭</div>
+          <div>
+            <h1 class="sectionTitle">Seleccionar nivel y tema</h1>
+            <p class="subtitle">Antes de entrar al admin, elige el nivel y el tema que vas a editar.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="sectionTitle">1) Nivel</h2>
+        <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+          <select id="selLevel" class="select" style="min-width:160px;">
+            <option value="A1">A1</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+          </select>
+
+          <button id="btnLoadTopics" class="btn-white-outline">Cargar temas</button>
+          <span id="levelHint" class="hintSmall"></span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="sectionTitle">2) Tema</h2>
+
+        <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+          <select id="selTopic" class="select" style="min-width:520px; max-width:100%;" disabled>
+            <option value="">— Primero carga los temas —</option>
+          </select>
+
+          <button id="btnRefresh" class="btn-white-outline" disabled>Actualizar</button>
+        </div>
+
+        <div id="topicPreview" class="card" style="margin-top:14px; display:none;">
+          <div class="subtitle" style="margin-bottom:6px;">Seleccionado</div>
+          <div id="topicTitle" class="sectionTitle" style="font-size:22px;"></div>
+          <div id="topicSubtitle" class="subtitle" style="margin-top:6px;"></div>
+          <div class="metaRow" style="flex-wrap:wrap; gap:10px; margin-top:14px;">
+            <a id="goLessonAdmin" class="btn-yellow" href="#">✏️ Admin lección</a>
+            <a id="goExerciseAdmin" class="btn-white-outline" href="#">🧪 Admin ejercicios</a>
+          </div>
+          <p class="hintSmall" style="margin-top:10px;">
+            Tip: también puedes abrir “Ver lección” dentro de lessonadmin.
+          </p>
+        </div>
+
+        <div id="topicError" class="hintSmall" style="margin-top:12px; display:none;"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <script type="module" src="assets/js/pages/admin-select-page.js"></script>
+</body>
+</html>

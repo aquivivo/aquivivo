@@ -1,31 +1,53 @@
-// assets/js/layout.js
-// Injects unified header + provides logout + protects private pages:
-// - redirects to login if not authenticated
-// - blocks access if email not verified
-
-import { auth } from "./firebase-init.js";
-import {
-  onAuthStateChanged,
-  signOut,
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { auth, db } from './firebase-init.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 (function () {
-  const PUBLIC_PAGES = new Set(["login", "index"]);
+  const ADMIN_HREF = 'esadmin.html';
 
-  function buildHeader(level) {
-    const host = document.getElementById("appHeader");
+  function pageId() {
+    return document.body?.dataset?.page || '';
+  }
+
+  function qsLevel() {
+    const qs = new URLSearchParams(location.search);
+    return (qs.get('level') || 'A1').toUpperCase();
+  }
+
+  function getNextParam() {
+    try {
+      const qs = new URLSearchParams(location.search);
+      const next = qs.get('next');
+      if (!next) return '';
+      if (next.startsWith('http://') || next.startsWith('https://')) return '';
+      if (next.includes('..')) return '';
+      return next;
+    } catch {
+      return '';
+    }
+  }
+
+  function redirect(to) {
+    const cur = location.pathname.split('/').pop();
+    if (cur === to) return;
+    location.href = to;
+  }
+
+  function injectHeader() {
+    const host = document.getElementById('appHeader');
     if (!host) return;
 
-    const page = document.body?.dataset?.page || "";
-    const qs = new URLSearchParams(location.search);
-    const lvl = (level || qs.get("level") || "A1").toUpperCase();
+    const page = pageId();
+    const level = qsLevel();
 
-    const showNav = page !== "login";
-    const showLogout = page !== "login" && page !== "index";
+    const showPanel = page !== 'login';
+    const showCourse = page !== 'login';
+    const showBack = page !== 'index' && page !== 'login';
+    const showLogout = page !== 'login' && page !== 'index';
 
-    const hrefInicio = "index.html";
-    const hrefPanel = "espanel.html";
-    const hrefCourse = `course.html?level=${encodeURIComponent(lvl)}`;
+    const hrefInicio = 'index.html';
+    const hrefPanel = 'espanel.html';
+    const hrefCourse = `course.html?level=${encodeURIComponent(level)}`;
 
     host.innerHTML = `
       <div class="nav-glass">
@@ -34,20 +56,22 @@ import {
           <a class="brand" href="${hrefInicio}">
             <img src="assets/img/logo.png" alt="AquiVivo" />
           </a>
+
           <div class="nav-actions">
-            ${showNav ? `<a class="btn-white-outline" href="${hrefCourse}">📚 Curso</a>` : ``}
-            ${showNav ? `<a class="btn-white-outline" href="${hrefPanel}">🏠 Panel</a>` : ``}
+            <span id="navAdminSlot"></span>
+            ${showCourse ? `<a class="btn-white-outline" href="${hrefCourse}">📚 Curso</a>` : ``}
+            ${showPanel ? `<a class="btn-white-outline" href="${hrefPanel}">🏠 Panel</a>` : ``}
             <a class="btn-white-outline" href="${hrefInicio}">✨ Inicio</a>
-            ${showNav ? `<button class="btn-white-outline" id="btnAtras" type="button">⬅️ Atrás</button>` : ``}
+            ${showBack ? `<button class="btn-white-outline" id="btnAtras" type="button">⬅️ Atrás</button>` : ``}
             ${showLogout ? `<button class="btn-red" id="btnLogout" type="button">Cerrar sesión</button>` : ``}
           </div>
         </div>
       </div>
     `;
 
-    const backBtn = document.getElementById("btnAtras");
+    const backBtn = document.getElementById('btnAtras');
     if (backBtn) {
-      backBtn.addEventListener("click", () => {
+      backBtn.addEventListener('click', () => {
         const before = location.href;
         history.back();
         setTimeout(() => {
@@ -56,51 +80,118 @@ import {
       });
     }
 
-    const logoutBtn = document.getElementById("btnLogout");
+    const logoutBtn = document.getElementById('btnLogout');
     if (logoutBtn) {
-      logoutBtn.addEventListener("click", async () => {
+      logoutBtn.addEventListener('click', async () => {
         try {
           await signOut(auth);
         } catch (e) {
           console.error(e);
         }
-        window.location.href = "login.html";
+        location.href = 'login.html';
       });
     }
   }
 
-  function protectPage(user) {
-    const page = document.body?.dataset?.page || "";
-    if (PUBLIC_PAGES.has(page)) return;
+  function requireAuthForPage() {
+    const p = pageId();
+    return p !== 'login' && p !== 'index' && p !== '';
+  }
 
-    // not logged in
-    if (!user) {
-      const next = encodeURIComponent(location.pathname.split("/").pop() + location.search);
-      window.location.href = `login.html?next=${next}`;
-      return;
+  function isAdminPage() {
+    const p = pageId();
+    return (
+      p === 'esadmin' ||
+      p === 'admin-select' ||
+      p === 'lessonadmin' ||
+      p === 'ejercicioadmin' ||
+      p === 'lesson'
+    );
+  }
+
+  function guardToLogin(reason) {
+    const next = location.pathname.split('/').pop() + location.search;
+    const url =
+      'login.html?next=' +
+      encodeURIComponent(next) +
+      (reason ? '&reason=' + encodeURIComponent(reason) : '');
+    location.href = url;
+  }
+
+  function enforceEmailVerification(user) {
+    const p = pageId();
+    const allowed = p === 'login' || p === 'index' || p === '';
+    if (user && !user.emailVerified && !allowed) {
+      guardToLogin('verify');
+      return false;
     }
+    return true;
+  }
 
-    // not verified
-    if (user.email && user.emailVerified === false) {
-      signOut(auth).catch(() => {});
-      window.location.href = "login.html";
-      return;
+  async function setAdminButton(uid) {
+    const slot = document.getElementById('navAdminSlot');
+    if (!slot) return;
+
+    try {
+      const snap = await getDoc(doc(db, 'users', uid));
+      const data = snap.exists() ? snap.data() : null;
+      if (data?.admin) {
+        slot.innerHTML = `<a class="btn-yellow" href="${ADMIN_HREF}">🛡️ Admin</a>`;
+      } else {
+        slot.innerHTML = ``;
+      }
+    } catch (e) {
+      console.error('layout.js: cannot read users doc', e);
+      slot.innerHTML = ``;
     }
   }
 
-  function init() {
-    // header immediately (level from URL)
-    buildHeader();
+  async function ensureAdminOrRedirect(uid) {
+    try {
+      const snap = await getDoc(doc(db, 'users', uid));
+      const data = snap.exists() ? snap.data() : null;
+      if (!data?.admin) location.href = 'espanel.html';
+    } catch {
+      location.href = 'espanel.html';
+    }
+  }
 
-    // auth guard
-    onAuthStateChanged(auth, (user) => {
-      protectPage(user);
+  function boot() {
+    injectHeader();
+
+    onAuthStateChanged(auth, async (user) => {
+      const p = pageId();
+
+      // Pages that require auth
+      if (requireAuthForPage() && !user) {
+        guardToLogin('auth');
+        return;
+      }
+
+      if (user) {
+        // If not verified: keep session, but block app pages
+        if (!enforceEmailVerification(user)) return;
+
+        await setAdminButton(user.uid);
+
+        // login: if already verified -> go to next/panel
+        if (p === 'login' && user.emailVerified) {
+          const next = getNextParam();
+          redirect(next || 'espanel.html');
+          return;
+        }
+
+        // If user enters admin without admin flag
+        if (isAdminPage()) {
+          await ensureAdminOrRedirect(user.uid);
+        }
+      }
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
-    init();
+    boot();
   }
 })();

@@ -30,6 +30,28 @@ function setMsg(text, type) {
 }
 
 
+function getQueryParam(name) {
+  try {
+    const qs = new URLSearchParams(location.search);
+    return qs.get(name) || "";
+  } catch {
+    return "";
+  }
+}
+
+function initFromUrl() {
+  const reason = getQueryParam("reason");
+  if (reason === "verify") {
+    setMsg(
+      "📩 Tu cuenta requiere verificación de correo para acceder al panel y a los cursos. Inicia sesión y confirma tu email.",
+      "error"
+    );
+    ensureVerifyBox();
+    setVerifyHint("Después de iniciar sesión, revisa tu correo y pulsa “Ya verifiqué”.");
+  }
+}
+
+
 // --- Email verification UI (login only) ---
 function ensureVerifyBox() {
   const host = document.querySelector('.form-card') || document.body;
@@ -179,6 +201,7 @@ async function ensureUserDoc(uid, email, isAdmin) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initFromUrl();
   try {
     const qs = new URLSearchParams(location.search);
     const reason = qs.get('reason');

@@ -1,306 +1,54 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin | AquiVivo</title>
-
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
-      rel="stylesheet"
-    />
-
-    <link rel="stylesheet" href="assets/css/styles.css" />
-    <style>
-      :root {
-        --yellow: #fcd116;
-        --blue: #003893;
-        --red: #ce1126;
-      }
-      body {
-        margin: 0;
-        font-family: Montserrat, Arial, sans-serif;
-        min-height: 100vh;
-        background: linear-gradient(180deg, #001a4d, #003893, #001a4d);
-        color: white;
-      }
-      .wrap {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 28px 16px 60px;
-      }
-      h1 {
-        font-family: 'Playfair Display', serif;
-        color: var(--yellow);
-        margin: 0 0 6px 0;
-        font-size: 44px;
-      }
-      .sub {
-        opacity: 0.85;
-        margin: 0 0 18px 0;
-      }
-
-      .topbar {
-        position: fixed;
-        top: 14px;
-        right: 14px;
-        display: flex;
-        gap: 10px;
-        z-index: 50;
-      }
-      .topbar button {
-        padding: 8px 12px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 700;
-        background: var(--red);
-        color: white;
-      }
-      a.back {
-        display: inline-block;
-        color: white;
-        opacity: 0.9;
-        text-decoration: underline;
-        margin-bottom: 18px;
-      }
-
-      .card {
-        background: white;
-        color: #111827;
-        border-radius: 14px;
-        padding: 14px 14px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
-        margin: 12px 0;
-      }
-
-      .toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        margin: 14px 0 18px 0;
-      }
-      .toolbar input {
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid #d1d5db;
-        min-width: 260px;
-        width: 100%;
-        max-width: 420px;
-        box-sizing: border-box;
-      }
-      .pill {
-        display: inline-block;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 12px;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        margin-right: 6px;
-        margin-bottom: 6px;
-      }
-      .ok {
-        background: rgba(34, 197, 94, 0.14);
-        color: #065f46;
-      }
-      .no {
-        background: rgba(239, 68, 68, 0.14);
-        color: #7f1d1d;
-      }
-      .soon {
-        background: rgba(245, 158, 11, 0.14);
-        color: #7c2d12;
-      }
-
-      .userRow {
-        display: grid;
-        grid-template-columns: 1.2fr 1fr;
-        gap: 12px;
-        align-items: start;
-      }
-      @media (max-width: 860px) {
-        .userRow {
-          grid-template-columns: 1fr;
-        }
-      }
-      .userMeta {
-        font-size: 14px;
-        line-height: 1.45;
-      }
-      .userMeta b {
-        color: var(--blue);
-      }
-
-      .actions {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .levelBox {
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 10px;
-      }
-      .levelTitle {
-        font-weight: 800;
-        color: var(--blue);
-        margin-bottom: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-      }
-      .btnRow {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 8px;
-      }
-      .btn {
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 800;
-        padding: 8px 10px;
-        font-size: 12px;
-      }
-      .btnBlue {
-        background: var(--blue);
-        color: white;
-      }
-      .btnYellow {
-        background: var(--yellow);
-        color: #111827;
-      }
-      .btnRed {
-        background: var(--red);
-        color: white;
-      }
-      .btnGray {
-        background: #111827;
-        color: white;
-      }
-
-      .small {
-        font-size: 12px;
-        color: #6b7280;
-        margin-top: 6px;
-      }
-      .muted {
-        color: #6b7280;
-      }
-      .tag {
-        display: inline-block;
-        font-size: 11px;
-        padding: 4px 8px;
-        border-radius: 999px;
-        background: rgba(17, 24, 39, 0.06);
-        color: #111827;
-        font-weight: 800;
-      }
-    
-      .filterSelect{
-        padding:10px 12px;
-        border-radius:12px;
-        border:1px solid rgba(255,255,255,0.25);
-        background: rgba(255,255,255,0.08);
-        color: white;
-        font-weight:700;
-        outline:none;
-      }
-      .filterSelect option{ color:#111827; }
-
-      .summaryBar{
-        display:grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
-        margin: 12px 0 18px;
-      }
-      .sumCard{
-        border: 1px solid rgba(255,255,255,0.18);
-        background: rgba(255,255,255,0.06);
-        border-radius: 16px;
-        padding: 12px 14px;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-      }
-      .sumNum{
-        font-size: 24px;
-        font-weight: 900;
-        letter-spacing: 0.3px;
-      }
-      .sumLabel{
-        margin-top: 4px;
-        font-size: 12px;
-        opacity: 0.85;
-        font-weight: 700;
-      }
-      @media (max-width: 640px){
-        .summaryBar{ grid-template-columns: 1fr; }
-      }
-
-
-            /* Admin perf: compact list + collapsible details */
-      .userSummary { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-      .userSummary .left { display:flex; flex-direction:column; gap:2px; min-width:240px; }
-      .userSummary .right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-      .detailsBody { margin-top:12px; }
-</style>
-    <script src="assets/js/layout.js" type="module"></script>
+<head>
+  <meta charset="utf-8" />
+  <title>Admin | AquiVivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/layout.js" type="module"></script>
 </head>
+<body data-page="esadmin">
+  <div id="appHeader"></div>
 
-  <body data-page="esadmin">
-    <div id="appHeader"></div>
-    <main class="page">
-      <div class="container">
-        <div class="wrap">
-      <a class="back" href="espanel.html">← Volver al panel</a>
+  <main class="page">
+    <div class="container">
 
-      <h1>Admin</h1>
-      <p class="sub">
-        Buscar usuarios y gestionar acceso (días gratis, extender, revocar, curso activo).
-      </p>
-
-      <div class="toolbar">
-        <input id="search" placeholder="Buscar por correo / UID…" />
-        
-        <select id="filter" class="filterSelect" title="Filtrar usuarios">
-          <option value="all">Todos</option>
-          <option value="active">Con acceso activo</option>
-          <option value="expiring7">Caduca en 7 días</option>
-          <option value="expired">Acceso caducado</option>
-        </select>
-        <span id="status" class="muted"></span>
-      </div>
-
-
-      <div id="summary" class="summaryBar">
-        <div class="sumCard">
-          <div class="sumNum" id="cntActive">0</div>
-          <div class="sumLabel">Activos</div>
+      <section class="heroBanner">
+        <div class="heroTitleRow">
+          <div class="heroIcon">🛡️</div>
+          <div>
+            <h1 class="sectionTitle">Admin</h1>
+            <p class="subtitle">Usuarios, accesos y ajustes de la plataforma.</p>
+          </div>
         </div>
-        <div class="sumCard">
-          <div class="sumNum" id="cntExpiring7">0</div>
-          <div class="sumLabel">Caducan en 7 días</div>
-        </div>
-        <div class="sumCard">
-          <div class="sumNum" id="cntExpired">0</div>
-          <div class="sumLabel">Caducados</div>
-        </div>
-      </div>
+      </section>
 
-      <div id="usersList"></div>
-      <div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-        <button class="btn btnGray" id="btnLoadMore">Cargar más</button>
-        <div class="mutedSmall" id="loadInfo"></div>
-      </div>
+      <section class="card">
+        <h2 class="sectionTitle">Contenido</h2>
+        <div class="metaRow">
+          <a href="admin-select.html?type=lesson" class="btn-yellow">✏️ Admin lecciones</a>
+          <a href="admin-select.html?type=exercise" class="btn-white-outline">🧪 Admin ejercicios</a>
         </div>
-      </div>
-    </main>
+      </section>
 
-    <!-- Firebase -->
-    
+      <section class="card">
+        <h2 class="sectionTitle">Usuarios</h2>
+        <p class="subtitle">La lista se carga solo cuando la necesitas.</p>
+
+        <button id="btnLoadUsers" class="btn-white-outline">Cargar usuarios</button>
+
+        <div id="usersSection" style="display:none; margin-top:16px;">
+          <input id="userSearch" class="input" placeholder="Buscar por email..." />
+          <div id="usersList" class="list"></div>
+          <button id="btnLoadMore" class="btn-white-outline" style="margin-top:12px;">
+            Cargar más
+          </button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
   <script type="module" src="assets/js/pages/esadmin-page.js"></script>
 </body>
 </html>

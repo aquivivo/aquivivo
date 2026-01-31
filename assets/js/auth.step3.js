@@ -30,6 +30,28 @@ function setMsg(text, type) {
 }
 
 
+function getQueryParam(name) {
+  try {
+    const qs = new URLSearchParams(location.search);
+    return qs.get(name) || "";
+  } catch {
+    return "";
+  }
+}
+
+function initFromUrl() {
+  const reason = getQueryParam("reason");
+  if (reason === "verify") {
+    setMsg(
+      "📩 Tu cuenta requiere verificación de correo para acceder al panel y a los cursos. Inicia sesión y confirma tu email.",
+      "error"
+    );
+    ensureVerifyBox();
+    setVerifyHint("Después de iniciar sesión, revisa tu correo y pulsa “Ya verifiqué”.");
+  }
+}
+
+
 // --- Email verification UI (login only) ---
 function ensureVerifyBox() {
   const host = document.querySelector('.form-card') || document.body;
@@ -145,40 +167,43 @@ function getNextUrl() {
   }
 }
 
-async function ensureUserDoc(uid, email, isAdmin) {
+async function ensureUserDoc(uid, email) {
+  // Ensures users/{uid} exists and contains minimum contract fields:
+  // { email, admin:boolean, createdAt, access:boolean }
   const ref = doc(db, "users", uid);
   const snap = await getDoc(ref);
-  if (snap.exists()) return;
 
-  const now = new Date();
-  const trialEnd = new Date(now.getTime());
-
-  if (isAdmin) {
-    trialEnd.setFullYear(2099);
-  } else {
-    trialEnd.setDate(now.getDate() + 7); // 7-day trial
+  if (!snap.exists()) {
+    await setDoc(
+      ref,
+      {
+        email: email || null,
+        admin: false,
+        access: true,
+        createdAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    return;
   }
 
-  await setDoc(ref, {
-    email: email || null,
-    createdAt: serverTimestamp(),
-    access: isAdmin
-      ? {
-          A1: { freeUntil: trialEnd.toISOString() },
-          A2: { freeUntil: trialEnd.toISOString() },
-          B1: { freeUntil: trialEnd.toISOString() },
-          B2: { freeUntil: trialEnd.toISOString() },
-        }
-      : {
-          A1: { freeUntil: trialEnd.toISOString() },
-          A2: null,
-          B1: null,
-          B2: null,
-        },
-  });
+  // If doc exists, only fill missing fields (never overwrite admin=true)
+  const data = snap.data() || {};
+  const patch = {};
+
+  if (!data.email && email) patch.email = email;
+  if (typeof data.admin !== "boolean") patch.admin = false;
+  if (typeof data.access !== "boolean") patch.access = true;
+  if (!data.createdAt) patch.createdAt = serverTimestamp();
+
+  if (Object.keys(patch).length) {
+    await setDoc(ref, patch, { merge: true });
+  }
 }
 
+
 document.addEventListener("DOMContentLoaded", () => {
+  initFromUrl();
   try {
     const qs = new URLSearchParams(location.search);
     const reason = qs.get('reason');
@@ -217,6 +242,9 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const cred = await signInWithEmailAndPassword(auth, email, pass);
 
+      // Ensure users/{uid} exists (for admin panel / guards)
+      await ensureUserDoc(cred.user.uid, cred.user.email);
+
       // unverified: keep session, show verify tools, block app via layout.js
       if (cred.user && !cred.user.emailVerified) {
         await sendEmailVerification(cred.user).catch(() => {});
@@ -246,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // create users/{uid} doc so admin can see immediately
       // admin is determined later in panel; here always false
-      await ensureUserDoc(cred.user.uid, cred.user.email, false);
+      await ensureUserDoc(cred.user.uid, cred.user.email);
 
       // send verification email
       await sendEmailVerification(cred.user).catch(() => {});

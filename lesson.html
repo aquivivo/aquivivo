@@ -1,35 +1,30 @@
-
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lección | AquiVivo</title>
-<link rel="stylesheet" href="assets/css/styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lección | AquiVivo</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
   <script src="assets/js/layout.js" type="module"></script>
 </head>
 <body data-page="lesson">
-
-
   <div id="appHeader"></div>
-<header class="topbar">
-  <div class="brand">
-    <img src="assets/img/logo.png" class="logo">
-    <div class="title">AquiVivo</div>
-  </div>
 
-  <nav>
-    <button class="btn" onclick="location.href='course.html'">Atrás</button>
-  </nav>
-</header>
+  <main class="page">
+    <div class="container">
+      <section class="card">
+        <h1 class="sectionTitle" style="margin-top:0;">Lección</h1>
+        <div class="subtitle">
+          Esta ruta es antigua. Usa <b>lessonpage.html</b> para ver la lección y <b>lessonadmin.html</b> para editarla.
+        </div>
+        <div class="metaRow" style="margin-top:14px;">
+          <a class="btn-yellow" href="espanel.html">Ir al panel</a>
+          <a class="btn" href="course.html?level=A1">Ir al curso</a>
+        </div>
+      </section>
+    </div>
+  </main>
 
-<main>
-  <div class="card">
-    <h2>Lección</h2>
-    <p>Contenido de la lección aquí.</p>
-  </div>
-</main>
-
-<script src="assets/js/app.js"></script>
+  <!-- no page script on purpose -->
 </body>
 </html>
