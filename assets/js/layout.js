@@ -3,10 +3,7 @@ import {
   onAuthStateChanged,
   signOut,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import {
-  doc,
-  getDoc,
-} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 (function () {
   const ADMIN_HREF = 'esadmin.html';
@@ -35,12 +32,12 @@ import {
     el.textContent = msg;
   }
 
-  async function isAdmin(uid) {
+  async function getUserDoc(uid) {
     try {
       const snap = await getDoc(doc(db, 'users', uid));
-      return snap.exists() && snap.data()?.admin === true;
+      return snap.exists() ? snap.data() || {} : {};
     } catch {
-      return false;
+      return {};
     }
   }
 
@@ -60,7 +57,6 @@ import {
     const showBack = p !== 'index';
     const showLogout = !isPublicPage(p);
 
-    // ✅ Najważniejsze: "Curso" zawsze do Panelu (wybór kursu)
     const hrefCurso = 'espanel.html';
     const hrefPanel = 'espanel.html';
     const hrefInicio = 'index.html';
@@ -125,13 +121,24 @@ import {
       return;
     }
 
-    // admin-only pages require admin
-    if (isAdminOnlyPage(p)) {
-      const ok = await isAdmin(user.uid);
-      if (!ok) {
-        location.replace('espanel.html?reason=admin');
+    // Load Firestore user doc once (admin/blocked/plan/access)
+    const u = await getUserDoc(user.uid);
+    const isAdmin = u.admin === true;
+    const blocked = u.blocked === true;
+
+    // ✅ Global BLOCKED guard (except admin)
+    if (blocked && !isAdmin) {
+      const allowed = p === 'panel'; // allow to see panel message
+      if (!allowed) {
+        location.replace('espanel.html?reason=blocked');
         return;
       }
+    }
+
+    // admin-only pages require admin
+    if (isAdminOnlyPage(p) && !isAdmin) {
+      location.replace('espanel.html?reason=admin');
+      return;
     }
   }
 
@@ -143,8 +150,15 @@ import {
     await guard(user);
 
     if (user && user.emailVerified) {
-      const ok = await isAdmin(user.uid);
-      setAdminButtonVisible(ok);
+      const u = await (async () => {
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid));
+          return snap.exists() ? snap.data() || {} : {};
+        } catch {
+          return {};
+        }
+      })();
+      setAdminButtonVisible(u.admin === true);
     } else {
       setAdminButtonVisible(false);
       if (pageType() === 'login') {

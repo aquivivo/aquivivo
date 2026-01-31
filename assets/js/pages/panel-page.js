@@ -1,6 +1,8 @@
 // assets/js/pages/panel-page.js
-// Stabilny panel: email użytkownika, admin z Firestore users/{uid}.admin,
-// oraz kafelki kursów A1/A2/B1/B2.
+// Panel użytkownika: status dostępu + kody promo
+// Dodatki:
+// - jeśli w URL jest ?as=UID i zalogowany jest admin, pokazuje podgląd panelu danego usera (read-only)
+// - jeśli layout.js przekierował z reason=blocked, pokazuje komunikat
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
@@ -9,12 +11,69 @@ import {
   getDoc,
   setDoc,
   serverTimestamp,
+  updateDoc,
+  arrayUnion,
+  Timestamp,
+  addDoc,
+  collection,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 const $ = (id) => document.getElementById(id);
 
+const qs = new URLSearchParams(location.search);
+const AS_UID = (qs.get('as') || '').trim(); // admin preview
+
+function toCode(raw) {
+  return String(raw || '').trim().toUpperCase().replace(/\s+/g, '');
+}
+
+function show(el, yes) {
+  if (!el) return;
+  el.style.display = yes ? '' : 'none';
+}
+
+function ensureMsgBox() {
+  let box = document.getElementById('promoMsg');
+  if (!box) {
+    const anchor = document.getElementById('promoList')?.parentElement || document.getElementById('lastActivityCard');
+    if (anchor) {
+      box = document.createElement('div');
+      box.id = 'promoMsg';
+      box.className = 'hintSmall';
+      box.style.marginTop = '10px';
+      box.style.display = 'none';
+      anchor.insertBefore(box, anchor.firstChild);
+    }
+  }
+  return box;
+}
+
+function setMsg(text, kind = 'ok') {
+  const box = ensureMsgBox();
+  if (!box) return;
+  if (!text) {
+    box.style.display = 'none';
+    box.textContent = '';
+    return;
+  }
+  box.style.display = 'block';
+  box.textContent = text;
+  box.style.color = kind === 'bad' ? '#ffd1d7' : (kind === 'warn' ? '#ffe08a' : 'rgba(255,255,255,0.92)');
+}
+
+function formatDate(ts) {
+  try {
+    if (!ts) return '';
+    const d = ts?.toDate ? ts.toDate() : (ts instanceof Date ? ts : new Date(ts));
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleString('es-ES', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+  } catch {
+    return '';
+  }
+}
+
 async function ensureUserDoc(user) {
-  if (!user?.uid) return { admin: false, access: true };
+  if (!user?.uid) return { admin: false, access: false, plan: 'free' };
 
   const ref = doc(db, 'users', user.uid);
   const snap = await getDoc(ref);
@@ -25,38 +84,49 @@ async function ensureUserDoc(user) {
       {
         email: user.email || '',
         admin: false,
-        access: true,
+        access: false,
+        plan: 'free',
+        promoCodes: [],
+        blocked: false,
         createdAt: serverTimestamp(),
       },
       { merge: true },
     );
-    return { admin: false, access: true };
+    return { admin: false, access: false, plan: 'free', blocked: false };
   }
 
   const data = snap.data() || {};
   const patch = {};
   let needPatch = false;
 
-  if (typeof data.email !== 'string') {
-    patch.email = user.email || '';
-    needPatch = true;
-  }
-  if (typeof data.admin !== 'boolean') {
-    patch.admin = false;
-    needPatch = true;
-  }
-  if (typeof data.access === 'undefined') {
-    patch.access = true;
-    needPatch = true;
-  }
-  if (!data.createdAt) {
-    patch.createdAt = serverTimestamp();
-    needPatch = true;
-  }
+  if (typeof data.email !== 'string') { patch.email = user.email || ''; needPatch = true; }
+  if (typeof data.admin !== 'boolean') { patch.admin = false; needPatch = true; }
+  if (typeof data.access === 'undefined') { patch.access = false; needPatch = true; }
+  if (typeof data.plan !== 'string') { patch.plan = 'free'; needPatch = true; }
+  if (!Array.isArray(data.promoCodes)) { patch.promoCodes = []; needPatch = true; }
+  if (typeof data.blocked !== 'boolean') { patch.blocked = false; needPatch = true; }
+  if (!data.createdAt) { patch.createdAt = serverTimestamp(); needPatch = true; }
 
   if (needPatch) await setDoc(ref, patch, { merge: true });
 
-  return { admin: data.admin === true, access: data.access !== false };
+  return { ...data, ...patch };
+}
+
+function computeFlags(userDoc) {
+  const isAdmin = userDoc?.admin === true;
+  const plan = String(userDoc?.plan || 'free').toLowerCase();
+  const access = userDoc?.access === true;
+
+  const until = userDoc?.accessUntil || null;
+  const untilDate = until?.toDate ? until.toDate() : (until ? new Date(until) : null);
+  const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
+  const isUntilValid = hasUntil ? (untilDate.getTime() > Date.now()) : false;
+
+  const blocked = userDoc?.blocked === true;
+
+  const hasAccess = isAdmin || access || plan === 'premium' || isUntilValid;
+
+  return { isAdmin, plan, access, hasAccess, until, isUntilValid, blocked };
 }
 
 function renderAdminUI(isAdmin) {
@@ -99,26 +169,172 @@ function renderCourses() {
     .join('');
 }
 
-function renderLastActivityFallback() {
-  const when = $('lastActivityWhen');
-  const title = $('lastActivityTitle');
-  const link = $('lastActivityLink');
-  if (when) when.textContent = '—';
-  if (title) title.textContent = '—';
-  if (link) link.href = 'espanel.html';
+function renderPromoList(userDoc) {
+  const host = $('promoList');
+  if (!host) return;
+
+  const codes = Array.isArray(userDoc?.promoCodes) ? userDoc.promoCodes : [];
+  if (!codes.length) {
+    host.textContent = '—';
+    return;
+  }
+
+  host.innerHTML = codes
+    .slice(0, 20)
+    .map((c) => `<span class="pill" style="margin-right:8px; margin-bottom:8px; display:inline-flex;">🏷️ ${String(c)}</span>`)
+    .join('');
+}
+
+async function logAccess(uid, action, details = {}) {
+  try {
+    await addDoc(collection(db, 'users', uid, 'access_logs'), {
+      action,
+      details,
+      byUid: uid, // self (promo by user)
+      byEmail: auth.currentUser?.email || null,
+      createdAt: serverTimestamp(),
+    });
+  } catch {}
+}
+
+async function applyPromoCode(targetUid, targetDoc) {
+  const input = $('adm_promo_code');
+  const btn = $('addPromoBtn');
+  const raw = input ? input.value : '';
+  const code = toCode(raw);
+
+  if (!code) {
+    setMsg('Introduce un código.', 'warn');
+    return;
+  }
+
+  setMsg('');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Aplicando…';
+  }
+
+  try {
+    if (AS_UID) {
+      setMsg('Modo vista: no puedes aplicar códigos aquí.', 'warn');
+      return;
+    }
+
+    const promoRef = doc(db, 'promo_codes', code);
+    const promoSnap = await getDoc(promoRef);
+
+    if (!promoSnap.exists()) {
+      setMsg('Código inválido.', 'bad');
+      return;
+    }
+
+    const promo = promoSnap.data() || {};
+    if (promo.active === false) {
+      setMsg('Este código está desactivado.', 'bad');
+      return;
+    }
+
+    const days = Number(promo.days || promo.durationDays || 0);
+    const grantPlan = String(promo.plan || 'premium').toLowerCase();
+
+    const now = new Date();
+    const until = new Date(now.getTime() + Math.max(0, days) * 24 * 60 * 60 * 1000);
+
+    const currentUntil = targetDoc?.accessUntil?.toDate ? targetDoc.accessUntil.toDate() : null;
+    let newUntil = until;
+    if (currentUntil && !Number.isNaN(currentUntil.getTime())) {
+      if (currentUntil.getTime() > newUntil.getTime()) newUntil = currentUntil;
+    }
+
+    const payload = {
+      updatedAt: serverTimestamp(),
+      promoCodes: arrayUnion(code),
+      plan: grantPlan === 'premium' ? 'premium' : grantPlan,
+      access: true,
+    };
+    if (days > 0) payload.accessUntil = Timestamp.fromDate(newUntil);
+
+    await updateDoc(doc(db, 'users', targetUid), payload);
+    await logAccess(targetUid, 'promo_applied', { code, days });
+
+    if (input) input.value = '';
+    setMsg('Código aplicado ✅', 'ok');
+  } catch (e) {
+    console.error(e);
+    setMsg('Error aplicando el código. Intenta de nuevo.', 'bad');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Aplicar';
+    }
+  }
+}
+
+function showBlockedBanner() {
+  const reason = new URLSearchParams(location.search).get('reason');
+  if (reason === 'blocked') {
+    setMsg('⛔ Tu cuenta está bloqueada. Contacta con el administrador.', 'bad');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   renderCourses();
-  renderLastActivityFallback();
+
+  const btn = $('addPromoBtn');
+  const input = $('adm_promo_code');
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) return;
 
-    const emailEl = $('userEmail');
-    if (emailEl) emailEl.textContent = user.email || '—';
+    const baseDoc = await ensureUserDoc(user);
 
-    const info = await ensureUserDoc(user);
-    renderAdminUI(info.admin === true);
+    // Admin preview: load target user doc
+    let viewUid = user.uid;
+    let viewDoc = baseDoc;
+
+    const isAdmin = baseDoc.admin === true;
+    if (AS_UID) {
+      if (!isAdmin) {
+        setMsg('Acceso denegado (solo admin).', 'bad');
+        return;
+      }
+      viewUid = AS_UID;
+      const snap = await getDoc(doc(db, 'users', viewUid));
+      viewDoc = snap.exists() ? (snap.data() || {}) : {};
+      setMsg(`👀 Vista del panel de: ${viewDoc.email || viewUid}`, 'warn');
+    } else {
+      showBlockedBanner();
+    }
+
+    const emailEl = $('userEmail');
+    if (emailEl) emailEl.textContent = (AS_UID ? (viewDoc.email || '—') : (user.email || '—'));
+
+    renderAdminUI(isAdmin);
+
+    renderPromoList(viewDoc);
+
+    if (btn) {
+      btn.onclick = async () => {
+        const fresh = await getDoc(doc(db, 'users', viewUid));
+        const latest = fresh.exists() ? fresh.data() || {} : viewDoc;
+        await applyPromoCode(viewUid, latest);
+
+        const after = await getDoc(doc(db, 'users', viewUid));
+        const afterDoc = after.exists() ? after.data() || {} : latest;
+        renderPromoList(afterDoc);
+      };
+    }
+
+    if (input) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') btn?.click();
+      });
+    }
+
+    // Disable promo applying in preview mode
+    if (AS_UID) {
+      if (input) input.disabled = true;
+      if (btn) btn.disabled = true;
+    }
   });
 });

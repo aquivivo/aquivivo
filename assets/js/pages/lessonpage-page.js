@@ -9,6 +9,10 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/fi
 import {
   doc,
   getDoc,
+  updateDoc,
+  setDoc,
+  serverTimestamp,
+  increment,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 const $ = (id) => document.getElementById(id);
@@ -16,6 +20,53 @@ const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(window.location.search);
 const LEVEL = (qs.get('level') || 'A1').toUpperCase();
 const COURSE_ID = (qs.get('id') || '').trim();
+
+async function trackTopicOpen(uid, courseId, level) {
+  if (!uid || !courseId) return;
+  try {
+    const userRef = doc(db, 'users', uid);
+    const snap = await getDoc(userRef);
+    const data = snap.exists() ? (snap.data() || {}) : {};
+    const opened = data.openedTopics || {};
+    const already = opened && opened[courseId] === true;
+
+    // always update "last seen"
+    const basePatch = {
+      lastSeenAt: serverTimestamp(),
+      lastTopicId: courseId,
+      lastLevel: level || null,
+    };
+
+    if (!snap.exists()) {
+      await setDoc(userRef, {
+        email: auth.currentUser?.email || '',
+        admin: false,
+        access: false,
+        plan: 'free',
+        blocked: false,
+        createdAt: serverTimestamp(),
+        openedTopics: { [courseId]: true },
+        openedTopicsCount: 1,
+        ...basePatch,
+      }, { merge: true });
+      return;
+    }
+
+    if (already) {
+      await updateDoc(userRef, basePatch);
+      return;
+    }
+
+    await updateDoc(userRef, {
+      ...basePatch,
+      [`openedTopics.${courseId}`]: true,
+      openedTopicsCount: increment(1),
+    });
+  } catch (e) {
+    console.warn('trackTopicOpen failed', e);
+  }
+}
+
 
 function metaDocId(level, courseId) {
   return `${level}__${courseId}`;

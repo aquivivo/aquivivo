@@ -23,6 +23,61 @@
         </div>
       </section>
 
+      
+      <section class="card">
+        <h2 class="sectionTitle">📊 Dashboard</h2>
+        <p class="subtitle">Resumen rápido (conteos en Firestore). Haz clic en una tarjeta para ver detalles.</p>
+
+        <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+          <button id="btnRefreshStats" class="btn-white-outline" type="button">🔄 Actualizar</button>
+          <span id="statsStatus" class="hintSmall"></span>
+        </div>
+
+        <div class="panelGrid" style="margin-top:12px;">
+          <div class="card statCard" data-expand="users" data-details="statUsersDetails">
+            <div class="muted" style="font-weight:900;">👤 Usuarios</div>
+            <div id="statUsers" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+            <div class="hintSmall">Total en users</div>
+            <div id="statUsersDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+          </div>
+
+          <div class="card statCard" data-expand="premium" data-details="statPremiumPlanDetails">
+            <div class="muted" style="font-weight:900;">💎 Plan premium</div>
+            <div id="statPremiumPlan" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+            <div class="hintSmall">users donde plan == "premium"</div>
+            <div id="statPremiumPlanDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+          </div>
+
+          <div class="card statCard" data-expand="access" data-details="statAccessTrueDetails">
+            <div class="muted" style="font-weight:900;">🔓 access=true</div>
+            <div id="statAccessTrue" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+            <div class="hintSmall">users donde access == true</div>
+            <div id="statAccessTrueDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+          </div>
+
+          <div class="card statCard" data-expand="blocked" data-details="statBlockedDetails">
+            <div class="muted" style="font-weight:900;">⛔ Bloqueados</div>
+            <div id="statBlocked" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+            <div class="hintSmall">users donde blocked == true</div>
+            <div id="statBlockedDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+          </div>
+
+          <div class="card statCard" data-expand="courses" data-details="statCoursesDetails">
+            <div class="muted" style="font-weight:900;">📚 Temas</div>
+            <div id="statCourses" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+            <div class="hintSmall">docs en courses</div>
+            <div id="statCoursesDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+          </div>
+
+          <div class="card statCard" data-expand="exercises" data-details="statExercisesDetails">
+            <div class="muted" style="font-weight:900;">🧩 Ejercicios</div>
+            <div id="statExercises" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+            <div class="hintSmall">docs en exercises</div>
+            <div id="statExercisesDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="card">
         <h2 class="sectionTitle">Contenido</h2>
         <div class="metaRow">
@@ -31,23 +86,181 @@
         </div>
       </section>
 
+      
       <section class="card">
-        <h2 class="sectionTitle">Usuarios</h2>
-        <p class="subtitle">La lista se carga solo cuando la necesitas.</p>
+        <h2 class="sectionTitle">🎯 Segmentación (marketing)</h2>
+        <p class="subtitle">Listas rápidas: expirando pronto, premium activo, sin acceso (aprox.). Puedes exportar CSV.</p>
 
-        <button id="btnLoadUsers" class="btn-white-outline">Cargar usuarios</button>
+        <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+          <button id="btnLoadExp7" class="btn-white-outline" type="button">⏳ Expiran en 7 días</button>
+          <button id="btnLoadExp14" class="btn-white-outline" type="button">⏳ Expiran en 14 días</button>
+          <button id="btnLoadPremiumActive" class="btn-white-outline" type="button">💎 Premium activo (accessUntil)</button>
+          <button id="btnLoadFreeUsers" class="btn-white-outline" type="button">🔒 Sin acceso (aprox.)</button>
+          <button id="btnExportSegment" class="btn-yellow" type="button">⬇️ Exportar CSV</button>
+
+          <span id="segmentStatus" class="hintSmall" style="margin-left:auto;"></span>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="sectionTitle" style="margin-top:0;">Resultados</div>
+        <div id="segmentList" class="list"></div>
+      </section>
+
+      <section class="card">
+        <h2 class="sectionTitle">🏷️ Códigos promo</h2>
+        <p class="subtitle">Crea, activa y desactiva códigos. Los usuarios los aplican en el panel.</p>
+
+        <div class="metaRow" style="flex-wrap:wrap; gap:10px; align-items:flex-end;">
+          <div style="min-width:220px;">
+            <label class="muted" style="font-weight:900;">Código (ID)</label>
+            <input id="promoCode" class="input" placeholder="Ej. START2026" />
+          </div>
+
+          <div style="min-width:160px;">
+            <label class="muted" style="font-weight:900;">Días</label>
+            <input id="promoDays" class="input" type="number" min="0" step="1" placeholder="Ej. 30" />
+          </div>
+
+          <div style="min-width:180px;">
+            <label class="muted" style="font-weight:900;">Plan</label>
+            <select id="promoPlan" class="select">
+              <option value="premium" selected>premium</option>
+              <option value="free">free</option>
+            </select>
+          </div>
+
+          <label class="pill" style="gap:10px; align-items:center;">
+            <input id="promoActive" type="checkbox" style="width:18px; height:18px; margin:0;" checked />
+            Activo
+          </label>
+
+          <button id="btnSavePromoCode" class="btn-yellow" type="button">💾 Guardar</button>
+          <button id="btnClearPromoForm" class="btn-white-outline" type="button">🧹 Limpiar</button>
+
+          <span id="promoStatus" class="hintSmall" style="margin-left:auto;"></span>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="sectionTitle" style="margin-top:0;">Lista de códigos</div>
+        <div id="promoListAdmin" class="list"></div>
+      </section>
+
+      <section class="card">
+        <h2 class="sectionTitle">👤 Usuarios</h2>
+        <p class="subtitle">Busca por email, abre el editor y gestiona acceso/plan/fechas.</p>
+
+        <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+          <button id="btnLoadUsers" class="btn-white-outline" type="button">Cargar usuarios</button>
+
+          <select id="roleFilter" class="select" style="min-width:200px;">
+            <option value="all">Todos</option>
+            <option value="admins">Solo admin</option>
+            <option value="premium">Con acceso</option>
+            <option value="free">Sin acceso</option>
+          </select>
+
+          <input id="userSearch" class="input" placeholder="Buscar por email..." style="min-width:260px;" />
+          <button id="btnSearch" class="btn-white-outline" type="button">Buscar</button>
+          <button id="btnClear" class="btn-white-outline" type="button">Limpiar</button>
+
+          <span class="hintSmall" style="margin-left:auto;">Tip: click en usuario → editar acceso</span>
+        </div>
 
         <div id="usersSection" style="display:none; margin-top:16px;">
-          <input id="userSearch" class="input" placeholder="Buscar por email..." />
           <div id="usersList" class="list"></div>
-          <button id="btnLoadMore" class="btn-white-outline" style="margin-top:12px;">
-            Cargar más
-          </button>
+          <button id="btnLoadMore" class="btn-white-outline" style="margin-top:12px;">Cargar más</button>
         </div>
       </section>
 
     </div>
   </main>
+
+  <!-- Modal: Edit user access -->
+  <div id="userModal" class="modalOverlay" aria-hidden="true" style="display:none;">
+    <div class="modalCard">
+      <div class="modalHead">
+        <div class="modalTitle">Editar usuario</div>
+        <button id="userModalClose" class="btn-white-outline" type="button">✖</button>
+      </div>
+      <div class="hr"></div>
+
+      <div class="panelGrid">
+        <div class="card">
+          <div class="sectionTitle" style="margin-top:0;">Datos</div>
+          <div class="muted" style="font-weight:900; margin-top:8px;">Email</div>
+          <div id="um_email" class="pill" style="width:fit-content;">—</div>
+
+          <div class="muted" style="font-weight:900; margin-top:12px;">UID</div>
+          <div id="um_uid" class="hintSmall">—</div>
+
+          <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
+            <label class="pill" style="gap:10px;">
+              <input id="um_admin" type="checkbox" style="width:18px; height:18px; margin:0;" />
+              Admin
+            </label>
+            <label class="pill" style="gap:10px;">
+              <input id="um_access" type="checkbox" style="width:18px; height:18px; margin:0;" />
+              Acceso
+            </label>
+            <label class="pill" style="gap:10px;">
+              <input id="um_blocked" type="checkbox" style="width:18px; height:18px; margin:0;" />
+              Bloqueado
+            </label>
+          </div>
+
+          <div class="metaRow" style="margin-top:12px; flex-wrap:wrap; gap:10px;">
+            <button id="um_openPanelAs" class="btn-white-outline" type="button">👀 Ver panel como usuario</button>
+            <span class="hintSmall">Solo vista (no cambia tu login).</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sectionTitle" style="margin-top:0;">Plan y fecha</div>
+
+          <div class="muted" style="font-weight:900; margin-top:8px;">Plan</div>
+          <select id="um_plan" class="select">
+            <option value="free">free</option>
+            <option value="premium">premium</option>
+          </select>
+
+          <div class="muted" style="font-weight:900; margin-top:12px;">Acceso hasta</div>
+          <input id="um_until" class="input" type="datetime-local" />
+
+          <div class="hintSmall" style="margin-top:10px;">
+            Reglas: acceso = admin OR access=true OR plan=premium OR accessUntil en el futuro.
+          </div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+        <button id="um_grant30" class="btn-yellow" type="button">➕ Premium +30 días</button>
+        <button id="um_extend30" class="btn-white-outline" type="button">⏳ Extender +30 días</button>
+        <button id="um_revoke" class="btn-red" type="button">🔒 Quitar acceso</button>
+
+        <span id="um_status" class="hintSmall" style="margin-left:auto;"></span>
+      </div>
+
+      <div class="metaRow" style="margin-top:12px; justify-content:flex-end; gap:10px;">
+        <button id="um_save" class="btn-yellow" type="button">💾 Guardar cambios</button>
+        <button id="um_cancel" class="btn-white-outline" type="button">Cancelar</button>
+      </div>
+      <div class="hr"></div>
+      <div class="sectionTitle" style="margin-top:0;">📝 Nota del admin</div>
+      <textarea id="um_note" class="input" rows="3" placeholder="Nota interna (solo admin)…"></textarea>
+
+
+      <div class="hr"></div>
+      <div class="sectionTitle" style="margin-top:0;">📜 Historial de acceso</div>
+      <div id="um_logs" class="list"></div>
+      <div class="hintSmall" style="margin-top:10px;">
+        Se guarda automáticamente cuando cambias acceso/plan/fechas o usas botones rápidos.
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="assets/js/pages/esadmin-page.js"></script>
 </body>

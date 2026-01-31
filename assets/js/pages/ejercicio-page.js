@@ -1,3 +1,50 @@
+
+async function trackTopicOpen(uid, courseId, level) {
+  if (!uid || !courseId) return;
+  try {
+    const userRef = doc(db, 'users', uid);
+    const snap = await getDoc(userRef);
+    const data = snap.exists() ? (snap.data() || {}) : {};
+    const opened = data.openedTopics || {};
+    const already = opened && opened[courseId] === true;
+
+    // always update "last seen"
+    const basePatch = {
+      lastSeenAt: serverTimestamp(),
+      lastTopicId: courseId,
+      lastLevel: level || null,
+    };
+
+    if (!snap.exists()) {
+      await setDoc(userRef, {
+        email: auth.currentUser?.email || '',
+        admin: false,
+        access: false,
+        plan: 'free',
+        blocked: false,
+        createdAt: serverTimestamp(),
+        openedTopics: { [courseId]: true },
+        openedTopicsCount: 1,
+        ...basePatch,
+      }, { merge: true });
+      return;
+    }
+
+    if (already) {
+      await updateDoc(userRef, basePatch);
+      return;
+    }
+
+    await updateDoc(userRef, {
+      ...basePatch,
+      [`openedTopics.${courseId}`]: true,
+      openedTopicsCount: increment(1),
+    });
+  } catch (e) {
+    console.warn('trackTopicOpen failed', e);
+  }
+}
+
 import { auth, db } from '../firebase-init.js';
 import {
   onAuthStateChanged,
@@ -443,7 +490,9 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  sessionEmail.textContent = user.email || '(sin correo)';
+  
+  await trackTopicOpen(user.uid, COURSE_ID, LEVEL);
+sessionEmail.textContent = user.email || '(sin correo)';
   CURRENT_UID = user.uid || null;
   HAS_ACCESS = await computeHasAccess(CURRENT_UID);
 
