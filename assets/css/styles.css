@@ -601,3 +601,11 @@ a:hover{filter:brightness(1.05);}
 
 /* Micro-motion */
 .uiMotion .card:hover{transform:translateY(-2px);}
+
+/* =========================================
+   Promo / referral highlight card
+   ========================================= */
+.card--promo{
+  border: 1px solid rgba(255, 214, 0, 0.35);
+  background: linear-gradient(180deg, rgba(255, 214, 0, 0.18), rgba(255, 214, 0, 0.08));
+}

@@ -55,6 +55,20 @@ function safeText(v) {
   );
 }
 
+function tileAccentClass(topic){
+  const raw = String(topic?.tileStyle || topic?.tileClass || '').toLowerCase().trim();
+  if (!raw) return '';
+  if (raw === 'yellow' || raw === 'amarillo') return 'cardAccentYellow';
+  if (raw === 'blue' || raw === 'azul') return 'cardAccentBlue';
+  if (raw === 'red' || raw === 'rojo') return 'cardAccentRed';
+  if (raw === 'a1') return 'cardAccentBlue';
+  if (raw === 'a2') return 'cardAccentBlue';
+  if (raw === 'b1') return 'cardAccentRed';
+  if (raw === 'b2') return 'cardAccentYellow';
+  if (raw.startsWith('cardaccent')) return raw; // allow direct class
+  return '';
+}
+
 async function getLessonBadge(courseId) {
   try {
     const metaSnap = await getDoc(
@@ -90,6 +104,7 @@ async function getExercisesCount(courseId) {
 }
 
 function renderCard(topic, lessonBadge, exCount, hasLevelAccess) {
+  const accent = tileAccentClass(topic);
   const href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
 
   const exBadge =
@@ -108,7 +123,7 @@ function renderCard(topic, lessonBadge, exCount, hasLevelAccess) {
 
   return `
     <a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">
-      <div class="card" style="padding:16px; border-radius:24px;">
+      <div class="card ${accent}" style="padding:16px; border-radius:24px;">
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
           <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
             ${typeBadge}
@@ -157,6 +172,9 @@ async function loadTopics(user) {
 
   for (const d of snap.docs) {
     const topic = { id: d.id, ...(d.data() || {}) };
+
+    // Soft-delete / archive
+    if (topic.isArchived === true) continue;
 
     const [lessonBadge, exCount] = await Promise.all([
       getLessonBadge(topic.id),

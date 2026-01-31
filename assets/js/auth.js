@@ -234,6 +234,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+
+
+  // ✅ prevent form submit reload (mobile/Enter key issues)
+  // Some browsers submit the form on Enter, causing page reload before Firebase resolves.
+  const form = (loginBtn && loginBtn.closest('form')) || (emailInput && emailInput.closest('form')) || (passwordInput && passwordInput.closest('form'));
+  if (form && !form.dataset.noSubmitReload) {
+    form.dataset.noSubmitReload = '1';
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      doLogin();
+    });
+  }
+
+
   async function doLogin() {
     const email = (emailInput?.value || "").trim();
     const pass = (passwordInput?.value || "").trim();
@@ -315,6 +329,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") doLogin();
+    if (e.key !== "Enter") return;
+    const t = e.target;
+    const isInput = t && (t.tagName === 'INPUT' || t.tagName === 'BUTTON');
+    if (isInput) e.preventDefault();
+    doLogin();
   });
+
+  // prevent form submit reload
 });

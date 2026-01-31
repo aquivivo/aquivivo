@@ -18,16 +18,16 @@
 
     <main class="page">
       <div class="container">
-        <section class="heroBanner" style="padding: 22px 18px;">
-          <div style="display:flex; gap:14px; align-items:center;">
+        <section class="heroBanner heroBanner--course">
+          <div class="heroBanner__row">
             <div class="heroIcon">📚</div>
-            <div style="flex: 1;">
-              <h1 class="glow-text" style="margin:0; font-family:'Playfair Display',serif; font-weight:900; font-size: clamp(34px, 3.6vw, 52px); line-height:1.05;">
-                Programa
-              </h1>
-              <p class="subtitle" id="levelSubtitle" style="margin: 8px 0 0; font-weight:800;">Nivel</p>
 
-              <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="heroBanner__content">
+              <h1 class="glow-text heroTitle">Programa</h1>
+
+              <p class="subtitle levelSubtitle" id="levelSubtitle">Nivel</p>
+
+              <div class="levelButtons">
                 <a class="btn-white-outline" href="espanel.html">🏠 Panel</a>
                 <a class="btn-white-outline" href="course.html?level=A1">A1</a>
                 <a class="btn-white-outline" href="course.html?level=A2">A2</a>
@@ -38,12 +38,15 @@
           </div>
         </section>
 
-        <div class="card" style="margin-bottom:14px; padding: 14px 16px;">
-          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
-            <div class="muted" style="font-weight:800;">
+        <div class="card card--info">
+          <div class="rowBetween">
+            <div class="mutedStrong">
               Elige un tema para abrir la lección. Los badges muestran: ✅ lección publicada · 🟡 borrador · 🧩 ejercicios.
             </div>
-            <a class="btn-yellow" href="admin-select.html?type=lesson" style="display:none;" id="adminQuickLesson">🛠️ Admin</a>
+
+            <a class="btn-yellow" href="admin-select.html?type=lesson" id="adminQuickLesson" style="display:none;">
+              🛠️ Admin
+            </a>
           </div>
         </div>
 
@@ -52,8 +55,5 @@
     </main>
 
     <script type="module" src="assets/js/pages/course-page.js"></script>
-
-  </body>
-</html>
   </body>
 </html>

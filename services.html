@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Servicios | AquiVivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/layout.js" type="module"></script>
+</head>
+
+<body data-page="services">
+  <div id="appHeader"></div>
+
+  <main class="page">
+    <div class="container">
+
+      <div class="heroBanner">
+        <div class="heroTitleRow">
+          <div class="heroIcon">✨</div>
+          <div>
+            <h1 class="glow-text" style="margin:0; font-size:44px;">Servicios</h1>
+            <p class="subtitle" style="margin:6px 0 0;">
+              Elige un plan, una consulta o un servicio adicional.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card--promo" style="margin-top:16px;">
+        <div class="rowBetween" style="gap:12px; flex-wrap:wrap;">
+          <div>
+            <div class="sectionTitle" style="margin-top:0;">🎫 Código promocional</div>
+            <div class="muted">Si tienes un cupón, aplícalo al momento de comprar (próximamente).</div>
+          </div>
+          <div class="pill pill-yellow">Próximamente</div>
+        </div>
+      </div>
+
+      <div class="panel-grid" style="margin-top:16px;">
+        <div class="card">
+          <div class="sectionTitle" style="margin-top:0;">📦 Planes</div>
+          <div id="plansList" class="list"></div>
+        </div>
+
+        <div class="card">
+          <div class="sectionTitle" style="margin-top:0;">🗓️ Consultas</div>
+          <div id="consultsList" class="list"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="sectionTitle" style="margin-top:0;">🧩 Otros servicios</div>
+        <div id="extrasList" class="list"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="rowBetween" style="gap:12px; flex-wrap:wrap;">
+          <div>
+            <div class="sectionTitle" style="margin-top:0;">🛒 ¿Cómo comprar?</div>
+            <div class="muted">Por ahora: reserva o compra manualmente (mensaje / transferencia). Pagos automáticos se añaden más adelante.</div>
+          </div>
+          <button id="btnContact" class="btn-yellow" type="button">Contactar</button>
+        </div>
+        <div id="contactStatus" class="hintSmall" style="margin-top:10px;"></div>
+      </div>
+
+    </div>
+  
+      <section class="card" id="contactCard" style="margin-top:16px;">
+        <div class="sectionTitle">📌 Contacto</div>
+        <div class="subtitle" style="margin-top:6px;">Escríbeme por el canal que prefieras.</div>
+
+        <div class="hr"></div>
+
+        <div class="list">
+          <div class="listItem">
+            <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <div class="pill">📧</div>
+                <div>
+                  <div style="font-weight:900;">Email</div>
+                  <div class="hintSmall">aquivivo.pl@gmail.com</div>
+                </div>
+              </div>
+              <button id="btnEmail" class="btn-white-outline" type="button">Escribir</button>
+            </div>
+          </div>
+
+          <div class="listItem">
+            <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <div class="pill">💬</div>
+                <div>
+                  <div style="font-weight:900;">WhatsApp</div>
+                  <div class="hintSmall">+48 669 69 71 51</div>
+                </div>
+              </div>
+              <button id="btnWhatsApp" class="btn-white-outline" type="button">Abrir</button>
+            </div>
+          </div>
+
+          <div class="listItem">
+            <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <div class="pill">📸</div>
+                <div>
+                  <div style="font-weight:900;">Instagram</div>
+                  <div class="hintSmall">@sacariooo</div>
+                </div>
+              </div>
+              <button id="btnInstagram" class="btn-white-outline" type="button">Ver perfil</button>
+            </div>
+          </div>
+
+          <div class="listItem">
+            <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <div class="pill">🎵</div>
+                <div>
+                  <div style="font-weight:900;">TikTok</div>
+                  <div class="hintSmall">@latip0l</div>
+                </div>
+              </div>
+              <button id="btnTikTok" class="btn-white-outline" type="button">Ver perfil</button>
+            </div>
+          </div>
+
+          <div class="listItem">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <div class="pill">📍</div>
+              <div>
+                <div style="font-weight:900;">Ubicación</div>
+                <div class="hintSmall">Poznań, Polonia</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hintSmall" style="margin-top:10px;" id="contactStatus"></div>
+      </section>
+
+</main>
+
+  <script type="module" src="assets/js/pages/services-page.js"></script>
+</body>
+</html>

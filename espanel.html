@@ -1,321 +1,690 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <title>Panel del estudiante | AquiVivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
-  <script src="assets/js/layout.js" type="module"></script>
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <title>Panel del estudiante | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <script src="assets/js/layout.js" type="module"></script>
+  </head>
 
-<body data-page="panel">
-  <div id="appHeader"></div>
+  <body data-page="panel">
+    <div id="appHeader"></div>
 
-  <main class="page">
-    <div class="container">
+    <main class="page">
+      <div class="container">
+        <div class="heroBanner">
+          <div class="heroTitleRow">
+            <div class="heroIcon">🎓</div>
+            <div>
+              <h1 class="glow-text" style="margin: 0; font-size: 44px">
+                Panel del estudiante
+              </h1>
+              <div class="muted" style="margin-top: 6px">
+                Tu acceso, progreso y cursos disponibles.
+              </div>
+            </div>
+          </div>
 
-      <div class="heroBanner">
-        <div class="heroTitleRow">
-          <div class="heroIcon">🎓</div>
-          <div>
-            <h1 class="glow-text" style="margin:0; font-size:44px;">Panel del estudiante</h1>
-            <div class="muted" style="margin-top:6px;">Tu acceso, progreso y cursos disponibles.</div>
+          <div
+            class="metaRow"
+            style="margin-top: 14px; flex-wrap: wrap; gap: 10px"
+          >
+            <span class="pill"
+              >👤 <b id="userEmail">...</b>
+              <span id="adminBadge" style="margin-left: 10px"
+                >(admin: —)</span
+              ></span
+            >
+
+            <!-- ✅ Access status pills (Krok 11) -->
+            <span id="accessPill" class="pill" style="display: none"></span>
+            <span id="planPill" class="pill" style="display: none"></span>
+            <span id="untilPill" class="pill" style="display: none"></span>
+
+            <span
+              id="adminLinkWrap"
+              class="metaRow"
+              style="margin-left: auto"
+            ></span>
           </div>
         </div>
 
-        <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
-          <span class="pill">👤 <b id="userEmail">...</b> <span id="adminBadge" style="margin-left:10px;">(admin: —)</span></span>
+        <div class="panelGrid">
+          <div class="featureGrid" style="margin-top: 16px">
+            <div class="card featureCard">
+              <div style="font-weight: 900; font-size: 20px">
+                🗣 Conversación Natural
+              </div>
+              <div class="muted" style="margin-top: 6px">
+                Habla como un nativo desde el primer día.
+              </div>
+            </div>
+            <div class="card featureCard blue">
+              <div style="font-weight: 900; font-size: 20px">
+                📚 Material Exclusivo
+              </div>
+              <div class="muted" style="margin-top: 6px">
+                Recursos creados para hispanohablantes.
+              </div>
+            </div>
+            <div class="card featureCard red">
+              <div style="font-weight: 900; font-size: 20px">
+                ⚡ Resultados Rápidos
+              </div>
+              <div class="muted" style="margin-top: 6px">
+                Progreso visible semana tras semana.
+              </div>
+            </div>
+          </div>
 
-          <!-- ✅ Access status pills (Krok 11) -->
-          <span id="accessPill" class="pill" style="display:none;"></span>
-          <span id="planPill" class="pill" style="display:none;"></span>
-          <span id="untilPill" class="pill" style="display:none;"></span>
+          <div class="card card--promo" id="referralCard">
+            <div class="sectionTitle" style="margin-top: 0">
+              🤝 Mi código de recomendación
+            </div>
+            <div class="muted">
+              Compártelo con tus amigos. Cuando lo usen, recibirás una
+              recompensa.
+            </div>
 
-          <span id="adminLinkWrap" class="metaRow" style="margin-left:auto;"></span>
+            <div
+              class="metaRow"
+              style="margin-top: 12px; gap: 10px; align-items: center"
+            >
+              <input
+                id="myRefCode"
+                class="input"
+                disabled
+                style="max-width: 240px; font-weight: 900"
+              />
+              <button
+                id="btnCopyMyRefCode"
+                class="btn-white-outline"
+                type="button"
+              >
+                📋 Copiar
+              </button>
+            </div>
+
+            <div id="myRefInfo" class="hintSmall" style="margin-top: 8px"></div>
+
+            <div class="hr"></div>
+
+            <div style="font-weight: 900">🎁 Tengo un código de un amigo</div>
+            <div class="muted">
+              Escribe el código para asociarlo a tu cuenta.
+            </div>
+            <div
+              class="metaRow"
+              style="
+                margin-top: 10px;
+                gap: 10px;
+                align-items: center;
+                flex-wrap: wrap;
+              "
+            >
+              <input
+                id="useRefCode"
+                class="input"
+                placeholder="ej. MAGDAL-8F3K"
+                style="max-width: 240px"
+              />
+              <button id="btnApplyRefCode" class="btn-yellow" type="button">
+                Aplicar
+              </button>
+              <span id="applyRefStatus" class="hintSmall"></span>
+            </div>
+
+            <div class="hr"></div>
+
+            <div style="font-weight: 900">
+              📈 Estadísticas de recomendaciones
+            </div>
+            <div
+              class="metaRow"
+              style="margin-top: 10px; gap: 10px; flex-wrap: wrap"
+            >
+              <span class="pill" id="refStatInvites"
+                >👥 Recomendaciones: 0</span
+              >
+              <span class="pill pill-yellow" id="refStatRewards"
+                >🎫 Recompensas: 0</span
+              >
+            </div>
+            <div
+              id="refRewardsList"
+              class="muted"
+              style="margin-top: 10px"
+            ></div>
+            <div
+              id="refRewardsActions"
+              class="muted"
+              style="margin-top: 10px"
+            ></div>
+          </div>
+
+          <div class="card">
+            <div class="sectionTitle" style="margin-top: 0">📚 Cursos</div>
+            <div class="muted">Selecciona un nivel para empezar.</div>
+            <div
+              id="coursesCards"
+              class="coursesGrid"
+              style="margin-top: 12px"
+            ></div>
+          </div>
+
+          <div class="card" id="plansCard">
+            <div class="sectionTitle" style="margin-top: 0">💎 Planes</div>
+            <div class="muted" id="plansSubtitle">
+              Elige un paquete. Las consultas son un add‑on (no desbloquean
+              lecciones).
+            </div>
+
+            <div
+              id="plansGrid"
+              class="coursesGrid"
+              style="
+                margin-top: 12px;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+              "
+            >
+              <!-- A1-A2 -->
+              <div
+                class="courseCard"
+                data-plan="pack_a1a2"
+                data-levels="A1,A2"
+                style="cursor: default"
+              >
+                <div class="courseTop">
+                  <div class="courseBadge">📘 NIVEL A1–A2</div>
+                  <div class="pill pill-yellow" id="pillPlanA1A2">Oferta</div>
+                </div>
+                <div class="courseTitle" style="margin-top: 10px">
+                  Fundamentos
+                </div>
+                <div class="muted" style="margin-top: 6px">
+                  Vida cotidiana en Polonia.
+                </div>
+                <div
+                  style="margin-top: 14px; font-weight: 900; font-size: 22px"
+                >
+                  180 zł / 3 meses
+                </div>
+                <div
+                  style="
+                    margin-top: 14px;
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <button
+                    class="btn-yellow"
+                    type="button"
+                    data-act="scrollPromo"
+                  >
+                    Activar con código
+                  </button>
+                </div>
+              </div>
+
+              <!-- B1 -->
+              <div
+                class="courseCard"
+                data-plan="b1"
+                data-levels="B1"
+                style="cursor: default"
+              >
+                <div class="courseTop">
+                  <div class="courseBadge">🚀 NIVEL B1</div>
+                  <div class="pill" id="pillPlanB1">Especial</div>
+                </div>
+                <div class="courseTitle" style="margin-top: 10px">
+                  Vida independiente
+                </div>
+                <div class="muted" style="margin-top: 6px">
+                  Trabajo, oficina y vida social.
+                </div>
+                <div
+                  style="margin-top: 14px; font-weight: 900; font-size: 22px"
+                >
+                  250 zł / 3 meses
+                </div>
+                <div
+                  style="
+                    margin-top: 14px;
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <button
+                    class="btn-yellow"
+                    type="button"
+                    data-act="scrollPromo"
+                  >
+                    Activar con código
+                  </button>
+                </div>
+              </div>
+
+              <!-- B2 -->
+              <div
+                class="courseCard"
+                data-plan="b2"
+                data-levels="B2"
+                style="cursor: default"
+              >
+                <div class="courseTop">
+                  <div class="courseBadge">👑 NIVEL B2</div>
+                  <div class="pill pill-blue" id="pillPlanB2">Pro</div>
+                </div>
+                <div class="courseTitle" style="margin-top: 10px">
+                  Integración total
+                </div>
+                <div class="muted" style="margin-top: 6px">
+                  Comunicación profesional y formal.
+                </div>
+                <div
+                  style="margin-top: 14px; font-weight: 900; font-size: 22px"
+                >
+                  350 zł / 3 meses
+                </div>
+                <div
+                  style="
+                    margin-top: 14px;
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <button
+                    class="btn-yellow"
+                    type="button"
+                    data-act="scrollPromo"
+                  >
+                    Activar con código
+                  </button>
+                </div>
+              </div>
+
+              <!-- Consultations add-on -->
+              <div
+                class="courseCard"
+                data-plan="consult_addon"
+                style="cursor: default; grid-column: 1 / -1"
+              >
+                <div class="courseTop">
+                  <div class="courseBadge">💬 Consultas (add‑on)</div>
+                  <div class="pill" id="pillConsult">Add‑on</div>
+                </div>
+                <div class="courseTitle" style="margin-top: 10px">
+                  Paquete de consultas
+                </div>
+                <div class="muted" style="margin-top: 6px" id="consultSubtitle">
+                  Extra: sesiones 1:1 (no desbloquea lecciones).
+                </div>
+
+                <div
+                  class="metaRow"
+                  style="margin-top: 14px; gap: 10px; flex-wrap: wrap"
+                >
+                  <div class="pill pill-yellow" id="consultIncluded">
+                    Incluidas: 0
+                  </div>
+                  <div class="pill" id="consultLeft">Restantes: 0</div>
+                </div>
+
+                <div
+                  style="
+                    margin-top: 14px;
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <a
+                    class="btn-white-outline"
+                    id="btnConsultCTA"
+                    href="#"
+                    target="_blank"
+                    rel="noopener"
+                    >Reservar consulta</a
+                  >
+                  <button
+                    class="btn-white-outline"
+                    type="button"
+                    data-act="scrollPromo"
+                  >
+                    Aplicar código
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="plansStatus"
+              class="hintSmall"
+              style="margin-top: 12px; display: none"
+            ></div>
+          </div>
+
+          <div class="card" id="lastActivityCard">
+            <div class="sectionTitle" style="margin-top: 0">
+              🕒 Última actividad
+            </div>
+            <div class="muted" id="lastActivityWhen">—</div>
+            <div
+              style="margin-top: 10px; font-weight: 900"
+              id="lastActivityTitle"
+            >
+              —
+            </div>
+            <div style="margin-top: 12px">
+              <a id="lastActivityLink" class="btn-white-outline" href="#"
+                >Continuar</a
+              >
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="sectionTitle" style="margin-top: 0">
+              🏷️ Código promo
+            </div>
+            <div class="metaRow">
+              <input
+                id="adm_promo_code"
+                type="text"
+                placeholder="Código..."
+                style="max-width: 220px"
+              />
+              <button id="addPromoBtn" class="btn-white-outline" type="button">
+                Aplicar
+              </button>
+            </div>
+
+            <div
+              id="promoMsg"
+              class="hintSmall"
+              style="margin-top: 10px; display: none"
+            ></div>
+
+            <div style="margin-top: 12px">
+              <div style="font-weight: 900; margin-bottom: 6px">
+                Tus códigos
+              </div>
+              <div id="promoList" class="muted"></div>
+            </div>
+          </div>
         </div>
+
+        <!-- Settings modal (placeholder for panel-page.js) -->
+        <div id="adminModal" class="modalOverlay" aria-hidden="true">
+          <div class="modalCard">
+            <div class="modalHead">
+              <div class="modalTitle">Admin / Ajustes</div>
+              <button
+                id="closeSettingsBtn"
+                class="btn-white-outline"
+                type="button"
+              >
+                ✖
+              </button>
+            </div>
+            <div class="hr"></div>
+
+            <!-- host for extra buttons preview -->
+            <div id="extraButtonsHost" class="metaRow"></div>
+            <div
+              id="extraButtonsPreview"
+              class="muted"
+              style="margin-top: 10px"
+            ></div>
+
+            <div class="hr"></div>
+
+            <!-- Prices / promo config placeholders used by panel-page.js -->
+            <div class="panelGrid">
+              <div class="card">
+                <div class="sectionTitle" style="margin-top: 0">Precios</div>
+                <div class="metaRow">
+                  <input
+                    id="adm_price_A1A2"
+                    type="number"
+                    placeholder="A1/A2"
+                  />
+                  <input id="adm_price_B1" type="number" placeholder="B1" />
+                  <input id="adm_price_B2" type="number" placeholder="B2" />
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="sectionTitle" style="margin-top: 0">
+                  Promo (admin)
+                </div>
+                <div class="muted" style="margin-top: 6px">
+                  Crea códigos en la colección <b>promo_codes</b>. (Se gestiona
+                  desde Firestore.)
+                </div>
+                <div class="metaRow" style="margin-top: 10px">
+                  <input
+                    id="adm_promo_pct"
+                    type="number"
+                    placeholder="% descuento"
+                  />
+                  <input id="adm_promo_days" type="number" placeholder="días" />
+                  <button id="btnSavePromo" class="btn-yellow" type="button">
+                    Guardar
+                  </button>
+                </div>
+                <div class="hintSmall" style="margin-top: 8px">
+                  Nota: en este paso “Guardar” solo es placeholder (para
+                  mantener compatibilidad). Los códigos reales se aplican desde
+                  <b>promo_codes</b>.
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="metaRow"
+              style="margin-top: 12px; justify-content: flex-end"
+            >
+              <button id="userClose" class="btn-white-outline" type="button">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta modal placeholders -->
+        <div id="metaModal" class="modalOverlay" aria-hidden="true">
+          <div class="modalCard">
+            <div class="modalHead">
+              <div class="modalTitle">Editar meta del curso</div>
+              <button id="metaClose" class="btn-white-outline" type="button">
+                ✖
+              </button>
+            </div>
+            <div class="hr"></div>
+
+            <div class="panelGrid">
+              <div class="card">
+                <div class="sectionTitle" style="margin-top: 0">Nivel</div>
+                <div id="metaLevel" class="muted">—</div>
+                <div style="margin-top: 12px">
+                  <label class="muted" style="font-weight: 900">Title</label>
+                  <input id="metaTitle" type="text" />
+                </div>
+                <div style="margin-top: 10px">
+                  <label class="muted" style="font-weight: 900">Subtitle</label>
+                  <input id="metaSubtitle" type="text" />
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="sectionTitle" style="margin-top: 0">
+                  Botón / Tile
+                </div>
+                <div class="metaRow">
+                  <input
+                    id="metaPrimaryLabel"
+                    type="text"
+                    placeholder="Primary label"
+                  />
+                  <input
+                    id="metaPrimaryHref"
+                    type="text"
+                    placeholder="Primary href"
+                  />
+                </div>
+                <div class="metaRow" style="margin-top: 10px">
+                  <input id="metaBtnText" type="text" placeholder="Btn text" />
+                  <input id="metaBtnBg" type="text" placeholder="Btn bg" />
+                </div>
+                <div class="metaRow" style="margin-top: 10px">
+                  <input
+                    id="metaTileText"
+                    type="text"
+                    placeholder="Tile text"
+                  />
+                  <input id="metaTileBg" type="text" placeholder="Tile bg" />
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="metaRow"
+              style="margin-top: 12px; justify-content: flex-end"
+            >
+              <button id="metaSave" class="btn-yellow" type="button">
+                Guardar
+              </button>
+              <button id="metaCancel" class="btn-white-outline" type="button">
+                Cancelar
+              </button>
+              <span
+                id="metaDeleteWrap"
+                style="margin-left: auto; display: none"
+              >
+                <button id="metaDelete" class="btn-red" type="button">
+                  Eliminar
+                </button>
+                <button id="metaDeleteWithData" class="btn-red" type="button">
+                  Eliminar con datos
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add course modal placeholders -->
+        <div id="addCourseModal" class="modalOverlay" aria-hidden="true">
+          <div class="modalCard">
+            <div class="modalHead">
+              <div class="modalTitle">Nuevo curso</div>
+              <button
+                id="addCourseClose"
+                class="btn-white-outline"
+                type="button"
+              >
+                ✖
+              </button>
+            </div>
+            <div class="hr"></div>
+
+            <div class="panelGrid">
+              <div class="card">
+                <div class="sectionTitle" style="margin-top: 0">Nivel</div>
+                <select id="newCourseLevel">
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="B1">B1</option>
+                  <option value="B2">B2</option>
+                </select>
+                <div style="margin-top: 10px">
+                  <label class="muted" style="font-weight: 900">Title</label>
+                  <input id="newCourseTitle" type="text" />
+                </div>
+                <div style="margin-top: 10px">
+                  <label class="muted" style="font-weight: 900">Subtitle</label>
+                  <input id="newCourseSubtitle" type="text" />
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="sectionTitle" style="margin-top: 0">
+                  Botón / Tile
+                </div>
+                <div class="metaRow">
+                  <input
+                    id="newCoursePrimaryLabel"
+                    type="text"
+                    placeholder="Primary label"
+                  />
+                  <input
+                    id="newCoursePrimaryHref"
+                    type="text"
+                    placeholder="Primary href"
+                  />
+                </div>
+                <div class="metaRow" style="margin-top: 10px">
+                  <input
+                    id="newCourseBtnText"
+                    type="text"
+                    placeholder="Btn text"
+                  />
+                  <input id="newCourseBtnBg" type="text" placeholder="Btn bg" />
+                </div>
+                <div class="metaRow" style="margin-top: 10px">
+                  <input
+                    id="newCourseTileText"
+                    type="text"
+                    placeholder="Tile text"
+                  />
+                  <input
+                    id="newCourseTileBg"
+                    type="text"
+                    placeholder="Tile bg"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="metaRow"
+              style="margin-top: 12px; justify-content: flex-end"
+            >
+              <button id="addCourseCreate" class="btn-yellow" type="button">
+                Crear
+              </button>
+              <button
+                id="addCourseCancel"
+                class="btn-white-outline"
+                type="button"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- legacy placeholders required by panel-page.js but not shown -->
+        <a id="adm_btn_href" style="display: none"></a>
+        <input id="adm_btn_text" style="display: none" />
+        <input id="adm_btn_style" style="display: none" />
+        <input id="addCourseBtn" style="display: none" />
+        <div id="metaDeleteWrap" style="display: none"></div>
+        <div id="metaDelete" style="display: none"></div>
+        <div id="metaDeleteWithData" style="display: none"></div>
+        <div id="metaSave" style="display: none"></div>
+        <div id="metaCancel" style="display: none"></div>
       </div>
+    </main>
 
-      <div class="panelGrid">
-        
-      <div class="featureGrid" style="margin-top:16px;">
-        <div class="card featureCard">
-          <div style="font-weight:900; font-size:20px;">🗣 Conversación Natural</div>
-          <div class="muted" style="margin-top:6px;">Habla como un nativo desde el primer día.</div>
-        </div>
-        <div class="card featureCard blue">
-          <div style="font-weight:900; font-size:20px;">📚 Material Exclusivo</div>
-          <div class="muted" style="margin-top:6px;">Recursos creados para hispanohablantes.</div>
-        </div>
-        <div class="card featureCard red">
-          <div style="font-weight:900; font-size:20px;">⚡ Resultados Rápidos</div>
-          <div class="muted" style="margin-top:6px;">Progreso visible semana tras semana.</div>
-        </div>
-      </div>
-
-<div class="card">
-          <div class="sectionTitle" style="margin-top:0;">📚 Cursos</div>
-          <div class="muted">Selecciona un nivel para empezar.</div>
-          <div id="coursesCards" class="coursesGrid" style="margin-top:12px;"></div>
-        </div>
-
-        
-        <div class="card" id="plansCard">
-          <div class="sectionTitle" style="margin-top:0;">💎 Planes</div>
-          <div class="muted" id="plansSubtitle">Elige un paquete. Las consultas son un add‑on (no desbloquean lecciones).</div>
-
-          <div id="plansGrid" class="coursesGrid" style="margin-top:12px; grid-template-columns: repeat(3, minmax(0,1fr));">
-            <!-- A1-A2 -->
-            <div class="courseCard" data-plan="pack_a1a2" data-levels="A1,A2" style="cursor:default;">
-              <div class="courseTop">
-                <div class="courseBadge">📘 NIVEL A1–A2</div>
-                <div class="pill pill-yellow" id="pillPlanA1A2">Oferta</div>
-              </div>
-              <div class="courseTitle" style="margin-top:10px;">Fundamentos</div>
-              <div class="muted" style="margin-top:6px;">Vida cotidiana en Polonia.</div>
-              <div style="margin-top:14px; font-weight:900; font-size:22px;">180 zł / 3 meses</div>
-              <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn-yellow" type="button" data-act="scrollPromo">Activar con código</button>
-              </div>
-            </div>
-
-            <!-- B1 -->
-            <div class="courseCard" data-plan="b1" data-levels="B1" style="cursor:default;">
-              <div class="courseTop">
-                <div class="courseBadge">🚀 NIVEL B1</div>
-                <div class="pill" id="pillPlanB1">Especial</div>
-              </div>
-              <div class="courseTitle" style="margin-top:10px;">Vida independiente</div>
-              <div class="muted" style="margin-top:6px;">Trabajo, oficina y vida social.</div>
-              <div style="margin-top:14px; font-weight:900; font-size:22px;">250 zł / 3 meses</div>
-              <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn-yellow" type="button" data-act="scrollPromo">Activar con código</button>
-              </div>
-            </div>
-
-            <!-- B2 -->
-            <div class="courseCard" data-plan="b2" data-levels="B2" style="cursor:default;">
-              <div class="courseTop">
-                <div class="courseBadge">👑 NIVEL B2</div>
-                <div class="pill pill-blue" id="pillPlanB2">Pro</div>
-              </div>
-              <div class="courseTitle" style="margin-top:10px;">Integración total</div>
-              <div class="muted" style="margin-top:6px;">Comunicación profesional y formal.</div>
-              <div style="margin-top:14px; font-weight:900; font-size:22px;">350 zł / 3 meses</div>
-              <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn-yellow" type="button" data-act="scrollPromo">Activar con código</button>
-              </div>
-            </div>
-
-            <!-- Consultations add-on -->
-            <div class="courseCard" data-plan="consult_addon" style="cursor:default; grid-column: 1 / -1;">
-              <div class="courseTop">
-                <div class="courseBadge">💬 Consultas (add‑on)</div>
-                <div class="pill" id="pillConsult">Add‑on</div>
-              </div>
-              <div class="courseTitle" style="margin-top:10px;">Paquete de consultas</div>
-              <div class="muted" style="margin-top:6px;" id="consultSubtitle">Extra: sesiones 1:1 (no desbloquea lecciones).</div>
-
-              <div class="metaRow" style="margin-top:14px; gap:10px; flex-wrap:wrap;">
-                <div class="pill pill-yellow" id="consultIncluded">Incluidas: 0</div>
-                <div class="pill" id="consultLeft">Restantes: 0</div>
-              </div>
-
-              <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-                <a class="btn-white-outline" id="btnConsultCTA" href="#" target="_blank" rel="noopener">Reservar consulta</a>
-                <button class="btn-white-outline" type="button" data-act="scrollPromo">Aplicar código</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="plansStatus" class="hintSmall" style="margin-top:12px; display:none;"></div>
-        </div>
-
-<div class="card" id="lastActivityCard">
-          <div class="sectionTitle" style="margin-top:0;">🕒 Última actividad</div>
-          <div class="muted" id="lastActivityWhen">—</div>
-          <div style="margin-top:10px; font-weight:900;" id="lastActivityTitle">—</div>
-          <div style="margin-top:12px;">
-            <a id="lastActivityLink" class="btn-white-outline" href="#">Continuar</a>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="sectionTitle" style="margin-top:0;">🏷️ Código promo</div>
-          <div class="metaRow">
-            <input id="adm_promo_code" type="text" placeholder="Código..." style="max-width: 220px;">
-            <button id="addPromoBtn" class="btn-white-outline" type="button">Aplicar</button>
-          </div>
-
-          <div id="promoMsg" class="hintSmall" style="margin-top:10px; display:none;"></div>
-
-          <div style="margin-top:12px;">
-            <div style="font-weight:900; margin-bottom:6px;">Tus códigos</div>
-            <div id="promoList" class="muted"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Settings modal (placeholder for panel-page.js) -->
-      <div id="adminModal" class="modalOverlay" aria-hidden="true">
-        <div class="modalCard">
-          <div class="modalHead">
-            <div class="modalTitle">Admin / Ajustes</div>
-            <button id="closeSettingsBtn" class="btn-white-outline" type="button">✖</button>
-          </div>
-          <div class="hr"></div>
-
-          <!-- host for extra buttons preview -->
-          <div id="extraButtonsHost" class="metaRow"></div>
-          <div id="extraButtonsPreview" class="muted" style="margin-top:10px;"></div>
-
-          <div class="hr"></div>
-
-          <!-- Prices / promo config placeholders used by panel-page.js -->
-          <div class="panelGrid">
-            <div class="card">
-              <div class="sectionTitle" style="margin-top:0;">Precios</div>
-              <div class="metaRow">
-                <input id="adm_price_A1A2" type="number" placeholder="A1/A2" />
-                <input id="adm_price_B1" type="number" placeholder="B1" />
-                <input id="adm_price_B2" type="number" placeholder="B2" />
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="sectionTitle" style="margin-top:0;">Promo (admin)</div>
-              <div class="muted" style="margin-top:6px;">Crea códigos en la colección <b>promo_codes</b>. (Se gestiona desde Firestore.)</div>
-              <div class="metaRow" style="margin-top:10px;">
-                <input id="adm_promo_pct" type="number" placeholder="% descuento" />
-                <input id="adm_promo_days" type="number" placeholder="días" />
-                <button id="btnSavePromo" class="btn-yellow" type="button">Guardar</button>
-              </div>
-              <div class="hintSmall" style="margin-top:8px;">Nota: en este paso “Guardar” solo es placeholder (para mantener compatibilidad). Los códigos reales se aplican desde <b>promo_codes</b>.</div>
-            </div>
-          </div>
-
-          <div class="metaRow" style="margin-top:12px; justify-content:flex-end;">
-            <button id="userClose" class="btn-white-outline" type="button">Cerrar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Meta modal placeholders -->
-      <div id="metaModal" class="modalOverlay" aria-hidden="true">
-        <div class="modalCard">
-          <div class="modalHead">
-            <div class="modalTitle">Editar meta del curso</div>
-            <button id="metaClose" class="btn-white-outline" type="button">✖</button>
-          </div>
-          <div class="hr"></div>
-
-          <div class="panelGrid">
-            <div class="card">
-              <div class="sectionTitle" style="margin-top:0;">Nivel</div>
-              <div id="metaLevel" class="muted">—</div>
-              <div style="margin-top:12px;">
-                <label class="muted" style="font-weight:900;">Title</label>
-                <input id="metaTitle" type="text" />
-              </div>
-              <div style="margin-top:10px;">
-                <label class="muted" style="font-weight:900;">Subtitle</label>
-                <input id="metaSubtitle" type="text" />
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="sectionTitle" style="margin-top:0;">Botón / Tile</div>
-              <div class="metaRow">
-                <input id="metaPrimaryLabel" type="text" placeholder="Primary label" />
-                <input id="metaPrimaryHref" type="text" placeholder="Primary href" />
-              </div>
-              <div class="metaRow" style="margin-top:10px;">
-                <input id="metaBtnText" type="text" placeholder="Btn text" />
-                <input id="metaBtnBg" type="text" placeholder="Btn bg" />
-              </div>
-              <div class="metaRow" style="margin-top:10px;">
-                <input id="metaTileText" type="text" placeholder="Tile text" />
-                <input id="metaTileBg" type="text" placeholder="Tile bg" />
-              </div>
-            </div>
-          </div>
-
-          <div class="metaRow" style="margin-top:12px; justify-content:flex-end;">
-            <button id="metaSave" class="btn-yellow" type="button">Guardar</button>
-            <button id="metaCancel" class="btn-white-outline" type="button">Cancelar</button>
-            <span id="metaDeleteWrap" style="margin-left:auto; display:none;">
-              <button id="metaDelete" class="btn-red" type="button">Eliminar</button>
-              <button id="metaDeleteWithData" class="btn-red" type="button">Eliminar con datos</button>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Add course modal placeholders -->
-      <div id="addCourseModal" class="modalOverlay" aria-hidden="true">
-        <div class="modalCard">
-          <div class="modalHead">
-            <div class="modalTitle">Nuevo curso</div>
-            <button id="addCourseClose" class="btn-white-outline" type="button">✖</button>
-          </div>
-          <div class="hr"></div>
-
-          <div class="panelGrid">
-            <div class="card">
-              <div class="sectionTitle" style="margin-top:0;">Nivel</div>
-              <select id="newCourseLevel">
-                <option value="A1">A1</option>
-                <option value="A2">A2</option>
-                <option value="B1">B1</option>
-                <option value="B2">B2</option>
-              </select>
-              <div style="margin-top:10px;">
-                <label class="muted" style="font-weight:900;">Title</label>
-                <input id="newCourseTitle" type="text" />
-              </div>
-              <div style="margin-top:10px;">
-                <label class="muted" style="font-weight:900;">Subtitle</label>
-                <input id="newCourseSubtitle" type="text" />
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="sectionTitle" style="margin-top:0;">Botón / Tile</div>
-              <div class="metaRow">
-                <input id="newCoursePrimaryLabel" type="text" placeholder="Primary label" />
-                <input id="newCoursePrimaryHref" type="text" placeholder="Primary href" />
-              </div>
-              <div class="metaRow" style="margin-top:10px;">
-                <input id="newCourseBtnText" type="text" placeholder="Btn text" />
-                <input id="newCourseBtnBg" type="text" placeholder="Btn bg" />
-              </div>
-              <div class="metaRow" style="margin-top:10px;">
-                <input id="newCourseTileText" type="text" placeholder="Tile text" />
-                <input id="newCourseTileBg" type="text" placeholder="Tile bg" />
-              </div>
-            </div>
-          </div>
-
-          <div class="metaRow" style="margin-top:12px; justify-content:flex-end;">
-            <button id="addCourseCreate" class="btn-yellow" type="button">Crear</button>
-            <button id="addCourseCancel" class="btn-white-outline" type="button">Cancelar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- legacy placeholders required by panel-page.js but not shown -->
-      <a id="adm_btn_href" style="display:none;"></a>
-      <input id="adm_btn_text" style="display:none;">
-      <input id="adm_btn_style" style="display:none;">
-      <input id="addCourseBtn" style="display:none;">
-      <div id="metaDeleteWrap" style="display:none;"></div>
-      <div id="metaDelete" style="display:none;"></div>
-      <div id="metaDeleteWithData" style="display:none;"></div>
-      <div id="metaSave" style="display:none;"></div>
-      <div id="metaCancel" style="display:none;"></div>
-    </div>
-  </main>
-
-  <script type="module" src="assets/js/pages/panel-page.js"></script>
-</body>
+    <script type="module" src="assets/js/pages/panel-page.js"></script>
+  </body>
 </html>
