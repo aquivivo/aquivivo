@@ -61,6 +61,13 @@
             <div class="hintSmall">users donde blocked == true</div>
             <div id="statBlockedDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
           </div>
+          <div class="card statCard" data-expand="oneTopic" data-details="statOneTopicDetails">
+            <div class="muted" style="font-weight:900;">🎯 1 tema abierto</div>
+            <div id="statOneTopic" style="font-size:34px; font-weight:900; margin-top:6px;">—</div>
+            <div class="hintSmall">users donde openedTopicsCount == 1</div>
+            <div id="statOneTopicDetails" class="statDetails" style="display:none; margin-top:12px;"></div>
+          </div>
+
 
           <div class="card statCard" data-expand="courses" data-details="statCoursesDetails">
             <div class="muted" style="font-weight:900;">📚 Temas</div>
@@ -92,10 +99,14 @@
         <p class="subtitle">Listas rápidas: expirando pronto, premium activo, sin acceso (aprox.). Puedes exportar CSV.</p>
 
         <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+          <button id="btnLoadExp0" class="btn-white-outline" type="button">⏳ Expira hoy</button>
+          <button id="btnLoadExp3" class="btn-white-outline" type="button">⏳ Expira en 3 días</button>
           <button id="btnLoadExp7" class="btn-white-outline" type="button">⏳ Expiran en 7 días</button>
           <button id="btnLoadExp14" class="btn-white-outline" type="button">⏳ Expiran en 14 días</button>
           <button id="btnLoadPremiumActive" class="btn-white-outline" type="button">💎 Premium activo (accessUntil)</button>
           <button id="btnLoadFreeUsers" class="btn-white-outline" type="button">🔒 Sin acceso (aprox.)</button>
+          <button id="btnLoadOneTopic" class="btn-white-outline" type="button">🎯 Solo 1 tema</button>
+          <button id="btnLoadOneTopicInactive" class="btn-white-outline" type="button">🚶 1 tema · inactivo 7 días</button>
           <button id="btnExportSegment" class="btn-yellow" type="button">⬇️ Exportar CSV</button>
 
           <span id="segmentStatus" class="hintSmall" style="margin-left:auto;"></span>

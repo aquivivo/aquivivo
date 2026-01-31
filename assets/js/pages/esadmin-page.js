@@ -19,6 +19,7 @@ import {
   getCountFromServer,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
+console.log('✅ esadmin-page.js loaded: full-expand-v1');
 const $ = (id) => document.getElementById(id);
 
 /* ----------------------- Guard: admin only ----------------------- */
@@ -779,6 +780,7 @@ const statAccessTrue = $('statAccessTrue');
 const statBlocked = $('statBlocked');
 const statCourses = $('statCourses');
 const statExercises = $('statExercises');
+const statOneTopic = $('statOneTopic');
 
 function setStat(el, v) {
   if (!el) return;
@@ -800,12 +802,14 @@ async function loadStats() {
     const qPremium = query(usersCol, where('plan', '==', 'premium'));
     const qAccess = query(usersCol, where('access', '==', true));
     const qBlocked = query(usersCol, where('blocked', '==', true));
+    const qOneTopic = query(usersCol, where('openedTopicsCount', '==', 1));
 
-    const [cUsers, cPremium, cAccess, cBlocked, cCourses, cExercises] = await Promise.all([
+    const [cUsers, cPremium, cAccess, cBlocked, cOneTopic, cCourses, cExercises] = await Promise.all([
       countDocs(usersCol),
       countDocs(qPremium),
       countDocs(qAccess),
       countDocs(qBlocked),
+      countDocs(qOneTopic),
       countDocs(coursesCol),
       countDocs(exercisesCol),
     ]);
@@ -814,6 +818,7 @@ async function loadStats() {
     setStat(statPremiumPlan, cPremium);
     setStat(statAccessTrue, cAccess);
     setStat(statBlocked, cBlocked);
+    setStat(statOneTopic, cOneTopic);
     setStat(statCourses, cCourses);
     setStat(statExercises, cExercises);
 
@@ -827,12 +832,8 @@ async function loadStats() {
 btnRefreshStats?.addEventListener('click', loadStats);
 
 
-/* ----------------------- DASHBOARD: expandable tiles ----------------------- */
-function toggleDetailsBox(box, show) {
-  if (!box) return;
-  box.style.display = show ? 'block' : 'none';
-}
 
+/* ----------------------- DASHBOARD: expandable tiles ----------------------- */
 function renderDetails(box, rows) {
   if (!box) return;
   if (!rows || !rows.length) {
@@ -851,7 +852,6 @@ function renderDetails(box, rows) {
 }
 
 async function loadTileDetails(type) {
-  // returns array of {email/title, sub, right}
   if (type === 'users') {
     const q1 = query(collection(db,'users'), orderBy('createdAt','desc'), limit(20));
     const snap = await getDocs(q1);
@@ -867,7 +867,6 @@ async function loadTileDetails(type) {
     });
     return rows;
   }
-
   if (type === 'premium') {
     const q1 = query(collection(db,'users'), where('plan','==','premium'), limit(50));
     const snap = await getDocs(q1);
@@ -883,7 +882,6 @@ async function loadTileDetails(type) {
     });
     return rows;
   }
-
   if (type === 'access') {
     const q1 = query(collection(db,'users'), where('access','==', true), limit(50));
     const snap = await getDocs(q1);
@@ -899,7 +897,6 @@ async function loadTileDetails(type) {
     });
     return rows;
   }
-
   if (type === 'blocked') {
     const q1 = query(collection(db,'users'), where('blocked','==', true), limit(50));
     const snap = await getDocs(q1);
@@ -915,7 +912,6 @@ async function loadTileDetails(type) {
     });
     return rows;
   }
-
   if (type === 'oneTopic') {
     const q1 = query(collection(db,'users'), where('openedTopicsCount','==', 1), limit(50));
     const snap = await getDocs(q1);
@@ -931,7 +927,6 @@ async function loadTileDetails(type) {
     });
     return rows;
   }
-
   if (type === 'courses') {
     const q1 = query(collection(db,'courses'), orderBy('order','asc'), limit(20));
     const snap = await getDocs(q1);
@@ -946,7 +941,6 @@ async function loadTileDetails(type) {
     });
     return rows;
   }
-
   if (type === 'exercises') {
     const q1 = query(collection(db,'exercises'), orderBy('order','asc'), limit(20));
     const snap = await getDocs(q1);
@@ -961,7 +955,6 @@ async function loadTileDetails(type) {
     });
     return rows;
   }
-
   return [];
 }
 
@@ -972,24 +965,44 @@ function wireDashboardTiles() {
   tiles.forEach(tile => {
     tile.style.cursor = 'pointer';
     tile.title = 'Click para ver detalles';
-    tile.addEventListener('click', async (e) => {
-      // avoid triggering when user selects text
+    tile.addEventListener('click', async () => {
       const type = tile.getAttribute('data-expand');
       const detailsId = tile.getAttribute('data-details');
       const box = detailsId ? document.getElementById(detailsId) : null;
       if (!type || !box) return;
 
-      const isOpen = box.style.display !== 'none' && box.style.display !== '';
-      if (isOpen) {
-        toggleDetailsBox(box, false);
-        return;
+      const isOpen = box.style.display === 'block';
+      if (isOpen) { box.style.display = 'none'; return; }
+
+      box.style.display = 'block';
+      if (box.dataset.loaded === '1') return;
+
+      box.innerHTML = '<div class="hintSmall">Cargando…</div>';
+      try {
+        let rows = tileCache.get(type);
+        if (!rows) {
+          rows = await loadTileDetails(type);
+          tileCache.set(type, rows);
+        }
+        renderDetails(box, rows);
+        box.dataset.loaded = '1';
+      } catch (err) {
+        console.error(err);
+        box.innerHTML = '<div class="hintSmall">Error cargando detalles.</div>';
       }
+    });
+  });
+}
 
 /* ----------------------- SEGMENTACIÓN (lists + CSV) ----------------------- */
+const btnLoadExp0 = $('btnLoadExp0');
+const btnLoadExp3 = $('btnLoadExp3');
 const btnLoadExp7 = $('btnLoadExp7');
 const btnLoadExp14 = $('btnLoadExp14');
 const btnLoadPremiumActive = $('btnLoadPremiumActive');
 const btnLoadFreeUsers = $('btnLoadFreeUsers');
+const btnLoadOneTopic = $('btnLoadOneTopic');
+const btnLoadOneTopicInactive = $('btnLoadOneTopicInactive');
 const btnExportSegment = $('btnExportSegment');
 const segmentStatus = $('segmentStatus');
 const segmentList = $('segmentList');
@@ -1028,6 +1041,44 @@ function renderSegment(rows){
       </div>
     `;
   }).join('');
+}
+
+async function loadExpiringExact(days){
+  // exact window: now..now+days
+  setSegStatus('Cargando…');
+  if(segmentList) segmentList.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  CURRENT_SEGMENT_ROWS = [];
+  try{
+    const now = new Date();
+    const end = new Date(now.getTime() + days*24*60*60*1000);
+    const q1 = query(
+      collection(db,'users'),
+      where('accessUntil','>=', Timestamp.fromDate(now)),
+      where('accessUntil','<=', Timestamp.fromDate(end)),
+      orderBy('accessUntil','asc'),
+      limit(200),
+    );
+    const snap = await getDocs(q1);
+    const rows=[];
+    snap.forEach(d=>{
+      const u=d.data()||{};
+      rows.push({
+        uid:d.id,
+        email:(u.email||'').toLowerCase(),
+        access:u.access===true,
+        plan:String(u.plan||'free').toLowerCase(),
+        blocked:u.blocked===true,
+        accessUntil:u.accessUntil||null,
+      });
+    });
+    CURRENT_SEGMENT_ROWS = rows;
+    renderSegment(rows);
+    setSegStatus(`OK ✅ (${rows.length})`);
+  }catch(e){
+    console.error(e);
+    setSegStatus('Error cargando.', 'bad');
+    if(segmentList) segmentList.innerHTML = '<div class="hintSmall">Error.</div>';
+  }
 }
 
 async function loadExpiring(days){
@@ -1138,6 +1189,76 @@ async function loadFreeApprox(){
   }
 }
 
+
+async function loadOneTopic(){
+  setSegStatus('Cargando…');
+  if(segmentList) segmentList.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  CURRENT_SEGMENT_ROWS = [];
+  try{
+    const q1 = query(
+      collection(db,'users'),
+      where('openedTopicsCount','==', 1),
+      limit(200),
+    );
+    const snap = await getDocs(q1);
+    const rows=[];
+    snap.forEach(d=>{
+      const u=d.data()||{};
+      rows.push({
+        uid:d.id,
+        email:(u.email||'').toLowerCase(),
+        access:u.access===true,
+        plan:String(u.plan||'free').toLowerCase(),
+        blocked:u.blocked===true,
+        accessUntil:u.accessUntil||null,
+      });
+    });
+    const filtered = rows.filter(r=>!r.blocked);
+    CURRENT_SEGMENT_ROWS = filtered;
+    renderSegment(filtered);
+    setSegStatus(`OK ✅ (${filtered.length})`);
+  }catch(e){
+    console.error(e);
+    setSegStatus('Error cargando.', 'bad');
+    if(segmentList) segmentList.innerHTML = '<div class="hintSmall">Error.</div>';
+  }
+}
+
+async function loadOneTopicInactive(){
+  setSegStatus('Cargando…');
+  if(segmentList) segmentList.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  CURRENT_SEGMENT_ROWS = [];
+  try{
+    const sevenDaysAgo = new Date(Date.now() - 7*24*60*60*1000);
+    const q1 = query(
+      collection(db,'users'),
+      where('openedTopicsCount','==', 1),
+      where('lastSeenAt','<=', Timestamp.fromDate(sevenDaysAgo)),
+      limit(200),
+    );
+    const snap = await getDocs(q1);
+    const rows=[];
+    snap.forEach(d=>{
+      const u=d.data()||{};
+      rows.push({
+        uid:d.id,
+        email:(u.email||'').toLowerCase(),
+        access:u.access===true,
+        plan:String(u.plan||'free').toLowerCase(),
+        blocked:u.blocked===true,
+        accessUntil:u.accessUntil||null,
+      });
+    });
+    const filtered = rows.filter(r=>!r.blocked);
+    CURRENT_SEGMENT_ROWS = filtered;
+    renderSegment(filtered);
+    setSegStatus(`OK ✅ (${filtered.length})`);
+  }catch(e){
+    console.error(e);
+    setSegStatus('Error cargando.', 'bad');
+  }
+}
+
 function exportCSV(){
   if(!CURRENT_SEGMENT_ROWS.length){
     setSegStatus('No hay datos para exportar.', 'warn');
@@ -1169,10 +1290,14 @@ function exportCSV(){
   setSegStatus('CSV descargado ✅');
 }
 
+btnLoadExp0?.addEventListener('click', ()=>loadExpiringExact(0));
+btnLoadExp3?.addEventListener('click', ()=>loadExpiringExact(3));
 btnLoadExp7?.addEventListener('click', ()=>loadExpiring(7));
 btnLoadExp14?.addEventListener('click', ()=>loadExpiring(14));
 btnLoadPremiumActive?.addEventListener('click', loadPremiumActive);
 btnLoadFreeUsers?.addEventListener('click', loadFreeApprox);
+btnLoadOneTopic?.addEventListener('click', loadOneTopic);
+btnLoadOneTopicInactive?.addEventListener('click', loadOneTopicInactive);
 btnExportSegment?.addEventListener('click', exportCSV);
 
 // allow edit button
