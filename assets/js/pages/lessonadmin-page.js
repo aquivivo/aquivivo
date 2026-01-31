@@ -1,10 +1,19 @@
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
     import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 import { auth, db } from "../firebase-init.js";
-
-    const ADMIN_EMAILS = ["aquivivo.pl@gmail.com"];
-    const isAdmin = (email) => ADMIN_EMAILS.some(a => (a||"").toLowerCase() === (email||"").toLowerCase());
     const $ = (id) => document.getElementById(id);
+
+async function isAdminUid(uid) {
+  if (!uid) return false;
+  try {
+    const snap = await getDoc(doc(db, "users", uid));
+    const data = snap.exists() ? snap.data() : null;
+    return !!data?.admin;
+  } catch (e) {
+    console.error("lessonadmin: cannot read users doc", e);
+    return false;
+  }
+}
 
     const toast = $("toast");
     const btnBackCourse = $("btnBackCourse");
@@ -688,7 +697,7 @@ btnSave.addEventListener("click", async ()=>{
         location.href = "login.html";
         return;
       }
-      if(!isAdmin(user.email)){
+      if(!(await isAdminUid(user.uid))){
         adminOnly.style.display = "none";
         noAdmin.style.display = "block";
         return;
@@ -697,53 +706,3 @@ btnSave.addEventListener("click", async ()=>{
       noAdmin.style.display = "none";
       try{ await loadDoc(); }catch(e){ console.error(e); showToast("Error cargando doc.", "toast-bad"); }
     });
-  </script>
-
-  <!-- Right dock: add blocks + defaults -->
-  <div class="addDock" id="addDock">
-    <div class="addDockTitle">➕ Añadir bloque <span style="opacity:.75;">(siempre visible)</span></div>
-
-    <div class="dockGrid">
-      <button class="dockBtn" id="btnAddHeading" type="button">➕ Título</button>
-      <button class="dockBtn" id="btnAddText" type="button">➕ Texto</button>
-      <button class="dockBtn" id="btnAddImage" type="button">➕ Imagen</button>
-      <button class="dockBtn" id="btnAddTip" type="button">➕ Tip</button>
-      <button class="dockBtn" id="btnAddExample" type="button">➕ Ejemplo</button>
-      <button class="dockBtn" id="btnAddDivider" type="button">➕ Separador</button>
-    </div>
-
-    <div class="dockDivider"></div>
-    <div class="addDockTitle">🎨 Estilo por defecto</div>
-
-    <label style="font-weight:900; font-size:12px; opacity:.9;">Color de texto</label>
-    <select class="dockSelect" id="defaultTextColor">
-      <option value="muted">Blanco / por defecto</option>
-      <option value="yellow">Amarillo</option>
-      <option value="blue">Azul</option>
-      <option value="red">Rojo</option>
-    </select>
-
-    <label style="font-weight:900; font-size:12px; opacity:.9;">Tamaño de texto</label>
-    <select class="dockSelect" id="defaultTextSize">
-      <option value="xs">XS</option>
-      <option value="sm">S</option>
-      <option value="md" selected>M</option>
-      <option value="lg">L</option>
-      <option value="xl">XL</option>
-    </select>
-
-    <label style="font-weight:900; font-size:12px; opacity:.9;">Color del bloque</label>
-    <select class="dockSelect" id="defaultBlockBg">
-      <option value="none" selected>Sin fondo</option>
-      <option value="white">Blanco</option>
-      <option value="yellow">Amarillo</option>
-      <option value="blue">Azul</option>
-      <option value="red">Rojo</option>
-    </select>
-
-    <div style="font-size:12px; opacity:.8; line-height:1.35;">
-      Estos valores se aplican automáticamente a los nuevos bloques (Texto/Título/Imagen).
-    </div>
-  </div>
-
-  <script src="assets/js/layout.js">

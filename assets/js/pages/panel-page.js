@@ -22,20 +22,10 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-const ADMIN_EMAILS = [
-        'aquivivo.pl@gmail.com',
-        'DODAJ_DRUGI_EMAIL_TUTAJ@example.com',
-      ];
-
-      let IS_ADMIN = false;
+let IS_ADMIN = false;
       let META_CACHE = {};
       let ACCESS_CACHE = {};
       // <- wpisz tu drugi email (uczeń-test)
-
-      function isAdminEmail(email) {
-        const e = (email || '').toLowerCase();
-        return ADMIN_EMAILS.some((a) => (a || '').toLowerCase() === e);
-      }
       const userEmailEl = document.getElementById('userEmail');
       const coursesCardsEl = document.getElementById('coursesCards');
       const adminLinkWrap = document.getElementById('adminLinkWrap');
@@ -680,26 +670,57 @@ const ADMIN_EMAILS = [
         }
 
         userEmailEl.textContent = user.email || '(sin correo)';
-        const __isAdmin = isAdminEmail(user.email);
+
+        // Admin is determined ONLY by Firestore: users/{uid}.admin === true
+        const ref = doc(db, 'users', user.uid);
+        let snap = await getDoc(ref);
+        const wasMissing = !snap.exists();
+
+        // Ensure users/{uid} exists (safe merge; never overwrites admin:true)
+        if (wasMissing) {
+          await setDoc(
+            ref,
+            {
+              email: user.email || null,
+              admin: false,
+              access: true,
+              createdAt: serverTimestamp(),
+            },
+            { merge: true }
+          );
+          snap = await getDoc(ref);
+        } else {
+          const data = snap.data() || {};
+          const patch = {};
+          if (!('email' in data) && user.email) patch.email = user.email;
+          if (!('admin' in data)) patch.admin = false;
+          if (!('access' in data)) patch.access = true;
+          if (!('createdAt' in data)) patch.createdAt = serverTimestamp();
+          if (Object.keys(patch).length) {
+            await setDoc(ref, patch, { merge: true });
+            snap = await getDoc(ref);
+          }
+        }
+
+        const data = snap.exists() ? (snap.data() || {}) : {};
+        const __isAdmin = data.admin === true;
+
         IS_ADMIN = __isAdmin;
         window.__isAdmin = __isAdmin;
+
         const adminBadge = document.getElementById('adminBadge');
         if (adminBadge) {
           adminBadge.textContent = __isAdmin ? '(admin: SÍ)' : '(admin: NO)';
-          adminBadge.style.color = __isAdmin
-            ? '#FCD116'
-            : 'rgba(255,255,255,0.75)';
+          adminBadge.style.color = __isAdmin ? '#FCD116' : 'rgba(255,255,255,0.75)';
         }
 
         CURRENT_UID = user.uid;
 
-        // mostrar enlace al administrador (si es email de admin)
+        // mostrar enlace al administrador (si es admin)
         if (__isAdmin) {
           adminLinkWrap.classList.add('show');
         }
 
-        const ref = doc(db, 'users', user.uid);
-        let snap = await getDoc(ref);
 
         // si el usuario no existe en la colección users -> establecer A1 prueba = 7 días
         if (!snap.exists()) {
@@ -786,10 +807,6 @@ const ADMIN_EMAILS = [
           unlock_label: 'Desbloquear el curso'}};
 
       let siteSettings = structuredClone(DEFAULT_SETTINGS);
-
-      function isAdminUser(userEmail) {
-        return ADMIN_EMAILS.includes(userEmail);
-      }
 
       function applySettingsToUI() {
         // prices

@@ -1,5 +1,5 @@
 // assets/js/pages/course-page.js
-// Course topics list (requires auth + verified email + access for level)
+// Lista de temas del curso (requires auth + verified email; optional access gating)
 
 import { auth, db } from "../firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
@@ -21,22 +21,21 @@ const LEVEL = (params.get("level") || "A1").toUpperCase();
 const LS_VISITED_KEY = `aquivivo_visited_${LEVEL}`;
 const LS_LAST_KEY = `aquivivo_lastLesson_${LEVEL}`;
 
-// UI refs (must exist in course.html)
-const levelTitle = $("levelTitle");
-const levelSubtitle = $("levelSubtitle");
-const topicsGrid = $("topicsGrid");
-const searchInput = $("searchInput");
-const typeFilter = $("typeFilter");
-const taskFilter = $("taskFilter");
-const btnClearFilters = $("btnClearFilters");
+// UI (some are optional; code guards against missing nodes)
+const elLevelTitle = $("levelTitle");
+const elLevelSubtitle = $("levelSubtitle");
+const elTopicsGrid = $("topicsGrid");
+const elSearchInput = $("searchInput");
+const elTypeFilter = $("typeFilter");
+const elClearFilters = $("clearFilters"); // in HTML
+const elToast = $("toast");
 
 function toast(msg) {
-  const el = $("toast");
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add("show");
+  if (!elToast) return;
+  elToast.textContent = msg;
+  elToast.classList.add("show");
   clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+  window.__toastTimer = setTimeout(() => elToast.classList.remove("show"), 2200);
 }
 
 function getVisitedSet() {
@@ -47,7 +46,6 @@ function getVisitedSet() {
     return new Set();
   }
 }
-
 function setVisitedSet(set) {
   try {
     localStorage.setItem(LS_VISITED_KEY, JSON.stringify(Array.from(set)));
@@ -55,7 +53,7 @@ function setVisitedSet(set) {
 }
 
 function escapeHtml(s) {
-  return String(s || "")
+  return String(s ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -63,11 +61,12 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
-function hasActiveAccess(userData, level) {
+// Optional gating: if users/{uid}.access[LEVEL].freeUntil exists, it must be in the future
+function hasActiveAccessForLevel(userData, level) {
   const iso = userData?.access?.[level]?.freeUntil;
-  if (!iso) return false;
+  if (!iso) return true; // no config -> allow
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return false;
+  if (Number.isNaN(d.getTime())) return false;
   return d > new Date();
 }
 
@@ -75,10 +74,10 @@ async function loadCourseMeta() {
   try {
     const snap = await getDoc(doc(db, "course_meta", LEVEL));
     const data = snap.exists() ? snap.data() : {};
-    if (levelTitle) levelTitle.textContent = data?.title || `Nivel ${LEVEL}`;
-    if (levelSubtitle) levelSubtitle.textContent = data?.subtitle || "";
+    if (elLevelTitle) elLevelTitle.textContent = data?.title || `Nivel ${LEVEL}`;
+    if (elLevelSubtitle) elLevelSubtitle.textContent = data?.subtitle || "";
   } catch (e) {
-    console.error(e);
+    console.error("course-page: meta error", e);
   }
 }
 
@@ -92,10 +91,27 @@ function openLesson(topicId) {
 
 let allTopics = [];
 
+function setStats(total, showing) {
+  const totalEl = $("totalCount") || $("statTotal");
+  const showEl = $("showCount") || $("statShowing");
+  if (totalEl) totalEl.textContent = String(total);
+  if (showEl) showEl.textContent = String(showing);
+}
+
+function setProgress(visitedCount, total) {
+  const fill = $("progressFill");
+  const text = $("progressText");
+  const pct = total ? Math.round((visitedCount / total) * 100) : 0;
+
+  if (fill) fill.style.width = `${pct}%`;
+
+  // Keep original copy from your HTML
+  if (text) text.textContent = `${pct}% · ${visitedCount}/${total} temas visitados`;
+}
+
 function renderFiltered() {
-  const q = (searchInput?.value || "").toLowerCase().trim();
-  const t = (typeFilter?.value || "").toLowerCase().trim();
-  const task = (taskFilter?.value || "").toLowerCase().trim();
+  const q = (elSearchInput?.value || "").toLowerCase().trim();
+  const t = (elTypeFilter?.value || "").toLowerCase().trim();
 
   let list = allTopics.slice();
 
@@ -106,25 +122,22 @@ function renderFiltered() {
     });
   }
   if (t) list = list.filter((x) => (x.type || "").toLowerCase() === t);
-  if (task) {
-    list = list.filter((x) =>
-      Array.isArray(x.tasks)
-        ? x.tasks.map((z) => String(z).toLowerCase()).includes(task)
-        : String(x.task || "").toLowerCase() === task
-    );
-  }
 
   const visited = getVisitedSet();
-  if (topicsGrid) {
-    topicsGrid.innerHTML = "";
+
+  if (elTopicsGrid) {
+    elTopicsGrid.innerHTML = "";
     list.forEach((x, idx) => {
       const isVisited = visited.has(x.id);
+
       const card = document.createElement("button");
       card.type = "button";
       card.className = "topicCard card";
+
+      const typeLabel = x.type === "gramatica" ? "Gramática" : x.type === "vocabulario" ? "Vocabulario" : (x.type || "Tema");
       card.innerHTML = `
         <div class="metaRow" style="justify-content:space-between;">
-          <span class="pill pill-blue">${escapeHtml(x.typeLabel || x.type || "Tema")}</span>
+          <span class="pill pill-blue">${escapeHtml(typeLabel)}</span>
           <span class="pill pill-yellow">#${escapeHtml(String(x.order ?? idx + 1))}</span>
         </div>
         <div class="sectionTitle" style="margin:10px 0 6px; text-align:left;">
@@ -135,100 +148,91 @@ function renderFiltered() {
         </div>
         ${isVisited ? `<div class="pill" style="margin-top:10px;">✅ Visitado</div>` : ``}
       `;
+
       card.addEventListener("click", () => {
         const set = getVisitedSet();
         set.add(x.id);
         setVisitedSet(set);
         openLesson(x.id);
       });
-      topicsGrid.appendChild(card);
+
+      elTopicsGrid.appendChild(card);
     });
   }
 
-  // stats
-  $("statTotal") && ($("statTotal").textContent = String(allTopics.length));
-  $("statShowing") && ($("statShowing").textContent = String(list.length));
+  setStats(allTopics.length, list.length);
 
-  // progress
   const visitedCount = Array.from(visited).filter((id) => allTopics.some((t) => t.id === id)).length;
-  const total = allTopics.length;
-  const pct = total ? Math.round((visitedCount / total) * 100) : 0;
-  $("progressText") && ($("progressText").textContent = `${pct}%`);
-  $("progressCount") && ($("progressCount").textContent = `${visitedCount}/${total}`);
-  $("progressFill") && ($("progressFill").style.width = `${pct}%`);
-
-  // continue
-  const last = localStorage.getItem(LS_LAST_KEY);
-  const btn = $("btnContinue");
-  if (btn && last && allTopics.some((t) => t.id === last)) {
-    btn.style.display = "inline-flex";
-    btn.onclick = () => openLesson(last);
-  } else if (btn) {
-    btn.style.display = "none";
-  }
+  setProgress(visitedCount, allTopics.length);
 }
 
 async function loadTopics() {
-  // courses where level == LEVEL orderBy order
-  const q = query(
-    collection(db, "courses"),
-    where("level", "==", LEVEL),
-    orderBy("order", "asc")
-  );
-  const snap = await getDocs(q);
-  allTopics = snap.docs.map((d) => {
-    const data = d.data() || {};
-    return {
-      id: d.id,
-      title: data.title || data.name || "",
-      desc: data.desc || data.description || "",
-      type: data.type || data.category || "gramatica",
-      typeLabel: data.typeLabel || (String(data.type || "Gramática").slice(0, 1).toUpperCase() + String(data.type || "gramática").slice(1)),
-      tasks: data.tasks || [],
-      order: data.order ?? 0,
-    };
-  });
+  try {
+    const qy = query(
+      collection(db, "courses"),
+      where("level", "==", LEVEL),
+      orderBy("order", "asc")
+    );
+    const snap = await getDocs(qy);
 
-  // fill filters
-  if (typeFilter) {
-    const types = Array.from(new Set(allTopics.map((t) => (t.type || "").toLowerCase()).filter(Boolean)));
-    typeFilter.innerHTML = `<option value="">Todos</option>` + types.map((x) => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+    allTopics = snap.docs.map((d) => {
+      const data = d.data() || {};
+      return {
+        id: d.id,
+        title: data.title || "",
+        desc: data.desc || data.subtitle || "",
+        type: data.type || "",
+        order: data.order,
+      };
+    });
+
+    renderFiltered();
+  } catch (e) {
+    console.error("course-page: load topics error", e);
+    toast("❌ Error cargando temas.");
   }
-  renderFiltered();
 }
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) return; // layout.js will redirect
+function bindUI() {
+  if (elSearchInput) elSearchInput.addEventListener("input", renderFiltered);
+  if (elTypeFilter) elTypeFilter.addEventListener("change", renderFiltered);
 
-  // access control via users/{uid}
-  try {
-    const uSnap = await getDoc(doc(db, "users", user.uid));
-    const uData = uSnap.exists() ? uSnap.data() : null;
-
-    if (!uData || !hasActiveAccess(uData, LEVEL)) {
-      // no access → send to panel
-      toast("🔒 No tienes acceso a este nivel.");
-      setTimeout(() => (window.location.href = "espanel.html"), 600);
-      return;
-    }
-  } catch (e) {
-    console.error(e);
-    toast("No se pudo verificar el acceso. Revisa consola.");
-    return;
+  if (elClearFilters) {
+    elClearFilters.addEventListener("click", () => {
+      if (elSearchInput) elSearchInput.value = "";
+      if (elTypeFilter) elTypeFilter.value = "";
+      renderFiltered();
+    });
   }
+}
 
-  await loadCourseMeta();
-  await loadTopics();
-});
+function boot() {
+  bindUI();
 
-// UI events
-searchInput?.addEventListener("input", renderFiltered);
-typeFilter?.addEventListener("change", renderFiltered);
-taskFilter?.addEventListener("change", renderFiltered);
-btnClearFilters?.addEventListener("click", () => {
-  if (searchInput) searchInput.value = "";
-  if (typeFilter) typeFilter.value = "";
-  if (taskFilter) taskFilter.value = "";
-  renderFiltered();
-  toast("🧼 Filtros limpiados");
-});
+  onAuthStateChanged(auth, async (user) => {
+    // layout.js already guards auth + emailVerified, but we keep a safe fallback
+    if (!user) return;
+
+    try {
+      const uSnap = await getDoc(doc(db, "users", user.uid));
+      const uData = uSnap.exists() ? uSnap.data() : null;
+
+      if (!hasActiveAccessForLevel(uData, LEVEL)) {
+        toast("🔒 No tienes acceso a este nivel.");
+        setTimeout(() => (window.location.href = "espanel.html"), 700);
+        return;
+      }
+    } catch (e) {
+      console.error("course-page: user doc error", e);
+    }
+
+    await loadCourseMeta();
+    await loadTopics();
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
+}
