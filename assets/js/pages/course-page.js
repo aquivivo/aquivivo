@@ -23,22 +23,32 @@ const LEVEL = (params.get('level') || 'A1').toUpperCase();
 async function getUserFlags(uid) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
-    const d = snap.exists() ? (snap.data() || {}) : {};
+    if (!snap.exists()) {
+      return { isAdmin: false, hasLevelAccess: false, blocked: false };
+    }
+
+    const d = snap.data() || {};
     const isAdmin = d.admin === true;
-    const access = d.access === true;
-    const plan = String(d.plan || 'free').toLowerCase();
+    const blocked = d.blocked === true;
+
+    if (isAdmin) {
+      return { isAdmin: true, hasLevelAccess: true, blocked: false };
+    }
+
     const until = d.accessUntil || null;
     const untilDate = until?.toDate ? until.toDate() : (until ? new Date(until) : null);
-    const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
-    const isUntilValid = hasUntil ? (untilDate.getTime() > Date.now()) : false;
+    const timeOk = !!untilDate && !Number.isNaN(untilDate.getTime()) && untilDate.getTime() > Date.now();
 
-    const levels = Array.isArray(d.accessLevels) ? d.accessLevels.map(x => String(x).toUpperCase()) : [];
-    const hasLevelAccess = isAdmin || access || plan === 'premium' || isUntilValid || levels.includes(String(LEVEL).toUpperCase());
-    const blocked = d.blocked === true;
-    return { isAdmin, hasLevelAccess, blocked, plan, levels };
+    const levels = Array.isArray(d.levels)
+      ? d.levels.map((x) => String(x).toUpperCase())
+      : [];
+
+    const hasLevelAccess = timeOk && levels.includes(String(LEVEL).toUpperCase());
+
+    return { isAdmin: false, hasLevelAccess, blocked, levels };
   } catch (e) {
     console.warn('getUserFlags failed', e);
-    return { isAdmin: false, hasLevelAccess: false, blocked: false, plan: 'free', levels: [] };
+    return { isAdmin: false, hasLevelAccess: false, blocked: false };
   }
 }
 

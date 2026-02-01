@@ -1,5 +1,5 @@
 // assets/js/pages/esadmin-page.js
-// AquiVivo Admin (RESTORE): Dashboard + Usuarios + Códigos + Referral + Servicios
+// AquiVivo Admin (RESTORE+FIX): Dashboard + Usuarios + Códigos + Referral + Servicios + Segmentación (MVP)
 // Architecture: no inline JS. Page logic lives here.
 
 import { auth, db } from "../firebase-init.js";
@@ -17,6 +17,7 @@ import {
   setDoc,
   deleteDoc,
   serverTimestamp,
+  Timestamp,
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
@@ -35,35 +36,250 @@ function setStatus(el, msg, bad = false) {
   el.style.color = bad ? "var(--red, #ff6b6b)" : "";
 }
 
-async function safeCount(colName, cap = 500) {
-  // lightweight count (MVP) – avoids extra Firestore APIs
+/* =========================
+   Utils: dates
+   ========================= */
+function toDateMaybe(ts) {
+  try {
+    if (!ts) return null;
+    if (ts instanceof Date) return ts;
+    if (ts?.toDate) return ts.toDate();
+    if (ts?.seconds != null) return new Date(ts.seconds * 1000);
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? null : d;
+  } catch {
+    return null;
+  }
+}
+
+function isoDate(ts) {
+  const d = toDateMaybe(ts);
+  if (!d) return "";
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+// For <input type="datetime-local"> -> "YYYY-MM-DDTHH:mm"
+function isoDateTimeLocal(ts) {
+  const d = toDateMaybe(ts);
+  if (!d) return "";
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+}
+
+function parseDateTimeLocal(v) {
+  const s = String(v || "").trim();
+  if (!s) return null;
+  // datetime-local returns "YYYY-MM-DDTHH:mm"
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function startOfDay(d) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function addDays(d, n) {
+  const x = new Date(d);
+  x.setDate(x.getDate() + Number(n || 0));
+  return x;
+}
+
+function isFuture(d) {
+  const x = toDateMaybe(d);
+  if (!x) return false;
+  return x.getTime() > Date.now();
+}
+
+function hasAccess(u) {
+  const role = String(u?.role || "user");
+  if (role === "admin") return true;
+  if (u?.access === true) return true;
+  if (String(u?.plan || "") === "premium") return true;
+  if (isFuture(u?.accessUntil)) return true;
+  return false;
+}
+
+/* =========================
+   PLAN -> levels/accessUntil mapping (A1/A2/B1/B2 + free 7 days A1)
+   Contract in users/{uid}:
+   - plan: string
+   - levels: array of strings (e.g. ["A1","A2"])
+   - accessUntil: Firestore Timestamp/Date
+   ========================= */
+const PLAN_MAP = {
+  free:        { levels: ["A1"], days: 7 },
+
+  // single-level plans
+  a1:          { levels: ["A1"], days: 30 },
+  a2:          { levels: ["A2"], days: 30 },
+  b1:          { levels: ["B1"], days: 30 },
+  b2:          { levels: ["B2"], days: 30 },
+
+  // premium bundles (progressive)
+  premium_a1:  { levels: ["A1","A2"], days: 30 },
+  premium_b1:  { levels: ["A1","A2","B1"], days: 30 },
+  premium_b2:  { levels: ["A1","A2","B1","B2"], days: 30 },
+};
+
+function computeLevelsForPlan(planId) {
+  const p = String(planId || "").trim();
+  return PLAN_MAP[p]?.levels ? [...PLAN_MAP[p].levels] : [];
+}
+
+function computeUntilForPlan(planId) {
+  const p = String(planId || "").trim();
+  const days = PLAN_MAP[p]?.days;
+  if (!days) return null;
+  const d = new Date();
+  d.setDate(d.getDate() + Number(days));
+  return d;
+}
+
+function normalizePlanId(planId) {
+  return String(planId || "free").trim();
+}
+
+/* =========================
+   Lightweight counting (MVP)
+   ========================= */
+async function safeCountQuery(q, cap = 500) {
+  const snap = await getDocs(query(q, limit(cap)));
+  return snap.size;
+}
+
+async function safeCountCol(colName, cap = 500) {
   const snap = await getDocs(query(collection(db, colName), limit(cap)));
   return snap.size;
 }
 
 /* =========================
-   DASHBOARD
+   Admin guard (client-side)
+   ========================= */
+async function ensureAdmin(user) {
+  // DEV helper: allow-list specific UIDs to access admin UI even if users/{uid}.role is not set yet.
+  // Security still depends on Firestore Rules (this only prevents accidental lock-out).
+  const ADMIN_UIDS = new Set(['OgXNeCbloJiSGoi1DsZ9UN0aU0I2']); // add more UIDs if needed
+
+  try {
+    if (ADMIN_UIDS.has(user.uid)) return true;
+
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+    const data = snap.exists() ? snap.data() : {};
+    const role = String(data?.role || "user");
+
+    if (role !== "admin") {
+      // Show warning but DO NOT block the whole page (so you can still fix the role from UI/console).
+      const banner = document.querySelector(".heroBanner .subtitle") || document.querySelector(".heroBanner p.subtitle");
+      if (banner) banner.textContent = "⚠️ Tu cuenta no tiene rol admin en Firestore (users/OgXNeCbloJiSGoi1DsZ9UN0aU0I2.role). Panel en modo DEV.";
+      console.warn("[ensureAdmin] Not admin:", user.uid);
+      return true;
+    }
+    return true;
+  } catch (e) {
+    console.error("[ensureAdmin]", e);
+    // Fail-open in DEV to avoid locking yourself out; rules still protect writes.
+    return true;
+  }
+}
+
+
+/* =========================
+   DASHBOARD (IDs: statUsers, statCourses, statExercises, etc.)
    ========================= */
 async function loadDashboard() {
-  const st = $("dashStatus");
+  const st = $("statsStatus");
   try {
     setStatus(st, "Cargando…");
-    const [u, c, s, p] = await Promise.all([
-      safeCount("users"),
-      safeCount("courses"),
-      safeCount("services"),
-      safeCount("promo_codes"),
+
+    const usersCol = collection(db, "users");
+
+    const [
+      usersTotal,
+      coursesTotal,
+      exercisesTotal,
+      premiumPlan,
+      accessTrue,
+      blocked,
+      oneTopic,
+    ] = await Promise.all([
+      safeCountCol("users"),
+      safeCountCol("courses"),
+      safeCountCol("exercises"),
+      safeCountQuery(query(usersCol, where("plan", "==", "premium"))),
+      safeCountQuery(query(usersCol, where("access", "==", true))),
+      safeCountQuery(query(usersCol, where("blocked", "==", true))),
+      safeCountQuery(query(usersCol, where("openedTopicsCount", "==", 1))),
     ]);
 
-    if ($("dashUsers")) $("dashUsers").textContent = String(u);
-    if ($("dashCourses")) $("dashCourses").textContent = String(c);
-    if ($("dashServices")) $("dashServices").textContent = String(s);
-    if ($("dashPromoCodes")) $("dashPromoCodes").textContent = String(p);
+    if ($("statUsers")) $("statUsers").textContent = String(usersTotal);
+    if ($("statCourses")) $("statCourses").textContent = String(coursesTotal);
+    if ($("statExercises")) $("statExercises").textContent = String(exercisesTotal);
+
+    if ($("statPremiumPlan")) $("statPremiumPlan").textContent = String(premiumPlan);
+    if ($("statAccessTrue")) $("statAccessTrue").textContent = String(accessTrue);
+    if ($("statBlocked")) $("statBlocked").textContent = String(blocked);
+    if ($("statOneTopic")) $("statOneTopic").textContent = String(oneTopic);
 
     setStatus(st, "Listo ✅");
   } catch (e) {
     console.error("[dashboard]", e);
-    setStatus(st, "Error: sprawdź rules / Console.", true);
+    setStatus(st, "Error: revisa rules / Console.", true);
+  }
+}
+
+/* Optional: statCard click -> show small details (first 20 emails) */
+async function loadStatDetails(type) {
+  const detailsMap = {
+    users: "statUsersDetails",
+    premium: "statPremiumPlanDetails",
+    access: "statAccessTrueDetails",
+    blocked: "statBlockedDetails",
+    oneTopic: "statOneTopicDetails",
+  };
+  const detailsId = detailsMap[type];
+  const box = detailsId ? $(detailsId) : null;
+  if (!box) return;
+
+  const open = box.style.display !== "none";
+  if (open) {
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
+
+  box.style.display = "block";
+  box.innerHTML = '<div class="hintSmall">Cargando…</div>';
+
+  try {
+    const usersCol = collection(db, "users");
+    let q1 = query(usersCol, orderBy("__name__"), limit(20));
+    if (type === "premium") q1 = query(usersCol, where("plan", "==", "premium"), limit(20));
+    if (type === "access") q1 = query(usersCol, where("access", "==", true), limit(20));
+    if (type === "blocked") q1 = query(usersCol, where("blocked", "==", true), limit(20));
+    if (type === "oneTopic") q1 = query(usersCol, where("openedTopicsCount", "==", 1), limit(20));
+
+    const snap = await getDocs(q1);
+    const rows = [];
+    snap.forEach((d) => {
+      const u = d.data() || {};
+      const email = esc(u.email || u.emailLower || d.id);
+      const until = isoDate(u.accessUntil);
+      rows.push(`<div class="hintSmall">${email}${until ? " · " + esc(until) : ""}</div>`);
+    });
+    box.innerHTML = rows.length ? rows.join("") : '<div class="hintSmall">—</div>';
+  } catch (e) {
+    console.error("[stat details]", e);
+    box.innerHTML = '<div class="hintSmall">Error cargando detalles.</div>';
   }
 }
 
@@ -114,17 +330,25 @@ async function saveReferralSettings() {
 
 /* =========================
    PROMO CODES (promo_codes)
+   Supports two schemas:
+   A) { percent, note, active }  (old)
+   B) { days, plan, active }     (current HTML form)
    ========================= */
 function renderPromoRow(id, p) {
   const active = p.active === false ? "⛔" : "✅";
-  const pct = p.percent != null ? `${p.percent}%` : "—";
+  const pct = p.percent != null ? `${p.percent}%` : null;
+  const days = p.days != null ? `${p.days} días` : null;
+  const plan = p.plan ? `plan: ${esc(p.plan)}` : null;
   const note = p.note ? esc(p.note) : "";
+
+  const line2 = [pct, days, plan, note].filter(Boolean).join(" · ") || "—";
+
   return `
     <div class="listItem">
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${esc(id)} ${active}</div>
-          <div class="hintSmall">${esc(pct)}${note ? " · " + note : ""}</div>
+          <div class="hintSmall">${line2}</div>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn-white-outline" type="button" data-pc="toggle" data-id="${esc(id)}">
@@ -138,12 +362,11 @@ function renderPromoRow(id, p) {
 }
 
 async function loadPromoList() {
-  const list = $("promoList");
+  const list = $("promoListAdmin") || $("promoList");
   if (!list) return;
   list.innerHTML = '<div class="hintSmall">Cargando…</div>';
 
   try {
-    // no orderBy required (reduces index issues)
     const snap = await getDocs(query(collection(db, "promo_codes"), limit(200)));
     const rows = [];
     snap.forEach((d) => {
@@ -158,28 +381,50 @@ async function loadPromoList() {
 }
 
 async function savePromoCode() {
-  const code = String($("pcCode")?.value || "").trim();
-  const st = $("pcStatus");
+  // Current HTML ids
+  const code = String($("promoCode")?.value || $("pcCode")?.value || "").trim();
+  const st = $("promoStatus") || $("pcStatus");
   if (!code) {
     setStatus(st, "Falta el código.", true);
     return;
   }
-  const percent = Number($("pcPercent")?.value || 0);
-  const note = String($("pcNote")?.value || "").trim();
-  const active = String($("pcActive")?.value || "true") === "true";
+
+  const daysRaw = $("promoDays")?.value;
+  const plan = String($("promoPlan")?.value || "premium");
+  const active = $("promoActive") ? $("promoActive").checked : (String($("pcActive")?.value || "true") === "true");
+
+  // Optional old schema inputs if present
+  const percent = $("pcPercent") ? Number($("pcPercent").value || 0) : null;
+  const note = $("pcNote") ? String($("pcNote").value || "").trim() : "";
+
+  const days = daysRaw != null && String(daysRaw).trim() !== "" ? Number(daysRaw || 0) : null;
 
   setStatus(st, "Guardando…");
   try {
-    await setDoc(
-      doc(db, "promo_codes", code),
-      { code, percent, note, active, updatedAt: serverTimestamp() },
-      { merge: true }
-    );
+    const payload = {
+      code,
+      active,
+      updatedAt: serverTimestamp(),
+    };
+
+    if (days != null) payload.days = days;
+    if (plan) payload.plan = plan;
+    if (percent != null && !Number.isNaN(percent) && percent !== 0) payload.percent = percent;
+    if (note) payload.note = note;
+
+    await setDoc(doc(db, "promo_codes", code), payload, { merge: true });
+
     setStatus(st, "Guardado ✅");
+    if ($("promoCode")) $("promoCode").value = "";
+    if ($("promoDays")) $("promoDays").value = "";
+    if ($("promoPlan")) $("promoPlan").value = "premium";
+    if ($("promoActive")) $("promoActive").checked = true;
+
     if ($("pcCode")) $("pcCode").value = "";
     if ($("pcPercent")) $("pcPercent").value = "";
     if ($("pcNote")) $("pcNote").value = "";
     if ($("pcActive")) $("pcActive").value = "true";
+
     await loadPromoList();
     await loadDashboard();
   } catch (e) {
@@ -189,21 +434,37 @@ async function savePromoCode() {
 }
 
 async function togglePromo(id) {
-  const ref = doc(db, "promo_codes", id);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-  const p = snap.data() || {};
-  const next = p.active === false ? true : false;
-  await setDoc(ref, { active: next, updatedAt: serverTimestamp() }, { merge: true });
-  await loadPromoList();
-  await loadDashboard();
+  try {
+    const ref = doc(db, "promo_codes", id);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    const p = snap.data() || {};
+    const next = p.active === false ? true : false;
+    await setDoc(ref, { active: next, updatedAt: serverTimestamp() }, { merge: true });
+    await loadPromoList();
+    await loadDashboard();
+  } catch (e) {
+    console.error("[promo toggle]", e);
+  }
 }
 
 async function deletePromo(id) {
   if (!confirm("¿Eliminar código?")) return;
-  await deleteDoc(doc(db, "promo_codes", id));
-  await loadPromoList();
-  await loadDashboard();
+  try {
+    await deleteDoc(doc(db, "promo_codes", id));
+    await loadPromoList();
+    await loadDashboard();
+  } catch (e) {
+    console.error("[promo delete]", e);
+  }
+}
+
+function clearPromoForm() {
+  if ($("promoCode")) $("promoCode").value = "";
+  if ($("promoDays")) $("promoDays").value = "";
+  if ($("promoPlan")) $("promoPlan").value = "premium";
+  if ($("promoActive")) $("promoActive").checked = true;
+  setStatus($("promoStatus"), "");
 }
 
 /* =========================
@@ -305,21 +566,29 @@ async function editService(id) {
 }
 
 async function toggleService(id) {
-  const ref = doc(db, "services", id);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-  const s = snap.data() || {};
-  const next = s.active === false ? true : false;
-  await setDoc(ref, { active: next, updatedAt: serverTimestamp() }, { merge: true });
-  await loadServicesList();
-  await loadDashboard();
+  try {
+    const ref = doc(db, "services", id);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    const s = snap.data() || {};
+    const next = s.active === false ? true : false;
+    await setDoc(ref, { active: next, updatedAt: serverTimestamp() }, { merge: true });
+    await loadServicesList();
+    await loadDashboard();
+  } catch (e) {
+    console.error("[service toggle]", e);
+  }
 }
 
 async function deleteService(id) {
   if (!confirm("¿Eliminar servicio?")) return;
-  await deleteDoc(doc(db, "services", id));
-  await loadServicesList();
-  await loadDashboard();
+  try {
+    await deleteDoc(doc(db, "services", id));
+    await loadServicesList();
+    await loadDashboard();
+  } catch (e) {
+    console.error("[service delete]", e);
+  }
 }
 
 function clearServiceForm() {
@@ -328,31 +597,10 @@ function clearServiceForm() {
 }
 
 /* =========================
-   USERS (Usuarios) – basic list + modal save
-   Requires HTML ids: usersList, btnLoadUsers, userModal, etc.
+   USERS (Usuarios)
    ========================= */
 let usersLast = null;
 let usersCache = new Map();
-
-function isoDate(ts) {
-  try {
-    if (!ts) return "";
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  } catch {
-    return "";
-  }
-}
-
-function parseDateInput(v) {
-  const s = String(v || "").trim();
-  if (!s) return null;
-  const d = new Date(s + "T00:00:00");
-  return isNaN(d.getTime()) ? null : d;
-}
 
 function renderUserRow(uid, u) {
   const email = esc(u.email || u.emailLower || "(no email)");
@@ -360,7 +608,19 @@ function renderUserRow(uid, u) {
   const plan = esc(u.plan || "");
   const until = isoDate(u.accessUntil);
   const blocked = u.blocked === true ? "⛔" : "";
-  const access = u.access === false ? "🔒" : "✅";
+  const access = hasAccess(u) ? "✅" : "🔒";
+
+  const statusBadge = (() => {
+    if (String(u.role || "user") === "admin") return `<span class="pill">ADMIN</span>`;
+    if (u.blocked === true) return `<span class="pill">BLOCKED</span>`;
+    if (hasAccess(u)) {
+      const d = toDateMaybe(u.accessUntil);
+      if (d && d.getTime() - Date.now() < 7 * 24 * 3600 * 1000) return `<span class="pill">EXPIRING</span>`;
+      return `<span class="pill">ACTIVE</span>`;
+    }
+    return `<span class="pill">FREE</span>`;
+  })();
+
   return `
     <div class="listItem">
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
@@ -368,7 +628,8 @@ function renderUserRow(uid, u) {
           <div style="font-weight:900;">${email} ${blocked}</div>
           <div class="hintSmall">uid: ${esc(uid)} · role: ${role} · access: ${access}${plan ? " · plan: " + plan : ""}${until ? " · until: " + esc(until) : ""}</div>
         </div>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          ${statusBadge}
           <button class="btn-white-outline" type="button" data-user="open" data-uid="${esc(uid)}">Edit</button>
         </div>
       </div>
@@ -376,9 +637,34 @@ function renderUserRow(uid, u) {
   `;
 }
 
+function applyUserFilters(entries) {
+  const searchTerm = String($("userSearch")?.value || "").trim().toLowerCase();
+  const filter = String($("roleFilter")?.value || "all");
+
+  const out = [];
+  for (const [uid, u] of entries) {
+    const role = String(u.role || "user");
+
+    if (filter === "admins" && role !== "admin") continue;
+    if (filter === "premium" && !hasAccess(u)) continue;
+    if (filter === "free" && hasAccess(u)) continue;
+
+    if (searchTerm) {
+      const em = String(u.email || u.emailLower || "").toLowerCase();
+      if (!em.includes(searchTerm) && !uid.includes(searchTerm)) continue;
+    }
+
+    out.push([uid, u]);
+  }
+  return out;
+}
+
 async function loadUsers(reset = false) {
   const list = $("usersList");
+  const section = $("usersSection");
   if (!list) return;
+
+  if (section) section.style.display = "block";
 
   if (reset) {
     usersLast = null;
@@ -399,20 +685,8 @@ async function loadUsers(reset = false) {
       usersCache.set(d.id, d.data() || {});
     });
 
-    const searchTerm = String($("userSearch")?.value || "").trim().toLowerCase();
-    const roleFilter = String($("roleFilter")?.value || "all");
-
-    const rows = [];
-    for (const [uid, u] of usersCache.entries()) {
-      const r = String(u.role || "user");
-      if (roleFilter !== "all" && r !== roleFilter) continue;
-      if (searchTerm) {
-        const em = String(u.email || u.emailLower || "").toLowerCase();
-        if (!em.includes(searchTerm) && !uid.includes(searchTerm)) continue;
-      }
-      rows.push(renderUserRow(uid, u));
-    }
-
+    const filtered = applyUserFilters(usersCache.entries());
+    const rows = filtered.map(([uid, u]) => renderUserRow(uid, u));
     list.innerHTML = rows.length ? rows.join("") : '<div class="hintSmall">—</div>';
   } catch (e) {
     console.error("[users]", e);
@@ -429,12 +703,12 @@ function openUserModal(uid) {
   if ($("um_email")) $("um_email").textContent = u.email || u.emailLower || "";
   if ($("um_uid")) $("um_uid").textContent = uid;
 
-  if ($("um_admin")) $("um_admin").checked = u.role === "admin";
-  if ($("um_access")) $("um_access").checked = u.access !== false;
+  if ($("um_admin")) $("um_admin").checked = String(u.role || "user") === "admin";
+  if ($("um_access")) $("um_access").checked = u.access === true;
   if ($("um_blocked")) $("um_blocked").checked = u.blocked === true;
 
-  if ($("um_plan")) $("um_plan").value = u.plan || "";
-  if ($("um_until")) $("um_until").value = isoDate(u.accessUntil);
+  if ($("um_plan")) $("um_plan").value = u.plan || "free";
+  if ($("um_until")) $("um_until").value = isoDateTimeLocal(u.accessUntil);
   if ($("um_note")) $("um_note").value = u.note || "";
 
   if ($("um_status")) $("um_status").textContent = "";
@@ -457,25 +731,32 @@ async function saveUserModal() {
   const st = $("um_status");
   setStatus(st, "Guardando…");
 
+
   const role = $("um_admin")?.checked ? "admin" : "user";
-  const access = $("um_access")?.checked ? true : false;
+  const access = $("um_access")?.checked ? true : false; // legacy toggle (kept for compatibility)
   const blocked = $("um_blocked")?.checked ? true : false;
-  const plan = String($("um_plan")?.value || "").trim();
+
+  const plan = normalizePlanId($("um_plan")?.value || "free");
   const note = String($("um_note")?.value || "").trim();
 
-  const untilDate = parseDateInput($("um_until")?.value || "");
-  const accessUntil = untilDate ? untilDate : null;
+  // If admin set datetime manually -> keep it. Otherwise compute default by plan.
+  const manualUntil = parseDateTimeLocal($("um_until")?.value || "");
+  const computedUntil = computeUntilForPlan(plan);
+  const accessUntil = manualUntil || computedUntil || null;
+
+  // Levels always derived from plan (single source of truth)
+  const levels = computeLevelsForPlan(plan);
 
   try {
     await setDoc(
       doc(db, "users", uid),
-      { role, access, blocked, plan, note, accessUntil, updatedAt: serverTimestamp() },
+      { role, access, blocked, plan, levels, note, accessUntil, updatedAt: serverTimestamp() },
       { merge: true }
     );
 
     // refresh cache
     const old = usersCache.get(uid) || {};
-    usersCache.set(uid, { ...old, role, access, blocked, plan, note, accessUntil });
+    usersCache.set(uid, { ...old, role, access, blocked, plan, levels, note, accessUntil });
     setStatus(st, "Guardado ✅");
     closeUserModal();
     await loadUsers(true);
@@ -487,16 +768,193 @@ async function saveUserModal() {
 }
 
 /* =========================
+   SEGMENTACIÓN (MVP)
+   ========================= */
+let segmentCache = []; // [{uid,email,...}] last loaded segment
+
+function renderSegmentRow(u) {
+  const email = esc(u.email || u.emailLower || u.uid);
+  const until = isoDate(u.accessUntil);
+  const role = esc(u.role || "user");
+  const plan = esc(u.plan || "");
+  const access = hasAccess(u) ? "✅" : "🔒";
+  return `
+    <div class="listItem">
+      <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:900;">${email}</div>
+          <div class="hintSmall">uid: ${esc(u.uid)} · role: ${role} · access: ${access}${plan ? " · plan: " + plan : ""}${until ? " · until: " + esc(until) : ""}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function loadSegmentExpiring(days) {
+  const st = $("segmentStatus");
+  const list = $("segmentList");
+  if (!list) return;
+
+  setStatus(st, "Cargando…");
+  list.innerHTML = "";
+
+  try {
+    const today = startOfDay(new Date());
+    const end = addDays(today, Number(days || 0));
+    // include whole end day
+    end.setHours(23, 59, 59, 999);
+
+    const q1 = query(
+      collection(db, "users"),
+      where("accessUntil", ">=", today),
+      where("accessUntil", "<=", end),
+      orderBy("accessUntil", "asc"),
+      limit(200)
+    );
+
+    const snap = await getDocs(q1);
+    segmentCache = [];
+    snap.forEach((d) => {
+      const u = d.data() || {};
+      segmentCache.push({ uid: d.id, ...u });
+    });
+
+    list.innerHTML = segmentCache.length ? segmentCache.map(renderSegmentRow).join("") : '<div class="hintSmall">—</div>';
+    setStatus(st, `Listo ✅ (${segmentCache.length})`);
+  } catch (e) {
+    console.error("[segment expiring]", e);
+    list.innerHTML = '<div class="hintSmall">Error cargando segmento (index puede ser necesario).</div>';
+    setStatus(st, "Error", true);
+  }
+}
+
+async function loadSegmentPremiumActive() {
+  const st = $("segmentStatus");
+  const list = $("segmentList");
+  if (!list) return;
+
+  setStatus(st, "Cargando…");
+  list.innerHTML = "";
+
+  try {
+    const now = new Date();
+    const q1 = query(
+      collection(db, "users"),
+      where("accessUntil", ">=", now),
+      orderBy("accessUntil", "asc"),
+      limit(200)
+    );
+    const snap = await getDocs(q1);
+    segmentCache = [];
+    snap.forEach((d) => segmentCache.push({ uid: d.id, ...(d.data() || {}) }));
+    list.innerHTML = segmentCache.length ? segmentCache.map(renderSegmentRow).join("") : '<div class="hintSmall">—</div>';
+    setStatus(st, `Listo ✅ (${segmentCache.length})`);
+  } catch (e) {
+    console.error("[segment premium active]", e);
+    list.innerHTML = '<div class="hintSmall">Error cargando segmento.</div>';
+    setStatus(st, "Error", true);
+  }
+}
+
+async function loadSegmentFreeApprox() {
+  const st = $("segmentStatus");
+  const list = $("segmentList");
+  if (!list) return;
+
+  setStatus(st, "Cargando…");
+  list.innerHTML = "";
+
+  try {
+    // Approx: users with access == false AND (plan != premium) AND (accessUntil missing OR in past)
+    const snap = await getDocs(query(collection(db, "users"), limit(300)));
+    segmentCache = [];
+    snap.forEach((d) => {
+      const u = d.data() || {};
+      const ok = !hasAccess(u);
+      if (ok) segmentCache.push({ uid: d.id, ...u });
+    });
+
+    list.innerHTML = segmentCache.length ? segmentCache.map(renderSegmentRow).join("") : '<div class="hintSmall">—</div>';
+    setStatus(st, `Listo ✅ (${segmentCache.length})`);
+  } catch (e) {
+    console.error("[segment free]", e);
+    list.innerHTML = '<div class="hintSmall">Error cargando segmento.</div>';
+    setStatus(st, "Error", true);
+  }
+}
+
+async function loadSegmentOneTopic() {
+  const st = $("segmentStatus");
+  const list = $("segmentList");
+  if (!list) return;
+
+  setStatus(st, "Cargando…");
+  list.innerHTML = "";
+
+  try {
+    const q1 = query(collection(db, "users"), where("openedTopicsCount", "==", 1), limit(200));
+    const snap = await getDocs(q1);
+    segmentCache = [];
+    snap.forEach((d) => segmentCache.push({ uid: d.id, ...(d.data() || {}) }));
+    list.innerHTML = segmentCache.length ? segmentCache.map(renderSegmentRow).join("") : '<div class="hintSmall">—</div>';
+    setStatus(st, `Listo ✅ (${segmentCache.length})`);
+  } catch (e) {
+    console.error("[segment one topic]", e);
+    list.innerHTML = '<div class="hintSmall">Error cargando segmento.</div>';
+    setStatus(st, "Error", true);
+  }
+}
+
+function exportSegmentCSV() {
+  if (!segmentCache?.length) return;
+
+  const header = ["email", "uid", "role", "plan", "access", "blocked", "accessUntil"];
+  const lines = [header.join(",")];
+
+  for (const u of segmentCache) {
+    const row = [
+      (u.email || u.emailLower || "").replaceAll('"', '""'),
+      String(u.uid || "").replaceAll('"', '""'),
+      String(u.role || "user").replaceAll('"', '""'),
+      String(u.plan || "").replaceAll('"', '""'),
+      hasAccess(u) ? "true" : "false",
+      u.blocked === true ? "true" : "false",
+      isoDate(u.accessUntil),
+    ];
+    lines.push(row.map((x) => `"${String(x)}"`).join(","));
+  }
+
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `segment_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+}
+
+/* =========================
    BIND EVENTS
    ========================= */
 function bindEvents() {
+  // dashboard refresh
+  $("btnRefreshStats")?.addEventListener("click", loadDashboard);
+  document.querySelectorAll(".statCard[data-expand]")?.forEach?.((el) => {
+    el.addEventListener("click", (e) => {
+      const type = el.getAttribute("data-expand");
+      if (type) loadStatDetails(type);
+    });
+  });
+
   // referral
   $("btnSaveReferralSettings")?.addEventListener("click", saveReferralSettings);
 
   // promo
-  $("btnSavePromo")?.addEventListener("click", savePromoCode);
-  $("btnReloadPromo")?.addEventListener("click", loadPromoList);
-  $("promoList")?.addEventListener("click", async (e) => {
+  $("btnSavePromoCode")?.addEventListener("click", savePromoCode);
+  $("btnClearPromoForm")?.addEventListener("click", clearPromoForm);
+  $("promoListAdmin")?.addEventListener("click", async (e) => {
     const btn = e.target?.closest?.("button[data-pc]");
     if (!btn) return;
     const act = btn.getAttribute("data-pc");
@@ -521,7 +979,7 @@ function bindEvents() {
     if (act === "del") await deleteService(id);
   });
 
-  // users (only if section exists)
+  // users
   $("btnLoadUsers")?.addEventListener("click", () => loadUsers(true));
   $("btnLoadMore")?.addEventListener("click", () => loadUsers(false));
   $("btnSearch")?.addEventListener("click", () => loadUsers(true));
@@ -530,6 +988,7 @@ function bindEvents() {
     if ($("roleFilter")) $("roleFilter").value = "all";
     loadUsers(true);
   });
+  $("roleFilter")?.addEventListener("change", () => loadUsers(true));
   $("usersList")?.addEventListener("click", (e) => {
     const btn = e.target?.closest?.("button[data-user]");
     if (!btn) return;
@@ -540,6 +999,21 @@ function bindEvents() {
   $("userModalClose")?.addEventListener("click", closeUserModal);
   $("um_cancel")?.addEventListener("click", closeUserModal);
   $("um_save")?.addEventListener("click", saveUserModal);
+
+  // segmentación
+  $("btnLoadExp0")?.addEventListener("click", () => loadSegmentExpiring(0));
+  $("btnLoadExp3")?.addEventListener("click", () => loadSegmentExpiring(3));
+  $("btnLoadExp7")?.addEventListener("click", () => loadSegmentExpiring(7));
+  $("btnLoadExp14")?.addEventListener("click", () => loadSegmentExpiring(14));
+  $("btnLoadPremiumActive")?.addEventListener("click", loadSegmentPremiumActive);
+  $("btnLoadFreeUsers")?.addEventListener("click", loadSegmentFreeApprox);
+  $("btnLoadOneTopic")?.addEventListener("click", loadSegmentOneTopic);
+  $("btnExportSegment")?.addEventListener("click", exportSegmentCSV);
+
+  // optional: not implemented yet
+  $("btnLoadOneTopicInactive")?.addEventListener("click", () => {
+    setStatus($("segmentStatus"), "MVP: ten segment jeszcze nie jest podpięty.", true);
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -547,6 +1021,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) return; // layout.js should redirect anyway
+    const ok = await ensureAdmin(user);
+    if (!ok) return;
+
     // Load sections independently so one failure doesn't break others
     await loadDashboard();
     await loadReferralSettings();

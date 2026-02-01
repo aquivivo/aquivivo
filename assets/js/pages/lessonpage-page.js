@@ -75,10 +75,24 @@ function metaDocId(level, courseId) {
 async function getUserFlags(uid) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
-    const d = snap.exists() ? snap.data() || {} : {};
+    if (!snap.exists()) return { isAdmin: false, hasAccess: false };
+
+    const d = snap.data() || {};
     const isAdmin = d.admin === true;
-    const hasAccess = isAdmin || d.access === true || d.plan === 'premium';
-    return { isAdmin, hasAccess };
+
+    if (isAdmin) return { isAdmin: true, hasAccess: true };
+
+    const until = d.accessUntil || null;
+    const untilDate = until?.toDate ? until.toDate() : (until ? new Date(until) : null);
+    const timeOk = !!untilDate && !Number.isNaN(untilDate.getTime()) && untilDate.getTime() > Date.now();
+
+    const levels = Array.isArray(d.levels)
+      ? d.levels.map((x) => String(x).toUpperCase())
+      : [];
+
+    const hasAccess = timeOk && levels.includes(String(LEVEL).toUpperCase());
+
+    return { isAdmin: false, hasAccess };
   } catch (e) {
     console.warn('getUserFlags failed', e);
     return { isAdmin: false, hasAccess: false };

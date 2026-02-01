@@ -121,7 +121,7 @@
 <details class="card" id="accPromo">
 <summary class="sectionTitle" style="cursor:pointer; list-style:none;">
           🏷️ Códigos promo <span class="hintSmall" style="font-weight:600; margin-left:8px;">(clic para abrir/cerrar)</span>
-</summary><html><body><div class="hr"></div>
+</summary><div class="hr"></div>
 <div class="sectionTitle" style="margin-top:0;">🎁 Referral settings</div>
 <div class="metaRow" style="flex-wrap:wrap; gap:10px; align-items:flex-end;">
 <div style="min-width:220px;">
@@ -138,7 +138,7 @@
 <div class="hintSmall" style="margin-top:10px;">
   Guardado en: <b>promo_codes/_REFERRAL_SETTINGS</b>
 </div>
-</body></html>
+
 <div style="margin-top:10px;">
 <p class="subtitle">Crea, activa y desactiva códigos. Los usuarios los aplican en el panel.</p>
 <div class="metaRow" style="flex-wrap:wrap; gap:10px; align-items:flex-end;">
@@ -169,7 +169,8 @@
 <div class="sectionTitle" style="margin-top:0;">Lista de códigos</div>
 <div class="list" id="promoListAdmin"></div>
 </div>
-</details><html><body><details class="card" id="accServices" open="">
+</details>
+<details class="card" id="accServices" open="">
 <summary class="sectionTitle">
     🛍️ Servicios (oferta) <span class="hintSmall" style="font-weight:600; margin-left:8px;">(CRUD)</span>
 </summary>
@@ -243,7 +244,7 @@
 <div class="list" id="servicesAdminList"></div>
 </div>
 </details>
-</body></html>
+
 <!-- ✅ Users (accordion – closed by default) -->
 <details class="card" id="accUsers">
 <summary class="sectionTitle" style="cursor:pointer; list-style:none;">
@@ -310,8 +311,14 @@
 <div class="sectionTitle" style="margin-top:0;">Plan y fecha</div>
 <div class="muted" style="font-weight:900; margin-top:8px;">Plan</div>
 <select class="select" id="um_plan">
-<option value="free">free</option>
-<option value="premium">premium</option>
+<option value="free">free (7 días A1)</option>
+<option value="a1">A1</option>
+<option value="a2">A2</option>
+<option value="b1">B1</option>
+<option value="b2">B2</option>
+<option value="premium_a1">Premium A1 (A1+A2)</option>
+<option value="premium_b1">Premium B1 (A1+A2+B1)</option>
+<option value="premium_b2">Premium B2 (A1+A2+B1+B2)</option>
 </select>
 <div class="muted" style="font-weight:900; margin-top:12px;">Acceso hasta</div>
 <input class="input" id="um_until" type="datetime-local"/>

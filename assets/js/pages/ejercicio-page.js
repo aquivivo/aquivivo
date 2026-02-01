@@ -460,8 +460,21 @@ async function loadExercises(topic) {
 async function computeHasAccess(uid) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
-    const d = snap.exists() ? snap.data() || {} : {};
-    return d.admin === true || d.access === true || d.plan === 'premium';
+    if (!snap.exists()) return false;
+
+    const d = snap.data() || {};
+    if (d.admin === true) return true;
+    if (d.blocked === true) return false;
+
+    const until = d.accessUntil || null;
+    const untilDate = until?.toDate ? until.toDate() : (until ? new Date(until) : null);
+    const timeOk = !!untilDate && !Number.isNaN(untilDate.getTime()) && untilDate.getTime() > Date.now();
+
+    const levels = Array.isArray(d.levels)
+      ? d.levels.map((x) => String(x).toUpperCase())
+      : [];
+
+    return timeOk && levels.includes(String(LEVEL).toUpperCase());
   } catch (e) {
     console.warn('computeHasAccess failed', e);
     return false;

@@ -1,23 +1,25 @@
 // assets/js/pages/services-page.js
-// Servicios (catálogo) — Firestore driven + CTA (Payhip / Link / Contact)
-// HTML = vista, JS = lógica (sin inline JS)
+// Services/Plans listing for AquiVivo
+// - Reads Firestore collection: services
+// - Renders by category: plans / consults / extras
+// - CTA types: info | link | payhip
+// - For admins only: quick-apply plan to own account (testing)
 
 import { auth, db } from "../firebase-init.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 import {
   collection,
-  getDocs,
   query,
   orderBy,
-  limit,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
 const $ = (id) => document.getElementById(id);
-
-// Contact endpoints (from your provided data)
-const CONTACT_EMAIL = "aquivivo.pl@gmail.com";
-const CONTACT_WHATSAPP_E164 = "+48669697151"; // display format
-const CONTACT_WHATSAPP_DIGITS = "48669697151"; // wa.me requires digits only
 
 function esc(s) {
   return String(s ?? "")
@@ -27,208 +29,323 @@ function esc(s) {
     .replace(/"/g, "&quot;");
 }
 
-function renderList(el, items) {
-  if (!el) return;
-  if (!items?.length) {
-    el.innerHTML = '<div class="hintSmall">—</div>';
-    return;
+/* =========================
+   PLAN mapping (same as admin)
+   ========================= */
+const PLAN_MAP = {
+  free:        { levels: ["A1"], days: 7 },
+
+  a1:          { levels: ["A1"], days: 30 },
+  a2:          { levels: ["A2"], days: 30 },
+  b1:          { levels: ["B1"], days: 30 },
+  b2:          { levels: ["B2"], days: 30 },
+
+  premium_a1:  { levels: ["A1", "A2"], days: 30 },
+  premium_b1:  { levels: ["A1", "A2", "B1"], days: 30 },
+  premium_b2:  { levels: ["A1", "A2", "B1", "B2"], days: 30 },
+};
+
+function normalizePlanId(planId) {
+  return String(planId || "free").trim();
+}
+
+function computeLevelsForPlan(planId) {
+  const p = normalizePlanId(planId);
+  return PLAN_MAP[p]?.levels ? [...PLAN_MAP[p].levels] : [];
+}
+
+function computeUntilForPlan(planId) {
+  const p = normalizePlanId(planId);
+  const days = PLAN_MAP[p]?.days;
+  if (!days) return null;
+  const d = new Date();
+  d.setDate(d.getDate() + Number(days));
+  return d;
+}
+
+
+async function resolveUserId(uidOrEmailRaw) {
+  const v = String(uidOrEmailRaw || "").trim();
+  if (!v) return null;
+
+  // If it's likely an email, search users by emailLower
+  if (v.includes("@")) {
+    const emailLower = v.toLowerCase();
+    const qs = await getDocs(query(collection(db, "users"), where("emailLower", "==", emailLower)));
+    let found = null;
+    qs.forEach((d) => { if (!found) found = d.id; });
+    return found;
   }
 
-  el.innerHTML = items
-    .map((it) => {
-      const badge = it.badge
-        ? `<span class="pill pill-yellow">${esc(it.badge)}</span>`
-        : "";
-      const price = it.price ? `<div class="pill">💰 ${esc(it.price)}</div>` : "";
+  // Otherwise treat as UID
+  return v;
+}
 
-      const ctaLabel =
-        it.ctaLabel ||
-        (it.ctaType === "payhip"
-          ? "Comprar"
-          : it.ctaType === "link"
-          ? "Reservar"
-          : "Contactar");
+function setAssignStatus(msg) {
+  const el = $("assignStatus");
+  if (el) el.textContent = msg || "";
+}
 
-      return `
-        <div class="listItem">
-          <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
-            <div>
-              <div style="font-weight:900;">${esc(it.title)}</div>
-              <div class="hintSmall">${esc(it.desc)}</div>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-              ${price}
-              ${badge}
-              <button class="btn-white-outline" type="button"
-                data-action="cta"
-                data-cta-type="${esc(it.ctaType || "info")}"
-                data-cta-url="${esc(it.ctaUrl || "")}"
-                data-sku="${esc(it.sku || "")}"
-                data-title="${esc(it.title || "")}">
-                ${esc(ctaLabel)}
-              </button>
-            </div>
-          </div>
+async function getRole(uid) {
+  try {
+    const snap = await getDoc(doc(db, "users", uid));
+    const d = snap.exists() ? snap.data() : {};
+    return String(d?.role || "user");
+  } catch {
+    return "user";
+  }
+}
+
+function renderRow(sku, s, opts) {
+  const { isAdmin } = opts;
+  const active = s.active === false ? false : true;
+  if (!active) return "";
+
+  const title = esc(s.title || sku);
+  const desc = esc(s.desc || "");
+  const price = s.price ? `<div class="pill pill-yellow" style="font-weight:900;">${esc(s.price)}</div>` : "";
+  const badge = s.badge ? `<div class="pill">${esc(s.badge)}</div>` : "";
+  const ctaLabel = esc(s.ctaLabel || (s.category === "plans" ? "Comprar" : "Reservar"));
+
+  let cta = "";
+  const ctaType = String(s.ctaType || "info");
+  const ctaUrl = String(s.ctaUrl || "").trim();
+
+  if (ctaType === "link" && ctaUrl) {
+    cta = `<a class="btn-yellow" target="_blank" rel="noopener" href="${esc(ctaUrl)}">${ctaLabel}</a>`;
+  } else if (ctaType === "payhip" && ctaUrl) {
+    // admin uses "Payhip code" (e.g. qIPXv). We convert to a buy link.
+    const payhipLink = /^https?:\/\//i.test(ctaUrl) ? ctaUrl : `https://payhip.com/b/${ctaUrl}`;
+    cta = `<a class="btn-yellow" target="_blank" rel="noopener" href="${esc(payhipLink)}">${ctaLabel}</a>`;
+  } else {
+    cta = `<button class="btn-yellow" type="button" data-cta="info" data-sku="${esc(sku)}">${ctaLabel}</button>`;
+  }
+
+  const adminApply =
+    isAdmin && s.category === "plans"
+      ? `<button class="btn-white-outline" type="button" data-cta="apply" data-sku="${esc(sku)}">🧪 Asignar a mi cuenta</button>`
+      : "";
+
+  return `
+    <div class="listItem">
+      <div class="rowBetween" style="gap:12px; flex-wrap:wrap;">
+        <div style="min-width:240px; flex:1;">
+          <div style="font-weight:900;">${title}</div>
+          ${desc ? `<div class="hintSmall" style="margin-top:6px;">${desc}</div>` : ""}
+          <div class="hintSmall" style="margin-top:8px;">SKU: <b>${esc(sku)}</b></div>
         </div>
-      `;
-    })
-    .join("");
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+          ${badge}${price}
+          ${cta}
+          ${adminApply}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 async function loadServices() {
-  // Avoid composite index: fetch all ordered, filter active in JS
-  const q1 = query(collection(db, "services"), orderBy("order", "asc"), limit(500));
-  const snap = await getDocs(q1);
+  const plans = $("plansList");
+  const consults = $("consultsList");
+  const extras = $("extrasList");
+  if (!plans || !consults || !extras) return;
 
-  const plans = [];
-  const consults = [];
-  const extras = [];
+  plans.innerHTML = consults.innerHTML = extras.innerHTML = '<div class="hintSmall">Cargando…</div>';
 
-  snap.forEach((d) => {
-    const s = d.data() || {};
-    if (s.active === false) return; // default true if missing
-    const item = {
-      id: d.id,
-      sku: String(s.sku || d.id),
-      category: String(s.category || "extras"),
-      title: String(s.title || ""),
-      desc: String(s.desc || ""),
-      price: String(s.price || ""),
-      badge: String(s.badge || ""),
-      order: Number(s.order || 0),
-      ctaType: String(s.ctaType || "info"),
-      ctaUrl: String(s.ctaUrl || ""),
-      ctaLabel: String(s.ctaLabel || ""),
-    };
+  const snap = await getDocs(query(collection(db, "services"), orderBy("order", "asc")));
+  const rows = [];
+  snap.forEach((d) => rows.push({ id: d.id, data: d.data() || {} }));
 
-    if (item.category === "plans") plans.push(item);
-    else if (item.category === "consults") consults.push(item);
-    else extras.push(item);
-  });
-
-  renderList($("plansList"), plans);
-  renderList($("consultsList"), consults);
-  renderList($("extrasList"), extras);
-
-  return { plans, consults, extras };
+  return rows;
 }
 
-function setContactStatus(text) {
-  const el = $("contactStatus");
-  if (!el) return;
-  el.textContent = text || "";
+function setContactHint(msg) {
+  const st = $("contactStatus");
+  if (st) st.textContent = msg || "";
 }
 
-function openUrl(url) {
-  // Prefer window.open, fallback to location in case of popup blocker
-  try {
-    const w = window.open(url, "_blank");
-    if (!w) window.location.href = url;
-  } catch (_) {
-    window.location.href = url;
+function scrollToContact() {
+  const el = $("contactCard");
+  el?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+}
+
+
+async function applyPlanToUser(targetUid, planId, overrideDays) {
+  const plan = normalizePlanId(planId);
+  const levels = computeLevelsForPlan(plan);
+  if (!levels.length) {
+    throw new Error("Unknown plan SKU: " + plan);
   }
+
+  // duration: overrideDays (number) or default from PLAN_MAP
+  const days = overrideDays ? Number(overrideDays) : (PLAN_MAP[plan]?.days || 30);
+  const until = new Date();
+  until.setDate(until.getDate() + Number(days));
+
+  await setDoc(
+    doc(db, "users", targetUid),
+    {
+      plan,
+      levels,
+      accessUntil: until,
+      blocked: false,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  return { plan, levels, until };
 }
 
-function openWhatsApp(message) {
-  const text = encodeURIComponent(message || "Hola 👋");
-  const url = `https://wa.me/${CONTACT_WHATSAPP_DIGITS}?text=${text}`;
-  openUrl(url);
-}
-
-function openEmail(subject, body) {
-  const s = encodeURIComponent(subject || "AquiVivo");
-  const b = encodeURIComponent(body || "");
-  const url = `mailto:${CONTACT_EMAIL}?subject=${s}&body=${b}`;
-  window.location.href = url;
-}
-
-function contactNow(serviceTitle) {
-  const title = serviceTitle ? `“${serviceTitle}”` : "un servicio";
-  const msg = `Hola! Me interesa ${title}. ¿Podemos hablar?`;
-  // WhatsApp first, email fallback if something goes wrong
-  try {
-    openWhatsApp(msg);
-    setContactStatus(`Abriendo WhatsApp (${CONTACT_WHATSAPP_E164})…`);
-  } catch (e) {
-    console.error(e);
-    openEmail("Consulta AquiVivo", msg);
-    setContactStatus("Abriendo email…");
-  }
-}
-
-function handleCtaClick({ ctaType, ctaUrl, sku, title }) {
-  if (ctaType === "payhip" && ctaUrl) {
-    let url = ctaUrl.trim();
-    if (!/^https?:\/\//i.test(url)) url = `https://payhip.com/b/${url}`;
-    if (!/^https?:\/\//i.test(url)) {
-      alert("Enlace inválido.");
-      return;
-    }
-    openUrl(url);
+async function applyPlanToOwnAccount(uid, planId) {
+  const plan = normalizePlanId(planId);
+  const levels = computeLevelsForPlan(plan);
+  if (!levels.length) {
+    setContactHint("⚠️ SKU no reconocido como plan (revisa PLAN_MAP).");
     return;
   }
+  const until = computeUntilForPlan(plan);
+  setContactHint("Aplicando plan…");
 
-  if (ctaType === "link" && ctaUrl) {
-    const url = ctaUrl.trim();
-    if (!/^https?:\/\//i.test(url)) {
-      alert("Enlace inválido.");
-      return;
-    }
-    openUrl(url);
-    return;
-  }
+  await setDoc(
+    doc(db, "users", uid),
+    {
+      plan,
+      levels,
+      accessUntil: until,
+      blocked: false,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 
-  // info / default => contact
-  contactNow(title || sku);
+  setContactHint(`✅ Plan aplicado: ${plan} · levels=${levels.join(", ")} · hasta ${until?.toLocaleDateString?.() || ""}`);
 }
 
-function initActions() {
-  // Bottom "Contactar" button
-  const btnContact = $("btnContact");
-  btnContact?.addEventListener("click", () => contactNow("un servicio"));
+function bindCTAHandlers(opts) {
+  const { uid, isAdmin } = opts;
 
-  const btnEmail = $("btnEmail");
-  btnEmail?.addEventListener("click", () => {
-    openEmail("Consulta AquiVivo", "Hola! Me gustaría recibir más información.");
-  });
-
-  const btnWhatsApp = $("btnWhatsApp");
-  btnWhatsApp?.addEventListener("click", () => contactNow("un servicio"));
-
-  const btnInstagram = $("btnInstagram");
-  btnInstagram?.addEventListener("click", () => openUrl("https://instagram.com/sacariooo"));
-
-  const btnTikTok = $("btnTikTok");
-  btnTikTok?.addEventListener("click", () => openUrl("https://www.tiktok.com/@latip0l"));
-
-  // Delegation for item CTA buttons
-  document.addEventListener("click", (e) => {
-    const btn = e.target?.closest?.("button[data-action='cta']");
+  // List click delegation
+  const host = document.querySelector("main");
+  host?.addEventListener("click", async (e) => {
+    const btn = e.target?.closest?.("[data-cta]");
     if (!btn) return;
 
-    handleCtaClick({
-      ctaType: btn.getAttribute("data-cta-type") || "info",
-      ctaUrl: btn.getAttribute("data-cta-url") || "",
-      sku: btn.getAttribute("data-sku") || "",
-      title: btn.getAttribute("data-title") || "",
-    });
+    const act = btn.getAttribute("data-cta");
+    const sku = btn.getAttribute("data-sku") || "";
+
+    if (act === "info") {
+      localStorage.setItem("lastServiceSku", sku);
+      setContactHint(`📌 Para comprar/reservar: escríbeme y menciona el SKU: ${sku}`);
+      scrollToContact();
+      return;
+    }
+
+    if (act === "apply") {
+      if (!isAdmin) return;
+      if (!uid) return;
+      if (!confirm(`Aplicar plan ${sku} a TU cuenta (solo тест)?`)) return;
+      try {
+        await applyPlanToOwnAccount(uid, sku);
+      } catch (err) {
+        console.error(err);
+        setContactHint("❌ No se pudo aplicar (rules/permissions).");
+      }
+    }
   });
+
+  $("btnContact")?.addEventListener("click", () => {
+    const sku = localStorage.getItem("lastServiceSku") || "";
+    setContactHint(sku ? `📌 Escríbeme y menciona el SKU: ${sku}` : "📌 Escríbeme para comprar/reservar.");
+    scrollToContact();
+  });
+
+  $("btnEmail")?.addEventListener("click", () => {
+    const sku = localStorage.getItem("lastServiceSku") || "";
+    const subject = encodeURIComponent("AquiVivo — compra / reserva");
+    const body = encodeURIComponent(sku ? `Hola! Quiero comprar/reservar: ${sku}` : "Hola! Quiero comprar/reservar un servicio.");
+    window.location.href = `mailto:aquivivo.pl@gmail.com?subject=${subject}&body=${body}`;
+  });
+
+  $("btnWhatsApp")?.addEventListener("click", () => {
+    const sku = localStorage.getItem("lastServiceSku") || "";
+    const txt = encodeURIComponent(sku ? `Hola! Quiero comprar/reservar: ${sku}` : "Hola! Quiero comprar/reservar un servicio.");
+    window.open(`https://wa.me/48669697151?text=${txt}`, "_blank", "noopener");
+  });
+
+  $("btnInstagram")?.addEventListener("click", () => window.open("https://instagram.com/sacariooo", "_blank", "noopener"));
+  $("btnTikTok")?.addEventListener("click", () => window.open("https://tiktok.com/@latip0l", "_blank", "noopener"));
+
+  // Admin assign panel (UID/email)
+  const adminCard = $("adminAssignCard");
+  if (adminCard) adminCard.style.display = (isAdmin ? "block" : "none");
+
+  $("btnAssignUser")?.addEventListener("click", async () => {
+    if (!isAdmin) return;
+    const who = $("assignUser")?.value || "";
+    const planSku = $("assignPlan")?.value || "";
+    const days = $("assignDays")?.value || "";
+
+    setAssignStatus("Asignando…");
+    try {
+      const targetUid = await resolveUserId(who);
+      if (!targetUid) { setAssignStatus("⚠️ Falta UID/email."); return; }
+
+      const res = await applyPlanToUser(targetUid, planSku, days);
+      setAssignStatus(`✅ OK: ${targetUid} · ${res.plan} · ${res.levels.join(", ")} · hasta ${res.until.toLocaleDateString()}`);
+    } catch (e) {
+      console.error(e);
+      setAssignStatus("❌ No se pudo asignar (SKU/rules).");
+    }
+  });
+
+  $("btnAssignUserClear")?.addEventListener("click", () => {
+    if ($("assignUser")) $("assignUser").value = "";
+    if ($("assignPlan")) $("assignPlan").value = "";
+    if ($("assignDays")) $("assignDays").value = "";
+    setAssignStatus("");
+  });
+
+}
+
+async function renderAll(rows, opts) {
+  const plans = $("plansList");
+  const consults = $("consultsList");
+  const extras = $("extrasList");
+  if (!plans || !consults || !extras) return;
+
+  const byCat = { plans: [], consults: [], extras: [] };
+
+  for (const r of rows) {
+    const cat = String(r.data.category || "extras");
+    if (!byCat[cat]) byCat[cat] = [];
+    byCat[cat].push(renderRow(r.id, r.data, opts));
+  }
+
+  plans.innerHTML = byCat.plans.filter(Boolean).join("") || '<div class="hintSmall">—</div>';
+  consults.innerHTML = byCat.consults.filter(Boolean).join("") || '<div class="hintSmall">—</div>';
+  extras.innerHTML = byCat.extras.filter(Boolean).join("") || '<div class="hintSmall">—</div>';
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   onAuthStateChanged(auth, async (user) => {
-    if (!user) return; // layout.js handles redirect
+    const uid = user?.uid || null;
+    const role = uid ? await getRole(uid) : "user";
+    const isAdmin = role === "admin";
+
     try {
-      await loadServices();
+      const rows = await loadServices();
+      await renderAll(rows || [], { uid, isAdmin });
+      bindCTAHandlers({ uid, isAdmin });
     } catch (e) {
-      console.error(e);
-      const msg =
-        "Error cargando servicios. (Comprueba Firestore Rules: services read)";
-      $("plansList").innerHTML = `<div class="hintSmall">${esc(msg)}</div>`;
-      $("consultsList").innerHTML = '<div class="hintSmall">—</div>';
-      $("extrasList").innerHTML = '<div class="hintSmall">—</div>';
+      console.error("[services-page]", e);
+      setContactHint("❌ Error cargando servicios.");
+      const plans = $("plansList");
+      const consults = $("consultsList");
+      const extras = $("extrasList");
+      if (plans) plans.innerHTML = '<div class="hintSmall">Error.</div>';
+      if (consults) consults.innerHTML = '<div class="hintSmall">Error.</div>';
+      if (extras) extras.innerHTML = '<div class="hintSmall">Error.</div>';
     }
   });
-
-  initActions();
 });
