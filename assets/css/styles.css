@@ -595,9 +595,9 @@ textarea:focus {
 }
 
 /* Hero title emphasis on internal pages (match landing style) */
-body:not([data-page="index"]) .heroBanner h1,
-body:not([data-page="index"]) .heroBanner .heroTitle,
-body:not([data-page="index"]) .heroBanner .glow-text {
+body:not([data-page='index']) .heroBanner h1,
+body:not([data-page='index']) .heroBanner .heroTitle,
+body:not([data-page='index']) .heroBanner .glow-text {
   font-size: clamp(34px, 4.2vw, 56px);
   line-height: 1.06;
 }
@@ -1211,4 +1211,20 @@ a:hover {
     right: 0;
     min-width: 220px;
   }
+}
+
+/* ===== Final background override (last-wins) ===== */
+html,
+body {
+  background: #1f3b8f !important;
+}
+
+/* ===== Admin: force sections collapsed on initial load ===== */
+body[data-page*='admin'] details[open] > :not(summary) {
+  display: none;
+}
+
+/* Optional: allow explicit re-open when a class is added by JS */
+body[data-page*='admin'] details[open].is-open > :not(summary) {
+  display: block;
 }
