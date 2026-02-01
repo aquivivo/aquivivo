@@ -20,6 +20,10 @@ function getStripeWebhookSecret() {
   );
 }
 
+function getBaseUrl() {
+  return functions.config().app?.base_url || process.env.BASE_URL || '';
+}
+
 // ✅ MAPOWANIE PLAN → PRICE (STRIPE)
 const PLAN_TO_PRICE = {
   premium_a1: 'price_1Sw0GZCI9cIUEmOtoPWavC9x',
@@ -83,12 +87,15 @@ exports.createCheckoutSession = functions.https.onCall(
 
     const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2024-06-20' });
     const origin = String(data?.origin || '').trim();
+    const configuredBaseUrl = getBaseUrl().trim();
+    const baseUrl = configuredBaseUrl || origin;
+    const safeBaseUrl = baseUrl.replace(/\/+$/, '');
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/services.html?success=1`,
-      cancel_url: `${origin}/services.html?canceled=1`,
+      success_url: `${safeBaseUrl}/services.html?success=1`,
+      cancel_url: `${safeBaseUrl}/services.html?canceled=1`,
       client_reference_id: uid,
       metadata: { uid, planId },
       allow_promotion_codes: true,
