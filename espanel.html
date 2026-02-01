@@ -54,129 +54,129 @@
           </div>
         </div>
 
-        <div class="panelGrid">
-          <div class="featureGrid" style="margin-top: 16px">
-            <div class="card featureCard">
-              <div style="font-weight: 900; font-size: 20px">
-                🗣 Conversación Natural
-              </div>
-              <div class="muted" style="margin-top: 6px">
-                Habla como un nativo desde el primer día.
-              </div>
+        <div
+          class="featureGrid"
+          style="
+            margin-top: 16px;
+            width: 100%;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          "
+        >
+          <div class="card featureCard">
+            <div style="font-weight: 900; font-size: 20px">
+              🗣 Conversación Natural
             </div>
-            <div class="card featureCard blue">
-              <div style="font-weight: 900; font-size: 20px">
-                📚 Material Exclusivo
-              </div>
-              <div class="muted" style="margin-top: 6px">
-                Recursos creados para hispanohablantes.
-              </div>
-            </div>
-            <div class="card featureCard red">
-              <div style="font-weight: 900; font-size: 20px">
-                ⚡ Resultados Rápidos
-              </div>
-              <div class="muted" style="margin-top: 6px">
-                Progreso visible semana tras semana.
-              </div>
+            <div class="muted" style="margin-top: 6px">
+              Habla como un nativo desde el primer día.
             </div>
           </div>
-
-          <div class="card card--promo" id="referralCard">
-            <div class="sectionTitle" style="margin-top: 0">
-              🤝 Mi código de recomendación
+          <div class="card featureCard blue">
+            <div style="font-weight: 900; font-size: 20px">
+              📚 Material Exclusivo
             </div>
-            <div class="muted">
-              Compártelo con tus amigos. Cuando lo usen, recibirás una
-              recompensa.
+            <div class="muted" style="margin-top: 6px">
+              Recursos creados para hispanohablantes.
             </div>
-
-            <div
-              class="metaRow"
-              style="margin-top: 12px; gap: 10px; align-items: center"
-            >
-              <input
-                id="myRefCode"
-                class="input"
-                disabled
-                style="max-width: 240px; font-weight: 900"
-              />
-              <button
-                id="btnCopyMyRefCode"
-                class="btn-white-outline"
-                type="button"
-              >
-                📋 Copiar
-              </button>
+          </div>
+          <div class="card featureCard red">
+            <div style="font-weight: 900; font-size: 20px">
+              ⚡ Resultados Rápidos
             </div>
-
-            <div id="myRefInfo" class="hintSmall" style="margin-top: 8px"></div>
-
-            <div class="hr"></div>
-
-            <div style="font-weight: 900">🎁 Tengo un código de un amigo</div>
-            <div class="muted">
-              Escribe el código para asociarlo a tu cuenta.
+            <div class="muted" style="margin-top: 6px">
+              Progreso visible semana tras semana.
             </div>
-            <div
-              class="metaRow"
-              style="
-                margin-top: 10px;
-                gap: 10px;
-                align-items: center;
-                flex-wrap: wrap;
-              "
-            >
-              <input
-                id="useRefCode"
-                class="input"
-                placeholder="ej. MAGDAL-8F3K"
-                style="max-width: 240px"
-              />
-              <button id="btnApplyRefCode" class="btn-yellow" type="button">
-                Aplicar
-              </button>
-              <span id="applyRefStatus" class="hintSmall"></span>
-            </div>
+          </div>
+        </div>
 
-            <div class="hr"></div>
+        <div class="card" style="margin-top: 16px">
+          <div class="sectionTitle" style="margin-top: 0">📚 Cursos</div>
+          <div class="muted">Selecciona un nivel para empezar.</div>
+          <div
+            id="coursesCards"
+            class="coursesGrid"
+            style="margin-top: 12px"
+          ></div>
+        </div>
 
-            <div style="font-weight: 900">
-              📈 Estadísticas de recomendaciones
-            </div>
-            <div
-              class="metaRow"
-              style="margin-top: 10px; gap: 10px; flex-wrap: wrap"
-            >
-              <span class="pill" id="refStatInvites"
-                >👥 Recomendaciones: 0</span
-              >
-              <span class="pill pill-yellow" id="refStatRewards"
-                >🎫 Recompensas: 0</span
-              >
-            </div>
-            <div
-              id="refRewardsList"
-              class="muted"
-              style="margin-top: 10px"
-            ></div>
-            <div
-              id="refRewardsActions"
-              class="muted"
-              style="margin-top: 10px"
-            ></div>
+        <div
+          class="card card--promo"
+          id="referralCard"
+          style="margin-top: 16px"
+        >
+          <div class="sectionTitle" style="margin-top: 0">
+            🤝 Mi código de recomendación
+          </div>
+          <div class="muted">
+            Compártelo con tus amigos. Cuando lo usen, recibirás una recompensa.
           </div>
 
-          <div class="card">
-            <div class="sectionTitle" style="margin-top: 0">📚 Cursos</div>
-            <div class="muted">Selecciona un nivel para empezar.</div>
-            <div
-              id="coursesCards"
-              class="coursesGrid"
-              style="margin-top: 12px"
-            ></div>
+          <div
+            class="metaRow"
+            style="margin-top: 12px; gap: 10px; align-items: center"
+          >
+            <input
+              id="myRefCode"
+              class="input"
+              disabled
+              style="max-width: 240px; font-weight: 900"
+            />
+            <button
+              id="btnCopyMyRefCode"
+              class="btn-white-outline"
+              type="button"
+            >
+              📋 Copiar
+            </button>
           </div>
 
+          <div id="myRefInfo" class="hintSmall" style="margin-top: 8px"></div>
+
+          <div class="hr"></div>
+
+          <div style="font-weight: 900">🎁 Tengo un código de un amigo</div>
+          <div class="muted">Escribe el código para asociarlo a tu cuenta.</div>
+          <div
+            class="metaRow"
+            style="
+              margin-top: 10px;
+              gap: 10px;
+              align-items: center;
+              flex-wrap: wrap;
+            "
+          >
+            <input
+              id="useRefCode"
+              class="input"
+              placeholder="ej. MAGDAL-8F3K"
+              style="max-width: 240px"
+            />
+            <button id="btnApplyRefCode" class="btn-yellow" type="button">
+              Aplicar
+            </button>
+            <span id="applyRefStatus" class="hintSmall"></span>
+          </div>
+
+          <div class="hr"></div>
+
+          <div style="font-weight: 900">📈 Estadísticas de recomendaciones</div>
+          <div
+            class="metaRow"
+            style="margin-top: 10px; gap: 10px; flex-wrap: wrap"
+          >
+            <span class="pill" id="refStatInvites">👥 Recomendaciones: 0</span>
+            <span class="pill pill-yellow" id="refStatRewards"
+              >🎫 Recompensas: 0</span
+            >
+          </div>
+          <div id="refRewardsList" class="muted" style="margin-top: 10px"></div>
+          <div
+            id="refRewardsActions"
+            class="muted"
+            style="margin-top: 10px"
+          ></div>
+        </div>
+
+        <div class="panelGrid" style="margin-top: 16px">
           <div class="card" id="plansCard">
             <div class="sectionTitle" style="margin-top: 0">💎 Planes</div>
             <div class="muted" id="plansSubtitle">
@@ -221,15 +221,7 @@
                     gap: 10px;
                     flex-wrap: wrap;
                   "
-                >
-                  <button
-                    class="btn-yellow"
-                    type="button"
-                    data-act="scrollPromo"
-                  >
-                    Activar con código
-                  </button>
-                </div>
+                ></div>
               </div>
 
               <!-- B1 -->
@@ -261,15 +253,7 @@
                     gap: 10px;
                     flex-wrap: wrap;
                   "
-                >
-                  <button
-                    class="btn-yellow"
-                    type="button"
-                    data-act="scrollPromo"
-                  >
-                    Activar con código
-                  </button>
-                </div>
+                ></div>
               </div>
 
               <!-- B2 -->
@@ -301,15 +285,7 @@
                     gap: 10px;
                     flex-wrap: wrap;
                   "
-                >
-                  <button
-                    class="btn-yellow"
-                    type="button"
-                    data-act="scrollPromo"
-                  >
-                    Activar con código
-                  </button>
-                </div>
+                ></div>
               </div>
 
               <!-- Consultations add-on -->
@@ -355,13 +331,6 @@
                     rel="noopener"
                     >Reservar consulta</a
                   >
-                  <button
-                    class="btn-white-outline"
-                    type="button"
-                    data-act="scrollPromo"
-                  >
-                    Aplicar código
-                  </button>
                 </div>
               </div>
             </div>
@@ -391,34 +360,6 @@
             </div>
 
             <div class="hr"></div>
-
-            <div class="sectionTitle" style="margin-top: 0">
-              🏷️ Código promo
-            </div>
-            <div class="metaRow">
-              <input
-                id="adm_promo_code"
-                type="text"
-                placeholder="Código..."
-                style="max-width: 220px"
-              />
-              <button id="addPromoBtn" class="btn-white-outline" type="button">
-                Aplicar
-              </button>
-            </div>
-
-            <div
-              id="promoMsg"
-              class="hintSmall"
-              style="margin-top: 10px; display: none"
-            ></div>
-
-            <div style="margin-top: 12px">
-              <div style="font-weight: 900; margin-bottom: 6px">
-                Tus códigos
-              </div>
-              <div id="promoList" class="muted"></div>
-            </div>
           </div>
         </div>
 
@@ -447,7 +388,7 @@
 
             <div class="hr"></div>
 
-            <!-- Prices / promo config placeholders used by panel-page.js -->
+            <!-- Prices placeholders -->
             <div class="panelGrid">
               <div class="card">
                 <div class="sectionTitle" style="margin-top: 0">Precios</div>
@@ -459,32 +400,6 @@
                   />
                   <input id="adm_price_B1" type="number" placeholder="B1" />
                   <input id="adm_price_B2" type="number" placeholder="B2" />
-                </div>
-              </div>
-
-              <div class="card">
-                <div class="sectionTitle" style="margin-top: 0">
-                  Promo (admin)
-                </div>
-                <div class="muted" style="margin-top: 6px">
-                  Crea códigos en la colección <b>promo_codes</b>. (Se gestiona
-                  desde Firestore.)
-                </div>
-                <div class="metaRow" style="margin-top: 10px">
-                  <input
-                    id="adm_promo_pct"
-                    type="number"
-                    placeholder="% descuento"
-                  />
-                  <input id="adm_promo_days" type="number" placeholder="días" />
-                  <button id="btnSavePromo" class="btn-yellow" type="button">
-                    Guardar
-                  </button>
-                </div>
-                <div class="hintSmall" style="margin-top: 8px">
-                  Nota: en este paso “Guardar” solo es placeholder (para
-                  mantener compatibilidad). Los códigos reales se aplican desde
-                  <b>promo_codes</b>.
                 </div>
               </div>
             </div>

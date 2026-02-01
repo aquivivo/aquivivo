@@ -1,43 +1,47 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <title>Servicios | AquiVivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
-  <script src="assets/js/layout.js" type="module"></script>
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <title>Servicios | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <script src="assets/js/layout.js" type="module"></script>
+  </head>
 
-<body data-page="services">
-  <div id="appHeader"></div>
+  <body data-page="services">
+    <div id="appHeader"></div>
 
-  <main class="page">
-    <div class="container">
-
-      <div class="heroBanner">
-        <div class="heroTitleRow">
-          <div class="heroIcon">✨</div>
-          <div>
-            <h1 class="glow-text" style="margin:0; font-size:44px;">Servicios</h1>
-            <p class="subtitle" style="margin:6px 0 0;">Compra tu plan premium.</p>
+    <main class="page">
+      <div class="container">
+        <div class="heroBanner">
+          <div class="heroTitleRow">
+            <div class="heroIcon">✨</div>
+            <div>
+              <h1 class="glow-text" style="margin: 0; font-size: 44px">
+                Servicios
+              </h1>
+              <p class="subtitle" style="margin: 6px 0 0">
+                Compra tu plan premium.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="card" style="margin-top:16px;">
-        <div class="sectionTitle" style="margin-top:0;">💎 Plan Premium A1/A2</div>
-        <div class="muted">Acceso completo a niveles A1 y A2 durante 3 meses.</div>
-        <div style="margin-top:12px; font-size:22px; font-weight:900;">250 zł</div>
-        <div style="margin-top:14px;">
-          <!-- id + data-plan (obsłużymy oba) -->
-          <button class="btn-yellow" id="buyA1" data-plan="premium_a1">Comprar</button>
+        <div id="servicesGrid" class="grid" style="margin-top: 16px"></div>
+        <div
+          id="servicesFallback"
+          class="hintSmall"
+          style="display: none; margin-top: 16px"
+        >
+          No se pudo cargar la oferta.
         </div>
       </div>
+    </main>
 
-    </div>
-  </main>
-
-  <script type="module" src="assets/js/pages/services-page.js"></script>
-</body>
+    <script type="module" src="assets/js/pages/services-page.js"></script>
+  </body>
 </html>

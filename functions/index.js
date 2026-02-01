@@ -26,17 +26,31 @@ function getBaseUrl() {
 
 // ✅ MAPOWANIE PLAN → PRICE (STRIPE)
 const PLAN_TO_PRICE = {
-  premium_a1: 'price_1Sw0GZCI9cIUEmOtoPWavC9x',
+  premium_a1: 'price_1Sw2t5CI9cIUEmOtYvVwzq30',
+  premium_b1: 'price_1Sw2rUCI9cIUEmOtj7nhkJFQ',
+  premium_b2: 'price_1Sw2xqCI9cIUEmOtEDsrRvid',
+  'vip a1 + a2 + b1': 'price_1Sw2yvCI9cIUEmOtwTCkpP4e',
+  'vip a1 + a2 + b1 + b2': 'price_1Sw2zoCI9cIUEmOtSeTp1AjZ',
+  'karta pobytu': 'price_1Sw310CI9cIUEmOtCYMhSLHa',
+  hablo: 'price_1Sw33RCI9cIUEmOtTe62WvWe',
 };
 
 // ⏱️ czas dostępu (dni)
 const PLAN_TO_DAYS = {
   premium_a1: 90,
+  premium_b1: 90,
+  premium_b2: 90,
+  'vip a1 + a2 + b1': 90,
+  'vip a1 + a2 + b1 + b2': 90,
 };
 
 // 🔓 levele odblokowane przez plan
 const PLAN_TO_LEVELS = {
   premium_a1: ['A1', 'A2'],
+  premium_b1: ['B1'],
+  premium_b2: ['B2'],
+  'vip a1 + a2 + b1': ['A1', 'A2', 'B1'],
+  'vip a1 + a2 + b1 + b2': ['A1', 'A2', 'B1', 'B2'],
 };
 
 function normalizePlan(planId) {
