@@ -7,12 +7,22 @@ const db = admin.firestore();
 
 // Secrets set via:
 // firebase.cmd functions:config:set stripe.secret="sk_..." stripe.webhook="whsec_..."
-const STRIPE_SECRET = functions.config().stripe?.secret || '';
-const STRIPE_WEBHOOK_SECRET = functions.config().stripe?.webhook || '';
+// or env vars: STRIPE_SECRET / STRIPE_WEBHOOK_SECRET
+function getStripeSecret() {
+  return functions.config().stripe?.secret || process.env.STRIPE_SECRET || '';
+}
+
+function getStripeWebhookSecret() {
+  return (
+    functions.config().stripe?.webhook ||
+    process.env.STRIPE_WEBHOOK_SECRET ||
+    ''
+  );
+}
 
 // ✅ MAPOWANIE PLAN → PRICE (STRIPE)
 const PLAN_TO_PRICE = {
-  premium_a1: "price_1Sw0GZC19cIUEmOtoPlavC9x",
+  premium_a1: 'price_1Sw0GZCI9cIUEmOtoPWavC9x',
 };
 
 // ⏱️ czas dostępu (dni)
@@ -22,11 +32,13 @@ const PLAN_TO_DAYS = {
 
 // 🔓 levele odblokowane przez plan
 const PLAN_TO_LEVELS = {
-  premium_a1: ["A1", "A2"],
+  premium_a1: ['A1', 'A2'],
 };
 
 function normalizePlan(planId) {
-  return String(planId || "").trim().toLowerCase();
+  return String(planId || '')
+    .trim()
+    .toLowerCase();
 }
 
 function computeNextUntil(existingTs, days) {
@@ -39,65 +51,73 @@ function computeNextUntil(existingTs, days) {
   }
 
   return admin.firestore.Timestamp.fromDate(
-    new Date(base.getTime() + Number(days) * 24 * 60 * 60 * 1000)
+    new Date(base.getTime() + Number(days) * 24 * 60 * 60 * 1000),
   );
 }
 
 // 1️⃣ START CHECKOUT (callable)
-exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "Zaloguj się.");
-  }
+exports.createCheckoutSession = functions.https.onCall(
+  async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Zaloguj się.');
+    }
 
-  if (!STRIPE_SECRET) {
-    throw new functions.https.HttpsError(
-      "failed-precondition",
-      "Brak stripe.secret w config."
-    );
-  }
+    const STRIPE_SECRET = getStripeSecret();
+    if (!STRIPE_SECRET) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Brak stripe.secret w config.',
+      );
+    }
 
-  const uid = context.auth.uid;
-  const planId = normalizePlan(data?.planId);
-  const priceId = PLAN_TO_PRICE[planId];
+    const uid = context.auth.uid;
+    const planId = normalizePlan(data?.planId);
+    const priceId = PLAN_TO_PRICE[planId];
 
-  if (!priceId) {
-    throw new functions.https.HttpsError("invalid-argument", "Nieznany plan.");
-  }
+    if (!priceId) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Nieznany plan.',
+      );
+    }
 
-  const stripe = new Stripe(STRIPE_SECRET, { apiVersion: "2024-06-20" });
-  const origin = String(data?.origin || "").trim();
+    const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2024-06-20' });
+    const origin = String(data?.origin || '').trim();
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${origin}/services.html?success=1`,
-    cancel_url: `${origin}/services.html?canceled=1`,
-    client_reference_id: uid,
-    metadata: { uid, planId },
-    allow_promotion_codes: true,
-  });
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${origin}/services.html?success=1`,
+      cancel_url: `${origin}/services.html?canceled=1`,
+      client_reference_id: uid,
+      metadata: { uid, planId },
+      allow_promotion_codes: true,
+    });
 
-  return { url: session.url };
-});
+    return { url: session.url };
+  },
+);
 
 // 2️⃣ WEBHOOK STRIPE → FIRESTORE
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   try {
-    const sig = req.headers["stripe-signature"];
-    if (!sig) return res.status(400).send("Missing stripe-signature");
+    const sig = req.headers['stripe-signature'];
+    if (!sig) return res.status(400).send('Missing stripe-signature');
 
+    const STRIPE_SECRET = getStripeSecret();
+    const STRIPE_WEBHOOK_SECRET = getStripeWebhookSecret();
     if (!STRIPE_SECRET || !STRIPE_WEBHOOK_SECRET) {
-      return res.status(500).send("Stripe not configured");
+      return res.status(500).send('Stripe not configured');
     }
 
-    const stripe = new Stripe(STRIPE_SECRET, { apiVersion: "2024-06-20" });
+    const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2024-06-20' });
     const event = stripe.webhooks.constructEvent(
       req.rawBody,
       sig,
-      STRIPE_WEBHOOK_SECRET
+      STRIPE_WEBHOOK_SECRET,
     );
 
-    if (event.type === "checkout.session.completed") {
+    if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const uid = session.metadata?.uid || session.client_reference_id;
       const planId = normalizePlan(session.metadata?.planId);
@@ -122,10 +142,10 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
               blocked: false,
               accessUntil: nextUntil,
               updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-              lastPaymentProvider: "stripe",
+              lastPaymentProvider: 'stripe',
               lastStripeSessionId: session.id,
             },
-            { merge: true }
+            { merge: true },
           );
         });
       }
@@ -133,7 +153,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
 
     return res.json({ received: true });
   } catch (err) {
-    console.error("stripeWebhook error:", err);
+    console.error('stripeWebhook error:', err);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 });
