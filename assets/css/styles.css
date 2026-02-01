@@ -20,6 +20,53 @@
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
 }
 
+/* ===== Brand Rules: official palette tokens ===== */
+:root {
+  --brand-blue-base: #003893;
+  --brand-blue-deep: #0b2a5a;
+  --brand-blue-deeper: #0a1f44;
+  --brand-yellow: #fcd116;
+  --brand-yellow-alt: #facc15;
+  --brand-red: #ce1126;
+  --brand-red-alt: #dc2626;
+  --brand-white: #ffffff;
+  --brand-pastel-blue: #bcd3ff;
+}
+
+/* ===== Brand Rules: tile motion (required) ===== */
+.card,
+.featureCard,
+.courseCard,
+.listItem,
+.contactFormCard,
+.heroBanner,
+.modalCard {
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover,
+  .featureCard:hover,
+  .courseCard:hover,
+  .listItem:hover,
+  .contactFormCard:hover,
+  .heroBanner:hover,
+  .modalCard:hover {
+    transform: translateY(-8px) scale(1.03);
+    filter: brightness(1.04);
+  }
+  .btn:hover,
+  .btn-white-outline:hover,
+  .btn-yellow:hover,
+  .btn-red:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.03);
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -1228,3 +1275,244 @@ body[data-page*='admin'] details[open] > :not(summary) {
 body[data-page*='admin'] details[open].is-open > :not(summary) {
   display: block;
 }
+
+/* =====================================================
+   AQUIVIVO — Brand Rules Patch (v1.0.1)
+   PURPOSE: Apply Colombia palette (blue/yellow/red) across UI
+   WITHOUT changing the page background you already have.
+   - Strong, readable accents (not pastel/minimal)
+   - Consistent cards, CTAs, badges, focus states
+   - Level tiles: A1/A2 blue, B1 red, B2 yellow (via data-levels)
+   ===================================================== */
+
+/* --- Tokens (adds; does not remove your existing vars) --- */
+:root{
+  --av-blue:#003893;
+  --av-blue-dark:#0B2A5A;
+  --av-blue-ink:#0b1b3f;
+  --av-blue-soft:#bcd3ff;
+
+  --av-yellow:#FCD116;
+  --av-yellow-2:#FACC15;
+
+  --av-red:#CE1126;
+  --av-red-2:#DC2626;
+
+  --av-white:#FFFFFF;
+  --av-gray:#6b7280;
+
+  --av-radius-xl:28px;
+  --av-radius-lg:22px;
+
+  --av-shadow:0 18px 70px rgba(0,0,0,.22);
+  --av-shadow-hover:0 26px 90px rgba(0,0,0,.28);
+
+  --av-ease:cubic-bezier(.2,.8,.2,1);
+  --av-fast:180ms;
+  --av-base:240ms;
+}
+
+/* --- Do NOT touch body background. Only ensure text contrast is stable. --- */
+body{ color:#eaf0ff; }
+
+/* --- Typography emphasis (autorytet + czytelność) --- */
+h1,h2,h3{
+  font-family:'Playfair Display',serif;
+  font-weight:900;
+}
+.subtitle{ color: rgba(234,240,255,.84); }
+.muted{ color: rgba(234,240,255,.76); }
+.hintSmall{ color: rgba(234,240,255,.74); }
+
+/* =====================================================
+   CARDS (round + depth + gentle motion)
+   ===================================================== */
+.card{
+  border-radius: var(--av-radius-xl);
+  box-shadow: var(--av-shadow);
+  transition: transform var(--av-base) var(--av-ease), box-shadow var(--av-base) var(--av-ease);
+}
+.card:hover{
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: var(--av-shadow-hover);
+}
+
+/* White cards used for forms/admin surfaces should stay readable */
+.card.card-white,
+.form-card,
+.contactFormCard,
+.modalCard,
+.modalBox.card{
+  background: var(--av-white);
+  color: var(--av-blue-ink);
+}
+
+/* Slight “glass” cards on blue backgrounds (for feature rows etc.) */
+.featureCard,
+.hero-card{
+  border-radius: var(--av-radius-xl);
+  border: 2px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
+  box-shadow: 0 14px 50px rgba(0,0,0,.22);
+  transition: transform var(--av-base) var(--av-ease), box-shadow var(--av-base) var(--av-ease);
+}
+.featureCard:hover,
+.hero-card:hover{
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 22px 70px rgba(0,0,0,.26);
+}
+
+/* =====================================================
+   BUTTONS / CTAs (yellow primary, red secondary, outline)
+   ===================================================== */
+.btn, .btn-yellow, .btn-red, .btn-white-outline{
+  border-radius: 18px;
+  font-weight: 900;
+  transition: transform var(--av-fast) var(--av-ease), box-shadow var(--av-fast) var(--av-ease), opacity var(--av-fast);
+}
+
+.btn{
+  background: var(--av-blue);
+  color: #fff;
+  border: 2px solid rgba(255,255,255,.10);
+}
+.btn-yellow{
+  background: var(--av-yellow);
+  color: var(--av-blue-ink);
+  border: 2px solid rgba(0,0,0,.05);
+}
+.btn-red{
+  background: var(--av-red);
+  color: #fff;
+  border: 2px solid rgba(255,255,255,.10);
+}
+.btn-white-outline{
+  background: transparent;
+  border: 2px solid rgba(255,255,255,.85);
+  color: #fff;
+}
+
+.btn:hover, .btn-yellow:hover, .btn-red:hover, .btn-white-outline:hover{
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+}
+
+/* =====================================================
+   PILLS / BADGES (strong accents)
+   ===================================================== */
+.pill{
+  border-radius: 999px;
+  font-weight: 800;
+  border: 2px solid rgba(255,255,255,.20);
+  background: rgba(255,255,255,.08);
+}
+.pill-yellow{
+  background: rgba(252,209,22,.18);
+  border-color: rgba(252,209,22,.55);
+  color: var(--av-yellow);
+}
+.pill-blue{
+  background: rgba(188,211,255,.18);
+  border-color: rgba(188,211,255,.55);
+  color: var(--av-blue-soft);
+}
+.pill-red{
+  background: rgba(206,17,38,.18);
+  border-color: rgba(206,17,38,.55);
+  color: #ffd1d6;
+}
+
+/* =====================================================
+   FORMS (focus in yellow)
+   ===================================================== */
+.input, .select, textarea, input, select{
+  border-radius: 16px;
+}
+.input:focus, .select:focus, textarea:focus, input:focus, select:focus{
+  outline: none;
+  border-color: rgba(252,209,22,.85);
+  box-shadow: 0 0 0 4px rgba(252,209,22,.18);
+}
+
+/* =====================================================
+   COURSE TILES (espanel) — STRONG level colors
+   uses: data-levels="A1,A2" / "B1" / "B2"
+   ===================================================== */
+.courseCard{
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--av-radius-xl);
+  border: 2px solid rgba(255,255,255,.12);
+  box-shadow: var(--av-shadow);
+  transition: transform var(--av-base) var(--av-ease), box-shadow var(--av-base) var(--av-ease);
+}
+.courseCard:hover{
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: var(--av-shadow-hover);
+}
+
+/* accent rail */
+.courseCard::before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:10px;
+  opacity: 1;
+}
+
+/* A1/A2 BLUE */
+.courseCard[data-levels*="A1"],
+.courseCard[data-levels*="A2"]{
+  background:
+    radial-gradient(900px 520px at 10% 0%, rgba(188,211,255,0.58), rgba(188,211,255,0.12) 55%),
+    linear-gradient(180deg, rgba(188,211,255,0.24), rgba(255,255,255,0.10));
+  border-color: rgba(188,211,255,0.55);
+  color: var(--av-blue-ink);
+}
+.courseCard[data-levels*="A1"]::before,
+.courseCard[data-levels*="A2"]::before{ background: rgba(188,211,255,0.98); }
+
+/* B1 RED */
+.courseCard[data-levels*="B1"]{
+  background:
+    radial-gradient(900px 520px at 10% 0%, rgba(206,17,38,0.56), rgba(206,17,38,0.12) 55%),
+    linear-gradient(180deg, rgba(206,17,38,0.26), rgba(255,255,255,0.08));
+  border-color: rgba(206,17,38,0.60);
+  color: #fff;
+}
+.courseCard[data-levels*="B1"]::before{ background: rgba(206,17,38,0.98); }
+.courseCard[data-levels*="B1"] .muted{ color: rgba(255,255,255,.88) !important; }
+.courseCard[data-levels*="B1"] .pill{
+  background: rgba(255,255,255,.12) !important;
+  border-color: rgba(255,255,255,.22) !important;
+  color: #fff !important;
+}
+
+/* B2 YELLOW */
+.courseCard[data-levels*="B2"]{
+  background:
+    radial-gradient(900px 520px at 10% 0%, rgba(252,209,22,0.66), rgba(252,209,22,0.14) 55%),
+    linear-gradient(180deg, rgba(252,209,22,0.26), rgba(255,255,255,0.10));
+  border-color: rgba(252,209,22,0.66);
+  color: var(--av-blue-ink);
+}
+.courseCard[data-levels*="B2"]::before{ background: rgba(252,209,22,0.99); }
+
+/* keep content above accent rail */
+.courseCard > *{ position: relative; z-index: 1; }
+
+/* =====================================================
+   PROGRESS (yellow focus)
+   ===================================================== */
+.progressFill, .readProgressFill{ background: var(--av-yellow); }
+.progressBar, .readProgressBar{
+  border-radius: 999px;
+  background: rgba(255,255,255,.20);
+  overflow: hidden;
+}
+
+/* =====================================================
+   SMALL POLISH: make headings pop inside cards
+   ===================================================== */
+.card h1, .card h2, .card h3{ color: var(--av-blue-ink); }
+.featureCard h1, .featureCard h2, .featureCard h3{ color:#fff; }
