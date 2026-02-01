@@ -17,14 +17,7 @@
 
     <main class="page">
       <div class="container">
-        <div
-          style="
-            display: grid;
-            grid-template-columns: minmax(320px, 520px) 1fr;
-            gap: 16px;
-            align-items: start;
-          "
-        >
+        <div class="panelHeroGrid">
           <div class="heroBanner" style="align-self: start">
             <div class="heroTitleRow">
               <div class="heroIcon">🎓</div>
@@ -61,7 +54,90 @@
               ></span>
             </div>
           </div>
-          <div></div>
+          <div class="referralSide">
+            <div class="card card--promo referral-card referral-card--compact" id="referralCard">
+            <div class="sectionTitle" style="margin-top: 0">
+              🤝 Mi código de recomendación
+            </div>
+            <div class="muted">
+              Compártelo con tus amigos. Cuando lo usen, recibirás una recompensa.
+            </div>
+
+            <div
+              class="metaRow"
+              style="margin-top: 12px; gap: 10px; align-items: center"
+            >
+              <input
+                id="myRefCode"
+                class="input"
+                disabled
+                style="max-width: 220px; font-weight: 900"
+              />
+              <button
+                id="btnCopyMyRefCode"
+                class="btn-white-outline"
+                type="button"
+              >
+                📋 Copiar
+              </button>
+            </div>
+
+            <div id="myRefInfo" class="hintSmall" style="margin-top: 8px"></div>
+
+            <div class="hr"></div>
+
+            <details class="refDetails">
+              <summary>🎁 Tengo un código de un amigo</summary>
+              <div class="muted">Escribe el código para asociarlo a tu cuenta.</div>
+              <div
+                class="metaRow"
+                style="
+                  margin-top: 10px;
+                  gap: 10px;
+                  align-items: center;
+                  flex-wrap: wrap;
+                "
+              >
+                <input
+                  id="useRefCode"
+                  class="input"
+                  placeholder="ej. MAGDAL-8F3K"
+                  style="max-width: 220px"
+                />
+                <button id="btnApplyRefCode" class="btn-yellow" type="button">
+                  Aplicar
+                </button>
+                <span id="applyRefStatus" class="hintSmall"></span>
+              </div>
+            </details>
+
+            <div class="hr"></div>
+
+            <details class="refDetails">
+              <summary>📈 Estadísticas de recomendaciones</summary>
+              <div
+                class="metaRow"
+                style="margin-top: 10px; gap: 10px; flex-wrap: wrap"
+              >
+                <span class="pill" id="refStatInvites">👥 Recomendaciones: 0</span>
+                <span class="pill pill-yellow" id="refStatRewards"
+                  >🎫 Recompensas: 0</span
+                >
+              </div>
+              <div id="refRewardsList" class="muted" style="margin-top: 10px"></div>
+              <div
+                id="refRewardsActions"
+                class="muted"
+                style="margin-top: 10px"
+              ></div>
+            </details>
+            </div>
+            <div class="card promo-mini" id="promoMini">
+              <div class="promo-mini-title">20% para ti</div>
+              <div class="promo-mini-sub">10% para tu amigo</div>
+            </div>
+          </div>
+          </div>
         </div>
 
         <div
@@ -98,7 +174,7 @@
           </div>
         </div>
 
-        <div class="card" style="margin-top: 16px">
+        <div class="card coursesSection" style="margin-top: 16px">
           <div class="sectionTitle" style="margin-top: 0">📚 Cursos</div>
           <div class="muted">Selecciona un nivel para empezar.</div>
           <div
@@ -108,82 +184,16 @@
           ></div>
         </div>
 
-        <div
-          class="card card--promo"
-          id="referralCard"
-          style="margin-top: 16px"
-        >
-          <div class="sectionTitle" style="margin-top: 0">
-            🤝 Mi código de recomendación
+        <div class="referralRow" style="margin-top: 16px">
+
+              style="margin-top: 10px"
+            ></div>
+            <div
+              id="refRewardsActions"
+              class="muted"
+              style="margin-top: 10px"
+            ></div>
           </div>
-          <div class="muted">
-            Compártelo con tus amigos. Cuando lo usen, recibirás una recompensa.
-          </div>
-
-          <div
-            class="metaRow"
-            style="margin-top: 12px; gap: 10px; align-items: center"
-          >
-            <input
-              id="myRefCode"
-              class="input"
-              disabled
-              style="max-width: 240px; font-weight: 900"
-            />
-            <button
-              id="btnCopyMyRefCode"
-              class="btn-white-outline"
-              type="button"
-            >
-              📋 Copiar
-            </button>
-          </div>
-
-          <div id="myRefInfo" class="hintSmall" style="margin-top: 8px"></div>
-
-          <div class="hr"></div>
-
-          <div style="font-weight: 900">🎁 Tengo un código de un amigo</div>
-          <div class="muted">Escribe el código para asociarlo a tu cuenta.</div>
-          <div
-            class="metaRow"
-            style="
-              margin-top: 10px;
-              gap: 10px;
-              align-items: center;
-              flex-wrap: wrap;
-            "
-          >
-            <input
-              id="useRefCode"
-              class="input"
-              placeholder="ej. MAGDAL-8F3K"
-              style="max-width: 240px"
-            />
-            <button id="btnApplyRefCode" class="btn-yellow" type="button">
-              Aplicar
-            </button>
-            <span id="applyRefStatus" class="hintSmall"></span>
-          </div>
-
-          <div class="hr"></div>
-
-          <div style="font-weight: 900">📈 Estadísticas de recomendaciones</div>
-          <div
-            class="metaRow"
-            style="margin-top: 10px; gap: 10px; flex-wrap: wrap"
-          >
-            <span class="pill" id="refStatInvites">👥 Recomendaciones: 0</span>
-            <span class="pill pill-yellow" id="refStatRewards"
-              >🎫 Recompensas: 0</span
-            >
-          </div>
-          <div id="refRewardsList" class="muted" style="margin-top: 10px"></div>
-          <div
-            id="refRewardsActions"
-            class="muted"
-            style="margin-top: 10px"
-          ></div>
         </div>
 
         <div class="panelGrid" style="margin-top: 16px">
@@ -194,14 +204,7 @@
               lecciones).
             </div>
 
-            <div
-              id="plansGrid"
-              class="coursesGrid"
-              style="
-                margin-top: 12px;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-              "
-            >
+            <div id="plansGrid" class="coursesGrid plans-grid">
               <!-- A1-A2 -->
               <div
                 class="courseCard"

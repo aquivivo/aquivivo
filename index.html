@@ -19,8 +19,8 @@
     <div class="container">
 
       <!-- HERO -->
-      <section class="heroBanner" style="padding:26px 22px;">
-        <div style="display:grid; grid-template-columns:1.15fr .85fr; gap:18px; align-items:center;">
+      <section class="heroBanner hero-main">
+        <div class="hero-grid">
           <div>
             <h1 class="glow-text" style="margin:0; font-family:'Playfair Display',serif; font-weight:900; font-size:clamp(40px,5vw,70px); line-height:1.02;">
               Aprende Polaco<br>
@@ -57,7 +57,7 @@
                   <div class="muted">Estudiantes</div>
                 </div>
                 <div class="card" style="padding:14px; text-align:center;">
-                  <div style="font-weight:900; font-size:34px; color:#bcd3ff;">10</div>
+                  <div style="font-weight:900; font-size:34px; color:var(--pastel-blue);">10</div>
                   <div class="muted">años</div>
                 </div>
                 <div class="card" style="padding:14px; text-align:center;">
@@ -78,20 +78,20 @@
     </div><!-- /container -->
 
     <!-- 3 KAFELKI: FULL WIDTH -->
-    <section style="margin-top:18px;">
-      <div style="width:100vw; margin-left:calc(50% - 50vw); padding:0 22px;">
-        <div style="max-width: 1280px; margin: 0 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
-          <div class="card" style="padding:22px; border-left:8px solid var(--yellow); border-radius:28px;">
+    <section class="section-wide">
+      <div class="section-wide-inner">
+        <div class="features-grid">
+          <div class="card featureCard featureCard--yellow" style="padding:22px;">
             <div style="font-weight:900; font-size:22px;">🗣 Conversación Natural</div>
             <div class="muted" style="margin-top:10px; font-size:18px; line-height:1.55;">Habla como un nativo desde el primer día.</div>
           </div>
 
-          <div class="card" style="padding:22px; border-left:8px solid #bcd3ff; border-radius:28px;">
+          <div class="card featureCard featureCard--blue" style="padding:22px;">
             <div style="font-weight:900; font-size:22px;">📚 Material Exclusivo</div>
             <div class="muted" style="margin-top:10px; font-size:18px; line-height:1.55;">Recursos creados para hispanohablantes.</div>
           </div>
 
-          <div class="card" style="padding:22px; border-left:8px solid var(--red); border-radius:28px;">
+          <div class="card featureCard featureCard--red" style="padding:22px;">
             <div style="font-weight:900; font-size:22px;">⚡ Resultados Rápidos</div>
             <div class="muted" style="margin-top:10px; font-size:18px; line-height:1.55;">Progreso visible semana tras semana.</div>
           </div>
@@ -202,7 +202,7 @@
             <div class="contactCheck">
               <input id="contactPrivacy" type="checkbox" required / name="privacy" autocomplete="off">
               <label for="contactPrivacy" style="margin:0; font-weight:800;">
-                Acepto la <a href="#" style="color:#003893; font-weight:900;">Política de Privacidad</a><span class="req">*</span>
+                Acepto la <a href="#" style="color:var(--blue); font-weight:900;">Política de Privacidad</a><span class="req">*</span>
               </label>
             </div>
 

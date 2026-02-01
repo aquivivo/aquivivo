@@ -1,79 +1,211 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Inicia sesión | AquiVivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
-  <style>
-    .auth-wrap{ max-width: 920px; margin: 0 auto; display:grid; grid-template-columns: 1.1fr .9fr; gap: 16px; align-items: start; }
-    @media (max-width: 860px){ .auth-wrap{ grid-template-columns: 1fr; } }
-    .form-card{ background: white; color: var(--blue-main); border-radius: 26px; padding: 22px; box-shadow: 0 18px 70px rgba(0,0,0,.22); }
-    .form-title{ margin: 0 0 6px 0; font-size: 22px; font-weight: 900; }
-    .form-sub{ margin: 0 0 16px 0; color: #6b7280; font-size: 13px; line-height: 1.35; }
-    .field{ display:grid; gap: 8px; margin-bottom: 12px; }
-    .field label{ font-weight: 900; font-size: 13px; color: #0b1b3f; }
-    .input{ width: 100%; padding: 12px 14px; border-radius: 16px; border: 2px solid #e5e7eb; outline: none; font-weight: 700; font-size: 14px; }
-    .input:focus{ border-color: rgba(252,209,22,.85); box-shadow: 0 0 0 4px rgba(252,209,22,.18); }
-    .actions{ display:flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-    .msg{ margin-top: 12px; font-weight: 800; font-size: 13px; color: #0b1b3f; }
-    .msg.error{ color: #b91c1c; } .msg.ok{ color: #065f46; }
-    .hint{ margin-top: 12px; font-size: 12px; color: #6b7280; line-height: 1.35; }
-    .quick-links{ margin-top: 14px; display:flex; gap: 10px; flex-wrap: wrap; }
-    .reset-link{ margin-top: 10px; display:inline-flex; align-items:center; gap: 10px; border:none; background:transparent; color:#003893; font-weight:900; cursor:pointer; text-decoration: underline; padding: 0; }
-    .reset-link:hover{ opacity:.9; }
-  </style>
-  <script src="assets/js/layout.js" type="module"></script>
-</head>
-<body data-page="login">
-  <div id="appHeader"></div>
-  <main class="page">
-    <div class="container">
-      <div class="auth-wrap">
-        <div class="hero-card">
-          <h1 class="hero-title glow-text">Inicia sesión</h1>
-          <p class="hero-subtitle">Accede a los cursos A1/A2 y tu panel de estudiante.</p>
-          <div class="stats" style="margin-top:16px;">
-          </div>
-          <div class="quick-links">
-            <a class="btn-white-outline" href="Programa.html">Programa</a>
-            <a class="btn-white-outline" href="Ebooks.html">E-books</a>
-            <a class="btn-white-outline" href="Contacto.html">Contacto</a>
-          </div>
-        </div>
-        <div class="form-card">
-          <div class="form-title">Inicia sesión / Regístrate</div>
-          <p class="form-sub">El registro crea una cuenta. Después de iniciar sesión, irás a tu panel de estudiante.</p>
-          <div class="field">
-            <label for="name">Nombre (opcional)</label>
-            <input class="input" type="text" id="name" placeholder="Nombre (solo en registro)">
-          </div>
-          <div class="field">
-            <label for="email">Correo electrónico</label>
-            <input class="input" type="email" id="email" placeholder="Correo electrónico">
-          </div>
-          <div class="field">
-            <label for="password">Contraseña</label>
-            <div style="position:relative;">
-              <input class="input" type="password" id="password" placeholder="Contraseña" style="padding-right:48px;">
-              <button type="button" id="togglePassword" title="Mostrar / ocultar contraseña" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); border:none; background:transparent; cursor:pointer; font-size:18px; opacity:.75;">👁️</button>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Inicia sesión | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <style>
+      .auth-wrap {
+        max-width: 920px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 16px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .auth-wrap {
+          grid-template-columns: 1fr;
+        }
+      }
+      .form-card {
+        background: white;
+        color: var(--blue-main);
+        border-radius: 26px;
+        padding: 22px;
+        box-shadow: 0 18px 70px rgba(0, 0, 0, 0.22);
+      }
+      .form-title {
+        margin: 0 0 6px 0;
+        font-size: 22px;
+        font-weight: 900;
+      }
+      .form-sub {
+        margin: 0 0 16px 0;
+        color: var(--ink-muted);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      .field {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .field label {
+        font-weight: 900;
+        font-size: 13px;
+        color: var(--ink-blue);
+      }
+      .input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 16px;
+        border: 2px solid var(--border-light);
+        outline: none;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .input:focus {
+        border-color: rgba(252, 209, 22, 0.85);
+        box-shadow: 0 0 0 4px rgba(252, 209, 22, 0.18);
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .msg {
+        margin-top: 12px;
+        font-weight: 800;
+        font-size: 13px;
+        color: var(--ink-blue);
+      }
+      .msg.error {
+        color: var(--danger-ink);
+      }
+      .msg.ok {
+        color: var(--success-ink);
+      }
+      .hint {
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--ink-muted);
+        line-height: 1.35;
+      }
+      .quick-links {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .reset-link {
+        margin-top: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        background: transparent;
+        color: var(--blue);
+        font-weight: 900;
+        cursor: pointer;
+        text-decoration: underline;
+        padding: 0;
+      }
+      .reset-link:hover {
+        opacity: 0.9;
+      }
+    </style>
+    <script src="assets/js/layout.js" type="module"></script>
+  </head>
+  <body data-page="login">
+    <div id="appHeader"></div>
+    <main class="page">
+      <div class="container">
+        <div class="auth-wrap">
+          <div class="hero-card">
+            <h1 class="hero-title glow-text">Inicia sesión</h1>
+            <p class="hero-subtitle">
+              Accede a los cursos A1/A2 y tu panel de estudiante.
+            </p>
+            <div class="stats" style="margin-top: 16px"></div>
+            <div class="quick-links">
+              <a class="btn-white-outline" href="Programa.html">Programa</a>
+              <a class="btn-white-outline" href="Ebooks.html">E-books</a>
+              <a class="btn-white-outline" href="Contacto.html">Contacto</a>
             </div>
           </div>
-          <div class="actions">
-            <button class="btn-yellow" id="loginBtn" type="button">Inicia sesión</button>
-            <button class="btn-red" id="registerBtn" type="button">Regístrate</button>
-          </div>
-          <button class="reset-link" type="button" id="resetPasswordBtn">Olvidé mi contraseña</button>
-          <div id="message" class="msg"></div>
-          <div class="hint">
-            Al registrarte, aceptas nuestros <a href="TOS.html" target="_blank">Términos de Servicio</a> y <a href="Privacy.html" target="_blank">Política de Privacidad</a>
+          <div class="form-card">
+            <div class="form-title">Inicia sesión / Regístrate</div>
+            <p class="form-sub">
+              El registro crea una cuenta. Después de iniciar sesión, irás a tu
+              panel de estudiante.
+            </p>
+            <div class="field">
+              <label for="name">Nombre (opcional)</label>
+              <input
+                class="input"
+                type="text"
+                id="name"
+                placeholder="Nombre (solo en registro)"
+              />
+            </div>
+            <div class="field">
+              <label for="email">Correo electrónico</label>
+              <input
+                class="input"
+                type="email"
+                id="email"
+                placeholder="Correo electrónico"
+              />
+            </div>
+            <div class="field">
+              <label for="password">Contraseña</label>
+              <div style="position: relative">
+                <input
+                  class="input"
+                  type="password"
+                  id="password"
+                  placeholder="Contraseña"
+                  style="padding-right: 48px"
+                />
+                <button
+                  type="button"
+                  id="togglePassword"
+                  title="Mostrar / ocultar contraseña"
+                  style="
+                    position: absolute;
+                    right: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                    font-size: 18px;
+                    opacity: 0.75;
+                  "
+                >
+                  👁️
+                </button>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn-yellow" id="loginBtn" type="button">
+                Inicia sesión
+              </button>
+              <button class="btn-red" id="registerBtn" type="button">
+                Regístrate
+              </button>
+            </div>
+            <button class="reset-link" type="button" id="resetPasswordBtn">
+              Olvidé mi contraseña
+            </button>
+            <div id="message" class="msg"></div>
+            <div class="hint">
+              Al registrarte, aceptas nuestros
+              <a href="TOS.html" target="_blank">Términos de Servicio</a> y
+              <a href="Privacy.html" target="_blank">Política de Privacidad</a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
 
-  <script type="module" src="assets/js/auth.js"></script>
-</body>
+    <script type="module" src="assets/js/auth.js"></script>
+  </body>
 </html>

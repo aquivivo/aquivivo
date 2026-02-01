@@ -1,176 +1,241 @@
 <!doctype html>
 <html lang="pl">
-<head>
-  <meta charset="UTF-8">
-  <title>Import B1 → Firestore (AquiVivo)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body{ font-family: Arial, sans-serif; padding: 20px; }
-    button{ padding: 12px 16px; font-weight: 800; cursor: pointer; }
-    .box{ margin-top: 12px; padding: 12px; border: 1px solid #ddd; border-radius: 10px; }
-    .ok{ color: #065f46; font-weight: 800; }
-    .err{ color: #b91c1c; font-weight: 800; }
-    code{ background:#f3f4f6; padding:2px 6px; border-radius:6px; }
-    .muted{ color:#6b7280; }
-  </style>
-</head>
-<body>
-
-<div style="background:#FCD116; color:#003893; padding:8px; text-align:center; font-size:12px; font-weight:700; margin-bottom:14px;">
-  Sesión activa: <strong id="sessionEmail" style="color:#003893; font-weight:900;">Cargando...</strong>
-</div>
-
-<h2>🔥 Import B1 → Firestore</h2>
-<p>Dodaje tematy <b>B1</b> do kolekcji <code>courses</code> bez duplikatów. Ustawia <code>free=false</code>.</p>
-<p class="muted">Wymaga zalogowania jako admin: <code>aquivivo.pl@gmail.com</code></p>
-
-<button id="importBtn">IMPORT B1 (bez duplikatów)</button>
-<div id="log" class="box">Status: gotowe.</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
-
-/* 🔥 FIREBASE CONFIG */
-const firebaseConfig = {
-  "apiKey": "AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM",
-  "authDomain": "aquivivo-platform.firebaseapp.com",
-  "projectId": "aquivivo-platform",
-  "storageBucket": "aquivivo-platform.firebasestorage.app",
-  "messagingSenderId": "116115622011",
-  "appId": "1:116115622011:web:33a4a583eba4368071bade"
-};
-const ADMIN_EMAIL = "aquivivo.pl@gmail.com";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const logEl = document.getElementById("log");
-function log(msg, type=""){
-  logEl.innerHTML = `<div class="${type}">${msg}</div>`;
-}
-
-/* 🔐 CHECK ADMIN */
-onAuthStateChanged(auth, (user) => {
-  if (!user || (user.email || "").toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-    alert("❌ Nie jesteś adminem (albo nie jesteś zalogowana na tej domenie).");
-    window.location.href = "login.html";
-  }
-});
-
-/* ===================== B1 DATA ===================== */
-/* Format: ["Tytuł", "Opis"] */
-const B1_GRAMMAR = [
-  [
-    "(Uzupełnij)",
-    "Wklej listę GRAMMAR tutaj w formacie: [\"Tytuł\",\"Opis\"]"
-  ]
-];
-const B1_VOCAB   = [
-  [
-    "(Uzupełnij)",
-    "Wklej listę VOCAB tutaj w formacie: [\"Temat\",\"Opis\"]"
-  ]
-];
-
-/* ===================== HELPERS ===================== */
-function makeKey(level, type, title, desc){
-  return [
-    String(level||"").toUpperCase().trim(),
-    String(type||"").toLowerCase().trim(),
-    String(title||"").trim(),
-    String(desc||"").trim()
-  ].join("||");
-}
-
-async function fetchExistingKeysForLevel(level){
-  const qRef = query(collection(db, "courses"), where("level", "==", level));
-  const snap = await getDocs(qRef);
-  const set = new Set();
-  snap.forEach(d => {
-    const data = d.data();
-    set.add(makeKey(data.level, data.type, data.title, data.desc));
-  });
-  return set;
-}
-
-/* ===================== IMPORT ===================== */
-document.getElementById("importBtn").onclick = async () => {
-  try{
-    log("⏳ Importuję…", "");
-
-    const col = collection(db, "courses");
-    const existing = await fetchExistingKeysForLevel("B1");
-
-    let order = 1;
-    let added = 0;
-    let skipped = 0;
-
-    for (const [title, desc] of B1_GRAMMAR) {
-      const level = "B1";
-      const type = "grammar";
-      const key = makeKey(level, type, title, desc);
-
-      if (existing.has(key)) skipped++;
-      else {
-        await addDoc(col, {
-          level, type, title, desc,
-          order,
-          free: false,
-          exerciseTypes: []
-        });
-        existing.add(key);
-        added++;
+  <head>
+    <meta charset="UTF-8" />
+    <title>Import B1 → Firestore (AquiVivo)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
       }
-      order++;
-    }
-
-    for (const [title, desc] of B1_VOCAB) {
-      const level = "B1";
-      const type = "vocabulary";
-      const key = makeKey(level, type, title, desc);
-
-      if (existing.has(key)) skipped++;
-      else {
-        await addDoc(col, {
-          level, type, title, desc,
-          order,
-          free: false,
-          exerciseTypes: []
-        });
-        existing.add(key);
-        added++;
+      button {
+        padding: 12px 16px;
+        font-weight: 800;
+        cursor: pointer;
       }
-      order++;
-    }
+      .box {
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+      }
+      .ok {
+        color: var(--success-ink);
+        font-weight: 800;
+      }
+      .err {
+        color: var(--danger-ink);
+        font-weight: 800;
+      }
+      code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .muted {
+        color: var(--ink-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        background: var(--yellow);
+        color: var(--blue);
+        padding: 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      "
+    >
+      Sesión activa:
+      <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
+        >Cargando...</strong
+      >
+    </div>
 
-    log(`✅ Gotowe! Dodano: ${added} • Pominięto (duplikaty): ${skipped}`, "ok");
-    alert(`✅ Import zakończony!\nDodano: ${added}\nPominięto (duplikaty): ${skipped}`);
-  } catch(e) {
-    console.error(e);
-    log("❌ Błąd importu: " + (e?.message || e), "err");
-    alert("❌ Błąd importu: " + (e?.message || e));
-  }
-};
+    <h2>🔥 Import B1 → Firestore</h2>
+    <p>
+      Dodaje tematy <b>B1</b> do kolekcji <code>courses</code> bez duplikatów.
+      Ustawia <code>free=false</code>.
+    </p>
+    <p class="muted">
+      Wymaga zalogowania jako admin: <code>aquivivo.pl@gmail.com</code>
+    </p>
 
-// Load session email
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    document.getElementById("sessionEmail").textContent = user.email || "(sin correo)";
-  } else {
-    document.getElementById("sessionEmail").textContent = "No conectado";
-  }
-});
-</script>
+    <button id="importBtn">IMPORT B1 (bez duplikatów)</button>
+    <div id="log" class="box">Status: gotowe.</div>
 
-</body>
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        getDocs,
+        query,
+        where,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+
+      /* 🔥 FIREBASE CONFIG */
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+        authDomain: 'aquivivo-platform.firebaseapp.com',
+        projectId: 'aquivivo-platform',
+        storageBucket: 'aquivivo-platform.firebasestorage.app',
+        messagingSenderId: '116115622011',
+        appId: '1:116115622011:web:33a4a583eba4368071bade',
+      };
+      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const logEl = document.getElementById('log');
+      function log(msg, type = '') {
+        logEl.innerHTML = `<div class="${type}">${msg}</div>`;
+      }
+
+      /* 🔐 CHECK ADMIN */
+      onAuthStateChanged(auth, (user) => {
+        if (
+          !user ||
+          (user.email || '').toLowerCase() !== ADMIN_EMAIL.toLowerCase()
+        ) {
+          alert(
+            '❌ Nie jesteś adminem (albo nie jesteś zalogowana na tej domenie).',
+          );
+          window.location.href = 'login.html';
+        }
+      });
+
+      /* ===================== B1 DATA ===================== */
+      /* Format: ["Tytuł", "Opis"] */
+      const B1_GRAMMAR = [
+        [
+          '(Uzupełnij)',
+          'Wklej listę GRAMMAR tutaj w formacie: ["Tytuł","Opis"]',
+        ],
+      ];
+      const B1_VOCAB = [
+        ['(Uzupełnij)', 'Wklej listę VOCAB tutaj w formacie: ["Temat","Opis"]'],
+      ];
+
+      /* ===================== HELPERS ===================== */
+      function makeKey(level, type, title, desc) {
+        return [
+          String(level || '')
+            .toUpperCase()
+            .trim(),
+          String(type || '')
+            .toLowerCase()
+            .trim(),
+          String(title || '').trim(),
+          String(desc || '').trim(),
+        ].join('||');
+      }
+
+      async function fetchExistingKeysForLevel(level) {
+        const qRef = query(
+          collection(db, 'courses'),
+          where('level', '==', level),
+        );
+        const snap = await getDocs(qRef);
+        const set = new Set();
+        snap.forEach((d) => {
+          const data = d.data();
+          set.add(makeKey(data.level, data.type, data.title, data.desc));
+        });
+        return set;
+      }
+
+      /* ===================== IMPORT ===================== */
+      document.getElementById('importBtn').onclick = async () => {
+        try {
+          log('⏳ Importuję…', '');
+
+          const col = collection(db, 'courses');
+          const existing = await fetchExistingKeysForLevel('B1');
+
+          let order = 1;
+          let added = 0;
+          let skipped = 0;
+
+          for (const [title, desc] of B1_GRAMMAR) {
+            const level = 'B1';
+            const type = 'grammar';
+            const key = makeKey(level, type, title, desc);
+
+            if (existing.has(key)) skipped++;
+            else {
+              await addDoc(col, {
+                level,
+                type,
+                title,
+                desc,
+                order,
+                free: false,
+                exerciseTypes: [],
+              });
+              existing.add(key);
+              added++;
+            }
+            order++;
+          }
+
+          for (const [title, desc] of B1_VOCAB) {
+            const level = 'B1';
+            const type = 'vocabulary';
+            const key = makeKey(level, type, title, desc);
+
+            if (existing.has(key)) skipped++;
+            else {
+              await addDoc(col, {
+                level,
+                type,
+                title,
+                desc,
+                order,
+                free: false,
+                exerciseTypes: [],
+              });
+              existing.add(key);
+              added++;
+            }
+            order++;
+          }
+
+          log(
+            `✅ Gotowe! Dodano: ${added} • Pominięto (duplikaty): ${skipped}`,
+            'ok',
+          );
+          alert(
+            `✅ Import zakończony!\nDodano: ${added}\nPominięto (duplikaty): ${skipped}`,
+          );
+        } catch (e) {
+          console.error(e);
+          log('❌ Błąd importu: ' + (e?.message || e), 'err');
+          alert('❌ Błąd importu: ' + (e?.message || e));
+        }
+      };
+
+      // Load session email
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          document.getElementById('sessionEmail').textContent =
+            user.email || '(sin correo)';
+        } else {
+          document.getElementById('sessionEmail').textContent = 'No conectado';
+        }
+      });
+    </script>
+  </body>
 </html>

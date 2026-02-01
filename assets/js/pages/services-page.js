@@ -27,12 +27,22 @@ function esc(s) {
 function renderCard(svc) {
   const title = svc.title ? esc(svc.title) : esc(svc.sku || 'Plan');
   const desc = svc.desc ? esc(svc.desc) : '';
-  const badge = svc.badge
-    ? `<div class="badge" style="display:inline-block; margin-bottom:10px;">${esc(svc.badge)}</div>`
-    : '';
+  const isFeatured = Boolean(svc._isFeatured);
+  const isA1A2 = Boolean(svc._isA1A2);
+  const badgeText = svc.badge
+    ? esc(svc.badge)
+    : isFeatured
+      ? '★ Recomendado'
+      : '';
+  const badge = badgeText ? `<div class="badge">${badgeText}</div>` : '';
   const price = svc.price
-    ? `<div style="margin-top:12px; font-size:22px; font-weight:900;">${esc(svc.price)}</div>`
+    ? `<div class="priceTag">${esc(svc.price)}</div>`
     : '';
+  const ctaClass = isFeatured
+    ? 'btn-yellow'
+    : isA1A2
+      ? 'btn-red'
+      : 'btn-white-outline';
 
   // CTA
   const ctaLabel =
@@ -43,12 +53,12 @@ function renderCard(svc) {
     // For Stripe checkout we treat `sku` as planId (the same planId used by createCheckoutSession)
     const planId = String(svc.sku || '').trim();
     ctaHtml = `
-      <button class="btn-yellow" data-plan="${esc(planId)}" type="button">${ctaLabel}</button>
+      <button class="${ctaClass}" data-plan="${esc(planId)}" type="button">${ctaLabel}</button>
     `;
   } else if (svc.ctaType === 'link') {
     const url = String(svc.ctaUrl || '').trim();
     ctaHtml = `
-      <a class="btn-yellow" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${ctaLabel}</a>
+      <a class="${ctaClass}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${ctaLabel}</a>
     `;
   } else if (svc.ctaType === 'payhip') {
     // Keep it visible, but do not guess integration here.
@@ -62,11 +72,11 @@ function renderCard(svc) {
   }
 
   return `
-    <div class="card" style="margin-top:16px;">
+    <div class="card services-card${isFeatured ? ' services-card--featured' : ''}${isA1A2 ? ' services-card--a1a2' : ''}">
       <div class="sectionTitle" style="margin-top:0;">${badge}${title}</div>
       ${desc ? `<div class="muted">${desc}</div>` : ''}
       ${price}
-      <div style="margin-top:14px;">${ctaHtml}</div>
+      <div class="ctaRow">${ctaHtml}</div>
     </div>
   `;
 }
@@ -91,6 +101,39 @@ async function loadServices() {
       grid.innerHTML = '<div class="hintSmall">No hay planes activos.</div>';
       return;
     }
+
+    const vipMatcher = (item) => {
+      const text =
+        `${item.title || ''} ${item.sku || ''} ${item.badge || ''} ${item.desc || ''}`.toLowerCase();
+      return (
+        text.includes('vip') &&
+        text.includes('a1') &&
+        text.includes('a2') &&
+        text.includes('b1') &&
+        text.includes('b2')
+      );
+    };
+
+    const a1a2Matcher = (item) => {
+      const text =
+        `${item.title || ''} ${item.sku || ''} ${item.badge || ''} ${item.desc || ''}`.toLowerCase();
+      return (
+        text.includes('a1') &&
+        text.includes('a2') &&
+        !text.includes('b1') &&
+        !text.includes('b2')
+      );
+    };
+
+    const featured =
+      items.find(vipMatcher) ||
+      items.find((item) => item.featured === true) ||
+      items[0];
+    const featuredId = featured?.id;
+    items.forEach((item) => {
+      item._isFeatured = item.id === featuredId;
+      item._isA1A2 = a1a2Matcher(item);
+    });
 
     grid.innerHTML = items.map(renderCard).join('');
 
