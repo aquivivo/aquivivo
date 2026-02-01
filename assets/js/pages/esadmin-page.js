@@ -535,7 +535,7 @@ async function saveService() {
     price: String($("svcPrice")?.value || "").trim(),
     badge: String($("svcBadge")?.value || "").trim(),
     order: Number($("svcOrder")?.value || 0),
-    ctaType: String($("svcCtaType")?.value || "info"),
+    ctaType: String($("svcCtaType")?.value || "info").trim(),
     ctaUrl: String($("svcCtaUrl")?.value || "").trim(),
     ctaLabel: String($("svcCtaLabel")?.value || "").trim(),
     active: String($("svcActive")?.value || "true") === "true",
@@ -543,7 +543,7 @@ async function saveService() {
   };
 
   if (payload.ctaType === "link" && payload.ctaUrl && !/^https?:\/\//i.test(payload.ctaUrl)) {
-    return setStatus(st, "CTA url debe empezar con http(s)://", true);
+    return setStatus(st, "CTA url debe empezar con http(s):// (solo para link)", true);
   }
 
   setStatus(st, "Guardando…");
