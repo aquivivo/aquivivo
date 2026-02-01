@@ -20,6 +20,30 @@ const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
 
+function showAccessLocked(reason = 'locked') {
+  const host = document.querySelector('.container') || document.body;
+  const page = document.querySelector('main.page .container') || host;
+
+  // try to use existing empty states if present
+  const grid = document.getElementById('topicsGrid') || document.getElementById('courseList') || null;
+
+  const card = document.createElement('section');
+  card.className = 'card';
+  card.style.marginTop = '16px';
+  card.innerHTML = `
+    <div class="sectionTitle" style="margin-top:0;">🔒 Acceso requerido</div>
+    <div class="muted" style="margin-top:6px; line-height:1.6;">
+      Este nivel está bloqueado para tu cuenta en este momento.
+    </div>
+    <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
+      <a class="btn-yellow" href="services.html?level=${encodeURIComponent(LEVEL)}" style="text-decoration:none;">Activar acceso</a>
+      <a class="btn-white-outline" href="espanel.html" style="text-decoration:none;">Volver al panel</a>
+    </div>
+  `;
+  if (grid) grid.innerHTML = '';
+  page.prepend(card);
+}
+
 async function getUserFlags(uid) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
@@ -165,6 +189,8 @@ async function loadTopics(user) {
   const subtitle = $('levelSubtitle');
   const flags = await getUserFlags(user.uid);
 
+  if (flags.blocked) { showAccessLocked('blocked'); return; }
+  if (!flags.hasLevelAccess) { showAccessLocked('locked'); return; }
   if (subtitle) subtitle.textContent = `Nivel ${LEVEL}`;
 
   const host = $('topicsList');

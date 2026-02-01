@@ -79,7 +79,10 @@ import {
     });
 
     dd.addEventListener('mouseenter', () => open());
-    dd.addEventListener('mouseleave', () => close());
+    dd.addEventListener('mouseleave', (e) => {
+      // only close if the pointer truly left the dropdown (not when moving into the menu)
+      if (!dd.contains(e.relatedTarget)) close();
+    });
 
     document.addEventListener('click', (e) => {
       if (!dd.contains(e.target)) close();

@@ -490,7 +490,7 @@ function showAccessLocked() {
               <div style="padding:14px 14px; line-height:1.6;">
                 <b>🔒 Acceso premium</b><br/>
                 Para ver ejercicios necesitas acceso.<br/>
-                Ve al <a href="espanel.html" style="text-decoration:underline;">Panel</a> para aplicar un código o activar el plan.
+                Ve al <a href="services.html" style="text-decoration:underline;">Panel</a> para aplicar un código o activar el plan.
               </div>
             `;
     }

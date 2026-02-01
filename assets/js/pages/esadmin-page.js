@@ -694,6 +694,128 @@ async function loadUsers(reset = false) {
   }
 }
 
+function ensureUserQuickButtons() {
+  // Add missing quick buttons into the modal actions row (without editing HTML file).
+  const statusEl = $("um_status");
+  const row = statusEl?.parentElement; // metaRow where buttons live
+  if (!row) return;
+
+  const mkBtn = (id, cls, text) => {
+    const b = document.createElement("button");
+    b.id = id;
+    b.type = "button";
+    b.className = cls;
+    b.textContent = text;
+    return b;
+  };
+
+  if (!$("um_extend7")) row.insertBefore(mkBtn("um_extend7", "btn-white-outline", "⏳ Extender +7 días"), statusEl);
+  if (!$("um_extend30")) row.insertBefore(mkBtn("um_extend30", "btn-white-outline", "⏳ Extender +30 días"), statusEl);
+  if (!$("um_extend90")) row.insertBefore(mkBtn("um_extend90", "btn-white-outline", "⏳ Extender +90 días"), statusEl);
+  if (!$("um_forever")) row.insertBefore(mkBtn("um_forever", "btn-white-outline", "∞ Permanente (hasta 2099)"), statusEl);
+
+  if (!$("um_resetTrial")) row.insertBefore(mkBtn("um_resetTrial", "btn-yellow", "🎁 Reset trial A1 (7d)"), statusEl);
+  if (!$("um_revoke")) row.insertBefore(mkBtn("um_revoke", "btn-red", "🔒 Quitar acceso"), statusEl);
+}
+
+function addDaysToUntil(existing, days) {
+  const base = existing && existing instanceof Date ? existing : null;
+  const now = new Date();
+  const start = base && base.getTime() > now.getTime() ? base : now;
+  const d = new Date(start.getTime());
+  d.setDate(d.getDate() + Number(days));
+  return d;
+}
+
+function setUntilInputFromDate(dt) {
+  const inp = $("um_until");
+  if (!inp) return;
+  // to local datetime-local value: YYYY-MM-DDTHH:MM
+  const pad = (n) => String(n).padStart(2, "0");
+  const yyyy = dt.getFullYear();
+  const mm = pad(dt.getMonth() + 1);
+  const dd = pad(dt.getDate());
+  const hh = pad(dt.getHours());
+  const mi = pad(dt.getMinutes());
+  inp.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+}
+
+async function quickExtend(days) {
+  const uid = String($("um_uid")?.textContent || "").trim();
+  if (!uid) return;
+
+  // Keep current plan selection, just extend the date and enable access.
+  const manual = parseDateTimeLocal($("um_until")?.value || "");
+  const cached = usersCache.get(uid) || {};
+  const current = manual || toDateMaybe(cached.accessUntil);
+  const next = addDaysToUntil(current, days);
+
+  if ($("um_access")) $("um_access").checked = true;
+  if ($("um_blocked")) $("um_blocked").checked = false;
+
+  setUntilInputFromDate(next);
+  await saveUserModal();
+}
+
+async function quickResetTrial() {
+  const uid = String($("um_uid")?.textContent || "").trim();
+  if (!uid) return;
+
+  // Force: free + levels[A1] + accessUntil now+7
+  if ($("um_plan")) $("um_plan").value = "free";
+  if ($("um_access")) $("um_access").checked = true;
+  if ($("um_blocked")) $("um_blocked").checked = false;
+
+  const next = addDaysToUntil(null, 7);
+  setUntilInputFromDate(next);
+  await saveUserModal();
+}
+
+
+async function quickForever() {
+  const uid = String($("um_uid")?.textContent || "").trim();
+  if (!uid) return;
+
+  // Permanent (with "until"): access=true + accessUntil far in the future
+  if ($("um_access")) $("um_access").checked = true;
+  if ($("um_blocked")) $("um_blocked").checked = false;
+
+  // Keep current plan selection (or set premium for clarity)
+  const p = normalizePlanId($("um_plan")?.value || "free");
+  if (p === "free") $("um_plan").value = "premium";
+
+  // Set accessUntil to a far-future date (so UI shows ACTIVE and it's effectively permanent)
+  const far = new Date(2099, 11, 31, 12, 0, 0); // 2099-12-31 12:00
+  setUntilInputFromDate(far);
+
+  await saveUserModal();
+}
+
+async function quickRevoke() {
+  const uid = String($("um_uid")?.textContent || "").trim();
+  if (!uid) return;
+
+  // Remove access by clearing levels and setting accessUntil in the past.
+  if ($("um_access")) $("um_access").checked = false;
+  if ($("um_plan")) $("um_plan").value = "free";
+  if ($("um_blocked")) $("um_blocked").checked = false;
+
+  // set a past date so even if something checks it, it's expired
+  const past = new Date(Date.now() - 24 * 3600 * 1000);
+  setUntilInputFromDate(past);
+
+  // additionally clear levels explicitly (saveUserModal derives levels from plan, so we patch after save)
+  await saveUserModal();
+  try {
+    await setDoc(doc(db, "users", uid), { levels: [] }, { merge: true });
+    const old = usersCache.get(uid) || {};
+    usersCache.set(uid, { ...old, levels: [] });
+  } catch (e) {
+    console.error("[revoke levels]", e);
+  }
+}
+
+
 function openUserModal(uid) {
   const modal = $("userModal");
   if (!modal) return;
@@ -712,6 +834,8 @@ function openUserModal(uid) {
   if ($("um_note")) $("um_note").value = u.note || "";
 
   if ($("um_status")) $("um_status").textContent = "";
+
+  ensureUserQuickButtons();
 
   modal.style.display = "block";
   modal.classList.add("open");
@@ -999,6 +1123,12 @@ function bindEvents() {
   $("userModalClose")?.addEventListener("click", closeUserModal);
   $("um_cancel")?.addEventListener("click", closeUserModal);
   $("um_save")?.addEventListener("click", saveUserModal);
+  $("um_extend7")?.addEventListener("click", () => quickExtend(7));
+  $("um_extend30")?.addEventListener("click", () => quickExtend(30));
+  $("um_extend90")?.addEventListener("click", () => quickExtend(90));
+  $("um_forever")?.addEventListener("click", quickForever);
+  $("um_resetTrial")?.addEventListener("click", quickResetTrial);
+  $("um_revoke")?.addEventListener("click", quickRevoke);
 
   // segmentación
   $("btnLoadExp0")?.addEventListener("click", () => loadSegmentExpiring(0));

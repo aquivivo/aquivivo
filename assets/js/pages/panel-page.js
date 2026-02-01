@@ -146,7 +146,7 @@ function renderAdminUI(isAdmin) {
   }
 }
 
-function renderCourses() {
+function renderCourses(userDoc, flags) {
   const host = $('coursesCards');
   if (!host) return;
 
@@ -157,29 +157,56 @@ function renderCourses() {
     { lvl: 'B2', title: 'B2 — Avanzado', subtitle: 'Fluidez y matices.' },
   ];
 
+  const canOpen = (lvl) => hasLevelAccess(flags, userDoc, lvl);
+
   host.innerHTML = levels
     .map(({ lvl, title, subtitle }) => {
       const href = `course.html?level=${encodeURIComponent(lvl)}`;
+      const unlocked = canOpen(lvl);
+
+      if (unlocked) {
+        return `
+          <a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">
+            <div class="courseTop">
+              <div class="courseBadge">📚 ${lvl}</div>
+              <div class="pill pill-yellow">Entrar →</div>
+            </div>
+            <div class="courseTitle" style="margin-top:10px;">${title}</div>
+            <div class="muted" style="margin-top:6px;">${subtitle}</div>
+          </a>
+        `;
+      }
+
       return `
-        <a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">
+        <div class="courseCard" style="opacity:.55; filter:saturate(.75); cursor:not-allowed;">
           <div class="courseTop">
-            <div class="courseBadge">📚 ${lvl}</div>
-            <div class="pill pill-yellow">Entrar →</div>
+            <div class="courseBadge">🔒 ${lvl}</div>
+            <div class="pill">Bloqueado</div>
           </div>
           <div class="courseTitle" style="margin-top:10px;">${title}</div>
           <div class="muted" style="margin-top:6px;">${subtitle}</div>
-        </a>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn-yellow" href="services.html?level=${encodeURIComponent(lvl)}" style="text-decoration:none;">Activar acceso</a>
+            <a class="btn-white-outline" href="services.html" style="text-decoration:none;">Ver planes</a>
+          </div>
+        </div>
       `;
     })
     .join('');
 }
 
-
 function parseAccessLevels(userDoc) {
+  // ✅ Primary source of truth: users.levels (A1/A2/B1/B2)
+  const rawLevels = userDoc?.levels;
+  if (Array.isArray(rawLevels)) {
+    return rawLevels.map((x) => String(x).toUpperCase()).filter(Boolean);
+  }
+
+  // Backward compatibility: users.accessLevels
   const raw = userDoc?.accessLevels;
   if (Array.isArray(raw)) return raw.map((x) => String(x).toUpperCase()).filter(Boolean);
 
-  // backward compatibility: plan like "a1", "a2", "b1", "b2", "pack_a1a2", "pack_b1b2"
+  // Fallback: plan mapping (legacy)
   const p = String(userDoc?.plan || '').toLowerCase();
   if (p === 'a1') return ['A1'];
   if (p === 'a2') return ['A2'];
@@ -187,6 +214,9 @@ function parseAccessLevels(userDoc) {
   if (p === 'b2') return ['B2'];
   if (p === 'pack_a1a2') return ['A1', 'A2'];
   if (p === 'pack_b1b2') return ['B1', 'B2'];
+  if (p === 'premium_a1' || p === 'premium_a1a2') return ['A1', 'A2'];
+  if (p === 'premium_b1') return ['B1', 'A1'];
+  if (p === 'premium_b2') return ['B2', 'A1'];
   return [];
 }
 
@@ -690,7 +720,7 @@ btnApplyRefCode?.addEventListener('click', async ()=>{
 
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderCourses();
+  renderCourses(null, { isAdmin:false, hasAccess:false });
 
   const btn = $('addPromoBtn');
   const input = $('adm_promo_code');
@@ -738,6 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const flags = computeFlags(viewDoc);
+    renderCourses(viewDoc, flags);
     renderPlans(viewDoc, flags);
 
     if (btn) {

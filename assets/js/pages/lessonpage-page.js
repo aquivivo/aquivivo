@@ -21,6 +21,33 @@ const qs = new URLSearchParams(window.location.search);
 const LEVEL = (qs.get('level') || 'A1').toUpperCase();
 const COURSE_ID = (qs.get('id') || '').trim();
 
+function showAccessLocked() {
+  const wrap = document.querySelector('.container') || document.body;
+  const card = document.createElement('section');
+  card.className = 'card';
+  card.style.marginTop = '14px';
+  card.innerHTML = `
+    <div class="sectionTitle" style="margin-top:0;">🔒 Acceso requerido</div>
+    <div class="muted" style="margin-top:6px; line-height:1.6;">
+      Esta lección está bloqueada para tu cuenta.
+    </div>
+    <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
+      <a class="btn-yellow" href="services.html?level=${encodeURIComponent(LEVEL)}" style="text-decoration:none;">Activar acceso</a>
+      <a class="btn-white-outline" href="espanel.html" style="text-decoration:none;">Volver al panel</a>
+    </div>
+  `;
+  // hide regular content if present
+  const content = document.getElementById('lessonContent');
+  const empty = document.getElementById('lessonEmpty');
+  const toc = document.getElementById('tocWrap');
+  const sticky = document.getElementById('lessonSticky');
+  if (content) content.style.display = 'none';
+  if (toc) toc.style.display = 'none';
+  if (sticky) sticky.style.display = 'none';
+  if (empty) { empty.style.display = 'none'; empty.innerHTML = ''; }
+  wrap.prepend(card);
+}
+
 async function trackTopicOpen(uid, courseId, level) {
   if (!uid || !courseId) return;
   try {
@@ -160,6 +187,7 @@ async function loadLesson(user) {
 
   const flags = await getUserFlags(user.uid);
 
+  if (!flags.hasAccess) { showAccessLocked(); return; }
   // Always show reading tools (progress + ejercicios link)
   if (readTools) readTools.style.display = '';
 

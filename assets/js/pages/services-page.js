@@ -1,9 +1,28 @@
+
+function handleBuyClick(e) {
+  const btn = e.target && e.target.closest && e.target.closest("[data-buy-plan]");
+  if (!btn) return;
+  const planId = btn.getAttribute("data-buy-plan");
+  if (!planId) return;
+
+  btn.disabled = true;
+  btn.textContent = "Redirigiendo…";
+  startCheckout(planId).catch((err) => {
+    console.error(err);
+    btn.disabled = false;
+    btn.textContent = "Comprar";
+    alert("No se pudo iniciar el pago. Verifica configuración de Stripe.");
+  });
+}
+
 // assets/js/pages/services-page.js
 // Services/Plans listing for AquiVivo
 // - Reads Firestore collection: services
 // - Renders by category: plans / consults / extras
 // - CTA types: info | link | payhip
 // - For admins only: quick-apply plan to own account (testing)
+import { startCheckout } from "../stripe-checkout.js";
+
 
 import { auth, db } from "../firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
@@ -349,3 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+
+document.addEventListener("click", handleBuyClick);
