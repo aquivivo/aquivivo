@@ -17,41 +17,51 @@
 
     <main class="page">
       <div class="container">
-        <div class="heroBanner">
-          <div class="heroTitleRow">
-            <div class="heroIcon">🎓</div>
-            <div>
-              <h1 class="glow-text" style="margin: 0; font-size: 44px">
-                Panel del estudiante
-              </h1>
-              <div class="muted" style="margin-top: 6px">
-                Tu acceso, progreso y cursos disponibles.
+        <div
+          style="
+            display: grid;
+            grid-template-columns: minmax(320px, 520px) 1fr;
+            gap: 16px;
+            align-items: start;
+          "
+        >
+          <div class="heroBanner" style="align-self: start">
+            <div class="heroTitleRow">
+              <div class="heroIcon">🎓</div>
+              <div>
+                <h1 class="glow-text" style="margin: 0; font-size: 44px">
+                  Panel del estudiante
+                </h1>
+                <div class="muted" style="margin-top: 6px">
+                  Tu acceso, progreso y cursos disponibles.
+                </div>
               </div>
             </div>
-          </div>
 
-          <div
-            class="metaRow"
-            style="margin-top: 14px; flex-wrap: wrap; gap: 10px"
-          >
-            <span class="pill"
-              >👤 <b id="userEmail">...</b>
-              <span id="adminBadge" style="margin-left: 10px"
-                >(admin: —)</span
-              ></span
-            >
-
-            <!-- ✅ Access status pills (Krok 11) -->
-            <span id="accessPill" class="pill" style="display: none"></span>
-            <span id="planPill" class="pill" style="display: none"></span>
-            <span id="untilPill" class="pill" style="display: none"></span>
-
-            <span
-              id="adminLinkWrap"
+            <div
               class="metaRow"
-              style="margin-left: auto"
-            ></span>
+              style="margin-top: 14px; flex-wrap: wrap; gap: 10px"
+            >
+              <span class="pill"
+                >👤 <b id="userEmail">...</b>
+                <span id="adminBadge" style="margin-left: 10px"
+                  >(admin: —)</span
+                ></span
+              >
+
+              <!-- ✅ Access status pills (Krok 11) -->
+              <span id="accessPill" class="pill" style="display: none"></span>
+              <span id="planPill" class="pill" style="display: none"></span>
+              <span id="untilPill" class="pill" style="display: none"></span>
+
+              <span
+                id="adminLinkWrap"
+                class="metaRow"
+                style="margin-left: auto"
+              ></span>
+            </div>
           </div>
+          <div></div>
         </div>
 
         <div
