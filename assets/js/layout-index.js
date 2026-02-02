@@ -1,4 +1,4 @@
-import { auth } from './firebase-init.js';
+﻿import { auth } from './firebase-init.js';
 import {
   onAuthStateChanged,
   signOut,
@@ -7,6 +7,21 @@ import {
 (function () {
   function qs(sel, root = document) {
     return root.querySelector(sel);
+  }
+
+  function smoothScrollTo(targetY, duration = 900) {
+    const startY = window.pageYOffset;
+    const diff = targetY - startY;
+    const startTime = performance.now();
+
+    function step(now) {
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      window.scrollTo(0, startY + diff * eased);
+      if (t < 1) requestAnimationFrame(step);
+    }
+
+    requestAnimationFrame(step);
   }
 
   function injectHeader() {
@@ -30,8 +45,8 @@ import {
           <div class="nav-actions">
             <a class="btn-white-outline" id="btnPolaco" href="${hrefPolaco}">POLACO</a>
             <div class="nav-dd" id="navServiciosDD">
-              <button class="btn-white-outline nav-dd-btn nav-dd-toggle" id="btnServicios" type="button" aria-haspopup="menu" aria-expanded="false">
-                🧳 Servicios <span class="nav-dd-caret">▼</span>
+              <button class="btn-white-outline nav-dd-btn" id="btnServicios" type="button" aria-haspopup="menu" aria-expanded="false">
+                &#x1F9F3; Servicios <span class="nav-dd-caret">&#9660;</span>
               </button>
               <div class="nav-dd-menu" id="menuServicios" role="menu" aria-label="Servicios">
                 <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#planes">Planes</a>
@@ -44,19 +59,18 @@ import {
               </div>
             </div>
 
-            <a class="btn-white-outline" id="btnContacto" href="#appFooter">💗 Contacto</a>
+            <a class="btn-white-outline" id="btnContacto" href="#contact">&#x1F495; Contacto</a>
 
-            <a class="btn-white-outline" id="btnPanel" href="${hrefPanel}">🏠 Libreta</a>
+            <a class="btn-white-outline" id="btnPanel" href="${hrefPanel}">&#x1F3E0; Libreta</a>
 
-            <a class="btn-yellow" id="btnLogin" href="${hrefLogin}" style="display:none;">🔐 Iniciar sesión</a>
-            <button class="btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesión</button>
+            <a class="btn-yellow" id="btnLogin" href="${hrefLogin}" style="display:none;">&#x1F510; Iniciar sesi&oacute;n</a>
+            <button class="btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesi&oacute;n</button>
           </div>
         </div>
 
         <div class="nav-line nav-line-below"></div>
       </div>
     `;
-    console.log('Header loaded: AquiVivo');
   }
 
   function injectFooter() {
@@ -72,8 +86,8 @@ import {
         <div class="nav-line nav-line-above"></div>
         <div class="footer-inner container">
           <div class="footer-text">
-            © 2026 AquiVivo. Todos los derechos reservados.<br />
-            Te ayudo a perder el miedo a hablar. 🌸🤍
+            &copy; 2026 AquiVivo. Todos los derechos reservados.<br />
+            Te ayudo a perder el miedo a hablar. &#x1F338;&#x1F90D;
           </div>
         </div>
       </footer>
@@ -109,7 +123,6 @@ import {
 
     dd.addEventListener('mouseenter', () => open());
     dd.addEventListener('mouseleave', (e) => {
-      // only close if the pointer truly left the dropdown (not when moving into the menu)
       if (!dd.contains(e.relatedTarget)) close();
     });
 
@@ -159,42 +172,39 @@ import {
   }
 
   function setupTramitesScroll() {
-    const link = document.getElementById('btnTramites');
-    if (!link) {
-      console.warn('Nie znaleziono btnTramites w DOM!');
-      return;
+    const id = 'mas-que-clases';
+
+    function adjustScroll() {
+      const target = document.getElementById(id);
+      if (!target) {
+        return;
+      }
+
+      const header = document.querySelector('.nav-glass');
+      const offset = (header ? header.getBoundingClientRect().height : 0) + 32;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+      setTimeout(() => {
+        window.scrollTo({ top, behavior: 'auto' });
+      }, 500);
     }
-    link.addEventListener(
-      'click',
-      function (e) {
-        console.log('Kliknięto Trámites!');
-        if (
-          window.location.pathname.endsWith('index.html') ||
-          window.location.pathname === '/'
-        ) {
-          const target = document.getElementById('mas-que-clases');
-          if (target) {
-            e.preventDefault();
-            setTimeout(function () {
-              const extraOffset = 140;
-              const top =
-                target.getBoundingClientRect().top +
-                window.pageYOffset +
-                extraOffset;
-              window.scrollTo({ top, behavior: 'smooth' });
-              history.replaceState(null, '', '#mas-que-clases');
-              console.log('Scroll do mas-que-clases!');
-            }, 100);
-          } else {
-            console.warn('Nie znaleziono sekcji mas-que-clases!');
-          }
-        } else {
-          window.location.href = 'index.html#mas-que-clases';
-          console.log('Przekierowanie na index.html#mas-que-clases');
-        }
-      },
-      true,
-    ); // użyj capture, by nadpisać inne eventy
+
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === `#${id}`) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            adjustScroll();
+          });
+        });
+      }
+    });
+    if (window.location.hash === `#${id}`) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          adjustScroll();
+        });
+      });
+    }
   }
 
   function setupAnchorScroll() {
@@ -204,25 +214,16 @@ import {
 
       const hash = a.getAttribute('href') || '';
       if (!hash.startsWith('#')) return;
+      if (hash === '#mas-que-clases') return;
 
       const target = document.getElementById(hash.slice(1));
       if (!target) return;
 
       e.preventDefault();
 
-      if (hash === '#mas-que-clases') {
-        const extraOffset = 140;
-        const top =
-          target.getBoundingClientRect().top + window.pageYOffset + extraOffset;
-        window.scrollTo({ top, behavior: 'smooth' });
-        history.replaceState(null, '', hash);
-        return;
-      }
-
       const header = document.querySelector('.nav-glass');
       const offset = header ? header.getBoundingClientRect().height + 8 : 0;
-      const top =
-        target.getBoundingClientRect().top + window.pageYOffset - offset;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
       window.scrollTo({ top, behavior: 'smooth' });
       history.replaceState(null, '', hash);
     });
@@ -257,8 +258,6 @@ import {
     onAuthStateChanged(auth, (user) => {
       const loggedIn = !!user && user.emailVerified;
 
-      // On index: if logged in -> show Panel + Logout
-      // If not -> show Login + Panel (Panel can still go to login via guard)
       if (loggedIn) {
         btnLogin.style.display = 'none';
         btnLogout.style.display = '';
