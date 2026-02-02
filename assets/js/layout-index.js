@@ -127,8 +127,7 @@ import {
       if (!target) return;
 
       e.preventDefault();
-
-      // offset = header height
+      e.stopPropagation();
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       history.replaceState(null, '', hash);
     });
@@ -147,7 +146,10 @@ import {
 
       e.preventDefault();
 
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const header = document.querySelector('.nav-glass');
+      const offset = header ? header.getBoundingClientRect().height + 8 : 0;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
       history.replaceState(null, '', hash);
     });
   }
