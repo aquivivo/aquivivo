@@ -21,6 +21,11 @@ import {
     path.endsWith('/index') ||
     path.endsWith('/index.html') ||
     path.endsWith('index.html');
+  const isLoginPage =
+    document.body?.dataset?.page === 'login' ||
+    path.endsWith('/login') ||
+    path.endsWith('/login.html') ||
+    path.endsWith('login.html');
   if (isIndex) return; // index uses layout-index.js
 
   function ensureMount() {
@@ -45,6 +50,25 @@ import {
 
   function buildHeader(user, isAdmin) {
     const logged = !!user;
+
+    if (isLoginPage) {
+      return `
+        <header class="topbar nav-glass">
+          <div class="nav-inner container">
+            <a class="brand" href="index.html" aria-label="AquiVivo">
+              <img src="assets/img/logo.png" alt="AquiVivo" />
+            </a>
+
+            <div class="nav-actions" aria-label="Navegación">
+              <a class="btn-white-outline" href="index.html">🏠 Inicio</a>
+              <a class="btn-yellow" href="login.html">🔐 Iniciar sesión</a>
+            </div>
+          </div>
+
+          <div class="nav-line nav-line-below"></div>
+        </header>
+      `;
+    }
 
     const hrefServicios = 'services.html';
     const hrefServiciosPlanes = 'services.html#planes';

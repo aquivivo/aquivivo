@@ -833,7 +833,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const input = $('adm_promo_code');
 
   onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
+    if (!user) {
+      window.location.href = 'login.html?next=espanel.html';
+      return;
+    }
     try {
       const baseDoc = await ensureUserDoc(user);
 
