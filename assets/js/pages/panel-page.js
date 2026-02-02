@@ -234,7 +234,7 @@ function renderCourses(userDoc, flags) {
           <a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">
             <div class="courseTop">
               <div class="courseBadge">📚 ${lvl}</div>
-              <div class="pill pill-yellow">Entrar →</div>
+                <div class="muted" style="font-weight:900;">Entrar →</div>
             </div>
             <div class="courseTitle" style="margin-top:10px;">${title}</div>
             <div class="muted" style="margin-top:6px;">${subtitle}</div>
@@ -246,7 +246,7 @@ function renderCourses(userDoc, flags) {
         <div class="courseCard" style="opacity:.55; filter:saturate(.75); cursor:not-allowed;">
           <div class="courseTop">
             <div class="courseBadge">🔒 ${lvl}</div>
-            <div class="pill">Bloqueado</div>
+            <div class="muted" style="font-weight:900;">Bloqueado</div>
           </div>
           <div class="courseTitle" style="margin-top:10px;">${title}</div>
           <div class="muted" style="margin-top:6px;">${subtitle}</div>
@@ -320,22 +320,6 @@ function renderPlans(userDoc, flags) {
       'Elige un paquete. Las consultas son un add‑on (no desbloquean lecciones).';
   }
 
-  // Visual pills per plan card
-  const setPill = (id, yes) => {
-    const el = $(id);
-    if (!el) return;
-    el.className = 'pill ' + (yes ? 'pill-green' : 'pill pill-yellow');
-    el.textContent = yes ? '✅ Tienes acceso' : 'Disponible';
-  };
-
-  setPill(
-    'pillPlanA1A2',
-    hasLevelAccess(flags, userDoc, 'A1') ||
-      hasLevelAccess(flags, userDoc, 'A2'),
-  );
-  setPill('pillPlanB1', hasLevelAccess(flags, userDoc, 'B1'));
-  setPill('pillPlanB2', hasLevelAccess(flags, userDoc, 'B2'));
-
   // Consultations add-on (does NOT unlock lessons)
   const included = Number(userDoc?.consultationsIncluded || 0);
   const left = Number(
@@ -387,7 +371,7 @@ function renderPromoList(userDoc) {
     .slice(0, 20)
     .map(
       (c) =>
-        `<span class="pill" style="margin-right:8px; margin-bottom:8px; display:inline-flex;">🏷️ ${String(c)}</span>`,
+        `<span style="margin-right:8px; margin-bottom:8px; display:inline-flex;">🏷️ ${String(c)}</span>`,
     )
     .join('');
 }
@@ -799,7 +783,7 @@ async function loadReferralStats(viewUid) {
           .map((r) => {
             const pct = Number(r.value || 0);
             const scope = String(r.scope || 'inne usługi');
-            return `<div class="pill" style="display:inline-flex; margin-right:8px; margin-bottom:8px;">🎫 -${pct}% · ${scope}</div>`;
+            return `<div style="display:inline-flex; margin-right:8px; margin-bottom:8px;">🎫 -${pct}% · ${scope}</div>`;
           })
           .join('');
       }

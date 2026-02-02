@@ -42,7 +42,7 @@ import {
 
             <a class="btn-white-outline" id="btnContacto" href="#contact">💗 Contacto</a>
 
-            <a class="btn-yellow" id="btnPanel" href="${hrefPanel}">🏠 Ir al Panel</a>
+            <a class="btn-yellow" id="btnPanel" href="${hrefPanel}">🏠 Libreta</a>
 
             <a class="btn-yellow" id="btnLogin" href="${hrefLogin}" style="display:none;">🔐 Iniciar sesión</a>
             <button class="btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesión</button>

@@ -15,32 +15,24 @@
           <div class="heroTitleRow">
             <div class="heroIcon">🛡️</div>
             <div>
-              <h1 class="sectionTitle">Admin</h1>
-              <p class="subtitle">
-                Usuarios, accesos y ajustes de la plataforma.
-              </p>
+              <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+                <a class="btn-yellow" href="admin-select.html?type=lesson"
+                  >✏️ Admin lecciones</a
+                >
+                <a
+                  class="btn-white-outline"
+                  href="admin-select.html?type=exercise"
+                  >🧪 Admin ejercicios</a
+                >
+                <a class="btn-white-outline" href="#accUsers">👤 Usuarios</a>
+                <a class="btn-white-outline" href="#accPromo"
+                  >🏷️ Códigos promo</a
+                >
+                <a class="btn-white-outline" href="#accSegments"
+                  >🎯 Segmentación</a
+                >
+              </div>
             </div>
-          </div>
-        </section>
-        <!-- ✅ Quick actions (always visible) -->
-        <section class="card" id="quickActions">
-          <h2 class="sectionTitle">⚡ Acciones rápidas</h2>
-          <p class="subtitle">Lo esencial, sin buscar en el dashboard.</p>
-          <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
-            <a class="btn-yellow" href="admin-select.html?type=lesson"
-              >✏️ Admin lecciones</a
-            >
-            <a class="btn-white-outline" href="admin-select.html?type=exercise"
-              >🧪 Admin ejercicios</a
-            >
-            <a class="btn-white-outline" href="#accUsers">👤 Usuarios</a>
-            <a class="btn-white-outline" href="#accPromo">🏷️ Códigos promo</a>
-            <a class="btn-white-outline" href="#accSegments">🎯 Segmentación</a>
-          </div>
-          <div class="hr"></div>
-          <div class="hintSmall">
-            Tip: el dashboard es para ver datos; las acciones rápidas son para
-            trabajar.
           </div>
         </section>
         <!-- ✅ Dashboard (accordion – open by default) -->
@@ -376,7 +368,7 @@
                   <option value="free">free</option>
                 </select>
               </div>
-              <label class="pill" style="gap: 10px; align-items: center">
+              <label style="gap: 10px; align-items: center">
                 <input
                   checked=""
                   id="promoActive"
@@ -611,7 +603,7 @@
             <div class="muted" style="font-weight: 900; margin-top: 8px">
               Email
             </div>
-            <div class="pill" id="um_email" style="width: fit-content">—</div>
+            <div id="um_email" style="width: fit-content">—</div>
             <div class="muted" style="font-weight: 900; margin-top: 12px">
               UID
             </div>
@@ -628,7 +620,7 @@
               class="metaRow"
               style="margin-top: 14px; flex-wrap: wrap; gap: 10px"
             >
-              <label class="pill" style="gap: 10px">
+              <label style="gap: 10px">
                 <input
                   id="um_admin"
                   style="width: 18px; height: 18px; margin: 0"
@@ -636,7 +628,7 @@
                 />
                 Admin
               </label>
-              <label class="pill" style="gap: 10px">
+              <label style="gap: 10px">
                 <input
                   id="um_access"
                   style="width: 18px; height: 18px; margin: 0"
@@ -644,7 +636,7 @@
                 />
                 Acceso
               </label>
-              <label class="pill" style="gap: 10px">
+              <label style="gap: 10px">
                 <input
                   id="um_blocked"
                   style="width: 18px; height: 18px; margin: 0"

@@ -79,8 +79,7 @@ import {
                 <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">Ver todo</a>
               </div>
             </div>
-            <a class="btn-white-outline" href="course.html">📚 Curso</a>
-            <a class="btn-yellow" href="espanel.html">🏠 Panel</a>
+            <a class="btn-yellow" href="espanel.html">🏠 Libreta</a>
             <button class="btn-white-outline" id="btnBack" type="button">⬅️ Atrás</button>
             ${
               logged

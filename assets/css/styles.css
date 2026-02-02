@@ -431,25 +431,6 @@ main.page {
   flex-wrap: wrap;
   align-items: center;
 }
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-weight: 900;
-  font-size: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.08);
-}
-.pill-yellow {
-  background: rgba(252, 209, 22, 0.18);
-  border-color: rgba(252, 209, 22, 0.42);
-}
-.pill-blue {
-  background: rgba(0, 56, 147, 0.18);
-  border-color: rgba(0, 56, 147, 0.42);
-}
 
 /* Session bar */
 .sessionBar {
@@ -959,7 +940,6 @@ p,
 .btn-yellow,
 .btn-red,
 .btn-white-outline,
-.pill,
 .metaRow,
 .readTools,
 .toolBtn,
@@ -975,18 +955,6 @@ p,
   background: var(--accent-red) !important;
 }
 
-.pill-yellow {
-  background: rgba(252, 209, 22, 0.16) !important;
-  border-color: rgba(252, 209, 22, 0.28) !important;
-}
-.pill-blue {
-  background: rgba(188, 211, 255, 0.14) !important;
-  border-color: rgba(188, 211, 255, 0.22) !important;
-}
-.pill-red {
-  background: rgba(206, 17, 38, 0.16) !important;
-  border-color: rgba(206, 17, 38, 0.26) !important;
-}
 
 /* Cards */
 .card {
@@ -1034,11 +1002,6 @@ p,
   border-left-width: 8px !important;
 }
 
-/* Pills */
-.pill {
-  border-radius: var(--radius-pill) !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
-}
 
 /* Shadows */
 .card,
