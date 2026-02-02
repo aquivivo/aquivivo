@@ -85,6 +85,10 @@ body {
 section[id] {
   scroll-margin-top: 120px;
 }
+#metodo-disenado-para-ti,
+#mas-que-clases {
+  scroll-margin-top: 0;
+}
 body {
   margin: 0;
   font-family:
@@ -960,10 +964,35 @@ p,
   background: #ffffff !important;
   border: 1px solid rgba(10, 31, 68, 0.12) !important;
   box-shadow: none !important;
+  padding: 16px !important;
+  text-align: center;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
 }
 .statCard .muted {
   color: var(--blue) !important;
   font-weight: 800 !important;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+  justify-content: center;
+  gap: 14px;
+}
+
+.section-wide.stats-band {
+  margin-top: clamp(-120px, -8vw, -64px);
+}
+.stats-band .section-wide-inner {
+  display: flex;
+  justify-content: flex-end;
+  padding-left: 0;
+  padding-right: clamp(24px, 6vw, 72px);
+}
+.stats-band .stat-grid {
+  margin-top: 0;
 }
 
 .heroBanner {
@@ -1354,6 +1383,10 @@ a:hover {
 .nav-dd.open .nav-dd-menu {
   display: block;
 }
+.nav-dd:hover .nav-dd-menu,
+.nav-dd:focus-within .nav-dd-menu {
+  display: block;
+}
 .nav-dd-item {
   display: block;
   padding: 10px 12px;
@@ -1361,6 +1394,10 @@ a:hover {
   color: var(--blue);
   text-decoration: none;
   font-weight: 700;
+}
+.nav-dd-item--red {
+  color: var(--red);
+  font-weight: 900;
 }
 .nav-dd-item:hover {
   background: rgba(252, 209, 22, 0.2);
@@ -1411,7 +1448,7 @@ a:hover {
    ================================ */
 
 .contactSection {
-  padding: 24px 0 24px;
+  padding: 40px 0 24px;
 }
 
 .contactHead {
@@ -1424,7 +1461,7 @@ a:hover {
   margin: 0 0 30px;
   font-family: 'Playfair Display', serif;
   font-weight: 900;
-  font-size: clamp(26px, 3.2vw, 40px);
+  font-size: clamp(32px, 4vw, 52px);
   letter-spacing: 0.2px;
 }
 
@@ -1438,9 +1475,9 @@ a:hover {
 .contactGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 16px;
   align-items: start;
-  max-width: 1040px;
+  max-width: 980px;
   margin: 0 auto;
 }
 
@@ -1448,41 +1485,42 @@ a:hover {
 .contactList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .contactRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .contactIcon {
-  width: 52px;
-  height: 52px;
-  flex: 0 0 52px;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
   display: grid;
   place-items: center;
-  border-radius: 16px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
 }
 
 .contactIcon svg {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   display: block;
 }
 
 .contactMeta .contactLabel {
   font-weight: 800;
   opacity: 0.85;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  font-size: 13px;
 }
 
 .contactMeta .contactValue {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 900;
   line-height: 1.2;
 }
@@ -1492,25 +1530,25 @@ a:hover {
   background: var(--card);
   color: var(--text);
   border-radius: 22px;
-  padding: 18px 18px 16px;
+  padding: 16px 16px 14px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow);
 }
 
 .contactFormCard h3 {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-family: 'Playfair Display', serif;
   font-weight: 900;
-  font-size: 20px;
+  font-size: 18px;
   color: var(--text);
 }
 
 .contactFormCard label {
   display: block;
-  margin: 10px 0 6px;
+  margin: 8px 0 6px;
   font-weight: 900;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text);
 }
 
@@ -1524,15 +1562,15 @@ a:hover {
   width: 100%;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.22);
-  padding: 9px 10px;
-  font-size: 14px;
+  padding: 8px 10px;
+  font-size: 13px;
   outline: none;
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
 }
 
 .contactFormCard textarea {
-  min-height: 90px;
+  min-height: 80px;
   resize: vertical;
 }
 
@@ -1546,7 +1584,7 @@ a:hover {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin: 10px 0 12px;
+  margin: 8px 0 10px;
 }
 
 .contactCheck input {
@@ -1559,8 +1597,8 @@ a:hover {
   width: 100%;
   border: 1px solid rgba(252, 209, 22, 0.95);
   border-radius: 999px;
-  padding: 10px 14px;
-  font-size: 16px;
+  padding: 9px 12px;
+  font-size: 15px;
   font-weight: 1000;
   cursor: pointer;
   background: var(--yellow);
@@ -1938,6 +1976,9 @@ h3 {
   gap: 56px;
   align-items: start;
 }
+.why-section {
+  padding-top: 48px;
+}
 .why-text h2 {
   margin: 0 0 20px;
   font-family: 'Playfair Display', serif;
@@ -2031,7 +2072,8 @@ h3 {
 
 /* ===== Method section (index) ===== */
 .method-section {
-  margin-top: 70px;
+  margin-top: 0;
+  padding-top: 70px;
 }
 .method-title {
   margin: 0 0 36px;
@@ -2048,6 +2090,11 @@ h3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 36px;
   align-items: stretch;
+}
+.method-cta {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
 }
 .method-card {
   position: relative;
@@ -2155,6 +2202,17 @@ h3 {
 /* ===== Services plus (index) ===== */
 .services-plus {
   margin-top: 76px;
+}
+#mas-que-clases.section-wide {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 80px 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+#mas-que-clases .section-wide-inner {
+  width: 100%;
 }
 .services-plus-head {
   text-align: center;
@@ -2488,6 +2546,17 @@ h3 {
   }
   .ebooks-grid {
     grid-template-columns: 1fr;
+  }
+  .stats-band .section-wide-inner {
+    justify-content: center;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .stats-band .stat-grid {
+    margin-top: 0;
+  }
+  .section-wide.stats-band {
+    margin-top: 24px;
   }
 }
 

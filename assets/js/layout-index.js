@@ -16,6 +16,7 @@ import {
     const hrefInicio = 'index.html';
     const hrefServicios = 'services.html';
     const hrefPolaco = '#metodo-disenado-para-ti';
+    const hrefTramites = '#mas-que-clases';
     const hrefPanel = 'espanel.html';
     const hrefLogin = 'login.html';
 
@@ -29,12 +30,13 @@ import {
           <div class="nav-actions">
             <a class="btn-white-outline" id="btnPolaco" href="${hrefPolaco}">POLACO</a>
             <div class="nav-dd" id="navServiciosDD">
-              <button class="btn-white-outline nav-dd-btn" id="btnServicios" type="button" aria-haspopup="menu" aria-expanded="false">
+              <button class="btn-white-outline nav-dd-btn nav-dd-toggle" id="btnServicios" type="button" aria-haspopup="menu" aria-expanded="false">
                 🧳 Servicios <span class="nav-dd-caret">▼</span>
               </button>
               <div class="nav-dd-menu" id="menuServicios" role="menu" aria-label="Servicios">
                 <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#planes">Planes</a>
                 <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#servicios">Servicios</a>
+                <a role="menuitem" class="nav-dd-item nav-dd-item--red" id="btnTramites" href="${hrefTramites}">Tr&aacute;mites</a>
                 <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#extras">Extras</a>
                 <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#ebooks">Ebooks</a>
                 <div class="nav-dd-sep" aria-hidden="true"></div>
@@ -42,7 +44,7 @@ import {
               </div>
             </div>
 
-            <a class="btn-white-outline" id="btnContacto" href="#contact">💗 Contacto</a>
+            <a class="btn-white-outline" id="btnContacto" href="#appFooter">💗 Contacto</a>
 
             <a class="btn-white-outline" id="btnPanel" href="${hrefPanel}">🏠 Libreta</a>
 
@@ -54,6 +56,7 @@ import {
         <div class="nav-line nav-line-below"></div>
       </div>
     `;
+    console.log('Header loaded: AquiVivo');
   }
 
   function injectFooter() {
@@ -86,10 +89,12 @@ import {
     function open() {
       dd.classList.add('open');
       btn.setAttribute('aria-expanded', 'true');
+      menu.style.display = 'block';
     }
     function close() {
       dd.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
+      menu.style.display = 'none';
     }
     function toggle() {
       if (dd.classList.contains('open')) close();
@@ -135,6 +140,63 @@ import {
     });
   }
 
+  function setupPolacoScroll() {
+    const link = document.getElementById('btnPolaco');
+    if (!link) return;
+
+    link.addEventListener('click', (e) => {
+      const hash = link.getAttribute('href') || '';
+      if (!hash.startsWith('#')) return;
+
+      const target = document.getElementById(hash.slice(1));
+      if (!target) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', hash);
+    });
+  }
+
+  function setupTramitesScroll() {
+    const link = document.getElementById('btnTramites');
+    if (!link) {
+      console.warn('Nie znaleziono btnTramites w DOM!');
+      return;
+    }
+    link.addEventListener(
+      'click',
+      function (e) {
+        console.log('Kliknięto Trámites!');
+        if (
+          window.location.pathname.endsWith('index.html') ||
+          window.location.pathname === '/'
+        ) {
+          const target = document.getElementById('mas-que-clases');
+          if (target) {
+            e.preventDefault();
+            setTimeout(function () {
+              const extraOffset = 140;
+              const top =
+                target.getBoundingClientRect().top +
+                window.pageYOffset +
+                extraOffset;
+              window.scrollTo({ top, behavior: 'smooth' });
+              history.replaceState(null, '', '#mas-que-clases');
+              console.log('Scroll do mas-que-clases!');
+            }, 100);
+          } else {
+            console.warn('Nie znaleziono sekcji mas-que-clases!');
+          }
+        } else {
+          window.location.href = 'index.html#mas-que-clases';
+          console.log('Przekierowanie na index.html#mas-que-clases');
+        }
+      },
+      true,
+    ); // użyj capture, by nadpisać inne eventy
+  }
+
   function setupAnchorScroll() {
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a[href^="#"]');
@@ -148,9 +210,19 @@ import {
 
       e.preventDefault();
 
+      if (hash === '#mas-que-clases') {
+        const extraOffset = 140;
+        const top =
+          target.getBoundingClientRect().top + window.pageYOffset + extraOffset;
+        window.scrollTo({ top, behavior: 'smooth' });
+        history.replaceState(null, '', hash);
+        return;
+      }
+
       const header = document.querySelector('.nav-glass');
       const offset = header ? header.getBoundingClientRect().height + 8 : 0;
-      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      const top =
+        target.getBoundingClientRect().top + window.pageYOffset - offset;
       window.scrollTo({ top, behavior: 'smooth' });
       history.replaceState(null, '', hash);
     });
@@ -203,6 +275,8 @@ import {
   injectFooter();
   setupDropdown();
   setupContactoScroll();
+  setupPolacoScroll();
+  setupTramitesScroll();
   setupAnchorScroll();
   setupCursosScroll();
   setupAuthButtons();

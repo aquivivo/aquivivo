@@ -76,8 +76,10 @@ import {
     const hrefServiciosExtras = 'services.html#extras';
     const hrefServiciosEbooks = 'services.html#ebooks';
     const hrefPolaco = 'index.html#metodo-disenado-para-ti';
+    const hrefTramites = 'index.html#mas-que-clases';
 
     // Keep it simple and stable on app pages
+
     return `
       <header class="topbar nav-glass">
         <div class="nav-inner container">
@@ -99,6 +101,7 @@ import {
               <div class="nav-dd-menu" id="menuServicios" role="menu" aria-label="Servicios">
                 <a role="menuitem" class="nav-dd-item" href="${hrefServiciosPlanes}">Planes</a>
                 <a role="menuitem" class="nav-dd-item" href="${hrefServiciosServicios}">Servicios</a>
+                <a role="menuitem" class="nav-dd-item nav-dd-item--red" id="btnTramites" href="${hrefTramites}">Tr&aacute;mites</a>
                 <a role="menuitem" class="nav-dd-item" href="${hrefServiciosExtras}">Extras</a>
                 <a role="menuitem" class="nav-dd-item" href="${hrefServiciosEbooks}">Ebooks</a>
                 <div class="nav-dd-sep" aria-hidden="true"></div>
@@ -144,10 +147,12 @@ import {
       function open() {
         dd.classList.add('open');
         btnServicios.setAttribute('aria-expanded', 'true');
+        menuServicios.style.display = 'block';
       }
       function close() {
         dd.classList.remove('open');
         btnServicios.setAttribute('aria-expanded', 'false');
+        menuServicios.style.display = 'none';
       }
       function toggle() {
         if (dd.classList.contains('open')) close();
@@ -197,6 +202,37 @@ import {
     }
   }
 
+  function setupAnchorScroll() {
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+
+      const hash = a.getAttribute('href') || '';
+      if (!hash.startsWith('#')) return;
+
+      const target = document.getElementById(hash.slice(1));
+      if (!target) return;
+
+      e.preventDefault();
+
+      if (hash === '#mas-que-clases') {
+        const extraOffset = 140;
+        const top =
+          target.getBoundingClientRect().top + window.pageYOffset + extraOffset;
+        window.scrollTo({ top, behavior: 'smooth' });
+        history.replaceState(null, '', hash);
+        return;
+      }
+
+      const header = document.querySelector('.nav-glass');
+      const offset = header ? header.getBoundingClientRect().height + 8 : 0;
+      const top =
+        target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+      history.replaceState(null, '', hash);
+    });
+  }
+
   const mount = ensureMount();
   const footerMount = ensureFooterMount();
 
@@ -216,6 +252,6 @@ import {
     mount.innerHTML = buildHeader(user, isAdmin);
     footerMount.innerHTML = buildFooter();
     wireHeader();
+    setupAnchorScroll();
   });
 })();
-
