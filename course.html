@@ -41,10 +41,16 @@
         <div class="card card--info">
           <div class="rowBetween">
             <div class="mutedStrong">
-              Elige un tema para abrir la lección. Los badges muestran: ✅ lección publicada · 🟡 borrador · 🧩 ejercicios.
+              Elige un tema para abrir la lección. Los badges muestran: ✅
+              lección publicada · 🟡 borrador · 🧩 ejercicios.
             </div>
 
-            <a class="btn-yellow" href="admin-select.html?type=lesson" id="adminQuickLesson" style="display:none;">
+            <a
+              class="btn-yellow"
+              href="admin-select.html?type=lesson"
+              id="adminQuickLesson"
+              style="display: none"
+            >
               🛠️ Admin
             </a>
           </div>
@@ -53,6 +59,37 @@
         <div id="topicsList" class="coursesGrid"></div>
       </div>
     </main>
+
+    <div class="modalOverlay" id="accessModal" style="display: none">
+      <div class="modalCard" style="max-width: 520px">
+        <div class="modalHead">
+          <div class="modalTitle">🔒 Epa, suave…</div>
+          <button class="btn-white-outline" id="accessModalClose" type="button">
+            ✖
+          </button>
+        </div>
+        <div class="hr"></div>
+        <div class="subtitle" id="accessModalLine1">
+          Este nivel todavía no es tuyo 😜
+        </div>
+        <div
+          class="metaRow"
+          style="margin-top: 12px; flex-wrap: wrap; gap: 10px"
+        >
+          <a
+            class="btn-yellow"
+            id="accessModalBuy"
+            href="services.html"
+            style="text-decoration: none"
+          >
+            Consíguelo
+          </a>
+        </div>
+        <div class="subtitle" id="accessModalLine2" style="margin-top: 10px">
+          ...y sigamos dándole duro al Polaco.
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="assets/js/pages/course-page.js"></script>
   </body>

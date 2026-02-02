@@ -501,8 +501,7 @@ function renderMyRefCode(userDoc) {
   const code = String(userDoc?.refCode || '').trim();
   if (!code) {
     myRefCode.value = '';
-    if (myRefInfo)
-      myRefInfo.textContent = 'El código se genera automáticamente.';
+    if (myRefInfo) myRefInfo.textContent = 'El código se crea solito ✨';
     return;
   }
   myRefCode.value = code;

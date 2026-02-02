@@ -22,6 +22,12 @@ const LEVEL = (params.get('level') || 'A1').toUpperCase();
 
 let CURRENT_FLAGS = null;
 
+const accessModal = document.getElementById('accessModal');
+const accessModalClose = document.getElementById('accessModalClose');
+const accessModalBuy = document.getElementById('accessModalBuy');
+const accessModalLine1 = document.getElementById('accessModalLine1');
+const accessModalLine2 = document.getElementById('accessModalLine2');
+
 function showAccessLocked(reason = 'locked') {
   const host = document.querySelector('.container') || document.body;
   const page = document.querySelector('main.page .container') || host;
@@ -125,6 +131,29 @@ function showLevelNotice(text) {
   }
 }
 
+function showAccessPopup(level) {
+  if (!accessModal) return;
+  const lvl = String(level || '').toUpperCase();
+  if (accessModalLine1) {
+    accessModalLine1.textContent =
+      lvl && lvl !== 'A1'
+        ? `Este nivel ${lvl} todavía no es tuyo 😜`
+        : 'Este nivel todavía no es tuyo 😜';
+  }
+  if (accessModalLine2) {
+    accessModalLine2.textContent = '...y sigamos dándole duro al Polaco.';
+  }
+  if (accessModalBuy) {
+    accessModalBuy.href = `services.html?level=${encodeURIComponent(lvl || LEVEL)}`;
+  }
+  accessModal.style.display = 'flex';
+}
+
+function hideAccessPopup() {
+  if (!accessModal) return;
+  accessModal.style.display = 'none';
+}
+
 function wireLevelButtons(flags) {
   const links = document.querySelectorAll('.levelButtons a[href]');
   if (!links.length) return;
@@ -152,6 +181,11 @@ function wireLevelButtons(flags) {
 }
 
 function initLevelButtonsGuard() {
+  accessModalClose?.addEventListener('click', hideAccessPopup);
+  accessModal?.addEventListener('click', (e) => {
+    if (e.target === accessModal) hideAccessPopup();
+  });
+
   document.addEventListener('click', (e) => {
     const link = e.target?.closest?.('.levelButtons a[href]');
     if (!link) return;
@@ -177,7 +211,7 @@ function initLevelButtonsGuard() {
 
     if (!hasAccessForLevel) {
       e.preventDefault();
-      showLevelNotice('🔒 Sin acceso. Solo puedes ver los temas de A1.');
+      showAccessPopup(level);
     }
   });
 }

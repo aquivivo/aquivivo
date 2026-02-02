@@ -109,14 +109,14 @@ function hasAccess(u) {
 }
 
 /* =========================
-   PLAN -> levels/accessUntil mapping (A1/A2/B1/B2 + free 7 days A1)
+  PLAN -> levels/accessUntil mapping (A1/A2/B1/B2)
    Contract in users/{uid}:
    - plan: string
    - levels: array of strings (e.g. ["A1","A2"])
    - accessUntil: Firestore Timestamp/Date
    ========================= */
 const PLAN_MAP = {
-  free: { levels: ['A1'], days: 7 },
+  free: { levels: [], days: 0 },
 
   // single-level plans
   a1: { levels: ['A1'], days: 30 },
@@ -852,13 +852,13 @@ async function quickResetTrial() {
   const uid = String($('um_uid')?.textContent || '').trim();
   if (!uid) return;
 
-  // Force: free + levels[A1] + accessUntil now+7
+  // Reset to free (no access)
   if ($('um_plan')) $('um_plan').value = 'free';
-  if ($('um_access')) $('um_access').checked = true;
+  if ($('um_access')) $('um_access').checked = false;
   if ($('um_blocked')) $('um_blocked').checked = false;
 
-  const next = addDaysToUntil(null, 7);
-  setUntilInputFromDate(next);
+  const past = new Date(Date.now() - 24 * 3600 * 1000);
+  setUntilInputFromDate(past);
   await saveUserModal();
 }
 
