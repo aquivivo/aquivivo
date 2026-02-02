@@ -59,7 +59,7 @@ import {
               </div>
             </div>
 
-            <a class="btn-white-outline" id="btnContacto" href="#contact">&#x1F495; Contacto</a>
+            <a class="btn-white-outline" id="btnContacto" href="#appFooter">&#x1F495; Contacto</a>
 
             <a class="btn-white-outline" id="btnPanel" href="${hrefPanel}">&#x1F3E0; Libreta</a>
 
@@ -140,6 +140,20 @@ import {
     if (!link) return;
 
     link.addEventListener('click', (e) => {
+      const footer = document.getElementById('appFooter');
+      if (footer) {
+        e.preventDefault();
+        e.stopPropagation();
+        const header = document.querySelector('.nav-glass');
+        const offset = (header ? header.getBoundingClientRect().height : 0) + 12;
+        footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+          window.scrollBy({ top: -offset, behavior: 'auto' });
+        }, 0);
+        history.replaceState(null, '', '#appFooter');
+        return;
+      }
+
       const hash = link.getAttribute('href') || '';
       if (!hash.startsWith('#')) return;
 
