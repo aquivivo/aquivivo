@@ -33,6 +33,16 @@ import {
     return mount;
   }
 
+  function ensureFooterMount() {
+    let mount = document.getElementById('appFooter');
+    if (mount) return mount;
+
+    mount = document.createElement('div');
+    mount.id = 'appFooter';
+    document.body.insertAdjacentElement('beforeend', mount);
+    return mount;
+  }
+
   function buildHeader(user, isAdmin) {
     const logged = !!user;
 
@@ -82,6 +92,20 @@ import {
 
         <div class="nav-line nav-line-below"></div>
       </header>
+    `;
+  }
+
+  function buildFooter() {
+    return `
+      <footer class="site-footer">
+        <div class="nav-line nav-line-above"></div>
+        <div class="footer-inner container">
+          <div class="footer-text">
+            © 2026 AquiVivo. Todos los derechos reservados.<br />
+            Te ayudo a perder el miedo a hablar. 🌸🤍
+          </div>
+        </div>
+      </footer>
     `;
   }
 
@@ -149,6 +173,7 @@ import {
   }
 
   const mount = ensureMount();
+  const footerMount = ensureFooterMount();
 
   // Render immediately + re-render on auth changes
   onAuthStateChanged(auth, async (user) => {
@@ -164,6 +189,7 @@ import {
     }
 
     mount.innerHTML = buildHeader(user, isAdmin);
+    footerMount.innerHTML = buildFooter();
     wireHeader();
   });
 })();

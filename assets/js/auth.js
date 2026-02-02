@@ -257,6 +257,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetBtn = $('resetPasswordBtn');
   const togglePassword = $('togglePassword');
 
+  let authBusy = false;
+  const setAuthBusy = (yes) => {
+    authBusy = !!yes;
+    if (loginBtn) loginBtn.disabled = authBusy;
+    if (registerBtn) registerBtn.disabled = authBusy;
+    if (resetBtn) resetBtn.disabled = authBusy;
+  };
+
   if (togglePassword && passwordInput) {
     togglePassword.addEventListener('click', () => {
       passwordInput.type =
@@ -279,11 +287,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function doLogin() {
+    if (authBusy) return;
     const email = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
     if (!email || !pass) return setMsg('Completa email y contraseña.', 'error');
 
     try {
+      setAuthBusy(true);
       const cred = await signInWithEmailAndPassword(auth, email, pass);
 
       // Ensure users/{uid} exists (for admin panel / guards)
@@ -305,10 +315,13 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = getNextUrl();
     } catch (err) {
       setMsg('Error: ' + (err?.message || err), 'error');
+    } finally {
+      setAuthBusy(false);
     }
   }
 
   async function doRegister() {
+    if (authBusy) return;
     const name = (nameInput?.value || '').trim();
     const gender = (
       document.querySelector('input[name="gender"]:checked')?.value || ''
@@ -318,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!email || !pass) return setMsg('Completa email y contraseña.', 'error');
 
     try {
+      setAuthBusy(true);
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
 
       // Create users/{uid} doc with 7-day A1 trial
@@ -339,10 +353,13 @@ document.addEventListener('DOMContentLoaded', () => {
       setVerifyHint('Si no ves el correo, revisa Spam y usa “Reenviar email”.');
     } catch (err) {
       setMsg('Error: ' + (err?.message || err), 'error');
+    } finally {
+      setAuthBusy(false);
     }
   }
 
   async function doReset() {
+    if (authBusy) return;
     const email = (emailInput?.value || '').trim();
     if (!email)
       return setMsg(
@@ -350,10 +367,13 @@ document.addEventListener('DOMContentLoaded', () => {
         'error',
       );
     try {
+      setAuthBusy(true);
       await sendPasswordResetEmail(auth, email);
       setMsg('📩 Se envió un correo para restablecer tu contraseña.', 'ok');
     } catch (err) {
       setMsg('Error: ' + (err?.message || err), 'error');
+    } finally {
+      setAuthBusy(false);
     }
   }
 

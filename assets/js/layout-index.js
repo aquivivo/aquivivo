@@ -54,6 +54,27 @@ import {
     `;
   }
 
+  function injectFooter() {
+    let host = document.getElementById('appFooter');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'appFooter';
+      document.body.insertAdjacentElement('beforeend', host);
+    }
+
+    host.innerHTML = `
+      <footer class="site-footer">
+        <div class="nav-line nav-line-above"></div>
+        <div class="footer-inner container">
+          <div class="footer-text">
+            © 2026 AquiVivo. Todos los derechos reservados.<br />
+            Te ayudo a perder el miedo a hablar. 🌸🤍
+          </div>
+        </div>
+      </footer>
+    `;
+  }
+
   function setupDropdown() {
     const dd = document.getElementById('navServiciosDD');
     const btn = document.getElementById('btnServicios');
@@ -175,6 +196,7 @@ import {
   }
 
   injectHeader();
+  injectFooter();
   setupDropdown();
   setupContactoScroll();
   setupAnchorScroll();
