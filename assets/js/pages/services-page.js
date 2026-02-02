@@ -27,10 +27,21 @@ function esc(s) {
 function renderCard(svc) {
   const title = svc.title ? esc(svc.title) : esc(svc.sku || 'Plan');
   const desc = svc.desc ? esc(svc.desc) : '';
+  const rawTitle = String(svc.title || '').trim();
   const isFeatured = Boolean(svc._isFeatured);
   const isA1A2 = Boolean(svc._isA1A2);
-  const badgeText = svc.badge
-    ? esc(svc.badge)
+  const isHablemosAmor = /e-?book\s+hablemos\s+del\s+amor/i.test(rawTitle);
+  const rawBadge = String(svc.badge || '').trim();
+  const badgeText = rawBadge
+    ? esc(
+        rawBadge.toLowerCase() === 'super promo'
+          ? '¡Más chévre!'
+          : rawBadge.toLowerCase() === 'más popular'
+            ? 'Bacano 🙂'
+            : rawBadge.toLowerCase() === 'popular'
+              ? '¡Más chévre!'
+              : rawBadge,
+      )
     : isFeatured
       ? '★ Recomendado'
       : '';
@@ -72,7 +83,7 @@ function renderCard(svc) {
   }
 
   return `
-    <div class="card services-card${isFeatured ? ' services-card--featured' : ''}${isA1A2 ? ' services-card--a1a2' : ''}">
+    <div class="card services-card${isFeatured ? ' services-card--featured' : ''}${isA1A2 ? ' services-card--a1a2' : ''}${isHablemosAmor ? ' services-card--amor' : ''}">
       <div class="sectionTitle" style="margin-top:0;">${badge}${title}</div>
       ${desc ? `<div class="muted">${desc}</div>` : ''}
       ${price}
@@ -132,6 +143,7 @@ async function loadServices() {
       service: 'servicios',
       services: 'servicios',
       consults: 'servicios',
+      consulta: 'servicios',
       consultas: 'servicios',
       uslugi: 'servicios',
       usługi: 'servicios',

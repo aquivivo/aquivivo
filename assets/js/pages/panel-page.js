@@ -812,6 +812,12 @@ btnApplyRefCode?.addEventListener('click', async () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  const panelTitle = $('panelTitle');
+  const panelSubtitle = $('panelSubtitle');
+  if (panelTitle) panelTitle.textContent = '¡Buenas!';
+  if (panelSubtitle)
+    panelSubtitle.textContent = 'Aqui tienes tu libreta! ¡Que chimba verte!';
+
   renderCourses(null, { isAdmin: false, hasAccess: false });
 
   const btn = $('addPromoBtn');
@@ -819,74 +825,98 @@ document.addEventListener('DOMContentLoaded', () => {
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) return;
+    try {
+      const baseDoc = await ensureUserDoc(user);
 
-    const baseDoc = await ensureUserDoc(user);
+      // Admin preview: load target user doc
+      let viewUid = user.uid;
+      let viewDoc = baseDoc;
 
-    // Admin preview: load target user doc
-    let viewUid = user.uid;
-    let viewDoc = baseDoc;
-
-    const isAdmin = baseDoc.admin === true;
-    if (AS_UID) {
-      if (!isAdmin) {
-        setMsg('Acceso denegado (solo admin).', 'bad');
-        return;
+      const isAdmin = baseDoc.admin === true;
+      if (AS_UID) {
+        if (!isAdmin) {
+          setMsg('Acceso denegado (solo admin).', 'bad');
+          return;
+        }
+        viewUid = AS_UID;
+        const snap = await getDoc(doc(db, 'users', viewUid));
+        viewDoc = snap.exists() ? snap.data() || {} : {};
+        setMsg(`👀 Vista del panel de: ${viewDoc.email || viewUid}`, 'warn');
+      } else {
+        showBlockedBanner();
       }
-      viewUid = AS_UID;
-      const snap = await getDoc(doc(db, 'users', viewUid));
-      viewDoc = snap.exists() ? snap.data() || {} : {};
-      setMsg(`👀 Vista del panel de: ${viewDoc.email || viewUid}`, 'warn');
-    } else {
-      showBlockedBanner();
-    }
 
-    const emailEl = $('userEmail');
-    if (emailEl)
-      emailEl.textContent = AS_UID ? viewDoc.email || '—' : user.email || '—';
+      const emailEl = $('userEmail');
+      if (emailEl)
+        emailEl.textContent = AS_UID ? viewDoc.email || '—' : user.email || '—';
 
-    renderAdminUI(isAdmin);
+      if (panelTitle || panelSubtitle) {
+        const gender = String(viewDoc.gender || '').toLowerCase();
+        if (gender === 'papi') {
+          if (panelTitle) panelTitle.textContent = '¡Buenas Papi!';
+          if (panelSubtitle)
+            panelSubtitle.textContent =
+              'Aqui tienes tu libreta! ¡Que chimba verte!';
+        } else if (gender === 'mami') {
+          if (panelTitle) panelTitle.textContent = '¡Buenas Mami!';
+          if (panelSubtitle)
+            panelSubtitle.textContent =
+              'Aqui tienes tu libreta! ¡Que chimba verte!';
+        } else {
+          if (panelTitle) panelTitle.textContent = '¡Buenas!';
+          if (panelSubtitle)
+            panelSubtitle.textContent =
+              'Aqui tienes tu libreta! ¡Que chimba verte!';
+        }
+      }
 
-    renderPromoList(viewDoc);
+      renderAdminUI(isAdmin);
 
-    viewDoc = await ensureMyRefCode(viewUid, viewDoc);
-    renderMyRefCode(viewDoc);
+      renderPromoList(viewDoc);
 
-    await loadReferralStats(viewUid);
+      viewDoc = await ensureMyRefCode(viewUid, viewDoc);
+      renderMyRefCode(viewDoc);
 
-    // Referral apply disabled in preview mode
-    if (AS_UID) {
-      if (useRefCode) useRefCode.disabled = true;
-      if (btnApplyRefCode) btnApplyRefCode.disabled = true;
-      if (applyRefStatus)
-        applyRefStatus.textContent = 'Vista previa (admin) — desactivado.';
-    }
+      await loadReferralStats(viewUid);
 
-    const flags = computeFlags(viewDoc);
-    renderCourses(viewDoc, flags);
-    renderPlans(viewDoc, flags);
+      // Referral apply disabled in preview mode
+      if (AS_UID) {
+        if (useRefCode) useRefCode.disabled = true;
+        if (btnApplyRefCode) btnApplyRefCode.disabled = true;
+        if (applyRefStatus)
+          applyRefStatus.textContent = 'Vista previa (admin) — desactivado.';
+      }
 
-    if (btn) {
-      btn.onclick = async () => {
-        const fresh = await getDoc(doc(db, 'users', viewUid));
-        const latest = fresh.exists() ? fresh.data() || {} : viewDoc;
-        await applyPromoCode(viewUid, latest);
+      const flags = computeFlags(viewDoc);
+      renderCourses(viewDoc, flags);
+      renderPlans(viewDoc, flags);
 
-        const after = await getDoc(doc(db, 'users', viewUid));
-        const afterDoc = after.exists() ? after.data() || {} : latest;
-        renderPromoList(afterDoc);
-      };
-    }
+      if (btn) {
+        btn.onclick = async () => {
+          const fresh = await getDoc(doc(db, 'users', viewUid));
+          const latest = fresh.exists() ? fresh.data() || {} : viewDoc;
+          await applyPromoCode(viewUid, latest);
 
-    if (input) {
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') btn?.click();
-      });
-    }
+          const after = await getDoc(doc(db, 'users', viewUid));
+          const afterDoc = after.exists() ? after.data() || {} : latest;
+          renderPromoList(afterDoc);
+        };
+      }
 
-    // Disable promo applying in preview mode
-    if (AS_UID) {
-      if (input) input.disabled = true;
-      if (btn) btn.disabled = true;
+      if (input) {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') btn?.click();
+        });
+      }
+
+      // Disable promo applying in preview mode
+      if (AS_UID) {
+        if (input) input.disabled = true;
+        if (btn) btn.disabled = true;
+      }
+    } catch (e) {
+      console.error('[panel init]', e);
+      setMsg('Error de permisos. Revisa reglas de Firestore.', 'bad');
     }
   });
 });

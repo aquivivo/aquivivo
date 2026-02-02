@@ -507,8 +507,7 @@ function fillServiceForm(id, s) {
   if ($('svcSku')) $('svcSku').value = id || '';
   if ($('svcCategory')) {
     const raw = String(s.category || '').toLowerCase();
-    const mapped =
-      raw === 'consults' || raw === 'consultas' ? 'servicios' : raw;
+    const mapped = raw === 'consults' ? 'consultas' : raw;
     $('svcCategory').value = mapped || 'extras';
   }
   if ($('svcTitle')) $('svcTitle').value = s.title || '';
@@ -525,8 +524,10 @@ function fillServiceForm(id, s) {
 
 function renderServiceRow(id, s) {
   const active = s.active === false ? '⛔ hidden' : '✅ active';
+  const cat = String(s.category || '').toLowerCase();
+  const catClass = cat ? ` serviceRow--${cat}` : '';
   return `
-    <div class="listItem">
+    <div class="listItem${catClass}">
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${esc(s.title || id)}</div>

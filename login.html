@@ -64,6 +64,13 @@
         border-color: rgba(252, 209, 22, 0.85);
         box-shadow: 0 0 0 4px rgba(252, 209, 22, 0.18);
       }
+      .form-card select {
+        background: #fff;
+        color: var(--ink-blue);
+      }
+      .form-card select option {
+        color: var(--ink-blue);
+      }
       .actions {
         display: flex;
         gap: 10px;
@@ -144,6 +151,33 @@
                 id="name"
                 placeholder="Nombre (solo en registro)"
               />
+            </div>
+            <div class="field">
+              <label>Género (registro)</label>
+              <div style="display: flex; gap: 14px; flex-wrap: wrap">
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-weight: 800;
+                  "
+                >
+                  <input type="radio" name="gender" value="papi" required />
+                  Papi
+                </label>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-weight: 800;
+                  "
+                >
+                  <input type="radio" name="gender" value="mami" required />
+                  Mami
+                </label>
+              </div>
             </div>
             <div class="field">
               <label for="email">Correo electrónico</label>

@@ -82,6 +82,9 @@ html,
 body {
   height: 100%;
 }
+section[id] {
+  scroll-margin-top: 120px;
+}
 body {
   margin: 0;
   font-family:
@@ -308,10 +311,10 @@ main.page {
 }
 
 .brand {
-  display: flex;
+  padding: 16px; /* Updated padding */
   align-items: center;
   gap: 12px;
-  min-width: 200px;
+  font-size: 14px; /* Updated font size */
 }
 .brand .brand .brand-sub {
   font-weight: 900;
@@ -320,10 +323,11 @@ main.page {
   opacity: 0.78;
 }
 
-.nav-actions {
+  font-size: 28px !important; /* Updated font size */
+  margin-top: 4px !important;
   display: flex;
   align-items: center;
-  gap: 10px;
+  font-size: 12px; /* Updated font size */
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -661,9 +665,9 @@ textarea:focus {
 /* ===== Panel layout (espanel) ===== */
 .panelGrid {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 40px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
 }
 @media (max-width: 860px) {
   .panelGrid {
@@ -768,6 +772,8 @@ textarea:focus {
 .list {
   display: grid;
   gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
 }
 .listItem {
   background: rgba(255, 255, 255, 0.08);
@@ -775,6 +781,20 @@ textarea:focus {
   border-radius: 18px;
   padding: 12px;
   backdrop-filter: blur(10px);
+  width: 100%;
+}
+.listItem.serviceRow--plans {
+  background: #ce1126;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+.listItem.serviceRow--ebooks {
+  background: #fcd116;
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #0b1b3f;
+}
+.listItem.serviceRow--ebooks .hintSmall {
+  color: rgba(11, 27, 63, 0.8);
 }
 .listItem .row {
   display: flex;
@@ -782,6 +802,9 @@ textarea:focus {
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
+}
+.listItem .rowBetween {
+  justify-content: flex-start;
 }
 
 /* Ensure selects/inputs are readable on admin pages */
@@ -1538,9 +1561,9 @@ a:hover {
   color: #ffffff;
 }
 .services-card--featured .badge {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.35);
-  color: #ffffff;
+  background: #fcd116;
+  border-color: rgba(252, 209, 22, 0.6);
+  color: #0a1f44;
 }
 .services-card--a1a2 {
   background: #fcd116 !important;
@@ -1556,9 +1579,9 @@ a:hover {
   opacity: 0.9;
 }
 .services-card--a1a2 .badge {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(0, 56, 147, 0.25);
-  color: #003893;
+  background: #003893;
+  border-color: rgba(0, 56, 147, 0.4);
+  color: #ffffff;
 }
 .badge {
   display: inline-flex;
@@ -1568,10 +1591,41 @@ a:hover {
   border-radius: 999px;
   font-weight: 900;
   font-size: 12px;
-  background: rgba(252, 209, 22, 0.2);
-  border: 1px solid rgba(252, 209, 22, 0.5);
+  background: #fcd116;
+  border: 1px solid #fcd116;
   color: var(--av-blue-ink);
   width: fit-content;
+}
+
+/* Ebooks: alternate badge colors (yellow/red/white/blue) */
+#ebooks .services-card:nth-child(4n+1) .badge {
+  background: #fcd116;
+  border-color: #fcd116;
+  color: #0a1f44;
+}
+#ebooks .services-card:nth-child(4n+2) .badge {
+  background: #ce1126;
+  border-color: #ce1126;
+  color: #ffffff;
+}
+#ebooks .services-card:nth-child(4n+3) .badge {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #0a1f44;
+}
+#ebooks .services-card:nth-child(4n+4) .badge {
+  background: #003893;
+  border-color: #003893;
+  color: #ffffff;
+}
+
+/* Specific ebook CTA: E-book Hablemos del Amor! */
+#ebooks .services-card--amor .ctaRow .btn,
+#ebooks .services-card--amor .ctaRow .btn-yellow,
+#ebooks .services-card--amor .ctaRow .btn-white-outline {
+  background: #ce1126 !important;
+  border-color: #ce1126 !important;
+  color: #ffffff !important;
 }
 
 /* Responsive */
@@ -1692,6 +1746,13 @@ body {
 /* ===== Admin: allow open details to show content ===== */
 body[data-page*='admin'] details[open] > :not(summary) {
   display: block;
+}
+
+/* Admin accordions: allow natural height (no internal scroll) */
+body[data-page*='admin'] details > div {
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
 }
 
 /* =====================================================
@@ -1865,47 +1926,55 @@ h3 {
 }
 
 /* =====================================================
-   BUTTONS / CTAs (yellow primary, red secondary, outline)
+   BUTTONS / CTAs (original pill + glass style)
    ===================================================== */
 .btn,
+.btn-white-outline,
 .btn-yellow,
-.btn-red,
-.btn-white-outline {
-  border-radius: 18px;
+.btn-red {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 999px;
+  padding: 11px 16px;
   font-weight: 900;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.14);
   transition:
-    transform var(--av-fast) var(--av-ease),
-    box-shadow var(--av-fast) var(--av-ease),
-    opacity var(--av-fast);
+    transform 0.12s ease,
+    filter 0.12s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.btn:hover,
+.btn-white-outline:hover,
+.btn-yellow:hover,
+.btn-red:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.99);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
 }
 
-.btn {
-  background: var(--av-blue);
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+.btn-white-outline {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.42);
 }
 .btn-yellow {
-  background: var(--av-yellow);
-  color: var(--av-blue-ink);
-  border: 2px solid rgba(0, 0, 0, 0.05);
+  background: rgba(252, 209, 22, 0.92);
+  color: #111827;
+  border-color: rgba(252, 209, 22, 0.95);
 }
 .btn-red {
-  background: var(--av-red);
+  background: rgba(206, 17, 38, 0.92);
   color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-}
-.btn-white-outline {
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  color: #fff;
-}
-
-.btn:hover,
-.btn-yellow:hover,
-.btn-red:hover,
-.btn-white-outline:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  border-color: rgba(206, 17, 38, 0.95);
 }
 
 /* =====================================================
@@ -1942,6 +2011,12 @@ textarea,
 input,
 select {
   border-radius: 16px;
+}
+.select option,
+select option,
+select optgroup {
+  color: #0b1b3f;
+  background: #ffffff;
 }
 .input:focus,
 .select:focus,

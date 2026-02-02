@@ -1,0 +1,178 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userRef(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function hasUserDoc() {
+      return signedIn() && exists(userRef(request.auth.uid));
+    }
+
+    function userDoc() {
+      return get(userRef(request.auth.uid)).data;
+    }
+
+    // Admin: po mailu lub po polu admin==true lub role=="admin"
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.email == "aquivivo.pl@gmail.com"
+        || (hasUserDoc() && (
+              userDoc().admin == true
+              || (("role" in userDoc()) && userDoc().role == "admin")
+           ))
+      );
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function notBlocked() {
+      return hasUserDoc() && userDoc().blocked != true;
+    }
+
+    // "Globalny" dostęp (premium / access=true / trial accessUntil)
+    function hasGlobalAccess() {
+      return isAdmin() || (
+        signedIn()
+        && hasUserDoc()
+        && notBlocked()
+        && (
+          userDoc().access == true
+          || userDoc().plan == "premium"
+          || (("accessUntil" in userDoc()) && userDoc().accessUntil > request.time)
+        )
+      );
+    }
+
+    // Dostęp do konkretnego poziomu (A1/A2/B1/B2) – levels[] w users doc
+    function hasLevel(level) {
+      return hasUserDoc()
+        && ("levels" in userDoc())
+        && (userDoc().levels is list)
+        && userDoc().levels.hasAny([level]);
+    }
+
+    function canReadLevel(level) {
+      return hasGlobalAccess() || (signedIn() && notBlocked() && hasLevel(level));
+    }
+
+    /* ===== USERS ===== */
+
+    // User może zmieniać tylko "bezpieczne" pola profilu
+    function userEditableKeys() {
+      return ["name","displayName","photoURL","lang","note","noteUser","updatedAt"];
+    }
+
+    // Chronione – user nie może ich ruszać
+    function protectedUserKeys() {
+      return ["role","admin","plan","levels","access","accessUntil","blocked","createdAt","email","emailLower"];
+    }
+
+    match /users/{uid} {
+
+      allow read: if isAdmin() || isOwner(uid);
+
+      // Create: pozwól userowi utworzyć swój doc (bez porównania createdAt do request.time)
+      // Minimalny kontrakt: email + admin/access/blocked (reszta może dopełnić admin/panel)
+      allow create: if isAdmin() || (
+        isOwner(uid)
+        && request.resource.data.email == request.auth.token.email
+        // emailLower opcjonalne (jeśli jest – musi pasować)
+        && ( !("emailLower" in request.resource.data) || request.resource.data.emailLower == request.auth.token.email.lower() )
+        && ( !("admin" in request.resource.data) || request.resource.data.admin == false )
+        && ( !("blocked" in request.resource.data) || request.resource.data.blocked == false )
+        // createdAt może być serverTimestamp – nie walidujemy "== request.time"
+      );
+
+      // Update: admin wszystko, user tylko userEditableKeys()
+      allow update: if isAdmin() || (
+        isOwner(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(userEditableKeys())
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(protectedUserKeys())
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    /* ===== COURSES (lista tematów) ===== */
+    match /courses/{docId} {
+      allow read: if signedIn();      // lista tematów może być dla zalogowanych
+      allow write: if isAdmin();
+    }
+
+    /* ===== COURSE META (treść lekcji) =====
+       docId: "A1__slug" / "A2__slug" / "B1__slug" / "B2__slug"
+    */
+    match /course_meta/{docId} {
+      allow read: if signedIn() && notBlocked() && (
+        isAdmin()
+        || (docId.startsWith("A1__") && canReadLevel("A1"))
+        || (docId.startsWith("A2__") && canReadLevel("A2"))
+        || (docId.startsWith("B1__") && canReadLevel("B1"))
+        || (docId.startsWith("B2__") && canReadLevel("B2"))
+      );
+
+      allow write: if isAdmin();
+    }
+
+    /* ===== EXERCISES =====
+       Każdy exercise doc powinien mieć pole: level: "A1"/"A2"/"B1"/"B2"
+    */
+    match /exercises/{id} {
+      allow read: if signedIn() && notBlocked() && (
+        isAdmin()
+        || (("level" in resource.data) && canReadLevel(resource.data.level))
+      );
+
+      allow write: if isAdmin();
+    }
+
+    /* ===== SERVICES (OFERTA) ===== */
+    match /services/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /* ===== PROMO CODES ===== */
+    match /promo_codes/{codeId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    /* ===== SITE SETTINGS ===== */
+    match /site_settings/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    /* ===== PROGRESS ===== */
+    match /user_progress/{uid}/topics/{topicId} {
+      allow read, write: if isAdmin() || isOwner(uid);
+    }
+
+    /* ===== REFERRALS / REWARDS (jak miałaś) ===== */
+    match /referrals/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.newUserUid == request.auth.uid
+        && request.resource.data.status == "PENDING";
+      allow update, delete: if isAdmin();
+    }
+
+    match /rewards/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

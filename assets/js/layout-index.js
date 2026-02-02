@@ -108,13 +108,38 @@ import {
       e.preventDefault();
 
       // offset = header height
-      const header = document.querySelector('.nav-glass');
-      const offset = header ? header.getBoundingClientRect().height : 0;
-      const top =
-        target.getBoundingClientRect().top + window.scrollY - offset - 10;
-
-      window.scrollTo({ top, behavior: 'smooth' });
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       history.replaceState(null, '', hash);
+    });
+  }
+
+  function setupAnchorScroll() {
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+
+      const hash = a.getAttribute('href') || '';
+      if (!hash.startsWith('#')) return;
+
+      const target = document.getElementById(hash.slice(1));
+      if (!target) return;
+
+      e.preventDefault();
+
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', hash);
+    });
+  }
+
+  function setupCursosScroll() {
+    const btn = document.getElementById('btnCursos');
+    const target = document.getElementById('cursos');
+    if (!btn || !target) return;
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#cursos');
     });
   }
 
@@ -152,5 +177,7 @@ import {
   injectHeader();
   setupDropdown();
   setupContactoScroll();
+  setupAnchorScroll();
+  setupCursosScroll();
   setupAuthButtons();
 })();
