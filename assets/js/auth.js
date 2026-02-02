@@ -10,6 +10,7 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   sendEmailVerification,
+  signOut,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 
 import {
@@ -106,6 +107,51 @@ function setVerifyHint(text) {
   }
   el.style.display = 'block';
   el.textContent = text;
+}
+
+// --- Logout box (for switching accounts on shared devices) ---
+function ensureLogoutBox() {
+  const host = document.querySelector('.form-card') || document.body;
+  if (!host) return null;
+
+  let box = document.getElementById('logoutBox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'logoutBox';
+    box.className = 'card';
+    box.style.marginTop = '14px';
+    box.style.padding = '14px';
+    box.innerHTML = `
+      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">👤 Cuenta activa</div>
+      <div class="subtitle" id="logoutSubtitle" style="margin:0 0 12px;"></div>
+      <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
+        <button id="btnLogoutHere" class="btn-red" type="button">Cerrar sesión</button>
+      </div>
+    `;
+
+    const msgEl = document.getElementById('message');
+    if (msgEl && msgEl.parentElement) {
+      msgEl.parentElement.insertBefore(box, msgEl.nextSibling);
+    } else {
+      host.appendChild(box);
+    }
+  }
+
+  const btnLogout = document.getElementById('btnLogoutHere');
+  if (btnLogout && !btnLogout.dataset.wired) {
+    btnLogout.dataset.wired = '1';
+    btnLogout.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        setMsg('Sesión cerrada. Ahora puedes iniciar con otra cuenta.', 'ok');
+      } catch (e) {
+        console.error(e);
+        setMsg('Error al cerrar sesión. Intenta de nuevo.', 'error');
+      }
+    });
+  }
+
+  return box;
 }
 
 let __resendCooldownUntil = 0;
@@ -248,6 +294,17 @@ document.addEventListener('DOMContentLoaded', () => {
       ensureVerifyBox();
     }
   }, 300);
+
+  // If user is already signed in, show logout box to switch accounts (mobile)
+  setTimeout(() => {
+    const u = auth.currentUser;
+    if (!u) return;
+    const box = ensureLogoutBox();
+    const sub = document.getElementById('logoutSubtitle');
+    if (box && sub) {
+      sub.textContent = `Estás conectado como ${u.email || '—'}.`;
+    }
+  }, 350);
 
   const nameInput = $('name');
   const emailInput = $('email');

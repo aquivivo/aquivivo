@@ -1073,6 +1073,9 @@ a:hover {
   section[style*='grid-template-columns:repeat(3,1fr)'] {
     grid-template-columns: 1fr !important;
   }
+  body[data-page='login'] .nav-actions {
+    display: none !important;
+  }
 }
 
 /* Micro-motion */
