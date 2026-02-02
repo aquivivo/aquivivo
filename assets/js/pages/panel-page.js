@@ -104,72 +104,80 @@ async function ensureUserDoc(user) {
     blocked: false,
   };
 
-  const ref = doc(db, 'users', user.uid);
-  const snap = await getDoc(ref);
+  try {
+    const ref = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
 
-  if (!snap.exists()) {
-    await setDoc(
-      ref,
-      {
-        email: user.email || '',
-        admin: false,
-        access: false,
-        plan: 'free',
-        promoCodes: [],
-        blocked: false,
-        createdAt: serverTimestamp(),
-      },
-      { merge: true },
-    );
-    return { ...defaults, email: user.email || '' };
-  }
+    if (!snap.exists()) {
+      await setDoc(
+        ref,
+        {
+          email: user.email || '',
+          admin: false,
+          access: false,
+          plan: 'free',
+          promoCodes: [],
+          blocked: false,
+          createdAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      return { ...defaults, email: user.email || '' };
+    }
 
-  const data = snap.data() || {};
-  const patch = {};
-  let needPatch = false;
+    const data = snap.data() || {};
+    const patch = {};
+    let needPatch = false;
 
-  if (typeof data.email !== 'string') {
-    patch.email = user.email || '';
-    needPatch = true;
-  }
-  if (typeof data.admin !== 'boolean') {
-    patch.admin = false;
-    needPatch = true;
-  }
-  if (typeof data.access === 'undefined') {
-    patch.access = false;
-    needPatch = true;
-  }
-  if (typeof data.plan !== 'string') {
-    patch.plan = 'free';
-    needPatch = true;
-  }
-  if (!Array.isArray(data.promoCodes)) {
-    patch.promoCodes = [];
-    needPatch = true;
-  }
-  if (typeof data.blocked !== 'boolean') {
-    patch.blocked = false;
-    needPatch = true;
-  }
-  if (!data.createdAt) {
-    patch.createdAt = serverTimestamp();
-    needPatch = true;
-  }
+    if (typeof data.email !== 'string') {
+      patch.email = user.email || '';
+      needPatch = true;
+    }
+    if (typeof data.admin !== 'boolean') {
+      patch.admin = false;
+      needPatch = true;
+    }
+    if (typeof data.access === 'undefined') {
+      patch.access = false;
+      needPatch = true;
+    }
+    if (typeof data.plan !== 'string') {
+      patch.plan = 'free';
+      needPatch = true;
+    }
+    if (!Array.isArray(data.promoCodes)) {
+      patch.promoCodes = [];
+      needPatch = true;
+    }
+    if (typeof data.blocked !== 'boolean') {
+      patch.blocked = false;
+      needPatch = true;
+    }
+    if (!data.createdAt) {
+      patch.createdAt = serverTimestamp();
+      needPatch = true;
+    }
 
-  const isAdminUser =
-    user?.email === 'aquivivo.pl@gmail.com' ||
-    data?.admin === true ||
-    data?.role === 'admin';
+    const isAdminUser =
+      user?.email === 'aquivivo.pl@gmail.com' ||
+      data?.admin === true ||
+      data?.role === 'admin';
 
-  if (needPatch && isAdminUser) await setDoc(ref, patch, { merge: true });
+    if (needPatch && isAdminUser) await setDoc(ref, patch, { merge: true });
 
-  return {
-    ...defaults,
-    email: data?.email || user.email || '',
-    ...data,
-    ...(needPatch && isAdminUser ? patch : {}),
-  };
+    return {
+      ...defaults,
+      email: data?.email || user.email || '',
+      ...data,
+      ...(needPatch && isAdminUser ? patch : {}),
+    };
+  } catch (e) {
+    console.warn('ensureUserDoc failed', e);
+    return {
+      ...defaults,
+      email: user.email || '',
+    };
+  }
 }
 
 function computeFlags(userDoc) {
