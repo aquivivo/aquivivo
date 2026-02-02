@@ -314,12 +314,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetBtn = $('resetPasswordBtn');
   const togglePassword = $('togglePassword');
 
-  let authBusy = false;
-  const setAuthBusy = (yes) => {
-    authBusy = !!yes;
-    if (loginBtn) loginBtn.disabled = authBusy;
-    if (registerBtn) registerBtn.disabled = authBusy;
-    if (resetBtn) resetBtn.disabled = authBusy;
+  let registerBusy = false;
+  const setRegisterBusy = (yes) => {
+    registerBusy = !!yes;
+    if (registerBtn) registerBtn.disabled = registerBusy;
+  };
+
+  const COOLDOWN_KEY = 'authCooldownUntil';
+  const getCooldownRemaining = () => {
+    const raw = Number(localStorage.getItem(COOLDOWN_KEY) || 0);
+    const diff = raw - Date.now();
+    return diff > 0 ? diff : 0;
+  };
+  const setCooldownMs = (ms) => {
+    const until = Date.now() + Number(ms || 0);
+    localStorage.setItem(COOLDOWN_KEY, String(until));
+  };
+  const ensureCooldownMsg = () => {
+    const remaining = getCooldownRemaining();
+    if (remaining > 0) {
+      const sec = Math.ceil(remaining / 1000);
+      setMsg(`Demasiados intentos. Espera ${sec}s y prueba de nuevo.`, 'error');
+      return true;
+    }
+    return false;
   };
 
   if (togglePassword && passwordInput) {
@@ -344,13 +362,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function doLogin() {
-    if (authBusy) return;
+    if (ensureCooldownMsg()) return;
     const email = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
     if (!email || !pass) return setMsg('Completa email y contraseña.', 'error');
 
     try {
-      setAuthBusy(true);
       const cred = await signInWithEmailAndPassword(auth, email, pass);
 
       // Ensure users/{uid} exists (for admin panel / guards)
@@ -371,14 +388,18 @@ document.addEventListener('DOMContentLoaded', () => {
       setMsg('✅ Sesión iniciada.', 'ok');
       window.location.href = getNextUrl();
     } catch (err) {
+      if (err?.code === 'auth/too-many-requests') {
+        setCooldownMs(120_000);
+        ensureCooldownMsg();
+        return;
+      }
       setMsg('Error: ' + (err?.message || err), 'error');
-    } finally {
-      setAuthBusy(false);
     }
   }
 
   async function doRegister() {
-    if (authBusy) return;
+    if (registerBusy) return;
+    if (ensureCooldownMsg()) return;
     const name = (nameInput?.value || '').trim();
     const gender = (
       document.querySelector('input[name="gender"]:checked')?.value || ''
@@ -386,9 +407,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
     if (!email || !pass) return setMsg('Completa email y contraseña.', 'error');
+    if (!gender) return setMsg('Elige Papi o Mami para registrarte.', 'error');
 
     try {
-      setAuthBusy(true);
+      setRegisterBusy(true);
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
 
       // Create users/{uid} doc with 7-day A1 trial
@@ -409,14 +431,19 @@ document.addEventListener('DOMContentLoaded', () => {
       ensureVerifyBox();
       setVerifyHint('Si no ves el correo, revisa Spam y usa “Reenviar email”.');
     } catch (err) {
+      if (err?.code === 'auth/too-many-requests') {
+        setCooldownMs(120_000);
+        ensureCooldownMsg();
+        return;
+      }
       setMsg('Error: ' + (err?.message || err), 'error');
     } finally {
-      setAuthBusy(false);
+      setRegisterBusy(false);
     }
   }
 
   async function doReset() {
-    if (authBusy) return;
+    if (ensureCooldownMsg()) return;
     const email = (emailInput?.value || '').trim();
     if (!email)
       return setMsg(
@@ -424,13 +451,15 @@ document.addEventListener('DOMContentLoaded', () => {
         'error',
       );
     try {
-      setAuthBusy(true);
       await sendPasswordResetEmail(auth, email);
       setMsg('📩 Se envió un correo para restablecer tu contraseña.', 'ok');
     } catch (err) {
+      if (err?.code === 'auth/too-many-requests') {
+        setCooldownMs(120_000);
+        ensureCooldownMsg();
+        return;
+      }
       setMsg('Error: ' + (err?.message || err), 'error');
-    } finally {
-      setAuthBusy(false);
     }
   }
 

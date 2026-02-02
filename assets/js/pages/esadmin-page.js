@@ -922,7 +922,8 @@ function openUserModal(uid) {
   if ($('um_plan')) $('um_plan').value = u.plan || 'free';
   if ($('um_until')) $('um_until').value = isoDateTimeLocal(u.accessUntil);
   if ($('um_note')) $('um_note').value = u.note || '';
-  if ($('um_gender')) $('um_gender').value = u.gender || '';
+  if ($('um_gender'))
+    $('um_gender').value = String(u.gender || '').toLowerCase();
 
   if ($('um_status')) $('um_status').textContent = '';
 
@@ -954,7 +955,9 @@ async function saveUserModal() {
 
   const plan = normalizePlanId($('um_plan')?.value || 'free');
   const note = String($('um_note')?.value || '').trim();
-  const gender = String($('um_gender')?.value || '').trim();
+  const gender = String($('um_gender')?.value || '')
+    .trim()
+    .toLowerCase();
 
   // If admin set datetime manually -> keep it. Otherwise compute default by plan.
   const manualUntil = parseDateTimeLocal($('um_until')?.value || '');
