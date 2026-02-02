@@ -103,7 +103,13 @@ service cloud.firestore {
 
     /* ===== COURSES (lista tematów) ===== */
     match /courses/{docId} {
-      allow read: if signedIn();      // lista tematów może być dla zalogowanych
+      allow read: if signedIn()
+        && notBlocked()
+        && (
+          hasGlobalAccess()
+          || hasLevel(resource.data.level)
+          || resource.data.level == "A1"
+        );
       allow write: if isAdmin();
     }
 

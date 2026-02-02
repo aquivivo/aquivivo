@@ -20,12 +20,17 @@ const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
 
+let CURRENT_FLAGS = null;
+
 function showAccessLocked(reason = 'locked') {
   const host = document.querySelector('.container') || document.body;
   const page = document.querySelector('main.page .container') || host;
 
   // try to use existing empty states if present
-  const grid = document.getElementById('topicsGrid') || document.getElementById('courseList') || null;
+  const grid =
+    document.getElementById('topicsGrid') ||
+    document.getElementById('courseList') ||
+    null;
 
   const card = document.createElement('section');
   card.className = 'card';
@@ -60,20 +65,121 @@ async function getUserFlags(uid) {
     }
 
     const until = d.accessUntil || null;
-    const untilDate = until?.toDate ? until.toDate() : (until ? new Date(until) : null);
-    const timeOk = !!untilDate && !Number.isNaN(untilDate.getTime()) && untilDate.getTime() > Date.now();
+    const untilDate = until?.toDate
+      ? until.toDate()
+      : until
+        ? new Date(until)
+        : null;
+    const timeOk =
+      !!untilDate &&
+      !Number.isNaN(untilDate.getTime()) &&
+      untilDate.getTime() > Date.now();
 
     const levels = Array.isArray(d.levels)
       ? d.levels.map((x) => String(x).toUpperCase())
       : [];
 
-    const hasLevelAccess = timeOk && levels.includes(String(LEVEL).toUpperCase());
+    const plan = String(d.plan || '').toLowerCase();
+    const hasGlobalAccess = d.access === true || plan === 'premium' || timeOk;
+    const hasLevelAccess =
+      hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase());
 
-    return { isAdmin: false, hasLevelAccess, blocked, levels };
+    return {
+      isAdmin: false,
+      hasLevelAccess,
+      hasGlobalAccess,
+      blocked,
+      levels,
+    };
   } catch (e) {
     console.warn('getUserFlags failed', e);
     return { isAdmin: false, hasLevelAccess: false, blocked: false };
   }
+}
+
+function showLevelNotice(text) {
+  const buttons = document.querySelector('.levelButtons');
+  const host =
+    buttons?.parentElement || buttons || document.querySelector('.container');
+  if (!host) return;
+
+  let box = document.getElementById('levelNotice');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'levelNotice';
+    box.className = 'hintSmall';
+    box.style.marginTop = '10px';
+    box.style.color = '#ffe08a';
+    if (buttons && buttons.parentElement === host) {
+      buttons.insertAdjacentElement('afterend', box);
+    } else {
+      host.appendChild(box);
+    }
+  }
+  box.textContent = text || '';
+  if (text) {
+    clearTimeout(box._timer);
+    box._timer = setTimeout(() => {
+      box.textContent = '';
+    }, 3000);
+  }
+}
+
+function wireLevelButtons(flags) {
+  const links = document.querySelectorAll('.levelButtons a[href]');
+  if (!links.length) return;
+
+  links.forEach((link) => {
+    const href = link.getAttribute('href') || '';
+    const level = (
+      new URL(href, location.href).searchParams.get('level') || ''
+    ).toUpperCase();
+    if (!level || level === 'A1') return;
+
+    const hasAccessForLevel =
+      flags?.isAdmin ||
+      flags?.hasGlobalAccess ||
+      (Array.isArray(flags?.levels) && flags.levels.includes(level));
+
+    if (hasAccessForLevel) return;
+
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      showLevelNotice('🔒 Sin acceso. Solo puedes ver los temas de A1.');
+    });
+  });
+  CURRENT_FLAGS = flags || null;
+}
+
+function initLevelButtonsGuard() {
+  document.addEventListener('click', (e) => {
+    const link = e.target?.closest?.('.levelButtons a[href]');
+    if (!link) return;
+
+    const href = link.getAttribute('href') || '';
+    const level = (
+      new URL(href, location.href).searchParams.get('level') || ''
+    ).toUpperCase();
+
+    if (!level || level === 'A1') return;
+
+    const f = CURRENT_FLAGS;
+    if (!f) {
+      e.preventDefault();
+      showLevelNotice('⏳ Cargando permisos…');
+      return;
+    }
+
+    const hasAccessForLevel =
+      f.isAdmin ||
+      f.hasGlobalAccess ||
+      (Array.isArray(f.levels) && f.levels.includes(level));
+
+    if (!hasAccessForLevel) {
+      e.preventDefault();
+      showLevelNotice('🔒 Sin acceso. Solo puedes ver los temas de A1.');
+    }
+  });
 }
 
 function safeText(v) {
@@ -89,8 +195,10 @@ function safeText(v) {
   );
 }
 
-function tileAccentClass(topic){
-  const raw = String(topic?.tileStyle || topic?.tileClass || '').toLowerCase().trim();
+function tileAccentClass(topic) {
+  const raw = String(topic?.tileStyle || topic?.tileClass || '')
+    .toLowerCase()
+    .trim();
   if (!raw) return '';
   if (raw === 'yellow' || raw === 'amarillo') return 'cardAccentYellow';
   if (raw === 'blue' || raw === 'azul') return 'cardAccentBlue';
@@ -137,16 +245,24 @@ async function getExercisesCount(courseId) {
   }
 }
 
-function renderCard(topic, lessonBadge, exCount, hasLevelAccess) {
+function renderCard(
+  topic,
+  lessonBadge,
+  exCount,
+  hasLevelAccess,
+  readOnly = false,
+) {
   const accent = tileAccentClass(topic);
   const href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
 
   const exBadge =
     exCount > 0 ? `<span class="pill pill-yellow">🧩 ${exCount}</span>` : '';
 
-  const accessBadge = hasLevelAccess
-    ? `<span class="pill pill-blue">✅ Acceso</span>`
-    : `<span class="pill pill-red">🔒 Premium</span>`;
+  const accessBadge = readOnly
+    ? `<span class="pill">👁️ Vista previa</span>`
+    : hasLevelAccess
+      ? `<span class="pill pill-blue">✅ Acceso</span>`
+      : `<span class="pill pill-red">🔒 Premium</span>`;
 
   const typeBadge = topic.type
     ? `<span class="pill" style="font-weight:900;">🏷️ ${safeText(topic.type)}</span>`
@@ -155,8 +271,7 @@ function renderCard(topic, lessonBadge, exCount, hasLevelAccess) {
   const title = safeText(topic.title || 'Tema');
   const desc = safeText(topic.desc || '');
 
-  return `
-    <a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">
+  const inner = `
       <div class="card ${accent}" style="padding:16px; border-radius:24px;">
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
           <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
@@ -166,7 +281,7 @@ function renderCard(topic, lessonBadge, exCount, hasLevelAccess) {
           <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
             ${lessonBadge || ''}
             ${exBadge || ''}
-            <span class="pill" style="opacity:.9;">Entrar →</span>
+            ${readOnly ? '' : `<span class="pill" style="opacity:.9;">Entrar →</span>`}
           </div>
         </div>
 
@@ -177,20 +292,32 @@ function renderCard(topic, lessonBadge, exCount, hasLevelAccess) {
         ${desc ? `<div class="muted" style="margin:0; line-height:1.65;">${desc}</div>` : ''}
 
         <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-          <span class="pill">📖 Lección</span>
-          <span class="pill">🧩 Ejercicios</span>
+          ${readOnly ? `<span class="pill">Solo temas</span>` : `<span class="pill">📖 Lección</span><span class="pill">🧩 Ejercicios</span>`}
         </div>
       </div>
-    </a>
   `;
+
+  if (readOnly) {
+    return `<div class="courseCard" style="text-decoration:none; color:inherit;">${inner}</div>`;
+  }
+
+  return `<a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">${inner}</a>`;
 }
 
 async function loadTopics(user) {
   const subtitle = $('levelSubtitle');
   const flags = await getUserFlags(user.uid);
+  wireLevelButtons(flags);
 
-  if (flags.blocked) { showAccessLocked('blocked'); return; }
-  if (!flags.hasLevelAccess) { showAccessLocked('locked'); return; }
+  if (flags.blocked) {
+    showAccessLocked('blocked');
+    return;
+  }
+  const previewOnly = !flags.hasLevelAccess && LEVEL === 'A1';
+  if (!flags.hasLevelAccess && !previewOnly) {
+    showAccessLocked('locked');
+    return;
+  }
   if (subtitle) subtitle.textContent = `Nivel ${LEVEL}`;
 
   const host = $('topicsList');
@@ -212,14 +339,22 @@ async function loadTopics(user) {
     // Soft-delete / archive
     if (topic.isArchived === true) continue;
 
-    const [lessonBadge, exCount] = await Promise.all([
-      getLessonBadge(topic.id),
-      getExercisesCount(topic.id),
-    ]);
+    const [lessonBadge, exCount] = previewOnly
+      ? ['', 0]
+      : await Promise.all([
+          getLessonBadge(topic.id),
+          getExercisesCount(topic.id),
+        ]);
 
     host.insertAdjacentHTML(
       'beforeend',
-      renderCard(topic, lessonBadge, exCount, flags.hasLevelAccess),
+      renderCard(
+        topic,
+        lessonBadge,
+        exCount,
+        flags.hasLevelAccess,
+        previewOnly,
+      ),
     );
   }
 
@@ -229,6 +364,7 @@ async function loadTopics(user) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initLevelButtonsGuard();
   onAuthStateChanged(auth, (user) => {
     if (!user) return; // layout.js guards
     loadTopics(user);

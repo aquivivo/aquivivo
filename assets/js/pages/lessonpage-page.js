@@ -44,7 +44,10 @@ function showAccessLocked() {
   if (content) content.style.display = 'none';
   if (toc) toc.style.display = 'none';
   if (sticky) sticky.style.display = 'none';
-  if (empty) { empty.style.display = 'none'; empty.innerHTML = ''; }
+  if (empty) {
+    empty.style.display = 'none';
+    empty.innerHTML = '';
+  }
   wrap.prepend(card);
 }
 
@@ -53,7 +56,7 @@ async function trackTopicOpen(uid, courseId, level) {
   try {
     const userRef = doc(db, 'users', uid);
     const snap = await getDoc(userRef);
-    const data = snap.exists() ? (snap.data() || {}) : {};
+    const data = snap.exists() ? snap.data() || {} : {};
     const opened = data.openedTopics || {};
     const already = opened && opened[courseId] === true;
 
@@ -65,17 +68,21 @@ async function trackTopicOpen(uid, courseId, level) {
     };
 
     if (!snap.exists()) {
-      await setDoc(userRef, {
-        email: auth.currentUser?.email || '',
-        admin: false,
-        access: false,
-        plan: 'free',
-        blocked: false,
-        createdAt: serverTimestamp(),
-        openedTopics: { [courseId]: true },
-        openedTopicsCount: 1,
-        ...basePatch,
-      }, { merge: true });
+      await setDoc(
+        userRef,
+        {
+          email: auth.currentUser?.email || '',
+          admin: false,
+          access: false,
+          plan: 'free',
+          blocked: false,
+          createdAt: serverTimestamp(),
+          openedTopics: { [courseId]: true },
+          openedTopicsCount: 1,
+          ...basePatch,
+        },
+        { merge: true },
+      );
       return;
     }
 
@@ -94,7 +101,6 @@ async function trackTopicOpen(uid, courseId, level) {
   }
 }
 
-
 function metaDocId(level, courseId) {
   return `${level}__${courseId}`;
 }
@@ -110,14 +116,24 @@ async function getUserFlags(uid) {
     if (isAdmin) return { isAdmin: true, hasAccess: true };
 
     const until = d.accessUntil || null;
-    const untilDate = until?.toDate ? until.toDate() : (until ? new Date(until) : null);
-    const timeOk = !!untilDate && !Number.isNaN(untilDate.getTime()) && untilDate.getTime() > Date.now();
+    const untilDate = until?.toDate
+      ? until.toDate()
+      : until
+        ? new Date(until)
+        : null;
+    const timeOk =
+      !!untilDate &&
+      !Number.isNaN(untilDate.getTime()) &&
+      untilDate.getTime() > Date.now();
 
     const levels = Array.isArray(d.levels)
       ? d.levels.map((x) => String(x).toUpperCase())
       : [];
 
-    const hasAccess = timeOk && levels.includes(String(LEVEL).toUpperCase());
+    const plan = String(d.plan || '').toLowerCase();
+    const hasGlobalAccess = d.access === true || plan === 'premium' || timeOk;
+    const hasAccess =
+      hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase());
 
     return { isAdmin: false, hasAccess };
   } catch (e) {
@@ -187,11 +203,14 @@ async function loadLesson(user) {
 
   const flags = await getUserFlags(user.uid);
 
-  if (!flags.hasAccess) { showAccessLocked(); return; }
+  if (!flags.hasAccess) {
+    showAccessLocked();
+    return;
+  }
   // Always show reading tools (progress + ejercicios link)
   if (readTools) readTools.style.display = '';
 
-    // Exercise links
+  // Exercise links
   if (exerciseLinksWrap) {
     exerciseLinksWrap.innerHTML = `
       <a class="btn-white-outline" href="ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}">🧩 Ejercicios</a>
@@ -315,7 +334,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-
 // --- TOC highlight (simple) ---
 function wireTocHighlight() {
   const wrap = document.getElementById('tocList');
@@ -338,14 +356,21 @@ function wireTocHighlight() {
     if (a) a.classList.add('tocActive');
   };
 
-  const obs = new IntersectionObserver((entries) => {
-    const visible = entries.filter(e => e.isIntersecting).sort((a,b) => (b.intersectionRatio - a.intersectionRatio));
-    if (!visible.length) return;
-    const top = visible[0].target;
-    const a = map.get(top);
-    if (a) setActive(a);
-  }, { rootMargin: '-15% 0px -70% 0px', threshold: [0.1, 0.2, 0.4, 0.6] });
+  const obs = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (!visible.length) return;
+      const top = visible[0].target;
+      const a = map.get(top);
+      if (a) setActive(a);
+    },
+    { rootMargin: '-15% 0px -70% 0px', threshold: [0.1, 0.2, 0.4, 0.6] },
+  );
 
   for (const el of map.keys()) obs.observe(el);
 }
-window.addEventListener('DOMContentLoaded', () => setTimeout(wireTocHighlight, 800));
+window.addEventListener('DOMContentLoaded', () =>
+  setTimeout(wireTocHighlight, 800),
+);

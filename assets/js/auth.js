@@ -224,7 +224,7 @@ function computeTrialAccessUntil(days = 7) {
 
 async function ensureUserDoc(uid, email, displayNameOptional, genderOptional) {
   // Ensures users/{uid} exists and contains minimum contract fields used by the app/admin.
-  // On first creation: grants 7-day A1 trial.
+  // On first creation: no access by default (admin grants later).
   const ref = doc(db, 'users', uid);
   const snap = await getDoc(ref);
 
@@ -240,13 +240,13 @@ async function ensureUserDoc(uid, email, displayNameOptional, genderOptional) {
 
         // access model
         plan: 'free',
-        levels: ['A1'],
-        accessUntil: computeTrialAccessUntil(7),
+        levels: [],
+        accessUntil: null,
 
         // flags
         admin: false,
         role: 'user',
-        access: true,
+        access: false,
         blocked: false,
 
         createdAt: serverTimestamp(),
@@ -267,7 +267,7 @@ async function ensureUserDoc(uid, email, displayNameOptional, genderOptional) {
 
   if (typeof data.admin !== 'boolean') patch.admin = false;
   if (typeof data.blocked !== 'boolean') patch.blocked = false;
-  if (typeof data.access !== 'boolean') patch.access = true;
+  if (typeof data.access !== 'boolean') patch.access = false;
   if (!data.createdAt) patch.createdAt = serverTimestamp();
 
   if (Object.keys(patch).length) {
