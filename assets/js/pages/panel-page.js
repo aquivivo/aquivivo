@@ -96,6 +96,14 @@ function formatDate(ts) {
 async function ensureUserDoc(user) {
   if (!user?.uid) return { admin: false, access: false, plan: 'free' };
 
+  const defaults = {
+    admin: false,
+    access: false,
+    plan: 'free',
+    promoCodes: [],
+    blocked: false,
+  };
+
   const ref = doc(db, 'users', user.uid);
   const snap = await getDoc(ref);
 
@@ -113,7 +121,7 @@ async function ensureUserDoc(user) {
       },
       { merge: true },
     );
-    return { admin: false, access: false, plan: 'free', blocked: false };
+    return { ...defaults, email: user.email || '' };
   }
 
   const data = snap.data() || {};
@@ -149,9 +157,19 @@ async function ensureUserDoc(user) {
     needPatch = true;
   }
 
-  if (needPatch) await setDoc(ref, patch, { merge: true });
+  const isAdminUser =
+    user?.email === 'aquivivo.pl@gmail.com' ||
+    data?.admin === true ||
+    data?.role === 'admin';
 
-  return { ...data, ...patch };
+  if (needPatch && isAdminUser) await setDoc(ref, patch, { merge: true });
+
+  return {
+    ...defaults,
+    email: data?.email || user.email || '',
+    ...data,
+    ...(needPatch && isAdminUser ? patch : {}),
+  };
 }
 
 function computeFlags(userDoc) {
