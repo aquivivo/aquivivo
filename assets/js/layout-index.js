@@ -15,6 +15,7 @@ import {
 
     const hrefInicio = 'index.html';
     const hrefServicios = 'services.html';
+    const hrefPolaco = '#metodo-disenado-para-ti';
     const hrefPanel = 'espanel.html';
     const hrefLogin = 'login.html';
 
@@ -26,6 +27,7 @@ import {
           </a>
 
           <div class="nav-actions">
+            <a class="btn-white-outline" id="btnPolaco" href="${hrefPolaco}">POLACO</a>
             <div class="nav-dd" id="navServiciosDD">
               <button class="btn-white-outline nav-dd-btn" id="btnServicios" type="button" aria-haspopup="menu" aria-expanded="false">
                 🧳 Servicios <span class="nav-dd-caret">▼</span>
@@ -42,7 +44,7 @@ import {
 
             <a class="btn-white-outline" id="btnContacto" href="#contact">💗 Contacto</a>
 
-            <a class="btn-yellow" id="btnPanel" href="${hrefPanel}">🏠 Libreta</a>
+            <a class="btn-white-outline" id="btnPanel" href="${hrefPanel}">🏠 Libreta</a>
 
             <a class="btn-yellow" id="btnLogin" href="${hrefLogin}" style="display:none;">🔐 Iniciar sesión</a>
             <button class="btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesión</button>

@@ -75,6 +75,7 @@ import {
     const hrefServiciosServicios = 'services.html#servicios';
     const hrefServiciosExtras = 'services.html#extras';
     const hrefServiciosEbooks = 'services.html#ebooks';
+    const hrefPolaco = 'index.html#metodo-disenado-para-ti';
 
     // Keep it simple and stable on app pages
     return `
@@ -90,6 +91,7 @@ import {
                 ? `<a class="btn-yellow" href="esadmin.html">🛡️ Admin</a>`
                 : ''
             }
+            <a class="btn-white-outline" id="btnPolaco" href="${hrefPolaco}">POLACO</a>
             <div class="nav-dd" id="navServiciosDD">
               <button class="btn-white-outline nav-dd-btn nav-dd-toggle" id="btnServicios" type="button" aria-haspopup="menu" aria-expanded="false">
                 🧳 Servicios <span class="nav-dd-caret">▼</span>
@@ -216,3 +218,4 @@ import {
     wireHeader();
   });
 })();
+
