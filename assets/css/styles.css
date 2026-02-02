@@ -1085,12 +1085,17 @@ a:hover {
   gap: 32px;
   align-items: start;
 }
+.panelHeroLeft {
+  display: grid;
+  gap: 16px;
+}
 .referralSide {
   position: relative;
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
   align-items: start;
+  padding-top: 44px;
 }
 .promo-mini {
   position: absolute;
@@ -1108,6 +1113,7 @@ a:hover {
   text-align: center;
   box-shadow: 0 10px 26px rgba(252, 209, 22, 0.28);
   z-index: 2;
+  animation: promoPulse 2.4s ease-in-out infinite;
 }
 .promo-mini-title {
   font-weight: 900;
@@ -1119,6 +1125,17 @@ a:hover {
   font-size: 12px;
   opacity: 0.9;
 }
+@keyframes promoPulse {
+  0%,
+  100% {
+    transform: translateY(-50%) scale(1);
+    box-shadow: 0 10px 26px rgba(252, 209, 22, 0.28);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.08);
+    box-shadow: 0 18px 44px rgba(252, 209, 22, 0.55);
+  }
+}
 .panelHeroGrid .heroBanner,
 .panelHeroGrid .referral-card--compact {
   padding: 20px;
@@ -1126,9 +1143,26 @@ a:hover {
 .panelHeroGrid .heroBanner {
   margin: 0;
 }
+.panelHeroLeft .heroBanner,
+#lastActivityCard {
+  transition: none !important;
+}
+@media (hover: hover) and (pointer: fine) {
+  .panelHeroLeft .heroBanner:hover,
+  #lastActivityCard:hover {
+    transform: none !important;
+    filter: none !important;
+  }
+  .referral-card--compact:hover {
+    transform: none !important;
+    filter: none !important;
+  }
+}
 .referral-card--compact {
   max-width: 460px;
   padding: 14px;
+  margin-top: 18px;
+  transition: none !important;
 }
 .referral-card--compact .sectionTitle {
   font-size: 18px;
@@ -1304,6 +1338,14 @@ a:hover {
 .nav-dd-item:hover {
   background: rgba(252, 209, 22, 0.2);
   color: var(--av-blue-ink);
+}
+.nav-dd-sep {
+  height: 1px;
+  margin: 6px 0;
+  background: rgba(10, 31, 68, 0.12);
+}
+.nav-dd-item-strong {
+  font-weight: 900;
 }
 
 /* Mobile: keep the menu inside flow so it doesn't overflow */
@@ -1875,7 +1917,6 @@ h3 {
 .card.card-white,
 .form-card,
 .contactFormCard,
-.modalCard,
 .modalBox.card {
   background: var(--av-white);
   color: var(--av-blue-ink);

@@ -18,40 +18,61 @@
     <main class="page">
       <div class="container">
         <div class="panelHeroGrid">
-          <div class="heroBanner" style="align-self: start">
-            <div class="heroTitleRow">
-              <div class="heroIcon">🎓</div>
-              <div>
-                <h1 class="glow-text" id="panelTitle" style="margin: 0; font-size: 44px">
-                  ¡Buenas!
-                </h1>
-                <div class="muted" id="panelSubtitle" style="margin-top: 6px">
-                  Aqui tienes tu libreta! ¡Que chimba verte!
+          <div class="panelHeroLeft">
+            <div class="heroBanner" style="align-self: start">
+              <div class="heroTitleRow">
+                <div class="heroIcon">🎓</div>
+                <div>
+                  <h1 class="glow-text" id="panelTitle" style="margin: 0; font-size: 44px">
+                    ¡Buenas!
+                  </h1>
+                  <div class="muted" id="panelSubtitle" style="margin-top: 6px">
+                    Aquí tienes tu libreta!<br />¡Qué chimba verte!
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div
-              class="metaRow"
-              style="margin-top: 14px; flex-wrap: wrap; gap: 10px"
-            >
-              <span class="pill"
-                >👤 <b id="userEmail">...</b>
-                <span id="adminBadge" style="margin-left: 10px"
-                  >(admin: —)</span
-                ></span
-              >
-
-              <!-- ✅ Access status pills (Krok 11) -->
-              <span id="accessPill" class="pill" style="display: none"></span>
-              <span id="planPill" class="pill" style="display: none"></span>
-              <span id="untilPill" class="pill" style="display: none"></span>
-
-              <span
-                id="adminLinkWrap"
+              <div
                 class="metaRow"
-                style="margin-left: auto"
-              ></span>
+                style="margin-top: 14px; flex-wrap: wrap; gap: 10px"
+              >
+                <span class="pill"
+                  >👤 <b id="userEmail">...</b>
+                  <span id="adminBadge" style="margin-left: 10px"
+                    >(admin: —)</span
+                  ></span
+                >
+
+                <!-- ✅ Access status pills (Krok 11) -->
+                <span id="accessPill" class="pill" style="display: none"></span>
+                <span id="planPill" class="pill" style="display: none"></span>
+                <span id="untilPill" class="pill" style="display: none"></span>
+
+                <span
+                  id="adminLinkWrap"
+                  class="metaRow"
+                  style="margin-left: auto"
+                ></span>
+              </div>
+            </div>
+            <div class="card" id="lastActivityCard">
+              <div class="sectionTitle" style="margin-top: 0">
+                🕒 Última actividad
+              </div>
+              <div class="muted" id="lastActivityWhen">—</div>
+              <div
+                style="margin-top: 10px; font-weight: 900"
+                id="lastActivityTitle"
+              >
+                —
+              </div>
+              <div style="margin-top: 12px">
+                <a id="lastActivityLink" class="btn-white-outline" href="#"
+                  >Continuar</a
+                >
+              </div>
+
+              <div class="hr"></div>
             </div>
           </div>
           <div class="referralSide">
@@ -162,27 +183,6 @@
           </div>
         </div>
 
-        <div class="panelGrid" style="margin-top: 16px">
-          <div class="card" id="lastActivityCard">
-            <div class="sectionTitle" style="margin-top: 0">
-              🕒 Última actividad
-            </div>
-            <div class="muted" id="lastActivityWhen">—</div>
-            <div
-              style="margin-top: 10px; font-weight: 900"
-              id="lastActivityTitle"
-            >
-              —
-            </div>
-            <div style="margin-top: 12px">
-              <a id="lastActivityLink" class="btn-white-outline" href="#"
-                >Continuar</a
-              >
-            </div>
-
-            <div class="hr"></div>
-          </div>
-        </div>
 
         <!-- Settings modal (placeholder for panel-page.js) -->
         <div id="adminModal" class="modalOverlay" aria-hidden="true">

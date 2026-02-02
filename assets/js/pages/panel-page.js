@@ -816,7 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const panelSubtitle = $('panelSubtitle');
   if (panelTitle) panelTitle.textContent = '¡Buenas!';
   if (panelSubtitle)
-    panelSubtitle.textContent = 'Aqui tienes tu libreta! ¡Que chimba verte!';
+    panelSubtitle.innerHTML = 'Aquí tienes tu libreta!<br />¡Qué chimba verte!';
 
   renderCourses(null, { isAdmin: false, hasAccess: false });
 
@@ -855,13 +855,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gender === 'papi') {
           if (panelTitle) panelTitle.textContent = '¡Buenas Papi!';
           if (panelSubtitle)
-            panelSubtitle.textContent =
-              'Aqui tienes tu libreta! ¡Que chimba verte!';
+            panelSubtitle.innerHTML =
+              'Aquí tienes tu libreta!<br />¡Qué chimba verte!';
         } else if (gender === 'mami') {
           if (panelTitle) panelTitle.textContent = '¡Buenas Mami!';
           if (panelSubtitle)
-            panelSubtitle.textContent =
-              'Aqui tienes tu libreta! ¡Que chimba verte!';
+            panelSubtitle.innerHTML =
+              'Aquí tienes tu libreta!<br />¡Qué chimba verte!';
         } else {
           if (panelTitle) panelTitle.textContent = '¡Buenas!';
           if (panelSubtitle)

@@ -36,6 +36,12 @@ import {
   function buildHeader(user, isAdmin) {
     const logged = !!user;
 
+    const hrefServicios = 'services.html';
+    const hrefServiciosPlanes = 'services.html#planes';
+    const hrefServiciosServicios = 'services.html#servicios';
+    const hrefServiciosExtras = 'services.html#extras';
+    const hrefServiciosEbooks = 'services.html#ebooks';
+
     // Keep it simple and stable on app pages
     return `
       <header class="topbar nav-glass">
@@ -50,7 +56,19 @@ import {
                 ? `<a class="btn-yellow" href="esadmin.html">🛡️ Admin</a>`
                 : ''
             }
-            <a class="btn-white-outline" href="services.html">✨ Servicios</a>
+            <div class="nav-dd" id="navServiciosDD">
+              <button class="btn-white-outline nav-dd-btn nav-dd-toggle" id="btnServicios" type="button" aria-haspopup="menu" aria-expanded="false">
+                🧳 Servicios <span class="nav-dd-caret">▼</span>
+              </button>
+              <div class="nav-dd-menu" id="menuServicios" role="menu" aria-label="Servicios">
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosPlanes}">Planes</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosServicios}">Servicios</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosExtras}">Extras</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosEbooks}">Ebooks</a>
+                <div class="nav-dd-sep" aria-hidden="true"></div>
+                <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">Ver todo</a>
+              </div>
+            </div>
             <a class="btn-white-outline" href="course.html">📚 Curso</a>
             <a class="btn-yellow" href="espanel.html">🏠 Panel</a>
             <button class="btn-white-outline" id="btnBack" type="button">⬅️ Atrás</button>
@@ -68,6 +86,45 @@ import {
   }
 
   function wireHeader() {
+    const dd = document.getElementById('navServiciosDD');
+    const btnServicios = document.getElementById('btnServicios');
+    const menuServicios = document.getElementById('menuServicios');
+    if (dd && btnServicios && menuServicios && !dd.dataset.wired) {
+      dd.dataset.wired = '1';
+
+      function open() {
+        dd.classList.add('open');
+        btnServicios.setAttribute('aria-expanded', 'true');
+      }
+      function close() {
+        dd.classList.remove('open');
+        btnServicios.setAttribute('aria-expanded', 'false');
+      }
+      function toggle() {
+        if (dd.classList.contains('open')) close();
+        else open();
+      }
+
+      btnServicios.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggle();
+      });
+
+      dd.addEventListener('mouseenter', () => open());
+      dd.addEventListener('mouseleave', (e) => {
+        if (!dd.contains(e.relatedTarget)) close();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!dd.contains(e.target)) close();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+      });
+    }
+
     const backBtn = document.getElementById('btnBack');
     if (backBtn && !backBtn.dataset.wired) {
       backBtn.dataset.wired = '1';

@@ -282,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
     if (!email || !pass) return setMsg('Completa email y contraseña.', 'error');
-    if (!gender) return setMsg('Elige Papi o Mami para registrarte.', 'error');
 
     try {
       const cred = await signInWithEmailAndPassword(auth, email, pass);
