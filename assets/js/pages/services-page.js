@@ -82,11 +82,17 @@ function renderCard(svc) {
 }
 
 async function loadServices() {
-  const grid = $('servicesGrid');
+  const plansGrid = $('servicesPlansGrid');
+  const servicesGrid = $('servicesServicesGrid');
+  const extrasGrid = $('servicesExtrasGrid');
+  const ebooksGrid = $('servicesEbooksGrid');
   const fallback = $('servicesFallback');
-  if (!grid) return;
+  if (!plansGrid || !servicesGrid || !extrasGrid || !ebooksGrid) return;
 
-  grid.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  plansGrid.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  servicesGrid.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  extrasGrid.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  ebooksGrid.innerHTML = '<div class="hintSmall">Cargando…</div>';
   if (fallback) fallback.style.display = 'none';
 
   try {
@@ -98,9 +104,108 @@ async function loadServices() {
     items.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
 
     if (!items.length) {
-      grid.innerHTML = '<div class="hintSmall">No hay planes activos.</div>';
+      plansGrid.innerHTML =
+        '<div class="hintSmall">No hay planes activos.</div>';
+      servicesGrid.innerHTML = '<div class="hintSmall">No hay servicios.</div>';
+      extrasGrid.innerHTML = '<div class="hintSmall">No hay extras.</div>';
+      ebooksGrid.innerHTML = '<div class="hintSmall">No hay ebooks.</div>';
       return;
     }
+
+    const normalize = (val) =>
+      String(val || '')
+        .toLowerCase()
+        .trim();
+    const categoryMap = {
+      plan: 'plans',
+      planes: 'plans',
+      plano: 'plans',
+      plany: 'plans',
+      suscripcion: 'plans',
+      suscripción: 'plans',
+      subscription: 'plans',
+      membresia: 'plans',
+      membresía: 'plans',
+      membership: 'plans',
+      servicio: 'servicios',
+      servicios: 'servicios',
+      service: 'servicios',
+      services: 'servicios',
+      consults: 'servicios',
+      consultas: 'servicios',
+      uslugi: 'servicios',
+      usługi: 'servicios',
+      consulta: 'servicios',
+      consultas: 'servicios',
+      clase: 'servicios',
+      clases: 'servicios',
+      lesson: 'servicios',
+      lessons: 'servicios',
+      extra: 'extras',
+      extras: 'extras',
+      ekstra: 'extras',
+      bonus: 'extras',
+      addon: 'extras',
+      'add-on': 'extras',
+      ebook: 'ebooks',
+      ebooks: 'ebooks',
+      ebooki: 'ebooks',
+      'e-book': 'ebooks',
+      pdf: 'ebooks',
+    };
+    const classify = (item) => {
+      const rawCat = normalize(
+        item.category || item.section || item.type || item.group,
+      );
+      const title = normalize(item.title || '');
+      const text = normalize(
+        `${item.title || ''} ${item.sku || ''} ${item.badge || ''} ${item.desc || ''}`,
+      );
+
+      if (title.includes('plan premium b2')) return 'plans';
+      if (
+        title.includes('e-book') ||
+        title.includes('ebook') ||
+        title.includes('e book')
+      ) {
+        return 'ebooks';
+      }
+
+      if (rawCat && categoryMap[rawCat]) return categoryMap[rawCat];
+
+      const isEbook =
+        /ebook|e-book|e book|ebooki|pdf/.test(rawCat) ||
+        /ebook|e-book|e book|ebooki|pdf/.test(text);
+      if (isEbook) return 'ebooks';
+
+      const isExtra =
+        /extra|extras|ekstra|bonus|add-on/.test(rawCat) ||
+        /extra|extras|ekstra|bonus|add-on/.test(text);
+      if (isExtra) return 'extras';
+
+      const isService =
+        /servicio|servicios|service|services|uslugi|usługi|clase|lesson|consulta|asesor[ií]a|tarjeta de residencia|residencia/.test(
+          rawCat,
+        ) ||
+        /servicio|servicios|service|services|uslugi|usługi|clase|lesson|consulta|asesor[ií]a|tarjeta de residencia|residencia/.test(
+          text,
+        );
+      if (isService) return 'servicios';
+
+      const isPlan =
+        /plan|planes|plano|plany|suscripci[oó]n|subscription|membres[ií]a|membership|plan premium|premium plan|premium b2/.test(
+          rawCat,
+        ) ||
+        /plan|planes|plano|plany|suscripci[oó]n|subscription|membres[ií]a|membership|plan premium|premium plan|premium b2/.test(
+          text,
+        );
+      if (isPlan) return 'plans';
+
+      if (rawCat) {
+        console.warn('[services] Unknown category:', rawCat, 'for', item);
+      }
+      return 'plans';
+    };
 
     const vipMatcher = (item) => {
       const text =
@@ -125,20 +230,47 @@ async function loadServices() {
       );
     };
 
+    const groups = {
+      plans: [],
+      servicios: [],
+      extras: [],
+      ebooks: [],
+    };
+    items.forEach((item) => {
+      const bucket = classify(item);
+      groups[bucket].push(item);
+    });
+
     const featured =
-      items.find(vipMatcher) ||
-      items.find((item) => item.featured === true) ||
+      groups.plans.find(vipMatcher) ||
+      groups.plans.find((item) => item.featured === true) ||
+      groups.plans[0] ||
       items[0];
     const featuredId = featured?.id;
     items.forEach((item) => {
-      item._isFeatured = item.id === featuredId;
+      item._isFeatured = item.id === featuredId && groups.plans.includes(item);
       item._isA1A2 = a1a2Matcher(item);
     });
 
-    grid.innerHTML = items.map(renderCard).join('');
+    plansGrid.innerHTML = groups.plans.length
+      ? groups.plans.map(renderCard).join('')
+      : '<div class="hintSmall">No hay planes activos.</div>';
+    servicesGrid.innerHTML = groups.servicios.length
+      ? groups.servicios.map(renderCard).join('')
+      : '<div class="hintSmall">No hay servicios.</div>';
+    extrasGrid.innerHTML = groups.extras.length
+      ? groups.extras.map(renderCard).join('')
+      : '<div class="hintSmall">No hay extras.</div>';
+    ebooksGrid.innerHTML = groups.ebooks.length
+      ? groups.ebooks.map(renderCard).join('')
+      : '<div class="hintSmall">No hay ebooks.</div>';
 
     // Bind Stripe buttons
-    grid.querySelectorAll('button[data-plan]').forEach((btn) => {
+    const buttons = [plansGrid, servicesGrid, extrasGrid, ebooksGrid].flatMap(
+      (g) => Array.from(g.querySelectorAll('button[data-plan]')),
+    );
+
+    buttons.forEach((btn) => {
       btn.addEventListener('click', async () => {
         const planId = btn.getAttribute('data-plan');
         if (!planId) return;
@@ -161,7 +293,13 @@ async function loadServices() {
     // Typical cases:
     // - permission-denied (Firestore rules)
     // - unauthenticated (rules require login)
-    grid.innerHTML =
+    plansGrid.innerHTML =
+      '<div class="hintSmall">No se pudo cargar la oferta.</div>';
+    servicesGrid.innerHTML =
+      '<div class="hintSmall">No se pudo cargar la oferta.</div>';
+    extrasGrid.innerHTML =
+      '<div class="hintSmall">No se pudo cargar la oferta.</div>';
+    ebooksGrid.innerHTML =
       '<div class="hintSmall">No se pudo cargar la oferta.</div>';
     if (fallback) fallback.style.display = 'block';
   }

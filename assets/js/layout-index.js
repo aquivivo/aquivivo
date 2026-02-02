@@ -32,8 +32,9 @@ import {
               </button>
               <div class="nav-dd-menu" id="menuServicios" role="menu" aria-label="Servicios">
                 <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#planes">Planes</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#consultas">Consultas</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#servicios">Servicios</a>
                 <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#extras">Extras</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServicios}#ebooks">Ebooks</a>
                 <div class="nav-dd-sep" aria-hidden="true"></div>
                 <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">Ver todo</a>
               </div>
@@ -109,7 +110,8 @@ import {
       // offset = header height
       const header = document.querySelector('.nav-glass');
       const offset = header ? header.getBoundingClientRect().height : 0;
-      const top = target.getBoundingClientRect().top + window.scrollY - offset - 10;
+      const top =
+        target.getBoundingClientRect().top + window.scrollY - offset - 10;
 
       window.scrollTo({ top, behavior: 'smooth' });
       history.replaceState(null, '', hash);

@@ -2,8 +2,8 @@
 // AquiVivo Admin (RESTORE+FIX): Dashboard + Usuarios + Códigos + Referral + Servicios + Segmentación (MVP)
 // Architecture: no inline JS. Page logic lives here.
 
-import { auth, db } from "../firebase-init.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { auth, db } from '../firebase-init.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
   collection,
   query,
@@ -18,22 +18,22 @@ import {
   deleteDoc,
   serverTimestamp,
   Timestamp,
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 const $ = (id) => document.getElementById(id);
 
 function esc(s) {
-  return String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function setStatus(el, msg, bad = false) {
   if (!el) return;
-  el.textContent = msg || "";
-  el.style.color = bad ? "var(--red, #ff6b6b)" : "";
+  el.textContent = msg || '';
+  el.style.color = bad ? 'var(--red, #ff6b6b)' : '';
 }
 
 /* =========================
@@ -54,27 +54,27 @@ function toDateMaybe(ts) {
 
 function isoDate(ts) {
   const d = toDateMaybe(ts);
-  if (!d) return "";
+  if (!d) return '';
   const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
 }
 
 // For <input type="datetime-local"> -> "YYYY-MM-DDTHH:mm"
 function isoDateTimeLocal(ts) {
   const d = toDateMaybe(ts);
-  if (!d) return "";
+  if (!d) return '';
   const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mi = String(d.getMinutes()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 }
 
 function parseDateTimeLocal(v) {
-  const s = String(v || "").trim();
+  const s = String(v || '').trim();
   if (!s) return null;
   // datetime-local returns "YYYY-MM-DDTHH:mm"
   const d = new Date(s);
@@ -100,10 +100,10 @@ function isFuture(d) {
 }
 
 function hasAccess(u) {
-  const role = String(u?.role || "user");
-  if (role === "admin") return true;
+  const role = String(u?.role || 'user');
+  if (role === 'admin') return true;
   if (u?.access === true) return true;
-  if (String(u?.plan || "") === "premium") return true;
+  if (String(u?.plan || '') === 'premium') return true;
   if (isFuture(u?.accessUntil)) return true;
   return false;
 }
@@ -116,27 +116,27 @@ function hasAccess(u) {
    - accessUntil: Firestore Timestamp/Date
    ========================= */
 const PLAN_MAP = {
-  free:        { levels: ["A1"], days: 7 },
+  free: { levels: ['A1'], days: 7 },
 
   // single-level plans
-  a1:          { levels: ["A1"], days: 30 },
-  a2:          { levels: ["A2"], days: 30 },
-  b1:          { levels: ["B1"], days: 30 },
-  b2:          { levels: ["B2"], days: 30 },
+  a1: { levels: ['A1'], days: 30 },
+  a2: { levels: ['A2'], days: 30 },
+  b1: { levels: ['B1'], days: 30 },
+  b2: { levels: ['B2'], days: 30 },
 
   // premium bundles (progressive)
-  premium_a1:  { levels: ["A1","A2"], days: 30 },
-  premium_b1:  { levels: ["A1","A2","B1"], days: 30 },
-  premium_b2:  { levels: ["A1","A2","B1","B2"], days: 30 },
+  premium_a1: { levels: ['A1', 'A2'], days: 30 },
+  premium_b1: { levels: ['A1', 'A2', 'B1'], days: 30 },
+  premium_b2: { levels: ['A1', 'A2', 'B1', 'B2'], days: 30 },
 };
 
 function computeLevelsForPlan(planId) {
-  const p = String(planId || "").trim();
+  const p = String(planId || '').trim();
   return PLAN_MAP[p]?.levels ? [...PLAN_MAP[p].levels] : [];
 }
 
 function computeUntilForPlan(planId) {
-  const p = String(planId || "").trim();
+  const p = String(planId || '').trim();
   const days = PLAN_MAP[p]?.days;
   if (!days) return null;
   const d = new Date();
@@ -145,7 +145,7 @@ function computeUntilForPlan(planId) {
 }
 
 function normalizePlanId(planId) {
-  return String(planId || "free").trim();
+  return String(planId || 'free').trim();
 }
 
 /* =========================
@@ -172,36 +172,39 @@ async function ensureAdmin(user) {
   try {
     if (ADMIN_UIDS.has(user.uid)) return true;
 
-    const ref = doc(db, "users", user.uid);
+    const ref = doc(db, 'users', user.uid);
     const snap = await getDoc(ref);
     const data = snap.exists() ? snap.data() : {};
-    const role = String(data?.role || "user");
+    const role = String(data?.role || 'user');
 
-    if (role !== "admin") {
+    if (role !== 'admin') {
       // Show warning but DO NOT block the whole page (so you can still fix the role from UI/console).
-      const banner = document.querySelector(".heroBanner .subtitle") || document.querySelector(".heroBanner p.subtitle");
-      if (banner) banner.textContent = "⚠️ Tu cuenta no tiene rol admin en Firestore (users/OgXNeCbloJiSGoi1DsZ9UN0aU0I2.role). Panel en modo DEV.";
-      console.warn("[ensureAdmin] Not admin:", user.uid);
+      const banner =
+        document.querySelector('.heroBanner .subtitle') ||
+        document.querySelector('.heroBanner p.subtitle');
+      if (banner)
+        banner.textContent =
+          '⚠️ Tu cuenta no tiene rol admin en Firestore (users/OgXNeCbloJiSGoi1DsZ9UN0aU0I2.role). Panel en modo DEV.';
+      console.warn('[ensureAdmin] Not admin:', user.uid);
       return true;
     }
     return true;
   } catch (e) {
-    console.error("[ensureAdmin]", e);
+    console.error('[ensureAdmin]', e);
     // Fail-open in DEV to avoid locking yourself out; rules still protect writes.
     return true;
   }
 }
 
-
 /* =========================
    DASHBOARD (IDs: statUsers, statCourses, statExercises, etc.)
    ========================= */
 async function loadDashboard() {
-  const st = $("statsStatus");
+  const st = $('statsStatus');
   try {
-    setStatus(st, "Cargando…");
+    setStatus(st, 'Cargando…');
 
-    const usersCol = collection(db, "users");
+    const usersCol = collection(db, 'users');
 
     const [
       usersTotal,
@@ -212,61 +215,68 @@ async function loadDashboard() {
       blocked,
       oneTopic,
     ] = await Promise.all([
-      safeCountCol("users"),
-      safeCountCol("courses"),
-      safeCountCol("exercises"),
-      safeCountQuery(query(usersCol, where("plan", "==", "premium"))),
-      safeCountQuery(query(usersCol, where("access", "==", true))),
-      safeCountQuery(query(usersCol, where("blocked", "==", true))),
-      safeCountQuery(query(usersCol, where("openedTopicsCount", "==", 1))),
+      safeCountCol('users'),
+      safeCountCol('courses'),
+      safeCountCol('exercises'),
+      safeCountQuery(query(usersCol, where('plan', '==', 'premium'))),
+      safeCountQuery(query(usersCol, where('access', '==', true))),
+      safeCountQuery(query(usersCol, where('blocked', '==', true))),
+      safeCountQuery(query(usersCol, where('openedTopicsCount', '==', 1))),
     ]);
 
-    if ($("statUsers")) $("statUsers").textContent = String(usersTotal);
-    if ($("statCourses")) $("statCourses").textContent = String(coursesTotal);
-    if ($("statExercises")) $("statExercises").textContent = String(exercisesTotal);
+    if ($('statUsers')) $('statUsers').textContent = String(usersTotal);
+    if ($('statCourses')) $('statCourses').textContent = String(coursesTotal);
+    if ($('statExercises'))
+      $('statExercises').textContent = String(exercisesTotal);
 
-    if ($("statPremiumPlan")) $("statPremiumPlan").textContent = String(premiumPlan);
-    if ($("statAccessTrue")) $("statAccessTrue").textContent = String(accessTrue);
-    if ($("statBlocked")) $("statBlocked").textContent = String(blocked);
-    if ($("statOneTopic")) $("statOneTopic").textContent = String(oneTopic);
+    if ($('statPremiumPlan'))
+      $('statPremiumPlan').textContent = String(premiumPlan);
+    if ($('statAccessTrue'))
+      $('statAccessTrue').textContent = String(accessTrue);
+    if ($('statBlocked')) $('statBlocked').textContent = String(blocked);
+    if ($('statOneTopic')) $('statOneTopic').textContent = String(oneTopic);
 
-    setStatus(st, "Listo ✅");
+    setStatus(st, 'Listo ✅');
   } catch (e) {
-    console.error("[dashboard]", e);
-    setStatus(st, "Error: revisa rules / Console.", true);
+    console.error('[dashboard]', e);
+    setStatus(st, 'Error: revisa rules / Console.', true);
   }
 }
 
 /* Optional: statCard click -> show small details (first 20 emails) */
 async function loadStatDetails(type) {
   const detailsMap = {
-    users: "statUsersDetails",
-    premium: "statPremiumPlanDetails",
-    access: "statAccessTrueDetails",
-    blocked: "statBlockedDetails",
-    oneTopic: "statOneTopicDetails",
+    users: 'statUsersDetails',
+    premium: 'statPremiumPlanDetails',
+    access: 'statAccessTrueDetails',
+    blocked: 'statBlockedDetails',
+    oneTopic: 'statOneTopicDetails',
   };
   const detailsId = detailsMap[type];
   const box = detailsId ? $(detailsId) : null;
   if (!box) return;
 
-  const open = box.style.display !== "none";
+  const open = box.style.display !== 'none';
   if (open) {
-    box.style.display = "none";
-    box.innerHTML = "";
+    box.style.display = 'none';
+    box.innerHTML = '';
     return;
   }
 
-  box.style.display = "block";
+  box.style.display = 'block';
   box.innerHTML = '<div class="hintSmall">Cargando…</div>';
 
   try {
-    const usersCol = collection(db, "users");
-    let q1 = query(usersCol, orderBy("__name__"), limit(20));
-    if (type === "premium") q1 = query(usersCol, where("plan", "==", "premium"), limit(20));
-    if (type === "access") q1 = query(usersCol, where("access", "==", true), limit(20));
-    if (type === "blocked") q1 = query(usersCol, where("blocked", "==", true), limit(20));
-    if (type === "oneTopic") q1 = query(usersCol, where("openedTopicsCount", "==", 1), limit(20));
+    const usersCol = collection(db, 'users');
+    let q1 = query(usersCol, orderBy('__name__'), limit(20));
+    if (type === 'premium')
+      q1 = query(usersCol, where('plan', '==', 'premium'), limit(20));
+    if (type === 'access')
+      q1 = query(usersCol, where('access', '==', true), limit(20));
+    if (type === 'blocked')
+      q1 = query(usersCol, where('blocked', '==', true), limit(20));
+    if (type === 'oneTopic')
+      q1 = query(usersCol, where('openedTopicsCount', '==', 1), limit(20));
 
     const snap = await getDocs(q1);
     const rows = [];
@@ -274,11 +284,15 @@ async function loadStatDetails(type) {
       const u = d.data() || {};
       const email = esc(u.email || u.emailLower || d.id);
       const until = isoDate(u.accessUntil);
-      rows.push(`<div class="hintSmall">${email}${until ? " · " + esc(until) : ""}</div>`);
+      rows.push(
+        `<div class="hintSmall">${email}${until ? ' · ' + esc(until) : ''}</div>`,
+      );
     });
-    box.innerHTML = rows.length ? rows.join("") : '<div class="hintSmall">—</div>';
+    box.innerHTML = rows.length
+      ? rows.join('')
+      : '<div class="hintSmall">—</div>';
   } catch (e) {
-    console.error("[stat details]", e);
+    console.error('[stat details]', e);
     box.innerHTML = '<div class="hintSmall">Error cargando detalles.</div>';
   }
 }
@@ -288,43 +302,48 @@ async function loadStatDetails(type) {
    promo_codes/_REFERRAL_SETTINGS
    ========================= */
 async function loadReferralSettings() {
-  const p = $("refOwnerPercent");
-  const s = $("refRewardScope");
-  const st = $("refSettingsStatus");
+  const p = $('refOwnerPercent');
+  const s = $('refRewardScope');
+  const st = $('refSettingsStatus');
   if (!p || !s) return;
 
   try {
-    const snap = await getDoc(doc(db, "promo_codes", "_REFERRAL_SETTINGS"));
+    const snap = await getDoc(doc(db, 'promo_codes', '_REFERRAL_SETTINGS'));
     const data = snap.exists() ? snap.data() : {};
-    p.value = data?.percent ?? "";
-    s.value = data?.scope ?? "";
+    p.value = data?.percent ?? '';
+    s.value = data?.scope ?? '';
   } catch (e) {
-    console.error("[referral load]", e);
-    setStatus(st, "Error cargando.", true);
+    console.error('[referral load]', e);
+    setStatus(st, 'Error cargando.', true);
   }
 }
 
 async function saveReferralSettings() {
-  const p = $("refOwnerPercent");
-  const s = $("refRewardScope");
-  const st = $("refSettingsStatus");
+  const p = $('refOwnerPercent');
+  const s = $('refRewardScope');
+  const st = $('refSettingsStatus');
   if (!p || !s) return;
 
   const percent = Number(p.value || 0);
-  const scope = String(s.value || "").trim();
+  const scope = String(s.value || '').trim();
 
-  setStatus(st, "Guardando…");
+  setStatus(st, 'Guardando…');
   try {
     await setDoc(
-      doc(db, "promo_codes", "_REFERRAL_SETTINGS"),
-      { type: "REFERRAL_SETTINGS", percent, scope, updatedAt: serverTimestamp() },
-      { merge: true }
+      doc(db, 'promo_codes', '_REFERRAL_SETTINGS'),
+      {
+        type: 'REFERRAL_SETTINGS',
+        percent,
+        scope,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
     );
-    setStatus(st, "Guardado ✅");
+    setStatus(st, 'Guardado ✅');
     await loadDashboard();
   } catch (e) {
-    console.error("[referral save]", e);
-    setStatus(st, "Error (permissions?).", true);
+    console.error('[referral save]', e);
+    setStatus(st, 'Error (permissions?).', true);
   }
 }
 
@@ -335,13 +354,13 @@ async function saveReferralSettings() {
    B) { days, plan, active }     (current HTML form)
    ========================= */
 function renderPromoRow(id, p) {
-  const active = p.active === false ? "⛔" : "✅";
+  const active = p.active === false ? '⛔' : '✅';
   const pct = p.percent != null ? `${p.percent}%` : null;
   const days = p.days != null ? `${p.days} días` : null;
   const plan = p.plan ? `plan: ${esc(p.plan)}` : null;
-  const note = p.note ? esc(p.note) : "";
+  const note = p.note ? esc(p.note) : '';
 
-  const line2 = [pct, days, plan, note].filter(Boolean).join(" · ") || "—";
+  const line2 = [pct, days, plan, note].filter(Boolean).join(' · ') || '—';
 
   return `
     <div class="listItem">
@@ -352,7 +371,7 @@ function renderPromoRow(id, p) {
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn-white-outline" type="button" data-pc="toggle" data-id="${esc(id)}">
-            ${p.active === false ? "Activate" : "Hide"}
+            ${p.active === false ? 'Activate' : 'Hide'}
           </button>
           <button class="btn-red" type="button" data-pc="del" data-id="${esc(id)}">Delete</button>
         </div>
@@ -362,44 +381,53 @@ function renderPromoRow(id, p) {
 }
 
 async function loadPromoList() {
-  const list = $("promoListAdmin") || $("promoList");
+  const list = $('promoListAdmin') || $('promoList');
   if (!list) return;
   list.innerHTML = '<div class="hintSmall">Cargando…</div>';
 
   try {
-    const snap = await getDocs(query(collection(db, "promo_codes"), limit(200)));
+    const snap = await getDocs(
+      query(collection(db, 'promo_codes'), limit(200)),
+    );
     const rows = [];
     snap.forEach((d) => {
-      if (d.id === "_REFERRAL_SETTINGS") return;
+      if (d.id === '_REFERRAL_SETTINGS') return;
       rows.push(renderPromoRow(d.id, d.data() || {}));
     });
-    list.innerHTML = rows.length ? rows.join("") : '<div class="hintSmall">—</div>';
+    list.innerHTML = rows.length
+      ? rows.join('')
+      : '<div class="hintSmall">—</div>';
   } catch (e) {
-    console.error("[promo list]", e);
+    console.error('[promo list]', e);
     list.innerHTML = '<div class="hintSmall">Error cargando promo_codes.</div>';
   }
 }
 
 async function savePromoCode() {
   // Current HTML ids
-  const code = String($("promoCode")?.value || $("pcCode")?.value || "").trim();
-  const st = $("promoStatus") || $("pcStatus");
+  const code = String($('promoCode')?.value || $('pcCode')?.value || '').trim();
+  const st = $('promoStatus') || $('pcStatus');
   if (!code) {
-    setStatus(st, "Falta el código.", true);
+    setStatus(st, 'Falta el código.', true);
     return;
   }
 
-  const daysRaw = $("promoDays")?.value;
-  const plan = String($("promoPlan")?.value || "premium");
-  const active = $("promoActive") ? $("promoActive").checked : (String($("pcActive")?.value || "true") === "true");
+  const daysRaw = $('promoDays')?.value;
+  const plan = String($('promoPlan')?.value || 'premium');
+  const active = $('promoActive')
+    ? $('promoActive').checked
+    : String($('pcActive')?.value || 'true') === 'true';
 
   // Optional old schema inputs if present
-  const percent = $("pcPercent") ? Number($("pcPercent").value || 0) : null;
-  const note = $("pcNote") ? String($("pcNote").value || "").trim() : "";
+  const percent = $('pcPercent') ? Number($('pcPercent').value || 0) : null;
+  const note = $('pcNote') ? String($('pcNote').value || '').trim() : '';
 
-  const days = daysRaw != null && String(daysRaw).trim() !== "" ? Number(daysRaw || 0) : null;
+  const days =
+    daysRaw != null && String(daysRaw).trim() !== ''
+      ? Number(daysRaw || 0)
+      : null;
 
-  setStatus(st, "Guardando…");
+  setStatus(st, 'Guardando…');
   try {
     const payload = {
       code,
@@ -409,95 +437,106 @@ async function savePromoCode() {
 
     if (days != null) payload.days = days;
     if (plan) payload.plan = plan;
-    if (percent != null && !Number.isNaN(percent) && percent !== 0) payload.percent = percent;
+    if (percent != null && !Number.isNaN(percent) && percent !== 0)
+      payload.percent = percent;
     if (note) payload.note = note;
 
-    await setDoc(doc(db, "promo_codes", code), payload, { merge: true });
+    await setDoc(doc(db, 'promo_codes', code), payload, { merge: true });
 
-    setStatus(st, "Guardado ✅");
-    if ($("promoCode")) $("promoCode").value = "";
-    if ($("promoDays")) $("promoDays").value = "";
-    if ($("promoPlan")) $("promoPlan").value = "premium";
-    if ($("promoActive")) $("promoActive").checked = true;
+    setStatus(st, 'Guardado ✅');
+    if ($('promoCode')) $('promoCode').value = '';
+    if ($('promoDays')) $('promoDays').value = '';
+    if ($('promoPlan')) $('promoPlan').value = 'premium';
+    if ($('promoActive')) $('promoActive').checked = true;
 
-    if ($("pcCode")) $("pcCode").value = "";
-    if ($("pcPercent")) $("pcPercent").value = "";
-    if ($("pcNote")) $("pcNote").value = "";
-    if ($("pcActive")) $("pcActive").value = "true";
+    if ($('pcCode')) $('pcCode').value = '';
+    if ($('pcPercent')) $('pcPercent').value = '';
+    if ($('pcNote')) $('pcNote').value = '';
+    if ($('pcActive')) $('pcActive').value = 'true';
 
     await loadPromoList();
     await loadDashboard();
   } catch (e) {
-    console.error("[promo save]", e);
-    setStatus(st, "Error (permissions?).", true);
+    console.error('[promo save]', e);
+    setStatus(st, 'Error (permissions?).', true);
   }
 }
 
 async function togglePromo(id) {
   try {
-    const ref = doc(db, "promo_codes", id);
+    const ref = doc(db, 'promo_codes', id);
     const snap = await getDoc(ref);
     if (!snap.exists()) return;
     const p = snap.data() || {};
     const next = p.active === false ? true : false;
-    await setDoc(ref, { active: next, updatedAt: serverTimestamp() }, { merge: true });
+    await setDoc(
+      ref,
+      { active: next, updatedAt: serverTimestamp() },
+      { merge: true },
+    );
     await loadPromoList();
     await loadDashboard();
   } catch (e) {
-    console.error("[promo toggle]", e);
+    console.error('[promo toggle]', e);
   }
 }
 
 async function deletePromo(id) {
-  if (!confirm("¿Eliminar código?")) return;
+  if (!confirm('¿Eliminar código?')) return;
   try {
-    await deleteDoc(doc(db, "promo_codes", id));
+    await deleteDoc(doc(db, 'promo_codes', id));
     await loadPromoList();
     await loadDashboard();
   } catch (e) {
-    console.error("[promo delete]", e);
+    console.error('[promo delete]', e);
   }
 }
 
 function clearPromoForm() {
-  if ($("promoCode")) $("promoCode").value = "";
-  if ($("promoDays")) $("promoDays").value = "";
-  if ($("promoPlan")) $("promoPlan").value = "premium";
-  if ($("promoActive")) $("promoActive").checked = true;
-  setStatus($("promoStatus"), "");
+  if ($('promoCode')) $('promoCode').value = '';
+  if ($('promoDays')) $('promoDays').value = '';
+  if ($('promoPlan')) $('promoPlan').value = 'premium';
+  if ($('promoActive')) $('promoActive').checked = true;
+  setStatus($('promoStatus'), '');
 }
 
 /* =========================
    SERVICES (services) CRUD
    ========================= */
 function fillServiceForm(id, s) {
-  if ($("svcSku")) $("svcSku").value = id || "";
-  if ($("svcCategory")) $("svcCategory").value = s.category || "extras";
-  if ($("svcTitle")) $("svcTitle").value = s.title || "";
-  if ($("svcDesc")) $("svcDesc").value = s.desc || "";
-  if ($("svcPrice")) $("svcPrice").value = s.price || "";
-  if ($("svcBadge")) $("svcBadge").value = s.badge || "";
-  if ($("svcOrder")) $("svcOrder").value = String(Number(s.order || 0));
-  if ($("svcCtaType")) $("svcCtaType").value = s.ctaType || "info";
-  if ($("svcCtaUrl")) $("svcCtaUrl").value = s.ctaUrl || "";
-  if ($("svcCtaLabel")) $("svcCtaLabel").value = s.ctaLabel || "";
-  if ($("svcActive")) $("svcActive").value = s.active === false ? "false" : "true";
+  if ($('svcSku')) $('svcSku').value = id || '';
+  if ($('svcCategory')) {
+    const raw = String(s.category || '').toLowerCase();
+    const mapped =
+      raw === 'consults' || raw === 'consultas' ? 'servicios' : raw;
+    $('svcCategory').value = mapped || 'extras';
+  }
+  if ($('svcTitle')) $('svcTitle').value = s.title || '';
+  if ($('svcDesc')) $('svcDesc').value = s.desc || '';
+  if ($('svcPrice')) $('svcPrice').value = s.price || '';
+  if ($('svcBadge')) $('svcBadge').value = s.badge || '';
+  if ($('svcOrder')) $('svcOrder').value = String(Number(s.order || 0));
+  if ($('svcCtaType')) $('svcCtaType').value = s.ctaType || 'info';
+  if ($('svcCtaUrl')) $('svcCtaUrl').value = s.ctaUrl || '';
+  if ($('svcCtaLabel')) $('svcCtaLabel').value = s.ctaLabel || '';
+  if ($('svcActive'))
+    $('svcActive').value = s.active === false ? 'false' : 'true';
 }
 
 function renderServiceRow(id, s) {
-  const active = s.active === false ? "⛔ hidden" : "✅ active";
+  const active = s.active === false ? '⛔ hidden' : '✅ active';
   return `
     <div class="listItem">
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${esc(s.title || id)}</div>
-          <div class="hintSmall">SKU: ${esc(id)} · cat: ${esc(s.category || "extras")} · ${active}</div>
-          <div class="hintSmall">${s.price ? "💰 " + esc(s.price) : ""}${s.badge ? " · ⭐ " + esc(s.badge) : ""}</div>
+          <div class="hintSmall">SKU: ${esc(id)} · cat: ${esc(s.category || 'extras')} · ${active}</div>
+          <div class="hintSmall">${s.price ? '💰 ' + esc(s.price) : ''}${s.badge ? ' · ⭐ ' + esc(s.badge) : ''}</div>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn-white-outline" type="button" data-svc="edit" data-id="${esc(id)}">Edit</button>
           <button class="btn-white-outline" type="button" data-svc="toggle" data-id="${esc(id)}">
-            ${s.active === false ? "Activate" : "Hide"}
+            ${s.active === false ? 'Activate' : 'Hide'}
           </button>
           <button class="btn-red" type="button" data-svc="del" data-id="${esc(id)}">Delete</button>
         </div>
@@ -507,93 +546,114 @@ function renderServiceRow(id, s) {
 }
 
 async function loadServicesList() {
-  const list = $("servicesAdminList");
+  const list = $('servicesAdminList');
   if (!list) return;
   list.innerHTML = '<div class="hintSmall">Cargando…</div>';
 
   try {
-    const snap = await getDocs(query(collection(db, "services"), orderBy("order", "asc"), limit(500)));
+    const snap = await getDocs(
+      query(collection(db, 'services'), orderBy('order', 'asc'), limit(500)),
+    );
     const rows = [];
     snap.forEach((d) => rows.push(renderServiceRow(d.id, d.data() || {})));
-    list.innerHTML = rows.length ? rows.join("") : '<div class="hintSmall">—</div>';
+    list.innerHTML = rows.length
+      ? rows.join('')
+      : '<div class="hintSmall">—</div>';
   } catch (e) {
-    console.error("[services list]", e);
+    console.error('[services list]', e);
     list.innerHTML = '<div class="hintSmall">Error cargando services.</div>';
   }
 }
 
 async function saveService() {
-  const st = $("svcStatus");
-  const sku = String($("svcSku")?.value || "").trim();
-  if (!sku) return setStatus(st, "Falta SKU.", true);
+  const st = $('svcStatus');
+  const sku = String($('svcSku')?.value || '').trim();
+  if (!sku) return setStatus(st, 'Falta SKU.', true);
 
   const payload = {
     sku,
-    category: String($("svcCategory")?.value || "extras"),
-    title: String($("svcTitle")?.value || "").trim(),
-    desc: String($("svcDesc")?.value || "").trim(),
-    price: String($("svcPrice")?.value || "").trim(),
-    badge: String($("svcBadge")?.value || "").trim(),
-    order: Number($("svcOrder")?.value || 0),
-    ctaType: String($("svcCtaType")?.value || "info").trim(),
-    ctaUrl: String($("svcCtaUrl")?.value || "").trim(),
-    ctaLabel: String($("svcCtaLabel")?.value || "").trim(),
-    active: String($("svcActive")?.value || "true") === "true",
+    category: String($('svcCategory')?.value || 'extras'),
+    title: String($('svcTitle')?.value || '').trim(),
+    desc: String($('svcDesc')?.value || '').trim(),
+    price: String($('svcPrice')?.value || '').trim(),
+    badge: String($('svcBadge')?.value || '').trim(),
+    order: Number($('svcOrder')?.value || 0),
+    ctaType: String($('svcCtaType')?.value || 'info').trim(),
+    ctaUrl: String($('svcCtaUrl')?.value || '').trim(),
+    ctaLabel: String($('svcCtaLabel')?.value || '').trim(),
+    active: String($('svcActive')?.value || 'true') === 'true',
     updatedAt: serverTimestamp(),
   };
 
-  if (payload.ctaType === "link" && payload.ctaUrl && !/^https?:\/\//i.test(payload.ctaUrl)) {
-    return setStatus(st, "CTA url debe empezar con http(s):// (solo para link)", true);
+  if (
+    payload.ctaType === 'link' &&
+    payload.ctaUrl &&
+    !/^https?:\/\//i.test(payload.ctaUrl)
+  ) {
+    return setStatus(
+      st,
+      'CTA url debe empezar con http(s):// (solo para link)',
+      true,
+    );
   }
 
-  setStatus(st, "Guardando…");
+  setStatus(st, 'Guardando…');
   try {
-    await setDoc(doc(db, "services", sku), payload, { merge: true });
-    setStatus(st, "Guardado ✅");
+    await setDoc(doc(db, 'services', sku), payload, { merge: true });
+    setStatus(st, 'Guardado ✅');
     await loadServicesList();
     await loadDashboard();
   } catch (e) {
-    console.error("[services save]", e);
-    setStatus(st, "Error (permissions?).", true);
+    console.error('[services save]', e);
+    setStatus(st, 'Error (permissions?).', true);
   }
 }
 
 async function editService(id) {
-  const snap = await getDoc(doc(db, "services", id));
+  const snap = await getDoc(doc(db, 'services', id));
   if (!snap.exists()) return;
   fillServiceForm(id, snap.data() || {});
-  setStatus($("svcStatus"), "Editando ✏️");
+  setStatus($('svcStatus'), 'Editando ✏️');
 }
 
 async function toggleService(id) {
   try {
-    const ref = doc(db, "services", id);
+    const ref = doc(db, 'services', id);
     const snap = await getDoc(ref);
     if (!snap.exists()) return;
     const s = snap.data() || {};
     const next = s.active === false ? true : false;
-    await setDoc(ref, { active: next, updatedAt: serverTimestamp() }, { merge: true });
+    await setDoc(
+      ref,
+      { active: next, updatedAt: serverTimestamp() },
+      { merge: true },
+    );
     await loadServicesList();
     await loadDashboard();
   } catch (e) {
-    console.error("[service toggle]", e);
+    console.error('[service toggle]', e);
   }
 }
 
 async function deleteService(id) {
-  if (!confirm("¿Eliminar servicio?")) return;
+  if (!confirm('¿Eliminar servicio?')) return;
   try {
-    await deleteDoc(doc(db, "services", id));
+    await deleteDoc(doc(db, 'services', id));
     await loadServicesList();
     await loadDashboard();
   } catch (e) {
-    console.error("[service delete]", e);
+    console.error('[service delete]', e);
   }
 }
 
 function clearServiceForm() {
-  fillServiceForm("", { category: "extras", ctaType: "info", active: true, order: 0 });
-  setStatus($("svcStatus"), "");
+  fillServiceForm('', {
+    category: 'extras',
+    ctaType: 'info',
+    active: true,
+    order: 0,
+  });
+  setStatus($('svcStatus'), '');
 }
 
 /* =========================
@@ -603,19 +663,21 @@ let usersLast = null;
 let usersCache = new Map();
 
 function renderUserRow(uid, u) {
-  const email = esc(u.email || u.emailLower || "(no email)");
-  const role = esc(u.role || "user");
-  const plan = esc(u.plan || "");
+  const email = esc(u.email || u.emailLower || '(no email)');
+  const role = esc(u.role || 'user');
+  const plan = esc(u.plan || '');
   const until = isoDate(u.accessUntil);
-  const blocked = u.blocked === true ? "⛔" : "";
-  const access = hasAccess(u) ? "✅" : "🔒";
+  const blocked = u.blocked === true ? '⛔' : '';
+  const access = hasAccess(u) ? '✅' : '🔒';
 
   const statusBadge = (() => {
-    if (String(u.role || "user") === "admin") return `<span class="pill">ADMIN</span>`;
+    if (String(u.role || 'user') === 'admin')
+      return `<span class="pill">ADMIN</span>`;
     if (u.blocked === true) return `<span class="pill">BLOCKED</span>`;
     if (hasAccess(u)) {
       const d = toDateMaybe(u.accessUntil);
-      if (d && d.getTime() - Date.now() < 7 * 24 * 3600 * 1000) return `<span class="pill">EXPIRING</span>`;
+      if (d && d.getTime() - Date.now() < 7 * 24 * 3600 * 1000)
+        return `<span class="pill">EXPIRING</span>`;
       return `<span class="pill">ACTIVE</span>`;
     }
     return `<span class="pill">FREE</span>`;
@@ -626,7 +688,7 @@ function renderUserRow(uid, u) {
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${email} ${blocked}</div>
-          <div class="hintSmall">uid: ${esc(uid)} · role: ${role} · access: ${access}${plan ? " · plan: " + plan : ""}${until ? " · until: " + esc(until) : ""}</div>
+          <div class="hintSmall">uid: ${esc(uid)} · role: ${role} · access: ${access}${plan ? ' · plan: ' + plan : ''}${until ? ' · until: ' + esc(until) : ''}</div>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
           ${statusBadge}
@@ -638,19 +700,21 @@ function renderUserRow(uid, u) {
 }
 
 function applyUserFilters(entries) {
-  const searchTerm = String($("userSearch")?.value || "").trim().toLowerCase();
-  const filter = String($("roleFilter")?.value || "all");
+  const searchTerm = String($('userSearch')?.value || '')
+    .trim()
+    .toLowerCase();
+  const filter = String($('roleFilter')?.value || 'all');
 
   const out = [];
   for (const [uid, u] of entries) {
-    const role = String(u.role || "user");
+    const role = String(u.role || 'user');
 
-    if (filter === "admins" && role !== "admin") continue;
-    if (filter === "premium" && !hasAccess(u)) continue;
-    if (filter === "free" && hasAccess(u)) continue;
+    if (filter === 'admins' && role !== 'admin') continue;
+    if (filter === 'premium' && !hasAccess(u)) continue;
+    if (filter === 'free' && hasAccess(u)) continue;
 
     if (searchTerm) {
-      const em = String(u.email || u.emailLower || "").toLowerCase();
+      const em = String(u.email || u.emailLower || '').toLowerCase();
       if (!em.includes(searchTerm) && !uid.includes(searchTerm)) continue;
     }
 
@@ -660,22 +724,22 @@ function applyUserFilters(entries) {
 }
 
 async function loadUsers(reset = false) {
-  const list = $("usersList");
-  const section = $("usersSection");
+  const list = $('usersList');
+  const section = $('usersSection');
   if (!list) return;
 
-  if (section) section.style.display = "block";
+  if (section) section.style.display = 'block';
 
   if (reset) {
     usersLast = null;
     usersCache = new Map();
-    list.innerHTML = "";
+    list.innerHTML = '';
   }
 
   list.innerHTML = list.innerHTML || '<div class="hintSmall">Cargando…</div>';
 
   try {
-    const parts = [collection(db, "users"), orderBy("__name__"), limit(50)];
+    const parts = [collection(db, 'users'), orderBy('__name__'), limit(50)];
     if (usersLast) parts.splice(2, 0, startAfter(usersLast));
     const q1 = query.apply(null, parts);
 
@@ -687,35 +751,61 @@ async function loadUsers(reset = false) {
 
     const filtered = applyUserFilters(usersCache.entries());
     const rows = filtered.map(([uid, u]) => renderUserRow(uid, u));
-    list.innerHTML = rows.length ? rows.join("") : '<div class="hintSmall">—</div>';
+    list.innerHTML = rows.length
+      ? rows.join('')
+      : '<div class="hintSmall">—</div>';
   } catch (e) {
-    console.error("[users]", e);
+    console.error('[users]', e);
     list.innerHTML = '<div class="hintSmall">Error cargando users.</div>';
   }
 }
 
 function ensureUserQuickButtons() {
   // Add missing quick buttons into the modal actions row (without editing HTML file).
-  const statusEl = $("um_status");
+  const statusEl = $('um_status');
   const row = statusEl?.parentElement; // metaRow where buttons live
   if (!row) return;
 
   const mkBtn = (id, cls, text) => {
-    const b = document.createElement("button");
+    const b = document.createElement('button');
     b.id = id;
-    b.type = "button";
+    b.type = 'button';
     b.className = cls;
     b.textContent = text;
     return b;
   };
 
-  if (!$("um_extend7")) row.insertBefore(mkBtn("um_extend7", "btn-white-outline", "⏳ Extender +7 días"), statusEl);
-  if (!$("um_extend30")) row.insertBefore(mkBtn("um_extend30", "btn-white-outline", "⏳ Extender +30 días"), statusEl);
-  if (!$("um_extend90")) row.insertBefore(mkBtn("um_extend90", "btn-white-outline", "⏳ Extender +90 días"), statusEl);
-  if (!$("um_forever")) row.insertBefore(mkBtn("um_forever", "btn-white-outline", "∞ Permanente (hasta 2099)"), statusEl);
+  if (!$('um_extend7'))
+    row.insertBefore(
+      mkBtn('um_extend7', 'btn-white-outline', '⏳ Extender +7 días'),
+      statusEl,
+    );
+  if (!$('um_extend30'))
+    row.insertBefore(
+      mkBtn('um_extend30', 'btn-white-outline', '⏳ Extender +30 días'),
+      statusEl,
+    );
+  if (!$('um_extend90'))
+    row.insertBefore(
+      mkBtn('um_extend90', 'btn-white-outline', '⏳ Extender +90 días'),
+      statusEl,
+    );
+  if (!$('um_forever'))
+    row.insertBefore(
+      mkBtn('um_forever', 'btn-white-outline', '∞ Permanente (hasta 2099)'),
+      statusEl,
+    );
 
-  if (!$("um_resetTrial")) row.insertBefore(mkBtn("um_resetTrial", "btn-yellow", "🎁 Reset trial A1 (7d)"), statusEl);
-  if (!$("um_revoke")) row.insertBefore(mkBtn("um_revoke", "btn-red", "🔒 Quitar acceso"), statusEl);
+  if (!$('um_resetTrial'))
+    row.insertBefore(
+      mkBtn('um_resetTrial', 'btn-yellow', '🎁 Reset trial A1 (7d)'),
+      statusEl,
+    );
+  if (!$('um_revoke'))
+    row.insertBefore(
+      mkBtn('um_revoke', 'btn-red', '🔒 Quitar acceso'),
+      statusEl,
+    );
 }
 
 function addDaysToUntil(existing, days) {
@@ -728,10 +818,10 @@ function addDaysToUntil(existing, days) {
 }
 
 function setUntilInputFromDate(dt) {
-  const inp = $("um_until");
+  const inp = $('um_until');
   if (!inp) return;
   // to local datetime-local value: YYYY-MM-DDTHH:MM
-  const pad = (n) => String(n).padStart(2, "0");
+  const pad = (n) => String(n).padStart(2, '0');
   const yyyy = dt.getFullYear();
   const mm = pad(dt.getMonth() + 1);
   const dd = pad(dt.getDate());
@@ -741,48 +831,47 @@ function setUntilInputFromDate(dt) {
 }
 
 async function quickExtend(days) {
-  const uid = String($("um_uid")?.textContent || "").trim();
+  const uid = String($('um_uid')?.textContent || '').trim();
   if (!uid) return;
 
   // Keep current plan selection, just extend the date and enable access.
-  const manual = parseDateTimeLocal($("um_until")?.value || "");
+  const manual = parseDateTimeLocal($('um_until')?.value || '');
   const cached = usersCache.get(uid) || {};
   const current = manual || toDateMaybe(cached.accessUntil);
   const next = addDaysToUntil(current, days);
 
-  if ($("um_access")) $("um_access").checked = true;
-  if ($("um_blocked")) $("um_blocked").checked = false;
+  if ($('um_access')) $('um_access').checked = true;
+  if ($('um_blocked')) $('um_blocked').checked = false;
 
   setUntilInputFromDate(next);
   await saveUserModal();
 }
 
 async function quickResetTrial() {
-  const uid = String($("um_uid")?.textContent || "").trim();
+  const uid = String($('um_uid')?.textContent || '').trim();
   if (!uid) return;
 
   // Force: free + levels[A1] + accessUntil now+7
-  if ($("um_plan")) $("um_plan").value = "free";
-  if ($("um_access")) $("um_access").checked = true;
-  if ($("um_blocked")) $("um_blocked").checked = false;
+  if ($('um_plan')) $('um_plan').value = 'free';
+  if ($('um_access')) $('um_access').checked = true;
+  if ($('um_blocked')) $('um_blocked').checked = false;
 
   const next = addDaysToUntil(null, 7);
   setUntilInputFromDate(next);
   await saveUserModal();
 }
 
-
 async function quickForever() {
-  const uid = String($("um_uid")?.textContent || "").trim();
+  const uid = String($('um_uid')?.textContent || '').trim();
   if (!uid) return;
 
   // Permanent (with "until"): access=true + accessUntil far in the future
-  if ($("um_access")) $("um_access").checked = true;
-  if ($("um_blocked")) $("um_blocked").checked = false;
+  if ($('um_access')) $('um_access').checked = true;
+  if ($('um_blocked')) $('um_blocked').checked = false;
 
   // Keep current plan selection (or set premium for clarity)
-  const p = normalizePlanId($("um_plan")?.value || "free");
-  if (p === "free") $("um_plan").value = "premium";
+  const p = normalizePlanId($('um_plan')?.value || 'free');
+  if (p === 'free') $('um_plan').value = 'premium';
 
   // Set accessUntil to a far-future date (so UI shows ACTIVE and it's effectively permanent)
   const far = new Date(2099, 11, 31, 12, 0, 0); // 2099-12-31 12:00
@@ -792,13 +881,13 @@ async function quickForever() {
 }
 
 async function quickRevoke() {
-  const uid = String($("um_uid")?.textContent || "").trim();
+  const uid = String($('um_uid')?.textContent || '').trim();
   if (!uid) return;
 
   // Remove access by clearing levels and setting accessUntil in the past.
-  if ($("um_access")) $("um_access").checked = false;
-  if ($("um_plan")) $("um_plan").value = "free";
-  if ($("um_blocked")) $("um_blocked").checked = false;
+  if ($('um_access')) $('um_access').checked = false;
+  if ($('um_plan')) $('um_plan').value = 'free';
+  if ($('um_blocked')) $('um_blocked').checked = false;
 
   // set a past date so even if something checks it, it's expired
   const past = new Date(Date.now() - 24 * 3600 * 1000);
@@ -807,64 +896,63 @@ async function quickRevoke() {
   // additionally clear levels explicitly (saveUserModal derives levels from plan, so we patch after save)
   await saveUserModal();
   try {
-    await setDoc(doc(db, "users", uid), { levels: [] }, { merge: true });
+    await setDoc(doc(db, 'users', uid), { levels: [] }, { merge: true });
     const old = usersCache.get(uid) || {};
     usersCache.set(uid, { ...old, levels: [] });
   } catch (e) {
-    console.error("[revoke levels]", e);
+    console.error('[revoke levels]', e);
   }
 }
 
-
 function openUserModal(uid) {
-  const modal = $("userModal");
+  const modal = $('userModal');
   if (!modal) return;
   const u = usersCache.get(uid);
   if (!u) return;
 
-  if ($("um_email")) $("um_email").textContent = u.email || u.emailLower || "";
-  if ($("um_uid")) $("um_uid").textContent = uid;
+  if ($('um_email')) $('um_email').textContent = u.email || u.emailLower || '';
+  if ($('um_uid')) $('um_uid').textContent = uid;
 
-  if ($("um_admin")) $("um_admin").checked = String(u.role || "user") === "admin";
-  if ($("um_access")) $("um_access").checked = u.access === true;
-  if ($("um_blocked")) $("um_blocked").checked = u.blocked === true;
+  if ($('um_admin'))
+    $('um_admin').checked = String(u.role || 'user') === 'admin';
+  if ($('um_access')) $('um_access').checked = u.access === true;
+  if ($('um_blocked')) $('um_blocked').checked = u.blocked === true;
 
-  if ($("um_plan")) $("um_plan").value = u.plan || "free";
-  if ($("um_until")) $("um_until").value = isoDateTimeLocal(u.accessUntil);
-  if ($("um_note")) $("um_note").value = u.note || "";
+  if ($('um_plan')) $('um_plan').value = u.plan || 'free';
+  if ($('um_until')) $('um_until').value = isoDateTimeLocal(u.accessUntil);
+  if ($('um_note')) $('um_note').value = u.note || '';
 
-  if ($("um_status")) $("um_status").textContent = "";
+  if ($('um_status')) $('um_status').textContent = '';
 
   ensureUserQuickButtons();
 
-  modal.style.display = "block";
-  modal.classList.add("open");
+  modal.style.display = 'block';
+  modal.classList.add('open');
 }
 
 function closeUserModal() {
-  const modal = $("userModal");
+  const modal = $('userModal');
   if (!modal) return;
-  modal.classList.remove("open");
-  modal.style.display = "none";
+  modal.classList.remove('open');
+  modal.style.display = 'none';
 }
 
 async function saveUserModal() {
-  const uid = String($("um_uid")?.textContent || "").trim();
+  const uid = String($('um_uid')?.textContent || '').trim();
   if (!uid) return;
 
-  const st = $("um_status");
-  setStatus(st, "Guardando…");
+  const st = $('um_status');
+  setStatus(st, 'Guardando…');
 
+  const role = $('um_admin')?.checked ? 'admin' : 'user';
+  const access = $('um_access')?.checked ? true : false; // legacy toggle (kept for compatibility)
+  const blocked = $('um_blocked')?.checked ? true : false;
 
-  const role = $("um_admin")?.checked ? "admin" : "user";
-  const access = $("um_access")?.checked ? true : false; // legacy toggle (kept for compatibility)
-  const blocked = $("um_blocked")?.checked ? true : false;
-
-  const plan = normalizePlanId($("um_plan")?.value || "free");
-  const note = String($("um_note")?.value || "").trim();
+  const plan = normalizePlanId($('um_plan')?.value || 'free');
+  const note = String($('um_note')?.value || '').trim();
 
   // If admin set datetime manually -> keep it. Otherwise compute default by plan.
-  const manualUntil = parseDateTimeLocal($("um_until")?.value || "");
+  const manualUntil = parseDateTimeLocal($('um_until')?.value || '');
   const computedUntil = computeUntilForPlan(plan);
   const accessUntil = manualUntil || computedUntil || null;
 
@@ -873,21 +961,39 @@ async function saveUserModal() {
 
   try {
     await setDoc(
-      doc(db, "users", uid),
-      { role, access, blocked, plan, levels, note, accessUntil, updatedAt: serverTimestamp() },
-      { merge: true }
+      doc(db, 'users', uid),
+      {
+        role,
+        access,
+        blocked,
+        plan,
+        levels,
+        note,
+        accessUntil,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
     );
 
     // refresh cache
     const old = usersCache.get(uid) || {};
-    usersCache.set(uid, { ...old, role, access, blocked, plan, levels, note, accessUntil });
-    setStatus(st, "Guardado ✅");
+    usersCache.set(uid, {
+      ...old,
+      role,
+      access,
+      blocked,
+      plan,
+      levels,
+      note,
+      accessUntil,
+    });
+    setStatus(st, 'Guardado ✅');
     closeUserModal();
     await loadUsers(true);
     await loadDashboard();
   } catch (e) {
-    console.error("[user save]", e);
-    setStatus(st, "Error (permissions?).", true);
+    console.error('[user save]', e);
+    setStatus(st, 'Error (permissions?).', true);
   }
 }
 
@@ -899,15 +1005,15 @@ let segmentCache = []; // [{uid,email,...}] last loaded segment
 function renderSegmentRow(u) {
   const email = esc(u.email || u.emailLower || u.uid);
   const until = isoDate(u.accessUntil);
-  const role = esc(u.role || "user");
-  const plan = esc(u.plan || "");
-  const access = hasAccess(u) ? "✅" : "🔒";
+  const role = esc(u.role || 'user');
+  const plan = esc(u.plan || '');
+  const access = hasAccess(u) ? '✅' : '🔒';
   return `
     <div class="listItem">
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${email}</div>
-          <div class="hintSmall">uid: ${esc(u.uid)} · role: ${role} · access: ${access}${plan ? " · plan: " + plan : ""}${until ? " · until: " + esc(until) : ""}</div>
+          <div class="hintSmall">uid: ${esc(u.uid)} · role: ${role} · access: ${access}${plan ? ' · plan: ' + plan : ''}${until ? ' · until: ' + esc(until) : ''}</div>
         </div>
       </div>
     </div>
@@ -915,12 +1021,12 @@ function renderSegmentRow(u) {
 }
 
 async function loadSegmentExpiring(days) {
-  const st = $("segmentStatus");
-  const list = $("segmentList");
+  const st = $('segmentStatus');
+  const list = $('segmentList');
   if (!list) return;
 
-  setStatus(st, "Cargando…");
-  list.innerHTML = "";
+  setStatus(st, 'Cargando…');
+  list.innerHTML = '';
 
   try {
     const today = startOfDay(new Date());
@@ -929,11 +1035,11 @@ async function loadSegmentExpiring(days) {
     end.setHours(23, 59, 59, 999);
 
     const q1 = query(
-      collection(db, "users"),
-      where("accessUntil", ">=", today),
-      where("accessUntil", "<=", end),
-      orderBy("accessUntil", "asc"),
-      limit(200)
+      collection(db, 'users'),
+      where('accessUntil', '>=', today),
+      where('accessUntil', '<=', end),
+      orderBy('accessUntil', 'asc'),
+      limit(200),
     );
 
     const snap = await getDocs(q1);
@@ -943,54 +1049,59 @@ async function loadSegmentExpiring(days) {
       segmentCache.push({ uid: d.id, ...u });
     });
 
-    list.innerHTML = segmentCache.length ? segmentCache.map(renderSegmentRow).join("") : '<div class="hintSmall">—</div>';
+    list.innerHTML = segmentCache.length
+      ? segmentCache.map(renderSegmentRow).join('')
+      : '<div class="hintSmall">—</div>';
     setStatus(st, `Listo ✅ (${segmentCache.length})`);
   } catch (e) {
-    console.error("[segment expiring]", e);
-    list.innerHTML = '<div class="hintSmall">Error cargando segmento (index puede ser necesario).</div>';
-    setStatus(st, "Error", true);
+    console.error('[segment expiring]', e);
+    list.innerHTML =
+      '<div class="hintSmall">Error cargando segmento (index puede ser necesario).</div>';
+    setStatus(st, 'Error', true);
   }
 }
 
 async function loadSegmentPremiumActive() {
-  const st = $("segmentStatus");
-  const list = $("segmentList");
+  const st = $('segmentStatus');
+  const list = $('segmentList');
   if (!list) return;
 
-  setStatus(st, "Cargando…");
-  list.innerHTML = "";
+  setStatus(st, 'Cargando…');
+  list.innerHTML = '';
 
   try {
     const now = new Date();
     const q1 = query(
-      collection(db, "users"),
-      where("accessUntil", ">=", now),
-      orderBy("accessUntil", "asc"),
-      limit(200)
+      collection(db, 'users'),
+      where('accessUntil', '>=', now),
+      orderBy('accessUntil', 'asc'),
+      limit(200),
     );
     const snap = await getDocs(q1);
     segmentCache = [];
     snap.forEach((d) => segmentCache.push({ uid: d.id, ...(d.data() || {}) }));
-    list.innerHTML = segmentCache.length ? segmentCache.map(renderSegmentRow).join("") : '<div class="hintSmall">—</div>';
+    list.innerHTML = segmentCache.length
+      ? segmentCache.map(renderSegmentRow).join('')
+      : '<div class="hintSmall">—</div>';
     setStatus(st, `Listo ✅ (${segmentCache.length})`);
   } catch (e) {
-    console.error("[segment premium active]", e);
+    console.error('[segment premium active]', e);
     list.innerHTML = '<div class="hintSmall">Error cargando segmento.</div>';
-    setStatus(st, "Error", true);
+    setStatus(st, 'Error', true);
   }
 }
 
 async function loadSegmentFreeApprox() {
-  const st = $("segmentStatus");
-  const list = $("segmentList");
+  const st = $('segmentStatus');
+  const list = $('segmentList');
   if (!list) return;
 
-  setStatus(st, "Cargando…");
-  list.innerHTML = "";
+  setStatus(st, 'Cargando…');
+  list.innerHTML = '';
 
   try {
     // Approx: users with access == false AND (plan != premium) AND (accessUntil missing OR in past)
-    const snap = await getDocs(query(collection(db, "users"), limit(300)));
+    const snap = await getDocs(query(collection(db, 'users'), limit(300)));
     segmentCache = [];
     snap.forEach((d) => {
       const u = d.data() || {};
@@ -998,59 +1109,75 @@ async function loadSegmentFreeApprox() {
       if (ok) segmentCache.push({ uid: d.id, ...u });
     });
 
-    list.innerHTML = segmentCache.length ? segmentCache.map(renderSegmentRow).join("") : '<div class="hintSmall">—</div>';
+    list.innerHTML = segmentCache.length
+      ? segmentCache.map(renderSegmentRow).join('')
+      : '<div class="hintSmall">—</div>';
     setStatus(st, `Listo ✅ (${segmentCache.length})`);
   } catch (e) {
-    console.error("[segment free]", e);
+    console.error('[segment free]', e);
     list.innerHTML = '<div class="hintSmall">Error cargando segmento.</div>';
-    setStatus(st, "Error", true);
+    setStatus(st, 'Error', true);
   }
 }
 
 async function loadSegmentOneTopic() {
-  const st = $("segmentStatus");
-  const list = $("segmentList");
+  const st = $('segmentStatus');
+  const list = $('segmentList');
   if (!list) return;
 
-  setStatus(st, "Cargando…");
-  list.innerHTML = "";
+  setStatus(st, 'Cargando…');
+  list.innerHTML = '';
 
   try {
-    const q1 = query(collection(db, "users"), where("openedTopicsCount", "==", 1), limit(200));
+    const q1 = query(
+      collection(db, 'users'),
+      where('openedTopicsCount', '==', 1),
+      limit(200),
+    );
     const snap = await getDocs(q1);
     segmentCache = [];
     snap.forEach((d) => segmentCache.push({ uid: d.id, ...(d.data() || {}) }));
-    list.innerHTML = segmentCache.length ? segmentCache.map(renderSegmentRow).join("") : '<div class="hintSmall">—</div>';
+    list.innerHTML = segmentCache.length
+      ? segmentCache.map(renderSegmentRow).join('')
+      : '<div class="hintSmall">—</div>';
     setStatus(st, `Listo ✅ (${segmentCache.length})`);
   } catch (e) {
-    console.error("[segment one topic]", e);
+    console.error('[segment one topic]', e);
     list.innerHTML = '<div class="hintSmall">Error cargando segmento.</div>';
-    setStatus(st, "Error", true);
+    setStatus(st, 'Error', true);
   }
 }
 
 function exportSegmentCSV() {
   if (!segmentCache?.length) return;
 
-  const header = ["email", "uid", "role", "plan", "access", "blocked", "accessUntil"];
-  const lines = [header.join(",")];
+  const header = [
+    'email',
+    'uid',
+    'role',
+    'plan',
+    'access',
+    'blocked',
+    'accessUntil',
+  ];
+  const lines = [header.join(',')];
 
   for (const u of segmentCache) {
     const row = [
-      (u.email || u.emailLower || "").replaceAll('"', '""'),
-      String(u.uid || "").replaceAll('"', '""'),
-      String(u.role || "user").replaceAll('"', '""'),
-      String(u.plan || "").replaceAll('"', '""'),
-      hasAccess(u) ? "true" : "false",
-      u.blocked === true ? "true" : "false",
+      (u.email || u.emailLower || '').replaceAll('"', '""'),
+      String(u.uid || '').replaceAll('"', '""'),
+      String(u.role || 'user').replaceAll('"', '""'),
+      String(u.plan || '').replaceAll('"', '""'),
+      hasAccess(u) ? 'true' : 'false',
+      u.blocked === true ? 'true' : 'false',
       isoDate(u.accessUntil),
     ];
-    lines.push(row.map((x) => `"${String(x)}"`).join(","));
+    lines.push(row.map((x) => `"${String(x)}"`).join(','));
   }
 
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
   a.download = `segment_${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a);
@@ -1064,89 +1191,96 @@ function exportSegmentCSV() {
    ========================= */
 function bindEvents() {
   // dashboard refresh
-  $("btnRefreshStats")?.addEventListener("click", loadDashboard);
-  document.querySelectorAll(".statCard[data-expand]")?.forEach?.((el) => {
-    el.addEventListener("click", (e) => {
-      const type = el.getAttribute("data-expand");
+  $('btnRefreshStats')?.addEventListener('click', loadDashboard);
+  document.querySelectorAll('.statCard[data-expand]')?.forEach?.((el) => {
+    el.addEventListener('click', (e) => {
+      const type = el.getAttribute('data-expand');
       if (type) loadStatDetails(type);
     });
   });
 
   // referral
-  $("btnSaveReferralSettings")?.addEventListener("click", saveReferralSettings);
+  $('btnSaveReferralSettings')?.addEventListener('click', saveReferralSettings);
 
   // promo
-  $("btnSavePromoCode")?.addEventListener("click", savePromoCode);
-  $("btnClearPromoForm")?.addEventListener("click", clearPromoForm);
-  $("promoListAdmin")?.addEventListener("click", async (e) => {
-    const btn = e.target?.closest?.("button[data-pc]");
+  $('btnSavePromoCode')?.addEventListener('click', savePromoCode);
+  $('btnClearPromoForm')?.addEventListener('click', clearPromoForm);
+  $('promoListAdmin')?.addEventListener('click', async (e) => {
+    const btn = e.target?.closest?.('button[data-pc]');
     if (!btn) return;
-    const act = btn.getAttribute("data-pc");
-    const id = btn.getAttribute("data-id");
+    const act = btn.getAttribute('data-pc');
+    const id = btn.getAttribute('data-id');
     if (!id) return;
-    if (act === "toggle") await togglePromo(id);
-    if (act === "del") await deletePromo(id);
+    if (act === 'toggle') await togglePromo(id);
+    if (act === 'del') await deletePromo(id);
   });
 
   // services
-  $("btnReloadServicesAdmin")?.addEventListener("click", loadServicesList);
-  $("btnSaveService")?.addEventListener("click", saveService);
-  $("btnClearService")?.addEventListener("click", clearServiceForm);
-  $("servicesAdminList")?.addEventListener("click", async (e) => {
-    const btn = e.target?.closest?.("button[data-svc]");
+  $('btnReloadServicesAdmin')?.addEventListener('click', loadServicesList);
+  $('btnSaveService')?.addEventListener('click', saveService);
+  $('btnClearService')?.addEventListener('click', clearServiceForm);
+  $('servicesAdminList')?.addEventListener('click', async (e) => {
+    const btn = e.target?.closest?.('button[data-svc]');
     if (!btn) return;
-    const act = btn.getAttribute("data-svc");
-    const id = btn.getAttribute("data-id");
+    const act = btn.getAttribute('data-svc');
+    const id = btn.getAttribute('data-id');
     if (!id) return;
-    if (act === "edit") await editService(id);
-    if (act === "toggle") await toggleService(id);
-    if (act === "del") await deleteService(id);
+    if (act === 'edit') await editService(id);
+    if (act === 'toggle') await toggleService(id);
+    if (act === 'del') await deleteService(id);
   });
 
   // users
-  $("btnLoadUsers")?.addEventListener("click", () => loadUsers(true));
-  $("btnLoadMore")?.addEventListener("click", () => loadUsers(false));
-  $("btnSearch")?.addEventListener("click", () => loadUsers(true));
-  $("btnClear")?.addEventListener("click", () => {
-    if ($("userSearch")) $("userSearch").value = "";
-    if ($("roleFilter")) $("roleFilter").value = "all";
+  $('btnLoadUsers')?.addEventListener('click', () => loadUsers(true));
+  $('btnLoadMore')?.addEventListener('click', () => loadUsers(false));
+  $('btnSearch')?.addEventListener('click', () => loadUsers(true));
+  $('btnClear')?.addEventListener('click', () => {
+    if ($('userSearch')) $('userSearch').value = '';
+    if ($('roleFilter')) $('roleFilter').value = 'all';
     loadUsers(true);
   });
-  $("roleFilter")?.addEventListener("change", () => loadUsers(true));
-  $("usersList")?.addEventListener("click", (e) => {
-    const btn = e.target?.closest?.("button[data-user]");
+  $('roleFilter')?.addEventListener('change', () => loadUsers(true));
+  $('usersList')?.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('button[data-user]');
     if (!btn) return;
-    const uid = btn.getAttribute("data-uid");
+    const uid = btn.getAttribute('data-uid');
     if (uid) openUserModal(uid);
   });
 
-  $("userModalClose")?.addEventListener("click", closeUserModal);
-  $("um_cancel")?.addEventListener("click", closeUserModal);
-  $("um_save")?.addEventListener("click", saveUserModal);
-  $("um_extend7")?.addEventListener("click", () => quickExtend(7));
-  $("um_extend30")?.addEventListener("click", () => quickExtend(30));
-  $("um_extend90")?.addEventListener("click", () => quickExtend(90));
-  $("um_forever")?.addEventListener("click", quickForever);
-  $("um_resetTrial")?.addEventListener("click", quickResetTrial);
-  $("um_revoke")?.addEventListener("click", quickRevoke);
+  $('userModalClose')?.addEventListener('click', closeUserModal);
+  $('um_cancel')?.addEventListener('click', closeUserModal);
+  $('um_save')?.addEventListener('click', saveUserModal);
+  $('um_extend7')?.addEventListener('click', () => quickExtend(7));
+  $('um_extend30')?.addEventListener('click', () => quickExtend(30));
+  $('um_extend90')?.addEventListener('click', () => quickExtend(90));
+  $('um_forever')?.addEventListener('click', quickForever);
+  $('um_resetTrial')?.addEventListener('click', quickResetTrial);
+  $('um_revoke')?.addEventListener('click', quickRevoke);
 
   // segmentación
-  $("btnLoadExp0")?.addEventListener("click", () => loadSegmentExpiring(0));
-  $("btnLoadExp3")?.addEventListener("click", () => loadSegmentExpiring(3));
-  $("btnLoadExp7")?.addEventListener("click", () => loadSegmentExpiring(7));
-  $("btnLoadExp14")?.addEventListener("click", () => loadSegmentExpiring(14));
-  $("btnLoadPremiumActive")?.addEventListener("click", loadSegmentPremiumActive);
-  $("btnLoadFreeUsers")?.addEventListener("click", loadSegmentFreeApprox);
-  $("btnLoadOneTopic")?.addEventListener("click", loadSegmentOneTopic);
-  $("btnExportSegment")?.addEventListener("click", exportSegmentCSV);
+  $('btnLoadExp0')?.addEventListener('click', () => loadSegmentExpiring(0));
+  $('btnLoadExp3')?.addEventListener('click', () => loadSegmentExpiring(3));
+  $('btnLoadExp7')?.addEventListener('click', () => loadSegmentExpiring(7));
+  $('btnLoadExp14')?.addEventListener('click', () => loadSegmentExpiring(14));
+  $('btnLoadPremiumActive')?.addEventListener(
+    'click',
+    loadSegmentPremiumActive,
+  );
+  $('btnLoadFreeUsers')?.addEventListener('click', loadSegmentFreeApprox);
+  $('btnLoadOneTopic')?.addEventListener('click', loadSegmentOneTopic);
+  $('btnExportSegment')?.addEventListener('click', exportSegmentCSV);
 
   // optional: not implemented yet
-  $("btnLoadOneTopicInactive")?.addEventListener("click", () => {
-    setStatus($("segmentStatus"), "MVP: ten segment jeszcze nie jest podpięty.", true);
+  $('btnLoadOneTopicInactive')?.addEventListener('click', () => {
+    setStatus(
+      $('segmentStatus'),
+      'MVP: ten segment jeszcze nie jest podpięty.',
+      true,
+    );
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
 
   onAuthStateChanged(auth, async (user) => {
