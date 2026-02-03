@@ -1281,6 +1281,129 @@ function formatReviewDate(ts) {
   return isoDate(d);
 }
 
+/* =========================
+   APP LOGS
+   ========================= */
+let appLogsCache = [];
+
+function formatLogDate(ts) {
+  const d = toDateMaybe(ts);
+  if (!d) return '';
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+}
+
+function getLogFilters() {
+  return {
+    type: String($('logType')?.value || 'all'),
+    page: String($('logPage')?.value || '').trim().toLowerCase(),
+    search: String($('logSearch')?.value || '').trim().toLowerCase(),
+    limit: Number($('logLimit')?.value || 100),
+  };
+}
+
+function renderAppLogs() {
+  const list = $('appLogsList');
+  const section = $('appLogsSection');
+  if (!list) return;
+
+  const { type, page, search } = getLogFilters();
+  let entries = appLogsCache.slice();
+
+  if (type !== 'all') {
+    entries = entries.filter((e) => String(e.type || '') === type);
+  }
+  if (page) {
+    entries = entries.filter((e) => String(e.page || '').toLowerCase().includes(page));
+  }
+  if (search) {
+    entries = entries.filter((e) => {
+      const hay = `${e.message || ''} ${e.email || ''} ${e.uid || ''}`.toLowerCase();
+      return hay.includes(search);
+    });
+  }
+
+  if (section) section.style.display = 'block';
+  if (!entries.length) {
+    list.innerHTML = '<div class="hintSmall">Brak logow.</div>';
+    return;
+  }
+
+  list.innerHTML = entries
+    .map((e) => {
+      const id = safeKey(e.id);
+      const when = formatLogDate(e.createdAt);
+      const who = esc(e.email || e.uid || 'anon');
+      const pageTxt = esc(e.page || '-');
+      const typeTxt = esc(e.type || 'error');
+      const msg = esc(e.message || '(brak komunikatu)');
+      const stack = esc(e.stack || '');
+      const extra = e.extra ? esc(JSON.stringify(e.extra)) : '';
+
+      return `
+        <div class="listItem">
+          <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:900;">${typeTxt.toUpperCase()} ${when ? '· ' + when : ''}</div>
+              <div class="hintSmall">strona: ${pageTxt}  -  user: ${who}</div>
+              <div class="hintSmall logMessage">${msg}</div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn-white-outline" data-log="toggle" data-id="${id}">Szczegoly</button>
+            </div>
+          </div>
+          <div class="hintSmall logDetails" id="logDetails_${id}" style="display:none; margin-top:10px;">
+            ${stack ? `<div><b>Stack:</b><br/>${stack}</div>` : ''}
+            ${extra ? `<div style="margin-top:6px;"><b>Extra:</b> ${extra}</div>` : ''}
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadAppLogs() {
+  const list = $('appLogsList');
+  const section = $('appLogsSection');
+  const st = $('logStatus');
+  if (!list) return;
+
+  const { limit } = getLogFilters();
+  if (section) section.style.display = 'block';
+  list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
+  setStatus(st, 'Ladowanie...');
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'app_logs'), orderBy('createdAt', 'desc'), limit(limit || 100)),
+    );
+    appLogsCache = [];
+    snap.forEach((d) => {
+      appLogsCache.push({ id: d.id, ...(d.data() || {}) });
+    });
+    renderAppLogs();
+    setStatus(st, `Wczytano: ${appLogsCache.length}`);
+  } catch (e) {
+    console.error('[app logs]', e);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania logow.</div>';
+    setStatus(st, 'Blad', true);
+  }
+}
+
+function toggleAppLogDetails(id) {
+  const box = document.getElementById(`logDetails_${id}`);
+  if (!box) return;
+  if (box.style.display === 'block') {
+    box.style.display = 'none';
+  } else {
+    box.style.display = 'block';
+  }
+}
+
 function renderReviews() {
   const list = $('reviewsList');
   const section = $('reviewsSection');
@@ -1973,6 +2096,19 @@ function bindEvents() {
   $('reviewRating')?.addEventListener('change', renderReviews);
   $('reviewLevel')?.addEventListener('change', renderReviews);
   $('reviewSearch')?.addEventListener('input', renderReviews);
+
+  // logi aplikacji
+  $('btnLoadAppLogs')?.addEventListener('click', loadAppLogs);
+  $('logType')?.addEventListener('change', renderAppLogs);
+  $('logPage')?.addEventListener('input', renderAppLogs);
+  $('logSearch')?.addEventListener('input', renderAppLogs);
+  $('logLimit')?.addEventListener('change', loadAppLogs);
+  $('appLogsList')?.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('button[data-log="toggle"]');
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
+    if (id) toggleAppLogDetails(id);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

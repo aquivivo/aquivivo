@@ -5,6 +5,7 @@
 //  Shows Login when signed out, Logout when signed in
 
 import { auth, db } from './firebase-init.js';
+import './logger.js';
 import {
   onAuthStateChanged,
   signOut,

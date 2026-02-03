@@ -801,6 +801,81 @@ body[data-page='course'] .courseCard.isInProgress .card {
   backdrop-filter: blur(10px);
   width: 100%;
 }
+
+/* Admin progress error details */
+.progressErrorsBox {
+  display: grid;
+  gap: 10px;
+}
+.progressErrorItem {
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+}
+.progressErrorHead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.progressErrorIndex {
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.progressErrorId {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.progressErrorPrompt {
+  font-weight: 800;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.progressErrorOptions {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.progressErrorOptions span {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.progressErrorAnswers {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+.progressErrorLabel {
+  font-weight: 900;
+  margin-right: 6px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.progressErrorUser {
+  color: #ffd1d6;
+  font-weight: 900;
+}
+.progressErrorCorrect {
+  color: rgba(188, 211, 255, 0.95);
+  font-weight: 900;
+}
+
+/* App logs */
+.logMessage {
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.logDetails {
+  white-space: pre-wrap;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
 .listItem.serviceRow--plans {
   background: #ce1126;
   border-color: rgba(255, 255, 255, 0.2);

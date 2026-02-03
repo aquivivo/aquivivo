@@ -740,6 +740,56 @@
             </div>
           </div>
         </details>
+
+        <!-- Logi aplikacji -->
+        <details class="card" id="accAppLogs">
+          <summary
+            class="sectionTitle"
+            style="cursor: pointer; list-style: none"
+          >
+            Logi aplikacji
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(kliknij aby otworzyc/zamknac)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <p class="subtitle">
+              Najnowsze bledy i odrzucenia (client-side). Filtry dzialaja po wczytaniu.
+            </p>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadAppLogs" type="button">
+                Wczytaj logi
+              </button>
+              <select class="select" id="logType" style="min-width: 200px">
+                <option value="all">Wszystkie typy</option>
+                <option value="error">error</option>
+                <option value="rejection">rejection</option>
+                <option value="resource">resource</option>
+              </select>
+              <input
+                class="input"
+                id="logPage"
+                placeholder="Filtr strony (np. lessonpage)"
+                style="min-width: 220px"
+              />
+              <input
+                class="input"
+                id="logSearch"
+                placeholder="Szukaj (message/email)..."
+                style="min-width: 220px"
+              />
+              <select class="select" id="logLimit" style="min-width: 140px">
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+              </select>
+              <span class="hintSmall" id="logStatus"></span>
+            </div>
+            <div id="appLogsSection" style="display: none; margin-top: 16px">
+              <div class="list" id="appLogsList"></div>
+            </div>
+          </div>
+        </details>
       </div>
     </main>
     <!-- Modal: Edit user access -->

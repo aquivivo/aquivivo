@@ -248,6 +248,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    /* ===== APP LOGS ===== */
+    match /app_logs/{id} {
+      allow read: if isAdmin();
+      allow create: if signedIn();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

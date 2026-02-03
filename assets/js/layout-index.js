@@ -1,4 +1,5 @@
-Ôªøimport { auth } from './firebase-init.js';
+import { auth } from './firebase-init.js';
+import './logger.js';
 import {
   onAuthStateChanged,
   signOut,
@@ -212,11 +213,11 @@ import {
     try {
       await updateDoc(userRef, payload);
       CURRENT_DOC = { ...(docData || {}), ...payload };
-      setTrialMessage('‚úÖ Trial A1 activado por 7 d√≠as.', 'ok');
+      setTrialMessage('? Trial A1 activado por 7 dÌas.', 'ok');
       return true;
     } catch (e) {
       console.warn('[trial] activation failed', e);
-      setTrialMessage('No se pudo activar el trial. Int√©ntalo de nuevo.');
+      setTrialMessage('No se pudo activar el trial. IntÈntalo de nuevo.');
       return false;
     }
   }
@@ -227,13 +228,13 @@ import {
 
     if (!CURRENT_USER) {
       btn.disabled = false;
-      setTrialMessage('Inicia sesi√≥n para activar tu prueba gratuita.');
+      setTrialMessage('Inicia sesiÛn para activar tu prueba gratuita.');
       return;
     }
 
     if (!CURRENT_DOC) {
       btn.disabled = true;
-      setTrialMessage('‚è≥ Cargando tu estado...');
+      setTrialMessage('? Cargando tu estado...');
       return;
     }
 
@@ -252,7 +253,7 @@ import {
     const ok = isTrialEligible(CURRENT_DOC);
     btn.disabled = !ok;
     if (ok) {
-      setTrialMessage('Activa tu prueba gratuita de A1 (7 d√≠as).', 'ok');
+      setTrialMessage('Activa tu prueba gratuita de A1 (7 dÌas).', 'ok');
     } else {
       setTrialMessage(
         'Tu prueba ya fue usada. Vuelve cuando no tengas plan activo o tras un tiempo de inactividad.',
