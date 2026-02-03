@@ -22,7 +22,7 @@
       <div class="container">
         <section class="heroBanner" style="padding: 22px 18px">
           <div class="heroTitleRow">
-            <div class="heroIcon">🧩</div>
+            <div class="heroIcon">EJ</div>
             <div style="flex: 1">
               <h1
                 class="glow-text"
@@ -35,17 +35,18 @@
                 Ejercicios
               </h1>
               <p class="subtitle" id="topicDesc" style="margin: 8px 0 0">
-                Cargando…
+                Cargando...
               </p>
 
               <div class="metaRow" style="margin-top: 10px">
-                <span id="pillLevel">Nivel: —</span>
+                <span id="pillLevel">Nivel: -</span>
                 <span id="pillType" style="display: none"></span>
                 <span id="pillSlug" style="display: none"></span>
-                <span id="pillCount">0</span>
-                <span id="pillProgress">0%</span>
+                <span id="pillCount">Ejercicios: 0</span>
+                <span id="pillProgress">Practica: 0%</span>
+                <span id="pillTestScore">Test: 0%</span>
                 <a id="pillLessonLink" href="#" style="text-decoration: none"
-                  >📖 Lección</a
+                  >Leccion</a
                 >
               </div>
 
@@ -59,15 +60,18 @@
                     ></div>
                   </div>
                   <div class="readProgressText" id="readProgressText">
-                    🧩 Progreso: 0%
+                    Ejercicios: 0%
+                  </div>
+                  <div class="readProgressText" id="testProgressText">
+                    Test: 0%
                   </div>
                 </div>
                 <div class="exerciseLinks" id="exerciseLinksWrap">
                   <a class="btn-white-outline" id="btnBackLesson" href="#"
-                    >← Volver a la lección</a
+                    >Volver a la leccion</a
                   >
                   <a class="btn-white-outline" id="btnBackCourse" href="#"
-                    >📚 Temas</a
+                    >Temas</a
                   >
                 </div>
               </div>
@@ -96,7 +100,7 @@
               <input
                 id="searchInput"
                 class="input"
-                placeholder="Buscar…"
+                placeholder="Buscar..."
                 style="min-width: 220px"
               />
               <select id="filterType" class="select">
@@ -110,7 +114,7 @@
                 <option value="">Tag: todos</option>
               </select>
               <button id="btnClearFilters" class="btn-white-outline">
-                🧹 Limpiar
+                Limpiar
               </button>
             </div>
 
@@ -122,10 +126,10 @@
                 align-items: center;
               "
             >
-              <span id="taskChips">—</span>
+              <span id="taskChips">-</span>
               <span
                 ><span id="doneCount">0</span>/<span id="totalCount">0</span>
-                hecho</span
+                practica</span
               >
             </div>
           </div>
@@ -137,7 +141,7 @@
 
         <section style="margin-top: 14px">
           <div id="emptyExercises" class="empty" style="display: none">
-            No hay ejercicios todavía.
+            No hay ejercicios todavia.
           </div>
           <div id="exerciseList" class="exerciseList"></div>
         </section>
@@ -157,8 +161,8 @@
             gap: 10px;
           "
         >
-          <div style="font-weight: 900; font-size: 18px">🎉 ¡Listo!</div>
-          <button class="toolBtn" id="btnCloseFinish" title="Cerrar">✕</button>
+          <div style="font-weight: 900; font-size: 18px">Listo</div>
+          <button class="toolBtn" id="btnCloseFinish" title="Cerrar">X</button>
         </div>
         <div class="muted" style="margin-top: 8px" id="finishText">
           Has completado los ejercicios.
@@ -167,12 +171,12 @@
           style="margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap"
         >
           <a class="btn-yellow" id="btnFinishLesson" href="#"
-            >📖 Volver a la lección</a
+            >Volver a la leccion</a
           >
           <a class="btn-white-outline" id="btnFinishCourse" href="#"
-            >📚 Ver temas</a
+            >Ver temas</a
           >
-          <a class="btn" id="btnFinishPanel" href="espanel.html">🏠 Libreta</a>
+          <a class="btn" id="btnFinishPanel" href="espanel.html">Libreta</a>
         </div>
       </div>
     </div>

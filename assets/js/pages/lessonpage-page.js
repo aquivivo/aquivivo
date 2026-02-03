@@ -1,8 +1,5 @@
 // assets/js/pages/lessonpage-page.js
 // Contract: lessonpage.html?level=A1&id=COURSE_DOC_ID
-// Topic: courses/{id}
-// Lesson content: course_meta/{LEVEL}__{COURSE_ID}
-// Access: users/{uid}.admin OR users/{uid}.access===true OR users/{uid}.plan==="premium"
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
@@ -21,6 +18,19 @@ const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(window.location.search);
 const LEVEL = (qs.get('level') || 'A1').toUpperCase();
 const COURSE_ID = (qs.get('id') || '').trim();
+let currentTopic = null;
+
+let selectedRating = 0;
+const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
+
+function isAdminUser(userDoc, email) {
+  const mail = String(email || '').toLowerCase();
+  return (
+    ADMIN_EMAILS.includes(mail) ||
+    userDoc?.admin === true ||
+    String(userDoc?.role || '').toLowerCase() === 'admin'
+  );
+}
 
 function showAccessLocked() {
   const wrap = document.querySelector('.container') || document.body;
@@ -28,20 +38,19 @@ function showAccessLocked() {
   card.className = 'card';
   card.style.marginTop = '14px';
   card.innerHTML = `
-    <div class="sectionTitle" style="margin-top:0;">🔒 Acceso requerido</div>
+    <div class="sectionTitle" style="margin-top:0;">Acceso requerido</div>
     <div class="muted" style="margin-top:6px; line-height:1.6;">
-      Esta lección está bloqueada para tu cuenta.
+      Esta leccion esta bloqueada para tu cuenta.
     </div>
     <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
       <a class="btn-yellow" href="services.html?level=${encodeURIComponent(LEVEL)}" style="text-decoration:none;">Activar acceso</a>
       <a class="btn-white-outline" href="espanel.html" style="text-decoration:none;">Volver al panel</a>
     </div>
   `;
-  // hide regular content if present
-  const content = document.getElementById('lessonContent');
-  const empty = document.getElementById('lessonEmpty');
-  const toc = document.getElementById('tocWrap');
-  const sticky = document.getElementById('lessonSticky');
+  const content = $('lessonContent');
+  const empty = $('lessonEmpty');
+  const toc = $('tocWrap');
+  const sticky = $('lessonSticky');
   if (content) content.style.display = 'none';
   if (toc) toc.style.display = 'none';
   if (sticky) sticky.style.display = 'none';
@@ -61,7 +70,6 @@ async function trackTopicOpen(uid, courseId, level) {
     const opened = data.openedTopics || {};
     const already = opened && opened[courseId] === true;
 
-    // always update "last seen"
     const basePatch = {
       lastSeenAt: serverTimestamp(),
       lastTopicId: courseId,
@@ -106,39 +114,34 @@ function metaDocId(level, courseId) {
   return `${level}__${courseId}`;
 }
 
+function topicKeyFrom(topic) {
+  const slug = String(topic?.slug || topic?.id || COURSE_ID || '').trim();
+  return slug ? `${LEVEL}__${slug}` : null;
+}
+
 async function getUserFlags(uid) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
     if (!snap.exists()) return { isAdmin: false, hasAccess: false };
 
     const d = snap.data() || {};
-    const isAdmin = d.admin === true;
-
+    const isAdmin = isAdminUser(d, auth.currentUser?.email);
     if (isAdmin) return { isAdmin: true, hasAccess: true };
 
     const until = d.accessUntil || null;
-    const untilDate = until?.toDate
-      ? until.toDate()
-      : until
-        ? new Date(until)
-        : null;
-    const hasUntil =
-      !!untilDate && !Number.isNaN(untilDate.getTime());
+    const untilDate = until?.toDate ? until.toDate() : until ? new Date(until) : null;
+    const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
     const isUntilValid = hasUntil ? untilDate.getTime() > Date.now() : false;
 
     const rawLevels = Array.isArray(d.levels)
       ? d.levels.map((x) => String(x).toUpperCase())
       : [];
-    const levels = rawLevels.length
-      ? rawLevels
-      : levelsFromPlan(d.plan);
+    const levels = rawLevels.length ? rawLevels : levelsFromPlan(d.plan);
 
     const plan = String(d.plan || '').toLowerCase();
-    const hasGlobalAccess =
-      plan === 'premium' || (d.access === true && levels.length === 0);
+    const hasGlobalAccess = plan === 'premium' || (d.access === true && levels.length === 0);
     const hasAccess =
-      (hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase())) &&
-      isUntilValid;
+      (hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase())) && isUntilValid;
 
     return { isAdmin: false, hasAccess };
   } catch (e) {
@@ -151,27 +154,10 @@ function show(el, yes) {
   if (!el) return;
   el.style.display = yes ? '' : 'none';
 }
+
 function setText(id, v) {
   const el = $(id);
   if (el) el.textContent = v;
-}
-
-function renderLocked() {
-  show($('lessonContent'), false);
-  show($('tocWrap'), false);
-  show($('studentHint'), true);
-
-  const empty = $('lessonEmpty');
-  if (empty) {
-    empty.style.display = 'block';
-    empty.innerHTML = `
-      <div style="font-size:16px; line-height:1.6;">
-        <b>🔒 Acceso premium</b><br/>
-        Para ver esta lección necesitas acceso.<br/>
-        Ve al <a href="espanel.html" style="text-decoration:underline;">Panel</a> para aplicar un código o activar el plan.
-      </div>
-    `;
-  }
 }
 
 function renderEmpty(msg) {
@@ -184,8 +170,157 @@ function renderEmpty(msg) {
   }
 }
 
+function renderLocked() {
+  show($('lessonContent'), false);
+  show($('tocWrap'), false);
+  const empty = $('lessonEmpty');
+  if (empty) {
+    empty.style.display = 'block';
+    empty.innerHTML = `
+      <div style="font-size:16px; line-height:1.6;">
+        <b>Acceso premium</b><br/>
+        Para ver esta leccion necesitas acceso.<br/>
+        Ve al <a href="espanel.html" style="text-decoration:underline;">Panel</a> para aplicar un codigo o activar el plan.
+      </div>
+    `;
+  }
+}
+
+function updateProgressUI(progress) {
+  const readFill = $('readProgressFill');
+  const readText = $('readProgressText');
+  const testText = $('testProgressText');
+  const statusText = $('lessonStatusText');
+
+  const practicePercent = Number(progress?.practicePercent || 0);
+  const practiceDone = Number(progress?.practiceDone || 0);
+  const practiceTotal = Number(progress?.practiceTotal || 0);
+  const testScore = Number(progress?.testScore || 0);
+  const testTotal = Number(progress?.testTotal || 0);
+  const completed = progress?.completed === true;
+
+  if (readFill) readFill.style.width = `${practicePercent}%`;
+  if (readText) {
+    readText.textContent = practiceTotal
+      ? `Ejercicios: ${practiceDone}/${practiceTotal} (${practicePercent}%)`
+      : 'Ejercicios: -';
+  }
+  if (testText) {
+    testText.textContent = testTotal ? `Test: ${testScore}%` : 'Test: -';
+  }
+  if (statusText) {
+    statusText.textContent = completed ? 'Estado: completado' : 'Estado: en progreso';
+  }
+}
+
+async function loadProgress(uid, topic) {
+  if (!uid || !topic) return;
+  const key = topicKeyFrom(topic);
+  if (!key) return;
+
+  try {
+    const snap = await getDoc(doc(db, 'user_progress', uid, 'topics', key));
+    if (!snap.exists()) {
+      updateProgressUI(null);
+      return;
+    }
+    updateProgressUI(snap.data() || {});
+  } catch (e) {
+    console.warn('loadProgress failed', e);
+  }
+}
+
+function renderRatingButtons() {
+  const card = $('ratingCard');
+  if (!card) return;
+  card.querySelectorAll('button[data-rating]').forEach((btn) => {
+    const val = Number(btn.getAttribute('data-rating') || 0);
+    if (val === selectedRating) {
+      btn.classList.add('btn-yellow');
+      btn.classList.remove('btn-white-outline');
+    } else {
+      btn.classList.add('btn-white-outline');
+      btn.classList.remove('btn-yellow');
+    }
+  });
+}
+
+function setRatingMsg(text, bad = false) {
+  const el = $('ratingMsg');
+  if (!el) return;
+  el.textContent = text || '';
+  el.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+}
+
+async function loadMyReview(user, topic) {
+  if (!user?.uid || !topic) return;
+  const reviewId = `${user.uid}__${topic.id || COURSE_ID}`;
+  try {
+    const snap = await getDoc(doc(db, 'reviews', reviewId));
+    if (!snap.exists()) return;
+    const data = snap.data() || {};
+    selectedRating = Number(data.rating || 0);
+    const text = String(data.text || data.comment || '');
+    const input = $('ratingText');
+    if (input) input.value = text;
+    renderRatingButtons();
+  } catch (e) {
+    console.warn('loadMyReview failed', e);
+  }
+}
+
+async function saveReview(user, topic) {
+  if (!user?.uid || !topic) return;
+  if (!selectedRating) {
+    setRatingMsg('Elige una calificacion (1-5).', true);
+    return;
+  }
+
+  const reviewId = `${user.uid}__${topic.id || COURSE_ID}`;
+  const reviewRef = doc(db, 'reviews', reviewId);
+  const text = String($('ratingText')?.value || '').trim();
+
+  try {
+    const snap = await getDoc(reviewRef);
+    const payload = {
+      userId: user.uid,
+      userEmail: user.email || '',
+      targetType: 'topic',
+      level: LEVEL,
+      topicId: topic.id || COURSE_ID,
+      topicSlug: topic.slug || null,
+      topicTitle: topic.title || topic.name || '',
+      rating: Number(selectedRating),
+      text,
+      updatedAt: serverTimestamp(),
+    };
+    if (!snap.exists()) payload.createdAt = serverTimestamp();
+    await setDoc(reviewRef, payload, { merge: true });
+    setRatingMsg('Gracias. Tu opinion fue guardada.');
+  } catch (e) {
+    console.error(e);
+    setRatingMsg('No se pudo guardar la opinion.', true);
+  }
+}
+
+function setupRatingCard(user, topic) {
+  const card = $('ratingCard');
+  if (!card) return;
+  card.style.display = 'block';
+
+  card.querySelectorAll('button[data-rating]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectedRating = Number(btn.getAttribute('data-rating') || 0);
+      renderRatingButtons();
+    });
+  });
+
+  $('btnSaveReview')?.addEventListener('click', () => saveReview(user, topic));
+  renderRatingButtons();
+  loadMyReview(user, topic);
+}
+
 async function loadLesson(user) {
-  // Pills
   const pillLevel = $('pillLevel');
   const pillTopic = $('pillTopic');
   const pillType = $('pillType');
@@ -193,37 +328,33 @@ async function loadLesson(user) {
   const pillPub = $('pillPub');
   const pillAdminLink = $('pillAdminLink');
   const readTools = $('readTools');
-  const lessonSticky = $('lessonSticky');
   const exerciseLinksWrap = $('exerciseLinksWrap');
 
-  setText('lessonTitle', 'Cargando…');
-  setText('lessonDesc', 'Cargando…');
+  setText('lessonTitle', 'Cargando...');
+  setText('lessonDesc', 'Cargando...');
   if (pillLevel) pillLevel.textContent = `Nivel: ${LEVEL}`;
-  if (pillTopic) pillTopic.textContent = `Tema: —`;
+  if (pillTopic) pillTopic.textContent = 'Tema: -';
 
   if (!COURSE_ID) {
-    renderEmpty('Faltan parámetros en la URL (id).');
+    renderEmpty('Faltan parametros en la URL (id).');
     return;
   }
 
   const flags = await getUserFlags(user.uid);
-
   if (!flags.hasAccess) {
     showAccessLocked();
     return;
   }
-  // Always show reading tools (progress + ejercicios link)
+
   if (readTools) readTools.style.display = '';
 
-  // Exercise links
   if (exerciseLinksWrap) {
     exerciseLinksWrap.innerHTML = `
-      <a class="btn-white-outline" href="ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}">🧩 Ejercicios</a>
-      <a class="btn-white-outline" href="course.html?level=${encodeURIComponent(LEVEL)}">📚 Temas</a>
+      <a class="btn-white-outline" href="ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}">Ejercicios</a>
+      <a class="btn-white-outline" href="course.html?level=${encodeURIComponent(LEVEL)}">Temas</a>
     `;
   }
 
-  // Admin link
   if (pillAdminLink && flags.isAdmin) {
     pillAdminLink.style.display = 'inline-flex';
     pillAdminLink.href = `lessonadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}`;
@@ -231,7 +362,6 @@ async function loadLesson(user) {
     pillAdminLink.style.display = 'none';
   }
 
-  // Topic
   let topic = null;
   try {
     const snap = await getDoc(doc(db, 'courses', COURSE_ID));
@@ -239,40 +369,30 @@ async function loadLesson(user) {
   } catch (e) {
     console.error(e);
   }
-  const topicTitle = topic?.title || topic?.name || 'Lección';
+  currentTopic = topic;
+
+  const topicTitle = topic?.title || topic?.name || 'Leccion';
   const topicDesc = topic?.desc || topic?.description || '';
   if (pillTopic) pillTopic.textContent = `Tema: ${topicTitle}`;
 
-  // Lesson meta
   let meta = null;
   try {
-    const metaSnap = await getDoc(
-      doc(db, 'course_meta', metaDocId(LEVEL, COURSE_ID)),
-    );
+    const metaSnap = await getDoc(doc(db, 'course_meta', metaDocId(LEVEL, COURSE_ID)));
     if (metaSnap.exists()) meta = metaSnap.data() || {};
   } catch (e) {
     console.error(e);
   }
 
-  setText(
-    'lessonTitle',
-    (meta?.titleEs || meta?.title || topicTitle || 'Lección').trim(),
-  );
+  setText('lessonTitle', String(meta?.titleEs || meta?.title || topicTitle || 'Leccion').trim());
   setText(
     'lessonDesc',
-    (
-      meta?.descriptionEs ||
-      meta?.desc ||
-      meta?.description ||
-      topicDesc ||
-      ''
-    ).trim(),
+    String(meta?.descriptionEs || meta?.desc || meta?.description || topicDesc || '').trim(),
   );
 
   if (pillType) {
     if (meta?.type) {
       pillType.style.display = 'inline-flex';
-      pillType.textContent = `📌 ${meta.type}`;
+      pillType.textContent = meta.type;
     } else {
       pillType.style.display = 'none';
     }
@@ -282,7 +402,7 @@ async function loadLesson(user) {
   if (pillDuration) {
     if (dur > 0) {
       pillDuration.style.display = 'inline-flex';
-      pillDuration.textContent = `⏱ ${dur} min`;
+      pillDuration.textContent = `${dur} min`;
     } else {
       pillDuration.style.display = 'none';
     }
@@ -291,37 +411,27 @@ async function loadLesson(user) {
   const published = meta?.published === true;
   if (pillPub) {
     pillPub.style.display = 'inline-flex';
-    pillPub.textContent = published ? '✅ Publicado' : '🟡 Borrador';
+    pillPub.textContent = published ? 'Publicado' : 'Borrador';
   }
 
-  // Exercise link always visible
-  if (exerciseLinksWrap) {
-    exerciseLinksWrap.innerHTML = `
-      <a class="btn-white-outline" href="ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}">🧩 Ejercicios</a>
-    `;
-  }
-
-  // Access gate
   if (!flags.hasAccess) {
     renderLocked();
     return;
   }
 
-  // Draft gate for students
   if (!published && !flags.isAdmin) {
-    renderEmpty('Esta lección aún no está publicada.');
+    renderEmpty('Esta leccion aun no esta publicada.');
     const hint = $('studentHint');
     if (hint) {
       hint.style.display = 'block';
-      hint.textContent =
-        'Vuelve más tarde. (Si eres admin, publícala desde el panel de admin.)';
+      hint.textContent = 'Vuelve mas tarde.';
     }
     return;
   }
 
   const html = String(meta?.html || '').trim();
   if (!html) {
-    renderEmpty('Todavía no hay contenido de lección para este tema.');
+    renderEmpty('Todavia no hay contenido de leccion para este tema.');
     return;
   }
 
@@ -330,16 +440,20 @@ async function loadLesson(user) {
     contentEl.innerHTML = html;
     contentEl.style.display = 'block';
   }
+
+  if (topic) setupRatingCard(user, topic);
+
+  await trackTopicOpen(user.uid, COURSE_ID, LEVEL);
+  await loadProgress(user.uid, topic || { id: COURSE_ID, slug: COURSE_ID });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   onAuthStateChanged(auth, (user) => {
-    if (!user) return; // layout.js guards
+    if (!user) return;
     loadLesson(user);
   });
 });
 
-// --- TOC highlight (simple) ---
 function wireTocHighlight() {
   const wrap = document.getElementById('tocList');
   const content = document.getElementById('lessonContent');

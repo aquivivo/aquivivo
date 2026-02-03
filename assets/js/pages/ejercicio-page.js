@@ -1,50 +1,6 @@
-document.addEventListener('DOMContentLoaded', ()=>{document.body.classList.add('uiMotion');});
-
-async function trackTopicOpen(uid, courseId, level) {
-  if (!uid || !courseId) return;
-  try {
-    const userRef = doc(db, 'users', uid);
-    const snap = await getDoc(userRef);
-    const data = snap.exists() ? (snap.data() || {}) : {};
-    const opened = data.openedTopics || {};
-    const already = opened && opened[courseId] === true;
-
-    // always update "last seen"
-    const basePatch = {
-      lastSeenAt: serverTimestamp(),
-      lastTopicId: courseId,
-      lastLevel: level || null,
-    };
-
-    if (!snap.exists()) {
-      await setDoc(userRef, {
-        email: auth.currentUser?.email || '',
-        admin: false,
-        access: false,
-        plan: 'free',
-        blocked: false,
-        createdAt: serverTimestamp(),
-        openedTopics: { [courseId]: true },
-        openedTopicsCount: 1,
-        ...basePatch,
-      }, { merge: true });
-      return;
-    }
-
-    if (already) {
-      await updateDoc(userRef, basePatch);
-      return;
-    }
-
-    await updateDoc(userRef, {
-      ...basePatch,
-      [`openedTopics.${courseId}`]: true,
-      openedTopicsCount: increment(1),
-    });
-  } catch (e) {
-    console.warn('trackTopicOpen failed', e);
-  }
-}
+document.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.add('uiMotion');
+});
 
 import { auth, db } from '../firebase-init.js';
 import { levelsFromPlan } from '../plan-levels.js';
@@ -57,30 +13,24 @@ import {
   query,
   where,
   orderBy,
-  limit,
-  startAfter,
   getDocs,
   getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
   setDoc,
+  updateDoc,
   doc,
   serverTimestamp,
-  arrayUnion,
-  arrayRemove,
-  writeBatch,
   increment,
-  onSnapshot,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-// URL params
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
-const slugParam = params.get('slug') || '';
-const idParam = params.get('id') || '';
+const TOPIC_ID = String(params.get('id') || '').trim();
+const SLUG = String(params.get('slug') || '').trim();
 
-// UI refs
+const PRACTICE_COMPLETE_PCT = 80;
+const TEST_PASS_PCT = 80;
+const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
+
 const toast = document.getElementById('toast');
 const sessionEmail = document.getElementById('sessionEmail');
 const topicTitle = document.getElementById('topicTitle');
@@ -91,49 +41,48 @@ const exerciseList = document.getElementById('exerciseList');
 const emptyExercises = document.getElementById('emptyExercises');
 const adminWrap = document.getElementById('adminWrap');
 
-// pills
 const pillLevel = document.getElementById('pillLevel');
 const pillType = document.getElementById('pillType');
 const pillSlug = document.getElementById('pillSlug');
 const pillCount = document.getElementById('pillCount');
 const pillProgress = document.getElementById('pillProgress');
+const pillTestScore = document.getElementById('pillTestScore');
 const pillLessonLink = document.getElementById('pillLessonLink');
 
-// filters
+const readProgressFill = document.getElementById('readProgressFill');
+const readProgressText = document.getElementById('readProgressText');
+const testProgressText = document.getElementById('testProgressText');
+
 const searchInput = document.getElementById('searchInput');
 const filterType = document.getElementById('filterType');
 const filterTag = document.getElementById('filterTag');
 const btnClearFilters = document.getElementById('btnClearFilters');
-const toggleReorder = document.getElementById('toggleReorder');
-const reorderHint = document.getElementById('reorderHint');
 
-// admin-like inputs (student page has them but hidden / disabled)
-const exType = document.getElementById('exType');
-const exPrompt = document.getElementById('exPrompt');
-const exAnswer = document.getElementById('exAnswer');
-const exNotes = document.getElementById('exNotes');
-const exOrder = document.getElementById('exOrder');
-const exOptions = document.getElementById('exOptions');
-const exTags = document.getElementById('exTags');
-const exImageUrl = document.getElementById('exImageUrl');
-
-// buttons (may exist in template)
-const btnSave = document.getElementById('btnSave');
 const btnLogout = document.getElementById('btnLogout');
-const btnImport = document.getElementById('btnImport');
+const btnBackLesson = document.getElementById('btnBackLesson');
+const btnBackCourse = document.getElementById('btnBackCourse');
 
-// internal state
 let cachedExercises = [];
 let VIEW_EXERCISES = [];
-let currentTopic = null;
-
-let isAdmin = false; // admin moved to ejercicioadmin.html
-let IS_ADMIN = false; // admin moved to ejercicioadmin.html
-let HAS_ACCESS = false;
-
-let HAS_ORDER_CHANGES = false;
-let CURRENT_TOPIC_KEY = null;
 let CURRENT_UID = null;
+let CURRENT_TOPIC_KEY = null;
+let currentTopic = null;
+let hasShownFinish = false;
+let completedAt = null;
+
+const progressState = {
+  doneIds: new Set(),
+  testResults: new Map(),
+};
+
+function isAdminUser(userDoc, email) {
+  const mail = String(email || '').toLowerCase();
+  return (
+    ADMIN_EMAILS.includes(mail) ||
+    userDoc?.admin === true ||
+    String(userDoc?.role || '').toLowerCase() === 'admin'
+  );
+}
 
 function showToast(msg, type = 'ok', ms = 2000) {
   if (!toast) return;
@@ -148,73 +97,228 @@ function setToast(msg, type = 'ok') {
   showToast(msg, type, 2400);
 }
 
-function getNextOrder() {
-  const max = cachedExercises.reduce(
-    (m, e) => Math.max(m, Number(e.order || 0)),
-    0,
-  );
-  return max + 1;
+function normalizeText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
 }
 
-function normalizeType(t) {
-  return String(t || '').trim();
+function normalizeType(value) {
+  return String(value || '').trim();
 }
 
-function normalizeTag(t) {
-  return String(t || '').trim();
+function normalizeTag(value) {
+  return String(value || '').trim();
 }
 
-function setOptionsVisibility(type) {
-  const v = normalizeType(type);
-  if (!exOptions) return;
-  // for multiple choice, show options; otherwise hide
-  const needsOptions = /opci[oó]n m[uú]ltiple/i.test(v) || /multiple/i.test(v);
-  exOptions.closest?.('.field')?.classList?.toggle('hidden', !needsOptions);
+function isTestExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return t.includes('test final');
 }
 
-function applyTemplateForSelectedType(overwrite) {
-  // Optional template logic; keep as-is
-  if (!exType) return;
-  const t = exType.value;
-  setOptionsVisibility(t);
+function parseAnswerList(raw) {
+  return String(raw || '')
+    .split(/[\n;|]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
-  const setIf = (el, val) => {
-    if (!el) return;
-    if (overwrite || !String(el.value || '').trim()) el.value = val;
+function parseOptions(raw) {
+  if (Array.isArray(raw)) {
+    return raw.map((o) => String(o || '').trim()).filter(Boolean);
+  }
+  if (typeof raw === 'string') {
+    return raw
+      .split(/\r?\n/)
+      .map((o) => o.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function optionLabelFromIndex(idx) {
+  return String.fromCharCode(65 + idx);
+}
+
+function cleanOptionText(opt) {
+  return String(opt || '').replace(/^[A-D]\s*[)\.:-]\s*/i, '').trim();
+}
+
+function topicKeyFrom(topic) {
+  const slug = String(topic?.slug || topic?.id || SLUG || TOPIC_ID || '').trim();
+  return slug ? `${LEVEL}__${slug}` : null;
+}
+
+function progressDocRef(uid, topicKey) {
+  return doc(db, 'user_progress', uid, 'topics', topicKey);
+}
+
+function computeProgressStats() {
+  const allIds = new Set(cachedExercises.map((ex) => String(ex.id)));
+  const testExercises = cachedExercises.filter((ex) => isTestExercise(ex));
+  const practiceExercises = cachedExercises.filter((ex) => !isTestExercise(ex));
+
+  const doneIds = Array.from(progressState.doneIds).filter((id) => allIds.has(id));
+  const doneAll = doneIds.length;
+
+  const practiceIdSet = new Set(practiceExercises.map((ex) => String(ex.id)));
+  const donePractice = doneIds.filter((id) => practiceIdSet.has(id)).length;
+  const totalPractice = practiceExercises.length;
+  const practicePercent = totalPractice
+    ? Math.round((donePractice / totalPractice) * 100)
+    : 0;
+
+  const testIdSet = new Set(testExercises.map((ex) => String(ex.id)));
+  let testAnswered = 0;
+  let testCorrect = 0;
+  for (const id of testIdSet) {
+    const res = progressState.testResults.get(id);
+    if (!res) continue;
+    testAnswered += 1;
+    if (res.correct === true) testCorrect += 1;
+  }
+  const testTotal = testExercises.length;
+  const testScore = testTotal ? Math.round((testCorrect / testTotal) * 100) : 0;
+  const testPassed = testTotal ? testScore >= TEST_PASS_PCT : true;
+
+  const overallPercent = cachedExercises.length
+    ? Math.round((doneAll / cachedExercises.length) * 100)
+    : 0;
+
+  const completed = practicePercent >= PRACTICE_COMPLETE_PCT && testPassed;
+
+  return {
+    totalAll: cachedExercises.length,
+    doneAll,
+    doneIds,
+    totalPractice,
+    donePractice,
+    practicePercent,
+    overallPercent,
+    testTotal,
+    testAnswered,
+    testCorrect,
+    testScore,
+    testPassed,
+    completed,
+    practiceIds: practiceIdSet,
+    testIds: testIdSet,
+  };
+}
+
+function setProgressUI() {
+  const stats = computeProgressStats();
+
+  if (pillProgress) pillProgress.textContent = `Practica: ${stats.practicePercent}%`;
+  if (pillTestScore) {
+    pillTestScore.textContent = stats.testTotal ? `Test: ${stats.testScore}%` : 'Test: -';
+  }
+  if (pillCount) pillCount.textContent = `Ejercicios: ${stats.totalAll}`;
+
+  if (readProgressFill) readProgressFill.style.width = `${stats.practicePercent}%`;
+  if (readProgressText) {
+    readProgressText.textContent = stats.totalPractice
+      ? `Ejercicios: ${stats.donePractice}/${stats.totalPractice} (${stats.practicePercent}%)`
+      : 'Ejercicios: -';
+  }
+  if (testProgressText) {
+    testProgressText.textContent = stats.testTotal
+      ? `Test: ${stats.testCorrect}/${stats.testTotal} (${stats.testScore}%)`
+      : 'Test: -';
+  }
+
+  const doneEl = document.getElementById('doneCount');
+  const totalEl = document.getElementById('totalCount');
+  if (doneEl) doneEl.textContent = String(stats.donePractice);
+  if (totalEl) totalEl.textContent = String(stats.totalPractice);
+
+  maybeFinish(stats);
+}
+
+async function loadProgressForTopic(uid) {
+  if (!uid || !CURRENT_TOPIC_KEY) return;
+  try {
+    const snap = await getDoc(progressDocRef(uid, CURRENT_TOPIC_KEY));
+    progressState.doneIds = new Set();
+    progressState.testResults = new Map();
+    completedAt = null;
+
+    if (snap.exists()) {
+      const data = snap.data() || {};
+      const done = Array.isArray(data.doneIds) ? data.doneIds : [];
+      done.forEach((id) => progressState.doneIds.add(String(id)));
+
+      const testResults = data.testResults && typeof data.testResults === 'object'
+        ? data.testResults
+        : {};
+      Object.keys(testResults).forEach((key) => {
+        progressState.testResults.set(String(key), testResults[key]);
+      });
+
+      completedAt = data.completedAt || null;
+    }
+  } catch (e) {
+    console.warn('Progress read failed:', e?.code || e);
+  }
+
+  setProgressUI();
+}
+
+async function saveProgress() {
+  if (!CURRENT_UID || !CURRENT_TOPIC_KEY) return;
+
+  const stats = computeProgressStats();
+  const testResults = {};
+  stats.testIds.forEach((id) => {
+    const res = progressState.testResults.get(id);
+    if (res) testResults[id] = res;
+  });
+
+  const payload = {
+    level: LEVEL,
+    topicId: currentTopic?.id || TOPIC_ID || null,
+    topicSlug: currentTopic?.slug || null,
+    totalExercises: stats.totalAll,
+    doneIds: stats.doneIds,
+    doneCount: stats.doneAll,
+    overallPercent: stats.overallPercent,
+    practiceTotal: stats.totalPractice,
+    practiceDone: stats.donePractice,
+    practicePercent: stats.practicePercent,
+    testTotal: stats.testTotal,
+    testAnswered: stats.testAnswered,
+    testCorrect: stats.testCorrect,
+    testScore: stats.testScore,
+    testPassed: stats.testPassed,
+    completed: stats.completed,
+    testResults,
+    updatedAt: serverTimestamp(),
+    lastActivityAt: serverTimestamp(),
   };
 
-  if (/Rellenar los espacios/i.test(t)) {
-    setIf(exPrompt, 'Completa la frase: ____');
-    setIf(exAnswer, '');
-    setIf(exOptions, '');
-    setIf(exNotes, 'Escribe la respuesta correcta.');
-  } else if (/Opción múltiple/i.test(t)) {
-    setIf(exPrompt, 'Elige la opción correcta:');
-    setIf(exAnswer, '');
-    setIf(exOptions, 'A)\nB)\nC)');
-    setIf(exNotes, 'Indica la letra correcta en la respuesta.');
-  } else if (/Verdadero o falso/i.test(t)) {
-    setIf(exPrompt, 'Marca verdadero o falso:');
-    setIf(exAnswer, 'Verdadero');
-    setIf(exOptions, 'Verdadero\nFalso');
-    setIf(exNotes, '');
+  if (stats.completed && !completedAt) {
+    payload.completedAt = serverTimestamp();
+  } else if (completedAt) {
+    payload.completedAt = completedAt;
+  }
+
+  try {
+    await setDoc(progressDocRef(CURRENT_UID, CURRENT_TOPIC_KEY), payload, {
+      merge: true,
+    });
+  } catch (e) {
+    console.warn('Progress write failed:', e?.code || e);
   }
 }
 
-function fillExerciseTypes() {
-  // Keep existing list; if exType exists, set last used
-  if (!exType) return;
-  const types = [
-    'Rellenar los espacios',
-    'Opción múltiple',
-    'Verdadero o falso',
-  ];
-  exType.innerHTML = types
-    .map((t) => `<option value="${t}">${t}</option>`)
-    .join('');
-  const last = localStorage.getItem('lastExerciseType');
-  if (last && types.includes(last)) exType.value = last;
-  setOptionsVisibility(exType.value);
+function setTaskChips(exCount) {
+  if (!taskChips) return;
+  taskChips.innerHTML = `
+    <span class="pill pill-blue">Total: ${exCount}</span>
+    <span class="pill">Mostrando: ${VIEW_EXERCISES.length}</span>
+  `;
 }
 
 function buildTypeFilterOptions() {
@@ -223,7 +327,7 @@ function buildTypeFilterOptions() {
     new Set(cachedExercises.map((e) => normalizeType(e.type)).filter(Boolean)),
   ).sort();
   filterType.innerHTML =
-    `<option value="">Wszystko</option>` +
+    `<option value="">Tipo: todos</option>` +
     types.map((t) => `<option value="${t}">${t}</option>`).join('');
 }
 
@@ -235,7 +339,7 @@ function buildTagFilterOptions() {
   });
   const list = Array.from(tags).filter(Boolean).sort();
   filterTag.innerHTML =
-    `<option value="">Wszystko</option>` +
+    `<option value="">Tag: todos</option>` +
     list.map((t) => `<option value="${t}">${t}</option>`).join('');
 }
 
@@ -263,79 +367,178 @@ function applyFilters() {
   renderExercises();
 }
 
-function computeProgress() {
-  // Uses local progress stored per topic key
-  try {
-    const raw = localStorage.getItem(`progress__${CURRENT_TOPIC_KEY}`) || '{}';
-    const obj = JSON.parse(raw);
-    const done = Object.values(obj).filter(Boolean).length;
-    const total = cachedExercises.length || 0;
-    return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
-  } catch {
-    return { done: 0, total: cachedExercises.length || 0, pct: 0 };
-  }
+function makeOptionRow({ name, value, label, checked, onChange }) {
+  const row = document.createElement('label');
+  row.className = 'exerciseOption';
+
+  const input = document.createElement('input');
+  input.type = 'radio';
+  input.name = name;
+  input.value = value;
+  input.checked = !!checked;
+  input.addEventListener('change', onChange);
+
+  const text = document.createElement('span');
+  text.textContent = label;
+
+  row.appendChild(input);
+  row.appendChild(text);
+  return row;
 }
 
-function setProgressUI() {
-  const { done, total, pct } = computeProgress();
-  if (pillProgress) pillProgress.textContent = `Progreso: ${pct}%`;
-    try{ maybeFinish(done, total, LEVEL, TOPIC_ID); }catch{}
-  if (pillCount) pillCount.textContent = `Ejercicios: ${total}`;
-  const doneEl = document.getElementById('doneCount');
-  const totalEl = document.getElementById('totalCount');
-  if (doneEl) doneEl.textContent = String(done);
-  if (totalEl) totalEl.textContent = String(total);
-}
-
-async function loadProgressForTopic(uid) {
-  // no-op, local progress is enough; kept for compatibility
-  setProgressUI();
-}
-
-function setTaskChips(exCount) {
-  if (!taskChips) return;
-  taskChips.innerHTML = `
-          <span class="pill pill-blue">Total: ${exCount}</span>
-          <span class="pill">Mostrando: ${VIEW_EXERCISES.length}</span>
-        `;
+function setResultText(resultEl, correct, message) {
+  if (!resultEl) return;
+  resultEl.textContent = message || (correct ? 'Correcto.' : 'Incorrecto.');
+  resultEl.classList.remove('ok', 'bad');
+  resultEl.classList.add(correct ? 'ok' : 'bad');
 }
 
 function makeExerciseCard(ex) {
-  // Minimal card; keep existing visuals via styles.css
   const card = document.createElement('div');
   card.className = 'exerciseCard';
 
-  const opts = Array.isArray(ex.options) ? ex.options : [];
-  const hasOpts = opts.length > 0;
+  const top = document.createElement('div');
+  top.className = 'exerciseTop';
 
-  card.innerHTML = `
-          <div class="exerciseTop">
-            <div class="exerciseMeta">
-              <span class="pill">${ex.type || 'Ejercicio'}</span>
-              <span class="pill">#${ex.order || 0}</span>
-            </div>
-          </div>
-          <div class="exercisePrompt">${ex.prompt || ''}</div>
-          ${hasOpts ? `<div class="exerciseOptions">${opts.map((o) => `<div class="opt">• ${o}</div>`).join('')}</div>` : ''}
-          <div class="exerciseActions">
-            <button class="btn-white-outline btnMarkDone">✅ Hecho</button>
-          </div>
-        `;
+  const meta = document.createElement('div');
+  meta.className = 'exerciseMeta';
 
-  const btn = card.querySelector('.btnMarkDone');
-  btn?.addEventListener('click', () => {
-    try {
-      const key = `progress__${CURRENT_TOPIC_KEY}`;
-      const raw = localStorage.getItem(key) || '{}';
-      const obj = JSON.parse(raw);
-      obj[ex.id] = true;
-      localStorage.setItem(key, JSON.stringify(obj));
-      showToast('✅ Guardado (local)', 'ok', 1400);
-      setProgressUI();
-    } catch {
-      showToast('⚠️ No se pudo guardar', 'warn', 2000);
+  const typePill = document.createElement('span');
+  typePill.className = 'pill';
+  typePill.textContent = ex.type || 'Ejercicio';
+
+  const orderPill = document.createElement('span');
+  orderPill.className = 'pill';
+  orderPill.textContent = `#${ex.order || 0}`;
+
+  meta.appendChild(typePill);
+  meta.appendChild(orderPill);
+
+  const isTest = isTestExercise(ex);
+  if (isTest) {
+    const testPill = document.createElement('span');
+    testPill.className = 'pill pill-yellow';
+    testPill.textContent = 'Test';
+    meta.appendChild(testPill);
+  }
+
+  top.appendChild(meta);
+  card.appendChild(top);
+
+  const prompt = document.createElement('div');
+  prompt.className = 'exercisePrompt';
+  prompt.textContent = ex.prompt || '';
+  card.appendChild(prompt);
+
+  const options = parseOptions(ex.options);
+
+  const answerWrap = document.createElement('div');
+  answerWrap.className = 'exerciseAnswer';
+
+  const resultEl = document.createElement('div');
+  resultEl.className = 'exerciseResult';
+
+  const actions = document.createElement('div');
+  actions.className = 'exerciseActions';
+
+  if (isTest) {
+    let selectedValue = '';
+    let selectedLabel = '';
+
+    if (options.length) {
+      const optsWrap = document.createElement('div');
+      optsWrap.className = 'exerciseOptions';
+      const groupName = `test_${ex.id}`;
+
+      options.forEach((opt, idx) => {
+        const label = optionLabelFromIndex(idx);
+        const cleaned = cleanOptionText(opt);
+        const optionText = cleaned ? `${label}) ${cleaned}` : `${label}) ${opt}`;
+        const row = makeOptionRow({
+          name: groupName,
+          value: cleaned || opt,
+          label: optionText,
+          checked: false,
+          onChange: (ev) => {
+            selectedValue = ev.target.value;
+            selectedLabel = label;
+          },
+        });
+        optsWrap.appendChild(row);
+      });
+      card.appendChild(optsWrap);
+    } else {
+      const input = document.createElement('input');
+      input.className = 'input';
+      input.placeholder = 'Escribe tu respuesta...';
+      input.addEventListener('input', (ev) => {
+        selectedValue = ev.target.value;
+        selectedLabel = '';
+      });
+      answerWrap.appendChild(input);
+      card.appendChild(answerWrap);
     }
-  });
+
+    const btnCheck = document.createElement('button');
+    btnCheck.className = 'btn-yellow';
+    btnCheck.textContent = 'Comprobar';
+
+    btnCheck.addEventListener('click', async () => {
+      const userAnswer = String(selectedValue || '').trim();
+      if (!userAnswer) {
+        showToast('Escribe o elige una respuesta.', 'warn', 1800);
+        return;
+      }
+
+      const answers = parseAnswerList(ex.answer || '');
+      const answerNorms = answers.map((a) => normalizeText(a));
+      const answerNormsClean = answers.map((a) => normalizeText(cleanOptionText(a)));
+      const userNorm = normalizeText(userAnswer);
+      const labelNorm = normalizeText(selectedLabel || '');
+
+      let correct = false;
+      if (answerNorms.includes(userNorm) || answerNormsClean.includes(userNorm)) correct = true;
+      if (!correct && labelNorm && (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm))) {
+        correct = true;
+      }
+
+      progressState.testResults.set(String(ex.id), {
+        correct,
+        answer: userAnswer,
+      });
+      progressState.doneIds.add(String(ex.id));
+
+      setResultText(resultEl, correct);
+      await saveProgress();
+      setProgressUI();
+    });
+
+    actions.appendChild(btnCheck);
+    card.appendChild(actions);
+    card.appendChild(resultEl);
+
+    const prev = progressState.testResults.get(String(ex.id));
+    if (prev) {
+      setResultText(resultEl, prev.correct === true);
+    }
+  } else {
+    const btn = document.createElement('button');
+    btn.className = 'btn-white-outline';
+    const done = progressState.doneIds.has(String(ex.id));
+    btn.textContent = done ? 'Hecho' : 'Marcar hecho';
+    btn.disabled = done;
+
+    btn.addEventListener('click', async () => {
+      progressState.doneIds.add(String(ex.id));
+      btn.textContent = 'Hecho';
+      btn.disabled = true;
+      await saveProgress();
+      setProgressUI();
+    });
+
+    actions.appendChild(btn);
+    card.appendChild(actions);
+  }
 
   return card;
 }
@@ -346,15 +549,12 @@ function renderExercises() {
   exerciseList.innerHTML = '';
   setTaskChips(cachedExercises.length);
 
-  const shown = VIEW_EXERCISES.length;
-
-  if (!shown) {
+  if (!VIEW_EXERCISES.length) {
     emptyExercises.style.display = 'block';
     return;
   }
 
   emptyExercises.style.display = 'none';
-
   VIEW_EXERCISES.forEach((ex) => {
     exerciseList.appendChild(makeExerciseCard(ex));
   });
@@ -363,43 +563,26 @@ function renderExercises() {
 }
 
 async function loadTopic() {
-  // id contract: courses/{DOC_ID}
-  const courseId = String(idParam || '').trim();
-  if (!courseId) return null;
-
-  const snap = await getDoc(doc(db, 'courses', courseId));
-  if (!snap.exists()) return null;
-
-  const topic = { id: snap.id, ...(snap.data() || {}) };
-  currentTopic = topic;
-
-  const effectiveSlug = String(topic.slug || topic.id || '');
-  if (pillSlug) pillSlug.textContent = `slug: ${effectiveSlug}`;
-  if (pillLevel) pillLevel.textContent = `Nivel ${LEVEL}`;
-  if (pillType) pillType.textContent = topic.type || '—';
-
-  topicTitle.textContent = topic.title || 'Tema';
-  topicDesc.textContent = topic.desc || '';
-
-  // ✅ Always show return to lesson
-  if (pillLessonLink) {
-    pillLessonLink.style.display = 'inline-flex';
-    const topicId = String(topic.id || '');
-    const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topicId)}`;
-    pillLessonLink.href = url;
+  if (TOPIC_ID) {
+    const snap = await getDoc(doc(db, 'courses', TOPIC_ID));
+    if (!snap.exists()) return null;
+    const topic = { id: snap.id, ...(snap.data() || {}) };
+    return topic;
   }
 
-  return topic;
-}
+  if (SLUG) {
+    const q = query(
+      collection(db, 'courses'),
+      where('level', '==', LEVEL),
+      where('slug', '==', SLUG),
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const d = snap.docs[0];
+    return { id: d.id, ...(d.data() || {}) };
+  }
 
-async function loadLessonMetaPublic(topic) {
-  // kept as-is (may render lesson link / materials)
-  return;
-}
-
-async function loadLessonMeta(topic) {
-  // student page doesn't load admin meta
-  return;
+  return null;
 }
 
 async function loadExercises(topic) {
@@ -407,10 +590,8 @@ async function loadExercises(topic) {
   emptyExercises.style.display = 'none';
   cachedExercises = [];
 
-  const effectiveSlug = (topic && (topic.slug || topic.id || '')).toString();
-  CURRENT_TOPIC_KEY = `${LEVEL}__${effectiveSlug}`;
+  CURRENT_TOPIC_KEY = topicKeyFrom(topic);
 
-  // primary: topicId == topic.id
   let qEx = query(
     collection(db, 'exercises'),
     where('level', '==', LEVEL),
@@ -422,12 +603,11 @@ async function loadExercises(topic) {
   try {
     snap = await getDocs(qEx);
   } catch (e) {
-    // fallback: topicSlug (legacy)
     try {
       qEx = query(
         collection(db, 'exercises'),
         where('level', '==', LEVEL),
-        where('topicSlug', '==', effectiveSlug),
+        where('topicSlug', '==', String(topic.slug || topic.id)),
         orderBy('order'),
       );
       snap = await getDocs(qEx);
@@ -439,8 +619,7 @@ async function loadExercises(topic) {
 
   if (!snap) {
     emptyExercises.style.display = 'block';
-    emptyExercises.textContent =
-      'No se pudo cargar ejercicios (revisa consola).';
+    emptyExercises.textContent = 'No se pudo cargar ejercicios.';
     return;
   }
 
@@ -449,13 +628,12 @@ async function loadExercises(topic) {
     cachedExercises.push({ id: d.id, ...data });
   });
 
+  await loadProgressForTopic(CURRENT_UID);
+
   VIEW_EXERCISES = cachedExercises.slice();
   buildTypeFilterOptions();
   buildTagFilterOptions();
   applyFilters();
-
-  // progress
-  await loadProgressForTopic(CURRENT_UID);
 }
 
 async function computeHasAccess(uid) {
@@ -464,20 +642,18 @@ async function computeHasAccess(uid) {
     if (!snap.exists()) return false;
 
     const d = snap.data() || {};
-    if (d.admin === true) return true;
+    if (isAdminUser(d, auth.currentUser?.email)) return true;
     if (d.blocked === true) return false;
 
     const until = d.accessUntil || null;
-    const untilDate = until?.toDate ? until.toDate() : (until ? new Date(until) : null);
+    const untilDate = until?.toDate ? until.toDate() : until ? new Date(until) : null;
     const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
     const timeOk = hasUntil ? untilDate.getTime() > Date.now() : false;
 
     const rawLevels = Array.isArray(d.levels)
       ? d.levels.map((x) => String(x).toUpperCase())
       : [];
-    const levels = rawLevels.length
-      ? rawLevels
-      : levelsFromPlan(d.plan);
+    const levels = rawLevels.length ? rawLevels : levelsFromPlan(d.plan);
 
     return timeOk && levels.includes(String(LEVEL).toUpperCase());
   } catch (e) {
@@ -492,17 +668,110 @@ function showAccessLocked() {
     if (emptyExercises) {
       emptyExercises.style.display = 'block';
       emptyExercises.innerHTML = `
-              <div style="padding:14px 14px; line-height:1.6;">
-                <b>🔒 Acceso premium</b><br/>
-                Para ver ejercicios necesitas acceso.<br/>
-                Ve al <a href="services.html" style="text-decoration:underline;">Panel</a> para aplicar un código o activar el plan.
-              </div>
-            `;
+        <div style="padding:14px 14px; line-height:1.6;">
+          <b>Acceso premium</b><br/>
+          Para ver ejercicios necesitas acceso.<br/>
+          Ve al <a href="services.html" style="text-decoration:underline;">Panel</a> para aplicar un codigo o activar el plan.
+        </div>
+      `;
     }
   } catch {}
 }
-// ===== Auth + boot =====
-let CURRENT_UID = null;
+
+async function trackTopicOpen(uid, courseId, level) {
+  if (!uid || !courseId) return;
+  try {
+    const userRef = doc(db, 'users', uid);
+    const snap = await getDoc(userRef);
+    const data = snap.exists() ? snap.data() || {} : {};
+    const opened = data.openedTopics || {};
+    const already = opened && opened[courseId] === true;
+
+    const basePatch = {
+      lastSeenAt: serverTimestamp(),
+      lastTopicId: courseId,
+      lastLevel: level || null,
+    };
+
+    if (!snap.exists()) {
+      await setDoc(
+        userRef,
+        {
+          email: auth.currentUser?.email || '',
+          admin: false,
+          access: false,
+          plan: 'free',
+          blocked: false,
+          createdAt: serverTimestamp(),
+          openedTopics: { [courseId]: true },
+          openedTopicsCount: 1,
+          ...basePatch,
+        },
+        { merge: true },
+      );
+      return;
+    }
+
+    if (already) {
+      await updateDoc(userRef, basePatch);
+      return;
+    }
+
+    await updateDoc(userRef, {
+      ...basePatch,
+      [`openedTopics.${courseId}`]: true,
+      openedTopicsCount: increment(1),
+    });
+  } catch (e) {
+    console.warn('trackTopicOpen failed', e);
+  }
+}
+
+function showFinishModal(stats) {
+  const modal = document.getElementById('finishModal');
+  if (!modal) return;
+
+  const txt = document.getElementById('finishText');
+  if (txt) {
+    const exerciseLine = stats.totalPractice
+      ? `Ejercicios: ${stats.donePractice}/${stats.totalPractice}.`
+      : 'Ejercicios completados.';
+    const testLine = stats.testTotal
+      ? `Test: ${stats.testScore}%.`
+      : 'Test completado.';
+    txt.textContent = `${exerciseLine} ${testLine}`;
+  }
+
+  const btnLesson = document.getElementById('btnFinishLesson');
+  const btnCourse = document.getElementById('btnFinishCourse');
+  const btnPanel = document.getElementById('btnFinishPanel');
+  if (btnLesson && currentTopic?.id)
+    btnLesson.href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(currentTopic.id)}`;
+  if (btnCourse)
+    btnCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+  if (btnPanel) btnPanel.href = 'espanel.html';
+
+  const close = () => {
+    modal.style.display = 'none';
+  };
+  const closeBtn = document.getElementById('btnCloseFinish');
+  if (closeBtn) closeBtn.onclick = close;
+  modal.addEventListener(
+    'click',
+    (e) => {
+      if (e.target === modal) close();
+    },
+    { once: true },
+  );
+
+  modal.style.display = 'flex';
+}
+
+function maybeFinish(stats) {
+  if (!stats.completed || hasShownFinish) return;
+  hasShownFinish = true;
+  setTimeout(() => showFinishModal(stats), 450);
+}
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -510,62 +779,18 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  
-  await trackTopicOpen(user.uid, COURSE_ID, LEVEL);
-sessionEmail.textContent = user.email || '(sin correo)';
   CURRENT_UID = user.uid || null;
-  HAS_ACCESS = await computeHasAccess(CURRENT_UID);
+  if (sessionEmail) sessionEmail.textContent = user.email || '(sin correo)';
 
-  isAdmin = false; // admin moved to ejercicioadmin.html
-  IS_ADMIN = false; // admin moved to ejercicioadmin.html
-  adminWrap.style.display = 'none';
+  adminWrap && (adminWrap.style.display = 'none');
 
-  fillExerciseTypes();
-
-  if (exType) {
-    // ===== Plantilla UI wiring =====
-    const btnApplyTemplate = document.getElementById('btnApplyTemplate');
-    const tplOverwrite = document.getElementById('tplOverwrite');
-
-    // Apply on type change (fills only empty fields)
-    if (exType)
-      exType.addEventListener('change', () =>
-        applyTemplateForSelectedType(false),
-      );
-
-    if (btnApplyTemplate) {
-      btnApplyTemplate.addEventListener('click', () =>
-        applyTemplateForSelectedType(!!tplOverwrite?.checked),
-      );
-    }
-
-    // Upgrade quick buttons: set type + apply
-    const wireQuick = (id, type) => {
-      const b = document.getElementById(id);
-      if (!b) return;
-      b.addEventListener('click', () => {
-        exType.value = type;
-        localStorage.setItem('lastExerciseType', type);
-        applyTemplateForSelectedType(!!tplOverwrite?.checked);
-        exPrompt?.focus?.();
-      });
-    };
-    wireQuick('btnTplFill', 'Rellenar los espacios');
-    wireQuick('btnTplChoice', 'Opción múltiple');
-    wireQuick('btnTplTF', 'Verdadero o falso');
-
-    // First paint: ensure options visibility matches current type
-    setOptionsVisibility(exType.value);
-  }
-
-  // UI wiring
-  if (filterType) {
-    // default options; real types filled after load
-    filterType.innerHTML = `<option value="">Wszystko</option>`;
-  }
-  if (!IS_ADMIN) {
-    if (toggleReorder) toggleReorder.disabled = true;
-    if (toggleReorder) toggleReorder.checked = false;
+  if (btnLogout) {
+    btnLogout.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+      } catch {}
+      window.location.href = 'login.html';
+    });
   }
 
   if (btnClearFilters) {
@@ -580,86 +805,72 @@ sessionEmail.textContent = user.email || '(sin correo)';
   if (filterType) filterType.addEventListener('change', () => applyFilters());
   if (filterTag) filterTag.addEventListener('change', () => applyFilters());
 
-  if (btnLogout) {
-    btnLogout.addEventListener('click', async () => {
-      try {
-        await signOut(auth);
-      } catch {}
-      window.location.href = 'login.html';
-    });
-  }
-
-  // If missing params, do not try to query Firestore
-  if (!params.get('id') && !params.get('slug')) return;
+  if (!TOPIC_ID && !SLUG) return;
 
   try {
-    showToast('⏳ Cargando tema...', 'warn', 1200);
+    showToast('Cargando tema...', 'warn', 1200);
 
     const topic = await loadTopic();
-    // Lesson editor will be shown after topic loads
     if (!topic) {
-      topicTitle.textContent = 'Tema no encontrado';
-      topicDesc.textContent =
-        'No se pudo cargar el tema. Verifica el enlace (level/slug/id).';
-      pillType.textContent = '—';
-      pillSlug.textContent = '—';
-      pillCount.textContent = 'Ejercicios: 0';
-      pillProgress.textContent = 'Progreso: 0%';
-      emptyExercises.style.display = 'block';
-      emptyExercises.textContent = 'Tema no encontrado.';
+      if (topicTitle) topicTitle.textContent = 'Tema no encontrado';
+      if (topicDesc)
+        topicDesc.textContent =
+          'No se pudo cargar el tema. Verifica el enlace (level/slug/id).';
+      if (pillType) pillType.textContent = '-';
+      if (pillSlug) pillSlug.textContent = 'slug: -';
+      if (pillCount) pillCount.textContent = 'Ejercicios: 0';
+      if (pillProgress) pillProgress.textContent = 'Practica: 0%';
+      if (pillTestScore) pillTestScore.textContent = 'Test: 0%';
+      if (emptyExercises) {
+        emptyExercises.style.display = 'block';
+        emptyExercises.textContent = 'Tema no encontrado.';
+      }
       return;
     }
 
-    await loadLessonMetaPublic(topic);
-    if (isAdmin) await loadLessonMeta(topic);
+    currentTopic = topic;
 
-    // 🔒 Premium gate (students)
-    if (!HAS_ACCESS) {
+    if (pillLevel) pillLevel.textContent = `Nivel: ${LEVEL}`;
+    if (pillType) {
+      if (topic.type) {
+        pillType.style.display = 'inline-flex';
+        pillType.textContent = topic.type;
+      } else {
+        pillType.style.display = 'none';
+      }
+    }
+
+    const effectiveSlug = String(topic.slug || topic.id || '');
+    if (pillSlug) pillSlug.textContent = effectiveSlug ? `slug: ${effectiveSlug}` : 'slug: -';
+
+    if (topicTitle) topicTitle.textContent = topic.title || 'Tema';
+    if (topicDesc) topicDesc.textContent = topic.desc || '';
+
+    if (pillLessonLink && topic.id) {
+      pillLessonLink.style.display = 'inline-flex';
+      const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
+      pillLessonLink.href = url;
+      if (btnBackLesson) btnBackLesson.href = url;
+    }
+    if (btnBackCourse) {
+      btnBackCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+    }
+
+    const hasAccess = await computeHasAccess(CURRENT_UID);
+    if (!hasAccess) {
       showAccessLocked();
       return;
     }
 
+    await trackTopicOpen(user.uid, topic.id, LEVEL);
+
     await loadExercises(topic);
-    if (isAdmin) {
-      exOrder.value = String(getNextOrder());
-    }
   } catch (e) {
     console.error(e);
-    showToast('❌ No se pudo cargar (consola)', 'bad', 3200);
-    emptyExercises.style.display = 'block';
-    emptyExercises.textContent = 'No se pudo cargar. Revisa la consola.';
+    showToast('No se pudo cargar.', 'bad', 3200);
+    if (emptyExercises) {
+      emptyExercises.style.display = 'block';
+      emptyExercises.textContent = 'No se pudo cargar. Revisa la consola.';
+    }
   }
 });
-
-
-// --- Finish modal helpers ---
-function showFinishModal(done, total, level, topicId){
-  const modal = document.getElementById('finishModal');
-  if(!modal) return;
-  const txt = document.getElementById('finishText');
-  if(txt){
-    txt.textContent = `Has completado ${done}/${total} ejercicios. ¡Buen trabajo!`;
-  }
-  const btnLesson = document.getElementById('btnFinishLesson');
-  const btnCourse = document.getElementById('btnFinishCourse');
-  const btnPanel = document.getElementById('btnFinishPanel');
-  if(btnLesson) btnLesson.href = `lessonpage.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(topicId)}`;
-  if(btnCourse) btnCourse.href = `course.html?level=${encodeURIComponent(level)}`;
-  if(btnPanel) btnPanel.href = 'espanel.html';
-
-  const close = () => { modal.style.display = 'none'; };
-  const closeBtn = document.getElementById('btnCloseFinish');
-  if(closeBtn) closeBtn.onclick = close;
-  modal.addEventListener('click', (e)=>{ if(e.target === modal) close(); }, { once:true });
-
-  modal.style.display = 'flex';
-}
-
-// Call when progress hits 100% (non-blocking)
-function maybeFinish(done, total, level, topicId){
-  if(!total) return;
-  if(done >= total){
-    // small delay so UI updates first
-    setTimeout(()=> showFinishModal(done, total, level, topicId), 450);
-  }
-}

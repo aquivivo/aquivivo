@@ -324,6 +324,7 @@ const slugParam = params.get('slug') || '';
       const filterSearch = document.getElementById('filterSearch');
       const filterType = document.getElementById('filterType');
       const filterCategory = document.getElementById('filterCategory');
+      const filterSort = document.getElementById('filterSort');
       const btnClearFilters = document.getElementById('btnClearFilters');
       const toggleReorder = document.getElementById('toggleReorder');
       const btnSaveOrder = document.getElementById('btnSaveOrder');
@@ -1238,11 +1239,13 @@ const slugParam = params.get('slug') || '';
         filterSearch?.addEventListener('input', onFilter);
         filterType?.addEventListener('change', onFilter);
         filterCategory?.addEventListener('change', onFilter);
+        filterSort?.addEventListener('change', onFilter);
 
         btnClearFilters?.addEventListener('click', () => {
           if (filterSearch) filterSearch.value = '';
           if (filterType) filterType.value = '';
           if (filterCategory) filterCategory.value = '';
+          if (filterSort) filterSort.value = 'order_asc';
           applyFilters();
         });
 
@@ -1583,6 +1586,7 @@ const slugParam = params.get('slug') || '';
         const q = (filterSearch?.value || '').trim().toLowerCase();
         const t = (filterType?.value || '').trim();
         const c = (filterCategory?.value || '').trim();
+        const s = (filterSort?.value || 'order_asc').trim();
 
         VIEW_EXERCISES = ALL_EXERCISES.filter((ex) => {
           const hay =
@@ -1592,6 +1596,25 @@ const slugParam = params.get('slug') || '';
           const okC = !c || (ex.category || 'grammar') === c;
           return okQ && okT && okC;
         });
+
+        if (!REORDER_MODE) {
+          const [field, dirRaw] = s.split('_');
+          const dir = dirRaw === 'desc' ? -1 : 1;
+          VIEW_EXERCISES.sort((a, b) => {
+            let va = 0;
+            let vb = 0;
+            if (field === 'prompt') {
+              va = String(a.prompt || '').toLowerCase();
+              vb = String(b.prompt || '').toLowerCase();
+            } else {
+              va = Number(a.order || 0);
+              vb = Number(b.order || 0);
+            }
+            if (va < vb) return -1 * dir;
+            if (va > vb) return 1 * dir;
+            return 0;
+          });
+        }
 
         renderExerciseList();
       }

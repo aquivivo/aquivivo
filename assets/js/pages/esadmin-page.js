@@ -707,6 +707,76 @@ function clearServiceForm() {
    ========================= */
 let usersLast = null;
 let usersCache = new Map();
+let usersProgressCache = new Map();
+
+function formatProgressSummary(s) {
+  if (!s) return 'Postepy: -';
+  const total = Number(s.topicsTotal || 0);
+  const done = Number(s.topicsCompleted || 0);
+  const practice = Number.isFinite(s.practiceAvg) ? `${s.practiceAvg}%` : '-';
+  const test = Number.isFinite(s.testAvg) ? `${s.testAvg}%` : '-';
+  return `Postepy: ${done}/${total} tematow, praktyka ${practice}, test ${test}`;
+}
+
+function summarizeProgressDocs(snap) {
+  const docs = snap?.docs || [];
+  const total = docs.length;
+  let completed = 0;
+  let practiceSum = 0;
+  let practiceCount = 0;
+  let testSum = 0;
+  let testCount = 0;
+  let lastTs = null;
+
+  docs.forEach((d) => {
+    const data = d.data() || {};
+    if (data.completed === true) completed += 1;
+
+    const practice = Number(data.practicePercent);
+    if (!Number.isNaN(practice)) {
+      practiceSum += practice;
+      practiceCount += 1;
+    }
+
+    const testTotal = Number(data.testTotal || 0);
+    const testScore = Number(data.testScore);
+    if (testTotal > 0 && !Number.isNaN(testScore)) {
+      testSum += testScore;
+      testCount += 1;
+    }
+
+    const ts = data.lastActivityAt || data.updatedAt || data.completedAt || null;
+    const dt = toDateMaybe(ts);
+    if (dt && (!lastTs || dt.getTime() > lastTs.getTime())) lastTs = dt;
+  });
+
+  const practiceAvg = practiceCount ? Math.round(practiceSum / practiceCount) : null;
+  const testAvg = testCount ? Math.round(testSum / testCount) : null;
+
+  return {
+    topicsTotal: total,
+    topicsCompleted: completed,
+    practiceAvg,
+    testAvg,
+    lastActivity: lastTs,
+  };
+}
+
+async function loadProgressForUsers(uids) {
+  const missing = (uids || []).filter((uid) => uid && !usersProgressCache.has(uid));
+  if (!missing.length) return;
+
+  await Promise.all(
+    missing.map(async (uid) => {
+      try {
+        const snap = await getDocs(collection(db, 'user_progress', uid, 'topics'));
+        usersProgressCache.set(uid, summarizeProgressDocs(snap));
+      } catch {
+        usersProgressCache.set(uid, null);
+      }
+    }),
+  );
+}
 
 function renderUserRow(uid, u) {
   const email = esc(u.email || u.emailLower || '(brak emaila)');
@@ -715,6 +785,7 @@ function renderUserRow(uid, u) {
   const until = isoDate(u.accessUntil);
   const blocked = u.blocked === true ? 'BLOK' : '';
   const access = hasAccess(u) ? 'TAK' : 'NIE';
+  const progressSummary = formatProgressSummary(usersProgressCache.get(uid));
 
   const statusBadge = (() => {
     if (String(u.role || 'user') === 'admin')
@@ -735,6 +806,7 @@ function renderUserRow(uid, u) {
         <div>
           <div style="font-weight:900;">${email} ${blocked}</div>
           <div class="hintSmall">uid: ${esc(uid)}  -  role: ${role}  -  access: ${access}${plan ? '  -  plan: ' + plan : ''}${until ? '  -  until: ' + esc(until) : ''}</div>
+          <div class="hintSmall">${esc(progressSummary)}</div>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
           ${statusBadge}
@@ -750,6 +822,8 @@ function applyUserFilters(entries) {
     .trim()
     .toLowerCase();
   const filter = String($('roleFilter')?.value || 'all');
+  const planFilter = String($('planFilter')?.value || 'all');
+  const sortKey = String($('userSort')?.value || 'createdAt_desc');
 
   const out = [];
   for (const [uid, u] of entries) {
@@ -758,6 +832,16 @@ function applyUserFilters(entries) {
     if (filter === 'admins' && role !== 'admin') continue;
     if (filter === 'premium' && !hasAccess(u)) continue;
     if (filter === 'free' && hasAccess(u)) continue;
+    if (filter === 'blocked' && u.blocked !== true) continue;
+
+    if (planFilter !== 'all') {
+      const planNorm = normalizePlanKey(u.plan || 'free');
+      if (planFilter === 'vip') {
+        if (!planNorm.startsWith('vip')) continue;
+      } else if (planNorm !== planFilter) {
+        continue;
+      }
+    }
 
     if (searchTerm) {
       const em = String(u.email || u.emailLower || '').toLowerCase();
@@ -766,7 +850,51 @@ function applyUserFilters(entries) {
 
     out.push([uid, u]);
   }
-  return out;
+  return sortUsers(out, sortKey);
+}
+
+function sortUsers(entries, sortKey) {
+  const getEmail = (u) => String(u.email || u.emailLower || '').toLowerCase();
+  const getPlan = (u) => normalizePlanKey(u.plan || 'free');
+  const getCreated = (u) => toDateMaybe(u.createdAt)?.getTime() || 0;
+  const getLastLogin =
+    (u) =>
+      toDateMaybe(u.lastLoginAt)?.getTime() ||
+      toDateMaybe(u.lastSeenAt)?.getTime() ||
+      0;
+  const getAccessUntil = (u) => toDateMaybe(u.accessUntil)?.getTime() || 0;
+
+  const [field, dirRaw] = String(sortKey || 'createdAt_desc').split('_');
+  const dir = dirRaw === 'asc' ? 1 : -1;
+
+  const sorted = entries.slice();
+  sorted.sort((a, b) => {
+    const ua = a[1];
+    const ub = b[1];
+    let va = 0;
+    let vb = 0;
+    if (field === 'email') {
+      va = getEmail(ua);
+      vb = getEmail(ub);
+    } else if (field === 'lastLogin') {
+      va = getLastLogin(ua);
+      vb = getLastLogin(ub);
+    } else if (field === 'accessUntil') {
+      va = getAccessUntil(ua);
+      vb = getAccessUntil(ub);
+    } else if (field === 'plan') {
+      va = getPlan(ua);
+      vb = getPlan(ub);
+    } else {
+      va = getCreated(ua);
+      vb = getCreated(ub);
+    }
+
+    if (va < vb) return -1 * dir;
+    if (va > vb) return 1 * dir;
+    return 0;
+  });
+  return sorted;
 }
 
 async function loadUsers(reset = false) {
@@ -797,12 +925,373 @@ async function loadUsers(reset = false) {
 
     const filtered = applyUserFilters(usersCache.entries());
     const rows = filtered.map(([uid, u]) => renderUserRow(uid, u));
-    list.innerHTML = rows.length
-      ? rows.join('')
-      : '<div class="hintSmall"></div>';
+    list.innerHTML = rows.length ? rows.join('') : '<div class="hintSmall"></div>';
+
+    // Load progress summaries for visible users, then re-render once
+    const visibleUids = filtered.map(([uid]) => uid);
+    await loadProgressForUsers(visibleUids);
+    const rowsAfter = filtered.map(([uid, u]) => renderUserRow(uid, u));
+    list.innerHTML = rowsAfter.length ? rowsAfter.join('') : '<div class="hintSmall"></div>';
   } catch (e) {
     console.error('[users]', e);
     list.innerHTML = '<div class="hintSmall">Blad ladowania userow.</div>';
+  }
+}
+
+/* =========================
+   POSTEPY (analiza)
+   ========================= */
+let progressUsers = [];
+let progressEntries = [];
+let progressCoursesCache = new Map();
+let progressExerciseCache = new Map();
+let currentProgressUid = '';
+
+function safeKey(raw) {
+  return String(raw || '').replace(/[^a-z0-9_-]/gi, '_');
+}
+
+function pickUserLabel(u) {
+  const email = u?.email || u?.emailLower || '';
+  return email ? `${email} (${u.uid || ''})` : u.uid || '(brak)';
+}
+
+function getProgressFilters() {
+  return {
+    sortKey: String($('progressSort')?.value || 'lastActivity_desc'),
+    filter: String($('progressFilter')?.value || 'all'),
+    search: String($('progressSearch')?.value || '').trim().toLowerCase(),
+  };
+}
+
+async function loadProgressUsers() {
+  const select = $('progressUserSelect');
+  const section = $('progressSection');
+  if (!select) return;
+
+  select.innerHTML = '<option value="">Wybierz uzytkownika</option>';
+  if (section) section.style.display = 'none';
+
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), limit(300)));
+    progressUsers = [];
+    snap.forEach((d) => {
+      const data = d.data() || {};
+      progressUsers.push({ uid: d.id, ...data });
+    });
+    progressUsers.sort((a, b) => {
+      const ea = String(a.emailLower || a.email || '').toLowerCase();
+      const eb = String(b.emailLower || b.email || '').toLowerCase();
+      return ea.localeCompare(eb);
+    });
+    for (const u of progressUsers) {
+      const opt = document.createElement('option');
+      opt.value = u.uid;
+      opt.textContent = pickUserLabel(u);
+      select.appendChild(opt);
+    }
+  } catch (e) {
+    console.error('[progress users]', e);
+  }
+}
+
+async function hydrateCourseTitles(entries) {
+  const ids = new Set();
+  entries.forEach((e) => {
+    if (e.topicId) ids.add(String(e.topicId));
+  });
+  const missing = Array.from(ids).filter((id) => !progressCoursesCache.has(id));
+  if (!missing.length) return;
+
+  await Promise.all(
+    missing.map(async (id) => {
+      try {
+        const snap = await getDoc(doc(db, 'courses', id));
+        if (snap.exists()) progressCoursesCache.set(id, snap.data() || {});
+      } catch {}
+    }),
+  );
+}
+
+function getWrongResults(entry) {
+  const results = entry?.testResults && typeof entry.testResults === 'object' ? entry.testResults : {};
+  return Object.entries(results).filter(([, r]) => r && r.correct === false);
+}
+
+function isHardTopic(entry) {
+  const practice = Number(entry?.practicePercent || 0);
+  const testTotal = Number(entry?.testTotal || 0);
+  const testScore = Number(entry?.testScore || 0);
+  if (practice > 0 && practice < 80) return true;
+  if (testTotal > 0 && testScore < 80) return true;
+  return false;
+}
+
+function sortProgress(entries, sortKey) {
+  const list = entries.slice();
+  const [field, dirRaw] = String(sortKey || 'lastActivity_desc').split('_');
+  const dir = dirRaw === 'asc' ? 1 : -1;
+
+  list.sort((a, b) => {
+    const ta = a;
+    const tb = b;
+    let va = 0;
+    let vb = 0;
+    if (field === 'practice') {
+      va = Number(ta.practicePercent || 0);
+      vb = Number(tb.practicePercent || 0);
+    } else if (field === 'test') {
+      va = Number(ta.testScore || 0);
+      vb = Number(tb.testScore || 0);
+    } else if (field === 'topic') {
+      const ca = progressCoursesCache.get(ta.topicId || '') || {};
+      const cb = progressCoursesCache.get(tb.topicId || '') || {};
+      const taName = String(ca.title || ta.topicSlug || ta.topicId || ta.id || '').toLowerCase();
+      const tbName = String(cb.title || tb.topicSlug || tb.topicId || tb.id || '').toLowerCase();
+      va = taName;
+      vb = tbName;
+    } else {
+      const da = toDateMaybe(ta.lastActivityAt || ta.updatedAt || ta.completedAt);
+      const db = toDateMaybe(tb.lastActivityAt || tb.updatedAt || tb.completedAt);
+      va = da ? da.getTime() : 0;
+      vb = db ? db.getTime() : 0;
+    }
+    if (va < vb) return -1 * dir;
+    if (va > vb) return 1 * dir;
+    return 0;
+  });
+  return list;
+}
+
+function renderProgressList() {
+  const list = $('progressList');
+  const section = $('progressSection');
+  if (!list) return;
+
+  const { sortKey, filter, search } = getProgressFilters();
+  let entries = progressEntries.slice();
+
+  if (filter === 'hard') {
+    entries = entries.filter((e) => isHardTopic(e));
+  } else if (filter === 'not_done') {
+    entries = entries.filter((e) => e.completed !== true);
+  }
+
+  if (search) {
+    entries = entries.filter((e) => {
+      const course = progressCoursesCache.get(e.topicId || '') || {};
+      const title = String(course.title || e.topicSlug || e.topicId || e.id || '').toLowerCase();
+      return title.includes(search);
+    });
+  }
+
+  entries = sortProgress(entries, sortKey);
+
+  if (section) section.style.display = 'block';
+  if (!entries.length) {
+    list.innerHTML = '<div class="hintSmall">Brak danych.</div>';
+    return;
+  }
+
+  list.innerHTML = entries
+    .map((e) => {
+      const course = progressCoursesCache.get(e.topicId || '') || {};
+      const title = esc(course.title || e.topicSlug || e.topicId || e.id || '(bez tytulu)');
+      const level = esc(String(e.level || course.level || '-'));
+      const practice = Number(e.practicePercent || 0);
+      const testTotal = Number(e.testTotal || 0);
+      const testScore = testTotal ? Number(e.testScore || 0) : null;
+      const completed = e.completed === true;
+      const last = isoDate(e.lastActivityAt || e.updatedAt || e.completedAt);
+      const wrong = getWrongResults(e);
+      const key = safeKey(e.id);
+      const hard = isHardTopic(e);
+
+      return `
+        <div class="listItem">
+          <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:900;">${title}</div>
+              <div class="hintSmall">
+                level: ${level}  -  praktyka: ${practice}%  -  test: ${testScore == null ? '-' : testScore + '%'}  -  ${completed ? 'UKONCZONE' : 'W TRAKCIE'}${last ? '  -  ostatnio: ' + esc(last) : ''}
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              ${hard ? '<span class="pill pill-red">TRUDNE</span>' : ''}
+              ${completed ? '<span class="pill pill-blue">DONE</span>' : '<span class="pill">IN PROGRESS</span>'}
+              ${wrong.length ? `<span class="pill">BLEDY ${wrong.length}</span>` : ''}
+              ${wrong.length ? `<button class="btn-white-outline" data-progress="toggle" data-key="${key}">Bledy</button>` : ''}
+            </div>
+          </div>
+          <div class="hintSmall" id="progressErrors_${key}" style="display:none; margin-top:10px;"></div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadProgressForUser(uid) {
+  const list = $('progressList');
+  const section = $('progressSection');
+  if (!uid || !list) return;
+
+  currentProgressUid = uid;
+  if (section) section.style.display = 'block';
+  list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
+
+  try {
+    const snap = await getDocs(collection(db, 'user_progress', uid, 'topics'));
+    progressEntries = [];
+    snap.forEach((d) => progressEntries.push({ id: d.id, ...(d.data() || {}) }));
+    await hydrateCourseTitles(progressEntries);
+    renderProgressList();
+  } catch (e) {
+    console.error('[progress list]', e);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania postepow.</div>';
+  }
+}
+
+async function loadExercisesForTopic(topicId) {
+  const id = String(topicId || '').trim();
+  if (!id) return new Map();
+  if (progressExerciseCache.has(id)) return progressExerciseCache.get(id);
+
+  const map = new Map();
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'exercises'), where('topicId', '==', id)),
+    );
+    snap.forEach((d) => map.set(d.id, d.data() || {}));
+  } catch (e) {
+    console.warn('[progress exercises]', e);
+  }
+  progressExerciseCache.set(id, map);
+  return map;
+}
+
+async function toggleProgressErrors(key) {
+  const box = document.getElementById(`progressErrors_${key}`);
+  if (!box) return;
+
+  if (box.style.display === 'block') {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+
+  const entry = progressEntries.find((e) => safeKey(e.id) === key);
+  if (!entry) return;
+
+  const wrong = getWrongResults(entry);
+  if (!wrong.length) {
+    box.textContent = 'Brak bledow testu.';
+    box.style.display = 'block';
+    return;
+  }
+
+  const exMap = await loadExercisesForTopic(entry.topicId);
+  const lines = wrong.map(([exId, r]) => {
+    const ex = exMap.get(exId) || {};
+    const prompt = esc(ex.prompt || '(brak tresci)');
+    const correct = esc(ex.answer || '-');
+    const userAns = esc(r?.answer || '-');
+    return `<div style="margin-top:6px;"><b>${esc(exId)}</b> - ${prompt}<br/>Odpowiedz: ${userAns}<br/>Poprawna: ${correct}</div>`;
+  });
+  box.innerHTML = lines.join('');
+  box.style.display = 'block';
+}
+
+/* =========================
+   OPINIE I OCENY
+   ========================= */
+let reviewsCache = [];
+
+function getReviewFilters() {
+  return {
+    type: String($('reviewType')?.value || 'all'),
+    rating: String($('reviewRating')?.value || 'all'),
+    level: String($('reviewLevel')?.value || 'all'),
+    search: String($('reviewSearch')?.value || '').trim().toLowerCase(),
+  };
+}
+
+function formatReviewDate(ts) {
+  const d = toDateMaybe(ts);
+  if (!d) return '';
+  return isoDate(d);
+}
+
+function renderReviews() {
+  const list = $('reviewsList');
+  const section = $('reviewsSection');
+  if (!list) return;
+
+  const { type, rating, level, search } = getReviewFilters();
+  let items = reviewsCache.slice();
+
+  if (type !== 'all') items = items.filter((r) => String(r.targetType || '') === type);
+  if (rating !== 'all')
+    items = items.filter((r) => String(r.rating || '') === rating);
+  if (level !== 'all')
+    items = items.filter((r) => String(r.level || '').toUpperCase() === level);
+  if (search) {
+    items = items.filter((r) => {
+      const email = String(r.userEmail || '').toLowerCase();
+      const title = String(r.topicTitle || r.topicSlug || r.topicId || '').toLowerCase();
+      return email.includes(search) || title.includes(search);
+    });
+  }
+
+  if (section) section.style.display = 'block';
+  if (!items.length) {
+    list.innerHTML = '<div class="hintSmall">Brak opinii.</div>';
+    return;
+  }
+
+  list.innerHTML = items
+    .map((r) => {
+      const email = esc(r.userEmail || '(brak emaila)');
+      const ratingVal = Number(r.rating || 0);
+      const ratingTxt = ratingVal ? `${ratingVal}/5` : '-';
+      const target = esc(r.targetType || '-');
+      const title = esc(r.topicTitle || r.topicSlug || r.topicId || r.courseLabel || '-');
+      const lvl = esc(String(r.level || '-'));
+      const date = esc(formatReviewDate(r.createdAt || r.updatedAt));
+      const text = esc(r.text || r.comment || '');
+      return `
+        <div class="listItem">
+          <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:900;">${title}</div>
+              <div class="hintSmall">typ: ${target}  -  poziom: ${lvl}  -  ocena: ${ratingTxt}  -  ${date}</div>
+              ${text ? `<div class="hintSmall" style="margin-top:6px;">${text}</div>` : ''}
+              <div class="hintSmall" style="margin-top:6px;">user: ${email}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadReviews() {
+  const list = $('reviewsList');
+  const section = $('reviewsSection');
+  if (!list) return;
+
+  if (section) section.style.display = 'block';
+  list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(200)),
+    );
+    reviewsCache = [];
+    snap.forEach((d) => reviewsCache.push({ id: d.id, ...(d.data() || {}) }));
+    renderReviews();
+  } catch (e) {
+    console.error('[reviews]', e);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania opinii.</div>';
   }
 }
 
@@ -1355,14 +1844,34 @@ function bindEvents() {
   $('btnClear')?.addEventListener('click', () => {
     if ($('userSearch')) $('userSearch').value = '';
     if ($('roleFilter')) $('roleFilter').value = 'all';
+    if ($('planFilter')) $('planFilter').value = 'all';
+    if ($('userSort')) $('userSort').value = 'createdAt_desc';
     loadUsers(true);
   });
   $('roleFilter')?.addEventListener('change', () => loadUsers(true));
+  $('planFilter')?.addEventListener('change', () => loadUsers(true));
+  $('userSort')?.addEventListener('change', () => loadUsers(true));
   $('usersList')?.addEventListener('click', (e) => {
     const btn = e.target?.closest?.('button[data-user]');
     if (!btn) return;
     const uid = btn.getAttribute('data-uid');
     if (uid) openUserModal(uid);
+  });
+
+  // postepy (analiza)
+  $('btnLoadProgress')?.addEventListener('click', loadProgressUsers);
+  $('progressUserSelect')?.addEventListener('change', (e) => {
+    const uid = String(e.target?.value || '');
+    if (uid) loadProgressForUser(uid);
+  });
+  $('progressSort')?.addEventListener('change', renderProgressList);
+  $('progressFilter')?.addEventListener('change', renderProgressList);
+  $('progressSearch')?.addEventListener('input', renderProgressList);
+  $('progressList')?.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('button[data-progress="toggle"]');
+    if (!btn) return;
+    const key = btn.getAttribute('data-key');
+    if (key) toggleProgressErrors(key);
   });
 
   $('userModalClose')?.addEventListener('click', closeUserModal);
@@ -1397,6 +1906,13 @@ function bindEvents() {
       true,
     );
   });
+
+  // opinie i oceny
+  $('btnLoadReviews')?.addEventListener('click', loadReviews);
+  $('reviewType')?.addEventListener('change', renderReviews);
+  $('reviewRating')?.addEventListener('change', renderReviews);
+  $('reviewLevel')?.addEventListener('change', renderReviews);
+  $('reviewSearch')?.addEventListener('input', renderReviews);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

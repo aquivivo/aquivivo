@@ -94,6 +94,21 @@ function formatDate(ts) {
   }
 }
 
+function formatShortDate(ts) {
+  try {
+    if (!ts) return '';
+    const d = ts?.toDate ? ts.toDate() : ts instanceof Date ? ts : new Date(ts);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  } catch {
+    return '';
+  }
+}
+
 function toDateMaybe(ts) {
   try {
     if (!ts) return null;
@@ -104,6 +119,84 @@ function toDateMaybe(ts) {
     return Number.isNaN(d.getTime()) ? null : d;
   } catch {
     return null;
+  }
+}
+
+function summarizeProgressDocs(docs) {
+  const total = docs.length;
+  let completed = 0;
+  let practiceSum = 0;
+  let practiceCount = 0;
+  let testSum = 0;
+  let testCount = 0;
+  let lastTs = null;
+
+  docs.forEach((d) => {
+    const data = d.data() || {};
+    if (data.completed === true) completed += 1;
+
+    const practice = Number(data.practicePercent);
+    if (!Number.isNaN(practice)) {
+      practiceSum += practice;
+      practiceCount += 1;
+    }
+
+    const testTotal = Number(data.testTotal || 0);
+    const testScore = Number(data.testScore);
+    if (testTotal > 0 && !Number.isNaN(testScore)) {
+      testSum += testScore;
+      testCount += 1;
+    }
+
+    const ts = data.lastActivityAt || data.updatedAt || data.completedAt || null;
+    const dt = toDateMaybe(ts);
+    if (dt && (!lastTs || dt.getTime() > lastTs.getTime())) lastTs = dt;
+  });
+
+  const practiceAvg = practiceCount ? Math.round(practiceSum / practiceCount) : null;
+  const testAvg = testCount ? Math.round(testSum / testCount) : null;
+
+  return {
+    topicsTotal: total,
+    topicsCompleted: completed,
+    practiceAvg,
+    testAvg,
+    lastActivity: lastTs,
+  };
+}
+
+async function loadProgressSummary(uid) {
+  if (!uid) return;
+  const tEl = $('progTopics');
+  const cEl = $('progCompleted');
+  const pEl = $('progPractice');
+  const teEl = $('progTest');
+  const lEl = $('progLastActivity');
+
+  if (tEl) tEl.textContent = 'Temas: -';
+  if (cEl) cEl.textContent = 'Completados: -';
+  if (pEl) pEl.textContent = 'Práctica: -';
+  if (teEl) teEl.textContent = 'Test: -';
+  if (lEl) lEl.textContent = 'Última actividad: -';
+
+  try {
+    const snap = await getDocs(collection(db, 'user_progress', uid, 'topics'));
+    const summary = summarizeProgressDocs(snap.docs || []);
+
+    if (tEl) tEl.textContent = `Temas: ${summary.topicsTotal}`;
+    if (cEl)
+      cEl.textContent = `Completados: ${summary.topicsCompleted}/${summary.topicsTotal}`;
+    if (pEl)
+      pEl.textContent =
+        summary.practiceAvg == null ? 'Práctica: -' : `Práctica: ${summary.practiceAvg}%`;
+    if (teEl)
+      teEl.textContent = summary.testAvg == null ? 'Test: -' : `Test: ${summary.testAvg}%`;
+    if (lEl) {
+      const dt = summary.lastActivity ? formatShortDate(summary.lastActivity) : '';
+      lEl.textContent = dt ? `Última actividad: ${dt}` : 'Última actividad: -';
+    }
+  } catch (e) {
+    console.warn('loadProgressSummary failed', e);
   }
 }
 
@@ -940,6 +1033,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const flags = computeFlags(viewDoc);
       renderCourses(viewDoc, flags);
       renderPlans(viewDoc, flags);
+      await loadProgressSummary(viewUid);
 
       if (btn) {
         btn.onclick = async () => {

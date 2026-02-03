@@ -225,6 +225,15 @@ service cloud.firestore {
       allow read, write: if isAdmin() || isOwner(uid);
     }
 
+    /* ===== REVIEWS / RATINGS ===== */
+    match /reviews/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
     /* ===== REFERRALS / REWARDS (jak miałaś) ===== */
     match /referrals/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.ownerUid == request.auth.uid);

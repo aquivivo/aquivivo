@@ -2948,3 +2948,68 @@ select:focus {
 .featureCard h3 {
   color: #fff;
 }
+
+/* =====================================================
+   Exercise cards
+   ===================================================== */
+.exerciseList {
+  display: grid;
+  gap: 14px;
+}
+.exerciseCard {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.exerciseTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.exerciseMeta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.exercisePrompt {
+  font-weight: 800;
+  font-size: 18px;
+  margin-top: 10px;
+  line-height: 1.45;
+}
+.exerciseOptions {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+.exerciseOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+}
+.exerciseAnswer {
+  margin-top: 10px;
+}
+.exerciseActions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.exerciseResult {
+  margin-top: 8px;
+  font-weight: 800;
+}
+.exerciseResult.ok {
+  color: #b7f7c3;
+}
+.exerciseResult.bad {
+  color: #ffd1d6;
+}

@@ -2,7 +2,6 @@
 // Course topics list + badges:
 // - lesson status from course_meta/{LEVEL}__{COURSE_ID} (html/published)
 // - exercises count from exercises where level == LEVEL and topicId == COURSE_ID
-// Uses existing CSS classes: coursesGrid + courseCard (already styled in styles.css)
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
@@ -20,6 +19,21 @@ import {
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
+const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
+
+function isAdminUser(userDoc, email) {
+  const mail = String(email || '').toLowerCase();
+  return (
+    ADMIN_EMAILS.includes(mail) ||
+    userDoc?.admin === true ||
+    String(userDoc?.role || '').toLowerCase() === 'admin'
+  );
+}
+
+function isAdminSession() {
+  const mail = String(auth.currentUser?.email || '').toLowerCase();
+  return ADMIN_EMAILS.includes(mail);
+}
 
 let CURRENT_FLAGS = null;
 
@@ -29,23 +43,19 @@ const accessModalBuy = document.getElementById('accessModalBuy');
 const accessModalLine1 = document.getElementById('accessModalLine1');
 const accessModalLine2 = document.getElementById('accessModalLine2');
 
-function showAccessLocked(reason = 'locked') {
+function showAccessLocked() {
   const host = document.querySelector('.container') || document.body;
   const page = document.querySelector('main.page .container') || host;
 
-  // try to use existing empty states if present
-  const grid =
-    document.getElementById('topicsGrid') ||
-    document.getElementById('courseList') ||
-    null;
+  const grid = document.getElementById('topicsGrid') || document.getElementById('courseList') || null;
 
   const card = document.createElement('section');
   card.className = 'card';
   card.style.marginTop = '16px';
   card.innerHTML = `
-    <div class="sectionTitle" style="margin-top:0;">🔒 Acceso requerido</div>
+    <div class="sectionTitle" style="margin-top:0;">Acceso requerido</div>
     <div class="muted" style="margin-top:6px; line-height:1.6;">
-      Este nivel está bloqueado para tu cuenta en este momento.
+      Este nivel esta bloqueado para tu cuenta en este momento.
     </div>
     <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
       <a class="btn-yellow" href="services.html?level=${encodeURIComponent(LEVEL)}" style="text-decoration:none;">Activar acceso</a>
@@ -56,15 +66,18 @@ function showAccessLocked(reason = 'locked') {
   page.prepend(card);
 }
 
-async function getUserFlags(uid) {
+async function getUserFlags(uid, email) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
     if (!snap.exists()) {
+      if (isAdminUser(null, email)) {
+        return { isAdmin: true, hasLevelAccess: true, blocked: false };
+      }
       return { isAdmin: false, hasLevelAccess: false, blocked: false };
     }
 
     const d = snap.data() || {};
-    const isAdmin = d.admin === true;
+    const isAdmin = isAdminUser(d, email);
     const blocked = d.blocked === true;
 
     if (isAdmin) {
@@ -72,28 +85,19 @@ async function getUserFlags(uid) {
     }
 
     const until = d.accessUntil || null;
-    const untilDate = until?.toDate
-      ? until.toDate()
-      : until
-        ? new Date(until)
-        : null;
-    const hasUntil =
-      !!untilDate && !Number.isNaN(untilDate.getTime());
+    const untilDate = until?.toDate ? until.toDate() : until ? new Date(until) : null;
+    const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
     const isUntilValid = hasUntil ? untilDate.getTime() > Date.now() : false;
 
     const rawLevels = Array.isArray(d.levels)
       ? d.levels.map((x) => String(x).toUpperCase())
       : [];
-    const levels = rawLevels.length
-      ? rawLevels
-      : levelsFromPlan(d.plan);
+    const levels = rawLevels.length ? rawLevels : levelsFromPlan(d.plan);
 
     const plan = String(d.plan || '').toLowerCase();
-    const hasGlobalAccess =
-      plan === 'premium' || (d.access === true && levels.length === 0);
+    const hasGlobalAccess = plan === 'premium' || (d.access === true && levels.length === 0);
     const hasLevelAccess =
-      (hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase())) &&
-      isUntilValid;
+      (hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase())) && isUntilValid;
 
     return {
       isAdmin: false,
@@ -112,8 +116,7 @@ async function getUserFlags(uid) {
 
 function showLevelNotice(text) {
   const buttons = document.querySelector('.levelButtons');
-  const host =
-    buttons?.parentElement || buttons || document.querySelector('.container');
+  const host = buttons?.parentElement || buttons || document.querySelector('.container');
   if (!host) return;
 
   let box = document.getElementById('levelNotice');
@@ -139,16 +142,17 @@ function showLevelNotice(text) {
 }
 
 function showAccessPopup(level) {
+  if (isAdminSession()) return;
   if (!accessModal) return;
   const lvl = String(level || '').toUpperCase();
   if (accessModalLine1) {
     accessModalLine1.textContent =
       lvl && lvl !== 'A1'
-        ? `Este nivel ${lvl} todavía no es tuyo 😜`
-        : 'Este nivel todavía no es tuyo 😜';
+        ? `Este nivel ${lvl} todav\u00eda no es tuyo \uD83D\uDE1C`
+        : `Este nivel todav\u00eda no es tuyo \uD83D\uDE1C`;
   }
   if (accessModalLine2) {
-    accessModalLine2.textContent = '...y sigamos dándole duro al Polaco.';
+    accessModalLine2.textContent = '...y sigamos d\u00e1ndole duro al Polaco.';
   }
   if (accessModalBuy) {
     accessModalBuy.href = `services.html?level=${encodeURIComponent(lvl || LEVEL)}`;
@@ -167,10 +171,10 @@ function wireLevelButtons(flags) {
 
   links.forEach((link) => {
     const href = link.getAttribute('href') || '';
-    const level = (
-      new URL(href, location.href).searchParams.get('level') || ''
-    ).toUpperCase();
+    const level = (new URL(href, location.href).searchParams.get('level') || '').toUpperCase();
     if (!level || level === 'A1') return;
+
+    if (flags?.isAdmin || isAdminSession()) return;
 
     const levelAllowed =
       flags?.isAdmin ||
@@ -182,7 +186,7 @@ function wireLevelButtons(flags) {
 
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      showLevelNotice('🔒 Sin acceso. Solo puedes ver los temas de A1.');
+      showLevelNotice('Sin acceso. Solo puedes ver los temas de A1.');
     });
   });
   CURRENT_FLAGS = flags || null;
@@ -199,16 +203,16 @@ function initLevelButtonsGuard() {
     if (!link) return;
 
     const href = link.getAttribute('href') || '';
-    const level = (
-      new URL(href, location.href).searchParams.get('level') || ''
-    ).toUpperCase();
+    const level = (new URL(href, location.href).searchParams.get('level') || '').toUpperCase();
 
     if (!level || level === 'A1') return;
+
+    if (isAdminSession()) return;
 
     const f = CURRENT_FLAGS;
     if (!f) {
       e.preventDefault();
-      showLevelNotice('⏳ Cargando permisos…');
+      showLevelNotice('Cargando permisos...');
       return;
     }
 
@@ -218,7 +222,7 @@ function initLevelButtonsGuard() {
       (Array.isArray(f.levels) && f.levels.includes(level));
     const hasAccessForLevel = levelAllowed && !!f.isUntilValid;
 
-    if (!hasAccessForLevel) {
+    if (!hasAccessForLevel && !f.isAdmin) {
       e.preventDefault();
       showAccessPopup(level);
     }
@@ -226,22 +230,16 @@ function initLevelButtonsGuard() {
 }
 
 function safeText(v) {
-  return String(v ?? '').replace(
-    /[<>&"]/g,
-    (ch) =>
-      ({
-        '<': '&lt;',
-        '>': '&gt;',
-        '&': '&amp;',
-        '"': '&quot;',
-      })[ch],
-  );
+  return String(v ?? '').replace(/[<>&"]/g, (ch) => ({
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    '"': '&quot;',
+  })[ch]);
 }
 
 function tileAccentClass(topic) {
-  const raw = String(topic?.tileStyle || topic?.tileClass || '')
-    .toLowerCase()
-    .trim();
+  const raw = String(topic?.tileStyle || topic?.tileClass || '').toLowerCase().trim();
   if (!raw) return '';
   if (raw === 'yellow' || raw === 'amarillo') return 'cardAccentYellow';
   if (raw === 'blue' || raw === 'azul') return 'cardAccentBlue';
@@ -250,25 +248,21 @@ function tileAccentClass(topic) {
   if (raw === 'a2') return 'cardAccentBlue';
   if (raw === 'b1') return 'cardAccentRed';
   if (raw === 'b2') return 'cardAccentYellow';
-  if (raw.startsWith('cardaccent')) return raw; // allow direct class
+  if (raw.startsWith('cardaccent')) return raw;
   return '';
 }
 
 async function getLessonBadge(courseId) {
   try {
-    const metaSnap = await getDoc(
-      doc(db, 'course_meta', `${LEVEL}__${courseId}`),
-    );
+    const metaSnap = await getDoc(doc(db, 'course_meta', `${LEVEL}__${courseId}`));
     if (!metaSnap.exists()) return '';
     const meta = metaSnap.data() || {};
-    const hasHtml =
-      typeof meta.html === 'string' && meta.html.trim().length > 0;
+    const hasHtml = typeof meta.html === 'string' && meta.html.trim().length > 0;
     if (!hasHtml) return '';
     const published = meta.published === true;
-    // styles.css ma pill-blue i zwykły pill
     return published
-      ? `<span class="pill pill-blue">✅ Lección</span>`
-      : `<span class="pill">🟡 Borrador</span>`;
+      ? `<span class="pill pill-blue">Leccion</span>`
+      : `<span class="pill">Borrador</span>`;
   } catch {
     return '';
   }
@@ -288,34 +282,83 @@ async function getExercisesCount(courseId) {
   }
 }
 
-function renderCard(
-  topic,
-  lessonBadge,
-  exCount,
-  hasLevelAccess,
-  readOnly = false,
-) {
+async function loadProgressMap(uid) {
+  try {
+    const snap = await getDocs(collection(db, 'user_progress', uid, 'topics'));
+    const map = {};
+    snap.forEach((d) => {
+      map[d.id] = d.data() || {};
+    });
+    return map;
+  } catch (e) {
+    console.warn('loadProgressMap failed', e);
+    return {};
+  }
+}
+
+function topicKeyFor(topic) {
+  const slug = String(topic?.slug || topic?.id || '').trim();
+  return slug ? `${LEVEL}__${slug}` : null;
+}
+
+function buildProgressBadges(progress) {
+  if (!progress) return '';
+  const badges = [];
+  const practicePercent = Number(progress.practicePercent || 0);
+  const testScore = Number(progress.testScore || 0);
+  const testTotal = Number(progress.testTotal || 0);
+  const completed = progress.completed === true;
+
+  if (completed) {
+    badges.push('<span class="pill pill-blue">Completado</span>');
+  } else if (practicePercent > 0) {
+    badges.push(`<span class="pill">Progreso ${practicePercent}%</span>`);
+  }
+
+  if (testTotal > 0) {
+    badges.push(`<span class="pill pill-yellow">Test ${testScore}%</span>`);
+  }
+
+  return badges.join('');
+}
+
+function renderCard(topic, lessonBadge, exCount, hasLevelAccess, readOnly, progress) {
   const accent = tileAccentClass(topic);
   const href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
 
-  const exBadge =
-    exCount > 0 ? `<span class="pill pill-yellow">🧩 ${exCount}</span>` : '';
+  const exBadge = exCount > 0 ? `<span class="pill pill-yellow">Ejercicios ${exCount}</span>` : '';
 
   const accessBadge = readOnly
-    ? `<span class="pill">👁️ Vista previa</span>`
+    ? `<span class="pill">Vista previa</span>`
     : hasLevelAccess
-      ? `<span class="pill pill-blue">✅ Acceso</span>`
-      : `<span class="pill pill-red">🔒 Premium</span>`;
+      ? `<span class="pill pill-blue">Acceso</span>`
+      : `<span class="pill pill-red">Premium</span>`;
 
   const typeBadge = topic.type
-    ? `<span class="pill" style="font-weight:900;">🏷️ ${safeText(topic.type)}</span>`
-    : `<span class="pill" style="font-weight:900;">📌 Tema</span>`;
+    ? `<span class="pill" style="font-weight:900;">${safeText(topic.type)}</span>`
+    : `<span class="pill" style="font-weight:900;">Tema</span>`;
 
   const title = safeText(topic.title || 'Tema');
   const desc = safeText(topic.desc || '');
+  const progressBadges = buildProgressBadges(progress);
+
+  const isCompleted = progress?.completed === true;
+  const hasProgress =
+    progress &&
+    (Number(progress.practicePercent || 0) > 0 ||
+      Number(progress.testScore || 0) > 0 ||
+      Number(progress.practiceDone || 0) > 0 ||
+      Number(progress.testTotal || 0) > 0);
+  const isInProgress = !!hasProgress && !isCompleted;
+  const extraStyle = [
+    isCompleted ? 'opacity:.6; filter:saturate(.7);' : '',
+    isInProgress ? 'border:2px solid rgba(255,107,107,0.45);' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const inner = `
-      <div class="card ${accent}" style="padding:16px; border-radius:24px;">
+      <div class="card ${accent}" style="padding:16px; border-radius:24px; ${extraStyle}">
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
           <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
             ${typeBadge}
@@ -324,7 +367,8 @@ function renderCard(
           <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
             ${lessonBadge || ''}
             ${exBadge || ''}
-            ${readOnly ? '' : `<span class="pill" style="opacity:.9;">Entrar →</span>`}
+            ${progressBadges}
+            ${readOnly ? '' : `<span class="pill" style="opacity:.9;">Entrar</span>`}
           </div>
         </div>
 
@@ -335,7 +379,7 @@ function renderCard(
         ${desc ? `<div class="muted" style="margin:0; line-height:1.65;">${desc}</div>` : ''}
 
         <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-          ${readOnly ? `<span class="pill">Solo temas</span>` : `<span class="pill">📖 Lección</span><span class="pill">🧩 Ejercicios</span>`}
+          ${readOnly ? `<span class="pill">Solo temas</span>` : `<span class="pill">Leccion</span><span class="pill">Ejercicios</span>`}
         </div>
       </div>
   `;
@@ -349,16 +393,16 @@ function renderCard(
 
 async function loadTopics(user) {
   const subtitle = $('levelSubtitle');
-  const flags = await getUserFlags(user.uid);
+  const flags = await getUserFlags(user.uid, user.email);
   wireLevelButtons(flags);
 
   if (flags.blocked) {
-    showAccessLocked('blocked');
+    showAccessLocked();
     return;
   }
   const previewOnly = !flags.hasLevelAccess && LEVEL === 'A1';
   if (!flags.hasLevelAccess && !previewOnly) {
-    showAccessLocked('locked');
+    showAccessLocked();
     return;
   }
   if (subtitle) subtitle.textContent = `Nivel ${LEVEL}`;
@@ -367,6 +411,8 @@ async function loadTopics(user) {
   if (!host) return;
 
   host.innerHTML = '';
+
+  const progressMap = previewOnly ? {} : await loadProgressMap(user.uid);
 
   const q = query(
     collection(db, 'courses'),
@@ -378,26 +424,18 @@ async function loadTopics(user) {
 
   for (const d of snap.docs) {
     const topic = { id: d.id, ...(d.data() || {}) };
-
-    // Soft-delete / archive
     if (topic.isArchived === true) continue;
 
     const [lessonBadge, exCount] = previewOnly
       ? ['', 0]
-      : await Promise.all([
-          getLessonBadge(topic.id),
-          getExercisesCount(topic.id),
-        ]);
+      : await Promise.all([getLessonBadge(topic.id), getExercisesCount(topic.id)]);
+
+    const key = topicKeyFor(topic);
+    const progress = key ? progressMap[key] : null;
 
     host.insertAdjacentHTML(
       'beforeend',
-      renderCard(
-        topic,
-        lessonBadge,
-        exCount,
-        flags.hasLevelAccess,
-        previewOnly,
-      ),
+      renderCard(topic, lessonBadge, exCount, flags.hasLevelAccess, previewOnly, progress),
     );
   }
 
@@ -407,9 +445,11 @@ async function loadTopics(user) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const heroIcon = document.getElementById('heroLevelIcon');
+  if (heroIcon) heroIcon.textContent = LEVEL;
   initLevelButtonsGuard();
   onAuthStateChanged(auth, (user) => {
-    if (!user) return; // layout.js guards
+    if (!user) return;
     loadTopics(user);
   });
 });

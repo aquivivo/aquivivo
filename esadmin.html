@@ -590,6 +590,29 @@
                 <option value="admins">Tylko admin</option>
                 <option value="premium">Z dostepem</option>
                 <option value="free">Bez dostepu</option>
+                <option value="blocked">Zablokowani</option>
+              </select>
+              <select class="select" id="planFilter" style="min-width: 200px">
+                <option value="all">Plan: wszystkie</option>
+                <option value="free">Plan: free</option>
+                <option value="a1">Plan: A1</option>
+                <option value="a2">Plan: A2</option>
+                <option value="b1">Plan: B1</option>
+                <option value="b2">Plan: B2</option>
+                <option value="premium">Plan: premium</option>
+                <option value="premium_a1">Plan: premium_a1</option>
+                <option value="premium_b1">Plan: premium_b1</option>
+                <option value="premium_b2">Plan: premium_b2</option>
+                <option value="vip">Plan: VIP</option>
+              </select>
+              <select class="select" id="userSort" style="min-width: 210px">
+                <option value="createdAt_desc">Sortuj: najnowsi</option>
+                <option value="createdAt_asc">Sortuj: najstarsi</option>
+                <option value="email_asc">Sortuj: email A-Z</option>
+                <option value="email_desc">Sortuj: email Z-A</option>
+                <option value="lastLogin_desc">Sortuj: ostatnie logowanie</option>
+                <option value="accessUntil_desc">Sortuj: dostep wygasa</option>
+                <option value="plan_asc">Sortuj: plan</option>
               </select>
               <input
                 class="input"
@@ -616,6 +639,104 @@
               >
                 Wczytaj wiecej
               </button>
+            </div>
+          </div>
+        </details>
+
+        <!-- Postepy (analiza) -->
+        <details class="card" id="accProgress">
+          <summary
+            class="sectionTitle"
+            style="cursor: pointer; list-style: none"
+          >
+            Postepy (analiza)
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(kliknij aby otworzyc/zamknac)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <p class="subtitle">
+              Wybierz uzytkownika, aby zobaczyc trudne tematy i bledne odpowiedzi w tescie.
+            </p>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadProgress" type="button">
+                Wczytaj postepy
+              </button>
+              <select class="select" id="progressUserSelect" style="min-width: 260px">
+                <option value="">Wybierz uzytkownika</option>
+              </select>
+              <select class="select" id="progressSort" style="min-width: 220px">
+                <option value="lastActivity_desc">Sortuj: ostatnia aktywnosc</option>
+                <option value="practice_asc">Sortuj: najnizsza praktyka</option>
+                <option value="test_asc">Sortuj: najnizszy test</option>
+                <option value="topic_asc">Sortuj: temat A-Z</option>
+              </select>
+              <select class="select" id="progressFilter" style="min-width: 200px">
+                <option value="all">Wszystkie</option>
+                <option value="hard">Tylko trudne (&lt; 80%)</option>
+                <option value="not_done">Nieukonczone</option>
+              </select>
+              <input
+                class="input"
+                id="progressSearch"
+                placeholder="Szukaj po temacie..."
+                style="min-width: 240px"
+              />
+            </div>
+            <div id="progressSection" style="display: none; margin-top: 16px">
+              <div class="list" id="progressList"></div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Opinie i oceny -->
+        <details class="card" id="accReviews">
+          <summary
+            class="sectionTitle"
+            style="cursor: pointer; list-style: none"
+          >
+            Opinie i oceny
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(kliknij aby otworzyc/zamknac)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <p class="subtitle">
+              Lista opinii uzytkownikow o lekcjach/tematach/kursach.
+            </p>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadReviews" type="button">
+                Wczytaj opinie
+              </button>
+              <select class="select" id="reviewType" style="min-width: 200px">
+                <option value="all">Wszystkie typy</option>
+                <option value="topic">Temat / lekcja</option>
+                <option value="course">Kurs (poziom)</option>
+              </select>
+              <select class="select" id="reviewRating" style="min-width: 200px">
+                <option value="all">Wszystkie oceny</option>
+                <option value="5">5</option>
+                <option value="4">4</option>
+                <option value="3">3</option>
+                <option value="2">2</option>
+                <option value="1">1</option>
+              </select>
+              <select class="select" id="reviewLevel" style="min-width: 180px">
+                <option value="all">Poziom: wszystkie</option>
+                <option value="A1">A1</option>
+                <option value="A2">A2</option>
+                <option value="B1">B1</option>
+                <option value="B2">B2</option>
+              </select>
+              <input
+                class="input"
+                id="reviewSearch"
+                placeholder="Szukaj (email/temat)..."
+                style="min-width: 260px"
+              />
+            </div>
+            <div id="reviewsSection" style="display: none; margin-top: 16px">
+              <div class="list" id="reviewsList"></div>
             </div>
           </div>
         </details>
