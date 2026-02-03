@@ -24,17 +24,6 @@ import {
     requestAnimationFrame(step);
   }
 
-  function scrollToAnchor(id, extraOffset = 8, behavior = 'smooth') {
-    const target = document.getElementById(id);
-    if (!target) return false;
-
-    const header = document.querySelector('.nav-glass');
-    const offset = (header ? header.getBoundingClientRect().height : 0) + extraOffset;
-    const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-    window.scrollTo({ top, behavior });
-    return true;
-  }
-
   function injectHeader() {
     const host = document.getElementById('appHeader');
     if (!host) return;
@@ -192,11 +181,13 @@ import {
       const hash = link.getAttribute('href') || '';
       if (!hash.startsWith('#')) return;
 
+      const target = document.getElementById(hash.slice(1));
+      if (!target) return;
+
       e.preventDefault();
       e.stopPropagation();
-      if (scrollToAnchor(hash.slice(1), 8, 'smooth')) {
-        history.replaceState(null, '', hash);
-      }
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', hash);
     });
   }
 
@@ -204,12 +195,15 @@ import {
     const id = 'mas-que-clases';
 
     function adjustScroll() {
-      if (!scrollToAnchor(id, 32, 'smooth')) return;
+      const target = document.getElementById(id);
+      if (!target) {
+        return;
+      }
+
       const header = document.querySelector('.nav-glass');
       const offset = (header ? header.getBoundingClientRect().height : 0) + 32;
-      const target = document.getElementById(id);
-      if (!target) return;
       const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
       setTimeout(() => {
         window.scrollTo({ top, behavior: 'auto' });
       }, 500);
@@ -242,11 +236,16 @@ import {
       if (!hash.startsWith('#')) return;
       if (hash === '#mas-que-clases') return;
 
+      const target = document.getElementById(hash.slice(1));
+      if (!target) return;
+
       e.preventDefault();
 
-      if (scrollToAnchor(hash.slice(1), 8, 'smooth')) {
-        history.replaceState(null, '', hash);
-      }
+      const header = document.querySelector('.nav-glass');
+      const offset = header ? header.getBoundingClientRect().height + 8 : 0;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+      history.replaceState(null, '', hash);
     });
   }
 
@@ -257,22 +256,8 @@ import {
 
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      if (scrollToAnchor('cursos', 8, 'smooth')) {
-        history.replaceState(null, '', '#cursos');
-      }
-    });
-  }
-
-  function setupInitialHashScroll() {
-    const hash = window.location.hash || '';
-    if (!hash.startsWith('#')) return;
-    if (hash === '#mas-que-clases') return;
-
-    const id = hash.slice(1);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        scrollToAnchor(id, 8, 'auto');
-      });
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#cursos');
     });
   }
 
@@ -314,5 +299,4 @@ import {
   setupAnchorScroll();
   setupCursosScroll();
   setupAuthButtons();
-  setupInitialHashScroll();
 })();
