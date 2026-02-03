@@ -5,8 +5,12 @@ import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import { levelsFromPlan } from '../plan-levels.js';
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
+  query,
+  where,
   updateDoc,
   setDoc,
   serverTimestamp,
@@ -122,11 +126,11 @@ function topicKeyFrom(topic) {
 async function getUserFlags(uid) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
-    if (!snap.exists()) return { isAdmin: false, hasAccess: false };
+    if (!snap.exists()) return { isAdmin: false, hasAccess: false, levels: [], hasGlobalAccess: false };
 
     const d = snap.data() || {};
     const isAdmin = isAdminUser(d, auth.currentUser?.email);
-    if (isAdmin) return { isAdmin: true, hasAccess: true };
+    if (isAdmin) return { isAdmin: true, hasAccess: true, levels: [], hasGlobalAccess: true };
 
     const until = d.accessUntil || null;
     const untilDate = until?.toDate ? until.toDate() : until ? new Date(until) : null;
@@ -143,10 +147,10 @@ async function getUserFlags(uid) {
     const hasAccess =
       (hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase())) && isUntilValid;
 
-    return { isAdmin: false, hasAccess };
+    return { isAdmin: false, hasAccess, levels, hasGlobalAccess };
   } catch (e) {
     console.warn('getUserFlags failed', e);
-    return { isAdmin: false, hasAccess: false };
+    return { isAdmin: false, hasAccess: false, levels: [], hasGlobalAccess: false };
   }
 }
 
@@ -181,6 +185,58 @@ function renderLocked() {
         <b>Acceso premium</b><br/>
         Para ver esta leccion necesitas acceso.<br/>
         Ve al <a href="espanel.html" style="text-decoration:underline;">Panel</a> para aplicar un codigo o activar el plan.
+      </div>
+    `;
+  }
+}
+
+function prevLevelOf(level) {
+  const lvl = String(level || '').toUpperCase();
+  if (lvl === 'A2') return 'A1';
+  if (lvl === 'B1') return 'A2';
+  if (lvl === 'B2') return 'B1';
+  return '';
+}
+
+async function isPrevLevelCompleted(uid, prevLevel) {
+  if (!uid || !prevLevel) return true;
+  try {
+    const courseSnap = await getDocs(
+      query(collection(db, 'courses'), where('level', '==', prevLevel)),
+    );
+    const total = courseSnap.docs.filter((d) => (d.data() || {}).isArchived !== true)
+      .length;
+    if (!total) return true;
+
+    const progSnap = await getDocs(
+      query(
+        collection(db, 'user_progress', uid, 'topics'),
+        where('level', '==', prevLevel),
+      ),
+    );
+    let completed = 0;
+    progSnap.forEach((d) => {
+      const data = d.data() || {};
+      if (data.completed === true) completed += 1;
+    });
+    return completed >= total;
+  } catch (e) {
+    console.warn('prev level check failed', e);
+    return true;
+  }
+}
+
+function renderLevelGate(prevLevel) {
+  show($('lessonContent'), false);
+  show($('tocWrap'), false);
+  const empty = $('lessonEmpty');
+  if (empty) {
+    empty.style.display = 'block';
+    empty.innerHTML = `
+      <div style="font-size:16px; line-height:1.6;">
+        <b>Acceso bloqueado</b><br/>
+        Para leer este nivel primero completa <b>${prevLevel}</b>.<br/>
+        Ve a <a href="course.html?level=${encodeURIComponent(prevLevel)}" style="text-decoration:underline;">Programa ${prevLevel}</a>.
       </div>
     `;
   }
@@ -374,6 +430,20 @@ async function loadLesson(user) {
   const topicTitle = topic?.title || topic?.name || 'Leccion';
   const topicDesc = topic?.desc || topic?.description || '';
   if (pillTopic) pillTopic.textContent = `Tema: ${topicTitle}`;
+
+  if (!flags.isAdmin) {
+    const prevLevel = prevLevelOf(LEVEL);
+    const hasMulti =
+      flags.hasGlobalAccess ||
+      (Array.isArray(flags.levels) && flags.levels.length > 1);
+    if (prevLevel && hasMulti) {
+      const ok = await isPrevLevelCompleted(user.uid, prevLevel);
+      if (!ok) {
+        renderLevelGate(prevLevel);
+        return;
+      }
+    }
+  }
 
   let meta = null;
   try {

@@ -4,7 +4,7 @@
 // - jeśli w URL jest ?as=UID i zalogowany jest admin, pokazuje podgląd panelu danego usera (read-only)
 // - jeśli layout.js przekierował z reason=blocked, pokazuje komunikat
 
-import { auth, db } from '../firebase-init.js';
+import { auth, db, storage } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import { levelsFromPlan } from '../plan-levels.js';
 import {
@@ -23,6 +23,12 @@ import {
   limit,
   orderBy,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -611,6 +617,94 @@ const myRefCode = $('myRefCode');
 const btnCopyMyRefCode = $('btnCopyMyRefCode');
 const myRefInfo = $('myRefInfo');
 
+const avatarWrap = $('userAvatarWrap');
+const avatarImg = $('userAvatarImg');
+const avatarFallback = $('userAvatarFallback');
+const avatarFile = $('avatarFile');
+const btnAvatarUpload = $('btnAvatarUpload');
+const btnAvatarRemove = $('btnAvatarRemove');
+const avatarMsg = $('avatarMsg');
+
+function setAvatarMsg(text, bad = false) {
+  if (!avatarMsg) return;
+  avatarMsg.textContent = text || '';
+  avatarMsg.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+}
+
+function renderAvatar(url) {
+  if (!avatarWrap || !avatarImg) return;
+  if (url) {
+    avatarImg.src = url;
+    avatarWrap.classList.add('hasImage');
+  } else {
+    avatarImg.removeAttribute('src');
+    avatarWrap.classList.remove('hasImage');
+  }
+}
+
+async function uploadAvatar(uid, file, currentPath) {
+  if (!uid || !file) return null;
+  if (!file.type.startsWith('image/')) {
+    setAvatarMsg('Solo imagenes (JPG/PNG/WebP).', true);
+    return null;
+  }
+  const maxMb = 3;
+  if (file.size > maxMb * 1024 * 1024) {
+    setAvatarMsg(`Max ${maxMb}MB.`, true);
+    return null;
+  }
+
+  const path = `avatars/${uid}/profile_${Date.now()}`;
+  const refObj = storageRef(storage, path);
+
+  try {
+    setAvatarMsg('Subiendo...');
+    await uploadBytes(refObj, file, { contentType: file.type });
+    const url = await getDownloadURL(refObj);
+
+    await updateDoc(doc(db, 'users', uid), {
+      photoURL: url,
+      photoPath: path,
+      updatedAt: serverTimestamp(),
+    });
+
+    if (currentPath) {
+      try {
+        await deleteObject(storageRef(storage, currentPath));
+      } catch {}
+    }
+
+    renderAvatar(url);
+    setAvatarMsg('Foto guardada.');
+    return { url, path };
+  } catch (e) {
+    console.error('uploadAvatar failed', e);
+    setAvatarMsg('No se pudo subir la foto.', true);
+    return null;
+  }
+}
+
+async function removeAvatar(uid, currentPath) {
+  if (!uid) return;
+  try {
+    await updateDoc(doc(db, 'users', uid), {
+      photoURL: '',
+      photoPath: '',
+      updatedAt: serverTimestamp(),
+    });
+    if (currentPath) {
+      try {
+        await deleteObject(storageRef(storage, currentPath));
+      } catch {}
+    }
+    renderAvatar('');
+    setAvatarMsg('Foto eliminada.');
+  } catch (e) {
+    console.error('removeAvatar failed', e);
+    setAvatarMsg('No se pudo eliminar la foto.', true);
+  }
+}
+
 function renderMyRefCode(userDoc) {
   if (!myRefCode) return;
   const code = String(userDoc?.refCode || '').trim();
@@ -1011,6 +1105,28 @@ document.addEventListener('DOMContentLoaded', () => {
             panelSubtitle.textContent =
               'Aqui tienes tu libreta! ¡Que chimba verte!';
         }
+      }
+
+      renderAvatar(viewDoc?.photoURL || '');
+
+      if (AS_UID) {
+        if (btnAvatarUpload) btnAvatarUpload.disabled = true;
+        if (btnAvatarRemove) btnAvatarRemove.disabled = true;
+        if (avatarFile) avatarFile.disabled = true;
+      } else {
+        let avatarPath = String(viewDoc?.photoPath || '');
+        btnAvatarUpload?.addEventListener('click', () => avatarFile?.click());
+        avatarFile?.addEventListener('change', async (e) => {
+          const file = e.target?.files?.[0];
+          if (!file) return;
+          const res = await uploadAvatar(user.uid, file, avatarPath);
+          if (res?.path) avatarPath = res.path;
+          if (avatarFile) avatarFile.value = '';
+        });
+        btnAvatarRemove?.addEventListener('click', async () => {
+          await removeAvatar(user.uid, avatarPath);
+          avatarPath = '';
+        });
       }
 
       renderAdminUI(isAdmin);

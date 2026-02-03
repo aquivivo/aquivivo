@@ -351,8 +351,10 @@ function renderCard(topic, lessonBadge, exCount, hasLevelAccess, readOnly, progr
       Number(progress.testTotal || 0) > 0);
   const isInProgress = !!hasProgress && !isCompleted;
   const extraStyle = [
-    isCompleted ? 'opacity:.6; filter:saturate(.7);' : '',
-    isInProgress ? 'border:2px solid rgba(255,107,107,0.45);' : '',
+    isCompleted
+      ? 'opacity:.55; filter:saturate(.45) brightness(.85); background: rgba(6, 18, 45, 0.98) !important; box-shadow: 0 10px 28px rgba(0,0,0,0.25) !important;'
+      : '',
+    isInProgress ? 'border:2px solid rgba(255,107,107,0.65) !important; box-shadow: 0 0 0 1px rgba(255,107,107,0.2);' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -384,11 +386,13 @@ function renderCard(topic, lessonBadge, exCount, hasLevelAccess, readOnly, progr
       </div>
   `;
 
+  const outerClass = `courseCard${isCompleted ? ' isCompleted' : ''}${isInProgress ? ' isInProgress' : ''}`;
+
   if (readOnly) {
-    return `<div class="courseCard" style="text-decoration:none; color:inherit;">${inner}</div>`;
+    return `<div class="${outerClass}" style="text-decoration:none; color:inherit;">${inner}</div>`;
   }
 
-  return `<a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">${inner}</a>`;
+  return `<a class="${outerClass}" href="${href}" style="text-decoration:none; color:inherit;">${inner}</a>`;
 }
 
 async function loadTopics(user) {
@@ -422,10 +426,23 @@ async function loadTopics(user) {
 
   const snap = await getDocs(q);
 
-  for (const d of snap.docs) {
-    const topic = { id: d.id, ...(d.data() || {}) };
-    if (topic.isArchived === true) continue;
+  const topics = snap.docs
+    .map((d, idx) => ({ idx, topic: { id: d.id, ...(d.data() || {}) } }))
+    .filter((t) => t.topic.isArchived !== true);
 
+  // move completed to the end, keep original order otherwise
+  topics.sort((a, b) => {
+    if (previewOnly) return a.idx - b.idx;
+    const keyA = topicKeyFor(a.topic);
+    const keyB = topicKeyFor(b.topic);
+    const doneA = keyA && progressMap[keyA]?.completed === true ? 1 : 0;
+    const doneB = keyB && progressMap[keyB]?.completed === true ? 1 : 0;
+    if (doneA !== doneB) return doneA - doneB;
+    return a.idx - b.idx;
+  });
+
+  for (const item of topics) {
+    const topic = item.topic;
     const [lessonBadge, exCount] = previewOnly
       ? ['', 0]
       : await Promise.all([getLessonBadge(topic.id), getExercisesCount(topic.id)]);
