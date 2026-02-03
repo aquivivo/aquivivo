@@ -1369,6 +1369,7 @@ a:hover {
   border: 1px solid rgba(255, 255, 255, 0.28);
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.35);
   z-index: 1200;
+  pointer-events: none;
 }
 
 /* Hover-bridge: prevents the menu from closing when moving cursor from button to menu */
@@ -1380,12 +1381,21 @@ a:hover {
   top: -12px;
   height: 12px;
 }
+@media (hover: none) and (pointer: coarse) {
+  .nav-dd-menu::before {
+    display: none;
+  }
+}
 .nav-dd.open .nav-dd-menu {
   display: block;
+  pointer-events: auto;
 }
-.nav-dd:hover .nav-dd-menu,
-.nav-dd:focus-within .nav-dd-menu {
-  display: block;
+@media (hover: hover) and (pointer: fine) {
+  .nav-dd:hover .nav-dd-menu,
+  .nav-dd:focus-within .nav-dd-menu {
+    display: block;
+    pointer-events: auto;
+  }
 }
 .nav-dd-item {
   display: block;

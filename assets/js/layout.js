@@ -170,6 +170,12 @@ import {
         if (!dd.contains(e.relatedTarget)) close();
       });
 
+      menuServicios.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+        close();
+      });
+
       document.addEventListener('click', (e) => {
         if (!dd.contains(e.target)) close();
       });
