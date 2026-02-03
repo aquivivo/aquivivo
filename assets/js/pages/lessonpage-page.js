@@ -385,6 +385,7 @@ async function loadLesson(user) {
   const pillAdminLink = $('pillAdminLink');
   const readTools = $('readTools');
   const exerciseLinksWrap = $('exerciseLinksWrap');
+  const extrasWrap = $('lessonExtras');
 
   setText('lessonTitle', 'Cargando...');
   setText('lessonDesc', 'Cargando...');
@@ -460,6 +461,73 @@ async function loadLesson(user) {
     String(meta?.descriptionEs || meta?.desc || meta?.description || topicDesc || '').trim(),
   );
 
+  function renderExtras(metaData) {
+    if (!extrasWrap) return;
+    const summary = String(metaData?.summary || '').trim();
+    const vocab = Array.isArray(metaData?.vocab) ? metaData.vocab : [];
+    const resources = Array.isArray(metaData?.resources) ? metaData.resources : [];
+    const homework = String(metaData?.homework || '').trim();
+
+    const blocks = [];
+
+    if (summary) {
+      blocks.push(`
+        <div class="card lessonExtraCard">
+          <div class="sectionTitle" style="margin-top:0;">Resumen</div>
+          <div class="muted" style="line-height:1.6;">${summary}</div>
+        </div>
+      `);
+    }
+
+    if (vocab.length) {
+      blocks.push(`
+        <div class="card lessonExtraCard">
+          <div class="sectionTitle" style="margin-top:0;">Vocabulario clave</div>
+          <div class="lessonExtraList">
+            ${vocab.map((v) => `<div class="lessonExtraItem">${v}</div>`).join('')}
+          </div>
+        </div>
+      `);
+    }
+
+    if (resources.length) {
+      blocks.push(`
+        <div class="card lessonExtraCard">
+          <div class="sectionTitle" style="margin-top:0;">Recursos</div>
+          <div class="lessonExtraList">
+            ${resources
+              .map((r) => {
+                const label = (r?.label || r?.title || r?.name || 'Recurso').trim();
+                const url = (r?.url || '').trim();
+                if (!url) return '';
+                return `<a class="lessonExtraLink" href="${url}" target="_blank" rel="noopener">${label}</a>`;
+              })
+              .filter(Boolean)
+              .join('')}
+          </div>
+        </div>
+      `);
+    }
+
+    if (homework) {
+      blocks.push(`
+        <div class="card lessonExtraCard">
+          <div class="sectionTitle" style="margin-top:0;">Tarea</div>
+          <div class="muted" style="line-height:1.6;">${homework}</div>
+        </div>
+      `);
+    }
+
+    if (!blocks.length) {
+      extrasWrap.style.display = 'none';
+      extrasWrap.innerHTML = '';
+      return;
+    }
+
+    extrasWrap.style.display = '';
+    extrasWrap.innerHTML = blocks.join('');
+  }
+
   if (pillType) {
     if (meta?.type) {
       pillType.style.display = 'inline-flex';
@@ -511,6 +579,8 @@ async function loadLesson(user) {
     contentEl.innerHTML = html;
     contentEl.style.display = 'block';
   }
+
+  renderExtras(meta || {});
 
   if (topic) setupRatingCard(user, topic);
 

@@ -34,6 +34,10 @@ async function isAdminUid(uid) {
     const durationInput = $("durationInput");
     const publishedToggle = $("publishedToggle");
     const htmlArea = $("htmlArea");
+    const extraSummary = $("extraSummary");
+    const extraVocab = $("extraVocab");
+    const extraResources = $("extraResources");
+    const extraHomework = $("extraHomework");
 
     // Blocks builder
     const btnAddHeading = $("btnAddHeading");
@@ -115,6 +119,30 @@ async function isAdminUid(uid) {
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
+    }
+
+    function parseLines(raw){
+      return String(raw || "")
+        .split(/\r?\n/)
+        .map((x)=>x.trim())
+        .filter(Boolean);
+    }
+
+    function parseResources(raw){
+      const lines = parseLines(raw);
+      const out = [];
+      lines.forEach((line)=>{
+        const parts = line.split("|").map((x)=>x.trim()).filter(Boolean);
+        if(parts.length >= 2){
+          out.push({ label: parts[0], url: parts.slice(1).join("|") });
+        }
+      });
+      return out;
+    }
+
+    function resourcesToText(list){
+      if(!Array.isArray(list)) return "";
+      return list.map((r)=>`${r.label || ""} | ${r.url || ""}`.trim()).join("\n");
     }
 
     function colorToCss(c){
@@ -580,6 +608,10 @@ async function isAdminUid(uid) {
       durationInput.value = (d.durationMin ?? "") === 0 ? "" : (d.durationMin ?? "");
       publishedToggle.value = d.published ? "true" : "false";
       htmlArea.value = d.html || "";
+      if(extraSummary) extraSummary.value = d.summary || "";
+      if(extraVocab) extraVocab.value = Array.isArray(d.vocab) ? d.vocab.join("\n") : (d.vocabText || "");
+      if(extraResources) extraResources.value = resourcesToText(d.resources);
+      if(extraHomework) extraHomework.value = d.homework || "";
 
       // Blocks (preferred)
       if(Array.isArray(d.blocks) && d.blocks.length){
@@ -606,6 +638,10 @@ async function isAdminUid(uid) {
       const html = (mode === "auto" && BLOCKS.length)
         ? compileBlocksToHtml(BLOCKS)
         : (htmlArea.value || "").trim();
+      const summary = extraSummary ? (extraSummary.value || "").trim() : "";
+      const vocab = extraVocab ? parseLines(extraVocab.value) : [];
+      const resources = extraResources ? parseResources(extraResources.value) : [];
+      const homework = extraHomework ? (extraHomework.value || "").trim() : "";
 
       const payload = {
         title, desc, type,
@@ -613,6 +649,10 @@ async function isAdminUid(uid) {
         published,
         html,
         blocks: BLOCKS.length ? BLOCKS : [],
+        summary,
+        vocab,
+        resources,
+        homework,
         updatedAt: serverTimestamp()
       };
 

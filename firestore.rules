@@ -67,7 +67,7 @@ service cloud.firestore {
 
     // User może zmieniać tylko "bezpieczne" pola profilu
     function userEditableKeys() {
-      return ["name","displayName","photoURL","photoPath","lang","note","noteUser","refCode","refCodeCreatedAt","reviewDailyMinutes","reviewDailyLimit","reviewDirection","updatedAt"];
+      return ["name","displayName","photoURL","photoPath","lang","gender","studyGoalMin","reviewReminders","note","noteUser","refCode","refCodeCreatedAt","reviewDailyMinutes","reviewDailyLimit","reviewDirection","updatedAt"];
     }
 
     // Chronione – user nie może ich ruszać

@@ -224,7 +224,7 @@ async function loadReviewSummary(uid) {
   if (overEl) overEl.textContent = 'Atrasadas: -';
   if (newEl) newEl.textContent = 'Nuevas: -';
   if (hintEl) hintEl.textContent = '';
-  if (planEl) planEl.textContent = 'Plan: 10 min al dia';
+  if (planEl) planEl.textContent = 'Plan: 10 min al día';
   if (weekEl) weekEl.innerHTML = '';
 
   try {
@@ -241,7 +241,7 @@ async function loadReviewSummary(uid) {
     if (minutesEl) minutesEl.value = String(minutes);
     if (limitEl) limitEl.value = String(limit);
     if (directionEl) directionEl.value = direction;
-    if (planEl) planEl.textContent = `Plan: ${minutes} min al dia`;
+    if (planEl) planEl.textContent = `Plan: ${minutes} min al día`;
 
     if (saveBtn && !saveBtn.dataset.wired) {
       saveBtn.dataset.wired = '1';
@@ -263,7 +263,7 @@ async function loadReviewSummary(uid) {
           setTimeout(() => {
             if (saveStatus) saveStatus.textContent = '';
           }, 2000);
-          if (planEl) planEl.textContent = `Plan: ${m} min al dia`;
+          if (planEl) planEl.textContent = `Plan: ${m} min al día`;
         } catch (e) {
           console.warn('save review settings failed', e);
           if (saveStatus) saveStatus.textContent = 'Error al guardar';
@@ -301,7 +301,7 @@ async function loadReviewSummary(uid) {
     if (newEl) newEl.textContent = 'Nuevas: -';
 
     if (weekEl) {
-      const labels = ['Hoy', 'Manana', 'D+2', 'D+3', 'D+4', 'D+5', 'D+6'];
+      const labels = ['Hoy', 'Mañana', 'D+2', 'D+3', 'D+4', 'D+5', 'D+6'];
       weekEl.innerHTML = weekCounts
         .map(
           (c, i) =>
@@ -545,7 +545,7 @@ function renderPlans(userDoc, flags) {
   }
   if (subtitle) {
     subtitle.textContent =
-      'Elige un paquete. Las consultas son un add‑on (no desbloquean lecciones).';
+      'Elige un paquete. Las consultas son un extra (no desbloquean lecciones).';
   }
 
   // Consultations add-on (does NOT unlock lessons)
@@ -732,11 +732,24 @@ const avatarFile = $('avatarFile');
 const btnAvatarUpload = $('btnAvatarUpload');
 const btnAvatarRemove = $('btnAvatarRemove');
 const avatarMsg = $('avatarMsg');
+const setDisplayName = $('setDisplayName');
+const setGender = $('setGender');
+const setLang = $('setLang');
+const setGoal = $('setGoal');
+const setReviewReminders = $('setReviewReminders');
+const btnSaveSettings = $('btnSaveSettings');
+const settingsMsg = $('settingsMsg');
 
 function setAvatarMsg(text, bad = false) {
   if (!avatarMsg) return;
   avatarMsg.textContent = text || '';
   avatarMsg.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+}
+
+function setSettingsMsg(text, bad = false) {
+  if (!settingsMsg) return;
+  settingsMsg.textContent = text || '';
+  settingsMsg.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
 }
 
 function renderAvatar(url) {
@@ -753,12 +766,12 @@ function renderAvatar(url) {
 async function uploadAvatar(uid, file, currentPath) {
   if (!uid || !file) return null;
   if (!file.type.startsWith('image/')) {
-    setAvatarMsg('Solo imagenes (JPG/PNG/WebP).', true);
+    setAvatarMsg('Solo imágenes (JPG/PNG/WebP).', true);
     return null;
   }
   const maxMb = 3;
   if (file.size > maxMb * 1024 * 1024) {
-    setAvatarMsg(`Max ${maxMb}MB.`, true);
+    setAvatarMsg(`Máx ${maxMb}MB.`, true);
     return null;
   }
 
@@ -849,6 +862,57 @@ function renderMyRefCode(userDoc) {
   if (myRefInfo) myRefInfo.textContent = 'Cópialo y compártelo.';
 }
 
+function renderUserSettings(userDoc, isPreview) {
+  if (setDisplayName)
+    setDisplayName.value = userDoc?.displayName || userDoc?.name || '';
+  if (setGender) setGender.value = String(userDoc?.gender || '');
+  if (setLang) setLang.value = String(userDoc?.lang || 'es');
+  if (setGoal) setGoal.value = String(userDoc?.studyGoalMin || 10);
+  if (setReviewReminders)
+    setReviewReminders.checked = userDoc?.reviewReminders !== false;
+
+  const inputs = [
+    setDisplayName,
+    setGender,
+    setLang,
+    setGoal,
+    setReviewReminders,
+    btnSaveSettings,
+  ].filter(Boolean);
+
+  if (isPreview) {
+    inputs.forEach((el) => {
+      el.disabled = true;
+    });
+    if (settingsMsg) settingsMsg.textContent = 'Vista previa (admin)';
+    return;
+  }
+
+  if (btnSaveSettings && !btnSaveSettings.dataset.wired) {
+    btnSaveSettings.dataset.wired = '1';
+    btnSaveSettings.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user?.uid) return;
+      setSettingsMsg('Guardando...');
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          displayName: String(setDisplayName?.value || '').trim(),
+          gender: String(setGender?.value || '').trim(),
+          lang: String(setLang?.value || 'es').trim(),
+          studyGoalMin: Number(setGoal?.value || 10),
+          reviewReminders: !!setReviewReminders?.checked,
+          updatedAt: serverTimestamp(),
+        });
+        setSettingsMsg('Guardado OK');
+        setTimeout(() => setSettingsMsg(''), 2000);
+      } catch (e) {
+        console.warn('save settings failed', e);
+        setSettingsMsg('Error al guardar', true);
+      }
+    });
+  }
+}
+
 async function ensureMyRefCode(viewUid, viewDoc) {
   // Do not generate in admin preview
   if (typeof AS_UID !== 'undefined' && AS_UID) return viewDoc;
@@ -935,10 +999,10 @@ async function getReferralSettings() {
     return {
       friendPercent: Number(d.refFriendPercent ?? 0),
       ownerPercent: Number(d.refOwnerPercent ?? 0),
-      scope: String(d.refRewardScope || 'inne usługi'),
+      scope: String(d.refRewardScope || 'otros servicios'),
     };
   } catch {
-    return { friendPercent: 0, ownerPercent: 0, scope: 'inne usługi' };
+    return { friendPercent: 0, ownerPercent: 0, scope: 'otros servicios' };
   }
 }
 
@@ -962,7 +1026,7 @@ async function createOwnerReward(ownerUid, settings, referredUid) {
     ownerUid,
     kind: 'PERCENT',
     value: Number(settings.ownerPercent || 0),
-    scope: settings.scope || 'inne usługi',
+    scope: settings.scope || 'otros servicios',
     status: 'AVAILABLE',
     source: 'REFERRAL',
     referredUid: referredUid || null,
@@ -1134,12 +1198,12 @@ async function loadReferralStats(viewUid) {
       refStatRewards.textContent = `🎫 Recompensas: ${rewards.length}`;
     if (refRewardsList) {
       if (!rewards.length) {
-        refRewardsList.textContent = '— Brak dostępnych nagród —';
+        refRewardsList.textContent = '— No hay recompensas disponibles —';
       } else {
         refRewardsList.innerHTML = rewards
           .map((r) => {
             const pct = Number(r.value || 0);
-            const scope = String(r.scope || 'inne usługi');
+            const scope = String(r.scope || 'otros servicios');
             return `<div style="display:inline-flex; margin-right:8px; margin-bottom:8px;">🎫 -${pct}% · ${scope}</div>`;
           })
           .join('');
@@ -1235,11 +1299,12 @@ document.addEventListener('DOMContentLoaded', () => {
           if (panelTitle) panelTitle.textContent = '¡Buenas!';
           if (panelSubtitle)
             panelSubtitle.textContent =
-              'Aqui tienes tu libreta! ¡Que chimba verte!';
+              'Aquí tienes tu libreta! ¡Qué chimba verte!';
         }
       }
 
       renderAvatar(viewDoc?.photoURL || '');
+      renderUserSettings(viewDoc, !!AS_UID);
 
       if (AS_UID) {
         if (btnAvatarUpload) btnAvatarUpload.disabled = true;
