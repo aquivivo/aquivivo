@@ -214,18 +214,66 @@ async function loadReviewSummary(uid) {
   const planEl = $('reviewPlan');
   const weekEl = $('reviewWeek');
   const hintEl = $('reviewHint');
+  const minutesEl = $('reviewMinutes');
+  const limitEl = $('reviewLimit');
+  const directionEl = $('reviewDirection');
+  const saveBtn = $('reviewSave');
+  const saveStatus = $('reviewSaveStatus');
 
-  if (dueEl) dueEl.textContent = 'Na dziś: -';
-  if (overEl) overEl.textContent = 'Zaległe: -';
-  if (newEl) newEl.textContent = 'Nowe: -';
+  if (dueEl) dueEl.textContent = 'Para hoy: -';
+  if (overEl) overEl.textContent = 'Atrasadas: -';
+  if (newEl) newEl.textContent = 'Nuevas: -';
   if (hintEl) hintEl.textContent = '';
-  if (planEl) planEl.textContent = 'Plan: 10 min dziennie';
+  if (planEl) planEl.textContent = 'Plan: 10 min al dia';
   if (weekEl) weekEl.innerHTML = '';
 
   try {
+    let settings = {};
+    try {
+      const userSnap = await getDoc(doc(db, 'users', uid));
+      settings = userSnap.exists() ? userSnap.data() || {} : {};
+    } catch {}
+
+    const minutes = Number(settings.reviewDailyMinutes || 10);
+    const limit = Number(settings.reviewDailyLimit || 20);
+    const direction = String(settings.reviewDirection || 'pl_es');
+
+    if (minutesEl) minutesEl.value = String(minutes);
+    if (limitEl) limitEl.value = String(limit);
+    if (directionEl) directionEl.value = direction;
+    if (planEl) planEl.textContent = `Plan: ${minutes} min al dia`;
+
+    if (saveBtn && !saveBtn.dataset.wired) {
+      saveBtn.dataset.wired = '1';
+      saveBtn.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if (!user) return;
+        if (saveStatus) saveStatus.textContent = 'Guardando...';
+        const m = Number(minutesEl?.value || 10);
+        const l = Number(limitEl?.value || 20);
+        const dir = String(directionEl?.value || 'pl_es');
+        try {
+          await updateDoc(doc(db, 'users', user.uid), {
+            reviewDailyMinutes: m,
+            reviewDailyLimit: l,
+            reviewDirection: dir,
+            updatedAt: serverTimestamp(),
+          });
+          if (saveStatus) saveStatus.textContent = 'Guardado OK';
+          setTimeout(() => {
+            if (saveStatus) saveStatus.textContent = '';
+          }, 2000);
+          if (planEl) planEl.textContent = `Plan: ${m} min al dia`;
+        } catch (e) {
+          console.warn('save review settings failed', e);
+          if (saveStatus) saveStatus.textContent = 'Error al guardar';
+        }
+      });
+    }
+
     const snap = await getDocs(collection(db, 'user_spaced', uid, 'cards'));
     if (snap.empty) {
-      if (hintEl) hintEl.textContent = 'Brak danych. Uruchom powtórki.';
+      if (hintEl) hintEl.textContent = 'Sin datos. Empieza un repaso.';
       return;
     }
 
@@ -248,12 +296,12 @@ async function loadReviewSummary(uid) {
       if (diff >= 0 && diff < 7) weekCounts[diff] += 1;
     });
 
-    if (dueEl) dueEl.textContent = `Na dziś: ${due}`;
-    if (overEl) overEl.textContent = `Zaległe: ${overdue}`;
-    if (newEl) newEl.textContent = 'Nowe: +';
+    if (dueEl) dueEl.textContent = `Para hoy: ${due}`;
+    if (overEl) overEl.textContent = `Atrasadas: ${overdue}`;
+    if (newEl) newEl.textContent = 'Nuevas: -';
 
     if (weekEl) {
-      const labels = ['Dziś', 'Jutro', 'D+2', 'D+3', 'D+4', 'D+5', 'D+6'];
+      const labels = ['Hoy', 'Manana', 'D+2', 'D+3', 'D+4', 'D+5', 'D+6'];
       weekEl.innerHTML = weekCounts
         .map(
           (c, i) =>
@@ -1265,3 +1313,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+

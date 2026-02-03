@@ -407,6 +407,7 @@ async function loadLesson(user) {
   if (exerciseLinksWrap) {
     exerciseLinksWrap.innerHTML = `
       <a class="btn-white-outline" href="ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}">Ejercicios</a>
+      <a class="btn-white-outline" href="review.html">Repasar</a>
       <a class="btn-white-outline" href="course.html?level=${encodeURIComponent(LEVEL)}">Temas</a>
     `;
   }

@@ -18,7 +18,7 @@ import {
 
 const $ = (id) => document.getElementById(id);
 
-const DAILY_LIMIT = 20;
+const DEFAULT_DAILY_LIMIT = 20;
 const BOX_INTERVALS = [0, 1, 3, 7, 14, 30];
 const CARD_TYPE_HINT = 'tarjeta';
 
@@ -124,7 +124,7 @@ async function loadSrsMap(uid) {
   return map;
 }
 
-function buildQueue(cards, srs) {
+function buildQueue(cards, srs, limit, direction) {
   const now = Date.now();
   const due = [];
   const fresh = [];
@@ -142,7 +142,20 @@ function buildQueue(cards, srs) {
   });
 
   const list = [...due, ...fresh];
-  return list.slice(0, DAILY_LIMIT);
+
+  const withDirection = list.map((card) => {
+    let flip = false;
+    if (direction === 'es_pl') flip = true;
+    if (direction === 'mixed') flip = Math.random() < 0.5;
+    if (!flip) return card;
+    return {
+      ...card,
+      front: card.back,
+      back: card.front,
+    };
+  });
+
+  return withDirection.slice(0, limit || DEFAULT_DAILY_LIMIT);
 }
 
 function updateStats() {
@@ -154,9 +167,9 @@ function updateStats() {
   const done = Math.min(currentIdx, total);
   const newCount = queue.filter((c) => !srsMap.get(c.id)).length;
 
-  if (countEl) countEl.textContent = `Na dziś: ${total}`;
-  if (newEl) newEl.textContent = `Nowe: ${newCount}`;
-  if (progEl) progEl.textContent = `Postęp: ${done}/${total}`;
+  if (countEl) countEl.textContent = `Para hoy: ${total}`;
+  if (newEl) newEl.textContent = `Nuevas: ${newCount}`;
+  if (progEl) progEl.textContent = `Progreso: ${done}/${total}`;
 }
 
 function renderCard() {
@@ -182,7 +195,7 @@ function renderCard() {
   showBack = false;
 
   if (!currentCard) {
-    if (frontEl) frontEl.textContent = 'Koniec powtórek 🎉';
+    if (frontEl) frontEl.textContent = 'Repaso terminado';
     if (backEl) backEl.textContent = '';
     if (btnShow) btnShow.disabled = true;
     if (btnCorrect) btnCorrect.disabled = true;
@@ -192,7 +205,7 @@ function renderCard() {
 
   if (frontEl) frontEl.textContent = currentCard.front || '-';
   if (backEl) backEl.textContent = currentCard.back || '-';
-  if (hintEl) hintEl.textContent = 'Najpierw pomyśl, potem pokaż odpowiedź.';
+  if (hintEl) hintEl.textContent = 'Piensa primero y luego muestra la respuesta.';
   if (btnShow) btnShow.disabled = false;
   if (btnCorrect) btnCorrect.disabled = true;
   if (btnWrong) btnWrong.disabled = true;
@@ -247,7 +260,7 @@ function bindActions() {
     cardEl?.classList.add('isFlipped');
     if (btnCorrect) btnCorrect.disabled = false;
     if (btnWrong) btnWrong.disabled = false;
-    if (hintEl) hintEl.textContent = 'Oceń odpowiedź: "Znam" albo "Nie wiem".';
+    if (hintEl) hintEl.textContent = 'Evalua tu respuesta: \"La se\" o \"No lo se\".';
   });
 
   btnCorrect?.addEventListener('click', () => markAnswer(true));
@@ -257,6 +270,8 @@ function bindActions() {
 async function initReview(user) {
   const userDoc = await getUserDoc(user.uid);
   const levels = getUserLevels(userDoc);
+  const limit = Number(userDoc.reviewDailyLimit || DEFAULT_DAILY_LIMIT);
+  const direction = String(userDoc.reviewDirection || 'pl_es');
 
   const exercises = await loadExercisesForLevels(levels);
   const cards = exercises
@@ -264,7 +279,7 @@ async function initReview(user) {
     .flatMap(buildCardsFromExercise);
 
   srsMap = await loadSrsMap(user.uid);
-  queue = buildQueue(cards, srsMap);
+  queue = buildQueue(cards, srsMap, limit, direction);
   currentIdx = 0;
   renderCard();
 }

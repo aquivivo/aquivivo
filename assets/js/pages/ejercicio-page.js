@@ -113,6 +113,19 @@ function normalizeTag(value) {
   return String(value || '').trim();
 }
 
+function normalizeTags(raw) {
+  if (Array.isArray(raw)) {
+    return raw.map((t) => String(t || '').trim()).filter(Boolean);
+  }
+  if (typeof raw === 'string') {
+    return raw
+      .split(',')
+      .map((t) => String(t || '').trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 function isTestExercise(ex) {
   const t = normalizeText(ex?.type || '');
   return t.includes('test final');
@@ -422,6 +435,16 @@ function makeExerciseCard(ex) {
     meta.appendChild(testPill);
   }
 
+  const tags = normalizeTags(ex.tags);
+  if (tags.length) {
+    tags.slice(0, 4).forEach((tag) => {
+      const tagPill = document.createElement('span');
+      tagPill.className = 'pill';
+      tagPill.textContent = `#${tag}`;
+      meta.appendChild(tagPill);
+    });
+  }
+
   top.appendChild(meta);
   card.appendChild(top);
 
@@ -429,6 +452,41 @@ function makeExerciseCard(ex) {
   prompt.className = 'exercisePrompt';
   prompt.textContent = ex.prompt || '';
   card.appendChild(prompt);
+
+  if (ex.imageUrl) {
+    const img = document.createElement('img');
+    img.className = 'exerciseImage';
+    img.alt = 'Imagen';
+    img.loading = 'lazy';
+    img.src = ex.imageUrl;
+    card.appendChild(img);
+  }
+
+  const notes = String(ex.notes || '').trim();
+  if (notes) {
+    const noteWrap = document.createElement('div');
+    noteWrap.className = 'exerciseNoteWrap';
+
+    const noteBtn = document.createElement('button');
+    noteBtn.className = 'btn-white-outline exerciseNoteBtn';
+    noteBtn.type = 'button';
+    noteBtn.textContent = 'Pista';
+
+    const noteText = document.createElement('div');
+    noteText.className = 'exerciseNote';
+    noteText.textContent = notes;
+    noteText.style.display = 'none';
+
+    noteBtn.addEventListener('click', () => {
+      const isOpen = noteText.style.display === 'block';
+      noteText.style.display = isOpen ? 'none' : 'block';
+      noteBtn.textContent = isOpen ? 'Pista' : 'Ocultar pista';
+    });
+
+    noteWrap.appendChild(noteBtn);
+    noteWrap.appendChild(noteText);
+    card.appendChild(noteWrap);
+  }
 
   const options = parseOptions(ex.options);
 

@@ -114,22 +114,48 @@
               </div>
             </div>
             <div class="card" id="reviewSummaryCard">
-              <div class="sectionTitle" style="margin-top: 0">Powtórki</div>
+              <div class="sectionTitle" style="margin-top: 0">Repaso</div>
               <div
                 class="metaRow"
                 style="margin-top: 10px; gap: 10px; flex-wrap: wrap"
               >
-                <span id="reviewDue">Na dziś: -</span>
-                <span id="reviewOverdue">Zaległe: -</span>
-                <span id="reviewNew">Nowe: -</span>
+                <span id="reviewDue">Para hoy: -</span>
+                <span id="reviewOverdue">Atrasadas: -</span>
+                <span id="reviewNew">Nuevas: -</span>
               </div>
               <div class="hintSmall" id="reviewPlan" style="margin-top: 8px">
-                Plan: 10 min dziennie
+                Plan: 10 min al dia
               </div>
               <div id="reviewWeek" class="reviewWeek" style="margin-top: 10px"></div>
               <div class="metaRow" style="margin-top: 12px; gap: 10px">
-                <a class="btn-yellow" href="review.html">Start 10 min</a>
+                <a class="btn-yellow" href="review.html">Empezar 10 min</a>
                 <span class="hintSmall" id="reviewHint"></span>
+              </div>
+              <div class="hr"></div>
+              <div class="sectionTitle" style="margin-top: 0">Ajustes</div>
+              <div class="metaRow" style="gap: 10px; flex-wrap: wrap">
+                <label class="hintSmall" style="font-weight: 900">Plan diario</label>
+                <select id="reviewMinutes" class="select" style="min-width: 160px">
+                  <option value="5">5 min</option>
+                  <option value="10">10 min</option>
+                  <option value="15">15 min</option>
+                </select>
+                <label class="hintSmall" style="font-weight: 900">Tarjetas/día</label>
+                <select id="reviewLimit" class="select" style="min-width: 160px">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                </select>
+                <label class="hintSmall" style="font-weight: 900">Dirección</label>
+                <select id="reviewDirection" class="select" style="min-width: 200px">
+                  <option value="pl_es">PL → ES</option>
+                  <option value="es_pl">ES → PL</option>
+                  <option value="mixed">Mixto</option>
+                </select>
+                <button class="btn-white-outline" id="reviewSave" type="button">
+                  Guardar
+                </button>
+                <span class="hintSmall" id="reviewSaveStatus"></span>
               </div>
             </div>
           </div>
