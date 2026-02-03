@@ -1018,6 +1018,38 @@ function getWrongResults(entry) {
   return Object.entries(results).filter(([, r]) => r && r.correct === false);
 }
 
+function normalizeAnswerValue(val) {
+  if (val == null) return '-';
+  if (typeof val === 'string') return val;
+  if (Array.isArray(val)) return val.join(', ');
+  if (typeof val === 'object') {
+    try {
+      return JSON.stringify(val);
+    } catch {
+      return String(val);
+    }
+  }
+  return String(val);
+}
+
+function normalizeOptionsValue(raw) {
+  if (Array.isArray(raw)) {
+    return raw.map((x) => String(x || '').trim()).filter(Boolean);
+  }
+  if (typeof raw === 'string') {
+    return raw
+      .split(/\r?\n|;/)
+      .map((x) => String(x || '').trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function formatExerciseType(ex) {
+  const raw = ex?.type || ex?.kind || ex?.exerciseType || '';
+  return String(raw || '').trim();
+}
+
 function isHardTopic(entry) {
   const practice = Number(entry?.practicePercent || 0);
   const testTotal = Number(entry?.testTotal || 0);
@@ -1100,12 +1132,19 @@ function renderProgressList() {
       const level = esc(String(e.level || course.level || '-'));
       const practice = Number(e.practicePercent || 0);
       const testTotal = Number(e.testTotal || 0);
+      const testCorrect = Number(e.testCorrect || 0);
+      const testAnswered = Number(e.testAnswered || 0);
       const testScore = testTotal ? Number(e.testScore || 0) : null;
       const completed = e.completed === true;
       const last = isoDate(e.lastActivityAt || e.updatedAt || e.completedAt);
       const wrong = getWrongResults(e);
       const key = safeKey(e.id);
       const hard = isHardTopic(e);
+      const missing = testTotal > 0 ? Math.max(0, testTotal - testAnswered) : 0;
+      const testLine =
+        testTotal > 0
+          ? `test: ${testCorrect}/${testTotal} (${testScore}%)${missing ? '  -  brak: ' + missing : ''}`
+          : 'test: -';
 
       return `
         <div class="listItem">
@@ -1113,7 +1152,7 @@ function renderProgressList() {
             <div>
               <div style="font-weight:900;">${title}</div>
               <div class="hintSmall">
-                level: ${level}  -  praktyka: ${practice}%  -  test: ${testScore == null ? '-' : testScore + '%'}  -  ${completed ? 'UKONCZONE' : 'W TRAKCIE'}${last ? '  -  ostatnio: ' + esc(last) : ''}
+                level: ${level}  -  praktyka: ${practice}%  -  ${testLine}  -  ${completed ? 'UKONCZONE' : 'W TRAKCIE'}${last ? '  -  ostatnio: ' + esc(last) : ''}
               </div>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
@@ -1123,7 +1162,7 @@ function renderProgressList() {
               ${wrong.length ? `<button class="btn-white-outline" data-progress="toggle" data-key="${key}">Bledy</button>` : ''}
             </div>
           </div>
-          <div class="hintSmall" id="progressErrors_${key}" style="display:none; margin-top:10px;"></div>
+          <div class="hintSmall progressErrorsBox" id="progressErrors_${key}" style="display:none; margin-top:10px;"></div>
         </div>
       `;
     })
@@ -1190,12 +1229,33 @@ async function toggleProgressErrors(key) {
   }
 
   const exMap = await loadExercisesForTopic(entry.topicId);
-  const lines = wrong.map(([exId, r]) => {
+  const lines = wrong.map(([exId, r], idx) => {
     const ex = exMap.get(exId) || {};
     const prompt = esc(ex.prompt || '(brak tresci)');
-    const correct = esc(ex.answer || '-');
-    const userAns = esc(r?.answer || '-');
-    return `<div style="margin-top:6px;"><b>${esc(exId)}</b> - ${prompt}<br/>Odpowiedz: ${userAns}<br/>Poprawna: ${correct}</div>`;
+    const correct = esc(normalizeAnswerValue(ex.answer));
+    const userAns = esc(normalizeAnswerValue(r?.answer));
+    const opts = normalizeOptionsValue(ex.options || ex.optionsText || '');
+    const type = formatExerciseType(ex);
+
+    const optionsHtml = opts.length
+      ? `<div class="progressErrorOptions">Opcje: ${opts.map((o) => `<span>${esc(o)}</span>`).join('')}</div>`
+      : '';
+
+    return `
+      <div class="progressErrorItem">
+        <div class="progressErrorHead">
+          <span class="progressErrorIndex">#${idx + 1}</span>
+          <span class="progressErrorId">${esc(exId)}</span>
+          ${type ? `<span class="pill">Typ: ${esc(type)}</span>` : ''}
+        </div>
+        <div class="progressErrorPrompt">${prompt}</div>
+        ${optionsHtml}
+        <div class="progressErrorAnswers">
+          <div><span class="progressErrorLabel">Uzytkownik:</span> <span class="progressErrorUser">${userAns}</span></div>
+          <div><span class="progressErrorLabel">Poprawna:</span> <span class="progressErrorCorrect">${correct}</span></div>
+        </div>
+      </div>
+    `;
   });
   box.innerHTML = lines.join('');
   box.style.display = 'block';
