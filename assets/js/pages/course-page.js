@@ -350,17 +350,15 @@ function renderCard(topic, lessonBadge, exCount, hasLevelAccess, readOnly, progr
       Number(progress.practiceDone || 0) > 0 ||
       Number(progress.testTotal || 0) > 0);
   const isInProgress = !!hasProgress && !isCompleted;
-  const extraStyle = [
-    isCompleted
-      ? 'opacity:.55; filter:saturate(.45) brightness(.85); background: rgba(6, 18, 45, 0.98) !important; box-shadow: 0 10px 28px rgba(0,0,0,0.25) !important;'
-      : '',
-    isInProgress ? 'border:2px solid rgba(255,107,107,0.65) !important; box-shadow: 0 0 0 1px rgba(255,107,107,0.2);' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+
+  const statusLine = isCompleted
+    ? `<div class="statusLine statusLine--done">Estado: Completado</div>`
+    : isInProgress
+      ? `<div class="statusLine statusLine--progress">Estado: En progreso</div>`
+      : '';
 
   const inner = `
-      <div class="card ${accent}" style="padding:16px; border-radius:24px; ${extraStyle}">
+      <div class="card ${accent}" style="padding:16px; border-radius:24px;">
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
           <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
             ${typeBadge}
@@ -379,6 +377,7 @@ function renderCard(topic, lessonBadge, exCount, hasLevelAccess, readOnly, progr
         </div>
 
         ${desc ? `<div class="muted" style="margin:0; line-height:1.65;">${desc}</div>` : ''}
+        ${statusLine}
 
         <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
           ${readOnly ? `<span class="pill">Solo temas</span>` : `<span class="pill">Leccion</span><span class="pill">Ejercicios</span>`}

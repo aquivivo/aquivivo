@@ -661,25 +661,49 @@ async function uploadAvatar(uid, file, currentPath) {
     setAvatarMsg('Subiendo...');
     await uploadBytes(refObj, file, { contentType: file.type });
     const url = await getDownloadURL(refObj);
+    try {
+      await updateDoc(doc(db, 'users', uid), {
+        photoURL: url,
+        photoPath: path,
+        updatedAt: serverTimestamp(),
+      });
 
-    await updateDoc(doc(db, 'users', uid), {
-      photoURL: url,
-      photoPath: path,
-      updatedAt: serverTimestamp(),
-    });
+      if (currentPath) {
+        try {
+          await deleteObject(storageRef(storage, currentPath));
+        } catch {}
+      }
 
-    if (currentPath) {
-      try {
-        await deleteObject(storageRef(storage, currentPath));
-      } catch {}
+      renderAvatar(url);
+      setAvatarMsg('Foto guardada.');
+      return { url, path };
+    } catch (e) {
+      console.error('update profile photo failed', e);
+      renderAvatar(url);
+      setAvatarMsg(
+        'Foto subida, pero no se pudo guardar en tu perfil. Revisa reglas de Firestore.',
+        true,
+      );
+      return { url, path };
     }
-
-    renderAvatar(url);
-    setAvatarMsg('Foto guardada.');
-    return { url, path };
   } catch (e) {
     console.error('uploadAvatar failed', e);
-    setAvatarMsg('No se pudo subir la foto.', true);
+    const code = String(e?.code || '');
+    if (code.includes('unauthorized') || code.includes('permission-denied')) {
+      setAvatarMsg(
+        'No tienes permisos para subir la foto. Revisa reglas de Storage.',
+        true,
+      );
+    } else if (code.includes('bucket-not-found') || code.includes('project-not-found')) {
+      setAvatarMsg(
+        'No hay bucket de Storage configurado. Activa Storage en Firebase.',
+        true,
+      );
+    } else if (code.includes('canceled')) {
+      setAvatarMsg('Subida cancelada.', true);
+    } else {
+      setAvatarMsg('No se pudo subir la foto.', true);
+    }
     return null;
   }
 }
