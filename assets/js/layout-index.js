@@ -3,6 +3,11 @@ import {
   onAuthStateChanged,
   signOut,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+import { db } from './firebase-init.js';
+import {
+  doc,
+  getDoc,
+} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 (function () {
   function qs(sel, root = document) {
@@ -64,7 +69,10 @@ import {
             <a class="btn-white-outline" id="btnPanel" href="${hrefPanel}">&#x1F3E0; Libreta</a>
 
             <a class="btn-yellow" id="btnLogin" href="${hrefLogin}" style="display:none;">&#x1F510; Iniciar sesi&oacute;n</a>
-            <button class="btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesi&oacute;n</button>
+            <div class="nav-admin-stack" id="navAdminStack" style="display:none;">
+              <button class="btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesi&oacute;n</button>
+              <a class="btn-yellow" id="btnAdmin" href="esadmin.html" style="display:none;">&#x1F6E1;&#xFE0F; Admin</a>
+            </div>
           </div>
         </div>
 
@@ -265,6 +273,8 @@ import {
     const btnLogin = document.getElementById('btnLogin');
     const btnLogout = document.getElementById('btnLogout');
     const btnPanel = document.getElementById('btnPanel');
+    const btnAdmin = document.getElementById('btnAdmin');
+    const adminStack = document.getElementById('navAdminStack');
     if (!btnLogin || !btnLogout || !btnPanel) return;
 
     btnLogout.addEventListener('click', async () => {
@@ -275,8 +285,18 @@ import {
       }
     });
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       const loggedIn = !!user && user.emailVerified;
+      let isAdmin = false;
+      if (user?.uid) {
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid));
+          const data = snap.exists() ? snap.data() : {};
+          isAdmin = String(data?.role || 'user') === 'admin';
+        } catch (e) {
+          console.warn('[layout-index] admin check failed', e);
+        }
+      }
 
       if (loggedIn) {
         btnLogin.style.display = 'none';
@@ -286,6 +306,14 @@ import {
         btnLogin.style.display = '';
         btnLogout.style.display = 'none';
         btnPanel.style.display = '';
+      }
+
+      if (adminStack) {
+        adminStack.style.display = loggedIn ? 'flex' : 'none';
+      }
+
+      if (btnAdmin) {
+        btnAdmin.style.display = loggedIn && isAdmin ? '' : 'none';
       }
     });
   }

@@ -30,6 +30,30 @@ function setMsg(text, type) {
   el.className = 'msg' + (type ? ' ' + type : '');
 }
 
+function formatAuthError(err, context) {
+  const code = String(err?.code || '');
+  const map = {
+    // login
+    'auth/invalid-credential': 'Contrasena incorrecta o usuario no existe.',
+    'auth/wrong-password': 'Contrasena incorrecta.',
+    'auth/user-not-found': 'Usuario no existe.',
+    'auth/invalid-email': 'Email invalido.',
+    'auth/user-disabled': 'Cuenta deshabilitada. Contacta soporte.',
+    // register
+    'auth/email-already-in-use': 'Este email ya esta registrado.',
+    'auth/weak-password': 'La contrasena es demasiado debil.',
+    // reset
+    'auth/missing-email': 'Ingresa tu email.',
+  };
+
+  if (map[code]) return map[code];
+
+  if (context === 'login') return 'No se pudo iniciar sesion.';
+  if (context === 'register') return 'No se pudo crear la cuenta.';
+  if (context === 'reset') return 'No se pudo enviar el email.';
+  return 'Error de autenticacion.';
+}
+
 function getQueryParam(name) {
   try {
     const qs = new URLSearchParams(location.search);
@@ -393,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ensureCooldownMsg();
         return;
       }
-      setMsg('Error: ' + (err?.message || err), 'error');
+      setMsg(formatAuthError(err, 'login'), 'error');
     }
   }
 
@@ -436,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ensureCooldownMsg();
         return;
       }
-      setMsg('Error: ' + (err?.message || err), 'error');
+      setMsg(formatAuthError(err, 'register'), 'error');
     } finally {
       setRegisterBusy(false);
     }
@@ -459,7 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ensureCooldownMsg();
         return;
       }
-      setMsg('Error: ' + (err?.message || err), 'error');
+      setMsg(formatAuthError(err, 'reset'), 'error');
     }
   }
 

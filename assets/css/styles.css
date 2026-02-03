@@ -1787,6 +1787,16 @@ a:hover {
   align-items: center;
   flex-wrap: wrap;
 }
+.nav-admin-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.nav-admin-stack .btn-red,
+.nav-admin-stack .btn-yellow {
+  width: 100%;
+  justify-content: center;
+}
 .nav-dropdown {
   position: relative;
   display: inline-flex;
