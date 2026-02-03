@@ -689,6 +689,41 @@
           </div>
         </details>
 
+        <!-- Fiszki (statystyki) -->
+        <details class="card" id="accFlashcards">
+          <summary
+            class="sectionTitle"
+            style="cursor: pointer; list-style: none"
+          >
+            Fiszki (statystyki)
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(kliknij aby otworzyc/zamknac)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadFlashcards" type="button">
+                Wczytaj fiszki
+              </button>
+              <select class="select" id="flashcardsLevel" style="min-width: 180px">
+                <option value="all">Wszystkie poziomy</option>
+                <option value="A1">A1</option>
+                <option value="A2">A2</option>
+                <option value="B1">B1</option>
+                <option value="B2">B2</option>
+              </select>
+              <input
+                id="flashcardsSearch"
+                class="input"
+                placeholder="Szukaj tematu..."
+                style="min-width: 220px"
+              />
+            </div>
+            <div class="hintSmall" id="flashcardsSummary" style="margin-top: 10px"></div>
+            <div id="flashcardsList" class="muted" style="margin-top: 10px"></div>
+          </div>
+        </details>
+
         <!-- Opinie i oceny -->
         <details class="card" id="accReviews">
           <summary
@@ -788,6 +823,41 @@
             <div id="appLogsSection" style="display: none; margin-top: 16px">
               <div class="list" id="appLogsList"></div>
             </div>
+          </div>
+        </details>
+
+        <!-- Biblioteka audio -->
+        <details class="card" id="accAudioLib">
+          <summary
+            class="sectionTitle"
+            style="cursor: pointer; list-style: none"
+          >
+            Biblioteka audio
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(kliknij aby otworzyc/zamknac)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px; align-items: center">
+              <input id="audioLibFile" type="file" accept="audio/*" />
+              <input id="audioLibLabel" class="input" placeholder="Nazwa/etykieta" style="min-width: 200px" />
+              <select id="audioLibLevel" class="select" style="min-width: 160px">
+                <option value="">Poziom (opcjonalnie)</option>
+                <option value="A1">A1</option>
+                <option value="A2">A2</option>
+                <option value="B1">B1</option>
+                <option value="B2">B2</option>
+              </select>
+              <input id="audioLibTopic" class="input" placeholder="ID tematu (opcjonalnie)" style="min-width: 200px" />
+              <button class="btn btn-yellow" id="btnUploadAudioLib" type="button">
+                Wgraj
+              </button>
+              <button class="btn" id="btnLoadAudioLib" type="button">
+                Wczytaj
+              </button>
+            </div>
+            <div class="hintSmall" id="audioLibStatus" style="margin-top: 8px"></div>
+            <div id="audioLibList" class="muted" style="margin-top: 10px"></div>
           </div>
         </details>
       </div>

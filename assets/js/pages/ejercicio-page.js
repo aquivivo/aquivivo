@@ -58,9 +58,11 @@ const filterType = document.getElementById('filterType');
 const filterTag = document.getElementById('filterTag');
 const btnClearFilters = document.getElementById('btnClearFilters');
 
-const btnLogout = document.getElementById('btnLogout');
-const btnBackLesson = document.getElementById('btnBackLesson');
-const btnBackCourse = document.getElementById('btnBackCourse');
+  const btnLogout = document.getElementById('btnLogout');
+  const btnBackLesson = document.getElementById('btnBackLesson');
+  const btnBackCourse = document.getElementById('btnBackCourse');
+  const btnReview = document.getElementById('btnReview');
+  const btnFlashcards = document.getElementById('btnFlashcards');
 
 let cachedExercises = [];
 let VIEW_EXERCISES = [];
@@ -904,12 +906,18 @@ onAuthStateChanged(auth, async (user) => {
     if (topicTitle) topicTitle.textContent = topic.title || 'Tema';
     if (topicDesc) topicDesc.textContent = topic.desc || '';
 
-    if (pillLessonLink && topic.id) {
-      pillLessonLink.style.display = 'inline-flex';
-      const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
-      pillLessonLink.href = url;
-      if (btnBackLesson) btnBackLesson.href = url;
-    }
+      if (pillLessonLink && topic.id) {
+        pillLessonLink.style.display = 'inline-flex';
+        const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
+        pillLessonLink.href = url;
+        if (btnBackLesson) btnBackLesson.href = url;
+      }
+      if (btnReview && topic.id) {
+        btnReview.href = `review.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
+      }
+      if (btnFlashcards && topic.id) {
+        btnFlashcards.href = `flashcards.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
+      }
     if (btnBackCourse) {
       btnBackCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
     }

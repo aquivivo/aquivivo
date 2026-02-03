@@ -1,5 +1,7 @@
-﻿import { auth, db } from "../firebase-init.js";
+﻿import { auth, db, storage } from "../firebase-init.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js";
+
 
 async function getIsAdmin(uid) {
   try {
@@ -79,6 +81,15 @@ const slugParam = params.get('slug') || '';
       const exTags = document.getElementById('exTags');
       const exOrder = document.getElementById('exOrder');
       const exNotes = document.getElementById('exNotes');
+      const flashImportArea = document.getElementById('flashImportArea');
+      const btnImportFlashcards = document.getElementById('btnImportFlashcards');
+      const btnClearFlashcards = document.getElementById('btnClearFlashcards');
+      const flashImportStatus = document.getElementById('flashImportStatus');
+      const flashAudioFile = document.getElementById('flashAudioFile');
+      const btnUploadFlashAudio = document.getElementById('btnUploadFlashAudio');
+      const flashAudioUrl = document.getElementById('flashAudioUrl');
+      const btnCopyFlashAudio = document.getElementById('btnCopyFlashAudio');
+      const flashAudioStatus = document.getElementById('flashAudioStatus');
       const btnAddExercise = document.getElementById('btnAddExercise');
       const btnTplFill = document.getElementById('btnTplFill');
       const btnTplChoice = document.getElementById('btnTplChoice');
@@ -358,6 +369,63 @@ const slugParam = params.get('slug') || '';
           .filter(Boolean);
       }
 
+      function parseFlashcardLine(line) {
+        const raw = String(line || '').trim();
+        if (!raw) return '';
+        // If user already pasted labeled format, keep it.
+        if (/\bPL\s*:/i.test(raw) && /\bES\s*:/i.test(raw)) return raw;
+
+        let parts = raw.split('\t').map((x) => x.trim()).filter(Boolean);
+        if (parts.length < 2) {
+          parts = raw.split(' - ').map((x) => x.trim()).filter(Boolean);
+        }
+        if (parts.length < 2) {
+          parts = raw.split(';').map((x) => x.trim()).filter(Boolean);
+        }
+        if (parts.length < 2) return '';
+
+        const pl = parts[0];
+        const es = parts[1];
+        const exRaw = parts[2] || '';
+        const ex = exRaw.replace(/^EX\s*:\s*/i, '').trim();
+
+        return ex ? `PL: ${pl} | ES: ${es} | EX: ${ex}` : `PL: ${pl} | ES: ${es}`;
+      }
+
+      async function uploadFlashAudio() {
+        if (!flashAudioFile?.files?.length) {
+          if (flashAudioStatus) flashAudioStatus.textContent = 'Wybierz plik audio.';
+          return;
+        }
+        const file = flashAudioFile.files[0];
+        if (!file.type.startsWith('audio/')) {
+          if (flashAudioStatus) flashAudioStatus.textContent = 'To nie jest plik audio.';
+          return;
+        }
+        const maxMb = 8;
+        if (file.size > maxMb * 1024 * 1024) {
+          if (flashAudioStatus) flashAudioStatus.textContent = `Max ${maxMb}MB.`;
+          return;
+        }
+        if (flashAudioStatus) flashAudioStatus.textContent = 'Wgrywanie...';
+
+        try {
+          const topicSlug = String(currentTopic?.slug || currentTopic?.id || 'general');
+          const safeName = String(file.name || 'audio')
+            .replace(/[^a-z0-9._-]/gi, '_')
+            .toLowerCase();
+          const path = `audio/flashcards/${topicSlug}/${Date.now()}_${safeName}`;
+          const refObj = storageRef(storage, path);
+          await uploadBytes(refObj, file, { contentType: file.type });
+          const url = await getDownloadURL(refObj);
+          if (flashAudioUrl) flashAudioUrl.value = url;
+          if (flashAudioStatus) flashAudioStatus.textContent = 'Wgrano ✅';
+        } catch (e) {
+          console.error('[audio upload]', e);
+          if (flashAudioStatus) flashAudioStatus.textContent = 'Blad wgrywania.';
+        }
+      }
+
       function showToast(msg, kind = 'ok', ms = 2200) {
         toast.className = '';
         toast.style.display = 'block';
@@ -620,17 +688,18 @@ const slugParam = params.get('slug') || '';
         }
 
         if (TEMPLATE_GROUPS.cards.has(type)) {
-          return {
-            ...base,
-            prompt: 'Tarjetas: (frente -> reverso)',
-            optionsText: opt(
-              '1) PL: ... | ES: ...',
-              '2) PL: ... | ES: ...',
-              '3) PL: ... | ES: ...',
-            ),
-            answer: '',
-            category: 'vocab',
-            notes: 'Mozesz dodac AUDIO_URL w Notas dla kart.'};
+            return {
+              ...base,
+              prompt: 'Tarjetas: (frente -> reverso)',
+              optionsText: opt(
+                '1) PL: ... | ES: ... | EX: ...',
+                '2) PL: ... | ES: ... | EX: ...',
+                '3) PL: ... | ES: ... | EX: ...',
+              ),
+              answer: '',
+              category: 'vocab',
+              notes:
+                'Opcjonalnie w linii: AUDIO:https://... | EXAUDIO:https://...'};
         }
 
         if (TEMPLATE_GROUPS.imageSentence.has(type)) {
@@ -1379,6 +1448,48 @@ const slugParam = params.get('slug') || '';
         if (importStatus) importStatus.textContent = '';
       });
 
+      btnImportFlashcards?.addEventListener('click', () => {
+        if (!flashImportArea || !exOptions || !exType) return;
+        const raw = flashImportArea.value || '';
+        const lines = String(raw)
+          .split('\n')
+          .map((l) => l.trim())
+          .filter(Boolean);
+        const out = lines
+          .map(parseFlashcardLine)
+          .filter(Boolean);
+
+        if (!out.length) {
+          if (flashImportStatus) flashImportStatus.textContent = 'Brak poprawnych linii.';
+          return;
+        }
+
+        exType.value = 'Tarjetas interactivas';
+        setOptionsVisibility(exType.value);
+        exOptions.value = out.join('\n');
+        if (exPrompt && !exPrompt.value.trim())
+          exPrompt.value = 'Fiszki (import)';
+
+        if (flashImportStatus) flashImportStatus.textContent = `Wgrano: ${out.length}`;
+      });
+
+      btnClearFlashcards?.addEventListener('click', () => {
+        if (flashImportArea) flashImportArea.value = '';
+        if (flashImportStatus) flashImportStatus.textContent = '';
+      });
+
+      btnUploadFlashAudio?.addEventListener('click', uploadFlashAudio);
+      btnCopyFlashAudio?.addEventListener('click', async () => {
+        const url = String(flashAudioUrl?.value || '').trim();
+        if (!url) return;
+        try {
+          await navigator.clipboard.writeText(url);
+          if (flashAudioStatus) flashAudioStatus.textContent = 'Skopiowano ✅';
+        } catch {
+          if (flashAudioStatus) flashAudioStatus.textContent = 'Nie udalo sie skopiowac.';
+        }
+      });
+
       btnImportJson?.addEventListener('click', async () => {
         if (!isAdmin || !currentTopic) return;
         if (!importJsonArea) return;
@@ -1708,5 +1819,6 @@ const slugParam = params.get('slug') || '';
         btnClosePreview.onclick = () => (previewModal.style.display = 'none');
         previewModal.style.display = 'block';
       }
+
 
 

@@ -2,9 +2,14 @@
 // AquiVivo Admin (RESTORE+FIX): Dashboard + Uzytkownicy + Kody + Referral + Uslugi + Segmentacja (MVP)
 // Architecture: no inline JS. Page logic lives here.
 
-import { auth, db } from '../firebase-init.js';
+import { auth, db, storage } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import { normalizePlanKey, levelsFromPlan } from '../plan-levels.js';
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
 import {
   collection,
   query,
@@ -13,6 +18,7 @@ import {
   limit,
   startAfter,
   getDocs,
+  addDoc,
   doc,
   getDoc,
   setDoc,
@@ -1261,9 +1267,144 @@ async function toggleProgressErrors(key) {
   box.style.display = 'block';
 }
 
-/* =========================
-   OPINIE I OCENY
-   ========================= */
+  /* =========================
+     FISZKI (STATYSTYKI)
+     ========================= */
+  let flashcardsCache = [];
+
+  function normalizeText(v) {
+    return String(v || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  }
+
+  function parseCardLine(raw) {
+    let line = String(raw || '').trim();
+    if (!line) return null;
+    line = line.replace(/^\s*\d+\)\s*/, '').trim();
+
+    let parts = line.split('|').map((p) => p.trim()).filter(Boolean);
+    if (parts.length < 2) {
+      parts = line.split(/->|=>|—|–|-/).map((p) => p.trim()).filter(Boolean);
+    }
+    if (parts.length < 2) return null;
+    return { front: parts[0], back: parts[1] };
+  }
+
+  function isCardExercise(ex) {
+    const t = normalizeText(ex?.type || '');
+    return t.includes('tarjeta');
+  }
+
+  function countCards(ex) {
+    const opts = Array.isArray(ex?.options) ? ex.options : [];
+    let count = 0;
+    opts.forEach((line) => {
+      if (parseCardLine(line)) count += 1;
+    });
+    return count;
+  }
+
+  function renderFlashcardsStats() {
+    const list = $('flashcardsList');
+    const summary = $('flashcardsSummary');
+    const level = String($('flashcardsLevel')?.value || 'all').toUpperCase();
+    const search = normalizeText($('flashcardsSearch')?.value || '');
+
+    if (!list) return;
+
+    let rows = flashcardsCache.slice();
+    if (level !== 'ALL') {
+      rows = rows.filter((r) => String(r.level || '').toUpperCase() === level);
+    }
+    if (search) {
+      rows = rows.filter((r) => {
+        const hay = normalizeText(`${r.title || ''} ${r.topicId || ''}`);
+        return hay.includes(search);
+      });
+    }
+
+    const totalCards = rows.reduce((sum, r) => sum + (r.cards || 0), 0);
+    const totalTopics = rows.length;
+    const totalExercises = rows.reduce((sum, r) => sum + (r.exercises || 0), 0);
+
+    if (summary) {
+      summary.textContent = `Razem kart: ${totalCards} · Tematow: ${totalTopics} · Cwiczen: ${totalExercises}`;
+    }
+
+    if (!rows.length) {
+      list.innerHTML = '<div class="hintSmall">Brak danych.</div>';
+      return;
+    }
+
+    list.innerHTML = rows
+      .map((r) => {
+        const title = esc(r.title || r.topicId || '(bez tytulu)');
+        const lvl = esc(String(r.level || '-'));
+        return `<div style="margin-bottom:8px;">${lvl} · <b>${title}</b> — karty: ${r.cards} (cwiczenia: ${r.exercises})</div>`;
+      })
+      .join('');
+  }
+
+  async function loadFlashcardsStats() {
+    const list = $('flashcardsList');
+    if (list) list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
+    const summary = $('flashcardsSummary');
+    if (summary) summary.textContent = '';
+
+    try {
+      const coursesSnap = await getDocs(collection(db, 'courses'));
+      const courses = new Map();
+      coursesSnap.forEach((d) => courses.set(d.id, d.data() || {}));
+
+      const exSnap = await getDocs(collection(db, 'exercises'));
+      const map = new Map();
+
+      exSnap.forEach((d) => {
+        const ex = d.data() || {};
+        if (!isCardExercise(ex)) return;
+        const cards = countCards(ex);
+        if (!cards) return;
+
+        const topicId = String(ex.topicId || ex.topicSlug || '').trim();
+        const course = topicId ? courses.get(topicId) || {} : {};
+        const level = String(ex.level || course.level || '').toUpperCase();
+        if (!topicId || !level) return;
+
+        const key = `${level}__${topicId}`;
+        const prev = map.get(key) || {
+          level,
+          topicId,
+          title: course.title || ex.topicTitle || topicId,
+          cards: 0,
+          exercises: 0,
+        };
+        prev.cards += cards;
+        prev.exercises += 1;
+        map.set(key, prev);
+      });
+
+      const order = { A1: 1, A2: 2, B1: 3, B2: 4 };
+      flashcardsCache = Array.from(map.values()).sort((a, b) => {
+        const oa = order[String(a.level || '').toUpperCase()] || 9;
+        const ob = order[String(b.level || '').toUpperCase()] || 9;
+        if (oa !== ob) return oa - ob;
+        if (b.cards !== a.cards) return b.cards - a.cards;
+        return String(a.title || '').localeCompare(String(b.title || ''));
+      });
+
+      renderFlashcardsStats();
+    } catch (e) {
+      console.error('[flashcards stats]', e);
+      if (list) list.innerHTML = '<div class="hintSmall">Blad ladowania fiszek.</div>';
+    }
+  }
+
+  /* =========================
+     OPINIE I OCENY
+     ========================= */
 let reviewsCache = [];
 
 function getReviewFilters() {
@@ -1401,6 +1542,158 @@ function toggleAppLogDetails(id) {
     box.style.display = 'none';
   } else {
     box.style.display = 'block';
+  }
+}
+
+/* =========================
+   BIBLIOTEKA AUDIO
+   ========================= */
+let audioLibCache = [];
+
+function formatAudioDate(ts) {
+  const d = toDateMaybe(ts);
+  if (!d) return '';
+  return isoDate(d);
+}
+
+function renderAudioLibrary() {
+  const list = $('audioLibList');
+  if (!list) return;
+
+  if (!audioLibCache.length) {
+    list.innerHTML = '<div class="hintSmall">Brak plikow audio.</div>';
+    return;
+  }
+
+  list.innerHTML = audioLibCache
+    .map((a) => {
+      const id = esc(a.id || '');
+      const label = esc(a.label || a.name || a.fileName || a.id || 'audio');
+      const url = esc(a.url || '');
+      const level = a.level ? `poziom: ${esc(a.level)}` : '';
+      const topic = a.topicId ? `temat: ${esc(a.topicId)}` : '';
+      const when = formatAudioDate(a.createdAt || a.updatedAt);
+      const meta = [level, topic, when ? `data: ${esc(when)}` : '']
+        .filter(Boolean)
+        .join('  -  ');
+
+      return `
+        <div class="listItem">
+          <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:900;">${label}</div>
+              <div class="hintSmall">${meta || ''}</div>
+              ${url ? `<div class="hintSmall">${url}</div>` : ''}
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              ${url ? `<button class="btn-white-outline" data-audio="copy" data-url="${url}">Kopiuj URL</button>` : ''}
+              ${url ? `<a class="btn-white-outline" href="${url}" target="_blank" rel="noopener">Otworz</a>` : ''}
+              <button class="btn-red" data-audio="del" data-id="${id}">Usun</button>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadAudioLibrary() {
+  const list = $('audioLibList');
+  const st = $('audioLibStatus');
+  if (!list) return;
+
+  list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
+  setStatus(st, 'Ladowanie...');
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'audio_library'), orderBy('createdAt', 'desc'), limit(200)),
+    );
+    audioLibCache = [];
+    snap.forEach((d) => audioLibCache.push({ id: d.id, ...(d.data() || {}) }));
+    renderAudioLibrary();
+    setStatus(st, `Wczytano: ${audioLibCache.length}`);
+  } catch (e) {
+    console.error('[audio library]', e);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania audio.</div>';
+    setStatus(st, 'Blad', true);
+  }
+}
+
+async function uploadAudioLibrary() {
+  const fileInput = $('audioLibFile');
+  const labelInput = $('audioLibLabel');
+  const levelInput = $('audioLibLevel');
+  const topicInput = $('audioLibTopic');
+  const st = $('audioLibStatus');
+
+  const file = fileInput?.files?.[0];
+  if (!file) {
+    setStatus(st, 'Wybierz plik audio.', true);
+    return;
+  }
+  if (!String(file.type || '').startsWith('audio/')) {
+    setStatus(st, 'To nie jest plik audio.', true);
+    return;
+  }
+
+  const label = String(labelInput?.value || '').trim() || file.name;
+  const level = String(levelInput?.value || '').trim().toUpperCase() || null;
+  const topicId = String(topicInput?.value || '').trim() || null;
+
+  const safeName = String(file.name || 'audio')
+    .replace(/[^a-z0-9._-]/gi, '_')
+    .toLowerCase();
+  const path = `audio/library/${Date.now()}_${safeName}`;
+
+  setStatus(st, 'Wgrywanie...');
+  try {
+    const refObj = storageRef(storage, path);
+    await uploadBytes(refObj, file, { contentType: file.type });
+    const url = await getDownloadURL(refObj);
+
+    await addDoc(collection(db, 'audio_library'), {
+      label,
+      url,
+      level,
+      topicId,
+      path,
+      size: file.size || 0,
+      contentType: file.type || '',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    setStatus(st, 'Wgrano ✅');
+    if (labelInput) labelInput.value = '';
+    if (fileInput) fileInput.value = '';
+    await loadAudioLibrary();
+  } catch (e) {
+    console.error('[audio upload]', e);
+    setStatus(st, 'Blad wgrywania.', true);
+  }
+}
+
+async function deleteAudioLibrary(id) {
+  if (!id) return;
+  if (!confirm('Usunac plik z biblioteki? (nie usuwa ze storage)')) return;
+  try {
+    await deleteDoc(doc(db, 'audio_library', id));
+    await loadAudioLibrary();
+  } catch (e) {
+    console.error('[audio delete]', e);
+    setStatus($('audioLibStatus'), 'Blad usuwania.', true);
+  }
+}
+
+async function copyAudioUrl(url) {
+  if (!url) return;
+  try {
+    await navigator.clipboard.writeText(url);
+    setStatus($('audioLibStatus'), 'Skopiowano ✅');
+  } catch (e) {
+    console.warn('[audio copy]', e);
+    setStatus($('audioLibStatus'), 'Nie udalo sie skopiowac.', true);
   }
 }
 
@@ -2050,6 +2343,10 @@ function bindEvents() {
   $('progressSort')?.addEventListener('change', renderProgressList);
   $('progressFilter')?.addEventListener('change', renderProgressList);
   $('progressSearch')?.addEventListener('input', renderProgressList);
+  // fiszki (statystyki)
+  $('btnLoadFlashcards')?.addEventListener('click', loadFlashcardsStats);
+  $('flashcardsLevel')?.addEventListener('change', renderFlashcardsStats);
+  $('flashcardsSearch')?.addEventListener('input', renderFlashcardsStats);
   $('progressList')?.addEventListener('click', (e) => {
     const btn = e.target?.closest?.('button[data-progress="toggle"]');
     if (!btn) return;
@@ -2108,6 +2405,17 @@ function bindEvents() {
     if (!btn) return;
     const id = btn.getAttribute('data-id');
     if (id) toggleAppLogDetails(id);
+  });
+
+  // biblioteka audio
+  $('btnUploadAudioLib')?.addEventListener('click', uploadAudioLibrary);
+  $('btnLoadAudioLib')?.addEventListener('click', loadAudioLibrary);
+  $('audioLibList')?.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('button[data-audio]');
+    if (!btn) return;
+    const act = btn.getAttribute('data-audio');
+    if (act === 'copy') copyAudioUrl(btn.getAttribute('data-url') || '');
+    if (act === 'del') deleteAudioLibrary(btn.getAttribute('data-id') || '');
   });
 }
 

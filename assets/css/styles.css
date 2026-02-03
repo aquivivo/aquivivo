@@ -1202,6 +1202,12 @@ p,
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
   }
+  .reviewExample {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+  }
   
   /* Lesson extras */
   .lessonExtraCard {

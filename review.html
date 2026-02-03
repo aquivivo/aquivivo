@@ -36,15 +36,42 @@
             <span id="reviewProgress">Progreso: 0/0</span>
           </div>
         </section>
+        
+        <section class="card" id="reviewFilters" style="margin-top: 12px">
+          <div class="metaRow" style="gap: 10px; flex-wrap: wrap">
+            <select id="reviewLevel" class="select" style="min-width: 160px"></select>
+            <select id="reviewTopic" class="select" style="min-width: 240px"></select>
+            <button class="btn-white-outline" id="reviewApply" type="button">
+              Aplicar
+            </button>
+            <label class="hintSmall" style="display: inline-flex; gap: 8px; align-items: center">
+              <input id="reviewOnlyFav" type="checkbox" />
+              Solo favoritos
+            </label>
+          </div>
+          <div class="hintSmall" style="margin-top: 8px">
+            Filtra el repaso por nivel y tema.
+          </div>
+        </section>
 
         <section class="card reviewCard" id="reviewCard" style="margin-top: 14px">
           <div class="reviewCardInner">
             <div class="reviewFront" id="reviewFront">Cargando...</div>
             <div class="reviewBack" id="reviewBack"></div>
+            <div class="reviewExample" id="reviewExample" style="display: none"></div>
           </div>
           <div class="reviewActions">
             <button class="btn-white-outline" id="btnShowBack" type="button">
               Mostrar respuesta
+            </button>
+            <button class="btn-white-outline" id="btnAudio" type="button">
+              Escuchar PL
+            </button>
+            <button class="btn-white-outline" id="btnExampleAudio" type="button">
+              Escuchar ejemplo
+            </button>
+            <button class="btn-white-outline" id="btnFav" type="button">
+              ☆ Favorito
             </button>
             <button class="btn-yellow" id="btnCorrect" type="button" disabled>
               La sé

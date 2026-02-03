@@ -543,6 +543,43 @@
           </div>
         </div>
 
+        <div class="card" style="margin-top: 10px">
+          <div class="sectionTitle" style="margin-top: 0">Fiszki (Quizlet)</div>
+          <textarea
+            id="flashImportArea"
+            placeholder="Wklej listę fiszek (np. PL<TAB>ES lub PL - ES)."
+          ></textarea>
+          <div class="smallNote" style="margin-top: 8px">
+            Format linii: <b>PL</b> + TAB + <b>ES</b> + (opcjonalnie) TAB + <b>EX</b>.<br />
+            Przykład: <code>dzień dobry\tbuenos días\tEX: Dzień dobry, jak się masz?</code>
+          </div>
+          <div class="adminActions" style="margin-top: 10px">
+            <button class="btn btn-yellow" id="btnImportFlashcards" type="button">
+              Wgraj do opcji
+            </button>
+            <button class="btn" id="btnClearFlashcards" type="button">
+              Wyczysc
+            </button>
+            <span class="smallNote" id="flashImportStatus" style="margin-left: auto"></span>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="sectionTitle" style="margin-top: 0">Audio do fiszek</div>
+          <div class="metaRow" style="gap: 10px; flex-wrap: wrap; align-items: center">
+            <input id="flashAudioFile" type="file" accept="audio/*" />
+            <button class="btn btn-yellow" id="btnUploadFlashAudio" type="button">
+              Wgraj audio
+            </button>
+            <input id="flashAudioUrl" class="input" placeholder="URL audio..." readonly />
+            <button class="btn" id="btnCopyFlashAudio" type="button">Kopiuj</button>
+            <span class="smallNote" id="flashAudioStatus"></span>
+          </div>
+          <div class="smallNote" style="margin-top: 8px">
+            Wklej URL do linii: <b>AUDIO:</b> lub <b>EXAUDIO:</b>.
+          </div>
+        </div>
+
         <div class="adminGrid">
           <div>
             <label>Typ cwiczenia</label>
@@ -570,6 +607,7 @@
             ></textarea>
             <div class="smallNote">
               Dla cwiczen wyboru dodaj co najmniej 2 opcje (po jednej na linie).
+              <br />Fiszki: <b>PL: ... | ES: ... | EX: ... | AUDIO: ... | EXAUDIO: ...</b>
             </div>
           </div>
 

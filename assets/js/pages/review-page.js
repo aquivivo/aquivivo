@@ -1,4 +1,4 @@
-// assets/js/pages/review-page.js
+﻿// assets/js/pages/review-page.js
 // Simple spaced repetition (Leitner-like) for flashcards from "Tarjetas interactivas"
 
 import { auth, db } from '../firebase-init.js';
@@ -8,6 +8,7 @@ import {
   collection,
   query,
   where,
+  orderBy,
   getDocs,
   getDoc,
   doc,
@@ -27,6 +28,8 @@ let currentIdx = 0;
 let currentCard = null;
 let showBack = false;
 let srsMap = new Map();
+let userDocCache = null;
+let userLevelsCache = [];
 
 function toDateMaybe(ts) {
   if (!ts) return null;
@@ -55,11 +58,31 @@ function parseCardLine(raw) {
   }
   if (parts.length < 2) return null;
 
-  const cleanSide = (val) =>
-    String(val || '').replace(/^(PL|ES|EN)\s*:\s*/i, '').trim();
+  const labeled = {};
+  const unlabeled = [];
+  parts.forEach((p) => {
+    const m = p.match(/^([A-Za-z_]+)\s*:\s*(.+)$/);
+    if (m) labeled[m[1].toLowerCase()] = m[2].trim();
+    else unlabeled.push(p);
+  });
+
+  const front = (labeled.pl || labeled.front || unlabeled[0] || '').trim();
+  const back = (labeled.es || labeled.back || unlabeled[1] || '').trim();
+  if (!front || !back) return null;
+
+  const example = (labeled.ex || labeled.ej || labeled.ejemplo || labeled.example || '').trim();
+  const audioUrl = (labeled.audio || labeled.a || '').trim();
+  const exampleAudio = (labeled.exaudio || labeled.ejaudio || labeled.ejemploaudio || labeled.exampleaudio || '').trim();
+
+  const plText = (labeled.pl || front).trim();
+
   return {
-    front: cleanSide(parts[0]),
-    back: cleanSide(parts[1]),
+    front,
+    back,
+    plText,
+    example,
+    audioUrl: /^https?:\/\//i.test(audioUrl) ? audioUrl : '',
+    exampleAudio: /^https?:\/\//i.test(exampleAudio) ? exampleAudio : '',
   };
 }
 
@@ -81,6 +104,10 @@ function buildCardsFromExercise(ex) {
       level: ex.level || null,
       front: parsed.front,
       back: parsed.back,
+      plText: parsed.plText || parsed.front,
+      audioUrl: parsed.audioUrl || '',
+      example: parsed.example || '',
+      exampleAudio: parsed.exampleAudio || '',
     });
   });
   return cards;
@@ -92,6 +119,9 @@ async function getUserDoc(uid) {
 }
 
 function getUserLevels(docData) {
+  if (docData?.admin === true || String(docData?.role || '') === 'admin') {
+    return ['A1', 'A2', 'B1', 'B2'];
+  }
   const rawLevels = Array.isArray(docData?.levels)
     ? docData.levels.map((x) => String(x).toUpperCase())
     : [];
@@ -99,12 +129,20 @@ function getUserLevels(docData) {
   return levelsFromPlan(docData?.plan);
 }
 
-async function loadExercisesForLevels(levels) {
+async function loadExercisesForLevels(levels, topicId) {
   const all = [];
   if (!levels.length) return all;
   for (const lvl of levels) {
     try {
-      const snap = await getDocs(query(collection(db, 'exercises'), where('level', '==', lvl)));
+      let q = query(collection(db, 'exercises'), where('level', '==', lvl));
+      if (topicId) {
+        q = query(
+          collection(db, 'exercises'),
+          where('level', '==', lvl),
+          where('topicId', '==', topicId),
+        );
+      }
+      const snap = await getDocs(q);
       snap.forEach((d) => all.push({ id: d.id, ...(d.data() || {}) }));
     } catch (e) {
       console.warn('[review] load exercises failed', e);
@@ -152,6 +190,8 @@ function buildQueue(cards, srs, limit, direction) {
       ...card,
       front: card.back,
       back: card.front,
+      plText: card.plText,
+      audioUrl: card.audioUrl,
     };
   });
 
@@ -178,8 +218,14 @@ function renderCard() {
   const backEl = $('reviewBack');
   const hintEl = $('reviewHint');
   const btnShow = $('btnShowBack');
+  const btnAudio = $('btnAudio');
+  const btnExampleAudio = $('btnExampleAudio');
+  const btnFav = $('btnFav');
+  const exampleEl = $('reviewExample');
   const btnCorrect = $('btnCorrect');
   const btnWrong = $('btnWrong');
+  const btnExampleAudio = $('btnExampleAudio');
+  const btnFav = $('btnFav');
   const empty = $('reviewEmpty');
 
   if (!queue.length) {
@@ -198,6 +244,10 @@ function renderCard() {
     if (frontEl) frontEl.textContent = 'Repaso terminado';
     if (backEl) backEl.textContent = '';
     if (btnShow) btnShow.disabled = true;
+    if (btnAudio) btnAudio.disabled = true;
+    if (btnExampleAudio) btnExampleAudio.disabled = true;
+    if (btnFav) btnFav.disabled = true;
+    if (exampleEl) exampleEl.style.display = 'none';
     if (btnCorrect) btnCorrect.disabled = true;
     if (btnWrong) btnWrong.disabled = true;
     return;
@@ -205,8 +255,23 @@ function renderCard() {
 
   if (frontEl) frontEl.textContent = currentCard.front || '-';
   if (backEl) backEl.textContent = currentCard.back || '-';
+  if (exampleEl) {
+    if (currentCard.example) {
+      exampleEl.textContent = `Ejemplo: ${currentCard.example}`;
+      exampleEl.style.display = '';
+    } else {
+      exampleEl.textContent = '';
+      exampleEl.style.display = 'none';
+    }
+  }
   if (hintEl) hintEl.textContent = 'Piensa primero y luego muestra la respuesta.';
   if (btnShow) btnShow.disabled = false;
+  if (btnAudio) btnAudio.disabled = false;
+  if (btnExampleAudio) btnExampleAudio.disabled = !currentCard.example;
+  if (btnFav) {
+    btnFav.disabled = false;
+    btnFav.textContent = currentCard.favorite ? '★ Favorito' : '☆ Favorito';
+  }
   if (btnCorrect) btnCorrect.disabled = true;
   if (btnWrong) btnWrong.disabled = true;
   if (cardEl) cardEl.classList.remove('isFlipped');
@@ -248,10 +313,70 @@ async function markAnswer(isCorrect) {
   renderCard();
 }
 
+function speakPolish(text) {
+  if (!text) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'pl-PL';
+  const voices = window.speechSynthesis?.getVoices?.() || [];
+  const plVoice = voices.find((v) =>
+    String(v.lang || '').toLowerCase().startsWith('pl'),
+  );
+  if (plVoice) utter.voice = plVoice;
+  window.speechSynthesis?.cancel?.();
+  window.speechSynthesis?.speak?.(utter);
+}
+
+function playPolish(card) {
+  if (!card) return;
+  if (card.audioUrl) {
+    const audio = new Audio(card.audioUrl);
+    audio.play().catch(() => {});
+    return;
+  }
+  speakPolish(card.plText || card.front || '');
+}
+
+function playExample(card) {
+  if (!card || !card.example) return;
+  if (card.exampleAudio) {
+    const audio = new Audio(card.exampleAudio);
+    audio.play().catch(() => {});
+    return;
+  }
+  speakPolish(card.example);
+}
+
+async function toggleFavorite(card) {
+  const user = auth.currentUser;
+  if (!user?.uid || !card) return;
+  const next = !card.favorite;
+  try {
+    await setDoc(
+      doc(db, 'user_spaced', user.uid, 'cards', card.id),
+      {
+        favorite: next,
+        cardId: card.id,
+        exerciseId: card.exerciseId || null,
+        topicId: card.topicId || null,
+        level: card.level || null,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+    const prev = srsMap.get(card.id) || {};
+    srsMap.set(card.id, { ...prev, favorite: next });
+    card.favorite = next;
+    renderCard();
+  } catch (e) {
+    console.warn('[review] toggle favorite failed', e);
+  }
+}
+
 function bindActions() {
   const btnShow = $('btnShowBack');
   const btnCorrect = $('btnCorrect');
   const btnWrong = $('btnWrong');
+  const btnAudio = $('btnAudio');
   const cardEl = $('reviewCard');
   const hintEl = $('reviewHint');
 
@@ -260,28 +385,127 @@ function bindActions() {
     cardEl?.classList.add('isFlipped');
     if (btnCorrect) btnCorrect.disabled = false;
     if (btnWrong) btnWrong.disabled = false;
-    if (hintEl) hintEl.textContent = 'Evalua tu respuesta: \"La se\" o \"No lo se\".';
+    if (hintEl) hintEl.textContent = 'Evalúa tu respuesta: "La sé" o "No lo sé".';
+  });
+
+  btnAudio?.addEventListener('click', () => {
+    playPolish(currentCard);
+  });
+  btnExampleAudio?.addEventListener('click', () => {
+    playExample(currentCard);
+  });
+  btnFav?.addEventListener('click', async () => {
+    await toggleFavorite(currentCard);
   });
 
   btnCorrect?.addEventListener('click', () => markAnswer(true));
   btnWrong?.addEventListener('click', () => markAnswer(false));
 }
 
-async function initReview(user) {
-  const userDoc = await getUserDoc(user.uid);
-  const levels = getUserLevels(userDoc);
-  const limit = Number(userDoc.reviewDailyLimit || DEFAULT_DAILY_LIMIT);
-  const direction = String(userDoc.reviewDirection || 'pl_es');
+async function loadTopicsForLevel(level) {
+  const topicSelect = $('reviewTopic');
+  if (!topicSelect) return;
+  topicSelect.innerHTML = '<option value="all">Todos los temas</option>';
+  if (!level || level === 'ALL') {
+    topicSelect.disabled = true;
+    return;
+  }
+  topicSelect.disabled = false;
 
-  const exercises = await loadExercisesForLevels(levels);
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'courses'), where('level', '==', level), orderBy('order')),
+    );
+    snap.forEach((d) => {
+      const t = d.data() || {};
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = t.title || t.slug || d.id;
+      topicSelect.appendChild(opt);
+    });
+  } catch (e) {
+    console.warn('[review] load topics failed', e);
+  }
+}
+
+async function refreshReview() {
+  if (!auth.currentUser) return;
+  const levelEl = $('reviewLevel');
+  const topicEl = $('reviewTopic');
+  const selectedLevel = String(levelEl?.value || '').toUpperCase();
+  const topicId = String(topicEl?.value || '').trim();
+
+  const levels =
+    selectedLevel && selectedLevel !== 'ALL'
+      ? [selectedLevel]
+      : userLevelsCache;
+
+  srsMap = await loadSrsMap(auth.currentUser.uid);
+  const exercises = await loadExercisesForLevels(
+    levels,
+    topicId && topicId !== 'all' ? topicId : '',
+  );
   const cards = exercises
     .filter(isCardExercise)
-    .flatMap(buildCardsFromExercise);
-
-  srsMap = await loadSrsMap(user.uid);
-  queue = buildQueue(cards, srsMap, limit, direction);
+    .flatMap(buildCardsFromExercise)
+    .map((c) => ({ ...c, favorite: srsMap.get(c.id)?.favorite === true }));
+  const limit = Number(userDocCache?.reviewDailyLimit || DEFAULT_DAILY_LIMIT);
+  const direction = String(userDocCache?.reviewDirection || 'pl_es');
+  let list = buildQueue(cards, srsMap, limit, direction);
+  const onlyFav = $('reviewOnlyFav')?.checked;
+  if (onlyFav) list = list.filter((c) => c.favorite);
+  queue = list;
   currentIdx = 0;
   renderCard();
+}
+
+async function initReview(user) {
+  userDocCache = await getUserDoc(user.uid);
+  userLevelsCache = getUserLevels(userDocCache);
+
+  const levelEl = $('reviewLevel');
+  if (levelEl) {
+    levelEl.innerHTML = '';
+    const optAll = document.createElement('option');
+    optAll.value = 'ALL';
+    optAll.textContent = 'Todos los niveles';
+    levelEl.appendChild(optAll);
+    userLevelsCache.forEach((lvl) => {
+      const opt = document.createElement('option');
+      opt.value = lvl;
+      opt.textContent = lvl;
+      levelEl.appendChild(opt);
+    });
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const preLevel = String(params.get('level') || '').toUpperCase();
+  const preTopic = String(params.get('id') || params.get('topic') || '').trim();
+
+  if (levelEl) {
+    if (preLevel && userLevelsCache.includes(preLevel)) {
+      levelEl.value = preLevel;
+    } else {
+      levelEl.value = 'ALL';
+    }
+  }
+
+  await loadTopicsForLevel(levelEl?.value || 'ALL');
+  if (preTopic) {
+    const topicEl = $('reviewTopic');
+    if (topicEl) topicEl.value = preTopic;
+  }
+
+  const applyBtn = $('reviewApply');
+  applyBtn?.addEventListener('click', refreshReview);
+  levelEl?.addEventListener('change', async () => {
+    await loadTopicsForLevel(levelEl.value);
+    await refreshReview();
+  });
+  $('reviewTopic')?.addEventListener('change', refreshReview);
+  $('reviewOnlyFav')?.addEventListener('change', refreshReview);
+
+  await refreshReview();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -294,3 +518,6 @@ document.addEventListener('DOMContentLoaded', () => {
     await initReview(user);
   });
 });
+
+
+

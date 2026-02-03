@@ -405,13 +405,15 @@ async function loadLesson(user) {
 
   if (readTools) readTools.style.display = '';
 
-  if (exerciseLinksWrap) {
-    exerciseLinksWrap.innerHTML = `
-      <a class="btn-white-outline" href="ejercicio.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}">Ejercicios</a>
-      <a class="btn-white-outline" href="review.html">Repasar</a>
-      <a class="btn-white-outline" href="course.html?level=${encodeURIComponent(LEVEL)}">Temas</a>
-    `;
-  }
+    if (exerciseLinksWrap) {
+      const params = `level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}`;
+      exerciseLinksWrap.innerHTML = `
+        <a class="btn-white-outline" href="ejercicio.html?${params}">Ejercicios</a>
+        <a class="btn-white-outline" href="review.html?${params}">Repasar</a>
+        <a class="btn-white-outline" href="flashcards.html?${params}">Fichas</a>
+        <a class="btn-white-outline" href="course.html?level=${encodeURIComponent(LEVEL)}">Temas</a>
+      `;
+    }
 
   if (pillAdminLink && flags.isAdmin) {
     pillAdminLink.style.display = 'inline-flex';

@@ -253,6 +253,11 @@ service cloud.firestore {
       allow read, write: if isAdmin() || isOwner(uid);
     }
 
+    /* ===== AUDIO LIBRARY ===== */
+    match /audio_library/{id} {
+      allow read, write: if isAdmin();
+    }
+
     /* ===== APP LOGS ===== */
     match /app_logs/{id} {
       allow read: if isAdmin();
