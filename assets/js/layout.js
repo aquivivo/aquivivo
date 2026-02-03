@@ -1,8 +1,8 @@
-// assets/js/layout.js
+﻿// assets/js/layout.js
 // Shared header for ALL pages except index.html (index uses layout-index.js)
-// ✅ Safe injection (doesn't replace body -> footers remain)
-// ✅ Uses firebase-init.js (matches your project)
-// ✅ Shows Login when signed out, Logout when signed in
+//  Safe injection (doesn't replace body -> footers remain)
+//  Uses firebase-init.js (matches your project)
+//  Shows Login when signed out, Logout when signed in
 
 import { auth, db } from './firebase-init.js';
 import {
@@ -29,6 +29,14 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     path.endsWith('/login') ||
     path.endsWith('/login.html') ||
     path.endsWith('login.html');
+  const adminPages = new Set([
+    'esadmin',
+    'lessonadmin',
+    'ejercicioadmin',
+    'adminselect',
+    'admin-select',
+  ]);
+  const isAdminPage = adminPages.has(document.body?.dataset?.page);
   if (isIndex) return; // index uses layout-index.js
 
   const IDLE_LIMIT_MS = 15 * 60 * 1000;
@@ -144,11 +152,11 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     try {
       await updateDoc(userRef, payload);
       CURRENT_DOC = { ...(docData || {}), ...payload };
-      setTrialMessage('✅ Trial A1 activado por 7 días.', 'ok');
+      setTrialMessage('Trial A1 activado por 7 dias.', 'ok');
       return true;
     } catch (e) {
       console.warn('[trial] activation failed', e);
-      setTrialMessage('No se pudo activar el trial. Inténtalo de nuevo.');
+      setTrialMessage('No se pudo activar el trial. Intentalo de nuevo.');
       return false;
     }
   }
@@ -159,13 +167,13 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
 
     if (!CURRENT_USER) {
       btn.disabled = false;
-      setTrialMessage('Inicia sesión para activar tu prueba gratuita.');
+      setTrialMessage('Inicia sesion para activar tu prueba gratuita.');
       return;
     }
 
     if (!CURRENT_DOC) {
       btn.disabled = true;
-      setTrialMessage('⏳ Cargando tu estado...');
+      setTrialMessage('Cargando tu estado...');
       return;
     }
 
@@ -184,7 +192,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     const ok = isTrialEligible(CURRENT_DOC);
     btn.disabled = !ok;
     if (ok) {
-      setTrialMessage('Activa tu prueba gratuita de A1 (7 días).', 'ok');
+      setTrialMessage('Activa tu prueba gratuita de A1 (7 dias).', 'ok');
     } else {
       setTrialMessage(
         'Tu prueba ya fue usada. Vuelve cuando no tengas plan activo o tras un tiempo de inactividad.',
@@ -281,6 +289,39 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
 
   function buildHeader(user, isAdmin) {
     const logged = !!user;
+    const labels = isAdminPage
+      ? {
+          navLabel: 'Nawigacja',
+          home: 'Strona glowna',
+          login: 'Zaloguj',
+          admin: 'Admin',
+          polaco: 'POLSKI',
+          servicios: 'Uslugi',
+          planes: 'Plany',
+          tramites: 'Tramites',
+          extras: 'Dodatki',
+          ebooks: 'Ebooki',
+          verTodo: 'Zobacz wszystko',
+          libreta: 'Libreta',
+          back: 'Wstecz',
+          logout: 'Wyloguj',
+        }
+      : {
+          navLabel: 'Navegacion',
+          home: 'Inicio',
+          login: 'Iniciar sesion',
+          admin: 'Admin',
+          polaco: 'POLACO',
+          servicios: 'Servicios',
+          planes: 'Planes',
+          tramites: 'Tramites',
+          extras: 'Extras',
+          ebooks: 'Ebooks',
+          verTodo: 'Ver todo',
+          libreta: 'Libreta',
+          back: 'Atras',
+          logout: 'Cerrar sesion',
+        };
 
     if (isLoginPage) {
       return `
@@ -290,9 +331,9 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
               <img src="assets/img/logo.png" alt="AquiVivo" />
             </a>
 
-            <div class="nav-actions" aria-label="Navegación">
-              <a class="btn-white-outline" href="index.html">🏠 Inicio</a>
-              <a class="btn-yellow" href="login.html">🔐 Iniciar sesión</a>
+            <div class="nav-actions" aria-label="${labels.navLabel}">
+              <a class="btn-white-outline" href="index.html">${labels.home}</a>
+              <a class="btn-yellow" href="login.html">${labels.login}</a>
             </div>
           </div>
 
@@ -318,33 +359,33 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
             <img src="assets/img/logo.png" alt="AquiVivo" />
           </a>
 
-          <div class="nav-actions" aria-label="Navegación">
+          <div class="nav-actions" aria-label="${labels.navLabel}">
             ${
               logged && isAdmin
-                ? `<a class="btn-yellow" href="esadmin.html">🛡️ Admin</a>`
+                ? `<a class="btn-yellow" href="esadmin.html">${labels.admin}</a>`
                 : ''
             }
-            <a class="btn-white-outline" id="btnPolaco" href="${hrefPolaco}">POLACO</a>
+            <a class="btn-white-outline" id="btnPolaco" href="${hrefPolaco}">${labels.polaco}</a>
             <div class="nav-dd" id="navServiciosDD">
               <button class="btn-white-outline nav-dd-btn nav-dd-toggle" id="btnServicios" type="button" aria-haspopup="menu" aria-expanded="false">
-                🧳 Servicios <span class="nav-dd-caret">▼</span>
+                ${labels.servicios} <span class="nav-dd-caret">v</span>
               </button>
-              <div class="nav-dd-menu" id="menuServicios" role="menu" aria-label="Servicios">
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosPlanes}">Planes</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosServicios}">Servicios</a>
-                <a role="menuitem" class="nav-dd-item nav-dd-item--red" id="btnTramites" href="${hrefTramites}">Tr&aacute;mites</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosExtras}">Extras</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosEbooks}">Ebooks</a>
+              <div class="nav-dd-menu" id="menuServicios" role="menu" aria-label="${labels.servicios}">
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosPlanes}">${labels.planes}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosServicios}">${labels.servicios}</a>
+                <a role="menuitem" class="nav-dd-item nav-dd-item--red" id="btnTramites" href="${hrefTramites}">${labels.tramites}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosExtras}">${labels.extras}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosEbooks}">${labels.ebooks}</a>
                 <div class="nav-dd-sep" aria-hidden="true"></div>
-                <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">Ver todo</a>
+                <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">${labels.verTodo}</a>
               </div>
             </div>
-            <a class="btn-yellow" href="espanel.html">🏠 Libreta</a>
-            <button class="btn-white-outline" id="btnBack" type="button">⬅️ Atrás</button>
+            <a class="btn-yellow" href="espanel.html">${labels.libreta}</a>
+            <button class="btn-white-outline" id="btnBack" type="button">${labels.back}</button>
             ${
               logged
-                ? `<button class="btn-red" id="btnLogout" type="button">Cerrar sesión</button>`
-                : `<a class="btn-white-outline" href="login.html">🔐 Iniciar sesión</a>`
+                ? `<button class="btn-red" id="btnLogout" type="button">${labels.logout}</button>`
+                : `<a class="btn-white-outline" href="login.html">${labels.login}</a>`
             }
           </div>
         </div>
@@ -360,8 +401,8 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         <div class="nav-line nav-line-above"></div>
         <div class="footer-inner container">
           <div class="footer-text">
-            © 2026 AquiVivo. Todos los derechos reservados.<br />
-            Te ayudo a perder el miedo a hablar. 🌸🤍
+            (c) 2026 AquiVivo. Todos los derechos reservados.<br />
+            Te ayudo a perder el miedo a hablar. 
           </div>
         </div>
       </footer>
@@ -522,3 +563,4 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     trialReady();
   }
 })();
+
