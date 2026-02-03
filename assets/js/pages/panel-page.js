@@ -6,6 +6,7 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+import { levelsFromPlan } from '../plan-levels.js';
 import {
   doc,
   getDoc,
@@ -185,6 +186,8 @@ function computeFlags(userDoc) {
   const plan = String(userDoc?.plan || 'free').toLowerCase();
   const access = userDoc?.access === true;
 
+  const levels = parseAccessLevels(userDoc);
+
   const until = userDoc?.accessUntil || null;
   const untilDate = until?.toDate
     ? until.toDate()
@@ -196,9 +199,21 @@ function computeFlags(userDoc) {
 
   const blocked = userDoc?.blocked === true;
 
-  const hasAccess = isAdmin || access || plan === 'premium' || isUntilValid;
+  const hasAccess =
+    isAdmin ||
+    ((plan === 'premium' || (access === true && levels.length === 0)) &&
+      isUntilValid);
 
-  return { isAdmin, plan, access, hasAccess, until, isUntilValid, blocked };
+  return {
+    isAdmin,
+    plan,
+    access,
+    hasAccess,
+    until,
+    hasUntil,
+    isUntilValid,
+    blocked,
+  };
 }
 
 function renderAdminUI(isAdmin) {
@@ -272,26 +287,19 @@ function parseAccessLevels(userDoc) {
   if (Array.isArray(raw))
     return raw.map((x) => String(x).toUpperCase()).filter(Boolean);
 
-  // Fallback: plan mapping (legacy)
-  const p = String(userDoc?.plan || '').toLowerCase();
-  if (p === 'a1') return ['A1'];
-  if (p === 'a2') return ['A2'];
-  if (p === 'b1') return ['B1'];
-  if (p === 'b2') return ['B2'];
-  if (p === 'pack_a1a2') return ['A1', 'A2'];
-  if (p === 'pack_b1b2') return ['B1', 'B2'];
-  if (p === 'premium_a1' || p === 'premium_a1a2') return ['A1', 'A2'];
-  if (p === 'premium_b1') return ['B1', 'A1'];
-  if (p === 'premium_b2') return ['B2', 'A1'];
-  return [];
+  // Fallback: plan mapping (legacy + Stripe planId)
+  const fromPlan = levelsFromPlan(userDoc?.plan);
+  return fromPlan;
 }
 
 function hasLevelAccess(flags, userDoc, level) {
   const lvl = String(level || '').toUpperCase();
   if (flags?.isAdmin) return true;
-  if (flags?.hasAccess) return true; // premium/global access
   const levels = parseAccessLevels(userDoc);
-  return levels.includes(lvl);
+  const allowed = flags?.hasAccess || levels.includes(lvl);
+  if (!allowed) return false;
+  if (!flags?.isUntilValid) return false;
+  return true;
 }
 
 function renderPlans(userDoc, flags) {
@@ -441,10 +449,13 @@ async function applyPromoCode(targetUid, targetDoc) {
       if (currentUntil.getTime() > newUntil.getTime()) newUntil = currentUntil;
     }
 
+    const mappedPlan = grantPlan === 'premium' ? 'premium' : grantPlan;
+    const levels = levelsFromPlan(mappedPlan);
     const payload = {
       updatedAt: serverTimestamp(),
       promoCodes: arrayUnion(code),
-      plan: grantPlan === 'premium' ? 'premium' : grantPlan,
+      plan: mappedPlan,
+      levels,
       access: true,
     };
     if (days > 0) payload.accessUntil = Timestamp.fromDate(newUntil);

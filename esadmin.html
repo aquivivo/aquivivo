@@ -665,14 +665,17 @@
               Plan
             </div>
             <select class="select" id="um_plan">
-              <option value="free">free (7 días A1)</option>
+              <option value="free">free (sin acceso)</option>
               <option value="a1">A1</option>
               <option value="a2">A2</option>
               <option value="b1">B1</option>
               <option value="b2">B2</option>
+              <option value="VIP A1 + A2 + B1">VIP A1 + A2 + B1</option>
+              <option value="VIP A1 + A2 + B1 + B2">VIP A1 + A2 + B1 + B2</option>
               <option value="premium_a1">Premium A1 (A1+A2)</option>
               <option value="premium_b1">Premium B1 (B1+A1)</option>
               <option value="premium_b2">Premium B2 (B2+A1)</option>
+              <option value="premium_B2">premium_B2</option>
             </select>
             <div class="muted" style="font-weight: 900; margin-top: 12px">
               Acceso hasta
@@ -682,6 +685,31 @@
               Reglas: acceso = admin OR access=true OR plan=premium OR
               accessUntil en el futuro.
             </div>
+          </div>
+          <div class="card">
+            <div class="sectionTitle" style="margin-top: 0">Trial</div>
+            <div class="muted" style="font-weight: 900; margin-top: 8px">
+              Nivel
+            </div>
+            <select class="select" id="um_trial_level">
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+            </select>
+            <div class="muted" style="font-weight: 900; margin-top: 12px">
+              Días
+            </div>
+            <input class="input" id="um_trial_days" type="number" min="1" step="1" value="7" />
+            <div class="metaRow" style="margin-top: 12px; flex-wrap: wrap; gap: 10px">
+              <button class="btn-yellow" id="um_trial_grant" type="button">
+                🎁 Dar trial ahora
+              </button>
+              <button class="btn-white-outline" id="um_trial_allow" type="button">
+                ✅ Permitir nuevo trial
+              </button>
+            </div>
+            <div class="hintSmall" id="um_trial_info" style="margin-top: 10px"></div>
           </div>
         </div>
         <div class="hr"></div>

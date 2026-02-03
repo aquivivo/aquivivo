@@ -6,6 +6,7 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+import { levelsFromPlan } from '../plan-levels.js';
 import {
   collection,
   query,
@@ -76,25 +77,31 @@ async function getUserFlags(uid) {
       : until
         ? new Date(until)
         : null;
-    const timeOk =
-      !!untilDate &&
-      !Number.isNaN(untilDate.getTime()) &&
-      untilDate.getTime() > Date.now();
+    const hasUntil =
+      !!untilDate && !Number.isNaN(untilDate.getTime());
+    const isUntilValid = hasUntil ? untilDate.getTime() > Date.now() : false;
 
-    const levels = Array.isArray(d.levels)
+    const rawLevels = Array.isArray(d.levels)
       ? d.levels.map((x) => String(x).toUpperCase())
       : [];
+    const levels = rawLevels.length
+      ? rawLevels
+      : levelsFromPlan(d.plan);
 
     const plan = String(d.plan || '').toLowerCase();
-    const hasGlobalAccess = d.access === true || plan === 'premium' || timeOk;
+    const hasGlobalAccess =
+      plan === 'premium' || (d.access === true && levels.length === 0);
     const hasLevelAccess =
-      hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase());
+      (hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase())) &&
+      isUntilValid;
 
     return {
       isAdmin: false,
       hasLevelAccess,
       hasGlobalAccess,
       blocked,
+      isUntilValid,
+      hasUntil,
       levels,
     };
   } catch (e) {
@@ -165,10 +172,11 @@ function wireLevelButtons(flags) {
     ).toUpperCase();
     if (!level || level === 'A1') return;
 
-    const hasAccessForLevel =
+    const levelAllowed =
       flags?.isAdmin ||
       flags?.hasGlobalAccess ||
       (Array.isArray(flags?.levels) && flags.levels.includes(level));
+    const hasAccessForLevel = levelAllowed && !!flags?.isUntilValid;
 
     if (hasAccessForLevel) return;
 
@@ -204,10 +212,11 @@ function initLevelButtonsGuard() {
       return;
     }
 
-    const hasAccessForLevel =
+    const levelAllowed =
       f.isAdmin ||
       f.hasGlobalAccess ||
       (Array.isArray(f.levels) && f.levels.includes(level));
+    const hasAccessForLevel = levelAllowed && !!f.isUntilValid;
 
     if (!hasAccessForLevel) {
       e.preventDefault();

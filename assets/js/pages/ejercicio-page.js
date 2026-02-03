@@ -47,6 +47,7 @@ async function trackTopicOpen(uid, courseId, level) {
 }
 
 import { auth, db } from '../firebase-init.js';
+import { levelsFromPlan } from '../plan-levels.js';
 import {
   onAuthStateChanged,
   signOut,
@@ -468,11 +469,15 @@ async function computeHasAccess(uid) {
 
     const until = d.accessUntil || null;
     const untilDate = until?.toDate ? until.toDate() : (until ? new Date(until) : null);
-    const timeOk = !!untilDate && !Number.isNaN(untilDate.getTime()) && untilDate.getTime() > Date.now();
+    const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
+    const timeOk = hasUntil ? untilDate.getTime() > Date.now() : false;
 
-    const levels = Array.isArray(d.levels)
+    const rawLevels = Array.isArray(d.levels)
       ? d.levels.map((x) => String(x).toUpperCase())
       : [];
+    const levels = rawLevels.length
+      ? rawLevels
+      : levelsFromPlan(d.plan);
 
     return timeOk && levels.includes(String(LEVEL).toUpperCase());
   } catch (e) {

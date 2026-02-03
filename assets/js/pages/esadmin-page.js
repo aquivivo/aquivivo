@@ -4,6 +4,7 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+import { normalizePlanKey, levelsFromPlan } from '../plan-levels.js';
 import {
   collection,
   query,
@@ -115,29 +116,33 @@ function hasAccess(u) {
    - levels: array of strings (e.g. ["A1","A2"])
    - accessUntil: Firestore Timestamp/Date
    ========================= */
-const PLAN_MAP = {
-  free: { levels: [], days: 0 },
+const PLAN_DAYS = {
+  free: 0,
 
   // single-level plans
-  a1: { levels: ['A1'], days: 30 },
-  a2: { levels: ['A2'], days: 30 },
-  b1: { levels: ['B1'], days: 30 },
-  b2: { levels: ['B2'], days: 30 },
+  a1: 30,
+  a2: 30,
+  b1: 30,
+  b2: 30,
 
   // premium bundles (progressive)
-  premium_a1: { levels: ['A1', 'A2'], days: 30 },
-  premium_b1: { levels: ['A1', 'A2', 'B1'], days: 30 },
-  premium_b2: { levels: ['A1', 'A2', 'B1', 'B2'], days: 30 },
+  premium: 30,
+  premium_a1: 30,
+  premium_b1: 30,
+  premium_b2: 30,
+
+  // VIP (custom names from Stripe / services.sku)
+  'vip a1 + a2 + b1': 30,
+  'vip a1 + a2 + b1 + b2': 30,
 };
 
 function computeLevelsForPlan(planId) {
-  const p = String(planId || '').trim();
-  return PLAN_MAP[p]?.levels ? [...PLAN_MAP[p].levels] : [];
+  return levelsFromPlan(planId);
 }
 
 function computeUntilForPlan(planId) {
-  const p = String(planId || '').trim();
-  const days = PLAN_MAP[p]?.days;
+  const p = normalizePlanKey(planId);
+  const days = PLAN_DAYS[p];
   if (!days) return null;
   const d = new Date();
   d.setDate(d.getDate() + Number(days));
@@ -799,7 +804,7 @@ function ensureUserQuickButtons() {
 
   if (!$('um_resetTrial'))
     row.insertBefore(
-      mkBtn('um_resetTrial', 'btn-yellow', '🎁 Reset trial A1 (7d)'),
+      mkBtn('um_resetTrial', 'btn-yellow', '✅ Permitir nuevo trial'),
       statusEl,
     );
   if (!$('um_revoke'))
@@ -852,14 +857,74 @@ async function quickResetTrial() {
   const uid = String($('um_uid')?.textContent || '').trim();
   if (!uid) return;
 
-  // Reset to free (no access)
-  if ($('um_plan')) $('um_plan').value = 'free';
-  if ($('um_access')) $('um_access').checked = false;
-  if ($('um_blocked')) $('um_blocked').checked = false;
+  try {
+    await setDoc(
+      doc(db, 'users', uid),
+      {
+        trialEligibleAfter: Timestamp.fromDate(new Date()),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+    const old = usersCache.get(uid) || {};
+    usersCache.set(uid, {
+      ...old,
+      trialEligibleAfter: new Date(),
+    });
+    setStatus($('um_status'), 'Trial reactivado ✅');
+  } catch (e) {
+    console.error('[trial allow]', e);
+    setStatus($('um_status'), 'Error activando trial.', true);
+  }
+}
 
-  const past = new Date(Date.now() - 24 * 3600 * 1000);
-  setUntilInputFromDate(past);
-  await saveUserModal();
+function renderTrialInfo(u) {
+  const info = $('um_trial_info');
+  if (!info) return;
+  const usedAt = toDateMaybe(u?.trialUsedAt);
+  const eligibleAt = toDateMaybe(u?.trialEligibleAfter);
+  const lvl = String(u?.trialLevel || '').toUpperCase();
+  const days = Number(u?.trialDays || 0);
+  const parts = [];
+  if (usedAt) parts.push(`usado: ${isoDate(usedAt)}`);
+  if (lvl) parts.push(`nivel: ${lvl}`);
+  if (days) parts.push(`días: ${days}`);
+  if (eligibleAt) parts.push(`reactivo: ${isoDate(eligibleAt)}`);
+  info.textContent = parts.length ? parts.join(' · ') : 'Sin trial usado.';
+}
+
+async function grantTrialNow() {
+  const uid = String($('um_uid')?.textContent || '').trim();
+  if (!uid) return;
+
+  const level = String($('um_trial_level')?.value || 'A1').toUpperCase();
+  const days = Math.max(1, Number($('um_trial_days')?.value || 7));
+  const until = addDaysToUntil(new Date(), days);
+
+  const payload = {
+    plan: `trial_${level.toLowerCase()}`,
+    levels: [level],
+    access: false,
+    blocked: false,
+    accessUntil: Timestamp.fromDate(until),
+    trialUsedAt: serverTimestamp(),
+    trialLevel: level,
+    trialDays: days,
+    trialSource: 'admin',
+    trialEligibleAfter: null,
+    updatedAt: serverTimestamp(),
+  };
+
+  try {
+    await setDoc(doc(db, 'users', uid), payload, { merge: true });
+    const old = usersCache.get(uid) || {};
+    usersCache.set(uid, { ...old, ...payload });
+    setStatus($('um_status'), 'Trial aplicado ✅');
+    renderTrialInfo({ ...old, ...payload });
+  } catch (e) {
+    console.error('[trial grant]', e);
+    setStatus($('um_status'), 'Error aplicando trial.', true);
+  }
 }
 
 async function quickForever() {
@@ -924,6 +989,11 @@ function openUserModal(uid) {
   if ($('um_note')) $('um_note').value = u.note || '';
   if ($('um_gender'))
     $('um_gender').value = String(u.gender || '').toLowerCase();
+  if ($('um_trial_level'))
+    $('um_trial_level').value = String(u.trialLevel || 'A1').toUpperCase();
+  if ($('um_trial_days'))
+    $('um_trial_days').value = Number(u.trialDays || 7);
+  renderTrialInfo(u);
 
   if ($('um_status')) $('um_status').textContent = '';
 
@@ -1265,6 +1335,8 @@ function bindEvents() {
   $('um_extend90')?.addEventListener('click', () => quickExtend(90));
   $('um_forever')?.addEventListener('click', quickForever);
   $('um_resetTrial')?.addEventListener('click', quickResetTrial);
+  $('um_trial_grant')?.addEventListener('click', grantTrialNow);
+  $('um_trial_allow')?.addEventListener('click', quickResetTrial);
   $('um_revoke')?.addEventListener('click', quickRevoke);
 
   // segmentación

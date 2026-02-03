@@ -17,6 +17,7 @@ import {
   doc,
   setDoc,
   serverTimestamp,
+  updateDoc,
   getDoc,
   Timestamp,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
@@ -396,6 +397,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Ensure users/{uid} exists (for admin panel / guards)
       await ensureUserDoc(cred.user.uid, cred.user.email, null, null);
+      try {
+        await updateDoc(doc(db, 'users', cred.user.uid), {
+          lastLoginAt: serverTimestamp(),
+        });
+      } catch (e) {
+        console.warn('[auth] lastLoginAt update failed', e);
+      }
 
       // unverified: keep session, show verify tools
       if (cred.user && !cred.user.emailVerified) {

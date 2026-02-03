@@ -75,6 +75,68 @@ service cloud.firestore {
       return ["role","admin","plan","levels","access","accessUntil","blocked","createdAt","email","emailLower"];
     }
 
+    // Dozwolone pola w samodzielnej aktywacji triala przez usera
+    function trialUserKeys() {
+      return ["plan","levels","access","blocked","accessUntil","trialUsedAt","trialLevel","trialDays","trialSource","trialEligibleAfter","updatedAt"];
+    }
+
+    function isValidTrialLevel(level) {
+      return ["A1"].hasAny([level]);
+    }
+
+    function isTrialPlan(plan, level) {
+      return (plan == "trial_a1" && level == "A1");
+    }
+
+    function lastLoginTs() {
+      return ("lastLoginAt" in resource.data) ? resource.data.lastLoginAt
+        : (("lastSeenAt" in resource.data) ? resource.data.lastSeenAt
+          : (("createdAt" in resource.data) ? resource.data.createdAt : null));
+    }
+
+    function lastAccessEndTs() {
+      return ("accessUntil" in resource.data) ? resource.data.accessUntil
+        : (("trialUsedAt" in resource.data) ? resource.data.trialUsedAt
+          : lastLoginTs());
+    }
+
+    function inactivePlanOk() {
+      return (lastAccessEndTs() is timestamp)
+        && lastAccessEndTs() <= request.time - duration.value(150, 'd');
+    }
+
+    function noLoginOk() {
+      return (lastLoginTs() is timestamp)
+        && lastLoginTs() <= request.time - duration.value(60, 'd');
+    }
+
+    function trialEligibleNow() {
+      return !("trialUsedAt" in resource.data)
+        || resource.data.trialUsedAt == null
+        || (("trialEligibleAfter" in resource.data)
+          && (resource.data.trialEligibleAfter is timestamp)
+          && resource.data.trialEligibleAfter <= request.time)
+        || inactivePlanOk()
+        || noLoginOk();
+    }
+
+    function isSelfTrialUpdate(uid) {
+      return isOwner(uid)
+        && trialEligibleNow()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(trialUserKeys())
+        && isValidTrialLevel(request.resource.data.trialLevel)
+        && isTrialPlan(request.resource.data.plan, request.resource.data.trialLevel)
+        && request.resource.data.trialDays == 7
+        && request.resource.data.trialSource == "user"
+        && request.resource.data.access == false
+        && request.resource.data.blocked == false
+        && ("levels" in request.resource.data)
+        && (request.resource.data.levels is list)
+        && request.resource.data.levels.hasAny([request.resource.data.trialLevel])
+        && request.resource.data.accessUntil >= request.time
+        && request.resource.data.accessUntil <= request.time + duration.value(7, 'd');
+    }
+
     match /users/{uid} {
 
       allow read: if isAdmin() || isOwner(uid);
@@ -91,8 +153,8 @@ service cloud.firestore {
         // createdAt może być serverTimestamp – nie walidujemy "== request.time"
       );
 
-      // Update: admin wszystko, user tylko userEditableKeys()
-      allow update: if isAdmin() || (
+      // Update: admin wszystko, user tylko userEditableKeys() + self-trial
+      allow update: if isAdmin() || isSelfTrialUpdate(uid) || (
         isOwner(uid)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(userEditableKeys())
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(protectedUserKeys())

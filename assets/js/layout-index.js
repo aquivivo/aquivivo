@@ -7,6 +7,8 @@ import { db } from './firebase-init.js';
 import {
   doc,
   getDoc,
+  updateDoc,
+  serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 (function () {
@@ -27,6 +29,250 @@ import {
     }
 
     requestAnimationFrame(step);
+  }
+
+  const IDLE_LIMIT_MS = 15 * 60 * 1000;
+  let idleTimer = null;
+  let idleEnabled = false;
+  let idleBound = false;
+
+  const TRIAL_DAYS = 7;
+  const TRIAL_LEVEL = 'A1';
+  const INACTIVE_PLAN_MS = 5 * 30 * 24 * 60 * 60 * 1000;
+  const NO_LOGIN_MS = 2 * 30 * 24 * 60 * 60 * 1000;
+  const TRIAL_INTENT_KEY = 'av_trial_intent';
+
+  let CURRENT_USER = null;
+  let CURRENT_DOC = null;
+
+  function toDateMaybe(v) {
+    if (!v) return null;
+    if (v instanceof Date) return v;
+    if (typeof v.toDate === 'function') return v.toDate();
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function normalizePlanKey(planId) {
+    return String(planId || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s*\+\s*/g, ' + ')
+      .replace(/\s+/g, ' ');
+  }
+
+  function levelsFromPlan(planId) {
+    const key = normalizePlanKey(planId);
+    const map = {
+      a1: ['A1'],
+      a2: ['A2'],
+      b1: ['B1'],
+      b2: ['B2'],
+      premium: ['A1', 'A2', 'B1', 'B2'],
+      premium_a1: ['A1', 'A2'],
+      premium_b1: ['A1', 'A2', 'B1'],
+      premium_b2: ['A1', 'A2', 'B1', 'B2'],
+      'vip a1 + a2 + b1': ['A1', 'A2', 'B1'],
+      'vip a1 + a2 + b1 + b2': ['A1', 'A2', 'B1', 'B2'],
+    };
+    return map[key] ? [...map[key]] : [];
+  }
+
+  function getUserLevels(docData) {
+    const rawLevels = Array.isArray(docData?.levels)
+      ? docData.levels.map((x) => String(x).toUpperCase())
+      : [];
+    if (rawLevels.length) return rawLevels;
+    return levelsFromPlan(docData?.plan);
+  }
+
+  function hasActiveAccess(docData) {
+    if (!docData) return false;
+    const levels = getUserLevels(docData);
+    const plan = normalizePlanKey(docData?.plan);
+    const untilDate = toDateMaybe(docData?.accessUntil);
+    const hasUntil = !!untilDate;
+    const isUntilValid = hasUntil ? untilDate.getTime() > Date.now() : false;
+    const hasGlobalAccess =
+      plan === 'premium' || (docData?.access === true && levels.length === 0);
+    return (hasGlobalAccess || levels.length > 0) && isUntilValid;
+  }
+
+  function isTrialEligible(docData) {
+    if (!docData) return false;
+    if (docData.admin === true || String(docData.role || '') === 'admin')
+      return false;
+    if (hasActiveAccess(docData)) return false;
+
+    const now = Date.now();
+    const trialUsedAt = toDateMaybe(docData.trialUsedAt);
+    const overrideAt = toDateMaybe(docData.trialEligibleAfter);
+    if (!trialUsedAt) return true;
+    if (overrideAt && overrideAt.getTime() <= now) return true;
+
+    const lastLogin =
+      toDateMaybe(docData.lastLoginAt) ||
+      toDateMaybe(docData.lastSeenAt) ||
+      toDateMaybe(docData.createdAt);
+    const lastAccessEnd =
+      toDateMaybe(docData.accessUntil) || trialUsedAt || lastLogin;
+
+    const inactivePlanOk =
+      !!lastAccessEnd && now - lastAccessEnd.getTime() >= INACTIVE_PLAN_MS;
+    const noLoginOk =
+      !!lastLogin && now - lastLogin.getTime() >= NO_LOGIN_MS;
+
+    return inactivePlanOk || noLoginOk;
+  }
+
+  function setTrialMessage(text, type = 'warn') {
+    const el = document.getElementById('trialMsg');
+    if (!el) return;
+    if (!text) {
+      el.style.display = 'none';
+      el.textContent = '';
+      return;
+    }
+    el.style.display = 'block';
+    el.textContent = text;
+    el.style.color = type === 'ok' ? '#bde5ff' : '#ffe08a';
+  }
+
+  function stopIdleTimer() {
+    if (idleTimer) {
+      clearTimeout(idleTimer);
+      idleTimer = null;
+    }
+  }
+
+  function startIdleTimer() {
+    stopIdleTimer();
+    idleTimer = setTimeout(handleIdleLogout, IDLE_LIMIT_MS);
+  }
+
+  async function handleIdleLogout() {
+    if (!idleEnabled) return;
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.warn('[idle] signOut failed', e);
+    } finally {
+      location.href = 'index.html';
+    }
+  }
+
+  function bindIdleListeners() {
+    if (idleBound) return;
+    idleBound = true;
+
+    const onActivity = () => {
+      if (!idleEnabled) return;
+      startIdleTimer();
+    };
+
+    const onVisibility = () => {
+      if (!document.hidden) onActivity();
+    };
+
+    const events = [
+      'mousemove',
+      'mousedown',
+      'keydown',
+      'scroll',
+      'touchstart',
+      'click',
+    ];
+
+    events.forEach((evt) =>
+      window.addEventListener(evt, onActivity, { passive: true }),
+    );
+    document.addEventListener('visibilitychange', onVisibility);
+  }
+
+  async function activateTrial(user, docData) {
+    if (!user?.uid) return false;
+    if (!isTrialEligible(docData)) return false;
+
+    const userRef = doc(db, 'users', user.uid);
+    const until = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+    const payload = {
+      plan: 'trial_a1',
+      levels: [TRIAL_LEVEL],
+      access: false,
+      blocked: false,
+      accessUntil: until,
+      trialUsedAt: serverTimestamp(),
+      trialLevel: TRIAL_LEVEL,
+      trialDays: TRIAL_DAYS,
+      trialSource: 'user',
+      trialEligibleAfter: null,
+      updatedAt: serverTimestamp(),
+    };
+
+    try {
+      await updateDoc(userRef, payload);
+      CURRENT_DOC = { ...(docData || {}), ...payload };
+      setTrialMessage('✅ Trial A1 activado por 7 días.', 'ok');
+      return true;
+    } catch (e) {
+      console.warn('[trial] activation failed', e);
+      setTrialMessage('No se pudo activar el trial. Inténtalo de nuevo.');
+      return false;
+    }
+  }
+
+  function updateTrialUI() {
+    const btn = document.getElementById('btnTrialA1');
+    if (!btn) return;
+
+    if (!CURRENT_USER) {
+      btn.disabled = false;
+      setTrialMessage('Inicia sesión para activar tu prueba gratuita.');
+      return;
+    }
+
+    if (!CURRENT_DOC) {
+      btn.disabled = true;
+      setTrialMessage('⏳ Cargando tu estado...');
+      return;
+    }
+
+    if (CURRENT_DOC.admin === true || String(CURRENT_DOC.role || '') === 'admin') {
+      btn.style.display = 'none';
+      setTrialMessage('');
+      return;
+    }
+
+    if (hasActiveAccess(CURRENT_DOC)) {
+      btn.disabled = true;
+      setTrialMessage('Ya tienes acceso activo.');
+      return;
+    }
+
+    const ok = isTrialEligible(CURRENT_DOC);
+    btn.disabled = !ok;
+    if (ok) {
+      setTrialMessage('Activa tu prueba gratuita de A1 (7 días).', 'ok');
+    } else {
+      setTrialMessage(
+        'Tu prueba ya fue usada. Vuelve cuando no tengas plan activo o tras un tiempo de inactividad.',
+      );
+    }
+  }
+
+  function setupTrialButton() {
+    const btn = document.getElementById('btnTrialA1');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+      if (!CURRENT_USER) {
+        localStorage.setItem(TRIAL_INTENT_KEY, '1');
+        location.href = 'login.html?next=' + encodeURIComponent('index.html');
+        return;
+      }
+      const ok = await activateTrial(CURRENT_USER, CURRENT_DOC);
+      if (ok) updateTrialUI();
+    });
   }
 
   function injectHeader() {
@@ -286,13 +532,17 @@ import {
     });
 
     onAuthStateChanged(auth, async (user) => {
+      CURRENT_USER = user || null;
+      CURRENT_DOC = null;
       const loggedIn = !!user && user.emailVerified;
       let isAdmin = false;
+
       if (user?.uid) {
         try {
           const snap = await getDoc(doc(db, 'users', user.uid));
           const data = snap.exists() ? snap.data() : {};
-          isAdmin = String(data?.role || 'user') === 'admin';
+          CURRENT_DOC = data;
+          isAdmin = String(data?.role || 'user') === 'admin' || data?.admin === true;
         } catch (e) {
           console.warn('[layout-index] admin check failed', e);
         }
@@ -315,6 +565,22 @@ import {
       if (btnAdmin) {
         btnAdmin.style.display = loggedIn && isAdmin ? '' : 'none';
       }
+
+      idleEnabled = !!user && !isAdmin;
+      if (idleEnabled) {
+        bindIdleListeners();
+        startIdleTimer();
+      } else {
+        stopIdleTimer();
+      }
+
+      updateTrialUI();
+
+      if (loggedIn && localStorage.getItem(TRIAL_INTENT_KEY) === '1') {
+        localStorage.removeItem(TRIAL_INTENT_KEY);
+        await activateTrial(user, CURRENT_DOC);
+        updateTrialUI();
+      }
     });
   }
 
@@ -327,4 +593,5 @@ import {
   setupAnchorScroll();
   setupCursosScroll();
   setupAuthButtons();
+  setupTrialButton();
 })();

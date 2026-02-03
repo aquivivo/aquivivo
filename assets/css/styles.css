@@ -1888,6 +1888,55 @@ body[data-page*='admin'] details > div {
   padding-right: 0;
 }
 
+/* ===== Content protection (soft) ===== */
+.content-protect,
+.content-protect * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.content-protect input,
+.content-protect textarea,
+.content-protect select,
+.content-protect option,
+.content-protect [contenteditable='true'] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default;
+}
+
+.content-watermark {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1500;
+  opacity: 0.12;
+  display: none;
+}
+.content-watermark-grid {
+  width: 110%;
+  height: 110%;
+  margin-left: -5%;
+  margin-top: -5%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 64px;
+  transform: rotate(-18deg);
+}
+.content-watermark-item {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+.content-blur main.page {
+  filter: blur(10px);
+  transition: filter 160ms ease;
+}
+
 /* =====================================================
    AQUIVIVO — Brand Rules Patch (v1.0.1)
    PURPOSE: Apply Colombia palette (blue/yellow/red) across UI
