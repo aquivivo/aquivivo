@@ -1,5 +1,5 @@
-<!doctype html>
-<html lang="es">
+﻿<!doctype html>
+<html lang="pl">
   <head>
     <meta charset="utf-8" />
     <title>Admin | AquiVivo</title>
@@ -13,43 +13,43 @@
       <div class="container">
         <section class="heroBanner">
           <div class="heroTitleRow">
-            <div class="heroIcon">🛡️</div>
+            <div class="heroIcon">ADMIN</div>
             <div>
               <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
                 <a class="btn-yellow" href="admin-select.html?type=lesson"
-                  >✏️ Admin lecciones</a
+                  >Admin lekcji</a
                 >
                 <a
                   class="btn-white-outline"
                   href="admin-select.html?type=exercise"
-                  >🧪 Admin ejercicios</a
+                  >Admin cwiczen</a
                 >
-                <a class="btn-white-outline" href="#accUsers">👤 Usuarios</a>
+                <a class="btn-white-outline" href="#accUsers">Uzytkownicy</a>
                 <a class="btn-white-outline" href="#accPromo"
-                  >🏷️ Códigos promo</a
+                  >Kody promo</a
                 >
                 <a class="btn-white-outline" href="#accSegments"
-                  >🎯 Segmentación</a
+                  >Segmentacja</a
                 >
               </div>
             </div>
           </div>
         </section>
-        <!-- ✅ Dashboard (accordion – open by default) -->
+        <!-- Dashboard (akordeon - domyslnie otwarty) -->
         <details class="card" id="accDashboard">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            📊 Dashboard
+            Pulpit
             <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(clic para abrir/cerrar)</span
+              >(kliknij aby otworzyc/zamknac)</span
             >
           </summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
-              Resumen rápido (conteos en Firestore). Haz clic en una tarjeta
-              para ver detalles.
+              Szybkie podsumowanie (liczniki z Firestore). Kliknij karte, aby
+              zobaczyc szczegoly.
             </p>
             <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
               <button
@@ -57,7 +57,7 @@
                 id="btnRefreshStats"
                 type="button"
               >
-                🔄 Actualizar
+                Odswiez
               </button>
               <span class="hintSmall" id="statsStatus"></span>
             </div>
@@ -67,14 +67,14 @@
                 data-details="statUsersDetails"
                 data-expand="users"
               >
-                <div class="muted" style="font-weight: 900">👤 Usuarios</div>
+                <div class="muted" style="font-weight: 900">Uzytkownicy</div>
                 <div
                   id="statUsers"
                   style="font-size: 34px; font-weight: 900; margin-top: 6px"
                 >
-                  —
+                  -
                 </div>
-                <div class="hintSmall">Total en users</div>
+                <div class="hintSmall">Suma w users</div>
                 <div
                   class="statDetails"
                   id="statUsersDetails"
@@ -87,15 +87,15 @@
                 data-expand="premium"
               >
                 <div class="muted" style="font-weight: 900">
-                  💎 Plan premium
+                  Plan premium
                 </div>
                 <div
                   id="statPremiumPlan"
                   style="font-size: 34px; font-weight: 900; margin-top: 6px"
                 >
-                  —
+                  -
                 </div>
-                <div class="hintSmall">users donde plan == "premium"</div>
+                <div class="hintSmall">uzytkownicy gdzie plan == "premium"</div>
                 <div
                   class="statDetails"
                   id="statPremiumPlanDetails"
@@ -107,14 +107,14 @@
                 data-details="statAccessTrueDetails"
                 data-expand="access"
               >
-                <div class="muted" style="font-weight: 900">🔓 access=true</div>
+                <div class="muted" style="font-weight: 900">access=true</div>
                 <div
                   id="statAccessTrue"
                   style="font-size: 34px; font-weight: 900; margin-top: 6px"
                 >
-                  —
+                  -
                 </div>
-                <div class="hintSmall">users donde access == true</div>
+                <div class="hintSmall">uzytkownicy gdzie access == true</div>
                 <div
                   class="statDetails"
                   id="statAccessTrueDetails"
@@ -126,14 +126,14 @@
                 data-details="statBlockedDetails"
                 data-expand="blocked"
               >
-                <div class="muted" style="font-weight: 900">⛔ Bloqueados</div>
+                <div class="muted" style="font-weight: 900">Zablokowani</div>
                 <div
                   id="statBlocked"
                   style="font-size: 34px; font-weight: 900; margin-top: 6px"
                 >
-                  —
+                  -
                 </div>
-                <div class="hintSmall">users donde blocked == true</div>
+                <div class="hintSmall">uzytkownicy gdzie blocked == true</div>
                 <div
                   class="statDetails"
                   id="statBlockedDetails"
@@ -146,15 +146,15 @@
                 data-expand="oneTopic"
               >
                 <div class="muted" style="font-weight: 900">
-                  🎯 1 tema abierto
+                  1 temat otwarty
                 </div>
                 <div
                   id="statOneTopic"
                   style="font-size: 34px; font-weight: 900; margin-top: 6px"
                 >
-                  —
+                  -
                 </div>
-                <div class="hintSmall">users donde openedTopicsCount == 1</div>
+                <div class="hintSmall">uzytkownicy gdzie openedTopicsCount == 1</div>
                 <div
                   class="statDetails"
                   id="statOneTopicDetails"
@@ -166,14 +166,14 @@
                 data-details="statCoursesDetails"
                 data-expand="courses"
               >
-                <div class="muted" style="font-weight: 900">📚 Temas</div>
+                <div class="muted" style="font-weight: 900">Tematy</div>
                 <div
                   id="statCourses"
                   style="font-size: 34px; font-weight: 900; margin-top: 6px"
                 >
-                  —
+                  -
                 </div>
-                <div class="hintSmall">docs en courses</div>
+                <div class="hintSmall">dokumenty w courses</div>
                 <div
                   class="statDetails"
                   id="statCoursesDetails"
@@ -185,14 +185,14 @@
                 data-details="statExercisesDetails"
                 data-expand="exercises"
               >
-                <div class="muted" style="font-weight: 900">🧩 Ejercicios</div>
+                <div class="muted" style="font-weight: 900">Cwiczenia</div>
                 <div
                   id="statExercises"
                   style="font-size: 34px; font-weight: 900; margin-top: 6px"
                 >
-                  —
+                  -
                 </div>
-                <div class="hintSmall">docs en exercises</div>
+                <div class="hintSmall">dokumenty w exercises</div>
                 <div
                   class="statDetails"
                   id="statExercisesDetails"
@@ -202,65 +202,65 @@
             </div>
           </div>
         </details>
-        <!-- ✅ Segmentación (accordion – closed by default) -->
+        <!-- Segmentacja (akordeon - domyslnie zamkniety) -->
         <details class="card" id="accSegments">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            🎯 Segmentación (marketing)
+            Segmentacja (marketing)
             <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(clic para abrir/cerrar)</span
+              >(kliknij aby otworzyc/zamknac)</span
             >
           </summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
-              Listas rápidas: expirando pronto, premium activo, sin acceso
-              (aprox.). Puedes exportar CSV.
+              Szybkie listy: wygasa wkrotce, premium aktywny, bez dostepu (ok.).
+              Mozesz eksportowac CSV.
             </p>
             <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
               <button class="btn-white-outline" id="btnLoadExp0" type="button">
-                ⏳ Expira hoy
+                Wygasa dzis
               </button>
               <button class="btn-white-outline" id="btnLoadExp3" type="button">
-                ⏳ Expira en 3 días
+                Wygasa za 3 dni
               </button>
               <button class="btn-white-outline" id="btnLoadExp7" type="button">
-                ⏳ Expiran en 7 días
+                Wygasa za 7 dni
               </button>
               <button class="btn-white-outline" id="btnLoadExp14" type="button">
-                ⏳ Expiran en 14 días
+                Wygasa za 14 dni
               </button>
               <button
                 class="btn-white-outline"
                 id="btnLoadPremiumActive"
                 type="button"
               >
-                💎 Premium activo (accessUntil)
+                Premium aktywny (accessUntil)
               </button>
               <button
                 class="btn-white-outline"
                 id="btnLoadFreeUsers"
                 type="button"
               >
-                🔒 Sin acceso (aprox.)
+                Bez dostepu (ok.)
               </button>
               <button
                 class="btn-white-outline"
                 id="btnLoadOneTopic"
                 type="button"
               >
-                🎯 Solo 1 tema
+                Tylko 1 temat
               </button>
               <button
                 class="btn-white-outline"
                 id="btnLoadOneTopicInactive"
                 type="button"
               >
-                🚶 1 tema · inactivo 7 días
+                1 temat - nieaktywny 7 dni
               </button>
               <button class="btn-yellow" id="btnExportSegment" type="button">
-                ⬇️ Exportar CSV
+                Eksportuj CSV
               </button>
               <span
                 class="hintSmall"
@@ -269,31 +269,31 @@
               ></span>
             </div>
             <div class="hr"></div>
-            <div class="sectionTitle" style="margin-top: 0">Resultados</div>
+            <div class="sectionTitle" style="margin-top: 0">Wyniki</div>
             <div class="list" id="segmentList"></div>
           </div>
         </details>
-        <!-- ✅ Promo codes (accordion – closed by default) -->
+        <!-- Kody promo (akordeon - domyslnie zamkniety) -->
         <details class="card" id="accPromo">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            🏷️ Códigos promo
+            Kody promo
             <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(clic para abrir/cerrar)</span
+              >(kliknij aby otworzyc/zamknac)</span
             >
           </summary>
           <div class="hr"></div>
           <div class="sectionTitle" style="margin-top: 0">
-            🎁 Referral settings
+            Ustawienia polecen
           </div>
           <div
             class="metaRow"
             style="flex-wrap: wrap; gap: 10px; align-items: flex-end"
           >
             <div style="min-width: 220px">
-              <label class="muted" style="font-weight: 900">% descuento</label>
+              <label class="muted" style="font-weight: 900">% znizki</label>
               <input
                 class="input"
                 id="refOwnerPercent"
@@ -319,7 +319,7 @@
               id="btnSaveReferralSettings"
               type="button"
             >
-              💾 Guardar
+              Zapisz
             </button>
             <span
               class="hintSmall"
@@ -328,13 +328,12 @@
             ></span>
           </div>
           <div class="hintSmall" style="margin-top: 10px">
-            Guardado en: <b>promo_codes/_REFERRAL_SETTINGS</b>
+            Zapisane w: <b>promo_codes/_REFERRAL_SETTINGS</b>
           </div>
 
           <div style="margin-top: 10px">
             <p class="subtitle">
-              Crea, activa y desactiva códigos. Los usuarios los aplican en el
-              panel.
+              Tworz, aktywuj i wylaczaj kody. Uzytkownicy stosuja je w panelu.
             </p>
             <div
               class="metaRow"
@@ -342,31 +341,54 @@
             >
               <div style="min-width: 220px">
                 <label class="muted" style="font-weight: 900"
-                  >Código (ID)</label
+                  >Kod (ID)</label
                 >
                 <input
                   class="input"
                   id="promoCode"
-                  placeholder="Ej. START2026"
+                  placeholder="np. START2026"
                 />
               </div>
               <div style="min-width: 160px">
-                <label class="muted" style="font-weight: 900">Días</label>
+                <label class="muted" style="font-weight: 900">Dni</label>
                 <input
                   class="input"
                   id="promoDays"
                   min="0"
-                  placeholder="Ej. 30"
+                  placeholder="np. 30"
                   step="1"
                   type="number"
                 />
+              </div>
+              <div style="min-width: 170px">
+                <label class="muted" style="font-weight: 900">Wygasa</label>
+                <input class="input" id="promoExpires" type="date" />
               </div>
               <div style="min-width: 180px">
                 <label class="muted" style="font-weight: 900">Plan</label>
                 <select class="select" id="promoPlan">
                   <option selected="" value="premium">premium</option>
+                  <option value="premium_a1">premium_a1 (A1+A2)</option>
+                  <option value="premium_b1">premium_b1 (A1+A2+B1)</option>
+                  <option value="premium_b2">premium_b2 (A1+A2+B1+B2)</option>
+                  <option value="VIP A1 + A2 + B1">VIP A1 + A2 + B1</option>
+                  <option value="VIP A1 + A2 + B1 + B2">
+                    VIP A1 + A2 + B1 + B2
+                  </option>
+                  <option value="a1">A1</option>
+                  <option value="a2">A2</option>
+                  <option value="b1">B1</option>
+                  <option value="b2">B2</option>
                   <option value="free">free</option>
                 </select>
+              </div>
+              <div style="min-width: 220px; flex: 1">
+                <label class="muted" style="font-weight: 900">Notatka</label>
+                <input
+                  class="input"
+                  id="promoNote"
+                  placeholder="np. Tylko nowi uzytkownicy"
+                />
               </div>
               <label style="gap: 10px; align-items: center">
                 <input
@@ -375,17 +397,34 @@
                   style="width: 18px; height: 18px; margin: 0"
                   type="checkbox"
                 />
-                Activo
+                Aktywny
+              </label>
+              <label style="gap: 10px; align-items: center">
+                <input
+                  checked=""
+                  id="promoStack"
+                  style="width: 18px; height: 18px; margin: 0"
+                  type="checkbox"
+                />
+                Sumuj dni
+              </label>
+              <label style="gap: 10px; align-items: center">
+                <input
+                  id="promoRepeat"
+                  style="width: 18px; height: 18px; margin: 0"
+                  type="checkbox"
+                />
+                Powtarzalny
               </label>
               <button class="btn-yellow" id="btnSavePromoCode" type="button">
-                💾 Guardar
+                Zapisz
               </button>
               <button
                 class="btn-white-outline"
                 id="btnClearPromoForm"
                 type="button"
               >
-                🧹 Limpiar
+                Wyczysc
               </button>
               <span
                 class="hintSmall"
@@ -395,14 +434,14 @@
             </div>
             <div class="hr"></div>
             <div class="sectionTitle" style="margin-top: 0">
-              Lista de códigos
+              Lista kodow
             </div>
             <div class="list" id="promoListAdmin"></div>
           </div>
         </details>
         <details class="card" id="accServices">
           <summary class="sectionTitle">
-            🛍️ Servicios (oferta)
+            Uslugi (oferta)
             <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
               >(CRUD)</span
             >
@@ -410,14 +449,14 @@
           <div style="margin-top: 12px">
             <div class="rowBetween" style="gap: 10px; flex-wrap: wrap">
               <div class="subtitle" style="margin: 0">
-                Dodaj / edytuj usługi widoczne na <b>services.html</b>.
+                Dodaj / edytuj uslugi widoczne na <b>services.html</b>.
               </div>
               <button
                 class="btn-white-outline"
                 id="btnReloadServicesAdmin"
                 type="button"
               >
-                🔄 Actualizar
+                Odswiez
               </button>
             </div>
             <div class="hr"></div>
@@ -430,39 +469,39 @@
                 <input class="input" id="svcSku" placeholder="np. CONSULT_60" />
               </div>
               <div style="min-width: 220px">
-                <label class="muted" style="font-weight: 900">Categoría</label>
+                <label class="muted" style="font-weight: 900">Kategoria</label>
                 <select class="select" id="svcCategory">
-                  <option value="plans">planes</option>
-                  <option value="consultas">consultas</option>
-                  <option value="servicios">servicios</option>
-                  <option value="extras" selected="">extras</option>
-                  <option value="ebooks">ebooks</option>
+                  <option value="plans">plany</option>
+                  <option value="consultas">konsultacje</option>
+                  <option value="servicios">uslugi</option>
+                  <option value="extras" selected="">dodatki</option>
+                  <option value="ebooks">ebooki</option>
                 </select>
               </div>
               <div style="min-width: 240px; flex: 1">
-                <label class="muted" style="font-weight: 900">Título</label>
+                <label class="muted" style="font-weight: 900">Tytul</label>
                 <input
                   class="input"
                   id="svcTitle"
-                  placeholder="np. Consulta 60 min"
+                  placeholder="np. Konsultacja 60 min"
                 />
               </div>
               <div style="min-width: 260px; flex: 1">
                 <label class="muted" style="font-weight: 900"
-                  >Descripción</label
+                  >Opis</label
                 >
-                <input class="input" id="svcDesc" placeholder="Krótki opis…" />
+                <input class="input" id="svcDesc" placeholder="Krotki opis..." />
               </div>
               <div style="min-width: 160px">
-                <label class="muted" style="font-weight: 900">Precio</label>
-                <input class="input" id="svcPrice" placeholder="np. 49€" />
+                <label class="muted" style="font-weight: 900">Cena</label>
+                <input class="input" id="svcPrice" placeholder="np. 49 EUR" />
               </div>
               <div style="min-width: 160px">
-                <label class="muted" style="font-weight: 900">Badge</label>
-                <input class="input" id="svcBadge" placeholder="np. Popular" />
+                <label class="muted" style="font-weight: 900">Etykieta</label>
+                <input class="input" id="svcBadge" placeholder="np. Popularny" />
               </div>
               <div style="min-width: 120px">
-                <label class="muted" style="font-weight: 900">Order</label>
+                <label class="muted" style="font-weight: 900">Kolejnosc</label>
                 <input
                   class="input"
                   id="svcOrder"
@@ -473,7 +512,7 @@
                 />
               </div>
               <div style="min-width: 160px">
-                <label class="muted" style="font-weight: 900">CTA type</label>
+                <label class="muted" style="font-weight: 900">Typ CTA</label>
                 <select class="select" id="svcCtaType">
                   <option selected="" value="info">info</option>
                   <option value="link">link</option>
@@ -483,38 +522,38 @@
               </div>
               <div style="min-width: 260px; flex: 1">
                 <label class="muted" style="font-weight: 900"
-                  >CTA url / Payhip code (stripe: vacío)</label
+                  >CTA url / kod Payhip (stripe: puste)</label
                 >
                 <input
                   class="input"
                   id="svcCtaUrl"
-                  placeholder="link/payhip: https://... lub kod · stripe: zostaw puste"
+                  placeholder="link/payhip: https://... lub kod - stripe: zostaw puste"
                 />
               </div>
               <div style="min-width: 180px">
-                <label class="muted" style="font-weight: 900">CTA label</label>
+                <label class="muted" style="font-weight: 900">Etykieta CTA</label>
                 <input
                   class="input"
                   id="svcCtaLabel"
-                  placeholder="np. Comprar / Reservar"
+                  placeholder="np. Kup / Zarezerwuj"
                 />
               </div>
               <div style="min-width: 140px">
-                <label class="muted" style="font-weight: 900">Activo</label>
+                <label class="muted" style="font-weight: 900">Aktywny</label>
                 <select class="select" id="svcActive">
                   <option selected="" value="true">true</option>
                   <option value="false">false</option>
                 </select>
               </div>
               <button class="btn-yellow" id="btnSaveService" type="button">
-                💾 Guardar
+                Zapisz
               </button>
               <button
                 class="btn-white-outline"
                 id="btnClearService"
                 type="button"
               >
-                Limpiar
+                Wyczysc
               </button>
               <span
                 class="hintSmall"
@@ -527,45 +566,45 @@
           </div>
         </details>
 
-        <!-- ✅ Users (accordion – closed by default) -->
+        <!-- Uzytkownicy (akordeon - domyslnie zamkniety) -->
         <details class="card" id="accUsers">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            👤 Usuarios
+            Uzytkownicy
             <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(clic para abrir/cerrar)</span
+              >(kliknij aby otworzyc/zamknac)</span
             >
           </summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
-              Busca por email, abre el editor y gestiona acceso/plan/fechas.
+              Szukaj po emailu, otworz edytor i zarzadzaj dostepem/planem/datami.
             </p>
             <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
               <button class="btn-white-outline" id="btnLoadUsers" type="button">
-                Cargar usuarios
+                Wczytaj uzytkownikow
               </button>
               <select class="select" id="roleFilter" style="min-width: 200px">
-                <option value="all">Todos</option>
-                <option value="admins">Solo admin</option>
-                <option value="premium">Con acceso</option>
-                <option value="free">Sin acceso</option>
+                <option value="all">Wszyscy</option>
+                <option value="admins">Tylko admin</option>
+                <option value="premium">Z dostepem</option>
+                <option value="free">Bez dostepu</option>
               </select>
               <input
                 class="input"
                 id="userSearch"
-                placeholder="Buscar por email..."
+                placeholder="Szukaj po email..."
                 style="min-width: 260px"
               />
               <button class="btn-white-outline" id="btnSearch" type="button">
-                Buscar
+                Szukaj
               </button>
               <button class="btn-white-outline" id="btnClear" type="button">
-                Limpiar
+                Wyczysc
               </button>
               <span class="hintSmall" style="margin-left: auto"
-                >Tip: click en usuario → editar acceso</span
+                >Wskazowka: kliknij uzytkownika -> edytuj dostep</span
               >
             </div>
             <div id="usersSection" style="display: none; margin-top: 16px">
@@ -575,7 +614,7 @@
                 id="btnLoadMore"
                 style="margin-top: 12px"
               >
-                Cargar más
+                Wczytaj wiecej
               </button>
             </div>
           </div>
@@ -591,28 +630,28 @@
     >
       <div class="modalCard">
         <div class="modalHead">
-          <div class="modalTitle">Editar usuario</div>
+          <div class="modalTitle">Edytuj uzytkownika</div>
           <button class="btn-white-outline" id="userModalClose" type="button">
-            ✖
+            X
           </button>
         </div>
         <div class="hr"></div>
         <div class="panelGrid">
           <div class="card">
-            <div class="sectionTitle" style="margin-top: 0">Datos</div>
+            <div class="sectionTitle" style="margin-top: 0">Dane</div>
             <div class="muted" style="font-weight: 900; margin-top: 8px">
               Email
             </div>
-            <div id="um_email" style="width: fit-content">—</div>
+            <div id="um_email" style="width: fit-content">-</div>
             <div class="muted" style="font-weight: 900; margin-top: 12px">
               UID
             </div>
-            <div class="hintSmall" id="um_uid">—</div>
+            <div class="hintSmall" id="um_uid">-</div>
             <div class="muted" style="font-weight: 900; margin-top: 12px">
-              Género
+              Plec
             </div>
             <select class="select" id="um_gender">
-              <option value="">—</option>
+              <option value="">-</option>
               <option value="papi">Papi</option>
               <option value="mami">Mami</option>
             </select>
@@ -634,7 +673,7 @@
                   style="width: 18px; height: 18px; margin: 0"
                   type="checkbox"
                 />
-                Acceso
+                Dostep
               </label>
               <label style="gap: 10px">
                 <input
@@ -642,7 +681,7 @@
                   style="width: 18px; height: 18px; margin: 0"
                   type="checkbox"
                 />
-                Bloqueado
+                Zablokowany
               </label>
             </div>
             <div
@@ -654,18 +693,18 @@
                 id="um_openPanelAs"
                 type="button"
               >
-                👀 Ver panel como usuario
+                Podglad panelu jako uzytkownik
               </button>
-              <span class="hintSmall">Solo vista (no cambia tu login).</span>
+              <span class="hintSmall">Tylko podglad (nie zmienia twojego logowania).</span>
             </div>
           </div>
           <div class="card">
-            <div class="sectionTitle" style="margin-top: 0">Plan y fecha</div>
+            <div class="sectionTitle" style="margin-top: 0">Plan i data</div>
             <div class="muted" style="font-weight: 900; margin-top: 8px">
               Plan
             </div>
             <select class="select" id="um_plan">
-              <option value="free">free (sin acceso)</option>
+              <option value="free">free (bez dostepu)</option>
               <option value="a1">A1</option>
               <option value="a2">A2</option>
               <option value="b1">B1</option>
@@ -678,18 +717,17 @@
               <option value="premium_B2">premium_B2</option>
             </select>
             <div class="muted" style="font-weight: 900; margin-top: 12px">
-              Acceso hasta
+              Dostep do
             </div>
             <input class="input" id="um_until" type="datetime-local" />
             <div class="hintSmall" style="margin-top: 10px">
-              Reglas: acceso = admin OR access=true OR plan=premium OR
-              accessUntil en el futuro.
+              Zasady: Dostep = admin OR access=true OR plan=premium OR accessUntil w przyszlosci.
             </div>
           </div>
           <div class="card">
             <div class="sectionTitle" style="margin-top: 0">Trial</div>
             <div class="muted" style="font-weight: 900; margin-top: 8px">
-              Nivel
+              Poziom
             </div>
             <select class="select" id="um_trial_level">
               <option value="A1">A1</option>
@@ -698,15 +736,15 @@
               <option value="B2">B2</option>
             </select>
             <div class="muted" style="font-weight: 900; margin-top: 12px">
-              Días
+              Dni
             </div>
             <input class="input" id="um_trial_days" type="number" min="1" step="1" value="7" />
             <div class="metaRow" style="margin-top: 12px; flex-wrap: wrap; gap: 10px">
               <button class="btn-yellow" id="um_trial_grant" type="button">
-                🎁 Dar trial ahora
+                Daj trial teraz
               </button>
               <button class="btn-white-outline" id="um_trial_allow" type="button">
-                ✅ Permitir nuevo trial
+                Pozwol na nowy trial
               </button>
             </div>
             <div class="hintSmall" id="um_trial_info" style="margin-top: 10px"></div>
@@ -715,13 +753,13 @@
         <div class="hr"></div>
         <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
           <button class="btn-yellow" id="um_grant30" type="button">
-            ➕ Premium +30 días
+            Premium +30 dni
           </button>
           <button class="btn-white-outline" id="um_extend30" type="button">
-            ⏳ Extender +30 días
+            Przedluz +30 dni
           </button>
           <button class="btn-red" id="um_revoke" type="button">
-            🔒 Quitar acceso
+            Usun dostep
           </button>
           <span
             class="hintSmall"
@@ -734,28 +772,28 @@
           style="margin-top: 12px; justify-content: flex-end; gap: 10px"
         >
           <button class="btn-yellow" id="um_save" type="button">
-            💾 Guardar cambios
+            Zapisz zmiany
           </button>
           <button class="btn-white-outline" id="um_cancel" type="button">
-            Cancelar
+            Anuluj
           </button>
         </div>
         <div class="hr"></div>
-        <div class="sectionTitle" style="margin-top: 0">📝 Nota del admin</div>
+        <div class="sectionTitle" style="margin-top: 0">Notatka admina</div>
         <textarea
           class="input"
           id="um_note"
-          placeholder="Nota interna (solo admin)…"
+          placeholder="Notatka wewnetrzna (tylko admin)..."
           rows="3"
         ></textarea>
         <div class="hr"></div>
         <div class="sectionTitle" style="margin-top: 0">
-          📜 Historial de acceso
+          Historia dostepu
         </div>
         <div class="list" id="um_logs"></div>
         <div class="hintSmall" style="margin-top: 10px">
-          Se guarda automáticamente cuando cambias acceso/plan/fechas o usas
-          botones rápidos.
+          Zapisuje sie automatycznie gdy zmieniasz dostep/plan/daty lub uzywasz
+          szybkich przyciskow.
         </div>
       </div>
     </div>
@@ -763,3 +801,10 @@
     <script src="assets/js/pages/esadmin-page.js" type="module"></script>
   </body>
 </html>
+
+
+
+
+
+
+

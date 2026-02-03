@@ -1,4 +1,4 @@
-import { auth, db } from '../firebase-init.js';
+﻿import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
   collection, query, where, orderBy, limit, getDocs, doc, getDoc
@@ -49,8 +49,8 @@ onAuthStateChanged(auth, async (user) => {
   }
   await ensureAdmin(user);
   // Small UX: if type passed, hint in the UI (optional)
-  if (type === 'lesson') levelHint.textContent = 'Destino: Admin lección';
-  if (type === 'exercise') levelHint.textContent = 'Destino: Admin ejercicios';
+  if (type === 'lesson') levelHint.textContent = 'Cel: Admin lekcji';
+  if (type === 'exercise') levelHint.textContent = 'Cel: Admin cwiczen';
 });
 
 btnLoadTopics.addEventListener('click', loadTopics);
@@ -65,7 +65,7 @@ selTopic.addEventListener('change', () => {
     return;
   }
 
-  topicTitle.textContent = t.title || '(sin título)';
+  topicTitle.textContent = t.title || '(bez tytulu)';
   topicSubtitle.textContent = t.subtitle || '';
   setPreviewVisible(true);
   setError('');
@@ -96,7 +96,7 @@ async function loadTopics() {
     btnRefresh.disabled = true;
 
     const level = selLevel.value;
-    levelHint.textContent = 'Cargando temas…';
+    levelHint.textContent = 'Wczytywanie tematow...';
 
     // Source of topics: your app uses collection 'courses' filtered by level, ordered.
     // Keep limit reasonable; you can remove limit if you want all.
@@ -122,20 +122,20 @@ async function loadTopics() {
     // Populate select
     selTopic.innerHTML = '';
     if (topicsCache.length === 0) {
-      selTopic.innerHTML = '<option value="">— No hay temas en este nivel —</option>';
-      levelHint.textContent = '0 temas.';
+      selTopic.innerHTML = '<option value="">-- Brak tematow na tym poziomie --</option>';
+      levelHint.textContent = '0 tematow.';
       selTopic.disabled = true;
       btnRefresh.disabled = false;
       return;
     }
 
-    selTopic.appendChild(new Option('— Elige un tema —', ''));
+    selTopic.appendChild(new Option('-- Wybierz temat --', ''));
     for (const t of topicsCache) {
       const label = t.title ? t.title : t.id;
       selTopic.appendChild(new Option(label, t.id));
     }
 
-    levelHint.textContent = `${topicsCache.length} temas cargados.`;
+    levelHint.textContent = `${topicsCache.length} tematow wczytanych.`;
     selTopic.disabled = false;
     btnRefresh.disabled = false;
 
@@ -146,10 +146,11 @@ async function loadTopics() {
     }
   } catch (err) {
     console.error(err);
-    setError('No se pudieron cargar los temas. Revisa la consola y Firestore.');
+    setError('Nie udalo sie wczytac tematow. Sprawdz konsole i Firestore.');
     levelHint.textContent = '';
-    selTopic.innerHTML = '<option value="">— Error al cargar —</option>';
+    selTopic.innerHTML = '<option value="">-- Blad wczytywania --</option>';
     selTopic.disabled = true;
     btnRefresh.disabled = false;
   }
 }
+

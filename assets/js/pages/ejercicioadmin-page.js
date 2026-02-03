@@ -1,4 +1,4 @@
-import { auth, db } from "../firebase-init.js";
+﻿import { auth, db } from "../firebase-init.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
 async function getIsAdmin(uid) {
@@ -106,7 +106,7 @@ const slugParam = params.get('slug') || '';
       function linesToArray(text) {
         return (text || '')
           .split('\n')
-          .map((s) => s.replace(/^\s*[-•]\s*/, '').trim())
+          .map((s) => s.replace(/^\s*[-*]\s*/, '').trim())
           .filter(Boolean);
       }
       function arrayToLines(arr) {
@@ -170,27 +170,27 @@ const slugParam = params.get('slug') || '';
 
           if (obj.length) {
             parts.push(
-              `<div class="lessonText"><b>🎯 Cele:</b><ul>${obj.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`,
+              `<div class="lessonText"><b>Cele:</b><ul>${obj.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`,
             );
           }
           if (dialog) {
             parts.push(
-              `<div class="lessonText"><b>💬 Diálogo:</b><div style="white-space:pre-wrap; margin-top:6px">${escapeHtml(dialog)}</div></div>`,
+              `<div class="lessonText"><b>Dialog:</b><div style="white-space:pre-wrap; margin-top:6px">${escapeHtml(dialog)}</div></div>`,
             );
           }
           if (gram.length) {
             parts.push(
-              `<div class="lessonText"><b>📚 Gramatyka:</b><ul>${gram.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`,
+              `<div class="lessonText"><b>Gramatyka:</b><ul>${gram.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`,
             );
           }
           if (voc.length) {
             parts.push(
-              `<div class="lessonText"><b>🧠 Słownictwo:</b><ul>${voc.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`,
+              `<div class="lessonText"><b>Slownictwo:</b><ul>${voc.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`,
             );
           }
           if (speak) {
             parts.push(
-              `<div class="lessonText"><b>🗣 Zadanie mówione:</b><div style="margin-top:6px">${escapeHtml(speak)}</div></div>`,
+              `<div class="lessonText"><b>Zadanie mowione:</b><div style="margin-top:6px">${escapeHtml(speak)}</div></div>`,
             );
           }
         }
@@ -226,14 +226,14 @@ const slugParam = params.get('slug') || '';
         if (!isAdmin) return;
         if (!topic || !(topic.slug || topic.id)) return;
 
-        lessonMetaStatus.textContent = 'Cargando...';
+        lessonMetaStatus.textContent = 'Ladowanie...';
         try {
           const docId = getLessonMetaDocId(topic);
           const ref = doc(db, 'course_meta', docId);
           const snap = await getDoc(ref);
 
           if (!snap.exists()) {
-            lessonMetaStatus.textContent = 'Sin lección guardada aún.';
+            lessonMetaStatus.textContent = 'Brak zapisanej lekcji.';
             return;
           }
 
@@ -252,23 +252,23 @@ const slugParam = params.get('slug') || '';
           lessonImageUrl.value = data.imageUrl || '';
           lessonHtml.value = data.html || '';
 
-          lessonMetaStatus.textContent = 'Lección cargada ✅';
+          lessonMetaStatus.textContent = 'Lekcja wczytana';
           renderLessonContent(data);
           syncLessonPageLink();
         } catch (e) {
           console.error(e);
-          lessonMetaStatus.textContent = 'Error cargando lección ❌';
+          lessonMetaStatus.textContent = 'Blad wczytywania lekcji';
         }
       }
 
       async function saveLessonMeta(topic) {
         if (!isAdmin) return;
         if (!topic || !(topic.slug || topic.id)) {
-          showToast('Primero elige un tema desde course.html', 'warn', 3000);
+          showToast('Najpierw wybierz temat w course.html', 'warn', 3000);
           return;
         }
 
-        lessonMetaStatus.textContent = 'Guardando...';
+        lessonMetaStatus.textContent = 'Zapisywanie...';
         try {
           const slug = String(topic.slug || topic.id);
           const docId = getLessonMetaDocId(topic);
@@ -290,12 +290,12 @@ const slugParam = params.get('slug') || '';
 
           await setDoc(ref, payload, { merge: true });
 
-          lessonMetaStatus.textContent = 'Guardado ✅';
-          showToast('Lección guardada ✅', 'ok', 2200);
+          lessonMetaStatus.textContent = 'Zapisano';
+          showToast('Lekcja zapisana', 'ok', 2200);
         } catch (e) {
           console.error(e);
-          lessonMetaStatus.textContent = 'Error ❌';
-          showToast('Error guardando lección', 'err', 2600);
+          lessonMetaStatus.textContent = 'Blad';
+          showToast('Blad zapisu lekcji', 'err', 2600);
         }
       }
 
@@ -382,8 +382,8 @@ const slugParam = params.get('slug') || '';
         btnAddExercise.disabled = isSaving;
         btnAutoOrder.disabled = isSaving;
         btnAddExercise.textContent = isSaving
-          ? '⏳ Guardando...'
-          : '➕ Guardar ejercicio';
+          ? 'Zapisywanie...'
+          : 'Zapisz cwiczenie';
       }
 
       // ===== UX buttons =====
@@ -393,16 +393,16 @@ const slugParam = params.get('slug') || '';
         backToCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
       if (levelsBtn)
         levelsBtn.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
-      if (pillLevel) pillLevel.textContent = `Nivel ${LEVEL}`;
+      if (pillLevel) pillLevel.textContent = `Poziom ${LEVEL}`;
 
       if (btnCopyLink)
         btnCopyLink.onclick = async () => {
           try {
             await navigator.clipboard.writeText(window.location.href);
-            showToast('✅ Enlace copiado', 'ok', 1800);
+            showToast('Link skopiowany', 'ok', 1800);
           } catch {
             showToast(
-              '⚠️ No se pudo copiar (bloqueado por navegador)',
+              'Nie udalo sie skopiowac (blokada przegladarki)',
               'warn',
               2600,
             );
@@ -458,8 +458,8 @@ const slugParam = params.get('slug') || '';
         'Retroalimentación por voz',
       ];
 
-      // ===== Plantillas (1:1 con TASK_OPTIONS) =====
-      // Uwaga: nie zmieniamy struktury Firestore. Szablony wypełniają istniejące pola formularza.
+      // ===== Szablony (1:1 z TASK_OPTIONS) =====
+      // Uwaga: nie zmieniamy struktury Firestore. Szablony wypelniaja istniejace pola formularza.
       const TEMPLATE_GROUPS = {
         choice: new Set([
           'Opción múltiple',
@@ -528,12 +528,12 @@ const slugParam = params.get('slug') || '';
 
         // Helpers
         const opt = (...lines) => lines.filter(Boolean).join('\n');
-        const noteAudio = 'AUDIO_URL: https://...  (pon aquí URL del audio)';
+        const noteAudio = 'AUDIO_URL: https://...  (podaj tutaj URL audio)';
 
         if (TEMPLATE_GROUPS.trueFalse.has(type)) {
           return {
             ...base,
-            prompt: 'Lee/Escucha y marca: ¿verdadero o falso?',
+            prompt: 'Lee/Escucha y marca: Â¿verdadero o falso?',
             optionsText: opt('true', 'false'),
             answer: 'true',
             category: 'both',
@@ -543,7 +543,7 @@ const slugParam = params.get('slug') || '';
         if (TEMPLATE_GROUPS.choice.has(type)) {
           return {
             ...base,
-            prompt: 'Elige la respuesta correcta:',
+            prompt: 'Elige la respuesta Poprawna:',
             optionsText: opt('A) ...', 'B) ...', 'C) ...', 'D) ...'),
             answer: 'B',
             category: 'both',
@@ -558,7 +558,7 @@ const slugParam = params.get('slug') || '';
             ...base,
             prompt: 'Completa: ___',
             optionsText: '',
-            answer: 'respuesta_correcta',
+            answer: 'respuesta_Poprawna',
             category: 'both',
             notes:
               type.startsWith('Escuchar') || type === 'Dictado con audio'
@@ -591,7 +591,7 @@ const slugParam = params.get('slug') || '';
             category: 'both',
             notes: type.startsWith('Escuchar')
               ? noteAudio
-              : 'Respuesta: números en orden, ej. 2-4-1-3'};
+              : 'Odpowiedz: numery w kolejnosci, np. 2-4-1-3'};
         }
 
         if (TEMPLATE_GROUPS.memory.has(type)) {
@@ -599,29 +599,29 @@ const slugParam = params.get('slug') || '';
             ...base,
             prompt: 'Encuentra los pares:',
             optionsText: opt(
-              'A) palabra = traducción',
-              'B) palabra = traducción',
-              'C) palabra = traducción',
+              'A) slowo = tlumaczenie',
+              'B) slowo = tlumaczenie',
+              'C) slowo = tlumaczenie',
             ),
             answer: 'pares correctos',
             category: 'vocab',
-            notes: "Usa opciones como pares: 'polaco = español'"};
+            notes: "Usa opciones como pares: 'polaco = hiszpanski'"};
         }
 
         if (TEMPLATE_GROUPS.grouping.has(type)) {
           return {
             ...base,
-            prompt: 'Agrupa las palabras en categorías:',
-            optionsText: opt('Categoría 1: ..., ...', 'Categoría 2: ..., ...'),
-            answer: 'agrupación',
+            prompt: 'Grupuj slowa w kategorie:',
+            optionsText: opt('Kategoria 1: ..., ...', 'Kategoria 2: ..., ...'),
+            answer: 'grupowanie',
             category: 'vocab',
-            notes: 'Sugerencia: wpisz kategorie + słowa w jednej linii'};
+            notes: 'Sugerencia: wpisz kategorie + slowa w jednej linii'};
         }
 
         if (TEMPLATE_GROUPS.cards.has(type)) {
           return {
             ...base,
-            prompt: 'Tarjetas: (frente → reverso)',
+            prompt: 'Tarjetas: (frente -> reverso)',
             optionsText: opt(
               '1) PL: ... | ES: ...',
               '2) PL: ... | ES: ...',
@@ -629,7 +629,7 @@ const slugParam = params.get('slug') || '';
             ),
             answer: '',
             category: 'vocab',
-            notes: 'Możesz dodać AUDIO_URL w Notas dla kart.'};
+            notes: 'Mozesz dodac AUDIO_URL w Notas dla kart.'};
         }
 
         if (TEMPLATE_GROUPS.imageSentence.has(type)) {
@@ -648,11 +648,11 @@ const slugParam = params.get('slug') || '';
             prompt:
               type === 'Corregir errores'
                 ? 'Popraw zdanie:'
-                : 'Przekształć zdanie według wzoru:',
+                : 'Przeksztalc zdanie wedlug wzoru:',
             optionsText: '',
-            answer: 'respuesta_correcta',
+            answer: 'respuesta_Poprawna',
             category: 'grammar',
-            notes: 'Możesz podać przykład w Notas.'};
+            notes: 'Mozesz podac przyklad w Notas.'};
         }
 
         if (type === 'Responder a una pregunta') {
@@ -666,7 +666,7 @@ const slugParam = params.get('slug') || '';
         if (type === 'Describir una imagen') {
           return {
             ...base,
-            prompt: 'Describe la imagen en 2–3 frases:',
+            prompt: 'Describe la imagen en 2-3 frases:',
             answer: '',
             category: 'both',
             notes: 'Dodaj URL obrazka.'};
@@ -681,7 +681,7 @@ const slugParam = params.get('slug') || '';
       }
 
       function setOptionsVisibility(type) {
-        // Ukryj opcje dla typów otwartych / voice itd.
+        // Ukryj opcje dla typow otwartych / voice itd.
         const needsOptions =
           TEMPLATE_GROUPS.choice.has(type) ||
           TEMPLATE_GROUPS.trueFalse.has(type) ||
@@ -732,10 +732,10 @@ const slugParam = params.get('slug') || '';
       if (!params.get('level') && !params.get('id') && !params.get('slug')) {
         topicTitle.textContent = 'Brak wybranego tematu';
         topicDesc.textContent =
-          'Otwórz najpierw course.html i kliknij temat (lesson otworzy się automatycznie z parametrami).';
-        pillType.textContent = '—';
-        pillSlug.textContent = 'slug: —';
-        pillCount.textContent = 'Ejercicios: —';
+          'Otworz najpierw course.html i kliknij temat (lesson otworzy sie automatycznie z parametrami).';
+        pillType.textContent = '-';
+        pillSlug.textContent = 'slug: -';
+        pillCount.textContent = 'Cwiczenia: -';
         exerciseList.innerHTML = '';
         emptyExercises.style.display = 'block';
       }
@@ -833,10 +833,10 @@ const slugParam = params.get('slug') || '';
 
       function renderTopic(t) {
         pillType.textContent =
-          t.type === 'grammar' ? 'Gramática' : 'Vocabulario';
+          t.type === 'grammar' ? 'Gramatyka' : 'Slownictwo';
         const eff = t.slug || t.id ? String(t.slug || t.id) : '';
-        pillSlug.textContent = eff ? `slug: ${eff}` : 'slug: —';
-        topicTitle.textContent = t.title || 'Tema';
+        pillSlug.textContent = eff ? `slug: ${eff}` : 'slug: -';
+        topicTitle.textContent = t.title || 'Temat';
         topicDesc.textContent = t.desc || '';
 
         taskChips.innerHTML = '';
@@ -899,7 +899,7 @@ const slugParam = params.get('slug') || '';
 
         // Ensure visual order label is consistent with current array order in reorder mode
         list.forEach((ex, idx) => {
-          // For display only; actual "order" is saved to Firestore when you click "Zapisz kolejność"
+          // For display only; actual "order" is saved to Firestore when you click "Zapisz kolejnosc"
           if (REORDER_MODE && IS_ADMIN) ex.__tmpOrder = idx + 1;
         });
 
@@ -919,9 +919,9 @@ const slugParam = params.get('slug') || '';
 
       function qLabel(total, shown) {
         if (!filterSearch && !filterType && !filterCategory)
-          return `Ejercicios: ${total}`;
-        if (shown === total) return `Ejercicios: ${total}`;
-        return `Ejercicios: ${shown} / ${total}`;
+          return `Cwiczenia: ${total}`;
+        if (shown === total) return `Cwiczenia: ${total}`;
+        return `Cwiczenia: ${shown} / ${total}`;
       }
       function getNextOrder() {
         if (!cachedExercises.length) return 1;
@@ -932,7 +932,7 @@ const slugParam = params.get('slug') || '';
       }
 
       function renderExerciseCard(ex, idx) {
-        const type = ex.type || 'Ejercicio';
+        const type = ex.type || 'Cwiczenie';
         const prompt = ex.prompt || '';
         const options = Array.isArray(ex.options) ? ex.options : [];
         const order = Number(ex.order || idx + 1);
@@ -961,8 +961,8 @@ const slugParam = params.get('slug') || '';
         const adminControls = isAdmin
           ? `
               <div style="display:flex; gap:8px; align-items:center">
-                <button class="btn" id="pv-${ex.id}" type="button" title="Podgląd (uczeń)">👀</button>
-                <button class="dangerMini" id="del-${ex.id}" type="button" title="Eliminar">🗑</button>
+                <button class="btn" id="pv-${ex.id}" type="button" title="Podglad (uczen)">Podglad</button>
+                <button class="dangerMini" id="del-${ex.id}" type="button" title="Usun">Usun</button>
               </div>
             `
           : '';
@@ -970,7 +970,7 @@ const slugParam = params.get('slug') || '';
         return `
           <div class="exercise ${REORDER_MODE && IS_ADMIN ? 'dragHint' : ''}" id="ex-${ex.id}" data-id="${ex.id}" ${REORDER_MODE && IS_ADMIN ? 'draggable="true"' : ''}>
             ${adminControls}
-            <div class="type">${escapeHtml(type)} · #${order} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ''}</div>
+            <div class="type">${escapeHtml(type)} Â· #${order} ${ex.category ? ` Â· <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ''}</div>
             <h3>${escapeHtml(prompt)}</h3>
             ${ex.imageUrl ? `<img src="${escapeHtml(ex.imageUrl)}" alt="" style="max-width:100%; border-radius:14px; border:1px solid rgba(0,0,0,0.08); margin: 10px 0 12px;" />` : ''}
             ${optionsHtml}
@@ -1004,14 +1004,14 @@ const slugParam = params.get('slug') || '';
           if (delBtn) {
             delBtn.onclick = async (ev) => {
               ev.stopPropagation();
-              if (!confirm('Usunąć to zadanie?')) return;
+              if (!confirm('Usunac to zadanie?')) return;
               try {
                 await deleteDoc(doc(db, 'exercises', ex.id));
-                showToast('🗑 Usunięto', 'ok', 1600);
+                showToast('Usunieto', 'ok', 1600);
                 await loadExercises(currentTopic);
               } catch (e) {
                 console.error(e);
-                showToast('❌ Błąd usuwania (sprawdź konsolę)', 'bad', 3200);
+                showToast('Blad usuwania (sprawdz konsole)', 'bad', 3200);
               }
             };
           }
@@ -1072,8 +1072,8 @@ const slugParam = params.get('slug') || '';
               markDone(CURRENT_UID, ex.id);
             }
             res.innerHTML = ok
-              ? `<span class="ok">✅ Correcto</span>`
-              : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
+            ? `<span class="ok">Poprawne</span>`
+              : `<span class="bad">Niepoprawne</span> <span class="smallNote">Poprawna: ${escapeHtml(correct)}</span>`;
           };
 
           chk.onclick = check;
@@ -1097,8 +1097,8 @@ const slugParam = params.get('slug') || '';
             }
 
             res.innerHTML = ok
-              ? `<span class="ok">✅ Correcto</span>`
-              : `<span class="bad">❌ Incorrecto</span> <span class="smallNote">Correcta: ${escapeHtml(correct)}</span>`;
+            ? `<span class="ok">Poprawne</span>`
+              : `<span class="bad">Niepoprawne</span> <span class="smallNote">Poprawna: ${escapeHtml(correct)}</span>`;
 
             if (ok) disableChoiceButtons(ex.id);
           };
@@ -1117,11 +1117,11 @@ const slugParam = params.get('slug') || '';
 
         if (!effectiveSlug) {
           emptyExercises.style.display = 'block';
-          pillCount.textContent = 'Ejercicios: —';
+          pillCount.textContent = 'Cwiczenia: -';
           return;
         }
 
-        // Prefer topicId (courses docId) — our canonical contract
+        // Prefer topicId (courses docId) - our canonical contract
         let snap = null;
         try {
           const qx = query(
@@ -1132,7 +1132,7 @@ const slugParam = params.get('slug') || '';
           );
           snap = await getDocs(qx);
         } catch (e) {
-          // Often means missing composite index or field mismatch — keep fallback below
+          // Often means missing composite index or field mismatch - keep fallback below
           console.warn('Primary exercises query failed', e);
         }
 
@@ -1148,7 +1148,7 @@ const slugParam = params.get('slug') || '';
         }
         if (snap.empty) {
           emptyExercises.style.display = 'block';
-          pillCount.textContent = 'Ejercicios: 0';
+          pillCount.textContent = 'Cwiczenia: 0';
           return;
         }
 
@@ -1181,7 +1181,7 @@ const slugParam = params.get('slug') || '';
           return;
         }
 
-        sessionEmail.textContent = user.email || '(sin correo)';
+        sessionEmail.textContent = user.email || '(brak emaila)';
         CURRENT_UID = user.uid || null;
         isAdmin = await getIsAdmin(user.uid);
         IS_ADMIN = isAdmin;
@@ -1191,7 +1191,7 @@ const slugParam = params.get('slug') || '';
 
         fillExerciseTypes();
 
-        // ===== Plantilla UI wiring =====
+        // ===== Podpiecie UI szablonow =====
         const btnApplyTemplate = document.getElementById('btnApplyTemplate');
         const tplOverwrite = document.getElementById('tplOverwrite');
 
@@ -1255,7 +1255,7 @@ const slugParam = params.get('slug') || '';
           if (!IS_ADMIN) return;
           if (!currentTopic || !currentTopic.slug) return;
           if (!HAS_ORDER_CHANGES) {
-            setToast('Brak zmian w kolejności.', 'info');
+            setToast('Brak zmian w kolejnosci.', 'info');
             return;
           }
 
@@ -1266,12 +1266,12 @@ const slugParam = params.get('slug') || '';
               const ex = ALL_EXERCISES[i];
               await updateDoc(doc(db, 'exercises', ex.id), { order: i + 1 });
             }
-            setToast('💾 Zapisano kolejność.', 'ok');
+            setToast('Zapisano kolejnosc.', 'ok');
             HAS_ORDER_CHANGES = false;
             await loadExercises(currentTopic);
           } catch (e) {
             console.error(e);
-            setToast('❌ Nie udało się zapisać kolejności (konsola).', 'error');
+            setToast('Nie udalo sie zapisac kolejnosci (konsola).', 'error');
           } finally {
             btnSaveOrder.disabled = false;
           }
@@ -1288,19 +1288,19 @@ const slugParam = params.get('slug') || '';
         if (!params.get('id') && !params.get('slug')) return;
 
         try {
-          showToast('⏳ Cargando tema...', 'warn', 1200);
+          showToast('Ladowanie tematu...', 'warn', 1200);
 
           const topic = await loadTopic();
           // Lesson editor will be shown after topic loads
           if (!topic) {
-            topicTitle.textContent = 'Tema no encontrado';
+            topicTitle.textContent = 'Nie znaleziono tematu';
             topicDesc.textContent =
-              'No se pudo cargar el tema. Verifica el enlace (level/slug/id).';
-            pillType.textContent = '—';
-            pillSlug.textContent = 'slug: —';
-            pillCount.textContent = 'Ejercicios: —';
+              'Nie mozna wczytac tematu. Sprawdz link (level/slug/id).';
+            pillType.textContent = '-';
+            pillSlug.textContent = 'slug: -';
+            pillCount.textContent = 'Cwiczenia: -';
             emptyExercises.style.display = 'block';
-            showToast('⚠️ No se encontró el tema', 'warn', 2600);
+            showToast('Nie znaleziono tematu', 'warn', 2600);
             return;
           }
 
@@ -1312,7 +1312,7 @@ const slugParam = params.get('slug') || '';
           }
         } catch (e) {
           console.error(e);
-          showToast('❌ Error al cargar (mira la consola)', 'bad', 3600);
+          showToast('Blad ladowania (sprawdz konsole)', 'bad', 3600);
         }
       });
 
@@ -1324,37 +1324,37 @@ const slugParam = params.get('slug') || '';
         const next = String(getNextOrder());
         if (kind === 'fill') {
           exType.value = 'Rellenar los espacios';
-          exPrompt.value = 'Completa la frase: Yo ___ de España.';
+          exPrompt.value = 'Completa la frase: Yo ___ de Espana.';
           exOptions.value = '';
           exAnswer.value = 'soy';
           exCategory.value = 'grammar';
-          exNotes.value = "Podpowiedź: czasownik 'być' w 1 os.";
-          if (exTags) exTags.value = 'czasowniki, być';
+          exNotes.value = "Podpowiedz: czasownik 'byc' w 1 os.";
+          if (exTags) exTags.value = 'czasowniki, byc';
           if (exImageUrl) exImageUrl.value = '';
           exOrder.value = next;
         } else if (kind === 'choice') {
           exType.value = 'Opción múltiple';
-          exPrompt.value = 'Elige la forma correcta: Ona ___ w domu.';
-          exOptions.value = 'A) jestem\nB) jest\nC) są';
+          exPrompt.value = 'Elige la forma Poprawna: Ona ___ w domu.';
+          exOptions.value = 'A) jestem\nB) jest\nC) sa';
           exAnswer.value = 'B';
           exCategory.value = 'grammar';
           exNotes.value = '';
-          if (exTags) exTags.value = 'być, teraźniejszy';
+          if (exTags) exTags.value = 'byc, terazniejszy';
           if (exImageUrl) exImageUrl.value = '';
           exOrder.value = next;
         } else if (kind === 'tf') {
           exType.value = 'Verdadero o falso';
           exPrompt.value =
-            '‘Mam’ es la forma de ‘tener’ en polaco (1ª persona).';
+            \"'Mam' es la forma de 'tener' en polaco (1a persona).\";
           exOptions.value = 'true\nfalse';
           exAnswer.value = 'true';
           exCategory.value = 'vocab';
           exNotes.value = '';
-          if (exTags) exTags.value = 'mieć, podstawy';
+          if (exTags) exTags.value = 'miec, podstawy';
           if (exImageUrl) exImageUrl.value = '';
           exOrder.value = next;
         }
-        showToast('✨ Plantilla aplicada', 'ok', 1400);
+        showToast('Szablon zastosowany', 'ok', 1400);
       }
 
       btnTplFill?.addEventListener('click', () => applyTemplate('fill'));
@@ -1367,7 +1367,7 @@ const slugParam = params.get('slug') || '';
         if (!txt) return [];
         const parsed = JSON.parse(txt);
         if (!Array.isArray(parsed))
-          throw new Error('JSON debe ser un ARRAY []');
+          throw new Error('JSON musi byc tablica []');
         return parsed;
       }
 
@@ -1386,14 +1386,14 @@ const slugParam = params.get('slug') || '';
           items = safeParseJsonArray(importJsonArea.value);
         } catch (e) {
           console.error(e);
-          if (importStatus) importStatus.textContent = 'JSON inválido ❌';
-          showToast('❌ JSON inválido (mira la consola)', 'bad', 3200);
+          if (importStatus) importStatus.textContent = 'Niepoprawny JSON';
+          showToast('Niepoprawny JSON (sprawdz konsole)', 'bad', 3200);
           return;
         }
 
         if (!items.length) {
           if (importStatus) importStatus.textContent = 'Nada para importar.';
-          showToast('⚠️ Wklej tablicę ćwiczeń', 'warn', 2200);
+          showToast('Wklej tablice cwiczen', 'warn', 2200);
           return;
         }
 
@@ -1443,15 +1443,15 @@ const slugParam = params.get('slug') || '';
             saved++;
           }
 
-          if (importStatus) importStatus.textContent = `Importado: ${saved} ✅`;
-          showToast(`✅ Importado: ${saved}`, 'ok', 2200);
+          if (importStatus) importStatus.textContent = `Zaimportowano: ${saved}`;
+          showToast(`Zaimportowano: ${saved}`, 'ok', 2200);
 
           await loadExercises(currentTopic);
           exOrder.value = String(getNextOrder());
         } catch (e) {
           console.error(e);
-          if (importStatus) importStatus.textContent = 'Error ❌';
-          showToast('❌ Error importando (mira la consola)', 'bad', 3600);
+          if (importStatus) importStatus.textContent = 'Blad';
+          showToast('Blad importu (sprawdz konsole)', 'bad', 3600);
         } finally {
           setSaving(false);
         }
@@ -1459,7 +1459,7 @@ const slugParam = params.get('slug') || '';
 
       btnAutoOrder.onclick = () => {
         exOrder.value = String(getNextOrder());
-        showToast('✨ Ustawiono order', 'ok', 1400);
+        showToast('Ustawiono kolejnosc', 'ok', 1400);
       };
 
       btnAddExercise.onclick = async () => {
@@ -1503,14 +1503,14 @@ const slugParam = params.get('slug') || '';
         }
 
         if (!ok) {
-          showToast('⚠️ Completa los campos marcados.', 'warn', 2600);
+          showToast('Uzupelnij wymagane pola.', 'warn', 2600);
           return;
         }
 
         const imageUrl = (exImageUrl?.value || '').trim();
         try {
           setSaving(true);
-          showToast('⏳ Guardando...', 'warn', 1200);
+          showToast('Zapisywanie...', 'warn', 1200);
 
           await addDoc(collection(db, 'exercises'), {
             level: LEVEL,
@@ -1538,10 +1538,10 @@ const slugParam = params.get('slug') || '';
           exOrder.value = String(order + 1);
 
           await loadExercises(currentTopic);
-          showToast('✅ Ejercicio guardado', 'ok', 2200);
+          showToast('Cwiczenie zapisane', 'ok', 2200);
         } catch (e) {
           console.error(e);
-          showToast('❌ Error al guardar (mira la consola)', 'bad', 3600);
+          showToast('Blad zapisu (sprawdz konsole)', 'bad', 3600);
         } finally {
           setSaving(false);
         }
@@ -1630,7 +1630,7 @@ const slugParam = params.get('slug') || '';
         const type = ex.type || 'open';
 
         let body = `<div class="card" style="padding:12px; margin:0">
-          <div class="smallNote" style="opacity:.9; margin-bottom:8px">Typ: <b>${escapeHtml(type)}</b> • Kategoria: <b>${escapeHtml(ex.category || 'grammar')}</b></div>
+          <div class="smallNote" style="opacity:.9; margin-bottom:8px">Typ: <b>${escapeHtml(type)}</b> - Kategoria: <b>${escapeHtml(ex.category || 'grammar')}</b></div>
           <div style="font-weight:800; font-size:18px">${escapeHtml(ex.prompt || '')}</div>`;
 
         if (opt.length) {
@@ -1646,10 +1646,10 @@ const slugParam = params.get('slug') || '';
               })
               .join('') +
             `</div>`;
-          body += `<div class="smallNote" style="margin-top:8px; opacity:.9">Wybierz odpowiedź i kliknij „Sprawdź”.</div>`;
+          body += `<div class="smallNote" style="margin-top:8px; opacity:.9">Wybierz odpowiedz i kliknij "Sprawdz".</div>`;
         } else {
           body += `<div style="margin-top:10px">
-            <input id="pvInput" placeholder="Wpisz odpowiedź…" />
+            <input id="pvInput" placeholder="Wpisz odpowiedz..." />
           </div>`;
         }
 
@@ -1677,11 +1677,13 @@ const slugParam = params.get('slug') || '';
           previewResult.classList.toggle('pill-yellow', ok);
           previewResult.classList.toggle('pill-red', !ok);
           previewResult.textContent = ok
-            ? '✅ OK'
-            : `❌ Nie. Poprawna: ${ex.answer || ''}`;
+            ? 'OK'
+            : `Nie. Poprawna: ${ex.answer || ''}`;
         };
 
         previewBackdrop.onclick = () => (previewModal.style.display = 'none');
         btnClosePreview.onclick = () => (previewModal.style.display = 'none');
         previewModal.style.display = 'block';
       }
+
+

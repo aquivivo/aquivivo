@@ -94,6 +94,19 @@ function formatDate(ts) {
   }
 }
 
+function toDateMaybe(ts) {
+  try {
+    if (!ts) return null;
+    if (ts instanceof Date) return ts;
+    if (ts?.toDate) return ts.toDate();
+    if (ts?.seconds != null) return new Date(ts.seconds * 1000);
+    const d = new Date(ts);
+    return Number.isNaN(d.getTime()) ? null : d;
+  } catch {
+    return null;
+  }
+}
+
 async function ensureUserDoc(user) {
   if (!user?.uid) return { admin: false, access: false, plan: 'free' };
 
@@ -433,21 +446,35 @@ async function applyPromoCode(targetUid, targetDoc) {
       return;
     }
 
+    const usedCodes = Array.isArray(targetDoc?.promoCodes)
+      ? targetDoc.promoCodes
+      : [];
+    if (usedCodes.includes(code) && promo.repeatable !== true) {
+      setMsg('Ya usaste este código.', 'warn');
+      return;
+    }
+
+    const expDate = toDateMaybe(promo.expiresAt || promo.expiresOn);
+    if (expDate && expDate.getTime() < Date.now()) {
+      setMsg(`Este código expiró (${formatDate(expDate)}).`, 'bad');
+      return;
+    }
+
     const days = Number(promo.days || promo.durationDays || 0);
     const grantPlan = String(promo.plan || 'premium').toLowerCase();
+    const stackDays = promo.stackDays !== false;
 
     const now = new Date();
-    const until = new Date(
-      now.getTime() + Math.max(0, days) * 24 * 60 * 60 * 1000,
-    );
-
     const currentUntil = targetDoc?.accessUntil?.toDate
       ? targetDoc.accessUntil.toDate()
       : null;
-    let newUntil = until;
-    if (currentUntil && !Number.isNaN(currentUntil.getTime())) {
-      if (currentUntil.getTime() > newUntil.getTime()) newUntil = currentUntil;
-    }
+    const base =
+      stackDays && currentUntil && currentUntil.getTime() > now.getTime()
+        ? currentUntil
+        : now;
+    const newUntil = new Date(
+      base.getTime() + Math.max(0, days) * 24 * 60 * 60 * 1000,
+    );
 
     const mappedPlan = grantPlan === 'premium' ? 'premium' : grantPlan;
     const levels = levelsFromPlan(mappedPlan);

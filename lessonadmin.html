@@ -1,8 +1,8 @@
-<!doctype html>
-<html lang="es">
+﻿<!doctype html>
+<html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>Admin lección | AquiVivo</title>
+    <title>Admin lekcji | AquiVivo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -26,35 +26,32 @@
       <div class="container">
         <div class="heroBanner">
           <div class="heroTitleRow">
-            <div class="heroIcon">🛠️</div>
+            <div class="heroIcon">ADMIN</div>
             <div>
               <h1 class="glow-text" style="margin: 0; font-size: 44px">
-                Admin de lección
+                Admin lekcji
               </h1>
               <div class="muted" style="margin-top: 6px">
-                Constructor por bloques + modo HTML. Guarda en Firestore y se
-                muestra en <b>lessonpage.html</b>.
+                Konstruktor blokowy + tryb HTML. Zapisuje w Firestore i wyswietla w <b>lessonpage.html</b>.
               </div>
             </div>
           </div>
 
           <div class="metaRow" style="margin-top: 14px">
-            <span id="pillLevel">Nivel: —</span>
-            <span id="pillTopic">Tema: —</span>
-            <span id="pillDoc">Doc: —</span>
-            <span id="pillPub">Publicado: —</span>
+            <span id="pillLevel">Poziom: -</span>
+            <span id="pillTopic">Temat: -</span>
+            <span id="pillDoc">Doc: -</span>
+            <span id="pillPub">Opublikowano: -</span>
           </div>
 
           <div class="nav-actions" style="margin-top: 14px">
-            <a id="btnBackCourse" class="btn-white-outline" href="#"
-              >⬅️ Curso</a
-            >
-            <a id="btnOpenLesson" class="btn-yellow" href="#">📘 Ver lección</a>
+            <a id="btnBackCourse" class="btn-white-outline" href="#">Kurs</a>
+            <a id="btnOpenLesson" class="btn-yellow" href="#">Podglad lekcji</a>
             <a id="btnOpenExercises" class="btn-white-outline" href="#"
-              >🧩 Admin ejercicios</a
+              >Admin cwiczen</a
             >
             <button id="btnPublish" class="btn-red" type="button">
-              🚀 Publicar
+              Opublikuj
             </button>
           </div>
 
@@ -63,9 +60,9 @@
             class="card"
             style="margin-top: 14px; display: none"
           >
-            <div style="font-weight: 900">Acceso denegado</div>
+            <div style="font-weight: 900">Brak dostepu</div>
             <div class="muted" style="margin-top: 6px">
-              Esta página es solo para administradores.
+              Ta strona jest tylko dla administratorow.
             </div>
           </div>
 
@@ -75,28 +72,28 @@
         <!-- Editor -->
         <div class="card" style="margin-top: 16px">
           <div class="sectionTitle" style="margin-top: 0">
-            ✨ Constructor por bloques
+            Konstruktor blokowy
           </div>
           <div class="muted">
-            Ordena con ⬆️⬇️. Cada bloque permite tamaño y color. Imágenes por
-            URL (por ahora).
+            Ukladaj kolejno gora/dol. Kazdy blok pozwala na rozmiar i kolor.
+            Obrazy przez URL (na razie).
           </div>
 
           <div class="metaRow" style="margin-top: 12px">
             <button id="btnTplGrammar" class="btn-white-outline" type="button">
-              📘 Plantilla: Gramática
+              Szablon: Gramatyka
             </button>
             <button id="btnTplVocab" class="btn-white-outline" type="button">
-              🧠 Plantilla: Vocabulario
+              Szablon: Slownictwo
             </button>
             <button id="btnTplPremium" class="btn-white-outline" type="button">
-              💎 Premium
+              Premium
             </button>
             <button id="btnTplRepaso" class="btn-white-outline" type="button">
-              🧪 Repaso/Test
+              Powtorka/Test
             </button>
             <button id="btnClearBlocks" class="btn-white-outline" type="button">
-              🧹 Limpiar
+              Wyczysc
             </button>
           </div>
 
@@ -108,35 +105,35 @@
               gap: 12px;
             "
           >
-            <label class="muted" style="font-weight: 800">Tipo</label>
+            <label class="muted" style="font-weight: 800">Typ</label>
             <select id="typeSelect">
-              <option value="grammar">Gramática</option>
-              <option value="vocab">Vocabulario</option>
+              <option value="grammar">Gramatyka</option>
+              <option value="vocab">Slownictwo</option>
               <option value="premium">Premium</option>
-              <option value="repaso">Repaso/Test</option>
+              <option value="repaso">Powtorka/Test</option>
             </select>
 
-            <label class="muted" style="font-weight: 800">Título</label>
+            <label class="muted" style="font-weight: 800">Tytul</label>
             <input
               id="titleInput"
               type="text"
-              placeholder="Título de la lección…"
+              placeholder="Tytul lekcji..."
             />
 
-            <label class="muted" style="font-weight: 800">Descripción</label>
+            <label class="muted" style="font-weight: 800">Opis</label>
             <input
               id="descInput"
               type="text"
-              placeholder="Descripción corta…"
+              placeholder="Krotki opis..."
             />
 
-            <label class="muted" style="font-weight: 800">Duración (min)</label>
+            <label class="muted" style="font-weight: 800">Czas (min)</label>
             <input
               id="durationInput"
               type="number"
               min="0"
               step="1"
-              placeholder="Ej. 15"
+              placeholder="np. 15"
             />
 
             <div class="metaRow" style="margin-top: 8px">
@@ -146,7 +143,7 @@
                   type="checkbox"
                   style="width: 18px; height: 18px; margin: 0"
                 />
-                Publicado
+                Opublikowano
               </label>
 
               <label style="gap: 10px">
@@ -155,11 +152,11 @@
                   type="checkbox"
                   style="width: 18px; height: 18px; margin: 0"
                 />
-                Modo HTML
+                Tryb HTML
               </label>
 
               <button id="btnWrapHtml" class="btn-white-outline" type="button">
-                📦 Convertir HTML → 1 bloque
+                Konwertuj HTML -> 1 blok
               </button>
             </div>
 
@@ -167,10 +164,10 @@
 
             <div class="metaRow" style="margin-top: 12px">
               <button id="btnLoad" class="btn-white-outline" type="button">
-                🔄 Recargar
+                Odswiez
               </button>
               <button id="btnSave" class="btn-yellow" type="button">
-                💾 Guardar
+                Zapisz
               </button>
             </div>
           </div>
@@ -178,46 +175,44 @@
 
         <!-- HTML editor -->
         <div class="card" style="margin-top: 16px">
-          <div class="sectionTitle" style="margin-top: 0">Contenido (HTML)</div>
+          <div class="sectionTitle" style="margin-top: 0">Tresc (HTML)</div>
           <div class="muted">
-            Tip: puedes pegar HTML con &lt;h2&gt;, listas, imágenes, tablas.
-            Esto se mostrará en lessonpage.html.
+            Wskazowka: mozesz wkleic HTML z &lt;h2&gt;, listami, obrazami,
+            tabelami. To wyswietli sie w lessonpage.html.
           </div>
-          <textarea id="htmlArea" rows="8" placeholder="<h2>…</h2>"></textarea>
+          <textarea id="htmlArea" rows="8" placeholder="<h2>...</h2>"></textarea>
         </div>
 
         <!-- Preview -->
         <div class="card" style="margin-top: 16px">
-          <div class="sectionTitle" style="margin-top: 0">👁️ Vista previa</div>
-          <div id="previewTitle" style="font-weight: 900; font-size: 22px">
-            —
-          </div>
-          <div id="previewDesc" class="muted" style="margin-top: 6px">—</div>
+          <div class="sectionTitle" style="margin-top: 0">Podglad</div>
+          <div id="previewTitle" style="font-weight: 900; font-size: 22px">-</div>
+          <div id="previewDesc" class="muted" style="margin-top: 6px">-</div>
           <div id="previewBody" style="margin-top: 12px"></div>
         </div>
 
         <!-- Default styling controls -->
         <div class="card" style="margin-top: 16px">
           <div class="sectionTitle" style="margin-top: 0">
-            🎨 Estilo por defecto
+            Styl domyslny
           </div>
           <div class="metaRow" style="margin-top: 10px">
             <div style="min-width: 220px">
               <div class="muted" style="font-weight: 800; margin-bottom: 6px">
-                Color de texto
+                Kolor tekstu
               </div>
               <select id="defaultTextColor">
-                <option value="white">Blanco / por defecto</option>
-                <option value="muted">Gris</option>
-                <option value="yellow">Amarillo</option>
-                <option value="blue">Azul claro</option>
-                <option value="red">Rojo claro</option>
+                <option value="white">Bialy / domyslny</option>
+                <option value="muted">Szary</option>
+                <option value="yellow">Zolty</option>
+                <option value="blue">Jasny niebieski</option>
+                <option value="red">Jasny czerwony</option>
               </select>
             </div>
 
             <div style="min-width: 220px">
               <div class="muted" style="font-weight: 800; margin-bottom: 6px">
-                Tamaño de texto
+                Rozmiar tekstu
               </div>
               <select id="defaultTextSize">
                 <option value="S">S</option>
@@ -228,34 +223,34 @@
 
             <div style="min-width: 220px">
               <div class="muted" style="font-weight: 800; margin-bottom: 6px">
-                Color del bloque
+                Kolor bloku
               </div>
               <select id="defaultBlockBg">
-                <option value="none" selected>Sin fondo</option>
+                <option value="none" selected>Bez tla</option>
                 <option value="card">Card</option>
-                <option value="card2">Card suave</option>
+                <option value="card2">Karta delikatna</option>
               </select>
             </div>
           </div>
 
           <div class="metaRow" style="margin-top: 12px">
             <button id="btnAddHeading" class="btn-white-outline" type="button">
-              ＋ Título
+              + Tytul
             </button>
             <button id="btnAddText" class="btn-white-outline" type="button">
-              ＋ Texto
+              + Tekst
             </button>
             <button id="btnAddImage" class="btn-white-outline" type="button">
-              ＋ Imagen
+              + Obraz
             </button>
             <button id="btnAddTip" class="btn-white-outline" type="button">
-              ＋ Tip
+              + Wskazowka
             </button>
             <button id="btnAddExample" class="btn-white-outline" type="button">
-              ＋ Ejemplo
+              + Przyklad
             </button>
             <button id="btnAddDivider" class="btn-white-outline" type="button">
-              ＋ Separador
+              + Separator
             </button>
           </div>
         </div>
@@ -265,3 +260,6 @@
     <script type="module" src="assets/js/pages/lessonadmin-page.js"></script>
   </body>
 </html>
+
+
+

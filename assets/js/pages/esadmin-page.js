@@ -1,5 +1,5 @@
-// assets/js/pages/esadmin-page.js
-// AquiVivo Admin (RESTORE+FIX): Dashboard + Usuarios + Códigos + Referral + Servicios + Segmentación (MVP)
+﻿// assets/js/pages/esadmin-page.js
+// AquiVivo Admin (RESTORE+FIX): Dashboard + Uzytkownicy + Kody + Referral + Uslugi + Segmentacja (MVP)
 // Architecture: no inline JS. Page logic lives here.
 
 import { auth, db } from '../firebase-init.js';
@@ -79,6 +79,14 @@ function parseDateTimeLocal(v) {
   if (!s) return null;
   // datetime-local returns "YYYY-MM-DDTHH:mm"
   const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function parseDateOnly(v) {
+  const s = String(v || '').trim();
+  if (!s) return null;
+  // date input returns "YYYY-MM-DD" -> treat as end of day
+  const d = new Date(`${s}T23:59:59`);
   return isNaN(d.getTime()) ? null : d;
 }
 
@@ -189,7 +197,7 @@ async function ensureAdmin(user) {
         document.querySelector('.heroBanner p.subtitle');
       if (banner)
         banner.textContent =
-          '⚠️ Tu cuenta no tiene rol admin en Firestore (users/OgXNeCbloJiSGoi1DsZ9UN0aU0I2.role). Panel en modo DEV.';
+          ' Uwaga: Twoje konto nie ma roli admin w Firestore (users/OgXNeCbloJiSGoi1DsZ9UN0aU0I2.role). Panel w trybie DEV.';
       console.warn('[ensureAdmin] Not admin:', user.uid);
       return true;
     }
@@ -207,7 +215,7 @@ async function ensureAdmin(user) {
 async function loadDashboard() {
   const st = $('statsStatus');
   try {
-    setStatus(st, 'Cargando…');
+    setStatus(st, 'Ladowanie...');
 
     const usersCol = collection(db, 'users');
 
@@ -241,10 +249,10 @@ async function loadDashboard() {
     if ($('statBlocked')) $('statBlocked').textContent = String(blocked);
     if ($('statOneTopic')) $('statOneTopic').textContent = String(oneTopic);
 
-    setStatus(st, 'Listo ✅');
+    setStatus(st, 'Gotowe');
   } catch (e) {
     console.error('[dashboard]', e);
-    setStatus(st, 'Error: revisa rules / Console.', true);
+    setStatus(st, 'Blad: sprawdz rules / Console.', true);
   }
 }
 
@@ -269,7 +277,7 @@ async function loadStatDetails(type) {
   }
 
   box.style.display = 'block';
-  box.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  box.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
 
   try {
     const usersCol = collection(db, 'users');
@@ -290,15 +298,15 @@ async function loadStatDetails(type) {
       const email = esc(u.email || u.emailLower || d.id);
       const until = isoDate(u.accessUntil);
       rows.push(
-        `<div class="hintSmall">${email}${until ? ' · ' + esc(until) : ''}</div>`,
+        `<div class="hintSmall">${email}${until ? '  -  ' + esc(until) : ''}</div>`,
       );
     });
     box.innerHTML = rows.length
       ? rows.join('')
-      : '<div class="hintSmall">—</div>';
+      : '<div class="hintSmall"></div>';
   } catch (e) {
     console.error('[stat details]', e);
-    box.innerHTML = '<div class="hintSmall">Error cargando detalles.</div>';
+    box.innerHTML = '<div class="hintSmall">Blad ladowania szczegolow.</div>';
   }
 }
 
@@ -319,7 +327,7 @@ async function loadReferralSettings() {
     s.value = data?.scope ?? '';
   } catch (e) {
     console.error('[referral load]', e);
-    setStatus(st, 'Error cargando.', true);
+    setStatus(st, 'Blad ladowania.', true);
   }
 }
 
@@ -332,7 +340,7 @@ async function saveReferralSettings() {
   const percent = Number(p.value || 0);
   const scope = String(s.value || '').trim();
 
-  setStatus(st, 'Guardando…');
+  setStatus(st, 'Zapisywanie...');
   try {
     await setDoc(
       doc(db, 'promo_codes', '_REFERRAL_SETTINGS'),
@@ -344,11 +352,11 @@ async function saveReferralSettings() {
       },
       { merge: true },
     );
-    setStatus(st, 'Guardado ✅');
+    setStatus(st, 'Zapisano');
     await loadDashboard();
   } catch (e) {
     console.error('[referral save]', e);
-    setStatus(st, 'Error (permissions?).', true);
+    setStatus(st, 'Blad (uprawnienia?).', true);
   }
 }
 
@@ -359,13 +367,21 @@ async function saveReferralSettings() {
    B) { days, plan, active }     (current HTML form)
    ========================= */
 function renderPromoRow(id, p) {
-  const active = p.active === false ? '⛔' : '✅';
+  const active = p.active === false ? 'NIE' : 'TAK';
   const pct = p.percent != null ? `${p.percent}%` : null;
-  const days = p.days != null ? `${p.days} días` : null;
+  const days = p.days != null ? `${p.days} dni` : null;
   const plan = p.plan ? `plan: ${esc(p.plan)}` : null;
   const note = p.note ? esc(p.note) : '';
+  const expDate = p.expiresAt ? isoDate(p.expiresAt) : null;
+  const expObj = toDateMaybe(p.expiresAt);
+  const expired = expObj && expObj.getTime() < Date.now();
+  const exp = expDate ? `${expired ? 'wygaslo' : 'wygasa'}: ${expDate}` : null;
+  const stack = p.stackDays === false ? 'od dzis' : 'dolicz dni';
+  const repeat = p.repeatable === true ? 'wielokrotny' : '1 raz/uzytkownik';
 
-  const line2 = [pct, days, plan, note].filter(Boolean).join(' · ') || '—';
+  const line2 =
+    [pct, days, plan, exp, stack, repeat, note].filter(Boolean).join('  -  ') ||
+    '';
 
   return `
     <div class="listItem">
@@ -376,9 +392,9 @@ function renderPromoRow(id, p) {
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn-white-outline" type="button" data-pc="toggle" data-id="${esc(id)}">
-            ${p.active === false ? 'Activate' : 'Hide'}
+            ${p.active === false ? 'Aktywuj' : 'Ukryj'}
           </button>
-          <button class="btn-red" type="button" data-pc="del" data-id="${esc(id)}">Delete</button>
+          <button class="btn-red" type="button" data-pc="del" data-id="${esc(id)}">Usun</button>
         </div>
       </div>
     </div>
@@ -388,7 +404,7 @@ function renderPromoRow(id, p) {
 async function loadPromoList() {
   const list = $('promoListAdmin') || $('promoList');
   if (!list) return;
-  list.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
 
   try {
     const snap = await getDocs(
@@ -401,10 +417,10 @@ async function loadPromoList() {
     });
     list.innerHTML = rows.length
       ? rows.join('')
-      : '<div class="hintSmall">—</div>';
+      : '<div class="hintSmall"></div>';
   } catch (e) {
     console.error('[promo list]', e);
-    list.innerHTML = '<div class="hintSmall">Error cargando promo_codes.</div>';
+    list.innerHTML = '<div class="hintSmall">Blad ladowania promo_codes.</div>';
   }
 }
 
@@ -413,26 +429,35 @@ async function savePromoCode() {
   const code = String($('promoCode')?.value || $('pcCode')?.value || '').trim();
   const st = $('promoStatus') || $('pcStatus');
   if (!code) {
-    setStatus(st, 'Falta el código.', true);
+    setStatus(st, 'Brak kodu.', true);
     return;
   }
 
   const daysRaw = $('promoDays')?.value;
+  const daysInputPresent = !!$('promoDays');
+  const expiresRaw = $('promoExpires')?.value;
   const plan = String($('promoPlan')?.value || 'premium');
   const active = $('promoActive')
     ? $('promoActive').checked
     : String($('pcActive')?.value || 'true') === 'true';
+  const stackDays = $('promoStack') ? $('promoStack').checked : true;
+  const repeatable = $('promoRepeat') ? $('promoRepeat').checked : false;
+  const promoNote = $('promoNote')
+    ? String($('promoNote').value || '').trim()
+    : '';
 
   // Optional old schema inputs if present
   const percent = $('pcPercent') ? Number($('pcPercent').value || 0) : null;
-  const note = $('pcNote') ? String($('pcNote').value || '').trim() : '';
+  const noteLegacy = $('pcNote') ? String($('pcNote').value || '').trim() : '';
+  const note = promoNote || noteLegacy;
 
   const days =
     daysRaw != null && String(daysRaw).trim() !== ''
       ? Number(daysRaw || 0)
       : null;
+  const expiresAt = parseDateOnly(expiresRaw);
 
-  setStatus(st, 'Guardando…');
+  setStatus(st, 'Zapisywanie...');
   try {
     const payload = {
       code,
@@ -441,18 +466,29 @@ async function savePromoCode() {
     };
 
     if (days != null) payload.days = days;
+    else if (daysInputPresent) payload.days = null;
     if (plan) payload.plan = plan;
     if (percent != null && !Number.isNaN(percent) && percent !== 0)
       payload.percent = percent;
     if (note) payload.note = note;
+    else if ($('promoNote') || $('pcNote')) payload.note = null;
+    if (expiresRaw != null) {
+      payload.expiresAt = expiresAt ? Timestamp.fromDate(expiresAt) : null;
+    }
+    payload.stackDays = stackDays;
+    payload.repeatable = repeatable;
 
     await setDoc(doc(db, 'promo_codes', code), payload, { merge: true });
 
-    setStatus(st, 'Guardado ✅');
+    setStatus(st, 'Zapisano');
     if ($('promoCode')) $('promoCode').value = '';
     if ($('promoDays')) $('promoDays').value = '';
+    if ($('promoExpires')) $('promoExpires').value = '';
     if ($('promoPlan')) $('promoPlan').value = 'premium';
+    if ($('promoNote')) $('promoNote').value = '';
     if ($('promoActive')) $('promoActive').checked = true;
+    if ($('promoStack')) $('promoStack').checked = true;
+    if ($('promoRepeat')) $('promoRepeat').checked = false;
 
     if ($('pcCode')) $('pcCode').value = '';
     if ($('pcPercent')) $('pcPercent').value = '';
@@ -463,7 +499,7 @@ async function savePromoCode() {
     await loadDashboard();
   } catch (e) {
     console.error('[promo save]', e);
-    setStatus(st, 'Error (permissions?).', true);
+    setStatus(st, 'Blad (uprawnienia?).', true);
   }
 }
 
@@ -487,7 +523,7 @@ async function togglePromo(id) {
 }
 
 async function deletePromo(id) {
-  if (!confirm('¿Eliminar código?')) return;
+  if (!confirm('Usunac kod?')) return;
   try {
     await deleteDoc(doc(db, 'promo_codes', id));
     await loadPromoList();
@@ -500,8 +536,12 @@ async function deletePromo(id) {
 function clearPromoForm() {
   if ($('promoCode')) $('promoCode').value = '';
   if ($('promoDays')) $('promoDays').value = '';
+  if ($('promoExpires')) $('promoExpires').value = '';
   if ($('promoPlan')) $('promoPlan').value = 'premium';
+  if ($('promoNote')) $('promoNote').value = '';
   if ($('promoActive')) $('promoActive').checked = true;
+  if ($('promoStack')) $('promoStack').checked = true;
+  if ($('promoRepeat')) $('promoRepeat').checked = false;
   setStatus($('promoStatus'), '');
 }
 
@@ -528,7 +568,7 @@ function fillServiceForm(id, s) {
 }
 
 function renderServiceRow(id, s) {
-  const active = s.active === false ? '⛔ hidden' : '✅ active';
+  const active = s.active === false ? 'NIE hidden' : 'TAK active';
   const cat = String(s.category || '').toLowerCase();
   const catClass = cat ? ` serviceRow--${cat}` : '';
   return `
@@ -536,15 +576,15 @@ function renderServiceRow(id, s) {
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${esc(s.title || id)}</div>
-          <div class="hintSmall">SKU: ${esc(id)} · cat: ${esc(s.category || 'extras')} · ${active}</div>
-          <div class="hintSmall">${s.price ? '💰 ' + esc(s.price) : ''}${s.badge ? ' · ⭐ ' + esc(s.badge) : ''}</div>
+          <div class="hintSmall">SKU: ${esc(id)}  -  cat: ${esc(s.category || 'extras')}  -  ${active}</div>
+          <div class="hintSmall">${s.price ? ' ' + esc(s.price) : ''}${s.badge ? '  -   ' + esc(s.badge) : ''}</div>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-white-outline" type="button" data-svc="edit" data-id="${esc(id)}">Edit</button>
+          <button class="btn-white-outline" type="button" data-svc="edit" data-id="${esc(id)}">Edytuj</button>
           <button class="btn-white-outline" type="button" data-svc="toggle" data-id="${esc(id)}">
-            ${s.active === false ? 'Activate' : 'Hide'}
+            ${s.active === false ? 'Aktywuj' : 'Ukryj'}
           </button>
-          <button class="btn-red" type="button" data-svc="del" data-id="${esc(id)}">Delete</button>
+          <button class="btn-red" type="button" data-svc="del" data-id="${esc(id)}">Usun</button>
         </div>
       </div>
     </div>
@@ -554,7 +594,7 @@ function renderServiceRow(id, s) {
 async function loadServicesList() {
   const list = $('servicesAdminList');
   if (!list) return;
-  list.innerHTML = '<div class="hintSmall">Cargando…</div>';
+  list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
 
   try {
     const snap = await getDocs(
@@ -564,17 +604,17 @@ async function loadServicesList() {
     snap.forEach((d) => rows.push(renderServiceRow(d.id, d.data() || {})));
     list.innerHTML = rows.length
       ? rows.join('')
-      : '<div class="hintSmall">—</div>';
+      : '<div class="hintSmall"></div>';
   } catch (e) {
     console.error('[services list]', e);
-    list.innerHTML = '<div class="hintSmall">Error cargando services.</div>';
+    list.innerHTML = '<div class="hintSmall">Blad ladowania services.</div>';
   }
 }
 
 async function saveService() {
   const st = $('svcStatus');
   const sku = String($('svcSku')?.value || '').trim();
-  if (!sku) return setStatus(st, 'Falta SKU.', true);
+  if (!sku) return setStatus(st, 'Brak SKU.', true);
 
   const payload = {
     sku,
@@ -598,20 +638,20 @@ async function saveService() {
   ) {
     return setStatus(
       st,
-      'CTA url debe empezar con http(s):// (solo para link)',
+      'CTA url musi zaczynac sie od http(s):// (tylko dla link)',
       true,
     );
   }
 
-  setStatus(st, 'Guardando…');
+  setStatus(st, 'Zapisywanie...');
   try {
     await setDoc(doc(db, 'services', sku), payload, { merge: true });
-    setStatus(st, 'Guardado ✅');
+    setStatus(st, 'Zapisano');
     await loadServicesList();
     await loadDashboard();
   } catch (e) {
     console.error('[services save]', e);
-    setStatus(st, 'Error (permissions?).', true);
+    setStatus(st, 'Blad (uprawnienia?).', true);
   }
 }
 
@@ -619,7 +659,7 @@ async function editService(id) {
   const snap = await getDoc(doc(db, 'services', id));
   if (!snap.exists()) return;
   fillServiceForm(id, snap.data() || {});
-  setStatus($('svcStatus'), 'Editando ✏️');
+  setStatus($('svcStatus'), 'Edycja');
 }
 
 async function toggleService(id) {
@@ -642,7 +682,7 @@ async function toggleService(id) {
 }
 
 async function deleteService(id) {
-  if (!confirm('¿Eliminar servicio?')) return;
+  if (!confirm('Usunac usluge?')) return;
   try {
     await deleteDoc(doc(db, 'services', id));
     await loadServicesList();
@@ -663,18 +703,18 @@ function clearServiceForm() {
 }
 
 /* =========================
-   USERS (Usuarios)
+   USERS (Uzytkownicy)
    ========================= */
 let usersLast = null;
 let usersCache = new Map();
 
 function renderUserRow(uid, u) {
-  const email = esc(u.email || u.emailLower || '(no email)');
+  const email = esc(u.email || u.emailLower || '(brak emaila)');
   const role = esc(u.role || 'user');
   const plan = esc(u.plan || '');
   const until = isoDate(u.accessUntil);
-  const blocked = u.blocked === true ? '⛔' : '';
-  const access = hasAccess(u) ? '✅' : '🔒';
+  const blocked = u.blocked === true ? 'BLOK' : '';
+  const access = hasAccess(u) ? 'TAK' : 'NIE';
 
   const statusBadge = (() => {
     if (String(u.role || 'user') === 'admin')
@@ -694,11 +734,11 @@ function renderUserRow(uid, u) {
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${email} ${blocked}</div>
-          <div class="hintSmall">uid: ${esc(uid)} · role: ${role} · access: ${access}${plan ? ' · plan: ' + plan : ''}${until ? ' · until: ' + esc(until) : ''}</div>
+          <div class="hintSmall">uid: ${esc(uid)}  -  role: ${role}  -  access: ${access}${plan ? '  -  plan: ' + plan : ''}${until ? '  -  until: ' + esc(until) : ''}</div>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
           ${statusBadge}
-          <button class="btn-white-outline" type="button" data-user="open" data-uid="${esc(uid)}">Edit</button>
+          <button class="btn-white-outline" type="button" data-user="open" data-uid="${esc(uid)}">Edytuj</button>
         </div>
       </div>
     </div>
@@ -742,7 +782,7 @@ async function loadUsers(reset = false) {
     list.innerHTML = '';
   }
 
-  list.innerHTML = list.innerHTML || '<div class="hintSmall">Cargando…</div>';
+  list.innerHTML = list.innerHTML || '<div class="hintSmall">Ladowanie...</div>';
 
   try {
     const parts = [collection(db, 'users'), orderBy('__name__'), limit(50)];
@@ -759,10 +799,10 @@ async function loadUsers(reset = false) {
     const rows = filtered.map(([uid, u]) => renderUserRow(uid, u));
     list.innerHTML = rows.length
       ? rows.join('')
-      : '<div class="hintSmall">—</div>';
+      : '<div class="hintSmall"></div>';
   } catch (e) {
     console.error('[users]', e);
-    list.innerHTML = '<div class="hintSmall">Error cargando users.</div>';
+    list.innerHTML = '<div class="hintSmall">Blad ladowania userow.</div>';
   }
 }
 
@@ -783,33 +823,33 @@ function ensureUserQuickButtons() {
 
   if (!$('um_extend7'))
     row.insertBefore(
-      mkBtn('um_extend7', 'btn-white-outline', '⏳ Extender +7 días'),
+      mkBtn('um_extend7', 'btn-white-outline', ' Przedluz +7 dni'),
       statusEl,
     );
   if (!$('um_extend30'))
     row.insertBefore(
-      mkBtn('um_extend30', 'btn-white-outline', '⏳ Extender +30 días'),
+      mkBtn('um_extend30', 'btn-white-outline', ' Przedluz +30 dni'),
       statusEl,
     );
   if (!$('um_extend90'))
     row.insertBefore(
-      mkBtn('um_extend90', 'btn-white-outline', '⏳ Extender +90 días'),
+      mkBtn('um_extend90', 'btn-white-outline', ' Przedluz +90 dni'),
       statusEl,
     );
   if (!$('um_forever'))
     row.insertBefore(
-      mkBtn('um_forever', 'btn-white-outline', '∞ Permanente (hasta 2099)'),
+      mkBtn('um_forever', 'btn-white-outline', ' Na stale (do 2099)'),
       statusEl,
     );
 
   if (!$('um_resetTrial'))
     row.insertBefore(
-      mkBtn('um_resetTrial', 'btn-yellow', '✅ Permitir nuevo trial'),
+      mkBtn('um_resetTrial', 'btn-yellow', ' Pozwol na nowy trial'),
       statusEl,
     );
   if (!$('um_revoke'))
     row.insertBefore(
-      mkBtn('um_revoke', 'btn-red', '🔒 Quitar acceso'),
+      mkBtn('um_revoke', 'btn-red', 'Usun dostep'),
       statusEl,
     );
 }
@@ -871,10 +911,10 @@ async function quickResetTrial() {
       ...old,
       trialEligibleAfter: new Date(),
     });
-    setStatus($('um_status'), 'Trial reactivado ✅');
+    setStatus($('um_status'), 'Trial ponownie aktywny ');
   } catch (e) {
     console.error('[trial allow]', e);
-    setStatus($('um_status'), 'Error activando trial.', true);
+    setStatus($('um_status'), 'Blad aktywacji triala.', true);
   }
 }
 
@@ -886,11 +926,11 @@ function renderTrialInfo(u) {
   const lvl = String(u?.trialLevel || '').toUpperCase();
   const days = Number(u?.trialDays || 0);
   const parts = [];
-  if (usedAt) parts.push(`usado: ${isoDate(usedAt)}`);
-  if (lvl) parts.push(`nivel: ${lvl}`);
-  if (days) parts.push(`días: ${days}`);
-  if (eligibleAt) parts.push(`reactivo: ${isoDate(eligibleAt)}`);
-  info.textContent = parts.length ? parts.join(' · ') : 'Sin trial usado.';
+  if (usedAt) parts.push(`uzyto: ${isoDate(usedAt)}`);
+  if (lvl) parts.push(`poziom: ${lvl}`);
+  if (days) parts.push(`dni: ${days}`);
+  if (eligibleAt) parts.push(`ponownie: ${isoDate(eligibleAt)}`);
+  info.textContent = parts.length ? parts.join('  -  ') : 'Brak uzytego triala.';
 }
 
 async function grantTrialNow() {
@@ -919,11 +959,11 @@ async function grantTrialNow() {
     await setDoc(doc(db, 'users', uid), payload, { merge: true });
     const old = usersCache.get(uid) || {};
     usersCache.set(uid, { ...old, ...payload });
-    setStatus($('um_status'), 'Trial aplicado ✅');
+    setStatus($('um_status'), 'Trial przyznany ');
     renderTrialInfo({ ...old, ...payload });
   } catch (e) {
     console.error('[trial grant]', e);
-    setStatus($('um_status'), 'Error aplicando trial.', true);
+    setStatus($('um_status'), 'Blad przyznawania triala.', true);
   }
 }
 
@@ -1017,7 +1057,7 @@ async function saveUserModal() {
   if (!uid) return;
 
   const st = $('um_status');
-  setStatus(st, 'Guardando…');
+  setStatus(st, 'Zapisywanie...');
 
   const role = $('um_admin')?.checked ? 'admin' : 'user';
   const access = $('um_access')?.checked ? true : false; // legacy toggle (kept for compatibility)
@@ -1067,19 +1107,17 @@ async function saveUserModal() {
       gender,
       accessUntil,
     });
-    setStatus(st, 'Guardado ✅');
+    setStatus(st, 'Zapisano');
     closeUserModal();
     await loadUsers(true);
     await loadDashboard();
   } catch (e) {
     console.error('[user save]', e);
-    setStatus(st, 'Error (permissions?).', true);
+    setStatus(st, 'Blad (uprawnienia?).', true);
   }
 }
 
-/* =========================
-   SEGMENTACIÓN (MVP)
-   ========================= */
+/* =========================`n   SEGMENTACJA (MVP)`n   ========================= */
 let segmentCache = []; // [{uid,email,...}] last loaded segment
 
 function renderSegmentRow(u) {
@@ -1087,13 +1125,13 @@ function renderSegmentRow(u) {
   const until = isoDate(u.accessUntil);
   const role = esc(u.role || 'user');
   const plan = esc(u.plan || '');
-  const access = hasAccess(u) ? '✅' : '🔒';
+  const access = hasAccess(u) ? 'TAK' : 'NIE';
   return `
     <div class="listItem">
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${email}</div>
-          <div class="hintSmall">uid: ${esc(u.uid)} · role: ${role} · access: ${access}${plan ? ' · plan: ' + plan : ''}${until ? ' · until: ' + esc(until) : ''}</div>
+          <div class="hintSmall">uid: ${esc(u.uid)}  -  role: ${role}  -  access: ${access}${plan ? '  -  plan: ' + plan : ''}${until ? '  -  until: ' + esc(until) : ''}</div>
         </div>
       </div>
     </div>
@@ -1105,7 +1143,7 @@ async function loadSegmentExpiring(days) {
   const list = $('segmentList');
   if (!list) return;
 
-  setStatus(st, 'Cargando…');
+  setStatus(st, 'Ladowanie...');
   list.innerHTML = '';
 
   try {
@@ -1131,13 +1169,13 @@ async function loadSegmentExpiring(days) {
 
     list.innerHTML = segmentCache.length
       ? segmentCache.map(renderSegmentRow).join('')
-      : '<div class="hintSmall">—</div>';
-    setStatus(st, `Listo ✅ (${segmentCache.length})`);
+      : '<div class="hintSmall"></div>';
+    setStatus(st, `Gotowe (${segmentCache.length})`);
   } catch (e) {
     console.error('[segment expiring]', e);
     list.innerHTML =
-      '<div class="hintSmall">Error cargando segmento (index puede ser necesario).</div>';
-    setStatus(st, 'Error', true);
+      '<div class="hintSmall">Blad ladowania segmentu (mozliwy brak indexu).</div>';
+    setStatus(st, 'Blad', true);
   }
 }
 
@@ -1146,7 +1184,7 @@ async function loadSegmentPremiumActive() {
   const list = $('segmentList');
   if (!list) return;
 
-  setStatus(st, 'Cargando…');
+  setStatus(st, 'Ladowanie...');
   list.innerHTML = '';
 
   try {
@@ -1162,12 +1200,12 @@ async function loadSegmentPremiumActive() {
     snap.forEach((d) => segmentCache.push({ uid: d.id, ...(d.data() || {}) }));
     list.innerHTML = segmentCache.length
       ? segmentCache.map(renderSegmentRow).join('')
-      : '<div class="hintSmall">—</div>';
-    setStatus(st, `Listo ✅ (${segmentCache.length})`);
+      : '<div class="hintSmall"></div>';
+    setStatus(st, `Gotowe (${segmentCache.length})`);
   } catch (e) {
     console.error('[segment premium active]', e);
-    list.innerHTML = '<div class="hintSmall">Error cargando segmento.</div>';
-    setStatus(st, 'Error', true);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania segmentu.</div>';
+    setStatus(st, 'Blad', true);
   }
 }
 
@@ -1176,7 +1214,7 @@ async function loadSegmentFreeApprox() {
   const list = $('segmentList');
   if (!list) return;
 
-  setStatus(st, 'Cargando…');
+  setStatus(st, 'Ladowanie...');
   list.innerHTML = '';
 
   try {
@@ -1191,12 +1229,12 @@ async function loadSegmentFreeApprox() {
 
     list.innerHTML = segmentCache.length
       ? segmentCache.map(renderSegmentRow).join('')
-      : '<div class="hintSmall">—</div>';
-    setStatus(st, `Listo ✅ (${segmentCache.length})`);
+      : '<div class="hintSmall"></div>';
+    setStatus(st, `Gotowe (${segmentCache.length})`);
   } catch (e) {
     console.error('[segment free]', e);
-    list.innerHTML = '<div class="hintSmall">Error cargando segmento.</div>';
-    setStatus(st, 'Error', true);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania segmentu.</div>';
+    setStatus(st, 'Blad', true);
   }
 }
 
@@ -1205,7 +1243,7 @@ async function loadSegmentOneTopic() {
   const list = $('segmentList');
   if (!list) return;
 
-  setStatus(st, 'Cargando…');
+  setStatus(st, 'Ladowanie...');
   list.innerHTML = '';
 
   try {
@@ -1219,12 +1257,12 @@ async function loadSegmentOneTopic() {
     snap.forEach((d) => segmentCache.push({ uid: d.id, ...(d.data() || {}) }));
     list.innerHTML = segmentCache.length
       ? segmentCache.map(renderSegmentRow).join('')
-      : '<div class="hintSmall">—</div>';
-    setStatus(st, `Listo ✅ (${segmentCache.length})`);
+      : '<div class="hintSmall"></div>';
+    setStatus(st, `Gotowe (${segmentCache.length})`);
   } catch (e) {
     console.error('[segment one topic]', e);
-    list.innerHTML = '<div class="hintSmall">Error cargando segmento.</div>';
-    setStatus(st, 'Error', true);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania segmentu.</div>';
+    setStatus(st, 'Blad', true);
   }
 }
 
@@ -1338,8 +1376,7 @@ function bindEvents() {
   $('um_trial_grant')?.addEventListener('click', grantTrialNow);
   $('um_trial_allow')?.addEventListener('click', quickResetTrial);
   $('um_revoke')?.addEventListener('click', quickRevoke);
-
-  // segmentación
+  // segmentacja
   $('btnLoadExp0')?.addEventListener('click', () => loadSegmentExpiring(0));
   $('btnLoadExp3')?.addEventListener('click', () => loadSegmentExpiring(3));
   $('btnLoadExp7')?.addEventListener('click', () => loadSegmentExpiring(7));
@@ -1356,7 +1393,7 @@ function bindEvents() {
   $('btnLoadOneTopicInactive')?.addEventListener('click', () => {
     setStatus(
       $('segmentStatus'),
-      'MVP: ten segment jeszcze nie jest podpięty.',
+      'MVP: ten segment jeszcze nie jest podpiety.',
       true,
     );
   });
@@ -1377,3 +1414,10 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadServicesList();
   });
 });
+
+
+
+
+
+
+

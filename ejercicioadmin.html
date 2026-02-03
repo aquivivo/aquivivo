@@ -1,8 +1,8 @@
-<!doctype html>
-<html lang="es">
+﻿<!doctype html>
+<html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>Admin | Ejercicios | AquiVivo</title>
+    <title>Admin | Cwiczenia | AquiVivo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link
@@ -11,7 +11,7 @@
     />
 
     <style id="coffeeFloatStyle">
-      /* ☕ Floating coffee (global) */
+      /*  Floating coffee (global) */
       #coffeeFloat {
         position: absolute;
         right: -40px;
@@ -307,7 +307,7 @@
     </div>
 
     <div class="sessionBar">
-      Sesión activa: <strong id="sessionEmail">Cargando...</strong>
+      Aktywna sesja: <strong id="sessionEmail">Ladowanie...</strong>
     </div>
 
     <main class="container">
@@ -315,21 +315,21 @@
 
       <div class="card">
         <div class="metaRow">
-          <span id="pillLevel">Nivel</span>
-          <span id="pillType">Tipo</span>
-          <span id="pillSlug">slug</span>
-          <span id="pillCount">Ejercicios: 0</span><span>ADMIN</span>
-          <span id="pillProgress">Progreso: 0%</span>
+          <span id="pillLevel">Poziom: -</span>
+          <span id="pillType">Typ: -</span>
+          <span id="pillSlug">slug: -</span>
+          <span id="pillCount">Cwiczenia: 0</span><span>ADMIN</span>
+          <span id="pillProgress">Postep: 0%</span>
         </div>
         <div class="progressWrap" style="margin-top: 10px">
           <div class="progressBar">
             <div class="progressFill" id="progressFill" style="width: 0%"></div>
           </div>
-          <div class="progressText" id="progressText">0 / 0 completados</div>
+          <div class="progressText" id="progressText">0 / 0 ukonczonych</div>
         </div>
 
-        <h1 id="topicTitle">Cargando…</h1>
-        <p class="subtitle" id="topicDesc">Cargando…</p>
+        <h1 id="topicTitle">Ladowanie...</h1>
+        <p class="subtitle" id="topicDesc">Ladowanie...</p>
 
         <div class="metaRow" id="taskChips"></div>
       </div>
@@ -341,7 +341,7 @@
         style="display: none"
       >
         <div class="lessonContentTitle">
-          <h3>📘 Lección — materiales del tema</h3>
+          <h3>Lekcja - materialy tematu</h3>
           <div
             style="
               display: flex;
@@ -351,18 +351,18 @@
             "
           >
             <a class="btn" id="btnOpenLessonPage" href="#"
-              >📖 Abrir lección (página)</a
+              >Otworz lekcje (strona)</a
             >
           </div>
         </div>
 
         <div id="lessonContentBody" class="lessonText"></div>
         <div id="lessonContentEmpty" class="lessonEmpty" style="display: none">
-          Todavía no hay contenido de lección para este tema.
+          Brak tresci lekcji dla tego tematu.
         </div>
       </div>
 
-      <div class="sectionTitle">🧩 Ejercicios</div>
+      <div class="sectionTitle">Cwiczenia</div>
 
       <div
         class="card"
@@ -379,11 +379,11 @@
         >
           <div style="flex: 1; min-width: 220px">
             <label style="display: block; font-weight: 700; margin-bottom: 6px"
-              >Buscar</label
+              >Szukaj</label
             >
             <input
               id="filterSearch"
-              placeholder="Szukaj po treści / odpowiedzi…"
+              placeholder="Szukaj po tresci / odpowiedzi..."
             />
           </div>
 
@@ -400,14 +400,14 @@
             >
             <select id="filterCategory">
               <option value="">Wszystko</option>
-              <option value="grammar">Gramática</option>
-              <option value="vocab">Vocabulario</option>
-              <option value="both">Gramática + vocabulario</option>
+              <option value="grammar">Gramatyka</option>
+              <option value="vocab">Slownictwo</option>
+              <option value="both">Gramatyka + slownictwo</option>
             </select>
           </div>
 
           <button class="btn" id="btnClearFilters" type="button">
-            🧹 Wyczyść
+            Wyczysc
           </button>
 
           <div
@@ -441,13 +441,13 @@
               type="button"
               style="display: none"
             >
-              💾 Zapisz kolejność
+              Zapisz kolejnosc
             </button>
           </div>
         </div>
 
         <div class="smallNote" style="margin-top: 8px; opacity: 0.95">
-          Tip: w trybie sortowania przeciągaj kafelki. Zapis kolejności
+          Wskazowka: w trybie sortowania przeciagaj kafelki. Zapis kolejnosci
           aktualizuje pole <b>order</b> w Firestore.
         </div>
       </div>
@@ -459,24 +459,22 @@
         class="card"
         style="display: none; opacity: 0.95"
       >
-        <div class="muted">Todavía no hay ejercicios para este tema.</div>
+        <div class="muted">Brak cwiczen dla tego tematu.</div>
         <div class="smallNote" style="margin-top: 10px">
-          Si eres admin, agrega el primero abajo 👇
+          Jesli jestes adminem, dodaj pierwsze ponizej.
         </div>
       </div>
 
       <!-- Admin -->
       <div id="noAdminCard" class="card" style="display: none">
-        <div class="sectionTitle">⛔ Acceso restringido</div>
-        <div class="muted">Esta página es solo para admin.</div>
+        <div class="sectionTitle">Brak dostepu</div>
+        <div class="muted">Ta strona jest tylko dla admina.</div>
       </div>
       <div id="adminWrap" class="card adminWrap">
-        <div class="sectionTitle">👑 Admin – agregar ejercicio</div>
+        <div class="sectionTitle">Admin - dodaj cwiczenie</div>
 
         <div class="card" style="margin-top: 10px">
-          <div class="sectionTitle" style="margin-top: 0">
-            ⚡ Producción rápida
-          </div>
+          <div class="sectionTitle" style="margin-top: 0">Szybka produkcja</div>
 
           <div
             style="
@@ -487,31 +485,31 @@
             "
           >
             <button class="btn" id="btnTplFill" type="button">
-              + Plantilla: rellenar
+              + Szablon: uzupelnianie
             </button>
             <button class="btn" id="btnTplChoice" type="button">
-              + Plantilla: choice
+              + Szablon: wybor
             </button>
             <button class="btn" id="btnTplTF" type="button">
-              + Plantilla: true/false
+              + Szablon: prawda/falsz
             </button>
           </div>
 
           <div style="margin-top: 12px">
             <label style="display: block; font-weight: 800; margin-bottom: 6px"
-              >Import JSON (array de ejercicios)</label
+              >Import JSON (tablica cwiczen)</label
             >
             <textarea
               id="importJsonArea"
               placeholder='[
-  {"type":"Opción múltiple","prompt":"...","options":["A) ...","B) ..."],"answer":"A","category":"grammar","order":1},
-  {"type":"Rellenar los espacios","prompt":"...","answer":"...","category":"vocab"}
+  {"type":"Wielokrotny wybor","prompt":"...","options":["A) ...","B) ..."],"answer":"A","category":"grammar","order":1},
+  {"type":"Uzupelnij luki","prompt":"...","answer":"...","category":"vocab"}
 ]'
             ></textarea>
             <div class="smallNote" style="margin-top: 8px">
-              - Wklej <b>tablicę</b> ćwiczeń. Jeśli element nie ma <b>order</b>,
+              - Wklej <b>tablice</b> cwiczen. Jesli element nie ma <b>order</b>,
               dostanie automatycznie kolejny numer.<br />
-              - Obsługiwane pola:
+              - Obslugiwane pola:
               <b
                 >type, prompt, options[], answer, category, tags, notes,
                 imageUrl, order</b
@@ -520,10 +518,10 @@
 
             <div class="adminActions" style="margin-top: 10px">
               <button class="btn btn-yellow" id="btnImportJson" type="button">
-                📥 Importuj i zapisz
+                Importuj i zapisz
               </button>
               <button class="btn" id="btnClearImport" type="button">
-                🧽 Wyczyść
+                Wyczysc
               </button>
               <span
                 class="smallNote"
@@ -536,54 +534,53 @@
 
         <div class="adminGrid">
           <div>
-            <label>Tipo de ejercicio</label>
+            <label>Typ cwiczenia</label>
             <select id="exType"></select>
           </div>
 
           <div>
-            <label>Pregunta / enunciado</label>
-            <input id="exPrompt" placeholder="Escribe el enunciado..." />
+            <label>Pytanie / tresc</label>
+            <input id="exPrompt" placeholder="Wpisz tresc..." />
           </div>
 
           <div>
-            <label>Imagen (URL) — opcional</label>
-            <input id="exImageUrl" placeholder="https://.../imagen.png" />
+            <label>Obraz (URL) - opcjonalnie</label>
+            <input id="exImageUrl" placeholder="https://.../obraz.png" />
             <div class="smallNote">
-              Jeśli dodasz obrazek, pokaże się nad odpowiedziami.
+              Jesli dodasz obrazek, pojawi sie nad odpowiedziami.
             </div>
           </div>
 
           <div>
-            <label>Opciones (solo si aplica)</label>
+            <label>Opcje (jesli dotyczy)</label>
             <textarea
               id="exOptions"
-              placeholder="Una opción por línea&#10;Ej:&#10;A) ...&#10;B) ...&#10;C) ..."
+              placeholder="Jedna opcja na linie&#10;np.:&#10;A) ...&#10;B) ...&#10;C) ..."
             ></textarea>
             <div class="smallNote">
-              Para ejercicios de selección, añade al menos 2 opciones (una por
-              línea).
+              Dla cwiczen wyboru dodaj co najmniej 2 opcje (po jednej na linie).
             </div>
           </div>
 
           <div>
-            <label>Respuesta correcta</label>
+            <label>Poprawna odpowiedz</label>
             <input
               id="exAnswer"
-              placeholder="Ej: B   |   true   |   palabra_correcta"
+              placeholder="np. B   |   true   |   poprawna_odpowiedz"
             />
             <div class="smallNote">
-              - Opción múltiple: letra (A/B/C/D) o texto exacto.<br />
-              - Verdadero o falso: <b>true</b> / <b>false</b>.<br />
-              - Campo abierto: wpisz poprawne słowo/odpowiedź (dokładnie).
+              - Wielokrotny wybor: litera (A/B/C/D) lub tekst dokladny.<br />
+              - Prawda czy falsz: <b>true</b> / <b>false</b>.<br />
+              - Otwarta odpowiedz: wpisz poprawne slowo/odpowiedz (dokladnie).
             </div>
           </div>
 
           <div>
             <label>Kategoria</label>
             <select id="exCategory">
-              <option value="grammar">Gramática</option>
-              <option value="vocab">Vocabulario</option>
-              <option value="both">Gramática + vocabulario</option>
+              <option value="grammar">Gramatyka</option>
+              <option value="vocab">Slownictwo</option>
+              <option value="both">Gramatyka + slownictwo</option>
             </select>
           </div>
 
@@ -596,22 +593,22 @@
           </div>
 
           <div>
-            <label>Orden</label>
+            <label>Kolejnosc</label>
             <input id="exOrder" type="number" min="1" placeholder="np. 1" />
           </div>
 
           <div>
-            <label>Notas (opcjonalnie)</label>
-            <input id="exNotes" placeholder="np. wskazówka / komentarz" />
+            <label>Notatki (opcjonalnie)</label>
+            <input id="exNotes" placeholder="np. wskazowka / komentarz" />
           </div>
         </div>
 
         <div class="adminActions">
           <button class="btn btn-yellow" id="btnAddExercise" type="button">
-            ➕ Guardar ejercicio
+            Zapisz cwiczenie
           </button>
           <button class="btn" id="btnAutoOrder" type="button">
-            ✨ Ustaw kolejny numer
+            Ustaw kolejny numer
           </button>
 
           <label
@@ -624,15 +621,15 @@
             "
           >
             <input type="checkbox" id="tplOverwrite" />
-            <span>Sobrescribir</span>
+            <span>Nadpisz</span>
           </label>
           <button class="btn" id="btnApplyTemplate" type="button">
-            🧩 Plantilla (tipo)
+            Szablon (Typ)
           </button>
         </div>
 
         <div class="smallNote" style="margin-top: 10px">
-          Zapis trafia do Firestore kolekcja: <b>exercises</b> z polami: level,
+          Zapis trafia do kolekcji Firestore: <b>exercises</b> z polami: level,
           topicSlug, order, type, prompt, options[], answer, notes.
         </div>
       </div>
@@ -650,8 +647,8 @@
             justify-content: space-between;
           "
         >
-          <div class="sectionTitle" style="margin: 0">👀 Podgląd (uczeń)</div>
-          <button class="btn" id="btnClosePreview" type="button">✖</button>
+          <div class="sectionTitle" style="margin: 0">Podglad (uczen)</div>
+          <button class="btn" id="btnClosePreview" type="button">X</button>
         </div>
 
         <div id="previewBody" style="margin-top: 10px"></div>
@@ -666,14 +663,14 @@
           "
         >
           <button class="btn btn-yellow" id="btnCheckPreview" type="button">
-            ✅ Sprawdź
+            Sprawdz
           </button>
           <span id="previewResult" style="display: none"></span>
         </div>
 
         <div class="smallNote" style="margin-top: 10px; opacity: 0.95">
-          Ten podgląd jest po to, żeby szybko sprawdzić czy treść i odpowiedź są
-          spójne.
+          Ten podglad jest po to, zeby szybko sprawdzic czy tresc i odpowiedz sa
+          spojne.
         </div>
       </div>
     </div>
@@ -681,3 +678,6 @@
     <script type="module" src="assets/js/pages/ejercicioadmin-page.js"></script>
   </body>
 </html>
+
+
+

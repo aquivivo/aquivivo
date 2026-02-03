@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+﻿import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
     import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 import { auth, db } from "../firebase-init.js";
     const $ = (id) => document.getElementById(id);
@@ -87,11 +87,11 @@ async function isAdminUid(uid) {
     }
 
     function setMetaPills(published){
-      pillLevel.textContent = `Nivel: ${LEVEL || "—"}`;
-      pillTopic.textContent = `Tema: ${TOPIC_ID || "—"}`;
-      pillDoc.textContent = `Doc: ${DOC_ID || "—"}`;
+      pillLevel.textContent = `Poziom: ${LEVEL || ""}`;
+      pillTopic.textContent = `Temat: ${TOPIC_ID || ""}`;
+      pillDoc.textContent = `Doc: ${DOC_ID || ""}`;
       pillPub.className = "pill " + (published ? "pill-green" : "pill-red");
-      pillPub.textContent = published ? "Publicado" : "Borrador";
+      pillPub.textContent = published ? "Opublikowano" : "Wersja robocza";
     }
 
     function renderPreview(){
@@ -99,9 +99,9 @@ async function isAdminUid(uid) {
       const d = (descInput.value || "").trim();
       const h = (htmlArea.value || "").trim();
 
-      previewTitle.textContent = t || "—";
-      previewDesc.textContent = d || "—";
-      previewBody.innerHTML = h || "<div style='opacity:.8'>Sin contenido todavía.</div>";
+      previewTitle.textContent = t || "";
+      previewDesc.textContent = d || "";
+      previewBody.innerHTML = h || "<div style='opacity:.8'>Brak tresci.</div>";
     }
 
     function uid(){
@@ -144,11 +144,11 @@ async function isAdminUid(uid) {
 
     function newBlock(kind){
       const base = { id: uid(), kind, color: "muted", size: "md", align: "left", bg: "none" };
-      if(kind === "heading") return { ...base, text: "Nuevo título", level: "h2", color: "yellow" };
-      if(kind === "text") return { ...base, text: "Escribe aquí el texto…" };
+      if(kind === "heading") return { ...base, text: "Nowy tytul", level: "h2", color: "yellow" };
+      if(kind === "text") return { ...base, text: "Wpisz tutaj tekst..." };
       if(kind === "image") return { ...base, url: "", caption: "", width: "full" };
-      if(kind === "tip") return { ...base, title: "Tip", text: "Consejo importante…", accent: "yellow" };
-      if(kind === "example") return { ...base, title: "Ejemplo", text: "", accent: "blue" };
+      if(kind === "tip") return { ...base, title: "Wskazowka", text: "Wazna wskazowka...", accent: "yellow" };
+      if(kind === "example") return { ...base, title: "Przyklad", text: "", accent: "blue" };
       if(kind === "divider") return { ...base };
       if(kind === "rawHtml") return { ...base, html: (htmlArea.value || "").trim() };
       return base;
@@ -223,7 +223,7 @@ async function isAdminUid(uid) {
 
         if(b.kind === "tip" || b.kind === "example"){
           const accent = (b.accent === "red" ? "var(--red)" : (b.accent === "yellow" ? "var(--yellow)" : "#86b7ff"));
-          const title = escapeHtml(b.title || (b.kind === "tip" ? "Tip" : "Ejemplo"));
+          const title = escapeHtml(b.title || (b.kind === "tip" ? "Wskazowka" : "Przyklad"));
           const text = escapeHtml(b.text || "").replaceAll("\n","<br>");
           out.push(`<div style="margin: 12px 0; border-radius: 16px; padding: 12px 14px; background: rgba(0,0,0,0.18); border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 14px 34px rgba(0,0,0,0.12);">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
@@ -246,7 +246,7 @@ async function isAdminUid(uid) {
         if(mode === "auto" && BLOCKS.length){
           htmlArea.value = compileBlocksToHtml(BLOCKS);
         }
-        // Preview siempre se renderiza desde htmlArea (auto o manual)
+        // Podglad zawsze renderuje sie z htmlArea (auto lub manual)
         renderPreview();
       } finally {
         IS_SYNCING_HTML = false;
@@ -264,22 +264,22 @@ async function isAdminUid(uid) {
         card.className = "blockCard";
 
         const kindLabel = ({
-          heading: "Título",
-          text: "Texto",
-          image: "Imagen",
-          tip: "Tip",
-          example: "Ejemplo",
-          divider: "Separador",
+          heading: "Tytul",
+          text: "Tekst",
+          image: "Obraz",
+          tip: "Wskazowka",
+          example: "Przyklad",
+          divider: "Separator",
           rawHtml: "HTML"
         })[b.kind] || b.kind;
 
         card.innerHTML = `
           <div class="blockHead">
-            <div class="blockTitle">🧩 ${escapeHtml(kindLabel)}</div>
+            <div class="blockTitle"> ${escapeHtml(kindLabel)}</div>
             <div class="blockTools">
-              <button class="toolBtn" data-act="up" title="Subir">⬆️</button>
-              <button class="toolBtn" data-act="down" title="Bajar">⬇️</button>
-              <button class="toolBtn danger" data-act="del" title="Eliminar">🗑</button>
+              <button class="toolBtn" data-act="up" title="W gore"></button>
+              <button class="toolBtn" data-act="down" title="W dol"></button>
+              <button class="toolBtn danger" data-act="del" title="Usun"></button>
             </div>
           </div>
           <div class="blockBody"></div>
@@ -293,16 +293,16 @@ async function isAdminUid(uid) {
           common.className = "inlineRow";
           common.innerHTML = `
             <div class="field">
-              <label>Color</label>
+              <label>Kolor</label>
               <select class="select" data-k="color">
-                <option value="muted">Blanco</option>
-                <option value="yellow">Amarillo</option>
-                <option value="blue">Azul</option>
-                <option value="red">Rojo</option>
+                <option value="muted">Bialy</option>
+                <option value="yellow">Zolty</option>
+                <option value="blue">Niebieski</option>
+                <option value="red">Czerwony</option>
               </select>
             </div>
             <div class="field">
-              <label>Tamaño</label>
+              <label>Rozmiar</label>
               <select class="select" data-k="size">
                 <option value="xs">XS</option>
                 <option value="sm">S</option>
@@ -312,21 +312,21 @@ async function isAdminUid(uid) {
               </select>
             </div>
             <div class="field">
-              <label>Alineación</label>
+              <label>Wyrownanie</label>
               <select class="select" data-k="align">
-                <option value="left">Izquierda</option>
-                <option value="center">Centro</option>
-                <option value="right">Derecha</option>
+                <option value="left">Lewa</option>
+                <option value="center">Srodek</option>
+                <option value="right">Prawa</option>
               </select>
             </div>
             <div class="field">
-              <label>Fondo del bloque</label>
+              <label>Tlo bloku</label>
               <select class="select" data-k="bg">
-                <option value="none">Sin fondo</option>
-                <option value="white">Blanco</option>
-                <option value="yellow">Amarillo</option>
-                <option value="blue">Azul</option>
-                <option value="red">Rojo</option>
+                <option value="none">Bez tla</option>
+                <option value="white">Bialy</option>
+                <option value="yellow">Zolty</option>
+                <option value="blue">Niebieski</option>
+                <option value="red">Czerwony</option>
               </select>
             </div>
           `;
@@ -356,73 +356,73 @@ async function isAdminUid(uid) {
         if(b.kind === "heading"){
           wrap.innerHTML = `
             <div class="field" style="grid-column:1/-1">
-              <label>Texto del título</label>
+              <label>Tekst tytulu</label>
               <input class="input" data-k="text" />
             </div>
             <div class="field">
-              <label>Nivel</label>
+              <label>Poziom</label>
               <select class="select" data-k="level">
-                <option value="h2">H2 (sección)</option>
-                <option value="h3">H3 (subsección)</option>
+                <option value="h2">H2 (sekcja)</option>
+                <option value="h3">H3 (podsekcja)</option>
               </select>
             </div>
           `;
         } else if(b.kind === "text"){
           wrap.innerHTML = `
             <div class="field" style="grid-column:1/-1">
-              <label>Texto</label>
+              <label>Tekst</label>
               <textarea data-k="text" style="min-height:150px"></textarea>
             </div>
           `;
         } else if(b.kind === "image"){
           wrap.innerHTML = `
             <div class="field" style="grid-column:1/-1">
-              <label>URL de imagen</label>
+              <label>URL obrazu</label>
               <input class="input" data-k="url" placeholder="https://..." />
-              <div class="mutedTiny">Tip: por ahora usamos URL. Más adelante podemos añadir upload a Firebase Storage.</div>
+              <div class="mutedTiny">Wskazowka: na razie uzywamy URL. Pozniej mozemy dodac upload do Firebase Storage.</div>
             </div>
             <div class="field" style="grid-column:1/-1">
-              <label>Caption (opcional)</label>
-              <input class="input" data-k="caption" placeholder="Texto bajo la imagen" />
+              <label>Podpis (opcjonalny)</label>
+              <input class="input" data-k="caption" placeholder="Tekst pod obrazem" />
             </div>
             <div class="field">
-              <label>Ancho</label>
+              <label>Szerokosc</label>
               <select class="select" data-k="width">
-                <option value="full">Completo</option>
-                <option value="narrow">Más estrecho</option>
+                <option value="full">Pelna</option>
+                <option value="narrow">Wezsze</option>
               </select>
             </div>
           `;
         } else if(b.kind === "tip" || b.kind === "example"){
           wrap.innerHTML = `
             <div class="field">
-              <label>Título del bloque</label>
+              <label>Tytul bloku</label>
               <input class="input" data-k="title" />
             </div>
             <div class="field">
-              <label>Color acento</label>
+              <label>Kolor akcentu</label>
               <select class="select" data-k="accent">
-                <option value="yellow">Amarillo</option>
-                <option value="blue">Azul</option>
-                <option value="red">Rojo</option>
+                <option value="yellow">Zolty</option>
+                <option value="blue">Niebieski</option>
+                <option value="red">Czerwony</option>
               </select>
             </div>
             <div class="field" style="grid-column:1/-1">
-              <label>Contenido</label>
+              <label>Tresc</label>
               <textarea data-k="text" style="min-height:150px"></textarea>
             </div>
           `;
         } else if(b.kind === "rawHtml"){
           wrap.innerHTML = `
             <div class="field" style="grid-column:1/-1">
-              <label>HTML (sin cambios)</label>
+              <label>HTML (bez zmian)</label>
               <textarea data-k="html" style="min-height:220px"></textarea>
-              <div class="mutedTiny">Este bloque inserta HTML tal cual. Úsalo solo si lo necesitas.</div>
+              <div class="mutedTiny">Ten blok wstawia HTML bez zmian. Uzyj tylko gdy potrzebujesz.</div>
             </div>
           `;
         } else if(b.kind === "divider"){
           wrap.innerHTML = `
-            <div class="mutedTiny">Separador visual (línea).</div>
+            <div class="mutedTiny">Separator wizualny (linia).</div>
           `;
         }
 
@@ -496,60 +496,60 @@ async function isAdminUid(uid) {
     function setTemplate(kind){
       if(kind === "grammar"){
         BLOCKS = [
-          { ...newBlock("heading"), text: "🎯 Objetivo de la lección", level:"h2" },
-          { ...newBlock("text"), text: "Después de esta lección podrás…\n• …\n• …\n• …" },
-          { ...newBlock("heading"), text: "📚 Explicación (gramática)", level:"h2" },
-          { ...newBlock("text"), text: "Explica la regla en 3–6 puntos.\nAñade ejemplos cortos." },
-          { ...newBlock("example"), title:"Ejemplos", text:"1) …\n2) …\n3) …", accent:"blue" },
-          { ...newBlock("tip"), title:"⚠️ Ojo", text:"Errores típicos / regla importante…", accent:"yellow" },
-          { ...newBlock("heading"), text: "🧩 Mini práctica", level:"h2" },
-          { ...newBlock("text"), text: "2–4 frases para traducir / completar (sin ejercicios interactivos aquí)." },
+          { ...newBlock("heading"), text: " Cel lekcji", level:"h2" },
+          { ...newBlock("text"), text: "Po tej lekcji bedziesz mogl...\n- ...\n- ...\n- ..." },
+          { ...newBlock("heading"), text: " Wyjasnienie (gramatyka)", level:"h2" },
+          { ...newBlock("text"), text: "Wyjasnij zasade w 3-6 punktach.\nDodaj krotkie przyklady." },
+          { ...newBlock("example"), title:"Przyklady", text:"1) ...\n2) ...\n3) ...", accent:"blue" },
+          { ...newBlock("tip"), title:" Uwaga", text:"Typowe bledy / wazna zasada...", accent:"yellow" },
+          { ...newBlock("heading"), text: " Mini praktyka", level:"h2" },
+          { ...newBlock("text"), text: "2-4 zdania do tlumaczenia / uzupelnienia (bez interaktywnych cwiczen tutaj)." },
         ];
       } else if(kind === "vocab"){
         BLOCKS = [
-          { ...newBlock("heading"), text: "🎯 Objetivo de la lección", level:"h2" },
-          { ...newBlock("text"), text: "Hoy aprenderás vocabulario de…\nAl final podrás…" },
-          { ...newBlock("image"), url: "", caption:"Imagen temática (opcional)", width:"full" },
-          { ...newBlock("heading"), text: "🧠 Vocabulario clave", level:"h2" },
-          { ...newBlock("text"), text: "• palabra — traducción\n• palabra — traducción\n• …" },
-          { ...newBlock("heading"), text: "💬 Frases útiles", level:"h2" },
-          { ...newBlock("example"), title:"Frases", text:"1) …\n2) …\n3) …", accent:"blue" },
-          { ...newBlock("tip"), title:"Tip de pronunciación", text:"Escribe aquí una mini guía / truco…", accent:"yellow" },
+          { ...newBlock("heading"), text: " Cel lekcji", level:"h2" },
+          { ...newBlock("text"), text: "Dzis nauczysz sie slownictwa z...\nNa koncu bedziesz mogl..." },
+          { ...newBlock("image"), url: "", caption:"Obraz tematyczny (opcjonalnie)", width:"full" },
+          { ...newBlock("heading"), text: " Slownictwo kluczowe", level:"h2" },
+          { ...newBlock("text"), text: "- slowo - tlumaczenie\n- slowo - tlumaczenie\n- ..." },
+          { ...newBlock("heading"), text: " Przydatne zwroty", level:"h2" },
+          { ...newBlock("example"), title:"Zwroty", text:"1) ...\n2) ...\n3) ...", accent:"blue" },
+          { ...newBlock("tip"), title:"Wskazowka wymowy", text:"Wpisz tutaj mini poradnik / trik...", accent:"yellow" },
         ];
       } else if(kind === "premium"){
         BLOCKS = [
-          { ...newBlock("heading"), text: "💎 Lección Premium", level:"h2", color:"yellow" },
-          { ...newBlock("text"), text: "✅ Formato premium: más ejemplos, mini tests y cajas de repaso." },
-          { ...newBlock("heading"), text: "📌 Warm‑up", level:"h2" },
-          { ...newBlock("text"), text: "2–3 preguntas rápidas para activar el tema…" },
-          { ...newBlock("heading"), text: "📚 Contenido principal", level:"h2" },
-          { ...newBlock("text"), text: "Explicación + estructura." },
-          { ...newBlock("example"), title:"Ejemplos premium", text:"• …\n• …\n• …", accent:"blue" },
-          { ...newBlock("tip"), title:"Errores típicos", text:"…", accent:"red" },
+          { ...newBlock("heading"), text: " Lekcja Premium", level:"h2", color:"yellow" },
+          { ...newBlock("text"), text: " Format premium: wiecej przykladow, mini testy i bloki powtorki." },
+          { ...newBlock("heading"), text: " Warm-up", level:"h2" },
+          { ...newBlock("text"), text: "2-3 szybkie pytania na rozgrzewke tematu..." },
+          { ...newBlock("heading"), text: " Tresc glowna", level:"h2" },
+          { ...newBlock("text"), text: "Wyjasnienie + struktura." },
+          { ...newBlock("example"), title:"Przyklady premium", text:"- ...\n- ...\n- ...", accent:"blue" },
+          { ...newBlock("tip"), title:"Typowe bledy", text:"...", accent:"red" },
           { ...newBlock("divider") },
-          { ...newBlock("heading"), text: "🔁 Repaso", level:"h2" },
-          { ...newBlock("text"), text: "Mini‑resumen + 5 preguntas tipo test (texto)." },
+          { ...newBlock("heading"), text: " Powtorka", level:"h2" },
+          { ...newBlock("text"), text: "Mini-podsumowanie + 5 pytan testowych (tekst)." },
         ];
       } else if(kind === "repaso"){
         BLOCKS = [
-          { ...newBlock("heading"), text: "🔁 Repaso / Test", level:"h2", color:"yellow" },
-          { ...newBlock("text"), text: "✅ Objetivo: comprobar lo que ya sabes (rápido y claro)." },
-          { ...newBlock("heading"), text: "📌 Resumen en 5 puntos", level:"h2" },
-          { ...newBlock("text"), text: "1) …\n2) …\n3) …\n4) …\n5) …" },
-          { ...newBlock("heading"), text: "🧩 Mini test (elige / completa)", level:"h2" },
-          { ...newBlock("example"), title:"Preguntas", text:"1) …\n2) …\n3) …\n4) …\n5) …", accent:"blue" },
-          { ...newBlock("tip"), title:"💡 Tip", text:"Si fallas, vuelve a la sección X y repite el ejemplo…", accent:"yellow" },
+          { ...newBlock("heading"), text: " Powtorka / Test", level:"h2", color:"yellow" },
+          { ...newBlock("text"), text: " Cel: sprawdzic to, co juz wiesz (szybko i jasno)." },
+          { ...newBlock("heading"), text: " Podsumowanie w 5 punktach", level:"h2" },
+          { ...newBlock("text"), text: "1) ...\n2) ...\n3) ...\n4) ...\n5) ..." },
+          { ...newBlock("heading"), text: " Mini test (wybierz / uzupelnij)", level:"h2" },
+          { ...newBlock("example"), title:"Pytania", text:"1) ...\n2) ...\n3) ...\n4) ...\n5) ...", accent:"blue" },
+          { ...newBlock("tip"), title:" Wskazowka", text:"Jesli sie pomylisz, wroc do sekcji X i powtorz przyklad...", accent:"yellow" },
         ];
       }
       if(htmlMode) htmlMode.value = "auto";
       renderBlocks();
       syncHtmlFromBlocks();
-      showToast("Plantilla aplicada ✅", "toast-ok");
+      showToast("Szablon zastosowany ", "toast-ok");
     }
 
     async function loadDoc(){
       if(!LEVEL || !TOPIC_ID){
-        showToast("Faltan parámetros en la URL (level, id).", "toast-bad");
+        showToast("Brakuje parametrow w URL (level, id).", "toast-bad");
         return;
       }
 
@@ -626,11 +626,11 @@ async function isAdminUid(uid) {
       await setDoc(ref, payload, { merge: true });
       setMetaPills(published);
       renderPreview();
-      showToast("Guardado ✅", "toast-ok");
+      showToast("Zapisano", "toast-ok");
     }
 
     btnLoad.addEventListener("click", async ()=>{
-      try{ await loadDoc(); showToast("Recargado", "toast-warn"); }catch(e){ console.error(e); showToast("Error al recargar.", "toast-bad"); }
+      try{ await loadDoc(); showToast("Odswiezono", "toast-warn"); }catch(e){ console.error(e); showToast("Blad przy odswiezaniu.", "toast-bad"); }
     });
 
     const btnPublish = document.getElementById("btnPublish");
@@ -638,15 +638,15 @@ async function isAdminUid(uid) {
       try{
         publishedToggle.value = "true";
         await saveDoc();
-        showToast("Lección publicada 🚀", "toast-ok");
+        showToast("Lekcja opublikowana ", "toast-ok");
       }catch(e){
         console.error(e);
-        showToast("Error al publicar.", "toast-bad");
+        showToast("Blad publikacji.", "toast-bad");
       }
     });
 
 btnSave.addEventListener("click", async ()=>{
-      try{ await saveDoc(); }catch(e){ console.error(e); showToast("Error al guardar.", "toast-bad"); }
+      try{ await saveDoc(); }catch(e){ console.error(e); showToast("Blad zapisu.", "toast-bad"); }
     });
     htmlArea.addEventListener("input", ()=>{ try{ renderPreview(); }catch(e){} });
 
@@ -667,20 +667,20 @@ btnSave.addEventListener("click", async ()=>{
       const mode = htmlMode.value;
       if(mode === "auto"){
         syncHtmlFromBlocks();
-        showToast("HTML en modo AUTO", "toast-warn");
+        showToast("HTML w trybie AUTO", "toast-warn");
       } else {
-        showToast("HTML en modo MANUAL", "toast-warn");
+        showToast("HTML w trybie MANUAL", "toast-warn");
       }
     });
 
     btnWrapHtml?.addEventListener("click", ()=>{
       const h = (htmlArea.value || "").trim();
-      if(!h){ showToast("No hay HTML para convertir.", "toast-warn"); return; }
+      if(!h){ showToast("Brak HTML do konwersji.", "toast-warn"); return; }
       BLOCKS = [ newBlock("rawHtml") ];
       if(htmlMode) htmlMode.value = "auto";
       renderBlocks();
       syncHtmlFromBlocks();
-      showToast("Convertido a bloque ✅", "toast-ok");
+      showToast("Zmieniono na blok", "toast-ok");
     });
 
     btnClearBlocks?.addEventListener("click", ()=>{
@@ -704,5 +704,10 @@ btnSave.addEventListener("click", async ()=>{
       }
       adminOnly.style.display = "block";
       noAdmin.style.display = "none";
-      try{ await loadDoc(); }catch(e){ console.error(e); showToast("Error cargando doc.", "toast-bad"); }
+      try{ await loadDoc(); }catch(e){ console.error(e); showToast("Blad ladowania dokumentu.", "toast-bad"); }
     });
+
+
+
+
+
