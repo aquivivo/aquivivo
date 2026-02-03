@@ -248,6 +248,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    /* ===== SPACED REPETITION ===== */
+    match /user_spaced/{uid}/cards/{cardId} {
+      allow read, write: if isAdmin() || isOwner(uid);
+    }
+
     /* ===== APP LOGS ===== */
     match /app_logs/{id} {
       allow read: if isAdmin();

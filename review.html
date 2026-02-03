@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Powtórki | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <script src="assets/js/layout.js" type="module"></script>
+  </head>
+
+  <body data-page="review">
+    <div id="appHeader"></div>
+
+    <main class="page">
+      <div class="container">
+        <section class="heroBanner heroBanner--review">
+          <div class="heroTitleRow">
+            <div class="heroIcon">🔁</div>
+            <div>
+              <h1 class="glow-text" style="margin: 0">Powtórki</h1>
+              <div class="subtitle" id="reviewSubtitle" style="margin-top: 6px">
+                Mini‑powtórki dla pamięci długotrwałej.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="reviewStats">
+          <div class="metaRow" style="gap: 14px; flex-wrap: wrap">
+            <span id="reviewCount">Na dziś: -</span>
+            <span id="reviewNew">Nowe: -</span>
+            <span id="reviewProgress">Postęp: 0/0</span>
+          </div>
+        </section>
+
+        <section class="card reviewCard" id="reviewCard" style="margin-top: 14px">
+          <div class="reviewCardInner">
+            <div class="reviewFront" id="reviewFront">Ładowanie...</div>
+            <div class="reviewBack" id="reviewBack"></div>
+          </div>
+          <div class="reviewActions">
+            <button class="btn-white-outline" id="btnShowBack" type="button">
+              Pokaż odpowiedź
+            </button>
+            <button class="btn-yellow" id="btnCorrect" type="button" disabled>
+              Znam
+            </button>
+            <button class="btn-red" id="btnWrong" type="button" disabled>
+              Nie wiem
+            </button>
+            <a class="btn-white-outline" href="espanel.html">Zakończ</a>
+          </div>
+          <div class="hintSmall" id="reviewHint" style="margin-top: 10px"></div>
+        </section>
+
+        <section class="card" id="reviewEmpty" style="display: none; margin-top: 14px">
+          <div class="sectionTitle" style="margin-top: 0">Brak powtórek</div>
+          <div class="muted">
+            Na dziś nie ma fiszek do powtórki. Wróć jutro albo zrób nowe ćwiczenia.
+          </div>
+          <div style="margin-top: 12px">
+            <a class="btn-yellow" href="espanel.html">Wróć do Librety</a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="assets/js/pages/review-page.js"></script>
+  </body>
+</html>

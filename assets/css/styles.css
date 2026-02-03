@@ -1161,6 +1161,61 @@ p,
   }
 }
 
+/* Review (spaced repetition) */
+.reviewCard {
+  padding: 18px;
+}
+.reviewCardInner {
+  min-height: 160px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 18px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+.reviewFront {
+  font-size: 22px;
+  font-weight: 900;
+}
+.reviewBack {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  display: none;
+}
+.reviewCard.isFlipped .reviewBack {
+  display: block;
+}
+.reviewCard.isFlipped .reviewFront {
+  display: none;
+}
+.reviewActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.reviewWeek {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+.reviewDay {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 12px;
+}
+.reviewDay b {
+  display: block;
+  font-size: 14px;
+  margin-top: 2px;
+}
+
 a {
   color: inherit;
 }

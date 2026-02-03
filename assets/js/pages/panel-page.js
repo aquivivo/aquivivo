@@ -206,6 +206,66 @@ async function loadProgressSummary(uid) {
   }
 }
 
+async function loadReviewSummary(uid) {
+  if (!uid) return;
+  const dueEl = $('reviewDue');
+  const overEl = $('reviewOverdue');
+  const newEl = $('reviewNew');
+  const planEl = $('reviewPlan');
+  const weekEl = $('reviewWeek');
+  const hintEl = $('reviewHint');
+
+  if (dueEl) dueEl.textContent = 'Na dziś: -';
+  if (overEl) overEl.textContent = 'Zaległe: -';
+  if (newEl) newEl.textContent = 'Nowe: -';
+  if (hintEl) hintEl.textContent = '';
+  if (planEl) planEl.textContent = 'Plan: 10 min dziennie';
+  if (weekEl) weekEl.innerHTML = '';
+
+  try {
+    const snap = await getDocs(collection(db, 'user_spaced', uid, 'cards'));
+    if (snap.empty) {
+      if (hintEl) hintEl.textContent = 'Brak danych. Uruchom powtórki.';
+      return;
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dayMs = 24 * 60 * 60 * 1000;
+    const weekCounts = Array(7).fill(0);
+    let due = 0;
+    let overdue = 0;
+
+    snap.forEach((d) => {
+      const data = d.data() || {};
+      const dueAt = toDateMaybe(data.dueAt);
+      if (!dueAt) return;
+      const diff = Math.floor((dueAt.getTime() - today.getTime()) / dayMs);
+      if (diff <= 0) {
+        due += 1;
+        if (dueAt.getTime() < now.getTime()) overdue += 1;
+      }
+      if (diff >= 0 && diff < 7) weekCounts[diff] += 1;
+    });
+
+    if (dueEl) dueEl.textContent = `Na dziś: ${due}`;
+    if (overEl) overEl.textContent = `Zaległe: ${overdue}`;
+    if (newEl) newEl.textContent = 'Nowe: +';
+
+    if (weekEl) {
+      const labels = ['Dziś', 'Jutro', 'D+2', 'D+3', 'D+4', 'D+5', 'D+6'];
+      weekEl.innerHTML = weekCounts
+        .map(
+          (c, i) =>
+            `<div class="reviewDay"><span>${labels[i]}</span><b>${c}</b></div>`,
+        )
+        .join('');
+    }
+  } catch (e) {
+    console.warn('loadReviewSummary failed', e);
+  }
+}
+
 async function ensureUserDoc(user) {
   if (!user?.uid) return { admin: false, access: false, plan: 'free' };
 
@@ -1174,6 +1234,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderCourses(viewDoc, flags);
       renderPlans(viewDoc, flags);
       await loadProgressSummary(viewUid);
+      await loadReviewSummary(viewUid);
 
       if (btn) {
         btn.onclick = async () => {
