@@ -69,7 +69,7 @@ import {
     return `perfil.html?uid=${encodeURIComponent(uid || '')}`;
   }
 
-  function toDateMaybe(v) { {
+  function toDateMaybe(v) {
     if (!v) return null;
     if (v instanceof Date) return v;
     if (typeof v.toDate === 'function') return v.toDate();

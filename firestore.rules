@@ -94,6 +94,10 @@ service cloud.firestore {
       return !exists(publicUserDoc(uid)) || get(publicUserDoc(uid)).data.allowMessages != false;
     }
 
+    function isPublicProfile(uid) {
+      return !exists(publicUserDoc(uid)) || get(publicUserDoc(uid)).data.publicProfile != false;
+    }
+
     /* ===== USERS ===== */
 
     // User może zmieniać tylko "bezpieczne" pola profilu
@@ -350,6 +354,21 @@ service cloud.firestore {
         && (request.auth.uid == uid || request.resource.data.toUid == uid);
       allow update: if isOwner(uid);
       allow delete: if isAdmin() || isOwner(uid);
+    }
+
+    /* ===== USER FEED ===== */
+    match /user_feed/{uid}/posts/{postId} {
+      allow read: if signedIn()
+        && !isBlocked(request.auth.uid, uid)
+        && (
+          isOwner(uid)
+          || isAdmin()
+          || isFriends(request.auth.uid, uid)
+          || isPublicProfile(uid)
+        );
+      allow create: if isOwner(uid)
+        && request.resource.data.authorUid == request.auth.uid;
+      allow update, delete: if isOwner(uid) || isAdmin();
     }
 
     /* ===== USER BLOCKS ===== */

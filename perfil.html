@@ -15,31 +15,141 @@
   <body data-page="profile">
     <div id="appHeader"></div>
 
-    <main class="page">
-      <div class="container">
-        <div class="card" id="profileCard">
-          <div class="metaRow" style="gap: 16px; align-items: center; flex-wrap: wrap">
-            <div class="heroIcon heroIcon--avatar" id="profileAvatarWrap">
-              <img id="profileAvatarImg" alt="Foto de perfil" />
-              <span id="profileAvatarFallback">USR</span>
+    <main class="page profile-page">
+      <div class="container profile-shell">
+        <aside class="profile-sidebar">
+          <div class="profile-nav">
+            <a class="profile-nav-item" href="index.html">&#127968; Inicio</a>
+            <a class="profile-nav-item" href="espanel.html#cursos">&#128218; Cursos</a>
+            <a class="profile-nav-item" href="review.html">&#128260; Practicar</a>
+            <a class="profile-nav-item" href="recompensas.html">&#127942; Logros</a>
+            <a class="profile-nav-item" href="mensajes.html">&#128172; Comunidad</a>
+            <a class="profile-nav-item active" href="perfil.html">&#128100; Perfil</a>
+          </div>
+        </aside>
+
+        <section class="profile-main">
+          <div class="card profile-card" id="profileCard">
+            <div class="profileHeader">
+              <div class="heroIcon heroIcon--avatar" id="profileAvatarWrap">
+                <img id="profileAvatarImg" alt="Foto de perfil" />
+                <span id="profileAvatarFallback">USR</span>
+              </div>
+              <div class="profileHeaderInfo">
+                <h1 class="glow-text" id="profileName" style="margin: 0; font-size: 36px">
+                  Perfil
+                </h1>
+                <div class="muted" id="profileHandle" style="margin-top: 6px"></div>
+                <div class="muted" id="profileStatus" style="margin-top: 6px">—</div>
+                <div class="profileStats">
+                  <div class="statCard">
+                    <div class="statValue" id="statStreak">0</div>
+                    <div class="statLabel">Racha</div>
+                  </div>
+                  <div class="statCard">
+                    <div class="statValue" id="statExp">0</div>
+                    <div class="statLabel">EXP</div>
+                  </div>
+                  <div class="statCard">
+                    <div class="statValue" id="statLeague">—</div>
+                    <div class="statLabel">Liga</div>
+                  </div>
+                  <div class="statCard">
+                    <div class="statValue" id="statTop3">0</div>
+                    <div class="statLabel">Top 3</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 class="glow-text" id="profileName" style="margin: 0; font-size: 36px">
-                Perfil
-              </h1>
-              <div class="muted" id="profileHandle" style="margin-top: 6px"></div>
-              <div class="muted" id="profileStatus" style="margin-top: 6px">—</div>
+
+            <div class="metaRow profileActions">
+              <button class="btn-yellow" id="btnProfileAdd" type="button">Agregar</button>
+              <a class="btn-white-outline" id="btnProfileChat" href="mensajes.html">Mensaje</a>
+              <button class="btn-white-outline" id="btnProfileBlock" type="button">Bloquear</button>
+              <a class="btn-white-outline" href="espanel.html">Volver</a>
+              <span class="hintSmall" id="profileMsg"></span>
             </div>
           </div>
 
-          <div class="metaRow" style="margin-top: 16px; gap: 10px; flex-wrap: wrap">
-            <button class="btn-yellow" id="btnProfileAdd" type="button">Agregar</button>
-            <a class="btn-white-outline" id="btnProfileChat" href="espanel.html">Mensaje</a>
-            <button class="btn-white-outline" id="btnProfileBlock" type="button">Bloquear</button>
-            <a class="btn-white-outline" href="espanel.html">Volver</a>
-            <span class="hintSmall" id="profileMsg"></span>
+          <div class="card status-card" id="statusCard">
+            <div class="status-heart" id="statusHeart">&#10084;&#65039;</div>
+            <div class="statusInputRow">
+              <div class="nav-avatar nav-avatar--small statusAvatar" id="statusAvatar">
+                <img id="statusAvatarImg" alt="Foto de perfil" style="display: none" />
+                <span id="statusAvatarFallback">U</span>
+              </div>
+              <textarea
+                id="statusInput"
+                class="statusInput"
+                rows="3"
+                placeholder="¿Cómo te sientes aprendiendo hoy?&#10;Puedes escribir en español o polaco &#128155;"
+              ></textarea>
+            </div>
+            <div class="statusTools">
+              <button class="statusChip" data-tag="estado" id="statusMood">
+                &#128522; Estado
+              </button>
+              <select id="statusMinutes" class="select statusSelect">
+                <option value="">&#9749; Aprendizaje</option>
+                <option value="5">5 min</option>
+                <option value="10">10 min</option>
+                <option value="15">15 min</option>
+                <option value="20">20 min</option>
+              </select>
+              <select id="statusCourse" class="select statusSelect">
+                <option value="">&#128214; Curso</option>
+                <option value="A1">A1</option>
+                <option value="A2">A2</option>
+                <option value="B1">B1</option>
+                <option value="B2">B2</option>
+              </select>
+              <button class="statusChip" data-tag="motivacion" id="statusMotivation">
+                &#10084;&#65039; Motivación
+              </button>
+            </div>
+            <div class="statusActions">
+              <button class="btn-yellow" id="statusPostBtn" type="button" disabled>
+                Publicar
+              </button>
+              <span class="hintSmall" id="statusHint"></span>
+            </div>
           </div>
-        </div>
+
+          <div class="feedList" id="feedList"></div>
+        </section>
+
+        <aside class="profile-side">
+          <div class="card">
+            <div class="sectionTitle" style="margin-top: 0">Invitaciones</div>
+            <div class="muted" id="invitesHint">No tienes invitaciones pendientes.</div>
+            <div class="friendList" id="invitesList" style="margin-top: 10px"></div>
+          </div>
+
+          <div class="card">
+            <div class="sectionTitle" style="margin-top: 0">Buscar amigos</div>
+            <div class="metaRow" style="gap: 10px; flex-wrap: wrap">
+              <input
+                id="friendSearchInput"
+                class="input"
+                placeholder="Usuario, idioma o nivel"
+                style="min-width: 200px; flex: 1"
+              />
+              <button id="friendSearchBtn" class="btn-white-outline" type="button">
+                Buscar
+              </button>
+            </div>
+            <div class="muted" id="friendSearchHint" style="margin-top: 10px">
+              Resultados de busqueda apareceran aqui.
+            </div>
+            <div class="friendList" id="friendSearchResults" style="margin-top: 10px"></div>
+          </div>
+
+          <div class="card">
+            <div class="sectionTitle" style="margin-top: 0">Ranking</div>
+            <div class="muted">Solo amigos, modo opt-in.</div>
+            <div class="rankingList" id="rankingList"></div>
+          </div>
+        </aside>
       </div>
     </main>
 
