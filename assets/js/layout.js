@@ -36,6 +36,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     'ejercicioadmin',
     'adminselect',
     'admin-select',
+    'admin-wizard',
   ]);
   const isAdminPage = adminPages.has(document.body?.dataset?.page);
   if (isIndex) return; // index uses layout-index.js

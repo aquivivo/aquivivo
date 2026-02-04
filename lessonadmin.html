@@ -173,6 +173,32 @@
           </div>
         </div>
 
+        <!-- Szybki import (outline/Markdown) -->
+        <div class="card" style="margin-top: 16px">
+          <div class="sectionTitle" style="margin-top: 0">
+            Szybki import (outline / Markdown)
+          </div>
+          <div class="muted">
+            Wklej szkic lekcji i zamien go na bloki. Obslugiwane znaczniki:
+            <b>TITLE:</b>, <b>DESC:</b>, <b>TIME:</b>, <b>##</b>, <b>###</b>,
+            <b>TIP:</b>, <b>EX:</b>, <b>IMG:</b>, <b>---</b>.
+          </div>
+          <textarea
+            id="outlineArea"
+            rows="8"
+            placeholder="TITLE: Miasto i miejsca\nDESC: Slownictwo z miasta\nTIME: 15\n\n## Cel lekcji\nNauczysz sie...\n\nTIP: Wskazowka | Zawsze uzywaj...\nEX: Przyklad | Jestem w centrum.\nIMG: https://...\n---\n### Slownictwo\n- tienda - sklep\n- calle - ulica"
+          ></textarea>
+          <div class="metaRow" style="margin-top: 10px">
+            <button id="btnOutlineReplace" class="btn-yellow" type="button">
+              Zamien na bloki
+            </button>
+            <button id="btnOutlineAppend" class="btn-white-outline" type="button">
+              Dodaj na koniec
+            </button>
+            <span class="hintSmall" id="outlineStatus"></span>
+          </div>
+        </div>
+
         <!-- HTML editor -->
         <div class="card" style="margin-top: 16px">
           <div class="sectionTitle" style="margin-top: 0">Tresc (HTML)</div>

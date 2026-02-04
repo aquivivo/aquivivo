@@ -544,6 +544,92 @@
         </div>
 
         <div class="card" style="margin-top: 10px">
+          <div class="sectionTitle" style="margin-top: 0">
+            Biblioteka cwiczen (A1/A2/B1)
+          </div>
+          <div class="muted">
+            Gotowe zestawy cwiczen do szybkiego dodania.
+          </div>
+          <div class="metaRow" style="margin-top: 10px; gap: 10px; flex-wrap: wrap">
+            <select id="libLevel" class="select" style="min-width: 120px">
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+            </select>
+            <select id="libSet" class="select" style="min-width: 320px"></select>
+            <button class="btn btn-yellow" id="btnInsertLibrary" type="button">
+              Dodaj zestaw
+            </button>
+            <span class="smallNote" id="libStatus"></span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 10px">
+          <div class="sectionTitle" style="margin-top: 0">
+            Masowy import (CSV / TSV)
+          </div>
+          <textarea
+            id="bulkImportArea"
+            placeholder="Wklej wiersze z arkusza. Przyklad:\n\ntype\tprompt\tanswer\toptions\tcategory\ttags\tnotes\timageUrl\torder\nOpción múltiple\tElige la forma correcta...\tB\tA) ...||B) ...||C) ...\tgrammar\tczasowniki\t\t\t1\nRellenar los espacios\tYo ___ de España.\tsoy\t\tgrammar\t\t\t\t\n\nSeparator kolumn: TAB (zalecane) lub srednik (;)."
+          ></textarea>
+          <div class="smallNote" style="margin-top: 8px">
+            - Naglowek jest opcjonalny. Jesli go nie ma, uzywamy: <b>prompt, answer, options, category, tags, notes, imageUrl, order</b>.<br />
+            - <b>options</b> rozdzielaj przez <b>||</b> (np. A) ... || B) ...).<br />
+            - Jesli brak <b>type</b>, uzyje aktualnego typu z formularza.
+          </div>
+          <div class="hr"></div>
+          <div class="smallNote" style="margin-top: 8px; font-weight: 800">
+            Mapowanie kolumn (opcjonalnie)
+          </div>
+          <label style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+            <input id="bulkMapUse" type="checkbox" />
+            Uzyj mapowania (kolumny liczone od 1)
+          </label>
+          <div class="metaRow" style="gap: 10px; flex-wrap: wrap; margin-top: 8px">
+            <select id="bulkMapType" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapPrompt" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapAnswer" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapOptions" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapCategory" class="select" style="min-width: 160px"></select>
+          </div>
+          <div class="metaRow" style="gap: 10px; flex-wrap: wrap; margin-top: 6px">
+            <select id="bulkMapTags" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapNotes" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapImage" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapOrder" class="select" style="min-width: 160px"></select>
+          </div>
+          <div class="smallNote" style="margin-top: 8px">Drag & drop:</div>
+          <div id="bulkMapChips" class="metaRow" style="gap:8px; flex-wrap:wrap; margin-top:6px;"></div>
+          <div class="metaRow" style="gap:8px; flex-wrap:wrap; margin-top:6px;">
+            <div class="mapTarget" data-map="type">type: <span id="mapValType">-</span></div>
+            <div class="mapTarget" data-map="prompt">prompt: <span id="mapValPrompt">-</span></div>
+            <div class="mapTarget" data-map="answer">answer: <span id="mapValAnswer">-</span></div>
+            <div class="mapTarget" data-map="options">options: <span id="mapValOptions">-</span></div>
+            <div class="mapTarget" data-map="category">category: <span id="mapValCategory">-</span></div>
+            <div class="mapTarget" data-map="tags">tags: <span id="mapValTags">-</span></div>
+            <div class="mapTarget" data-map="notes">notes: <span id="mapValNotes">-</span></div>
+            <div class="mapTarget" data-map="imageUrl">image: <span id="mapValImage">-</span></div>
+            <div class="mapTarget" data-map="order">order: <span id="mapValOrder">-</span></div>
+          </div>
+          <div class="adminActions" style="margin-top: 10px">
+            <input id="bulkImportFile" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" />
+            <button class="btn" id="btnLoadBulkFile" type="button">
+              Wczytaj plik
+            </button>
+            <button class="btn btn-yellow" id="btnBulkImport" type="button">
+              Importuj masowo
+            </button>
+            <button class="btn" id="btnBulkClear" type="button">Wyczysc</button>
+            <span
+              class="smallNote"
+              id="bulkImportStatus"
+              style="margin-left: auto"
+            ></span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 10px">
           <div class="sectionTitle" style="margin-top: 0">Fiszki (Quizlet)</div>
           <textarea
             id="flashImportArea"
@@ -658,6 +744,9 @@
           </button>
           <button class="btn" id="btnAutoOrder" type="button">
             Ustaw kolejny numer
+          </button>
+          <button class="btn" id="btnCancelEdit" type="button">
+            Anuluj edycje
           </button>
 
           <label

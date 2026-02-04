@@ -40,9 +40,10 @@ import {
       const params = new URLSearchParams(window.location.search);
       const LEVEL = (params.get('level') || 'A1').toUpperCase();
       
-const COURSE_ID = String(params.get('id') || '').trim();
-const slugParam = params.get('slug') || '';
+      const COURSE_ID = String(params.get('id') || '').trim();
+      const slugParam = params.get('slug') || '';
       const idParam = params.get('id') || '';
+      const HAS_TOPIC_PARAM = !!(idParam || slugParam);
 
       // UI refs
       const toast = document.getElementById('toast');
@@ -90,7 +91,36 @@ const slugParam = params.get('slug') || '';
       const flashAudioUrl = document.getElementById('flashAudioUrl');
       const btnCopyFlashAudio = document.getElementById('btnCopyFlashAudio');
       const flashAudioStatus = document.getElementById('flashAudioStatus');
+      const bulkImportArea = document.getElementById('bulkImportArea');
+      const btnBulkImport = document.getElementById('btnBulkImport');
+      const btnBulkClear = document.getElementById('btnBulkClear');
+      const bulkImportStatus = document.getElementById('bulkImportStatus');
+      const bulkImportFile = document.getElementById('bulkImportFile');
+      const btnLoadBulkFile = document.getElementById('btnLoadBulkFile');
+      const bulkMapUse = document.getElementById('bulkMapUse');
+      const bulkMapType = document.getElementById('bulkMapType');
+      const bulkMapPrompt = document.getElementById('bulkMapPrompt');
+      const bulkMapAnswer = document.getElementById('bulkMapAnswer');
+      const bulkMapOptions = document.getElementById('bulkMapOptions');
+      const bulkMapCategory = document.getElementById('bulkMapCategory');
+      const bulkMapTags = document.getElementById('bulkMapTags');
+      const bulkMapNotes = document.getElementById('bulkMapNotes');
+      const bulkMapImage = document.getElementById('bulkMapImage');
+      const bulkMapOrder = document.getElementById('bulkMapOrder');
+      const bulkMapChips = document.getElementById('bulkMapChips');
+      const mapValEls = {
+        type: document.getElementById('mapValType'),
+        prompt: document.getElementById('mapValPrompt'),
+        answer: document.getElementById('mapValAnswer'),
+        options: document.getElementById('mapValOptions'),
+        category: document.getElementById('mapValCategory'),
+        tags: document.getElementById('mapValTags'),
+        notes: document.getElementById('mapValNotes'),
+        imageUrl: document.getElementById('mapValImage'),
+        order: document.getElementById('mapValOrder'),
+      };
       const btnAddExercise = document.getElementById('btnAddExercise');
+      const btnCancelEdit = document.getElementById('btnCancelEdit');
       const btnTplFill = document.getElementById('btnTplFill');
       const btnTplChoice = document.getElementById('btnTplChoice');
       const btnTplTF = document.getElementById('btnTplTF');
@@ -98,6 +128,10 @@ const slugParam = params.get('slug') || '';
       const btnImportJson = document.getElementById('btnImportJson');
       const btnClearImport = document.getElementById('btnClearImport');
       const importStatus = document.getElementById('importStatus');
+      const libLevel = document.getElementById('libLevel');
+      const libSet = document.getElementById('libSet');
+      const btnInsertLibrary = document.getElementById('btnInsertLibrary');
+      const libStatus = document.getElementById('libStatus');
 
       // ===== Lesson meta (course_meta) =====
       const lessonMetaWrap = document.getElementById('lessonMetaWrap');
@@ -390,6 +424,705 @@ const slugParam = params.get('slug') || '';
         const ex = exRaw.replace(/^EX\s*:\s*/i, '').trim();
 
         return ex ? `PL: ${pl} | ES: ${es} | EX: ${ex}` : `PL: ${pl} | ES: ${es}`;
+      }
+
+      function splitBulkColumns(line) {
+        if (line.includes('\t')) return line.split('\t');
+        if (line.includes(';')) return line.split(';');
+        if (line.includes(',')) return line.split(',');
+        return [line];
+      }
+
+      function normalizeHeaderKey(raw) {
+        return String(raw || '')
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, '');
+      }
+
+      function parseOptionsCell(raw) {
+        const txt = String(raw || '').trim();
+        if (!txt) return [];
+        let parts = [];
+        if (txt.includes('||')) parts = txt.split('||');
+        else if (txt.includes('|')) parts = txt.split('|');
+        else if (txt.includes(';')) parts = txt.split(';');
+        else parts = [txt];
+        return parts.map((x) => x.trim()).filter(Boolean);
+      }
+
+      function parseBulkRows(raw, mapping = null) {
+        const lines = String(raw || '')
+          .split(/\r?\n/)
+          .map((l) => l.trim())
+          .filter(Boolean);
+        if (!lines.length) return { items: [], errors: 0 };
+
+        const headerAliases = {
+          type: 'type',
+          prompt: 'prompt',
+          question: 'prompt',
+          pytanie: 'prompt',
+          answer: 'answer',
+          odpowiedz: 'answer',
+          options: 'options',
+          opcje: 'options',
+          category: 'category',
+          kategoria: 'category',
+          tags: 'tags',
+          tagi: 'tags',
+          notes: 'notes',
+          notatki: 'notes',
+          imageurl: 'imageUrl',
+          image: 'imageUrl',
+          obraz: 'imageUrl',
+          order: 'order',
+          kolejnosc: 'order',
+        };
+
+        const headerMap = {};
+        let start = 0;
+        if (mapping && mapping.use) {
+          Object.keys(mapping.map || {}).forEach((k) => {
+            const idx = mapping.map[k];
+            if (typeof idx === 'number' && idx >= 0) headerMap[k] = idx;
+          });
+          start = 0;
+        } else {
+          const first = splitBulkColumns(lines[0]).map((x) => x.trim());
+          const headerKeys = first.map(normalizeHeaderKey);
+          const hasHeader = headerKeys.some((k) => headerAliases[k]);
+          if (hasHeader) {
+            headerKeys.forEach((k, idx) => {
+              const key = headerAliases[k];
+              if (key) headerMap[key] = idx;
+            });
+            start = 1;
+          } else {
+            headerMap.prompt = 0;
+            headerMap.answer = 1;
+            headerMap.options = 2;
+            headerMap.category = 3;
+            headerMap.tags = 4;
+            headerMap.notes = 5;
+            headerMap.imageUrl = 6;
+            headerMap.order = 7;
+            start = 0;
+          }
+        }
+
+        const items = [];
+        let errors = 0;
+
+        for (let i = start; i < lines.length; i++) {
+          const cols = splitBulkColumns(lines[i]).map((x) => x.trim());
+          const pick = (key) => {
+            const idx = headerMap[key];
+            if (idx == null) return '';
+            return cols[idx] || '';
+          };
+
+          const prompt = pick('prompt');
+          const answer = pick('answer');
+          if (!prompt || !answer) {
+            errors += 1;
+            continue;
+          }
+
+          items.push({
+            type: pick('type'),
+            prompt,
+            answer,
+            options: parseOptionsCell(pick('options')),
+            category: pick('category'),
+            tags: pick('tags'),
+            notes: pick('notes'),
+            imageUrl: pick('imageUrl'),
+            order: pick('order'),
+          });
+        }
+
+        return { items, errors };
+      }
+
+      function buildMapOptionsFromSample() {
+        const raw = String(bulkImportArea?.value || '').trim();
+        if (!raw) return [];
+        const firstLine = raw.split(/\r?\n/).find((l) => l.trim()) || '';
+        const cols = splitBulkColumns(firstLine).map((x) => x.trim());
+        if (!cols.length) return [];
+        return cols.map((c, idx) => ({
+          idx,
+          label: `${idx + 1}: ${c.slice(0, 18)}${c.length > 18 ? '…' : ''}`,
+        }));
+      }
+
+      function getColumnLabel(idx) {
+        const options = buildMapOptionsFromSample();
+        const found = options.find((o) => o.idx === idx);
+        return found ? found.label : `Kolumna ${idx + 1}`;
+      }
+
+      function fillMapSelect(selectEl, label) {
+        if (!selectEl) return;
+        const options = buildMapOptionsFromSample();
+        selectEl.innerHTML = '';
+        selectEl.appendChild(new Option(`${label} — auto`, ''));
+        selectEl.appendChild(new Option(`${label} — brak`, '-1'));
+        options.forEach((o) => {
+          selectEl.appendChild(new Option(o.label, String(o.idx + 1)));
+        });
+      }
+
+      function updateMapLabelsFromSelects() {
+        const map = {
+          type: mapSelectValue(bulkMapType),
+          prompt: mapSelectValue(bulkMapPrompt),
+          answer: mapSelectValue(bulkMapAnswer),
+          options: mapSelectValue(bulkMapOptions),
+          category: mapSelectValue(bulkMapCategory),
+          tags: mapSelectValue(bulkMapTags),
+          notes: mapSelectValue(bulkMapNotes),
+          imageUrl: mapSelectValue(bulkMapImage),
+          order: mapSelectValue(bulkMapOrder),
+        };
+        Object.keys(mapValEls).forEach((key) => {
+          const el = mapValEls[key];
+          if (!el) return;
+          const idx = map[key];
+          if (idx == null || idx < 0) {
+            el.textContent = '-';
+          } else {
+            el.textContent = getColumnLabel(idx);
+          }
+        });
+      }
+
+      function renderMapChips() {
+        if (!bulkMapChips) return;
+        const options = buildMapOptionsFromSample();
+        bulkMapChips.innerHTML = '';
+        if (!options.length) {
+          bulkMapChips.innerHTML = '<span class="smallNote">Brak danych do mapowania.</span>';
+          return;
+        }
+        options.forEach((o) => {
+          const chip = document.createElement('div');
+          chip.className = 'mapChip';
+          chip.textContent = o.label;
+          chip.draggable = true;
+          chip.dataset.col = String(o.idx);
+          chip.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', String(o.idx));
+            e.dataTransfer.effectAllowed = 'copy';
+          });
+          bulkMapChips.appendChild(chip);
+        });
+      }
+
+      function refreshBulkMapOptions() {
+        fillMapSelect(bulkMapType, 'type');
+        fillMapSelect(bulkMapPrompt, 'prompt');
+        fillMapSelect(bulkMapAnswer, 'answer');
+        fillMapSelect(bulkMapOptions, 'options');
+        fillMapSelect(bulkMapCategory, 'category');
+        fillMapSelect(bulkMapTags, 'tags');
+        fillMapSelect(bulkMapNotes, 'notes');
+        fillMapSelect(bulkMapImage, 'imageUrl');
+        fillMapSelect(bulkMapOrder, 'order');
+        renderMapChips();
+        updateMapLabelsFromSelects();
+      }
+
+      function mapSelectValue(selectEl) {
+        const v = String(selectEl?.value || '');
+        if (!v) return null;
+        if (v === '-1') return -1;
+        const n = Number(v);
+        if (!Number.isFinite(n) || n <= 0) return null;
+        return n - 1; // 1-based -> 0-based
+      }
+
+      function getBulkMapping() {
+        if (!bulkMapUse?.checked) return null;
+        const map = {
+          type: mapSelectValue(bulkMapType),
+          prompt: mapSelectValue(bulkMapPrompt),
+          answer: mapSelectValue(bulkMapAnswer),
+          options: mapSelectValue(bulkMapOptions),
+          category: mapSelectValue(bulkMapCategory),
+          tags: mapSelectValue(bulkMapTags),
+          notes: mapSelectValue(bulkMapNotes),
+          imageUrl: mapSelectValue(bulkMapImage),
+          order: mapSelectValue(bulkMapOrder),
+        };
+        return { use: true, map };
+      }
+
+      function selectForMapKey(key) {
+        if (key === 'type') return bulkMapType;
+        if (key === 'prompt') return bulkMapPrompt;
+        if (key === 'answer') return bulkMapAnswer;
+        if (key === 'options') return bulkMapOptions;
+        if (key === 'category') return bulkMapCategory;
+        if (key === 'tags') return bulkMapTags;
+        if (key === 'notes') return bulkMapNotes;
+        if (key === 'imageUrl') return bulkMapImage;
+        if (key === 'order') return bulkMapOrder;
+        return null;
+      }
+
+      function bindMapTargets() {
+        const targets = document.querySelectorAll('.mapTarget[data-map]');
+        targets.forEach((t) => {
+          t.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            t.classList.add('dragOver');
+          });
+          t.addEventListener('dragleave', () => {
+            t.classList.remove('dragOver');
+          });
+          t.addEventListener('drop', (e) => {
+            e.preventDefault();
+            t.classList.remove('dragOver');
+            const idx = Number(e.dataTransfer.getData('text/plain'));
+            if (!Number.isFinite(idx)) return;
+            const key = t.getAttribute('data-map');
+            const sel = selectForMapKey(key);
+            if (!sel) return;
+            sel.value = String(idx + 1);
+            if (bulkMapUse) bulkMapUse.checked = true;
+            updateMapLabelsFromSelects();
+          });
+        });
+
+        [
+          bulkMapType,
+          bulkMapPrompt,
+          bulkMapAnswer,
+          bulkMapOptions,
+          bulkMapCategory,
+          bulkMapTags,
+          bulkMapNotes,
+          bulkMapImage,
+          bulkMapOrder,
+        ].forEach((sel) => sel?.addEventListener('change', updateMapLabelsFromSelects));
+      }
+
+      const EXERCISE_LIBRARY = {
+        A1: [
+          {
+            id: 'a1_saludos',
+            label: 'A1 - Saludos y presentaciones',
+            items: [
+              {
+                type: 'Opción múltiple',
+                prompt: 'Elige la respuesta correcta: "Buenos días" significa...',
+                options: ['A) Buenas noches', 'B) Buenas tardes', 'C) Buenos días'],
+                answer: 'C',
+                category: 'vocab',
+                notes: '',
+              },
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Yo ___ Marta.',
+                answer: 'soy',
+                category: 'grammar',
+                notes: 'Verbo ser (1a persona).',
+              },
+              {
+                type: 'Verdadero o falso',
+                prompt: '"Adiós" es un saludo de despedida.',
+                options: ['true', 'false'],
+                answer: 'true',
+                category: 'vocab',
+              },
+              {
+                type: 'Opción múltiple',
+                prompt: '¿Cómo te llamas? — ____.',
+                options: ['A) Me llamo Ana', 'B) Soy en casa', 'C) Estoy 20 años'],
+                answer: 'A',
+                category: 'grammar',
+              },
+            ],
+          },
+          {
+            id: 'a1_numeros_tiempo',
+            label: 'A1 - Numeros y tiempo',
+            items: [
+              {
+                type: 'Opción múltiple',
+                prompt: '¿Cómo se dice "15"?',
+                options: ['A) quince', 'B) cincuenta', 'C) dieciséis'],
+                answer: 'A',
+                category: 'vocab',
+              },
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Son las ___ (3:30).',
+                answer: 'tres y media',
+                category: 'vocab',
+              },
+              {
+                type: 'Verdadero o falso',
+                prompt: '"Hoy es lunes" habla del día de la semana.',
+                options: ['true', 'false'],
+                answer: 'true',
+                category: 'vocab',
+              },
+            ],
+          },
+          {
+            id: 'a1_ser_estar',
+            label: 'A1 - Ser y estar (basico)',
+            items: [
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Madrid ___ en España.',
+                answer: 'está',
+                category: 'grammar',
+                notes: 'Ubicacion -> estar.',
+              },
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Yo ___ de Polonia.',
+                answer: 'soy',
+                category: 'grammar',
+              },
+              {
+                type: 'Opción múltiple',
+                prompt: 'Ella ___ cansada hoy.',
+                options: ['A) es', 'B) está', 'C) soy'],
+                answer: 'B',
+                category: 'grammar',
+              },
+              {
+                type: 'Verdadero o falso',
+                prompt: '"Soy en casa" es correcto.',
+                options: ['true', 'false'],
+                answer: 'false',
+                category: 'grammar',
+              },
+            ],
+          },
+          {
+            id: 'a1_familia',
+            label: 'A1 - Familia y personas',
+            items: [
+              {
+                type: 'Opción múltiple',
+                prompt: 'Selecciona la palabra: "hermana" =',
+                options: ['A) hermano', 'B) hermana', 'C) padre'],
+                answer: 'B',
+                category: 'vocab',
+              },
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Mi ___ se llama Carlos.',
+                answer: 'padre',
+                category: 'vocab',
+              },
+              {
+                type: 'Opción múltiple',
+                prompt: '¿Quién es la hija de tu madre?',
+                options: ['A) tía', 'B) hermana', 'C) abuelo'],
+                answer: 'B',
+                category: 'vocab',
+              },
+            ],
+          },
+        ],
+        A2: [
+          {
+            id: 'a2_pasado',
+            label: 'A2 - Pretérito perfecto',
+            items: [
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Hoy ___ (comer) pasta.',
+                answer: 'he comido',
+                category: 'grammar',
+              },
+              {
+                type: 'Opción múltiple',
+                prompt: '¿Has ___ al museo?',
+                options: ['A) ido', 'B) ido a', 'C) iendo'],
+                answer: 'A',
+                category: 'grammar',
+              },
+              {
+                type: 'Verdadero o falso',
+                prompt: '"Hemos visto" es pretérito perfecto.',
+                options: ['true', 'false'],
+                answer: 'true',
+                category: 'grammar',
+              },
+            ],
+          },
+          {
+            id: 'a2_viajes',
+            label: 'A2 - Viajes y transporte',
+            items: [
+              {
+                type: 'Opción múltiple',
+                prompt: '¿Cómo se dice "platforma" en español?',
+                options: ['A) andén', 'B) estación', 'C) billete'],
+                answer: 'A',
+                category: 'vocab',
+              },
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Necesito ___ un billete a Madrid.',
+                answer: 'comprar',
+                category: 'vocab',
+              },
+              {
+                type: 'Verdadero o falso',
+                prompt: '"Equipaje" significa "luggage".',
+                options: ['true', 'false'],
+                answer: 'true',
+                category: 'vocab',
+              },
+            ],
+          },
+          {
+            id: 'a2_compras',
+            label: 'A2 - Compras y precios',
+            items: [
+              {
+                type: 'Opción múltiple',
+                prompt: '¿Cuánto cuesta? =',
+                options: ['A) ¿Qué quieres?', 'B) ¿Qué precio tiene?', 'C) ¿Dónde está?'],
+                answer: 'B',
+                category: 'vocab',
+              },
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Quisiera ___ kilo de manzanas.',
+                answer: 'un',
+                category: 'grammar',
+              },
+              {
+                type: 'Opción múltiple',
+                prompt: 'Selecciona: "rebaja" significa...',
+                options: ['A) descuento', 'B) subida', 'C) caja'],
+                answer: 'A',
+                category: 'vocab',
+              },
+            ],
+          },
+          {
+            id: 'a2_pronombres',
+            label: 'A2 - Pronombres de objeto',
+            items: [
+              {
+                type: 'Rellenar los espacios',
+                prompt: '¿Ves a Juan? Sí, ___ veo.',
+                answer: 'lo',
+                category: 'grammar',
+              },
+              {
+                type: 'Opción múltiple',
+                prompt: 'Doy el libro a Ana → Yo ___ doy.',
+                options: ['A) lo', 'B) le', 'C) me'],
+                answer: 'B',
+                category: 'grammar',
+              },
+            ],
+          },
+        ],
+        B1: [
+          {
+            id: 'b1_subj',
+            label: 'B1 - Subjuntivo basico',
+            items: [
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Espero que tú ___ (venir) mañana.',
+                answer: 'vengas',
+                category: 'grammar',
+              },
+              {
+                type: 'Opción múltiple',
+                prompt: 'Es importante que ellos ___.',
+                options: ['A) estudian', 'B) estudien', 'C) estudiar'],
+                answer: 'B',
+                category: 'grammar',
+              },
+            ],
+          },
+          {
+            id: 'b1_estilo_indirecto',
+            label: 'B1 - Estilo indirecto',
+            items: [
+              {
+                type: 'Opción múltiple',
+                prompt: 'Ella dijo: "Voy mañana". → Ella dijo que ___ mañana.',
+                options: ['A) voy', 'B) iba', 'C) irá'],
+                answer: 'B',
+                category: 'grammar',
+              },
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Me contó que ___ (tener) trabajo.',
+                answer: 'tenía',
+                category: 'grammar',
+              },
+            ],
+          },
+          {
+            id: 'b1_opinion',
+            label: 'B1 - Expresar opinion',
+            items: [
+              {
+                type: 'Opción múltiple',
+                prompt: 'Elige la expresion de opinion:',
+                options: ['A) Creo que...', 'B) Tengo que...', 'C) Voy a...'],
+                answer: 'A',
+                category: 'vocab',
+              },
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'En mi ___, es mejor estudiar cada día.',
+                answer: 'opinión',
+                category: 'vocab',
+              },
+            ],
+          },
+          {
+            id: 'b1_condicional',
+            label: 'B1 - Condicional',
+            items: [
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'Si tuviera tiempo, ___ (viajar) más.',
+                answer: 'viajaría',
+                category: 'grammar',
+              },
+              {
+                type: 'Verdadero o falso',
+                prompt: '"Comeria" es condicional.',
+                options: ['true', 'false'],
+                answer: 'true',
+                category: 'grammar',
+              },
+            ],
+          },
+        ],
+        B2: [
+          {
+            id: 'b2_discursos',
+            label: 'B2 - Conectores y discurso',
+            items: [
+              {
+                type: 'Opción múltiple',
+                prompt: 'Elige el conector correcto: ___, no puedo venir.',
+                options: ['A) Sin embargo', 'B) A pesar de', 'C) Por ejemplo'],
+                answer: 'A',
+                category: 'grammar',
+              },
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'A pesar ___ la lluvia, salimos.',
+                answer: 'de',
+                category: 'grammar',
+              },
+            ],
+          },
+          {
+            id: 'b2_subj_avanzado',
+            label: 'B2 - Subjuntivo avanzado',
+            items: [
+              {
+                type: 'Rellenar los espacios',
+                prompt: 'No creo que ellos ___ (saber) la verdad.',
+                answer: 'sepan',
+                category: 'grammar',
+              },
+              {
+                type: 'Opción múltiple',
+                prompt: 'Si yo ___ más tiempo, estudiaría cada día.',
+                options: ['A) tuviera', 'B) tengo', 'C) tendría'],
+                answer: 'A',
+                category: 'grammar',
+              },
+            ],
+          },
+        ],
+      };
+
+      function renderLibrarySets() {
+        if (!libSet || !libLevel) return;
+        const lvl = String(libLevel.value || 'A1').toUpperCase();
+        const sets = EXERCISE_LIBRARY[lvl] || [];
+        libSet.innerHTML = '';
+        if (!sets.length) {
+          libSet.appendChild(new Option('Brak zestawow', ''));
+          return;
+        }
+        sets.forEach((s) => {
+          libSet.appendChild(new Option(s.label, s.id));
+        });
+      }
+
+      async function insertLibrarySet() {
+        if (!isAdmin || !currentTopic) return;
+        if (!libLevel || !libSet) return;
+        const lvl = String(libLevel.value || 'A1').toUpperCase();
+        const sets = EXERCISE_LIBRARY[lvl] || [];
+        const set = sets.find((s) => s.id === libSet.value);
+        if (!set) {
+          if (libStatus) libStatus.textContent = 'Wybierz zestaw.';
+          return;
+        }
+
+        if (libStatus) libStatus.textContent = 'Dodawanie...';
+        try {
+          setSaving(true);
+          let order = getNextOrder();
+          const batchLimit = 400;
+          let batch = writeBatch(db);
+          let pending = 0;
+
+          for (const item of set.items || []) {
+            const refDoc = doc(collection(db, 'exercises'));
+            const options = Array.isArray(item.options) ? item.options : [];
+            batch.set(refDoc, {
+              level: LEVEL,
+              topicSlug: String(currentTopic.slug || currentTopic.id || ''),
+              topicId: String(COURSE_ID || currentTopic.id || '').trim() || null,
+              type: item.type || 'Rellenar los espacios',
+              prompt: String(item.prompt || '').trim(),
+              imageUrl: String(item.imageUrl || '').trim(),
+              options: options,
+              answer: String(item.answer || '').trim(),
+              notes: String(item.notes || '').trim(),
+              category: String(item.category || 'grammar'),
+              tags: Array.isArray(item.tags) ? item.tags : [],
+              order: order++,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+            });
+            pending += 1;
+            if (pending >= batchLimit) {
+              await batch.commit();
+              batch = writeBatch(db);
+              pending = 0;
+            }
+          }
+          if (pending > 0) await batch.commit();
+
+          if (libStatus) libStatus.textContent = `Dodano: ${set.items.length}`;
+          showToast(`Dodano zestaw: ${set.label}`, 'ok', 2000);
+          await loadExercises(currentTopic);
+          if (exOrder) exOrder.value = String(getNextOrder());
+        } catch (e) {
+          console.error(e);
+          if (libStatus) libStatus.textContent = 'Blad dodawania.';
+          showToast('Blad dodawania zestawu', 'bad', 3000);
+        } finally {
+          setSaving(false);
+        }
       }
 
       async function uploadFlashAudio() {
@@ -799,7 +1532,8 @@ const slugParam = params.get('slug') || '';
       }
 
       // ===== Safe "no params" screen =====
-      if (!params.get('level') && !params.get('id') && !params.get('slug')) {
+      const SKIP_LOAD = !HAS_TOPIC_PARAM;
+      if (SKIP_LOAD) {
         topicTitle.textContent = 'Brak wybranego tematu';
         topicDesc.textContent =
           'Otworz najpierw course.html i kliknij temat (lesson otworzy sie automatycznie z parametrami).';
@@ -1032,6 +1766,8 @@ const slugParam = params.get('slug') || '';
           ? `
               <div style="display:flex; gap:8px; align-items:center">
                 <button class="btn" id="pv-${ex.id}" type="button" title="Podglad (uczen)">Podglad</button>
+                <button class="btn-white-outline" id="edit-${ex.id}" type="button" title="Edytuj">Edytuj</button>
+                <button class="btn-white-outline" id="dup-${ex.id}" type="button" title="Duplikuj">Duplikuj</button>
                 <button class="dangerMini" id="del-${ex.id}" type="button" title="Usun">Usun</button>
               </div>
             `
@@ -1094,6 +1830,23 @@ const slugParam = params.get('slug') || '';
             pvBtn.onclick = (ev) => {
               ev.stopPropagation();
               openPreview(ex);
+            };
+          }
+        }
+
+        if (isAdmin) {
+          const editBtn = document.getElementById(`edit-${ex.id}`);
+          if (editBtn) {
+            editBtn.onclick = (ev) => {
+              ev.stopPropagation();
+              enterEditMode(ex);
+            };
+          }
+          const dupBtn = document.getElementById(`dup-${ex.id}`);
+          if (dupBtn) {
+            dupBtn.onclick = async (ev) => {
+              ev.stopPropagation();
+              await duplicateExercise(ex);
             };
           }
         }
@@ -1198,7 +1951,6 @@ const slugParam = params.get('slug') || '';
             collection(db, 'exercises'),
             where('level', '==', LEVEL),
             where('topicId', '==', String(COURSE_ID || currentTopic.id || '').trim()),
-            orderBy('order', 'asc'),
           );
           snap = await getDocs(qx);
         } catch (e) {
@@ -1212,7 +1964,6 @@ const slugParam = params.get('slug') || '';
             collection(db, 'exercises'),
             where('level', '==', LEVEL),
             where('topicSlug', '==', effectiveSlug),
-            orderBy('order', 'asc'),
           );
           snap = await getDocs(qx2);
         }
@@ -1223,6 +1974,7 @@ const slugParam = params.get('slug') || '';
         }
 
         snap.forEach((d) => cachedExercises.push({ id: d.id, ...d.data() }));
+        cachedExercises.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
 
         // state for filters/reorder
         ALL_EXERCISES = cachedExercises.slice();
@@ -1260,6 +2012,15 @@ const slugParam = params.get('slug') || '';
         if (noAdminCard) noAdminCard.style.display = isAdmin ? 'none' : 'block';
 
         fillExerciseTypes();
+        refreshBulkMapOptions();
+        bindMapTargets();
+        if (libLevel) {
+          libLevel.value = LEVEL;
+          renderLibrarySets();
+        }
+        libLevel?.addEventListener('change', renderLibrarySets);
+        btnInsertLibrary?.addEventListener('click', insertLibrarySet);
+        if (btnCancelEdit) btnCancelEdit.style.display = 'none';
 
         // ===== Podpiecie UI szablonow =====
         const btnApplyTemplate = document.getElementById('btnApplyTemplate');
@@ -1357,7 +2118,7 @@ const slugParam = params.get('slug') || '';
         });
 
         // If opened without params, do not try to query Firestore
-        if (!params.get('id') && !params.get('slug')) return;
+        if (SKIP_LOAD) return;
 
         try {
           showToast('Ladowanie tematu...', 'warn', 1200);
@@ -1417,7 +2178,7 @@ const slugParam = params.get('slug') || '';
         } else if (kind === 'tf') {
           exType.value = 'Verdadero o falso';
           exPrompt.value =
-            \"'Mam' es la forma de 'tener' en polaco (1a persona).\";
+            "'Mam' es la forma de 'tener' en polaco (1a persona).";
           exOptions.value = 'true\nfalse';
           exAnswer.value = 'true';
           exCategory.value = 'vocab';
@@ -1571,10 +2332,196 @@ const slugParam = params.get('slug') || '';
         }
       });
 
+      btnBulkClear?.addEventListener('click', () => {
+        if (bulkImportArea) bulkImportArea.value = '';
+        if (bulkImportStatus) bulkImportStatus.textContent = '';
+        refreshBulkMapOptions();
+      });
+
+      btnLoadBulkFile?.addEventListener('click', () => {
+        const file = bulkImportFile?.files?.[0];
+        if (!file) {
+          if (bulkImportStatus) bulkImportStatus.textContent = 'Wybierz plik CSV/TSV.';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const text = String(reader.result || '');
+          if (bulkImportArea) bulkImportArea.value = text;
+          if (bulkImportStatus) bulkImportStatus.textContent = 'Plik wczytany ✅';
+          refreshBulkMapOptions();
+        };
+        reader.onerror = () => {
+          if (bulkImportStatus) bulkImportStatus.textContent = 'Blad wczytywania pliku.';
+        };
+        reader.readAsText(file);
+      });
+
+      bulkImportArea?.addEventListener('blur', refreshBulkMapOptions);
+
+      btnBulkImport?.addEventListener('click', async () => {
+        if (!isAdmin || !currentTopic) return;
+        if (!bulkImportArea) return;
+
+        const raw = bulkImportArea.value || '';
+        const mapping = getBulkMapping();
+        if (mapping?.use) {
+          if (mapping.map.prompt == null || mapping.map.answer == null) {
+            if (bulkImportStatus)
+              bulkImportStatus.textContent = 'Mapowanie: wybierz kolumny prompt + answer.';
+            return;
+          }
+        }
+        const { items, errors } = parseBulkRows(raw, mapping);
+        if (!items.length) {
+          if (bulkImportStatus)
+            bulkImportStatus.textContent = 'Brak poprawnych wierszy.';
+          return;
+        }
+
+        if (bulkImportStatus) bulkImportStatus.textContent = 'Importuje...';
+        try {
+          setSaving(true);
+          let auto = getNextOrder();
+          let saved = 0;
+          const BATCH_LIMIT = 400;
+          let batch = writeBatch(db);
+          let pending = 0;
+
+          for (const it of items) {
+            const type = String(it.type || exType.value || 'Rellenar los espacios');
+            const prompt = String(it.prompt || '').trim();
+            const answer = String(it.answer || '').trim();
+            if (!prompt || !answer) continue;
+
+            const options = Array.isArray(it.options) ? it.options : [];
+            const category = String(it.category || exCategory?.value || 'grammar');
+            const tags = toTagsArray(it.tags || '');
+            const notes = String(it.notes || '').trim();
+            const imageUrl = String(it.imageUrl || '').trim();
+            const orderNum = Number(it.order || 0) > 0 ? Number(it.order) : auto++;
+
+            const refDoc = doc(collection(db, 'exercises'));
+            batch.set(refDoc, {
+              level: LEVEL,
+              topicSlug: String(currentTopic.slug || currentTopic.id || ''),
+              topicId: String(COURSE_ID || currentTopic.id || '').trim() || null,
+              type,
+              prompt,
+              imageUrl,
+              options: options.length ? options : [],
+              answer,
+              notes,
+              category,
+              tags,
+              order: orderNum,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+            });
+            pending += 1;
+            saved += 1;
+
+            if (pending >= BATCH_LIMIT) {
+              await batch.commit();
+              batch = writeBatch(db);
+              pending = 0;
+            }
+          }
+          if (pending > 0) await batch.commit();
+
+          if (bulkImportStatus)
+            bulkImportStatus.textContent = `Zaimportowano: ${saved} (bledy: ${errors})`;
+          await loadExercises(currentTopic);
+          exOrder.value = String(getNextOrder());
+          showToast(`Import: ${saved} pozycji`, 'ok', 2200);
+        } catch (e) {
+          console.error(e);
+          if (bulkImportStatus) bulkImportStatus.textContent = 'Blad importu.';
+          showToast('Blad importu (sprawdz konsole)', 'bad', 3200);
+        } finally {
+          setSaving(false);
+        }
+      });
+
+      function enterEditMode(ex) {
+        if (!ex) return;
+        EDIT_ID = ex.id;
+        if (btnAddExercise) btnAddExercise.textContent = 'Zapisz zmiany';
+        if (btnCancelEdit) btnCancelEdit.style.display = 'inline-flex';
+
+        if (exType) exType.value = ex.type || exType.value;
+        setOptionsVisibility(exType?.value || '');
+        if (exPrompt) exPrompt.value = ex.prompt || '';
+        if (exImageUrl) exImageUrl.value = ex.imageUrl || '';
+        if (exOptions)
+          exOptions.value = Array.isArray(ex.options) ? ex.options.join('\n') : '';
+        if (exAnswer) exAnswer.value = ex.answer || '';
+        if (exNotes) exNotes.value = ex.notes || '';
+        if (exCategory) exCategory.value = ex.category || 'grammar';
+        if (exTags)
+          exTags.value = Array.isArray(ex.tags)
+            ? ex.tags.join(', ')
+            : String(ex.tags || '');
+        if (exOrder) exOrder.value = String(Number(ex.order || getNextOrder()));
+
+        window.scrollTo({ top: adminWrap?.offsetTop || 0, behavior: 'smooth' });
+      }
+
+      function exitEditMode() {
+        EDIT_ID = null;
+        if (btnAddExercise) btnAddExercise.textContent = 'Zapisz cwiczenie';
+        if (btnCancelEdit) btnCancelEdit.style.display = 'none';
+      }
+
+      function clearExerciseForm() {
+        if (exPrompt) exPrompt.value = '';
+        if (exImageUrl) exImageUrl.value = '';
+        if (exOptions) exOptions.value = '';
+        if (exAnswer) exAnswer.value = '';
+        if (exNotes) exNotes.value = '';
+        if (exTags) exTags.value = '';
+        if (exOrder) exOrder.value = String(getNextOrder());
+      }
+
+      async function duplicateExercise(ex) {
+        if (!isAdmin || !currentTopic || !ex) return;
+        try {
+          const order = getNextOrder();
+          await addDoc(collection(db, 'exercises'), {
+            level: LEVEL,
+            topicSlug: String(currentTopic.slug || currentTopic.id || ''),
+            topicId: String(COURSE_ID || currentTopic.id || '').trim() || null,
+            type: ex.type || '',
+            prompt: ex.prompt || '',
+            imageUrl: ex.imageUrl || '',
+            options: Array.isArray(ex.options) ? ex.options : [],
+            answer: ex.answer || '',
+            notes: ex.notes || '',
+            category: ex.category || 'grammar',
+            tags: Array.isArray(ex.tags) ? ex.tags : [],
+            order,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+          showToast('Zduplikowano', 'ok', 1800);
+          await loadExercises(currentTopic);
+          exOrder.value = String(getNextOrder());
+        } catch (e) {
+          console.error(e);
+          showToast('Blad duplikacji (sprawdz konsole)', 'bad', 3200);
+        }
+      }
+
       btnAutoOrder.onclick = () => {
         exOrder.value = String(getNextOrder());
         showToast('Ustawiono kolejnosc', 'ok', 1400);
       };
+
+      btnCancelEdit?.addEventListener('click', () => {
+        exitEditMode();
+        clearExerciseForm();
+        showToast('Edycja anulowana', 'warn', 1600);
+      });
 
       btnAddExercise.onclick = async () => {
         if (!isAdmin || !currentTopic) return;
@@ -1588,7 +2535,7 @@ const slugParam = params.get('slug') || '';
         const prompt = exPrompt.value.trim();
         const notes = exNotes.value.trim();
         const answer = normalizeAnswer(exAnswer.value);
-        const order = Number(exOrder.value || 0);
+        let order = Number(exOrder.value || 0);
 
         let ok = true;
 
@@ -1601,8 +2548,8 @@ const slugParam = params.get('slug') || '';
           ok = false;
         }
         if (!order || order < 1) {
-          markBad(exOrder, true);
-          ok = false;
+          order = getNextOrder();
+          if (exOrder) exOrder.value = String(order);
         }
 
         const options = parseOptions(exOptions.value);
@@ -1626,6 +2573,29 @@ const slugParam = params.get('slug') || '';
           setSaving(true);
           showToast('Zapisywanie...', 'warn', 1200);
 
+          if (EDIT_ID) {
+            await updateDoc(doc(db, 'exercises', EDIT_ID), {
+              level: LEVEL,
+              topicSlug: String(currentTopic.slug || currentTopic.id || ''),
+              topicId: (String(COURSE_ID || currentTopic.id || '').trim() || null),
+              type,
+              prompt,
+              imageUrl,
+              options: options.length ? options : [],
+              answer,
+              notes,
+              category: exCategory?.value || 'grammar',
+              tags: toTagsArray(exTags?.value),
+              order,
+              updatedAt: serverTimestamp(),
+            });
+            exitEditMode();
+            clearExerciseForm();
+            await loadExercises(currentTopic);
+            showToast('Zapisano zmiany', 'ok', 2000);
+            return;
+          }
+
           await addDoc(collection(db, 'exercises'), {
             level: LEVEL,
             topicSlug: String(currentTopic.slug || currentTopic.id || ''),
@@ -1640,17 +2610,11 @@ const slugParam = params.get('slug') || '';
             tags: toTagsArray(exTags?.value),
             order,
             createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()});
+            updatedAt: serverTimestamp(),
+          });
 
           // reset form
-          exPrompt.value = '';
-          if (exImageUrl) exImageUrl.value = '';
-          exOptions.value = '';
-          exAnswer.value = '';
-          exNotes.value = '';
-          if (exTags) exTags.value = '';
-          exOrder.value = String(order + 1);
-
+          clearExerciseForm();
           await loadExercises(currentTopic);
           showToast('Cwiczenie zapisane', 'ok', 2200);
         } catch (e) {
@@ -1670,6 +2634,7 @@ const slugParam = params.get('slug') || '';
       let ALL_EXERCISES = [];
       let VIEW_EXERCISES = [];
       let IS_ADMIN = false;
+      let EDIT_ID = null;
       let REORDER_MODE = false;
       let HAS_ORDER_CHANGES = false;
       let DRAG_ID = null;

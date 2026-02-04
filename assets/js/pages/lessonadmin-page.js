@@ -38,6 +38,10 @@ async function isAdminUid(uid) {
     const extraVocab = $("extraVocab");
     const extraResources = $("extraResources");
     const extraHomework = $("extraHomework");
+    const outlineArea = $("outlineArea");
+    const btnOutlineReplace = $("btnOutlineReplace");
+    const btnOutlineAppend = $("btnOutlineAppend");
+    const outlineStatus = $("outlineStatus");
 
     // Blocks builder
     const btnAddHeading = $("btnAddHeading");
@@ -138,6 +142,116 @@ async function isAdminUid(uid) {
         }
       });
       return out;
+    }
+
+    function applyDefaultsToBlock(b){
+      try{
+        const dc = defaultTextColor?.value || null;
+        const ds = defaultTextSize?.value || null;
+        const dbg = defaultBlockBg?.value || null;
+        if(dc && (b.kind === "text" || b.kind === "heading" || b.kind === "image")) b.color = dc;
+        if(ds && (b.kind === "text" || b.kind === "heading" || b.kind === "image")) b.size = ds;
+        if(dbg && (b.kind === "text" || b.kind === "heading" || b.kind === "image")) b.bg = dbg;
+      }catch(e){}
+      return b;
+    }
+
+    function parseOutlineToBlocks(raw){
+      const lines = String(raw || "").split(/\r?\n/);
+      const blocks = [];
+      let buffer = [];
+
+      const flushText = () => {
+        if(!buffer.length) return;
+        const text = buffer.join("\n").trim();
+        if(text){
+          blocks.push(applyDefaultsToBlock({ ...newBlock("text"), text }));
+        }
+        buffer = [];
+      };
+
+      const setMeta = (line) => {
+        const t = line.replace(/^title:\s*/i,"").trim();
+        if(t) titleInput.value = t;
+      };
+
+      const setDesc = (line) => {
+        const d = line.replace(/^(desc|description):\s*/i,"").trim();
+        if(d) descInput.value = d;
+      };
+
+      const setTime = (line) => {
+        const v = line.replace(/^(time|duration):\s*/i,"").trim();
+        const n = Number(String(v).replace(/[^\d]/g,""));
+        if(!Number.isNaN(n)) durationInput.value = n ? String(n) : "";
+      };
+
+      for(const rawLine of lines){
+        const line = String(rawLine || "");
+        const trimmed = line.trim();
+
+        if(!trimmed){
+          flushText();
+          continue;
+        }
+        if(/^title:\s*/i.test(trimmed)){ flushText(); setMeta(trimmed); continue; }
+        if(/^(desc|description):\s*/i.test(trimmed)){ flushText(); setDesc(trimmed); continue; }
+        if(/^(time|duration):\s*/i.test(trimmed)){ flushText(); setTime(trimmed); continue; }
+
+        if(/^---+$/.test(trimmed)){
+          flushText();
+          blocks.push(newBlock("divider"));
+          continue;
+        }
+
+        if(/^###\s+/.test(trimmed) || /^h3:\s*/i.test(trimmed)){
+          flushText();
+          const text = trimmed.replace(/^###\s+|^h3:\s*/i,"").trim();
+          blocks.push(applyDefaultsToBlock({ ...newBlock("heading"), level:"h3", text: text || "Podsekcja" }));
+          continue;
+        }
+        if(/^##\s+/.test(trimmed) || /^h2:\s*/i.test(trimmed)){
+          flushText();
+          const text = trimmed.replace(/^##\s+|^h2:\s*/i,"").trim();
+          blocks.push(applyDefaultsToBlock({ ...newBlock("heading"), level:"h2", text: text || "Sekcja" }));
+          continue;
+        }
+
+        if(/^tip:\s*/i.test(trimmed)){
+          flushText();
+          const body = trimmed.replace(/^tip:\s*/i,"").trim();
+          const parts = body.split("|").map((x)=>x.trim()).filter(Boolean);
+          const title = parts.length > 1 ? parts[0] : "Wskazowka";
+          const text = parts.length > 1 ? parts.slice(1).join(" | ") : parts[0] || "";
+          blocks.push(applyDefaultsToBlock({ ...newBlock("tip"), title, text }));
+          continue;
+        }
+
+        if(/^ex:\s*/i.test(trimmed)){
+          flushText();
+          const body = trimmed.replace(/^ex:\s*/i,"").trim();
+          const parts = body.split("|").map((x)=>x.trim()).filter(Boolean);
+          const title = parts.length > 1 ? parts[0] : "Przyklad";
+          const text = parts.length > 1 ? parts.slice(1).join(" | ") : parts[0] || "";
+          blocks.push(applyDefaultsToBlock({ ...newBlock("example"), title, text }));
+          continue;
+        }
+
+        if(/^img:\s*/i.test(trimmed)){
+          flushText();
+          const body = trimmed.replace(/^img:\s*/i,"").trim();
+          const parts = body.split("|").map((x)=>x.trim()).filter(Boolean);
+          const url = parts[0] || "";
+          const caption = parts[1] || "";
+          blocks.push(applyDefaultsToBlock({ ...newBlock("image"), url, caption }));
+          continue;
+        }
+
+        buffer.push(line);
+      }
+
+      flushText();
+      return blocks;
     }
 
     function resourcesToText(list){
@@ -702,6 +816,34 @@ btnSave.addEventListener("click", async ()=>{
     btnTplVocab?.addEventListener("click", ()=> setTemplate("vocab"));
     btnTplPremium?.addEventListener("click", ()=> setTemplate("premium"));
     btnTplRepaso?.addEventListener("click", ()=> setTemplate("repaso"));
+
+    const applyOutline = (mode="replace") => {
+      const raw = (outlineArea?.value || "").trim();
+      if(!raw){
+        if(outlineStatus) outlineStatus.textContent = "Brak tresci do importu.";
+        showToast("Brak tresci do importu.", "toast-warn");
+        return;
+      }
+      const blocks = parseOutlineToBlocks(raw);
+      if(!blocks.length){
+        if(outlineStatus) outlineStatus.textContent = "Nie wykryto blokow.";
+        showToast("Nie wykryto blokow.", "toast-warn");
+        return;
+      }
+      if(mode === "append"){
+        BLOCKS = [...BLOCKS, ...blocks];
+      }else{
+        BLOCKS = blocks;
+      }
+      if(htmlMode) htmlMode.value = "auto";
+      renderBlocks();
+      syncHtmlFromBlocks();
+      if(outlineStatus) outlineStatus.textContent = `Dodano blokow: ${blocks.length}`;
+      showToast("Import outline zakonczony", "toast-ok");
+    };
+
+    btnOutlineReplace?.addEventListener("click", ()=> applyOutline("replace"));
+    btnOutlineAppend?.addEventListener("click", ()=> applyOutline("append"));
 
     htmlMode?.addEventListener("change", ()=>{
       const mode = htmlMode.value;

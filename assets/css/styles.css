@@ -28,6 +28,250 @@
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
 }
 
+/* Admin select tweaks (smaller tiles + white text) */
+body[data-page='admin-select'] .heroBanner {
+  padding: 18px 20px;
+}
+body[data-page='admin-select'] .heroBanner .sectionTitle {
+  font-size: 28px;
+  color: #ffffff;
+}
+body[data-page='admin-select'] .heroBanner .subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
+body[data-page='admin-select'] .card {
+  padding: 16px;
+  border-radius: 20px;
+}
+body[data-page='admin-select'] .sectionTitle {
+  font-size: 22px;
+  color: #ffffff;
+}
+body[data-page='admin-select'] .subtitle,
+body[data-page='admin-select'] .hintSmall,
+body[data-page='admin-select'] label.muted {
+  color: rgba(255, 255, 255, 0.85);
+}
+body[data-page='admin-select'] .select,
+body[data-page='admin-select'] .input,
+body[data-page='admin-select'] .btn,
+body[data-page='admin-select'] .btn-white-outline,
+body[data-page='admin-select'] .btn-yellow {
+  font-size: 14px;
+}
+
+/* Admin wizard tweaks */
+body[data-page='admin-wizard'] .heroBanner {
+  padding: 18px 20px;
+}
+body[data-page='admin-wizard'] .heroBanner .sectionTitle {
+  font-size: 28px;
+  color: #ffffff;
+}
+body[data-page='admin-wizard'] .heroBanner .subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
+body[data-page='admin-wizard'] .card {
+  padding: 16px;
+  border-radius: 20px;
+}
+body[data-page='admin-wizard'] .sectionTitle {
+  font-size: 22px;
+  color: #ffffff;
+}
+body[data-page='admin-wizard'] .subtitle,
+body[data-page='admin-wizard'] .hintSmall,
+body[data-page='admin-wizard'] label.muted {
+  color: rgba(255, 255, 255, 0.85);
+}
+body[data-page='admin-wizard'] input,
+body[data-page='admin-wizard'] textarea,
+body[data-page='admin-wizard'] select,
+body[data-page='admin-wizard'] .btn,
+body[data-page='admin-wizard'] .btn-white-outline,
+body[data-page='admin-wizard'] .btn-yellow {
+  font-size: 14px;
+}
+body[data-page='admin-wizard'] textarea {
+  min-height: 120px;
+}
+body[data-page='admin-wizard'] .adminGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+body[data-page='admin-wizard'] .wizardLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+body[data-page='admin-wizard'] .wizardMain {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+body[data-page='admin-wizard'] .wizardSideCard {
+  position: sticky;
+  top: 90px;
+}
+body[data-page='admin-wizard'] .wizardStep {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.09),
+    rgba(255, 255, 255, 0.04)
+  );
+  animation: wizardFade 0.35s ease;
+}
+body[data-page='admin-wizard'] .wizDetails {
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+body[data-page='admin-wizard'] .wizDetails summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #ffffff;
+}
+body[data-page='admin-wizard'] .wizDetails[open] {
+  background: rgba(255, 255, 255, 0.06);
+}
+@media (max-width: 980px) {
+  body[data-page='admin-wizard'] .wizardLayout {
+    grid-template-columns: 1fr;
+  }
+  body[data-page='admin-wizard'] .wizardSideCard {
+    position: static;
+  }
+}
+@keyframes wizardFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+body[data-page='admin-wizard'] .mapTarget {
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  min-width: 140px;
+  user-select: none;
+}
+body[data-page='admin-wizard'] .mapTarget.dragOver {
+  border-color: rgba(252, 209, 22, 0.8);
+  box-shadow: 0 0 0 3px rgba(252, 209, 22, 0.2);
+}
+body[data-page='admin-wizard'] .mapChip {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  cursor: grab;
+}
+
+/* Compact admin: lesson + exercises */
+body[data-page='lessonadmin'] .page .container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+body[data-page='lessonadmin'] .heroBanner {
+  grid-column: 1 / -1;
+  padding: 16px 18px;
+}
+body[data-page='lessonadmin'],
+body[data-page='ejercicioadmin'] {
+  color: #ffffff;
+}
+body[data-page='lessonadmin'] .card {
+  padding: 14px;
+  border-radius: 20px;
+}
+body[data-page='lessonadmin'] .sectionTitle {
+  font-size: 18px;
+}
+body[data-page='lessonadmin'] .subtitle,
+body[data-page='lessonadmin'] .muted {
+  font-size: 14px;
+}
+body[data-page='lessonadmin'] input,
+body[data-page='lessonadmin'] textarea,
+body[data-page='lessonadmin'] select,
+body[data-page='lessonadmin'] .btn,
+body[data-page='lessonadmin'] .btn-white-outline,
+body[data-page='lessonadmin'] .btn-yellow,
+body[data-page='lessonadmin'] .btn-red {
+  font-size: 14px;
+}
+body[data-page='lessonadmin'] textarea {
+  min-height: 120px;
+}
+body[data-page='lessonadmin'] #previewBody {
+  font-size: 14px;
+}
+
+body[data-page='ejercicioadmin'] .card {
+  padding: 14px;
+  border-radius: 20px;
+}
+body[data-page='ejercicioadmin'] .sectionTitle {
+  font-size: 18px;
+}
+body[data-page='ejercicioadmin'] .subtitle,
+body[data-page='ejercicioadmin'] .muted,
+body[data-page='ejercicioadmin'] .smallNote {
+  font-size: 13px;
+}
+body[data-page='ejercicioadmin'] input,
+body[data-page='ejercicioadmin'] textarea,
+body[data-page='ejercicioadmin'] select,
+body[data-page='ejercicioadmin'] .btn,
+body[data-page='ejercicioadmin'] .btn-white-outline,
+body[data-page='ejercicioadmin'] .btn-yellow,
+body[data-page='ejercicioadmin'] .btn-red {
+  font-size: 14px;
+}
+body[data-page='ejercicioadmin'] .adminGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+body[data-page='ejercicioadmin'] .adminGrid textarea {
+  min-height: 120px;
+}
+body[data-page='ejercicioadmin'] .mapTarget {
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  min-width: 140px;
+  user-select: none;
+}
+body[data-page='ejercicioadmin'] .mapTarget.dragOver {
+  border-color: rgba(252, 209, 22, 0.8);
+  box-shadow: 0 0 0 3px rgba(252, 209, 22, 0.2);
+}
+body[data-page='ejercicioadmin'] .mapChip {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  cursor: grab;
+}
+
 /* ===== Brand Rules: official palette tokens ===== */
 :root {
   --brand-blue-base: #003893;

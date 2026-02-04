@@ -21,6 +21,9 @@
             <p class="subtitle">Zanim wejdziesz do admina, wybierz poziom i temat do edycji.</p>
           </div>
         </div>
+        <div class="metaRow" style="margin-top:10px; gap:10px; flex-wrap:wrap;">
+          <a class="btn-yellow" href="admin-wizard.html">Kreator lekcji i cwiczen</a>
+        </div>
       </section>
 
       <section class="card">
@@ -63,6 +66,65 @@
         </div>
 
         <div id="topicError" class="hintSmall" style="margin-top:12px; display:none;"></div>
+      </section>
+
+      <section class="card" id="copySection">
+        <h2 class="sectionTitle">3) Kopiuj temat (lekcja + cwiczenia)</h2>
+        <div class="metaRow" style="flex-wrap:wrap; gap:10px; align-items:flex-end;">
+          <div>
+            <label class="muted" style="font-weight:900; display:block; margin-bottom:6px;">Poziom zrodlowy</label>
+            <select id="copyFromLevel" class="select" style="min-width:160px;">
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+            </select>
+          </div>
+          <div>
+            <label class="muted" style="font-weight:900; display:block; margin-bottom:6px;">Temat zrodlowy</label>
+            <select id="copyFromTopic" class="select" style="min-width:360px; max-width:100%;" disabled>
+              <option value="">-- Wczytaj tematy --</option>
+            </select>
+          </div>
+          <button id="btnLoadCopyTopics" class="btn-white-outline">Wczytaj tematy</button>
+        </div>
+
+          <div class="metaRow" style="flex-wrap:wrap; gap:10px; margin-top:12px; align-items:flex-end;">
+            <div>
+              <label class="muted" style="font-weight:900; display:block; margin-bottom:6px;">Poziom docelowy</label>
+              <select id="copyToLevel" class="select" style="min-width:160px;">
+                <option value="A1">A1</option>
+                <option value="A2">A2</option>
+                <option value="B1">B1</option>
+                <option value="B2">B2</option>
+              </select>
+            </div>
+            <div>
+              <label class="muted" style="font-weight:900; display:block; margin-bottom:6px;">Otworz po kopiowaniu</label>
+              <select id="copyOpenTarget" class="select" style="min-width:200px;">
+                <option value="lesson">Admin lekcji</option>
+                <option value="exercise">Admin cwiczen</option>
+              </select>
+            </div>
+            <label style="display:flex; gap:8px; align-items:center; margin-top:20px;">
+              <input id="copyOpenAdmin" type="checkbox" />
+              Otworz automatycznie
+            </label>
+            <div style="flex:1; min-width:220px;">
+              <label class="muted" style="font-weight:900; display:block; margin-bottom:6px;">Nowy tytul (opcjonalnie)</label>
+              <input id="copyNewTitle" class="input" placeholder="Np. Miasto i miejsca (kopiuj)" />
+            </div>
+          <div style="min-width:220px;">
+            <label class="muted" style="font-weight:900; display:block; margin-bottom:6px;">Nowy slug (opcjonalnie)</label>
+            <input id="copyNewSlug" class="input" placeholder="np. miasto-i-miejsca" />
+          </div>
+          <button id="btnCopyTopic" class="btn-yellow">Kopiuj temat</button>
+          <span id="copyStatus" class="hintSmall"></span>
+        </div>
+
+        <div class="hintSmall" style="margin-top:10px;">
+          Kopiuje: kurs (courses), lekcje (course_meta) oraz wszystkie cwiczenia (exercises).
+        </div>
       </section>
 
     </div>
