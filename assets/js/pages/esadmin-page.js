@@ -12,6 +12,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
 import {
   collection,
+  collectionGroup,
   query,
   where,
   orderBy,
@@ -36,6 +37,19 @@ function esc(s) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function normText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function extractUrl(text) {
+  const match = String(text || '').match(/https?:\/\/\S+/i);
+  return match ? match[0] : '';
 }
 
 function setStatus(el, msg, bad = false) {
@@ -869,6 +883,470 @@ function clearServiceForm() {
     order: 0,
   });
   setStatus($('svcStatus'), '');
+}
+
+/* =========================
+   PUBLISHING (drafts)
+   ========================= */
+let draftsCache = [];
+let draftsTotalCount = 0;
+let coursesIndex = new Map();
+
+function parseCourseMetaId(raw) {
+  const id = String(raw || '');
+  const parts = id.split('__');
+  if (parts.length >= 2) {
+    return {
+      level: parts[0],
+      topicId: parts.slice(1).join('__'),
+    };
+  }
+  return { level: '', topicId: id };
+}
+
+async function ensureCoursesIndex(force = false) {
+  if (!force && coursesIndex.size) return coursesIndex;
+  coursesIndex = new Map();
+  const snap = await getDocs(query(collection(db, 'courses'), limit(500)));
+  snap.forEach((d) => coursesIndex.set(d.id, d.data() || {}));
+  return coursesIndex;
+}
+
+function getDraftFilters() {
+  return {
+    level: String($('draftLevel')?.value || 'all'),
+    search: String($('draftSearch')?.value || '').trim().toLowerCase(),
+  };
+}
+
+function renderDrafts() {
+  const list = $('draftsList');
+  if (!list) return;
+
+  const { level, search } = getDraftFilters();
+  let items = draftsCache.slice();
+
+  if (level !== 'all') {
+    items = items.filter((d) => String(d.level || '') === level);
+  }
+  if (search) {
+    items = items.filter((d) => {
+      const hay = `${d.title || ''} ${d.topicId || ''} ${d.slug || ''}`
+        .toLowerCase()
+        .trim();
+      return hay.includes(search);
+    });
+  }
+
+  $('draftsSummary')?.textContent =
+    draftsTotalCount > 0
+      ? `Szkice: ${draftsCache.length} / wszystkie: ${draftsTotalCount}`
+      : 'Brak danych.';
+
+  if (!items.length) {
+    list.innerHTML = '<div class="hintSmall">Brak szkicow.</div>';
+    return;
+  }
+
+  list.innerHTML = items
+    .map((d) => {
+      const title = esc(d.title || d.slug || d.topicId || '(bez tytulu)');
+      const levelTxt = esc(d.level || '-');
+      const meta = esc(d.topicId || d.slug || d.id || '');
+      const updated = d.updatedAt ? isoDate(d.updatedAt) : '';
+      const hasHtml = d.hasHtml ? 'tak' : 'nie';
+      const link = d.topicId
+        ? `lessonpage.html?level=${encodeURIComponent(d.level)}&id=${encodeURIComponent(d.topicId)}`
+        : '';
+
+      return `
+        <div class="listItem">
+          <div style="font-weight:900;">${title}</div>
+          <div class="hintSmall">poziom: ${levelTxt}  -  id: ${meta}  -  html: ${hasHtml}${updated ? '  -  aktualizacja: ' + esc(updated) : ''}</div>
+          <div class="metaRow" style="margin-top:8px; gap:8px;">
+            <button class="btn-white-outline" data-draft="publish" data-id="${esc(d.id)}">Opublikuj</button>
+            ${link ? `<a class="btn-white-outline" href="${esc(link)}" target="_blank" rel="noopener">Podglad</a>` : ''}
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadDrafts() {
+  const st = $('draftsStatus');
+  try {
+    setStatus(st, 'Ladowanie...');
+    await ensureCoursesIndex();
+    const snap = await getDocs(query(collection(db, 'course_meta'), limit(400)));
+    draftsTotalCount = snap.size || 0;
+    draftsCache = [];
+    snap.forEach((d) => {
+      const data = d.data() || {};
+      const published = data.published === true;
+      if (published) return;
+      const meta = parseCourseMetaId(d.id);
+      const course = coursesIndex.get(meta.topicId || '') || {};
+      draftsCache.push({
+        id: d.id,
+        level: data.level || meta.level || course.level || '',
+        topicId: meta.topicId || data.topicId || '',
+        slug: data.topicSlug || course.slug || '',
+        title: data.title || course.title || data.titleEs || '',
+        updatedAt: data.updatedAt || data.createdAt || null,
+        hasHtml: typeof data.html === 'string' && data.html.trim().length > 0,
+      });
+    });
+    setStatus(st, `Gotowe (${draftsCache.length})`);
+    renderDrafts();
+  } catch (e) {
+    console.error('[drafts]', e);
+    setStatus(st, 'Blad', true);
+    const list = $('draftsList');
+    if (list)
+      list.innerHTML = '<div class="hintSmall">Blad ladowania szkicow.</div>';
+  }
+}
+
+async function publishDraft(id) {
+  if (!id) return;
+  try {
+    await setDoc(
+      doc(db, 'course_meta', id),
+      { published: true, updatedAt: serverTimestamp() },
+      { merge: true },
+    );
+    draftsCache = draftsCache.filter((d) => d.id !== id);
+    renderDrafts();
+  } catch (e) {
+    console.error('[publish draft]', e);
+  }
+}
+
+/* =========================
+   MISSING DATA (audyt)
+   ========================= */
+let missingCache = {
+  price: [],
+  audio: [],
+  tags: [],
+  trans: [],
+};
+
+function normalizeOptions(raw) {
+  if (Array.isArray(raw)) {
+    return raw.map((x) => String(x || '').trim()).filter(Boolean);
+  }
+  if (typeof raw === 'string') {
+    return raw
+      .split(/\r?\n|;/)
+      .map((x) => String(x || '').trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function needsAudio(typeRaw) {
+  const t = normText(typeRaw);
+  return (
+    t.includes('escuchar') ||
+    t.includes('dictado') ||
+    t.includes('audio') ||
+    t.includes('repetir') ||
+    t.includes('voz') ||
+    t.includes('narrador')
+  );
+}
+
+function hasAudio(ex) {
+  if (ex?.audioUrl || ex?.audio || ex?.audioSrc) return true;
+  const url = extractUrl(ex?.notes || '');
+  return !!url;
+}
+
+function needsTranslation(typeRaw) {
+  const t = normText(typeRaw);
+  return t.includes('traduccion') || t.includes('tarjetas') || t.includes('fichas');
+}
+
+function lineHasTranslation(line) {
+  const raw = String(line || '').trim();
+  if (!raw) return false;
+  if (/\bPL\s*:/i.test(raw) && /\bES\s*:/i.test(raw)) return true;
+  if (raw.includes('|')) {
+    const parts = raw.split('|').map((p) => p.trim()).filter(Boolean);
+    return parts.length >= 2;
+  }
+  if (raw.includes('=') || raw.includes('->')) {
+    const parts = raw.split(/=|->/).map((p) => p.trim()).filter(Boolean);
+    return parts.length >= 2;
+  }
+  if (raw.includes(' - ')) {
+    const parts = raw.split(' - ').map((p) => p.trim()).filter(Boolean);
+    return parts.length >= 2;
+  }
+  return false;
+}
+
+function hasTranslation(ex) {
+  const options = normalizeOptions(ex?.options);
+  if (!options.length) return false;
+  return options.some((line) => lineHasTranslation(line));
+}
+
+function getMissingFilters() {
+  return {
+    level: String($('missingLevel')?.value || 'all'),
+    search: String($('missingSearch')?.value || '').trim().toLowerCase(),
+  };
+}
+
+function filterMissing(items) {
+  const { level, search } = getMissingFilters();
+  let out = items.slice();
+  if (level !== 'all') {
+    out = out.filter((x) => String(x.level || '') === level);
+  }
+  if (search) {
+    out = out.filter((x) => {
+      const hay = `${x.title || ''} ${x.id || ''} ${x.topicId || ''} ${x.slug || ''}`
+        .toLowerCase()
+        .trim();
+      return hay.includes(search);
+    });
+  }
+  return out;
+}
+
+function renderMissingList(targetId, items, emptyText) {
+  const list = $(targetId);
+  if (!list) return;
+  if (!items.length) {
+    list.innerHTML = `<div class="hintSmall">${emptyText}</div>`;
+    return;
+  }
+  list.innerHTML = items.slice(0, 30).map((i) => {
+    const title = esc(i.title || i.slug || i.id || '(bez tytulu)');
+    const meta = esc(i.meta || '');
+    return `
+      <div class="missingItem">
+        <div class="missingItemTitle">${title}</div>
+        <div class="missingItemMeta">${meta}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderMissing() {
+  const priceItems = filterMissing(missingCache.price);
+  const audioItems = filterMissing(missingCache.audio);
+  const tagsItems = filterMissing(missingCache.tags);
+  const transItems = filterMissing(missingCache.trans);
+
+  if ($('missingPriceCount')) $('missingPriceCount').textContent = String(missingCache.price.length);
+  if ($('missingAudioCount')) $('missingAudioCount').textContent = String(missingCache.audio.length);
+  if ($('missingTagsCount')) $('missingTagsCount').textContent = String(missingCache.tags.length);
+  if ($('missingTransCount')) $('missingTransCount').textContent = String(missingCache.trans.length);
+
+  $('missingPriceInfo')?.textContent = `Pokazano: ${priceItems.length}`;
+  $('missingAudioInfo')?.textContent = `Pokazano: ${audioItems.length}`;
+  $('missingTagsInfo')?.textContent = `Pokazano: ${tagsItems.length}`;
+  $('missingTransInfo')?.textContent = `Pokazano: ${transItems.length}`;
+
+  renderMissingList('missingPriceList', priceItems, 'Brak brakow.');
+  renderMissingList('missingAudioList', audioItems, 'Brak brakow.');
+  renderMissingList('missingTagsList', tagsItems, 'Brak brakow.');
+  renderMissingList('missingTransList', transItems, 'Brak brakow.');
+}
+
+async function loadMissing() {
+  const st = $('missingStatus');
+  try {
+    setStatus(st, 'Ladowanie...');
+    missingCache = { price: [], audio: [], tags: [], trans: [] };
+
+    const svcSnap = await getDocs(query(collection(db, 'services'), limit(500)));
+    svcSnap.forEach((d) => {
+      const data = d.data() || {};
+      const cta = String(data.ctaType || '');
+      const priceId = String(data.stripePriceId || '').trim();
+      if (cta === 'stripe' && !priceId) {
+        missingCache.price.push({
+          id: d.id,
+          title: data.title || data.name || data.sku || d.id,
+          meta: `sku: ${data.sku || d.id}  -  kategoria: ${data.category || '-'}`,
+          level: data.level || '',
+        });
+      }
+    });
+
+    const exSnap = await getDocs(query(collection(db, 'exercises'), limit(600)));
+    exSnap.forEach((d) => {
+      const ex = d.data() || {};
+      const level = String(ex.level || '');
+      const title = ex.prompt || ex.question || ex.title || d.id;
+      const meta = `id: ${d.id}  -  poziom: ${level || '-'}  -  typ: ${ex.type || '-'}`;
+      const tags = Array.isArray(ex.tags) ? ex.tags.filter(Boolean) : [];
+
+      if (!tags.length) {
+        missingCache.tags.push({
+          id: d.id,
+          title,
+          meta,
+          level,
+          topicId: ex.topicId || '',
+          slug: ex.topicSlug || '',
+        });
+      }
+
+      if (needsAudio(ex.type) && !hasAudio(ex)) {
+        missingCache.audio.push({
+          id: d.id,
+          title,
+          meta,
+          level,
+          topicId: ex.topicId || '',
+          slug: ex.topicSlug || '',
+        });
+      }
+
+      if (needsTranslation(ex.type) && !hasTranslation(ex)) {
+        missingCache.trans.push({
+          id: d.id,
+          title,
+          meta,
+          level,
+          topicId: ex.topicId || '',
+          slug: ex.topicSlug || '',
+        });
+      }
+    });
+
+    setStatus(st, 'Gotowe');
+    renderMissing();
+  } catch (e) {
+    console.error('[missing]', e);
+    setStatus(st, 'Blad', true);
+  }
+}
+
+/* =========================
+   ACTIVITY (DAU/WAU/MAU)
+   ========================= */
+let activityTopCache = [];
+
+function renderActivityTop() {
+  const list = $('activityTopList');
+  if (!list) return;
+  if (!activityTopCache.length) {
+    list.innerHTML = '<div class="hintSmall">Brak danych.</div>';
+    return;
+  }
+  list.innerHTML = activityTopCache
+    .map((t) => {
+      const title = esc(t.title || t.id || '(bez tytulu)');
+      const level = esc(t.level || '-');
+      const count = Number(t.count || 0);
+      return `
+        <div class="listItem">
+          <div style="font-weight:900;">${title}</div>
+          <div class="hintSmall">poziom: ${level}  -  aktywnosci: ${count}</div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadActivityStats() {
+  const st = $('activityStatus');
+  try {
+    setStatus(st, 'Ladowanie...');
+    const dayMs = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    let dau = 0;
+    let wau = 0;
+    let mau = 0;
+
+    const userSnap = await getDocs(query(collection(db, 'users'), limit(500)));
+    userSnap.forEach((d) => {
+      const u = d.data() || {};
+      const last =
+        toDateMaybe(u.lastLoginAt) ||
+        toDateMaybe(u.lastSeenAt) ||
+        toDateMaybe(u.createdAt);
+      if (!last) return;
+      const diff = now - last.getTime();
+      if (diff <= dayMs) dau += 1;
+      if (diff <= 7 * dayMs) wau += 1;
+      if (diff <= 30 * dayMs) mau += 1;
+    });
+
+    if ($('activityDAU')) $('activityDAU').textContent = String(dau);
+    if ($('activityWAU')) $('activityWAU').textContent = String(wau);
+    if ($('activityMAU')) $('activityMAU').textContent = String(mau);
+
+    let durationSum = 0;
+    let durationCount = 0;
+    const metaSnap = await getDocs(query(collection(db, 'course_meta'), limit(400)));
+    metaSnap.forEach((d) => {
+      const m = d.data() || {};
+      const dur = Number(m.durationMin || m.duration || 0);
+      if (dur > 0) {
+        durationSum += dur;
+        durationCount += 1;
+      }
+    });
+    const avgDur = durationCount ? Math.round(durationSum / durationCount) : null;
+    if ($('activityAvgLesson'))
+      $('activityAvgLesson').textContent = avgDur ? `${avgDur} min` : 'brak danych';
+
+    const progSnap = await getDocs(
+      query(collectionGroup(db, 'topics'), limit(600)),
+    );
+    const map = new Map();
+    progSnap.forEach((d) => {
+      const data = d.data() || {};
+      const rawId = d.id || '';
+      const meta = parseCourseMetaId(rawId);
+      const key = data.topicId || data.topicSlug || meta.topicId || rawId;
+      if (!key) return;
+      const level = data.level || meta.level || '';
+      const entry = map.get(key) || {
+        id: key,
+        count: 0,
+        level,
+        topicId: data.topicId || meta.topicId || key,
+        slug: data.topicSlug || '',
+      };
+      entry.count += 1;
+      map.set(key, entry);
+    });
+
+    await ensureCoursesIndex();
+    activityTopCache = Array.from(map.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+      .map((t) => {
+        const course =
+          coursesIndex.get(t.topicId || '') ||
+          coursesIndex.get(t.id || '') ||
+          {};
+        return {
+          ...t,
+          title: course.title || t.slug || t.id,
+          level: t.level || course.level || '',
+        };
+      });
+
+    renderActivityTop();
+    setStatus(st, 'Gotowe');
+  } catch (e) {
+    console.error('[activity]', e);
+    setStatus(st, 'Blad', true);
+    if ($('activityTopList'))
+      $('activityTopList').innerHTML =
+        '<div class="hintSmall">Blad ladowania aktywnosci.</div>';
+  }
 }
 
 /* =========================
@@ -2268,6 +2746,165 @@ async function loadReviews() {
   }
 }
 
+/* =========================
+   ZGLOSZENIA (user reports)
+   ========================= */
+let reportsCache = [];
+
+function getReportFilters() {
+  return {
+    status: String($('reportStatusFilter')?.value || 'all').toLowerCase(),
+    search: String($('reportSearch')?.value || '').trim().toLowerCase(),
+  };
+}
+
+function reportStatusLabel(status) {
+  const st = String(status || '').toLowerCase();
+  if (st === 'done') return 'ZAMKNIETE';
+  if (st === 'open') return 'W TOKU';
+  return 'NOWE';
+}
+
+function reportStatusClass(status) {
+  const st = String(status || '').toLowerCase();
+  if (st === 'done') return 'reportStatus--done';
+  if (st === 'open') return 'reportStatus--open';
+  return 'reportStatus--new';
+}
+
+function renderReports() {
+  const list = $('reportsList');
+  if (!list) return;
+
+  const { status, search } = getReportFilters();
+  let items = reportsCache.slice();
+
+  if (status !== 'all') {
+    items = items.filter((r) => String(r.status || 'new').toLowerCase() === status);
+  }
+  if (search) {
+    items = items.filter((r) => {
+      const hay = `${r.email || ''} ${r.topicId || ''} ${r.message || r.text || ''}`
+        .toLowerCase()
+        .trim();
+      return hay.includes(search);
+    });
+  }
+
+  if (!items.length) {
+    list.innerHTML = '<div class="hintSmall">Brak zgloszen.</div>';
+    return;
+  }
+
+  list.innerHTML = items
+    .map((r) => {
+      const statusVal = String(r.status || 'new').toLowerCase();
+      const statusTxt = reportStatusLabel(statusVal);
+      const email = esc(r.email || r.userEmail || '(brak emaila)');
+      const type = esc(r.type || 'inne');
+      const level = esc(r.level || '-');
+      const topic = esc(r.topicId || r.topicSlug || '-');
+      const msg = esc(r.message || r.text || '');
+      const date = esc(isoDate(r.createdAt || r.updatedAt));
+      const origin = esc(r.origin || 'user');
+
+      return `
+        <div class="listItem">
+          <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:900;">${type}</div>
+              <div class="hintSmall">
+                ${date ? date + '  -  ' : ''}poziom: ${level}  -  temat: ${topic}  -  origin: ${origin}
+              </div>
+              ${msg ? `<div class="hintSmall" style="margin-top:6px;">${msg}</div>` : ''}
+              <div class="hintSmall" style="margin-top:6px;">user: ${email}</div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span class="reportStatus ${reportStatusClass(statusVal)}">${statusTxt}</span>
+              <button class="btn-white-outline" data-report="toggle" data-id="${esc(r.id)}">Zamknij/Otworz</button>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadReports() {
+  const list = $('reportsList');
+  if (!list) return;
+  list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
+  setStatus($('reportStatusText'), 'Ladowanie...');
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'user_reports'), orderBy('createdAt', 'desc'), limit(200)),
+    );
+    reportsCache = [];
+    snap.forEach((d) => reportsCache.push({ id: d.id, ...(d.data() || {}) }));
+    renderReports();
+    setStatus($('reportStatusText'), `Gotowe (${reportsCache.length})`);
+  } catch (e) {
+    console.error('[reports]', e);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania zgloszen.</div>';
+    setStatus($('reportStatusText'), 'Blad', true);
+  }
+}
+
+async function createReportFromAdmin() {
+  const msg = String($('reportMessage')?.value || '').trim();
+  if (!msg) {
+    setStatus($('reportCreateStatus'), 'Wpisz opis.', true);
+    return;
+  }
+  const type = String($('reportType')?.value || 'other');
+  const level = String($('reportLevel')?.value || '').trim();
+  const topicId = String($('reportTopic')?.value || '').trim();
+  const email = String($('reportEmail')?.value || '').trim();
+  const user = auth.currentUser;
+
+  try {
+    setStatus($('reportCreateStatus'), 'Zapisywanie...');
+    await addDoc(collection(db, 'user_reports'), {
+      type,
+      level: level || null,
+      topicId: topicId || null,
+      email: email || user?.email || null,
+      userId: user?.uid || null,
+      message: msg,
+      status: 'new',
+      origin: 'admin',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    $('reportMessage').value = '';
+    $('reportTopic').value = '';
+    setStatus($('reportCreateStatus'), 'Dodano');
+    await loadReports();
+  } catch (e) {
+    console.error('[report create]', e);
+    setStatus($('reportCreateStatus'), 'Blad', true);
+  }
+}
+
+async function toggleReportStatus(id) {
+  if (!id) return;
+  const current = reportsCache.find((r) => r.id === id);
+  const status = String(current?.status || 'new').toLowerCase();
+  const next = status === 'done' ? 'open' : 'done';
+  try {
+    await setDoc(
+      doc(db, 'user_reports', id),
+      { status: next, updatedAt: serverTimestamp() },
+      { merge: true },
+    );
+    if (current) current.status = next;
+    renderReports();
+  } catch (e) {
+    console.error('[report toggle]', e);
+  }
+}
+
 function ensureUserQuickButtons() {
   // Add missing quick buttons into the modal actions row (without editing HTML file).
   const statusEl = $('um_status');
@@ -2811,6 +3448,22 @@ function bindEvents() {
     if (act === 'del') await deleteService(id);
   });
 
+  // publikacje (drafty)
+  $('btnLoadDrafts')?.addEventListener('click', loadDrafts);
+  $('draftLevel')?.addEventListener('change', renderDrafts);
+  $('draftSearch')?.addEventListener('input', renderDrafts);
+  $('draftsList')?.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('button[data-draft="publish"]');
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
+    if (id) publishDraft(id);
+  });
+
+  // kontrola brakow
+  $('btnLoadMissing')?.addEventListener('click', loadMissing);
+  $('missingLevel')?.addEventListener('change', renderMissing);
+  $('missingSearch')?.addEventListener('input', renderMissing);
+
   // users
   $('btnLoadUsers')?.addEventListener('click', () => loadUsers(true));
   $('btnLoadMore')?.addEventListener('click', () => loadUsers(false));
@@ -2852,6 +3505,9 @@ function bindEvents() {
     if (key) toggleProgressErrors(key);
   });
 
+  // aktywnosc
+  $('btnLoadActivity')?.addEventListener('click', loadActivityStats);
+
   $('userModalClose')?.addEventListener('click', closeUserModal);
   $('um_cancel')?.addEventListener('click', closeUserModal);
   $('um_save')?.addEventListener('click', saveUserModal);
@@ -2891,6 +3547,18 @@ function bindEvents() {
   $('reviewRating')?.addEventListener('change', renderReviews);
   $('reviewLevel')?.addEventListener('change', renderReviews);
   $('reviewSearch')?.addEventListener('input', renderReviews);
+
+  // zgloszenia
+  $('btnCreateReport')?.addEventListener('click', createReportFromAdmin);
+  $('btnLoadReports')?.addEventListener('click', loadReports);
+  $('reportStatusFilter')?.addEventListener('change', renderReports);
+  $('reportSearch')?.addEventListener('input', renderReports);
+  $('reportsList')?.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('button[data-report="toggle"]');
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
+    if (id) toggleReportStatus(id);
+  });
 
   // platnosci
   $('btnLoadPayments')?.addEventListener('click', loadPayments);

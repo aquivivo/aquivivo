@@ -739,6 +739,12 @@ const setGoal = $('setGoal');
 const setReviewReminders = $('setReviewReminders');
 const btnSaveSettings = $('btnSaveSettings');
 const settingsMsg = $('settingsMsg');
+const userReportType = $('userReportType');
+const userReportLevel = $('userReportLevel');
+const userReportTopic = $('userReportTopic');
+const userReportMessage = $('userReportMessage');
+const btnUserReport = $('btnUserReport');
+const userReportStatus = $('userReportStatus');
 
 function setAvatarMsg(text, bad = false) {
   if (!avatarMsg) return;
@@ -750,6 +756,51 @@ function setSettingsMsg(text, bad = false) {
   if (!settingsMsg) return;
   settingsMsg.textContent = text || '';
   settingsMsg.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+}
+
+function setUserReportMsg(text, bad = false) {
+  if (!userReportStatus) return;
+  userReportStatus.textContent = text || '';
+  userReportStatus.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+}
+
+async function submitUserReport(uid, email) {
+  if (!uid) return;
+  const message = String(userReportMessage?.value || '').trim();
+  if (!message) {
+    setUserReportMsg('Escribe el mensaje.', true);
+    return;
+  }
+
+  const type = String(userReportType?.value || 'other');
+  const level = String(userReportLevel?.value || '').trim();
+  const topicId = String(userReportTopic?.value || '').trim();
+
+  try {
+    if (btnUserReport) btnUserReport.disabled = true;
+    setUserReportMsg('Enviando...');
+    await addDoc(collection(db, 'user_reports'), {
+      userId: uid,
+      email: email || null,
+      type,
+      level: level || null,
+      topicId: topicId || null,
+      message,
+      status: 'new',
+      origin: 'user',
+      page: location.pathname,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    if (userReportMessage) userReportMessage.value = '';
+    if (userReportTopic) userReportTopic.value = '';
+    setUserReportMsg('Enviado. Gracias!');
+  } catch (e) {
+    console.warn('report submit failed', e);
+    setUserReportMsg('No se pudo enviar.', true);
+  } finally {
+    if (btnUserReport) btnUserReport.disabled = false;
+  }
 }
 
 function renderAvatar(url) {
@@ -1305,6 +1356,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       renderAvatar(viewDoc?.photoURL || '');
       renderUserSettings(viewDoc, !!AS_UID);
+
+      // user report form
+      if (btnUserReport && !btnUserReport.dataset.wired) {
+        btnUserReport.dataset.wired = '1';
+        btnUserReport.addEventListener('click', () =>
+          submitUserReport(viewUid, viewDoc?.email || user.email || ''),
+        );
+      }
+      if (AS_UID) {
+        [userReportType, userReportLevel, userReportTopic, userReportMessage, btnUserReport].forEach(
+          (el) => {
+            if (el) el.disabled = true;
+          },
+        );
+        setUserReportMsg('Vista previa (admin)');
+      }
 
       if (AS_UID) {
         if (btnAvatarUpload) btnAvatarUpload.disabled = true;

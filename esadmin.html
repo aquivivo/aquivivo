@@ -192,8 +192,8 @@
           </div>
         </details>
 
-        <div class=\"adminGroupTitle\">Sprzedaz i marketing</div>
-        <div class=\"adminGroup\">
+        <div class="adminGroupTitle">Sprzedaz i marketing</div>
+        <div class="adminGroup">
           <details class="card" id="accServices">
           <summary class="sectionTitle">
             Uslugi (oferta)
@@ -671,8 +671,119 @@
         </details>
         </div>
 
-        <div class=\"adminGroupTitle\">Uzytkownicy i postepy</div>
-        <div class=\"adminGroup\">
+        <div class="adminGroupTitle">Tresc i publikacje</div>
+        <div class="adminGroup">
+          <details class="card" id="accPublishing">
+            <summary class="sectionTitle" style="cursor: pointer; list-style: none">
+              Publikacje
+              <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+                >(szkice + szybka publikacja)</span
+              >
+            </summary>
+            <div style="margin-top: 10px">
+              <p class="subtitle">
+                Lista szkicow lekcji (course_meta gdzie published != true).
+              </p>
+              <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+                <button class="btn-white-outline" id="btnLoadDrafts" type="button">
+                  Wczytaj szkice
+                </button>
+                <select class="select" id="draftLevel" style="min-width: 180px">
+                  <option value="all">Poziom: wszystkie</option>
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="B1">B1</option>
+                  <option value="B2">B2</option>
+                </select>
+                <input
+                  class="input"
+                  id="draftSearch"
+                  placeholder="Szukaj (tytul/slug)..."
+                  style="min-width: 240px"
+                />
+                <span class="hintSmall" id="draftsStatus"></span>
+              </div>
+              <div class="hintSmall" id="draftsSummary" style="margin-top: 8px"></div>
+              <div id="draftsList" class="list" style="margin-top: 12px"></div>
+            </div>
+          </details>
+
+          <details class="card" id="accMissing">
+            <summary class="sectionTitle" style="cursor: pointer; list-style: none">
+              Kontrola brakow
+              <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+                >(priceId / audio / tagi / tlumaczenia)</span
+              >
+            </summary>
+            <div style="margin-top: 10px">
+              <p class="subtitle">
+                Szybki audyt brakow w danych. Wyniki sa heurystyczne (checklist).
+              </p>
+              <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+                <button class="btn-white-outline" id="btnLoadMissing" type="button">
+                  Sprawdz braki
+                </button>
+                <select class="select" id="missingLevel" style="min-width: 180px">
+                  <option value="all">Poziom: wszystkie</option>
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="B1">B1</option>
+                  <option value="B2">B2</option>
+                </select>
+                <input
+                  class="input"
+                  id="missingSearch"
+                  placeholder="Szukaj (id/slug/tytul)..."
+                  style="min-width: 240px"
+                />
+                <span class="hintSmall" id="missingStatus"></span>
+              </div>
+              <div class="panelGrid" style="margin-top: 12px">
+                <div class="card miniStat">
+                  <div class="muted" style="font-weight: 900">Brak priceId</div>
+                  <div id="missingPriceCount" class="miniStatValue">-</div>
+                </div>
+                <div class="card miniStat">
+                  <div class="muted" style="font-weight: 900">Brak audio</div>
+                  <div id="missingAudioCount" class="miniStatValue">-</div>
+                </div>
+                <div class="card miniStat">
+                  <div class="muted" style="font-weight: 900">Brak tagow</div>
+                  <div id="missingTagsCount" class="miniStatValue">-</div>
+                </div>
+                <div class="card miniStat">
+                  <div class="muted" style="font-weight: 900">Brak tlumaczen</div>
+                  <div id="missingTransCount" class="miniStatValue">-</div>
+                </div>
+              </div>
+              <div class="panelGrid" style="margin-top: 12px">
+                <div class="card">
+                  <div class="sectionTitle" style="margin-top: 0">Brak priceId</div>
+                  <div class="hintSmall" id="missingPriceInfo" style="margin-top: 6px"></div>
+                  <div id="missingPriceList" class="missingList"></div>
+                </div>
+                <div class="card">
+                  <div class="sectionTitle" style="margin-top: 0">Brak audio</div>
+                  <div class="hintSmall" id="missingAudioInfo" style="margin-top: 6px"></div>
+                  <div id="missingAudioList" class="missingList"></div>
+                </div>
+                <div class="card">
+                  <div class="sectionTitle" style="margin-top: 0">Brak tagow</div>
+                  <div class="hintSmall" id="missingTagsInfo" style="margin-top: 6px"></div>
+                  <div id="missingTagsList" class="missingList"></div>
+                </div>
+                <div class="card">
+                  <div class="sectionTitle" style="margin-top: 0">Brak tlumaczen</div>
+                  <div class="hintSmall" id="missingTransInfo" style="margin-top: 6px"></div>
+                  <div id="missingTransList" class="missingList"></div>
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="adminGroupTitle">Uzytkownicy i postepy</div>
+        <div class="adminGroup">
           <details class="card" id="accUsers">
           <summary
             class="sectionTitle"
@@ -792,6 +903,47 @@
             </div>
           </div>
         </details>
+          <details class="card" id="accActivity">
+          <summary class="sectionTitle" style="cursor: pointer; list-style: none">
+            Aktywnosc
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(DAU/WAU/MAU + top tematy)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <p class="subtitle">
+              DAU/WAU/MAU liczone po lastLoginAt/lastSeenAt. Top tematy na bazie
+              postepow (user_progress).
+            </p>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadActivity" type="button">
+                Wczytaj aktywnosc
+              </button>
+              <span class="hintSmall" id="activityStatus"></span>
+            </div>
+            <div class="panelGrid" style="margin-top: 12px">
+              <div class="card miniStat">
+                <div class="muted" style="font-weight: 900">DAU (24h)</div>
+                <div id="activityDAU" class="miniStatValue">-</div>
+              </div>
+              <div class="card miniStat">
+                <div class="muted" style="font-weight: 900">WAU (7 dni)</div>
+                <div id="activityWAU" class="miniStatValue">-</div>
+              </div>
+              <div class="card miniStat">
+                <div class="muted" style="font-weight: 900">MAU (30 dni)</div>
+                <div id="activityMAU" class="miniStatValue">-</div>
+              </div>
+              <div class="card miniStat">
+                <div class="muted" style="font-weight: 900">Sredni czas lekcji (deklarowany)</div>
+                <div id="activityAvgLesson" class="miniStatValue">-</div>
+              </div>
+            </div>
+            <div class="hr"></div>
+            <div class="sectionTitle" style="margin-top: 0">Top 10 tematow</div>
+            <div id="activityTopList" class="list" style="margin-top: 10px"></div>
+          </div>
+        </details>
           <details class="card" id="accFlashcards">
           <summary
             class="sectionTitle"
@@ -827,8 +979,8 @@
         </details>
         </div>
 
-        <div class=\"adminGroupTitle\">Opinie i jakosc</div>
-        <div class=\"adminGroup\">
+        <div class="adminGroupTitle">Opinie i jakosc</div>
+        <div class="adminGroup">
           <details class="card" id="accReviews">
           <summary
             class="sectionTitle"
@@ -879,10 +1031,58 @@
             </div>
           </div>
         </details>
+          <details class="card" id="accReports">
+          <summary class="sectionTitle" style="cursor: pointer; list-style: none">
+            Zgloszenia od uzytkownikow
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(formularz + lista)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <p class="subtitle">
+              Krotki formularz (manualny) + podglad zgloszen uzytkownikow.
+            </p>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px; align-items: flex-end">
+              <select class="select" id="reportType" style="min-width: 200px">
+                <option value="bug">Blad</option>
+                <option value="content">Tresci/lekcja</option>
+                <option value="payment">Platnosc</option>
+                <option value="other" selected="">Inne</option>
+              </select>
+              <select class="select" id="reportLevel" style="min-width: 160px">
+                <option value="">Poziom (opcjonalnie)</option>
+                <option value="A1">A1</option>
+                <option value="A2">A2</option>
+                <option value="B1">B1</option>
+                <option value="B2">B2</option>
+              </select>
+              <input class="input" id="reportTopic" placeholder="ID tematu (opcjonalnie)" style="min-width: 200px" />
+              <input class="input" id="reportEmail" placeholder="Email (opcjonalnie)" style="min-width: 220px" />
+              <input class="input" id="reportMessage" placeholder="Opis problemu..." style="min-width: 260px; flex: 1" />
+              <button class="btn-yellow" id="btnCreateReport" type="button">Dodaj</button>
+              <span class="hintSmall" id="reportCreateStatus"></span>
+            </div>
+            <div class="hr"></div>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadReports" type="button">
+                Wczytaj zgloszenia
+              </button>
+              <select class="select" id="reportStatusFilter" style="min-width: 200px">
+                <option value="all">Wszystkie</option>
+                <option value="new">Nowe</option>
+                <option value="open">W toku</option>
+                <option value="done">Zamkniete</option>
+              </select>
+              <input class="input" id="reportSearch" placeholder="Szukaj (email/temat)..." style="min-width: 240px" />
+              <span class="hintSmall" id="reportStatusText"></span>
+            </div>
+            <div id="reportsList" class="list" style="margin-top: 12px"></div>
+          </div>
+        </details>
         </div>
 
-        <div class=\"adminGroupTitle\">Techniczne i multimedia</div>
-        <div class=\"adminGroup\">
+        <div class="adminGroupTitle">Techniczne i multimedia</div>
+        <div class="adminGroup">
           <details class="card" id="accAppLogs">
           <summary
             class="sectionTitle"

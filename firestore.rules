@@ -266,6 +266,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    /* ===== USER REPORTS ===== */
+    match /user_reports/{id} {
+      allow read: if isAdmin();
+      allow create: if signedIn() && (isAdmin() || request.resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
     /* ===== PAYMENTS ===== */
     match /payments/{id} {
       allow read: if isAdmin();

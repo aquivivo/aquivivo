@@ -1076,6 +1076,64 @@ body[data-page='esadmin'] .listItem {
   padding: 10px 12px;
   border-radius: 16px;
 }
+body[data-page='esadmin'] .miniStat {
+  padding: 12px 14px;
+  border-radius: 18px;
+}
+body[data-page='esadmin'] .miniStatValue {
+  font-size: 22px;
+  font-weight: 900;
+  margin-top: 6px;
+}
+body[data-page='esadmin'] .missingList {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+body[data-page='esadmin'] .missingItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+}
+body[data-page='esadmin'] .missingItemTitle {
+  font-weight: 900;
+}
+body[data-page='esadmin'] .missingItemMeta {
+  font-size: 12px;
+  opacity: 0.8;
+}
+body[data-page='esadmin'] .reportStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+body[data-page='esadmin'] .reportStatus--new {
+  background: rgba(241, 196, 15, 0.2);
+  border-color: rgba(241, 196, 15, 0.6);
+  color: #ffe9a6;
+}
+body[data-page='esadmin'] .reportStatus--open {
+  background: rgba(52, 152, 219, 0.2);
+  border-color: rgba(52, 152, 219, 0.6);
+  color: #cfe8ff;
+}
+body[data-page='esadmin'] .reportStatus--done {
+  background: rgba(46, 204, 113, 0.2);
+  border-color: rgba(46, 204, 113, 0.6);
+  color: #baf7d2;
+}
 
 /* Admin progress error details */
 .progressErrorsBox {
