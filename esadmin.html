@@ -440,13 +440,22 @@
               <div class="subtitle" style="margin: 0">
                 Dodaj / edytuj uslugi widoczne na <b>services.html</b>.
               </div>
-              <button
-                class="btn-white-outline"
-                id="btnReloadServicesAdmin"
-                type="button"
-              >
-                Odswiez
-              </button>
+              <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+                <button
+                  class="btn-white-outline"
+                  id="btnReloadServicesAdmin"
+                  type="button"
+                >
+                  Odswiez
+                </button>
+                <button
+                  class="btn-white-outline"
+                  id="btnBackfillPriceIds"
+                  type="button"
+                >
+                  Uzupelnij brakujace priceId
+                </button>
+              </div>
             </div>
             <div class="hr"></div>
             <div
@@ -537,6 +546,7 @@
                   id="svcStripePriceId"
                   placeholder="price_..."
                 />
+                <div class="hintSmall">Wymagane, gdy CTA = stripe.</div>
               </div>
               <div style="min-width: 260px; flex: 1">
                 <label class="muted" style="font-weight: 900"
@@ -791,6 +801,81 @@
             <div id="reviewsSection" style="display: none; margin-top: 16px">
               <div class="list" id="reviewsList"></div>
             </div>
+          </div>
+        </details>
+
+        <!-- Platnosci -->
+        <details class="card" id="accPayments">
+          <summary
+            class="sectionTitle"
+            style="cursor: pointer; list-style: none"
+          >
+            Platnosci
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(kliknij aby otworzyc/zamknac)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <p class="subtitle">
+              Podglad platnosci Stripe oraz prob checkoutu.
+            </p>
+            <div class="sectionTitle" style="margin-top: 0">Platnosci</div>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadPayments" type="button">
+                Wczytaj platnosci
+              </button>
+              <select class="select" id="paymentsStatus" style="min-width: 200px">
+                <option value="all">Wszystkie</option>
+                <option value="succeeded">Sukces</option>
+                <option value="pending">W toku</option>
+                <option value="failed">Nieudane</option>
+                <option value="expired">Wygasle</option>
+              </select>
+              <input
+                class="input"
+                id="paymentsSearch"
+                placeholder="Szukaj (email/uid/sku/session)..."
+                style="min-width: 260px"
+              />
+              <select class="select" id="paymentsLimit" style="min-width: 140px">
+                <option value="50">50</option>
+                <option value="100" selected="">100</option>
+                <option value="200">200</option>
+              </select>
+              <span class="hintSmall" id="paymentsStatusText"></span>
+            </div>
+            <div id="paymentsList" class="list" style="margin-top: 12px"></div>
+
+            <div class="hr"></div>
+            <div class="sectionTitle" style="margin-top: 0">
+              Proby checkoutu
+            </div>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadAttempts" type="button">
+                Wczytaj proby
+              </button>
+              <select class="select" id="attemptsStatus" style="min-width: 200px">
+                <option value="all">Wszystkie</option>
+                <option value="created">Utworzone</option>
+                <option value="pending">W toku</option>
+                <option value="succeeded">Sukces</option>
+                <option value="failed">Nieudane</option>
+                <option value="expired">Wygasle</option>
+              </select>
+              <input
+                class="input"
+                id="attemptsSearch"
+                placeholder="Szukaj (email/uid/sku/session)..."
+                style="min-width: 260px"
+              />
+              <select class="select" id="attemptsLimit" style="min-width: 140px">
+                <option value="50">50</option>
+                <option value="100" selected="">100</option>
+                <option value="200">200</option>
+              </select>
+              <span class="hintSmall" id="attemptsStatusText"></span>
+            </div>
+            <div id="attemptsList" class="list" style="margin-top: 12px"></div>
           </div>
         </details>
 

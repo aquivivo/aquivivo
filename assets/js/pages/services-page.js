@@ -62,7 +62,7 @@ function renderCard(svc) {
 
   if (svc.ctaType === 'stripe') {
     // For Stripe checkout we treat `sku` as planId (the same planId used by createCheckoutSession)
-    const planId = String(svc.sku || '').trim();
+    const planId = String(svc.sku || svc.id || '').trim();
     ctaHtml = `
       <button class="${ctaClass}" data-plan="${esc(planId)}" type="button">${ctaLabel}</button>
     `;
@@ -293,9 +293,14 @@ async function loadServices() {
           await startCheckout(planId);
         } catch (e) {
           console.error('[services checkout]', e);
+          const msg = String(e?.message || '').trim();
           btn.disabled = false;
           btn.textContent = 'Intentar otra vez';
-          alert('No se pudo iniciar el checkout. Inténtalo de nuevo.');
+          alert(
+            msg
+              ? 'No se pudo iniciar el checkout. ' + msg
+              : 'No se pudo iniciar el checkout. Inténtalo de nuevo.',
+          );
         }
       });
     });
@@ -329,3 +334,4 @@ function init() {
 }
 
 init();
+

@@ -42,6 +42,16 @@ const PLAN_TO_LEVELS = {
   'vip a1 + a2 + b1 + b2': ['A1', 'A2', 'B1', 'B2'],
 };
 
+// Fallback price IDs (Stripe) – used when services doc is missing stripePriceId.
+const PLAN_TO_PRICE_ID = {
+  premium_a1: 'price_1Sw2t5CI9cIUEmOtYvVwzq30',
+  premium_b1: 'price_1Sw2rUCI9cIUEmOtj7nhkJFQ',
+  premium_b2: 'price_1Sw2xqCI9cIUEmOtEDsrRvid',
+  'vip a1 + a2 + b1': 'price_1Sw2yvCI9cIUEmOtwTCkpP4e',
+  'vip a1 + a2 + b1 + b2': 'price_1Sw2zoCI9cIUEmOtSeTp1AjZ',
+  'tarjeta de residencia': 'price_1Sw310CI9cIUEmOtCYMhSLHa',
+};
+
 function normalizePlan(planId) {
   return String(planId || '')
     .trim()
@@ -91,13 +101,43 @@ async function getPriceFromServices(planIdRaw) {
       .get();
   }
 
-  if (snap.empty) return null;
-  const doc = snap.docs[0];
-  const data = doc.data() || {};
+  let doc = null;
+  let data = null;
+  if (!snap.empty) {
+    doc = snap.docs[0];
+    data = doc.data() || {};
+  } else if (planIdRaw) {
+    const byId = await db.doc(`services/${planIdRaw}`).get();
+    if (byId.exists) {
+      doc = byId;
+      data = byId.data() || {};
+    }
+  }
+
+  if (!doc) return null;
   const accessDays = parseAccessDays(data.accessDays);
   const accessLevels = normalizeAccessLevels(data.accessLevels);
+  let priceId = data.stripePriceId || data.priceId || '';
+  if (!priceId) {
+    const docKey = normalizePlan(data.sku || doc.id);
+    const fallback = PLAN_TO_PRICE_ID[planKey] || PLAN_TO_PRICE_ID[docKey];
+    if (fallback) {
+      priceId = fallback;
+      try {
+        await doc.ref.set(
+          {
+            stripePriceId: fallback,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+      } catch (e) {
+        console.warn('[services] Failed to backfill stripePriceId', e);
+      }
+    }
+  }
   return {
-    priceId: data.stripePriceId || data.priceId || '',
+    priceId,
     active: data.active !== false,
     sku: data.sku || planIdRaw,
     id: doc.id,
@@ -181,20 +221,56 @@ exports.createCheckoutSession = functions.https.onCall(
     const baseUrl = configuredBaseUrl || origin;
     const safeBaseUrl = baseUrl.replace(/\/+$/, '');
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${safeBaseUrl}/services.html?success=1`,
-      cancel_url: `${safeBaseUrl}/services.html?canceled=1`,
-      client_reference_id: uid,
-      metadata: {
-        uid,
-        planId: service?.planKey || normalizePlan(planIdRaw),
-        planSku: planIdRaw,
-        serviceId: service?.id || '',
-      },
-      allow_promotion_codes: true,
-    });
+    const attemptRef = db.collection('payment_attempts').doc();
+    const attemptData = {
+      uid,
+      planId: service?.planKey || normalizePlan(planIdRaw),
+      planSku: planIdRaw,
+      serviceId: service?.id || '',
+      priceId,
+      origin: origin || '',
+      status: 'created',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    await attemptRef.set(attemptData, { merge: true });
+
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: `${safeBaseUrl}/services.html?success=1`,
+        cancel_url: `${safeBaseUrl}/services.html?canceled=1`,
+        client_reference_id: uid,
+        metadata: {
+          uid,
+          planId: service?.planKey || normalizePlan(planIdRaw),
+          planSku: planIdRaw,
+          serviceId: service?.id || '',
+          attemptId: attemptRef.id,
+        },
+        allow_promotion_codes: true,
+      });
+
+      await attemptRef.set(
+        {
+          status: 'pending',
+          stripeSessionId: session.id,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    } catch (err) {
+      await attemptRef.set(
+        {
+          status: 'failed',
+          error: err?.message || String(err),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+      throw err;
+    }
 
     return { url: session.url };
   },
@@ -225,6 +301,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
       const planSku = session.metadata?.planSku || session.metadata?.planId;
       const planId = normalizePlan(planSku);
       const serviceId = session.metadata?.serviceId;
+      const attemptId = session.metadata?.attemptId;
 
       let service = null;
       if (serviceId) service = await getServiceById(serviceId);
@@ -259,6 +336,59 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
             { merge: true },
           );
         });
+      }
+
+      const paymentStatus =
+        session.payment_status === 'paid' ? 'succeeded' : session.payment_status || 'succeeded';
+      const paymentRef = db.doc(`payments/${session.id}`);
+      await paymentRef.set(
+        {
+          uid: uid || '',
+          email: session.customer_details?.email || session.customer_email || '',
+          planId,
+          planSku: planSku || '',
+          serviceId: serviceId || '',
+          stripeSessionId: session.id,
+          stripePaymentIntentId: session.payment_intent || '',
+          amountTotal: session.amount_total ?? null,
+          currency: session.currency || '',
+          status: paymentStatus,
+          stripeCreatedAt:
+            session.created != null
+              ? admin.firestore.Timestamp.fromMillis(Number(session.created) * 1000)
+              : null,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+
+      if (attemptId) {
+        await db.doc(`payment_attempts/${attemptId}`).set(
+          {
+            status: paymentStatus,
+            stripeSessionId: session.id,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+      }
+    }
+
+    if (
+      event.type === 'checkout.session.expired' ||
+      event.type === 'checkout.session.async_payment_failed'
+    ) {
+      const session = event.data.object;
+      const attemptId = session.metadata?.attemptId;
+      if (attemptId) {
+        await db.doc(`payment_attempts/${attemptId}`).set(
+          {
+            status: event.type === 'checkout.session.expired' ? 'expired' : 'failed',
+            stripeSessionId: session.id,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
       }
     }
 

@@ -16,6 +16,7 @@ import {
   where,
   orderBy,
   limit,
+  writeBatch,
   startAfter,
   getDocs,
   addDoc,
@@ -566,6 +567,17 @@ function clearPromoForm() {
 /* =========================
    SERVICES (services) CRUD
    ========================= */
+let currentServiceId = null;
+let currentServiceData = null;
+const SERVICE_PRICE_FALLBACK = {
+  premium_a1: 'price_1Sw2t5CI9cIUEmOtYvVwzq30',
+  premium_b1: 'price_1Sw2rUCI9cIUEmOtj7nhkJFQ',
+  premium_b2: 'price_1Sw2xqCI9cIUEmOtEDsrRvid',
+  'vip a1 + a2 + b1': 'price_1Sw2yvCI9cIUEmOtwTCkpP4e',
+  'vip a1 + a2 + b1 + b2': 'price_1Sw2zoCI9cIUEmOtSeTp1AjZ',
+  'tarjeta de residencia': 'price_1Sw310CI9cIUEmOtCYMhSLHa',
+};
+
 function fillServiceForm(id, s) {
   if ($('svcSku')) $('svcSku').value = id || s.sku || '';
   if ($('svcCategory')) {
@@ -690,6 +702,49 @@ async function loadServicesList() {
   }
 }
 
+async function backfillServicePriceIds() {
+  const st = $('svcStatus');
+  setStatus(st, 'Uzupelnianie priceId...');
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'services'), limit(500)),
+    );
+    const batch = writeBatch(db);
+    let updated = 0;
+    snap.forEach((d) => {
+      const data = d.data() || {};
+      if (String(data.stripePriceId || '').trim()) return;
+      const sku = String(data.sku || d.id || '').trim();
+      const keySku = normalizePlanKey(sku);
+      const keyId = normalizePlanKey(d.id);
+      const priceId =
+        SERVICE_PRICE_FALLBACK[keySku] || SERVICE_PRICE_FALLBACK[keyId];
+      if (!priceId) return;
+      batch.set(
+        d.ref,
+        {
+          stripePriceId: priceId,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      updated += 1;
+    });
+
+    if (updated > 0) {
+      await batch.commit();
+      setStatus(st, `Uzupelniono priceId: ${updated}`);
+    } else {
+      setStatus(st, 'Brak brakujacych priceId');
+    }
+
+    await loadServicesList();
+  } catch (e) {
+    console.error('[services backfill]', e);
+    setStatus(st, 'Blad uzupelniania priceId.', true);
+  }
+}
+
 async function saveService() {
   const st = $('svcStatus');
   const sku = String($('svcSku')?.value || '').trim();
@@ -706,6 +761,7 @@ async function saveService() {
   }
 
   const accessLevels = parseServiceLevels($('svcAccessLevels')?.value || '');
+  const stripePriceIdRaw = String($('svcStripePriceId')?.value || '').trim();
 
   const skuLower = normalizePlanKey(sku);
   const payload = {
@@ -720,12 +776,25 @@ async function saveService() {
     accessLevels: accessLevels.length ? accessLevels : null,
     order: Number($('svcOrder')?.value || 0),
     ctaType: String($('svcCtaType')?.value || 'info').trim(),
-    stripePriceId: String($('svcStripePriceId')?.value || '').trim(),
+    // stripePriceId: don't wipe existing when field is empty during edit
     ctaUrl: String($('svcCtaUrl')?.value || '').trim(),
     ctaLabel: String($('svcCtaLabel')?.value || '').trim(),
     active: String($('svcActive')?.value || 'true') === 'true',
     updatedAt: serverTimestamp(),
   };
+  if (
+    payload.ctaType === 'stripe' &&
+    !stripePriceIdRaw &&
+    !currentServiceData?.stripePriceId
+  ) {
+    return setStatus(st, 'Podaj Stripe priceId (CTA = stripe).', true);
+  }
+  if (stripePriceIdRaw) {
+    payload.stripePriceId = stripePriceIdRaw;
+  } else if (!currentServiceData?.stripePriceId || currentServiceId !== sku) {
+    // allow empty for new doc; keep existing for edits
+    payload.stripePriceId = '';
+  }
 
   if (
     payload.ctaType === 'link' &&
@@ -754,7 +823,9 @@ async function saveService() {
 async function editService(id) {
   const snap = await getDoc(doc(db, 'services', id));
   if (!snap.exists()) return;
-  fillServiceForm(id, snap.data() || {});
+  currentServiceId = id;
+  currentServiceData = snap.data() || {};
+  fillServiceForm(id, currentServiceData);
   setStatus($('svcStatus'), 'Edycja');
 }
 
@@ -789,6 +860,8 @@ async function deleteService(id) {
 }
 
 function clearServiceForm() {
+  currentServiceId = null;
+  currentServiceData = null;
   fillServiceForm('', {
     category: 'extras',
     ctaType: 'info',
@@ -1510,6 +1583,213 @@ function formatReviewDate(ts) {
   const d = toDateMaybe(ts);
   if (!d) return '';
   return isoDate(d);
+}
+
+/* =========================
+   PLATNOSCI
+   ========================= */
+let paymentsCache = [];
+let attemptsCache = [];
+
+function formatPaymentDate(ts) {
+  const d = toDateMaybe(ts);
+  if (!d) return '';
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+}
+
+function formatMoney(amount, currency) {
+  const val = Number(amount);
+  if (!Number.isFinite(val)) return '-';
+  const curr = String(currency || '').toUpperCase();
+  const num = val / 100;
+  return `${num.toFixed(2)} ${curr || ''}`.trim();
+}
+
+function getPaymentsFilters() {
+  return {
+    status: String($('paymentsStatus')?.value || 'all').toLowerCase(),
+    search: String($('paymentsSearch')?.value || '').trim().toLowerCase(),
+  };
+}
+
+function paymentStatusOf(p) {
+  return String(p.status || p.paymentStatus || p.payment_status || '')
+    .trim()
+    .toLowerCase();
+}
+
+function renderPayments() {
+  const list = $('paymentsList');
+  if (!list) return;
+  const { status, search } = getPaymentsFilters();
+  let items = paymentsCache.slice();
+
+  if (status !== 'all') {
+    items = items.filter((p) => paymentStatusOf(p) === status);
+  }
+  if (search) {
+    items = items.filter((p) => {
+      const hay = [
+        p.email,
+        p.uid,
+        p.planSku,
+        p.planId,
+        p.serviceId,
+        p.stripeSessionId,
+        p.sessionId,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return hay.includes(search);
+    });
+  }
+
+  if (!items.length) {
+    list.innerHTML = '<div class="hintSmall">Brak platnosci.</div>';
+    return;
+  }
+
+  list.innerHTML = items
+    .map((p) => {
+      const email = esc(p.email || '(brak emaila)');
+      const statusTxt = paymentStatusOf(p) || 'unknown';
+      const amount = formatMoney(p.amountTotal || p.amount_total, p.currency);
+      const date = formatPaymentDate(p.createdAt || p.updatedAt || p.stripeCreatedAt);
+      const plan = esc(p.planSku || p.planId || '-');
+      const sessionId = esc(p.stripeSessionId || p.sessionId || '-');
+      return `
+        <div class="listItem">
+          <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:900;">${plan}</div>
+              <div class="hintSmall">status: ${esc(statusTxt)}  -  kwota: ${esc(amount)}  -  ${esc(date)}</div>
+              <div class="hintSmall">user: ${email}</div>
+              <div class="hintSmall">session: ${sessionId}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadPayments() {
+  const list = $('paymentsList');
+  if (!list) return;
+  list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
+  setStatus($('paymentsStatusText'), 'Ladowanie...');
+
+  try {
+    const lim = Number($('paymentsLimit')?.value || 100);
+    const snap = await getDocs(
+      query(collection(db, 'payments'), orderBy('createdAt', 'desc'), limit(lim)),
+    );
+    paymentsCache = [];
+    snap.forEach((d) => paymentsCache.push({ id: d.id, ...(d.data() || {}) }));
+    renderPayments();
+    setStatus($('paymentsStatusText'), `Gotowe (${paymentsCache.length})`);
+  } catch (e) {
+    console.error('[payments]', e);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania platnosci.</div>';
+    setStatus($('paymentsStatusText'), 'Blad', true);
+  }
+}
+
+function getAttemptsFilters() {
+  return {
+    status: String($('attemptsStatus')?.value || 'all').toLowerCase(),
+    search: String($('attemptsSearch')?.value || '').trim().toLowerCase(),
+  };
+}
+
+function renderAttempts() {
+  const list = $('attemptsList');
+  if (!list) return;
+  const { status, search } = getAttemptsFilters();
+  let items = attemptsCache.slice();
+
+  if (status !== 'all') {
+    items = items.filter(
+      (p) => String(p.status || '').toLowerCase() === status,
+    );
+  }
+  if (search) {
+    items = items.filter((p) => {
+      const hay = [
+        p.email,
+        p.uid,
+        p.planSku,
+        p.planId,
+        p.serviceId,
+        p.stripeSessionId,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return hay.includes(search);
+    });
+  }
+
+  if (!items.length) {
+    list.innerHTML = '<div class="hintSmall">Brak prob checkoutu.</div>';
+    return;
+  }
+
+  list.innerHTML = items
+    .map((p) => {
+      const email = esc(p.email || '(brak emaila)');
+      const statusTxt = esc(String(p.status || 'unknown'));
+      const date = formatPaymentDate(p.createdAt || p.updatedAt);
+      const plan = esc(p.planSku || p.planId || '-');
+      const sessionId = esc(p.stripeSessionId || '-');
+      const err = esc(p.error || '');
+      return `
+        <div class="listItem">
+          <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:900;">${plan}</div>
+              <div class="hintSmall">status: ${statusTxt}  -  ${esc(date)}</div>
+              <div class="hintSmall">user: ${email}</div>
+              <div class="hintSmall">session: ${sessionId}</div>
+              ${err ? `<div class="hintSmall">blad: ${err}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadAttempts() {
+  const list = $('attemptsList');
+  if (!list) return;
+  list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
+  setStatus($('attemptsStatusText'), 'Ladowanie...');
+
+  try {
+    const lim = Number($('attemptsLimit')?.value || 100);
+    const snap = await getDocs(
+      query(
+        collection(db, 'payment_attempts'),
+        orderBy('createdAt', 'desc'),
+        limit(lim),
+      ),
+    );
+    attemptsCache = [];
+    snap.forEach((d) => attemptsCache.push({ id: d.id, ...(d.data() || {}) }));
+    renderAttempts();
+    setStatus($('attemptsStatusText'), `Gotowe (${attemptsCache.length})`);
+  } catch (e) {
+    console.error('[attempts]', e);
+    list.innerHTML = '<div class="hintSmall">Blad ladowania prob.</div>';
+    setStatus($('attemptsStatusText'), 'Blad', true);
+  }
 }
 
 /* =========================
@@ -2390,6 +2670,7 @@ function bindEvents() {
 
   // services
   $('btnReloadServicesAdmin')?.addEventListener('click', loadServicesList);
+  $('btnBackfillPriceIds')?.addEventListener('click', backfillServicePriceIds);
   $('btnSaveService')?.addEventListener('click', saveService);
   $('btnClearService')?.addEventListener('click', clearServiceForm);
   $('servicesAdminList')?.addEventListener('click', async (e) => {
@@ -2483,6 +2764,16 @@ function bindEvents() {
   $('reviewRating')?.addEventListener('change', renderReviews);
   $('reviewLevel')?.addEventListener('change', renderReviews);
   $('reviewSearch')?.addEventListener('input', renderReviews);
+
+  // platnosci
+  $('btnLoadPayments')?.addEventListener('click', loadPayments);
+  $('paymentsStatus')?.addEventListener('change', renderPayments);
+  $('paymentsSearch')?.addEventListener('input', renderPayments);
+  $('paymentsLimit')?.addEventListener('change', loadPayments);
+  $('btnLoadAttempts')?.addEventListener('click', loadAttempts);
+  $('attemptsStatus')?.addEventListener('change', renderAttempts);
+  $('attemptsSearch')?.addEventListener('input', renderAttempts);
+  $('attemptsLimit')?.addEventListener('change', loadAttempts);
 
   // logi aplikacji
   $('btnLoadAppLogs')?.addEventListener('click', loadAppLogs);
