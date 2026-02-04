@@ -555,7 +555,7 @@ function clearPromoForm() {
    SERVICES (services) CRUD
    ========================= */
 function fillServiceForm(id, s) {
-  if ($('svcSku')) $('svcSku').value = id || '';
+  if ($('svcSku')) $('svcSku').value = id || s.sku || '';
   if ($('svcCategory')) {
     const raw = String(s.category || '').toLowerCase();
     const mapped = raw === 'consults' ? 'consultas' : raw;
@@ -567,6 +567,7 @@ function fillServiceForm(id, s) {
   if ($('svcBadge')) $('svcBadge').value = s.badge || '';
   if ($('svcOrder')) $('svcOrder').value = String(Number(s.order || 0));
   if ($('svcCtaType')) $('svcCtaType').value = s.ctaType || 'info';
+  if ($('svcStripePriceId')) $('svcStripePriceId').value = s.stripePriceId || '';
   if ($('svcCtaUrl')) $('svcCtaUrl').value = s.ctaUrl || '';
   if ($('svcCtaLabel')) $('svcCtaLabel').value = s.ctaLabel || '';
   if ($('svcActive'))
@@ -577,13 +578,19 @@ function renderServiceRow(id, s) {
   const active = s.active === false ? 'NIE hidden' : 'TAK active';
   const cat = String(s.category || '').toLowerCase();
   const catClass = cat ? ` serviceRow--${cat}` : '';
+  const stripeInfo =
+    s.ctaType === 'stripe' && s.stripePriceId
+      ? `  -  stripe: ${esc(s.stripePriceId)}`
+      : s.ctaType === 'stripe'
+        ? '  -  stripe: brak priceId'
+        : '';
   return `
     <div class="listItem${catClass}">
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${esc(s.title || id)}</div>
           <div class="hintSmall">SKU: ${esc(id)}  -  cat: ${esc(s.category || 'extras')}  -  ${active}</div>
-          <div class="hintSmall">${s.price ? ' ' + esc(s.price) : ''}${s.badge ? '  -   ' + esc(s.badge) : ''}</div>
+          <div class="hintSmall">${s.price ? ' ' + esc(s.price) : ''}${s.badge ? '  -   ' + esc(s.badge) : ''}${stripeInfo}</div>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn-white-outline" type="button" data-svc="edit" data-id="${esc(id)}">Edytuj</button>
@@ -622,8 +629,10 @@ async function saveService() {
   const sku = String($('svcSku')?.value || '').trim();
   if (!sku) return setStatus(st, 'Brak SKU.', true);
 
+  const skuLower = normalizePlanKey(sku);
   const payload = {
     sku,
+    skuLower,
     category: String($('svcCategory')?.value || 'extras'),
     title: String($('svcTitle')?.value || '').trim(),
     desc: String($('svcDesc')?.value || '').trim(),
@@ -631,6 +640,7 @@ async function saveService() {
     badge: String($('svcBadge')?.value || '').trim(),
     order: Number($('svcOrder')?.value || 0),
     ctaType: String($('svcCtaType')?.value || 'info').trim(),
+    stripePriceId: String($('svcStripePriceId')?.value || '').trim(),
     ctaUrl: String($('svcCtaUrl')?.value || '').trim(),
     ctaLabel: String($('svcCtaLabel')?.value || '').trim(),
     active: String($('svcActive')?.value || 'true') === 'true',

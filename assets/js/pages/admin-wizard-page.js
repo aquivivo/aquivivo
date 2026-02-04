@@ -512,6 +512,177 @@ async function loadSelectedTopic() {
   setStep(2);
 }
 
+async function loadCopyTopics() {
+  if (!wizCopyFromLevel || !wizCopyFromTopic) return;
+  setStatus(wizCopyStatus, '');
+  wizCopyFromTopic.disabled = true;
+  if (btnWizLoadCopyTopics) btnWizLoadCopyTopics.disabled = true;
+  try {
+    const level = String(wizCopyFromLevel.value || 'A1').toUpperCase();
+    const snap = await getDocs(
+      query(
+        collection(db, 'courses'),
+        where('level', '==', level),
+        orderBy('order', 'asc'),
+        limit(200),
+      ),
+    );
+    copyTopicsCache = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    wizCopyFromTopic.innerHTML = '';
+    if (!copyTopicsCache.length) {
+      wizCopyFromTopic.innerHTML = '<option value="">-- Brak tematow --</option>';
+      setStatus(wizCopyStatus, 'Brak tematow na tym poziomie.', true);
+      return;
+    }
+    wizCopyFromTopic.appendChild(new Option('-- Wybierz temat --', ''));
+    copyTopicsCache.forEach((t) => {
+      const label = t.title || t.name || t.slug || t.id;
+      wizCopyFromTopic.appendChild(new Option(label, t.id));
+    });
+    setStatus(wizCopyStatus, `${copyTopicsCache.length} tematow.`);
+  } catch (e) {
+    console.error(e);
+    setStatus(wizCopyStatus, 'Blad wczytywania tematow.', true);
+  } finally {
+    wizCopyFromTopic.disabled = false;
+    if (btnWizLoadCopyTopics) btnWizLoadCopyTopics.disabled = false;
+  }
+}
+
+async function copyTopic() {
+  if (!wizCopyFromLevel || !wizCopyFromTopic || !wizCopyToLevel) return;
+  const srcLevel = String(wizCopyFromLevel.value || 'A1').toUpperCase();
+  const srcId = String(wizCopyFromTopic.value || '').trim();
+  const dstLevel = String(
+    wizCopyToLevel.value || courseLevel?.value || srcLevel,
+  ).toUpperCase();
+
+  if (!srcId) {
+    setStatus(wizCopyStatus, 'Wybierz temat zrodlowy.', true);
+    return;
+  }
+
+  setStatus(wizCopyStatus, 'Kopiowanie...');
+  try {
+    const srcSnap = await getDoc(doc(db, 'courses', srcId));
+    if (!srcSnap.exists()) {
+      setStatus(wizCopyStatus, 'Nie znaleziono tematu zrodlowego.', true);
+      return;
+    }
+    const src = srcSnap.data() || {};
+    const newTitle =
+      String(wizCopyNewTitle?.value || '').trim() ||
+      src.title ||
+      src.name ||
+      '';
+    const newSlug =
+      String(wizCopyNewSlug?.value || '').trim() ||
+      String(src.slug || '') ||
+      slugify(newTitle);
+
+    const order = await getNextCourseOrder(dstLevel);
+    const newCourseRef = doc(collection(db, 'courses'));
+    const payload = {
+      ...src,
+      title: newTitle || src.title || '',
+      name: newTitle || src.name || '',
+      slug: newSlug || src.slug || '',
+      level: dstLevel,
+      order,
+      updatedAt: serverTimestamp(),
+      createdAt: serverTimestamp(),
+    };
+    await setDoc(newCourseRef, payload);
+
+    // Copy lesson
+    const metaSrcRef = doc(db, 'course_meta', `${srcLevel}__${srcId}`);
+    const metaSnap = await getDoc(metaSrcRef);
+    if (metaSnap.exists()) {
+      const meta = metaSnap.data() || {};
+      const metaDstRef = doc(
+        db,
+        'course_meta',
+        `${dstLevel}__${newCourseRef.id}`,
+      );
+      await setDoc(
+        metaDstRef,
+        {
+          ...meta,
+          level: dstLevel,
+          topicSlug: newSlug || meta.topicSlug || '',
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
+
+    // Copy exercises
+    let exSnap = null;
+    try {
+      exSnap = await getDocs(
+        query(
+          collection(db, 'exercises'),
+          where('level', '==', srcLevel),
+          where('topicId', '==', srcId),
+        ),
+      );
+    } catch (e) {
+      console.warn('[wizard] primary exercises copy failed', e);
+    }
+    if (!exSnap || exSnap.empty) {
+      const slugKey = String(src.slug || srcId);
+      exSnap = await getDocs(
+        query(
+          collection(db, 'exercises'),
+          where('level', '==', srcLevel),
+          where('topicSlug', '==', slugKey),
+        ),
+      );
+    }
+
+    const batchLimit = 400;
+    let batch = writeBatch(db);
+    let pending = 0;
+    let copied = 0;
+    for (const d of exSnap.docs) {
+      const ex = d.data() || {};
+      const ref = doc(collection(db, 'exercises'));
+      batch.set(ref, {
+        ...ex,
+        level: dstLevel,
+        topicId: newCourseRef.id,
+        topicSlug: newSlug || ex.topicSlug || '',
+        updatedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+      });
+      pending += 1;
+      copied += 1;
+      if (pending >= batchLimit) {
+        await batch.commit();
+        batch = writeBatch(db);
+        pending = 0;
+      }
+    }
+    if (pending > 0) await batch.commit();
+
+    setStatus(
+      wizCopyStatus,
+      `Gotowe. Nowy temat: ${newCourseRef.id} (cwiczenia: ${copied})`,
+    );
+    if (wizCopyNewTitle) wizCopyNewTitle.value = '';
+    if (wizCopyNewSlug) wizCopyNewSlug.value = '';
+
+    setCourseFormFromDoc(payload, newCourseRef.id);
+    await loadLessonMeta();
+    setStep(2);
+    updateSummary();
+  } catch (e) {
+    console.error(e);
+    setStatus(wizCopyStatus, 'Blad kopiowania. Sprawdz konsole.', true);
+  }
+}
+
 async function getNextCourseOrder(level) {
   try {
     const snap = await getDocs(
@@ -2288,6 +2459,13 @@ function bindEvents() {
     }
   });
 
+  btnWizLoadCopyTopics?.addEventListener('click', loadCopyTopics);
+  btnWizCopyTopic?.addEventListener('click', copyTopic);
+  wizCopyFromLevel?.addEventListener('change', loadCopyTopics);
+  courseLevel?.addEventListener('change', () => {
+    if (wizCopyToLevel) wizCopyToLevel.value = courseLevel.value;
+  });
+
   btnLoadEditTopics?.addEventListener('click', loadEditTopics);
   editLevel?.addEventListener('change', loadEditTopics);
   editTopic?.addEventListener('change', loadSelectedTopic);
@@ -2419,6 +2597,8 @@ function init() {
   refreshBulkMapOptions();
   bindMapTargets();
   updateSummary();
+  if (wizCopyFromLevel && courseLevel) wizCopyFromLevel.value = courseLevel.value;
+  if (wizCopyToLevel && courseLevel) wizCopyToLevel.value = courseLevel.value;
   bindEvents();
 }
 

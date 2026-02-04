@@ -24,17 +24,6 @@ function getBaseUrl() {
   return functions.config().app?.base_url || process.env.BASE_URL || '';
 }
 
-// ✅ MAPOWANIE PLAN → PRICE (STRIPE)
-const PLAN_TO_PRICE = {
-  premium_a1: 'price_1Sw2t5CI9cIUEmOtYvVwzq30',
-  premium_b1: 'price_1Sw2rUCI9cIUEmOtj7nhkJFQ',
-  premium_b2: 'price_1Sw2xqCI9cIUEmOtEDsrRvid',
-  'vip a1 + a2 + b1': 'price_1Sw2yvCI9cIUEmOtwTCkpP4e',
-  'vip a1 + a2 + b1 + b2': 'price_1Sw2zoCI9cIUEmOtSeTp1AjZ',
-  'karta pobytu': 'price_1Sw310CI9cIUEmOtCYMhSLHa',
-  hablo: 'price_1Sw33RCI9cIUEmOtTe62WvWe',
-};
-
 // ⏱️ czas dostępu (dni)
 const PLAN_TO_DAYS = {
   premium_a1: 90,
@@ -56,7 +45,39 @@ const PLAN_TO_LEVELS = {
 function normalizePlan(planId) {
   return String(planId || '')
     .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/\s*\+\s*/g, ' + ')
+    .replace(/\s+/g, ' ');
+}
+
+async function getPriceFromServices(planIdRaw) {
+  const planKey = normalizePlan(planIdRaw);
+  if (!planIdRaw && !planKey) return null;
+
+  let snap = await db
+    .collection('services')
+    .where('skuLower', '==', planKey)
+    .limit(1)
+    .get();
+
+  if (snap.empty && planIdRaw) {
+    snap = await db
+      .collection('services')
+      .where('sku', '==', planIdRaw)
+      .limit(1)
+      .get();
+  }
+
+  if (snap.empty) return null;
+  const doc = snap.docs[0];
+  const data = doc.data() || {};
+  return {
+    priceId: data.stripePriceId || data.priceId || '',
+    active: data.active !== false,
+    sku: data.sku || planIdRaw,
+    id: doc.id,
+    planKey,
+  };
 }
 
 function computeNextUntil(existingTs, days) {
@@ -89,13 +110,26 @@ exports.createCheckoutSession = functions.https.onCall(
     }
 
     const uid = context.auth.uid;
-    const planId = normalizePlan(data?.planId);
-    const priceId = PLAN_TO_PRICE[planId];
-
-    if (!priceId) {
+    const planIdRaw = String(data?.planId || '').trim();
+    if (!planIdRaw) {
       throw new functions.https.HttpsError(
         'invalid-argument',
-        'Nieznany plan.',
+        'Brak planId.',
+      );
+    }
+
+    const service = await getPriceFromServices(planIdRaw);
+    const priceId = service?.priceId;
+    if (!priceId) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        `Brak stripePriceId w services dla SKU: ${planIdRaw}`,
+      );
+    }
+    if (service?.active === false) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Plan jest nieaktywny.',
       );
     }
 
@@ -111,7 +145,12 @@ exports.createCheckoutSession = functions.https.onCall(
       success_url: `${safeBaseUrl}/services.html?success=1`,
       cancel_url: `${safeBaseUrl}/services.html?canceled=1`,
       client_reference_id: uid,
-      metadata: { uid, planId },
+      metadata: {
+        uid,
+        planId: service?.planKey || normalizePlan(planIdRaw),
+        planSku: planIdRaw,
+        serviceId: service?.id || '',
+      },
       allow_promotion_codes: true,
     });
 

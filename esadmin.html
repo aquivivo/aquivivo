@@ -16,24 +16,10 @@
             <div class="heroIcon">&#x1F6E0;&#xFE0F;</div>
             <div>
               <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
-                <a class="btn-yellow" href="admin-select.html?type=lesson"
-                  >Admin lekcji</a
-                >
-                <a
-                  class="btn-white-outline"
-                  href="admin-select.html?type=exercise"
-                  >Admin cwiczen</a
-                >
-                <a class="btn-white-outline" href="admin-wizard.html"
-                  >Kreator</a
-                >
+                <a class="btn-yellow" href="admin-wizard.html">Kreator</a>
                 <a class="btn-white-outline" href="#accUsers">Uzytkownicy</a>
-                <a class="btn-white-outline" href="#accPromo"
-                  >Kody promo</a
-                >
-                <a class="btn-white-outline" href="#accSegments"
-                  >Segmentacja</a
-                >
+                <a class="btn-white-outline" href="#accPromo">Kody promo</a>
+                <a class="btn-white-outline" href="#accSegments">Segmentacja</a>
               </div>
             </div>
           </div>
@@ -522,6 +508,14 @@
                   <option value="payhip">payhip</option>
                   <option value="stripe">stripe</option>
                 </select>
+              </div>
+              <div style="min-width: 240px">
+                <label class="muted" style="font-weight: 900">Stripe priceId</label>
+                <input
+                  class="input"
+                  id="svcStripePriceId"
+                  placeholder="price_..."
+                />
               </div>
               <div style="min-width: 260px; flex: 1">
                 <label class="muted" style="font-weight: 900"
