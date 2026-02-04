@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pl">
   <head>
     <meta charset="utf-8" />
@@ -25,7 +25,7 @@
           </div>
         </section>
         <!-- Dashboard (akordeon - domyslnie otwarty) -->
-        <details class="card" id="accDashboard">
+                <details class="card" id="accDashboard">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
@@ -191,244 +191,10 @@
             </div>
           </div>
         </details>
-        <!-- Segmentacja (akordeon - domyslnie zamkniety) -->
-        <details class="card" id="accSegments">
-          <summary
-            class="sectionTitle"
-            style="cursor: pointer; list-style: none"
-          >
-            Segmentacja (marketing)
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
-          <div style="margin-top: 10px">
-            <p class="subtitle">
-              Szybkie listy: wygasa wkrotce, premium aktywny, bez dostepu (ok.).
-              Mozesz eksportowac CSV.
-            </p>
-            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
-              <button class="btn-white-outline" id="btnLoadExp0" type="button">
-                Wygasa dzis
-              </button>
-              <button class="btn-white-outline" id="btnLoadExp3" type="button">
-                Wygasa za 3 dni
-              </button>
-              <button class="btn-white-outline" id="btnLoadExp7" type="button">
-                Wygasa za 7 dni
-              </button>
-              <button class="btn-white-outline" id="btnLoadExp14" type="button">
-                Wygasa za 14 dni
-              </button>
-              <button
-                class="btn-white-outline"
-                id="btnLoadPremiumActive"
-                type="button"
-              >
-                Premium aktywny (accessUntil)
-              </button>
-              <button
-                class="btn-white-outline"
-                id="btnLoadFreeUsers"
-                type="button"
-              >
-                Bez dostepu (ok.)
-              </button>
-              <button
-                class="btn-white-outline"
-                id="btnLoadOneTopic"
-                type="button"
-              >
-                Tylko 1 temat
-              </button>
-              <button
-                class="btn-white-outline"
-                id="btnLoadOneTopicInactive"
-                type="button"
-              >
-                1 temat - nieaktywny 7 dni
-              </button>
-              <button class="btn-yellow" id="btnExportSegment" type="button">
-                Eksportuj CSV
-              </button>
-              <span
-                class="hintSmall"
-                id="segmentStatus"
-                style="margin-left: auto"
-              ></span>
-            </div>
-            <div class="hr"></div>
-            <div class="sectionTitle" style="margin-top: 0">Wyniki</div>
-            <div class="list" id="segmentList"></div>
-          </div>
-        </details>
-        <!-- Kody promo (akordeon - domyslnie zamkniety) -->
-        <details class="card" id="accPromo">
-          <summary
-            class="sectionTitle"
-            style="cursor: pointer; list-style: none"
-          >
-            Kody promo
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
-          <div class="hr"></div>
-          <div class="sectionTitle" style="margin-top: 0">
-            Ustawienia polecen
-          </div>
-          <div
-            class="metaRow"
-            style="flex-wrap: wrap; gap: 10px; align-items: flex-end"
-          >
-            <div style="min-width: 220px">
-              <label class="muted" style="font-weight: 900">% znizki</label>
-              <input
-                class="input"
-                id="refOwnerPercent"
-                max="100"
-                min="0"
-                placeholder="np. 20"
-                step="1"
-                type="number"
-              />
-            </div>
-            <div style="min-width: 320px; flex: 1">
-              <label class="muted" style="font-weight: 900"
-                >Opis / zakres</label
-              >
-              <input
-                class="input"
-                id="refRewardScope"
-                placeholder="np. 20% en otros servicios"
-              />
-            </div>
-            <button
-              class="btn-yellow"
-              id="btnSaveReferralSettings"
-              type="button"
-            >
-              Zapisz
-            </button>
-            <span
-              class="hintSmall"
-              id="refSettingsStatus"
-              style="margin-left: auto"
-            ></span>
-          </div>
-          <div class="hintSmall" style="margin-top: 10px">
-            Zapisane w: <b>promo_codes/_REFERRAL_SETTINGS</b>
-          </div>
 
-          <div style="margin-top: 10px">
-            <p class="subtitle">
-              Tworz, aktywuj i wylaczaj kody. Uzytkownicy stosuja je w panelu.
-            </p>
-            <div
-              class="metaRow"
-              style="flex-wrap: wrap; gap: 10px; align-items: flex-end"
-            >
-              <div style="min-width: 220px">
-                <label class="muted" style="font-weight: 900"
-                  >Kod (ID)</label
-                >
-                <input
-                  class="input"
-                  id="promoCode"
-                  placeholder="np. START2026"
-                />
-              </div>
-              <div style="min-width: 160px">
-                <label class="muted" style="font-weight: 900">Dni</label>
-                <input
-                  class="input"
-                  id="promoDays"
-                  min="0"
-                  placeholder="np. 30"
-                  step="1"
-                  type="number"
-                />
-              </div>
-              <div style="min-width: 170px">
-                <label class="muted" style="font-weight: 900">Wygasa</label>
-                <input class="input" id="promoExpires" type="date" />
-              </div>
-              <div style="min-width: 180px">
-                <label class="muted" style="font-weight: 900">Plan</label>
-                <select class="select" id="promoPlan">
-                  <option selected="" value="premium">premium</option>
-                  <option value="premium_a1">premium_a1 (A1+A2)</option>
-                  <option value="premium_b1">premium_b1 (A1+A2+B1)</option>
-                  <option value="premium_b2">premium_b2 (A1+A2+B1+B2)</option>
-                  <option value="VIP A1 + A2 + B1">VIP A1 + A2 + B1</option>
-                  <option value="VIP A1 + A2 + B1 + B2">
-                    VIP A1 + A2 + B1 + B2
-                  </option>
-                  <option value="a1">A1</option>
-                  <option value="a2">A2</option>
-                  <option value="b1">B1</option>
-                  <option value="b2">B2</option>
-                  <option value="free">free</option>
-                </select>
-              </div>
-              <div style="min-width: 220px; flex: 1">
-                <label class="muted" style="font-weight: 900">Notatka</label>
-                <input
-                  class="input"
-                  id="promoNote"
-                  placeholder="np. Tylko nowi uzytkownicy"
-                />
-              </div>
-              <label style="gap: 10px; align-items: center">
-                <input
-                  checked=""
-                  id="promoActive"
-                  style="width: 18px; height: 18px; margin: 0"
-                  type="checkbox"
-                />
-                Aktywny
-              </label>
-              <label style="gap: 10px; align-items: center">
-                <input
-                  checked=""
-                  id="promoStack"
-                  style="width: 18px; height: 18px; margin: 0"
-                  type="checkbox"
-                />
-                Sumuj dni
-              </label>
-              <label style="gap: 10px; align-items: center">
-                <input
-                  id="promoRepeat"
-                  style="width: 18px; height: 18px; margin: 0"
-                  type="checkbox"
-                />
-                Powtarzalny
-              </label>
-              <button class="btn-yellow" id="btnSavePromoCode" type="button">
-                Zapisz
-              </button>
-              <button
-                class="btn-white-outline"
-                id="btnClearPromoForm"
-                type="button"
-              >
-                Wyczysc
-              </button>
-              <span
-                class="hintSmall"
-                id="promoStatus"
-                style="margin-left: auto"
-              ></span>
-            </div>
-            <div class="hr"></div>
-            <div class="sectionTitle" style="margin-top: 0">
-              Lista kodow
-            </div>
-            <div class="list" id="promoListAdmin"></div>
-          </div>
-        </details>
-        <details class="card" id="accServices">
+        <div class=\"adminGroupTitle\">Sprzedaz i marketing</div>
+        <div class=\"adminGroup\">
+          <details class="card" id="accServices">
           <summary class="sectionTitle">
             Uslugi (oferta)
             <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
@@ -593,9 +359,321 @@
             <div class="list" id="servicesAdminList"></div>
           </div>
         </details>
+          <details class="card" id="accPayments">
+          <summary
+            class="sectionTitle"
+            style="cursor: pointer; list-style: none"
+          >
+            Platnosci
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(kliknij aby otworzyc/zamknac)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <p class="subtitle">
+              Podglad platnosci Stripe oraz prob checkoutu.
+            </p>
+            <div class="sectionTitle" style="margin-top: 0">Platnosci</div>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadPayments" type="button">
+                Wczytaj platnosci
+              </button>
+              <select class="select" id="paymentsStatus" style="min-width: 200px">
+                <option value="all">Wszystkie</option>
+                <option value="succeeded">Sukces</option>
+                <option value="pending">W toku</option>
+                <option value="failed">Nieudane</option>
+                <option value="expired">Wygasle</option>
+              </select>
+              <input
+                class="input"
+                id="paymentsSearch"
+                placeholder="Szukaj (email/uid/sku/session)..."
+                style="min-width: 260px"
+              />
+              <select class="select" id="paymentsLimit" style="min-width: 140px">
+                <option value="50">50</option>
+                <option value="100" selected="">100</option>
+                <option value="200">200</option>
+              </select>
+              <span class="hintSmall" id="paymentsStatusText"></span>
+            </div>
+            <div class="hintSmall" id="paymentsSummary" style="margin-top: 8px"></div>
+            <div id="paymentsList" class="list" style="margin-top: 12px"></div>
 
-        <!-- Uzytkownicy (akordeon - domyslnie zamkniety) -->
-        <details class="card" id="accUsers">
+            <div class="hr"></div>
+            <div class="sectionTitle" style="margin-top: 0">
+              Proby checkoutu
+            </div>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadAttempts" type="button">
+                Wczytaj proby
+              </button>
+              <select class="select" id="attemptsStatus" style="min-width: 200px">
+                <option value="all">Wszystkie</option>
+                <option value="created">Utworzone</option>
+                <option value="pending">W toku</option>
+                <option value="succeeded">Sukces</option>
+                <option value="failed">Nieudane</option>
+                <option value="expired">Wygasle</option>
+              </select>
+              <input
+                class="input"
+                id="attemptsSearch"
+                placeholder="Szukaj (email/uid/sku/session)..."
+                style="min-width: 260px"
+              />
+              <select class="select" id="attemptsLimit" style="min-width: 140px">
+                <option value="50">50</option>
+                <option value="100" selected="">100</option>
+                <option value="200">200</option>
+              </select>
+              <span class="hintSmall" id="attemptsStatusText"></span>
+            </div>
+            <div class="hintSmall" id="attemptsSummary" style="margin-top: 8px"></div>
+            <div id="attemptsList" class="list" style="margin-top: 12px"></div>
+          </div>
+        </details>
+          <details class="card" id="accPromo">
+          <summary
+            class="sectionTitle"
+            style="cursor: pointer; list-style: none"
+          >
+            Kody promo
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(kliknij aby otworzyc/zamknac)</span
+            >
+          </summary>
+          <div class="hr"></div>
+          <div class="sectionTitle" style="margin-top: 0">
+            Ustawienia polecen
+          </div>
+          <div
+            class="metaRow"
+            style="flex-wrap: wrap; gap: 10px; align-items: flex-end"
+          >
+            <div style="min-width: 220px">
+              <label class="muted" style="font-weight: 900">% znizki</label>
+              <input
+                class="input"
+                id="refOwnerPercent"
+                max="100"
+                min="0"
+                placeholder="np. 20"
+                step="1"
+                type="number"
+              />
+            </div>
+            <div style="min-width: 320px; flex: 1">
+              <label class="muted" style="font-weight: 900"
+                >Opis / zakres</label
+              >
+              <input
+                class="input"
+                id="refRewardScope"
+                placeholder="np. 20% en otros servicios"
+              />
+            </div>
+            <button
+              class="btn-yellow"
+              id="btnSaveReferralSettings"
+              type="button"
+            >
+              Zapisz
+            </button>
+            <span
+              class="hintSmall"
+              id="refSettingsStatus"
+              style="margin-left: auto"
+            ></span>
+          </div>
+          <div class="hintSmall" style="margin-top: 10px">
+            Zapisane w: <b>promo_codes/_REFERRAL_SETTINGS</b>
+          </div>
+
+          <div style="margin-top: 10px">
+            <p class="subtitle">
+              Tworz, aktywuj i wylaczaj kody. Uzytkownicy stosuja je w panelu.
+            </p>
+            <div
+              class="metaRow"
+              style="flex-wrap: wrap; gap: 10px; align-items: flex-end"
+            >
+              <div style="min-width: 220px">
+                <label class="muted" style="font-weight: 900"
+                  >Kod (ID)</label
+                >
+                <input
+                  class="input"
+                  id="promoCode"
+                  placeholder="np. START2026"
+                />
+              </div>
+              <div style="min-width: 160px">
+                <label class="muted" style="font-weight: 900">Dni</label>
+                <input
+                  class="input"
+                  id="promoDays"
+                  min="0"
+                  placeholder="np. 30"
+                  step="1"
+                  type="number"
+                />
+              </div>
+              <div style="min-width: 170px">
+                <label class="muted" style="font-weight: 900">Wygasa</label>
+                <input class="input" id="promoExpires" type="date" />
+              </div>
+              <div style="min-width: 180px">
+                <label class="muted" style="font-weight: 900">Plan</label>
+                <select class="select" id="promoPlan">
+                  <option selected="" value="premium">premium</option>
+                  <option value="premium_a1">premium_a1 (A1+A2)</option>
+                  <option value="premium_b1">premium_b1 (A1+A2+B1)</option>
+                  <option value="premium_b2">premium_b2 (A1+A2+B1+B2)</option>
+                  <option value="VIP A1 + A2 + B1">VIP A1 + A2 + B1</option>
+                  <option value="VIP A1 + A2 + B1 + B2">
+                    VIP A1 + A2 + B1 + B2
+                  </option>
+                  <option value="a1">A1</option>
+                  <option value="a2">A2</option>
+                  <option value="b1">B1</option>
+                  <option value="b2">B2</option>
+                  <option value="free">free</option>
+                </select>
+              </div>
+              <div style="min-width: 220px; flex: 1">
+                <label class="muted" style="font-weight: 900">Notatka</label>
+                <input
+                  class="input"
+                  id="promoNote"
+                  placeholder="np. Tylko nowi uzytkownicy"
+                />
+              </div>
+              <label style="gap: 10px; align-items: center">
+                <input
+                  checked=""
+                  id="promoActive"
+                  style="width: 18px; height: 18px; margin: 0"
+                  type="checkbox"
+                />
+                Aktywny
+              </label>
+              <label style="gap: 10px; align-items: center">
+                <input
+                  checked=""
+                  id="promoStack"
+                  style="width: 18px; height: 18px; margin: 0"
+                  type="checkbox"
+                />
+                Sumuj dni
+              </label>
+              <label style="gap: 10px; align-items: center">
+                <input
+                  id="promoRepeat"
+                  style="width: 18px; height: 18px; margin: 0"
+                  type="checkbox"
+                />
+                Powtarzalny
+              </label>
+              <button class="btn-yellow" id="btnSavePromoCode" type="button">
+                Zapisz
+              </button>
+              <button
+                class="btn-white-outline"
+                id="btnClearPromoForm"
+                type="button"
+              >
+                Wyczysc
+              </button>
+              <span
+                class="hintSmall"
+                id="promoStatus"
+                style="margin-left: auto"
+              ></span>
+            </div>
+            <div class="hr"></div>
+            <div class="sectionTitle" style="margin-top: 0">
+              Lista kodow
+            </div>
+            <div class="list" id="promoListAdmin"></div>
+          </div>
+        </details>
+          <details class="card" id="accSegments">
+          <summary
+            class="sectionTitle"
+            style="cursor: pointer; list-style: none"
+          >
+            Segmentacja (marketing)
+            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
+              >(kliknij aby otworzyc/zamknac)</span
+            >
+          </summary>
+          <div style="margin-top: 10px">
+            <p class="subtitle">
+              Szybkie listy: wygasa wkrotce, premium aktywny, bez dostepu (ok.).
+              Mozesz eksportowac CSV.
+            </p>
+            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
+              <button class="btn-white-outline" id="btnLoadExp0" type="button">
+                Wygasa dzis
+              </button>
+              <button class="btn-white-outline" id="btnLoadExp3" type="button">
+                Wygasa za 3 dni
+              </button>
+              <button class="btn-white-outline" id="btnLoadExp7" type="button">
+                Wygasa za 7 dni
+              </button>
+              <button class="btn-white-outline" id="btnLoadExp14" type="button">
+                Wygasa za 14 dni
+              </button>
+              <button
+                class="btn-white-outline"
+                id="btnLoadPremiumActive"
+                type="button"
+              >
+                Premium aktywny (accessUntil)
+              </button>
+              <button
+                class="btn-white-outline"
+                id="btnLoadFreeUsers"
+                type="button"
+              >
+                Bez dostepu (ok.)
+              </button>
+              <button
+                class="btn-white-outline"
+                id="btnLoadOneTopic"
+                type="button"
+              >
+                Tylko 1 temat
+              </button>
+              <button
+                class="btn-white-outline"
+                id="btnLoadOneTopicInactive"
+                type="button"
+              >
+                1 temat - nieaktywny 7 dni
+              </button>
+              <button class="btn-yellow" id="btnExportSegment" type="button">
+                Eksportuj CSV
+              </button>
+              <span
+                class="hintSmall"
+                id="segmentStatus"
+                style="margin-left: auto"
+              ></span>
+            </div>
+            <div class="hr"></div>
+            <div class="sectionTitle" style="margin-top: 0">Wyniki</div>
+            <div class="list" id="segmentList"></div>
+          </div>
+        </details>
+        </div>
+
+        <div class=\"adminGroupTitle\">Uzytkownicy i postepy</div>
+        <div class=\"adminGroup\">
+          <details class="card" id="accUsers">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
@@ -670,9 +748,7 @@
             </div>
           </div>
         </details>
-
-        <!-- Postepy (analiza) -->
-        <details class="card" id="accProgress">
+          <details class="card" id="accProgress">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
@@ -716,9 +792,7 @@
             </div>
           </div>
         </details>
-
-        <!-- Fiszki (statystyki) -->
-        <details class="card" id="accFlashcards">
+          <details class="card" id="accFlashcards">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
@@ -751,9 +825,11 @@
             <div id="flashcardsList" class="muted" style="margin-top: 10px"></div>
           </div>
         </details>
+        </div>
 
-        <!-- Opinie i oceny -->
-        <details class="card" id="accReviews">
+        <div class=\"adminGroupTitle\">Opinie i jakosc</div>
+        <div class=\"adminGroup\">
+          <details class="card" id="accReviews">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
@@ -803,84 +879,11 @@
             </div>
           </div>
         </details>
+        </div>
 
-        <!-- Platnosci -->
-        <details class="card" id="accPayments">
-          <summary
-            class="sectionTitle"
-            style="cursor: pointer; list-style: none"
-          >
-            Platnosci
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
-          <div style="margin-top: 10px">
-            <p class="subtitle">
-              Podglad platnosci Stripe oraz prob checkoutu.
-            </p>
-            <div class="sectionTitle" style="margin-top: 0">Platnosci</div>
-            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
-              <button class="btn-white-outline" id="btnLoadPayments" type="button">
-                Wczytaj platnosci
-              </button>
-              <select class="select" id="paymentsStatus" style="min-width: 200px">
-                <option value="all">Wszystkie</option>
-                <option value="succeeded">Sukces</option>
-                <option value="pending">W toku</option>
-                <option value="failed">Nieudane</option>
-                <option value="expired">Wygasle</option>
-              </select>
-              <input
-                class="input"
-                id="paymentsSearch"
-                placeholder="Szukaj (email/uid/sku/session)..."
-                style="min-width: 260px"
-              />
-              <select class="select" id="paymentsLimit" style="min-width: 140px">
-                <option value="50">50</option>
-                <option value="100" selected="">100</option>
-                <option value="200">200</option>
-              </select>
-              <span class="hintSmall" id="paymentsStatusText"></span>
-            </div>
-            <div id="paymentsList" class="list" style="margin-top: 12px"></div>
-
-            <div class="hr"></div>
-            <div class="sectionTitle" style="margin-top: 0">
-              Proby checkoutu
-            </div>
-            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
-              <button class="btn-white-outline" id="btnLoadAttempts" type="button">
-                Wczytaj proby
-              </button>
-              <select class="select" id="attemptsStatus" style="min-width: 200px">
-                <option value="all">Wszystkie</option>
-                <option value="created">Utworzone</option>
-                <option value="pending">W toku</option>
-                <option value="succeeded">Sukces</option>
-                <option value="failed">Nieudane</option>
-                <option value="expired">Wygasle</option>
-              </select>
-              <input
-                class="input"
-                id="attemptsSearch"
-                placeholder="Szukaj (email/uid/sku/session)..."
-                style="min-width: 260px"
-              />
-              <select class="select" id="attemptsLimit" style="min-width: 140px">
-                <option value="50">50</option>
-                <option value="100" selected="">100</option>
-                <option value="200">200</option>
-              </select>
-              <span class="hintSmall" id="attemptsStatusText"></span>
-            </div>
-            <div id="attemptsList" class="list" style="margin-top: 12px"></div>
-          </div>
-        </details>
-
-        <!-- Logi aplikacji -->
-        <details class="card" id="accAppLogs">
+        <div class=\"adminGroupTitle\">Techniczne i multimedia</div>
+        <div class=\"adminGroup\">
+          <details class="card" id="accAppLogs">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
@@ -928,9 +931,7 @@
             </div>
           </div>
         </details>
-
-        <!-- Biblioteka audio -->
-        <details class="card" id="accAudioLib">
+          <details class="card" id="accAudioLib">
           <summary
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
@@ -963,6 +964,7 @@
             <div id="audioLibList" class="muted" style="margin-top: 10px"></div>
           </div>
         </details>
+        </div>
       </div>
     </main>
     <!-- Modal: Edit user access -->
@@ -1145,6 +1147,7 @@
     <script src="assets/js/pages/esadmin-page.js" type="module"></script>
   </body>
 </html>
+
 
 
 

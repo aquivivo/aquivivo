@@ -1623,6 +1623,129 @@ function paymentStatusOf(p) {
     .toLowerCase();
 }
 
+function statusLabel(status) {
+  switch (status) {
+    case 'succeeded':
+    case 'paid':
+      return 'SUKCES';
+    case 'failed':
+      return 'NIEUDANE';
+    case 'pending':
+      return 'W TOKU';
+    case 'expired':
+      return 'WYGASLE';
+    default:
+      return status ? status.toUpperCase() : 'NIEZNANY';
+  }
+}
+
+function statusClass(status) {
+  switch (status) {
+    case 'succeeded':
+    case 'paid':
+      return 'status-pill--success';
+    case 'failed':
+      return 'status-pill--failed';
+    case 'pending':
+      return 'status-pill--pending';
+    case 'expired':
+      return 'status-pill--expired';
+    default:
+      return '';
+  }
+}
+
+function renderStatusPill(statusRaw) {
+  const status = String(statusRaw || '').toLowerCase();
+  return `<span class="status-pill ${statusClass(status)}">${esc(
+    statusLabel(status),
+  )}</span>`;
+}
+
+function summarizePayments() {
+  const el = $('paymentsSummary');
+  if (!el) return;
+  if (!paymentsCache.length) {
+    el.textContent = '';
+    return;
+  }
+
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startWeek = new Date(startToday);
+  startWeek.setDate(startWeek.getDate() - 6);
+
+  const agg = {
+    today: { count: 0, totals: {} },
+    week: { count: 0, totals: {} },
+  };
+
+  for (const p of paymentsCache) {
+    const status = paymentStatusOf(p);
+    if (status !== 'succeeded' && status !== 'paid') continue;
+    const d = toDateMaybe(p.createdAt || p.updatedAt || p.stripeCreatedAt);
+    if (!d) continue;
+    const amount = Number(p.amountTotal ?? p.amount_total);
+    const currency = String(p.currency || '').toUpperCase();
+    if (d >= startToday) {
+      agg.today.count += 1;
+      if (!Number.isNaN(amount)) {
+        agg.today.totals[currency] = (agg.today.totals[currency] || 0) + amount;
+      }
+    }
+    if (d >= startWeek) {
+      agg.week.count += 1;
+      if (!Number.isNaN(amount)) {
+        agg.week.totals[currency] = (agg.week.totals[currency] || 0) + amount;
+      }
+    }
+  }
+
+  const fmtTotals = (totals) => {
+    const parts = Object.entries(totals).map(([cur, amt]) =>
+      formatMoney(amt, cur),
+    );
+    return parts.length ? parts.join(' / ') : '-';
+  };
+
+  el.textContent = `Dzis: ${agg.today.count} ( ${fmtTotals(agg.today.totals)} )  ·  7 dni: ${agg.week.count} ( ${fmtTotals(agg.week.totals)} )`;
+}
+
+function summarizeAttempts() {
+  const el = $('attemptsSummary');
+  if (!el) return;
+  if (!attemptsCache.length) {
+    el.textContent = '';
+    return;
+  }
+
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startWeek = new Date(startToday);
+  startWeek.setDate(startWeek.getDate() - 6);
+
+  let today = 0;
+  let week = 0;
+  let todayFailed = 0;
+  let weekFailed = 0;
+
+  for (const p of attemptsCache) {
+    const d = toDateMaybe(p.createdAt || p.updatedAt);
+    if (!d) continue;
+    const status = String(p.status || '').toLowerCase();
+    if (d >= startToday) {
+      today += 1;
+      if (status === 'failed' || status === 'expired') todayFailed += 1;
+    }
+    if (d >= startWeek) {
+      week += 1;
+      if (status === 'failed' || status === 'expired') weekFailed += 1;
+    }
+  }
+
+  el.textContent = `Dzis: ${today} (blad/wygasle: ${todayFailed})  ·  7 dni: ${week} (blad/wygasle: ${weekFailed})`;
+}
+
 function renderPayments() {
   const list = $('paymentsList');
   if (!list) return;
@@ -1668,7 +1791,7 @@ function renderPayments() {
           <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
             <div>
               <div style="font-weight:900;">${plan}</div>
-              <div class="hintSmall">status: ${esc(statusTxt)}  -  kwota: ${esc(amount)}  -  ${esc(date)}</div>
+              <div class="hintSmall" style="margin-top:6px;">${renderStatusPill(statusTxt)}  <span style="margin-left:8px;">kwota: ${esc(amount)}  -  ${esc(date)}</span></div>
               <div class="hintSmall">user: ${email}</div>
               <div class="hintSmall">session: ${sessionId}</div>
             </div>
@@ -1677,6 +1800,7 @@ function renderPayments() {
       `;
     })
     .join('');
+  summarizePayments();
 }
 
 async function loadPayments() {
@@ -1693,6 +1817,7 @@ async function loadPayments() {
     paymentsCache = [];
     snap.forEach((d) => paymentsCache.push({ id: d.id, ...(d.data() || {}) }));
     renderPayments();
+    summarizePayments();
     setStatus($('paymentsStatusText'), `Gotowe (${paymentsCache.length})`);
   } catch (e) {
     console.error('[payments]', e);
@@ -1744,7 +1869,7 @@ function renderAttempts() {
   list.innerHTML = items
     .map((p) => {
       const email = esc(p.email || '(brak emaila)');
-      const statusTxt = esc(String(p.status || 'unknown'));
+      const statusTxt = String(p.status || 'unknown');
       const date = formatPaymentDate(p.createdAt || p.updatedAt);
       const plan = esc(p.planSku || p.planId || '-');
       const sessionId = esc(p.stripeSessionId || '-');
@@ -1754,7 +1879,7 @@ function renderAttempts() {
           <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
             <div>
               <div style="font-weight:900;">${plan}</div>
-              <div class="hintSmall">status: ${statusTxt}  -  ${esc(date)}</div>
+              <div class="hintSmall" style="margin-top:6px;">${renderStatusPill(statusTxt)}  <span style="margin-left:8px;">${esc(date)}</span></div>
               <div class="hintSmall">user: ${email}</div>
               <div class="hintSmall">session: ${sessionId}</div>
               ${err ? `<div class="hintSmall">blad: ${err}</div>` : ''}
@@ -1764,6 +1889,7 @@ function renderAttempts() {
       `;
     })
     .join('');
+  summarizeAttempts();
 }
 
 async function loadAttempts() {
@@ -1784,6 +1910,7 @@ async function loadAttempts() {
     attemptsCache = [];
     snap.forEach((d) => attemptsCache.push({ id: d.id, ...(d.data() || {}) }));
     renderAttempts();
+    summarizeAttempts();
     setStatus($('attemptsStatusText'), `Gotowe (${attemptsCache.length})`);
   } catch (e) {
     console.error('[attempts]', e);

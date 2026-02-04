@@ -1045,6 +1045,37 @@ body[data-page='course'] .courseCard.isInProgress .card {
   backdrop-filter: blur(10px);
   width: 100%;
 }
+body[data-page='esadmin'] .adminGroupTitle {
+  margin: 24px 0 10px;
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 0.3px;
+}
+body[data-page='esadmin'] .adminGroup {
+  display: grid;
+  gap: 14px;
+}
+body[data-page='esadmin'] details.card {
+  padding: 18px 20px;
+  border-radius: 22px;
+}
+body[data-page='esadmin'] details.card .sectionTitle {
+  font-size: 18px;
+}
+body[data-page='esadmin'] details.card .subtitle {
+  font-size: 14px;
+}
+body[data-page='esadmin'] details.card .metaRow {
+  gap: 8px;
+}
+body[data-page='esadmin'] .list {
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+body[data-page='esadmin'] .listItem {
+  padding: 10px 12px;
+  border-radius: 16px;
+}
 
 /* Admin progress error details */
 .progressErrorsBox {
@@ -2676,6 +2707,39 @@ h3 {
   background: #ffffff;
   border-color: rgba(252, 209, 22, 0.9);
   color: var(--blue);
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.status-pill--success {
+  background: rgba(46, 204, 113, 0.2);
+  border-color: rgba(46, 204, 113, 0.6);
+  color: #baf7d2;
+}
+.status-pill--failed {
+  background: rgba(231, 76, 60, 0.2);
+  border-color: rgba(231, 76, 60, 0.6);
+  color: #ffd0cc;
+}
+.status-pill--pending {
+  background: rgba(241, 196, 15, 0.2);
+  border-color: rgba(241, 196, 15, 0.6);
+  color: #ffe9a6;
+}
+.status-pill--expired {
+  background: rgba(149, 165, 166, 0.2);
+  border-color: rgba(149, 165, 166, 0.6);
+  color: #e5eff0;
 }
 .method-level {
   text-align: center;
