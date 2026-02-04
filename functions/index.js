@@ -50,6 +50,29 @@ function normalizePlan(planId) {
     .replace(/\s+/g, ' ');
 }
 
+function parseAccessDays(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}
+
+function normalizeAccessLevels(raw) {
+  if (Array.isArray(raw)) {
+    return raw
+      .map((v) => String(v || '').trim().toUpperCase())
+      .filter((v) => ['A1', 'A2', 'B1', 'B2'].includes(v));
+  }
+  const str = String(raw || '').trim();
+  if (!str) return [];
+  const parts = str.replace(/\+/g, ' ').split(/[,\s]+/).filter(Boolean);
+  const out = [];
+  for (const p of parts) {
+    const up = String(p).trim().toUpperCase();
+    if (['A1', 'A2', 'B1', 'B2'].includes(up)) out.push(up);
+  }
+  return [...new Set(out)];
+}
+
 async function getPriceFromServices(planIdRaw) {
   const planKey = normalizePlan(planIdRaw);
   if (!planIdRaw && !planKey) return null;
@@ -71,12 +94,31 @@ async function getPriceFromServices(planIdRaw) {
   if (snap.empty) return null;
   const doc = snap.docs[0];
   const data = doc.data() || {};
+  const accessDays = parseAccessDays(data.accessDays);
+  const accessLevels = normalizeAccessLevels(data.accessLevels);
   return {
     priceId: data.stripePriceId || data.priceId || '',
     active: data.active !== false,
     sku: data.sku || planIdRaw,
     id: doc.id,
     planKey,
+    accessDays,
+    accessLevels,
+  };
+}
+
+async function getServiceById(serviceId) {
+  if (!serviceId) return null;
+  const snap = await db.doc(`services/${serviceId}`).get();
+  if (!snap.exists) return null;
+  const data = snap.data() || {};
+  return {
+    id: snap.id,
+    sku: data.sku || snap.id,
+    planKey: normalizePlan(data.sku || snap.id),
+    active: data.active !== false,
+    accessDays: parseAccessDays(data.accessDays),
+    accessLevels: normalizeAccessLevels(data.accessLevels),
   };
 }
 
@@ -180,12 +222,21 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const uid = session.metadata?.uid || session.client_reference_id;
-      const planId = normalizePlan(session.metadata?.planId);
+      const planSku = session.metadata?.planSku || session.metadata?.planId;
+      const planId = normalizePlan(planSku);
+      const serviceId = session.metadata?.serviceId;
 
-      const levels = PLAN_TO_LEVELS[planId];
-      const days = PLAN_TO_DAYS[planId];
+      let service = null;
+      if (serviceId) service = await getServiceById(serviceId);
+      if (!service && planSku) service = await getPriceFromServices(planSku);
 
-      if (uid && levels && days) {
+      const levels =
+        service?.accessLevels?.length
+          ? service.accessLevels
+          : PLAN_TO_LEVELS[planId] || [];
+      const days = service?.accessDays || PLAN_TO_DAYS[planId];
+
+      if (uid && days) {
         const userRef = db.doc(`users/${uid}`);
 
         await db.runTransaction(async (tx) => {

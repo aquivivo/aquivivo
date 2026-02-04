@@ -150,14 +150,26 @@ const PLAN_DAYS = {
   'vip a1 + a2 + b1 + b2': 30,
 };
 
+const servicesPlanCache = new Map();
+
+function parseAccessDays(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}
+
 function computeLevelsForPlan(planId) {
+  const key = normalizePlanKey(planId);
+  const svc = servicesPlanCache.get(key);
+  if (svc?.accessLevels?.length) return [...svc.accessLevels];
   return levelsFromPlan(planId);
 }
 
 function computeUntilForPlan(planId) {
   const p = normalizePlanKey(planId);
-  const days = PLAN_DAYS[p];
-  if (!days) return null;
+  const svc = servicesPlanCache.get(p);
+  const days = svc?.accessDays || PLAN_DAYS[p];
+  if (!days || !Number.isFinite(days)) return null;
   const d = new Date();
   d.setDate(d.getDate() + Number(days));
   return d;
@@ -565,6 +577,13 @@ function fillServiceForm(id, s) {
   if ($('svcDesc')) $('svcDesc').value = s.desc || '';
   if ($('svcPrice')) $('svcPrice').value = s.price || '';
   if ($('svcBadge')) $('svcBadge').value = s.badge || '';
+  if ($('svcAccessDays'))
+    $('svcAccessDays').value =
+      s.accessDays != null && s.accessDays !== ''
+        ? String(s.accessDays)
+        : '';
+  if ($('svcAccessLevels'))
+    $('svcAccessLevels').value = formatServiceLevels(s.accessLevels);
   if ($('svcOrder')) $('svcOrder').value = String(Number(s.order || 0));
   if ($('svcCtaType')) $('svcCtaType').value = s.ctaType || 'info';
   if ($('svcStripePriceId')) $('svcStripePriceId').value = s.stripePriceId || '';
@@ -572,6 +591,28 @@ function fillServiceForm(id, s) {
   if ($('svcCtaLabel')) $('svcCtaLabel').value = s.ctaLabel || '';
   if ($('svcActive'))
     $('svcActive').value = s.active === false ? 'false' : 'true';
+}
+
+function parseServiceLevels(raw) {
+  if (Array.isArray(raw)) {
+    return raw
+      .map((v) => String(v || '').trim().toUpperCase())
+      .filter((v) => ['A1', 'A2', 'B1', 'B2'].includes(v));
+  }
+  const str = String(raw || '').trim();
+  if (!str) return [];
+  const parts = str.replace(/\+/g, ' ').split(/[,\s]+/).filter(Boolean);
+  const out = [];
+  parts.forEach((p) => {
+    const up = String(p).trim().toUpperCase();
+    if (['A1', 'A2', 'B1', 'B2'].includes(up)) out.push(up);
+  });
+  return [...new Set(out)];
+}
+
+function formatServiceLevels(raw) {
+  const levels = parseServiceLevels(raw);
+  return levels.length ? levels.join(',') : '';
 }
 
 function renderServiceRow(id, s) {
@@ -584,13 +625,20 @@ function renderServiceRow(id, s) {
       : s.ctaType === 'stripe'
         ? '  -  stripe: brak priceId'
         : '';
+  const levelsText = formatServiceLevels(s.accessLevels);
+  const accessInfo = [
+    s.accessDays ? `dni: ${esc(s.accessDays)}` : '',
+    levelsText ? `poziomy: ${esc(levelsText)}` : '',
+  ]
+    .filter(Boolean)
+    .join('  -  ');
   return `
     <div class="listItem${catClass}">
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${esc(s.title || id)}</div>
           <div class="hintSmall">SKU: ${esc(id)}  -  cat: ${esc(s.category || 'extras')}  -  ${active}</div>
-          <div class="hintSmall">${s.price ? ' ' + esc(s.price) : ''}${s.badge ? '  -   ' + esc(s.badge) : ''}${stripeInfo}</div>
+          <div class="hintSmall">${s.price ? ' ' + esc(s.price) : ''}${s.badge ? '  -   ' + esc(s.badge) : ''}${stripeInfo}${accessInfo ? '  -  ' + accessInfo : ''}</div>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn-white-outline" type="button" data-svc="edit" data-id="${esc(id)}">Edytuj</button>
@@ -610,11 +658,29 @@ async function loadServicesList() {
   list.innerHTML = '<div class="hintSmall">Ladowanie...</div>';
 
   try {
+    servicesPlanCache.clear();
     const snap = await getDocs(
       query(collection(db, 'services'), orderBy('order', 'asc'), limit(500)),
     );
     const rows = [];
-    snap.forEach((d) => rows.push(renderServiceRow(d.id, d.data() || {})));
+    snap.forEach((d) => {
+      const data = d.data() || {};
+      const sku = data.sku || d.id;
+      const key = normalizePlanKey(sku);
+      const accessLevels = parseServiceLevels(data.accessLevels);
+      const accessDays = parseAccessDays(data.accessDays);
+      const cached = {
+        accessLevels,
+        accessDays,
+        sku,
+        id: d.id,
+      };
+      if (key) servicesPlanCache.set(key, cached);
+      const idKey = normalizePlanKey(d.id);
+      if (idKey && !servicesPlanCache.has(idKey))
+        servicesPlanCache.set(idKey, cached);
+      rows.push(renderServiceRow(d.id, data));
+    });
     list.innerHTML = rows.length
       ? rows.join('')
       : '<div class="hintSmall"></div>';
@@ -629,6 +695,18 @@ async function saveService() {
   const sku = String($('svcSku')?.value || '').trim();
   if (!sku) return setStatus(st, 'Brak SKU.', true);
 
+  const accessDaysRaw = String($('svcAccessDays')?.value || '').trim();
+  const accessDays =
+    accessDaysRaw !== '' ? Number(accessDaysRaw || 0) : null;
+  if (
+    accessDaysRaw !== '' &&
+    (!Number.isFinite(accessDays) || accessDays <= 0)
+  ) {
+    return setStatus(st, 'Dni dostepu musza byc > 0.', true);
+  }
+
+  const accessLevels = parseServiceLevels($('svcAccessLevels')?.value || '');
+
   const skuLower = normalizePlanKey(sku);
   const payload = {
     sku,
@@ -638,6 +716,8 @@ async function saveService() {
     desc: String($('svcDesc')?.value || '').trim(),
     price: String($('svcPrice')?.value || '').trim(),
     badge: String($('svcBadge')?.value || '').trim(),
+    accessDays: accessDays ?? null,
+    accessLevels: accessLevels.length ? accessLevels : null,
     order: Number($('svcOrder')?.value || 0),
     ctaType: String($('svcCtaType')?.value || 'info').trim(),
     stripePriceId: String($('svcStripePriceId')?.value || '').trim(),
