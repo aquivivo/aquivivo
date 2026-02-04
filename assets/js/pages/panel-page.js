@@ -768,6 +768,7 @@ const btnAvatarUpload = $('btnAvatarUpload');
 const btnAvatarRemove = $('btnAvatarRemove');
 const avatarMsg = $('avatarMsg');
 const setDisplayName = $('setDisplayName');
+const setHandle = $('setHandle');
 const setGender = $('setGender');
 const setLang = $('setLang');
 const setGoal = $('setGoal');
@@ -899,6 +900,47 @@ function normName(value) {
   return String(value || '').trim().toLowerCase();
 }
 
+function normHandle(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isValidHandle(value) {
+  if (!value) return true;
+  return /^[a-z0-9_]{3,20}$/.test(value);
+}
+
+function usePrettyProfile() {
+  const host = location.hostname || '';
+  if (!host) return false;
+  if (host === 'localhost' || host === '127.0.0.1') return false;
+  return true;
+}
+
+function buildProfileHref(handle, uid) {
+  const safeHandle = String(handle || '').trim();
+  if (safeHandle) {
+    if (usePrettyProfile()) {
+      return `/perfil/${encodeURIComponent(safeHandle)}`;
+    }
+    return `perfil.html?u=${encodeURIComponent(safeHandle)}`;
+  }
+  return `perfil.html?uid=${encodeURIComponent(uid)}`;
+}
+
+async function isHandleAvailable(handleLower, myUid) {
+  if (!handleLower) return true;
+  const snap = await getDocs(
+    query(
+      collection(db, 'public_users'),
+      where('handleLower', '==', handleLower),
+      limit(1),
+    ),
+  );
+  if (snap.empty) return true;
+  const hit = snap.docs[0];
+  return hit?.id === myUid;
+}
+
 async function generateUniqueFriendCode() {
   for (let i = 0; i < 6; i += 1) {
     const code = genFriendCode();
@@ -941,9 +983,10 @@ async function ensurePublicProfile(uid, userDoc, email) {
   const displayName =
     String(userDoc?.displayName || userDoc?.name || '') ||
     String(email || '').split('@')[0];
+  const handle = String(userDoc?.handle || '').trim();
   const photoURL = String(userDoc?.photoURL || '');
-  const userEmail = String(email || '').trim();
   const displayNameLower = normName(displayName);
+  const handleLower = normHandle(handle);
   const publicProfile = userDoc?.publicProfile !== false;
   const allowFriendRequests = userDoc?.allowFriendRequests !== false;
   const allowMessages = userDoc?.allowMessages !== false;
@@ -953,14 +996,17 @@ async function ensurePublicProfile(uid, userDoc, email) {
     const updates = {};
     if (displayName && displayName !== data.displayName) updates.displayName = displayName;
     if (photoURL !== data.photoURL) updates.photoURL = photoURL;
-    if (userEmail && userEmail !== data.email) updates.email = userEmail;
     if (displayNameLower && displayNameLower !== data.displayNameLower)
       updates.displayNameLower = displayNameLower;
+    if (handle && handle !== data.handle) updates.handle = handle;
+    if (handleLower && handleLower !== data.handleLower)
+      updates.handleLower = handleLower;
     if (data.publicProfile !== publicProfile) updates.publicProfile = publicProfile;
     if (data.allowFriendRequests !== allowFriendRequests)
       updates.allowFriendRequests = allowFriendRequests;
     if (data.allowMessages !== allowMessages) updates.allowMessages = allowMessages;
     if (!data.friendCode) updates.friendCode = await generateUniqueFriendCode();
+    if (data.email) updates.email = null;
     if (Object.keys(updates).length) {
       updates.updatedAt = serverTimestamp();
       await updateDoc(ref, updates);
@@ -978,13 +1024,14 @@ async function ensurePublicProfile(uid, userDoc, email) {
     photoURL,
     friendCode,
     displayNameLower,
+    handle,
+    handleLower,
     publicProfile,
     allowFriendRequests,
     allowMessages,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
-  if (userEmail) payload.email = userEmail;
   await setDoc(ref, payload);
   publicProfileCache.set(uid, payload);
   return payload;
@@ -1017,6 +1064,7 @@ function renderFriendRequests(items) {
   }
   friendRequestsList.innerHTML = '';
   items.forEach((req) => {
+    const handle = req.handle ? `@${req.handle}` : '';
     const wrap = document.createElement('div');
     wrap.className = 'friendItem';
     wrap.innerHTML = `
@@ -1024,6 +1072,7 @@ function renderFriendRequests(items) {
         <span class="friendAvatar">${friendAvatarLetter(req.name)}</span>
         <div>
           <div class="friendName">${req.name || 'Usuario'}</div>
+          ${handle ? `<div class="friendHint">${handle}</div>` : ''}
         </div>
       </div>
       <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
@@ -1043,6 +1092,8 @@ function renderFriends(items) {
   }
   friendsList.innerHTML = '';
   items.forEach((friend) => {
+    const handle = friend.handle ? `@${friend.handle}` : '';
+    const profileHref = buildProfileHref(friend.handle, friend.uid);
     const wrap = document.createElement('div');
     wrap.className = 'friendItem';
     wrap.innerHTML = `
@@ -1050,12 +1101,11 @@ function renderFriends(items) {
         <span class="friendAvatar">${friendAvatarLetter(friend.name)}</span>
         <div>
           <div class="friendName">${friend.name || 'Usuario'}</div>
+          ${handle ? `<div class="friendHint">${handle}</div>` : ''}
         </div>
       </div>
       <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
-        <a class="btn-white-outline" href="perfil.html?uid=${encodeURIComponent(
-          friend.uid,
-        )}">Perfil</a>
+        <a class="btn-white-outline" href="${profileHref}">Perfil</a>
         <button class="btn-white-outline" type="button" data-chat="${friend.uid}">Mensaje</button>
         <button class="btn-white-outline" type="button" data-remove="${friend.uid}">Eliminar</button>
         <button class="btn-white-outline" type="button" data-block="${friend.uid}">Bloquear</button>
@@ -1178,7 +1228,7 @@ async function loadFriendRequests(uid) {
       return {
         ...r,
         name: profile?.displayName || '',
-        email: profile?.email || '',
+        handle: profile?.handle || '',
       };
     }),
   );
@@ -1214,7 +1264,7 @@ async function loadFriends(uid) {
       return {
         uid: fuid,
         name: profile?.displayName || '',
-        email: profile?.email || '',
+        handle: profile?.handle || '',
       };
     }),
   );
@@ -1230,10 +1280,6 @@ async function sendFriendRequestToUid(myUid, targetUid) {
     return;
   }
   const targetProfile = await getPublicProfile(targetUid);
-  if (targetProfile?.publicProfile === false) {
-    setFriendReqMsg('Perfil privado.', true);
-    return;
-  }
   if (targetProfile?.allowFriendRequests === false) {
     setFriendReqMsg('No acepta solicitudes.', true);
     return;
@@ -1400,19 +1446,20 @@ function renderSearchResults(items, myUid) {
   communitySearchResults.innerHTML = '';
   items.forEach((item) => {
     const name = item.displayName || item.name || 'Usuario';
+    const handle = item.handle ? `@${item.handle}` : '';
     const wrap = document.createElement('div');
     wrap.className = 'friendItem';
+    const profileHref = buildProfileHref(item.handle, item.uid);
     wrap.innerHTML = `
       <div class="friendMeta">
         <span class="friendAvatar">${friendAvatarLetter(name)}</span>
         <div>
           <div class="friendName">${name}</div>
+          ${handle ? `<div class="friendHint">${handle}</div>` : ''}
         </div>
       </div>
       <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
-        <a class="btn-white-outline" href="perfil.html?uid=${encodeURIComponent(
-          item.uid,
-        )}">Ver perfil</a>
+        <a class="btn-white-outline" href="${profileHref}">Ver perfil</a>
         ${
           item.uid !== myUid
             ? `<button class="btn-white-outline" type="button" data-add="${item.uid}">Agregar</button>`
@@ -1432,17 +1479,30 @@ async function searchPublicUsers(myUid, term) {
   }
   setCommunitySearchMsg('Buscando...');
   try {
-    const snap = await getDocs(
-      query(
-        collection(db, 'public_users'),
-        orderBy('displayNameLower'),
-        startAt(q),
-        endAt(`${q}\uf8ff`),
-        limit(12),
-      ),
+    const nameQuery = query(
+      collection(db, 'public_users'),
+      orderBy('displayNameLower'),
+      startAt(q),
+      endAt(`${q}\uf8ff`),
+      limit(10),
     );
-    const results = (snap.docs || [])
-      .map((d) => ({ uid: d.id, ...(d.data() || {}) }))
+    const handleQuery = query(
+      collection(db, 'public_users'),
+      orderBy('handleLower'),
+      startAt(q),
+      endAt(`${q}\uf8ff`),
+      limit(10),
+    );
+    const [byName, byHandle] = await Promise.all([
+      getDocs(nameQuery),
+      getDocs(handleQuery),
+    ]);
+    const merged = new Map();
+    [...(byName.docs || []), ...(byHandle.docs || [])].forEach((d) => {
+      if (!d?.id) return;
+      if (!merged.has(d.id)) merged.set(d.id, { uid: d.id, ...(d.data() || {}) });
+    });
+    const results = Array.from(merged.values())
       .filter((d) => d.publicProfile !== false)
       .filter((d) => d.uid !== myUid);
     renderSearchResults(results, myUid);
@@ -1745,6 +1805,7 @@ function renderMyRefCode(userDoc) {
 }
 
 function renderUserSettings(userDoc, isPreview) {
+  if (setHandle) setHandle.value = String(userDoc?.handle || '');
   if (setDisplayName)
     setDisplayName.value = userDoc?.displayName || userDoc?.name || '';
   if (setGender) setGender.value = String(userDoc?.gender || '');
@@ -1760,6 +1821,7 @@ function renderUserSettings(userDoc, isPreview) {
     setAllowMessages.checked = userDoc?.allowMessages !== false;
 
   const inputs = [
+    setHandle,
     setDisplayName,
     setGender,
     setLang,
@@ -1785,8 +1847,20 @@ function renderUserSettings(userDoc, isPreview) {
       const user = auth.currentUser;
       if (!user?.uid) return;
       setSettingsMsg('Guardando...');
+      const rawHandle = normHandle(setHandle?.value || '');
+      if (!isValidHandle(rawHandle)) {
+        setSettingsMsg('Usuario inválido. Usa 3-20 letras/números/_', true);
+        return;
+      }
+      const available = await isHandleAvailable(rawHandle, user.uid);
+      if (!available) {
+        setSettingsMsg('Ese usuario ya existe.', true);
+        return;
+      }
       try {
         await updateDoc(doc(db, 'users', user.uid), {
+          handle: rawHandle || '',
+          handleLower: rawHandle || '',
           displayName: String(setDisplayName?.value || '').trim(),
           gender: String(setGender?.value || '').trim(),
           lang: String(setLang?.value || 'es').trim(),
@@ -1798,6 +1872,8 @@ function renderUserSettings(userDoc, isPreview) {
           updatedAt: serverTimestamp(),
         });
         await upsertPublicProfile(user.uid, {
+          handle: rawHandle || '',
+          handleLower: rawHandle || '',
           displayName: String(setDisplayName?.value || '').trim(),
           publicProfile: !!setPublicProfile?.checked,
           allowFriendRequests: !!setAllowFriendRequests?.checked,

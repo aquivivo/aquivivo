@@ -39,6 +39,22 @@ function esc(s) {
     .replace(/"/g, '&quot;');
 }
 
+function usePrettyProfile() {
+  const host = location.hostname || '';
+  if (!host) return false;
+  if (host === 'localhost' || host === '127.0.0.1') return false;
+  return true;
+}
+
+function buildProfileHref(handle, uid) {
+  const safeHandle = String(handle || '').trim();
+  if (safeHandle) {
+    if (usePrettyProfile()) return `/perfil/${encodeURIComponent(safeHandle)}`;
+    return `perfil.html?u=${encodeURIComponent(safeHandle)}`;
+  }
+  return `perfil.html?uid=${encodeURIComponent(uid)}`;
+}
+
 function normText(value) {
   return String(value || '')
     .toLowerCase()
@@ -1427,6 +1443,9 @@ async function loadProgressForUsers(uids) {
 
 function renderUserRow(uid, u) {
   const email = esc(u.email || u.emailLower || '(brak emaila)');
+  const handleRaw = String(u.handle || '').trim();
+  const handleLabel = handleRaw ? `@${handleRaw}` : '';
+  const profileHref = buildProfileHref(handleRaw, uid);
   const role = esc(u.role || 'user');
   const plan = esc(u.plan || '');
   const until = isoDate(u.accessUntil);
@@ -1452,11 +1471,13 @@ function renderUserRow(uid, u) {
       <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:900;">${email} ${blocked}</div>
+          ${handleLabel ? `<div class="hintSmall">${esc(handleLabel)}</div>` : ''}
           <div class="hintSmall">uid: ${esc(uid)}  -  role: ${role}  -  access: ${access}${plan ? '  -  plan: ' + plan : ''}${until ? '  -  until: ' + esc(until) : ''}</div>
           <div class="hintSmall">${esc(progressSummary)}</div>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
           ${statusBadge}
+          <a class="btn-white-outline" href="${profileHref}">Profil</a>
           <button class="btn-white-outline" type="button" data-user="open" data-uid="${esc(uid)}">Edytuj</button>
         </div>
       </div>

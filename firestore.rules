@@ -82,11 +82,23 @@ service cloud.firestore {
       );
     }
 
+    function publicUserDoc(uid) {
+      return /databases/$(database)/documents/public_users/$(uid);
+    }
+
+    function allowsFriendRequests(uid) {
+      return !exists(publicUserDoc(uid)) || get(publicUserDoc(uid)).data.allowFriendRequests != false;
+    }
+
+    function allowsMessages(uid) {
+      return !exists(publicUserDoc(uid)) || get(publicUserDoc(uid)).data.allowMessages != false;
+    }
+
     /* ===== USERS ===== */
 
     // User może zmieniać tylko "bezpieczne" pola profilu
     function userEditableKeys() {
-      return ["name","displayName","photoURL","photoPath","lang","gender","studyGoalMin","reviewReminders","publicProfile","allowFriendRequests","allowMessages","note","noteUser","refCode","refCodeCreatedAt","reviewDailyMinutes","reviewDailyLimit","reviewDirection","updatedAt"];
+      return ["name","displayName","handle","handleLower","photoURL","photoPath","lang","gender","studyGoalMin","reviewReminders","publicProfile","allowFriendRequests","allowMessages","note","noteUser","refCode","refCodeCreatedAt","reviewDailyMinutes","reviewDailyLimit","reviewDirection","updatedAt"];
     }
 
     // Chronione – user nie może ich ruszać
@@ -310,6 +322,7 @@ service cloud.firestore {
         && request.resource.data.toUid is string
         && request.resource.data.toUid != request.auth.uid
         && !isBlocked(request.resource.data.fromUid, request.resource.data.toUid)
+        && allowsFriendRequests(request.resource.data.toUid)
         && request.resource.data.status == "pending";
 
       allow update: if signedIn()
@@ -333,6 +346,7 @@ service cloud.firestore {
         && request.resource.data.toUid is string
         && isFriends(request.resource.data.fromUid, request.resource.data.toUid)
         && !isBlocked(request.resource.data.fromUid, request.resource.data.toUid)
+        && allowsMessages(request.resource.data.toUid)
         && (request.auth.uid == uid || request.resource.data.toUid == uid);
       allow update: if isOwner(uid);
       allow delete: if isAdmin() || isOwner(uid);

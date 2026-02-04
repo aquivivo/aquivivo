@@ -1,9 +1,14 @@
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
+  collection,
   doc,
+  getDocs,
   getDoc,
+  limit,
+  query,
   setDoc,
+  where,
   deleteDoc,
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
@@ -11,8 +16,14 @@ import {
 const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(location.search);
 const PROFILE_UID = (qs.get('uid') || '').trim();
+const PATH_HANDLE = (() => {
+  const m = (location.pathname || '').match(/\/perfil\/([^/]+)$/i);
+  return m ? decodeURIComponent(m[1]) : '';
+})();
+const PROFILE_HANDLE = (qs.get('u') || PATH_HANDLE || '').trim().toLowerCase();
 
 const profileName = $('profileName');
+const profileHandle = $('profileHandle');
 const profileStatus = $('profileStatus');
 const profileMsg = $('profileMsg');
 const btnAdd = $('btnProfileAdd');
@@ -36,6 +47,15 @@ function renderAvatar(url) {
     avatarImg.removeAttribute('src');
     avatarWrap.classList.remove('hasImage');
   }
+}
+
+async function resolveUidFromHandle(handle) {
+  if (!handle) return '';
+  const snap = await getDocs(
+    query(collection(db, 'public_users'), where('handleLower', '==', handle), limit(1)),
+  );
+  if (snap.empty) return '';
+  return snap.docs[0].id || '';
 }
 
 async function getFriendStatus(myUid, targetUid) {
@@ -105,7 +125,11 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = 'login.html?next=perfil.html';
     return;
   }
-  if (!PROFILE_UID) {
+  let targetUid = PROFILE_UID;
+  if (!targetUid && PROFILE_HANDLE) {
+    targetUid = await resolveUidFromHandle(PROFILE_HANDLE);
+  }
+  if (!targetUid) {
     setMsg('Falta el usuario.', true);
     return;
   }
@@ -113,8 +137,8 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     const [profileSnap, blockedInfo] = await Promise.all([
-      getDoc(doc(db, 'public_users', PROFILE_UID)),
-      isBlockedPair(user.uid, PROFILE_UID),
+      getDoc(doc(db, 'public_users', targetUid)),
+      isBlockedPair(user.uid, targetUid),
     ]);
 
     if (!profileSnap.exists()) {
@@ -123,16 +147,10 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const profile = profileSnap.data() || {};
-    if (profile.publicProfile === false && user.uid !== PROFILE_UID) {
-      if (profileStatus) profileStatus.textContent = 'Perfil privado.';
-      if (btnAdd) btnAdd.disabled = true;
-      if (btnChat) btnChat.classList.add('disabled');
-      if (btnBlock) btnBlock.disabled = true;
-      return;
-    }
-
     const name = profile.displayName || 'Usuario';
     if (profileName) profileName.textContent = name;
+    if (profileHandle)
+      profileHandle.textContent = profile.handle ? `@${profile.handle}` : '';
     renderAvatar(profile.photoURL || '');
 
     if (blockedInfo.blockedByOther) {
@@ -141,9 +159,17 @@ onAuthStateChanged(auth, async (user) => {
       if (btnChat) btnChat.style.pointerEvents = 'none';
     }
 
-    const friendStatus = await getFriendStatus(user.uid, PROFILE_UID);
+    const friendStatus = await getFriendStatus(user.uid, targetUid);
     const isFriend = friendStatus?.status === 'accepted';
     const canMessage = profile.allowMessages !== false;
+
+    if (profile.publicProfile === false && user.uid !== targetUid && !isFriend) {
+      if (profileStatus) profileStatus.textContent = 'Perfil privado.';
+      if (btnAdd) btnAdd.disabled = true;
+      if (btnChat) btnChat.classList.add('disabled');
+      if (btnBlock) btnBlock.disabled = true;
+      return;
+    }
 
     if (profileStatus) {
       profileStatus.textContent = isFriend
@@ -154,7 +180,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     if (btnChat) {
-      btnChat.href = `espanel.html?chat=${encodeURIComponent(PROFILE_UID)}`;
+      btnChat.href = `espanel.html?chat=${encodeURIComponent(targetUid)}`;
       const enabled = isFriend && canMessage;
       btnChat.style.pointerEvents = enabled ? '' : 'none';
       btnChat.style.opacity = enabled ? '' : '0.5';
@@ -162,29 +188,29 @@ onAuthStateChanged(auth, async (user) => {
 
     if (btnAdd) {
       const canAdd =
-        PROFILE_UID !== user.uid &&
+        targetUid !== user.uid &&
         profile.allowFriendRequests !== false &&
         !isFriend &&
         friendStatus?.status !== 'pending';
       btnAdd.disabled = !canAdd;
       btnAdd.addEventListener('click', async () => {
-        await sendFriendRequest(user.uid, PROFILE_UID);
+        await sendFriendRequest(user.uid, targetUid);
       });
     }
 
     if (btnBlock) {
       let isBlocked = blockedInfo.blockedByMe;
-      btnBlock.disabled = PROFILE_UID === user.uid;
+      btnBlock.disabled = targetUid === user.uid;
       btnBlock.textContent = isBlocked ? 'Desbloquear' : 'Bloquear';
       btnBlock.addEventListener('click', async () => {
-        if (PROFILE_UID === user.uid) return;
+        if (targetUid === user.uid) return;
         if (isBlocked) {
-          await unblockUser(user.uid, PROFILE_UID);
+          await unblockUser(user.uid, targetUid);
           isBlocked = false;
           btnBlock.textContent = 'Bloquear';
           setMsg('Usuario desbloqueado.');
         } else {
-          await blockUser(user.uid, PROFILE_UID);
+          await blockUser(user.uid, targetUid);
           isBlocked = true;
           btnBlock.textContent = 'Desbloquear';
         }
