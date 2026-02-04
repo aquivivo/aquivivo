@@ -98,6 +98,26 @@ service cloud.firestore {
       return !exists(publicUserDoc(uid)) || get(publicUserDoc(uid)).data.publicProfile != false;
     }
 
+    function postsVisibility(uid) {
+      return !exists(publicUserDoc(uid))
+        ? "public"
+        : (("postsVisibility" in get(publicUserDoc(uid)).data)
+          ? get(publicUserDoc(uid)).data.postsVisibility
+          : (get(publicUserDoc(uid)).data.publicProfile == false ? "private" : "public"));
+    }
+
+    function canViewFeed(uid) {
+      return isAdmin() || (
+        signedIn()
+        && !isBlocked(request.auth.uid, uid)
+        && (
+          isOwner(uid)
+          || postsVisibility(uid) == "public"
+          || (postsVisibility(uid) == "friends" && isFriends(request.auth.uid, uid))
+        )
+      );
+    }
+
     /* ===== USERS ===== */
 
     // User może zmieniać tylko "bezpieczne" pola profilu
@@ -358,17 +378,32 @@ service cloud.firestore {
 
     /* ===== USER FEED ===== */
     match /user_feed/{uid}/posts/{postId} {
-      allow read: if signedIn()
-        && !isBlocked(request.auth.uid, uid)
-        && (
-          isOwner(uid)
-          || isAdmin()
-          || isFriends(request.auth.uid, uid)
-          || isPublicProfile(uid)
-        );
+      allow read: if canViewFeed(uid);
       allow create: if isOwner(uid)
         && request.resource.data.authorUid == request.auth.uid;
       allow update, delete: if isOwner(uid) || isAdmin();
+    }
+
+    match /user_feed/{uid}/posts/{postId}/comments/{commentId} {
+      allow read: if canViewFeed(uid);
+      allow create: if signedIn()
+        && !isBlocked(request.auth.uid, uid)
+        && (isOwner(uid) || isFriends(request.auth.uid, uid))
+        && request.resource.data.authorUid == request.auth.uid;
+      allow update, delete: if isAdmin() || (
+        signedIn()
+        && resource.data.authorUid == request.auth.uid
+      );
+    }
+
+    match /user_feed/{uid}/posts/{postId}/reactions/{reactionId} {
+      allow read: if canViewFeed(uid);
+      allow create: if signedIn()
+        && !isBlocked(request.auth.uid, uid)
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if signedIn()
+        && !isBlocked(request.auth.uid, uid)
+        && resource.data.userId == request.auth.uid;
     }
 
     /* ===== USER BLOCKS ===== */

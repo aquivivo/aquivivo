@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
@@ -16,20 +16,20 @@
     <div id="appHeader"></div>
 
     <main class="page profile-page">
-      <div class="container profile-shell">
+      <div class="container profile-shell profile-shell--wide">
         <aside class="profile-sidebar">
           <div class="profile-nav">
-            <a class="profile-nav-item" href="index.html">&#127968; Inicio</a>
-            <a class="profile-nav-item" href="espanel.html#cursos">&#128218; Cursos</a>
-            <a class="profile-nav-item" href="review.html">&#128260; Practicar</a>
-            <a class="profile-nav-item" href="recompensas.html">&#127942; Logros</a>
-            <a class="profile-nav-item" href="mensajes.html">&#128172; Comunidad</a>
-            <a class="profile-nav-item active" href="perfil.html">&#128100; Perfil</a>
+            <a class="profile-nav-item" href="index.html">🏠 Inicio</a>
+            <a class="profile-nav-item" href="espanel.html#cursos">📚 Cursos</a>
+            <a class="profile-nav-item" href="review.html">🔁 Practicar</a>
+            <a class="profile-nav-item" href="recompensas.html">🏆 Logros</a>
+            <a class="profile-nav-item" href="mensajes.html">💬 Comunidad</a>
+            <a class="profile-nav-item active" href="perfil.html">👤 Perfil</a>
           </div>
         </aside>
 
         <section class="profile-main">
-          <div class="card profile-card" id="profileCard">
+          <div class="card profile-hero" id="profileCard">
             <div class="profileHeader">
               <div class="heroIcon heroIcon--avatar" id="profileAvatarWrap">
                 <img id="profileAvatarImg" alt="Foto de perfil" />
@@ -71,83 +71,187 @@
             </div>
           </div>
 
-          <div class="card status-card" id="statusCard">
-            <div class="status-heart" id="statusHeart">&#10084;&#65039;</div>
-            <div class="statusInputRow">
-              <div class="nav-avatar nav-avatar--small statusAvatar" id="statusAvatar">
-                <img id="statusAvatarImg" alt="Foto de perfil" style="display: none" />
-                <span id="statusAvatarFallback">U</span>
-              </div>
-              <textarea
-                id="statusInput"
-                class="statusInput"
-                rows="3"
-                placeholder="¿Cómo te sientes aprendiendo hoy?&#10;Puedes escribir en español o polaco &#128155;"
-              ></textarea>
-            </div>
-            <div class="statusTools">
-              <button class="statusChip" data-tag="estado" id="statusMood">
-                &#128522; Estado
-              </button>
-              <select id="statusMinutes" class="select statusSelect">
-                <option value="">&#9749; Aprendizaje</option>
-                <option value="5">5 min</option>
-                <option value="10">10 min</option>
-                <option value="15">15 min</option>
-                <option value="20">20 min</option>
-              </select>
-              <select id="statusCourse" class="select statusSelect">
-                <option value="">&#128214; Curso</option>
-                <option value="A1">A1</option>
-                <option value="A2">A2</option>
-                <option value="B1">B1</option>
-                <option value="B2">B2</option>
-              </select>
-              <button class="statusChip" data-tag="motivacion" id="statusMotivation">
-                &#10084;&#65039; Motivación
-              </button>
-            </div>
-            <div class="statusActions">
-              <button class="btn-yellow" id="statusPostBtn" type="button" disabled>
-                Publicar
-              </button>
-              <span class="hintSmall" id="statusHint"></span>
-            </div>
+          <div class="profile-tabs" role="tablist" aria-label="Secciones del perfil">
+            <button class="profile-tab-btn is-active" data-tab="info" type="button">Sobre mí</button>
+            <button class="profile-tab-btn" data-tab="feed" type="button">Feed</button>
+            <button class="profile-tab-btn" data-tab="rewards" type="button">Recompensas</button>
+            <button class="profile-tab-btn" data-tab="courses" type="button">Cursos</button>
           </div>
 
-          <div class="feedList" id="feedList"></div>
+          <section class="profile-tab is-active" id="tab-info">
+            <div class="card">
+              <div class="sectionTitle" style="margin-top: 0">Info / Sobre mí</div>
+              <div class="info-grid">
+                <div class="info-field">
+                  <label for="infoWhy">¿Por qué aprendo polaco?</label>
+                  <textarea id="infoWhy" class="input" rows="3" placeholder="Comparte tu motivo..."></textarea>
+                </div>
+                <div class="info-field">
+                  <label for="infoHard">¿Qué me cuesta más?</label>
+                  <textarea id="infoHard" class="input" rows="3" placeholder="Lo que se te hace difícil..."></textarea>
+                </div>
+                <div class="info-field">
+                  <label for="infoGoal">Mi meta</label>
+                  <textarea id="infoGoal" class="input" rows="3" placeholder="Tu objetivo principal..."></textarea>
+                </div>
+              </div>
+              <div class="metaRow" style="margin-top: 12px">
+                <button class="btn-yellow" id="infoSaveBtn" type="button">Guardar</button>
+                <span class="hintSmall" id="infoSaveMsg"></span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="sectionTitle" style="margin-top: 0">Privacidad</div>
+              <div class="privacy-grid">
+                <div class="privacy-item">
+                  <label for="privacyPosts">Visibilidad de publicaciones</label>
+                  <select id="privacyPosts" class="select">
+                    <option value="public">Públicas</option>
+                    <option value="friends">Solo amigos</option>
+                    <option value="private">Solo yo</option>
+                  </select>
+                </div>
+                <div class="privacy-item">
+                  <label for="privacyRewards">Recompensas visibles</label>
+                  <select id="privacyRewards" class="select">
+                    <option value="public">Sí</option>
+                    <option value="private">Ocultas</option>
+                  </select>
+                </div>
+                <div class="privacy-item">
+                  <label for="privacyStatus">Estado visible</label>
+                  <select id="privacyStatus" class="select">
+                    <option value="public">Siempre</option>
+                    <option value="private">Solo yo</option>
+                  </select>
+                </div>
+                <div class="privacy-item">
+                  <label for="privacyFriendReq">Solicitudes de amistad</label>
+                  <select id="privacyFriendReq" class="select">
+                    <option value="true">Permitir</option>
+                    <option value="false">No permitir</option>
+                  </select>
+                </div>
+                <div class="privacy-item">
+                  <label for="privacyMessages">Mensajes directos</label>
+                  <select id="privacyMessages" class="select">
+                    <option value="true">Permitir</option>
+                    <option value="false">No permitir</option>
+                  </select>
+                </div>
+                <div class="privacy-item">
+                  <label for="privacyPublic">Perfil público</label>
+                  <select id="privacyPublic" class="select">
+                    <option value="true">Visible</option>
+                    <option value="false">Privado</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="profile-tab" id="tab-feed">
+            <div class="card status-card" id="statusCard">
+              <div class="status-heart" id="statusHeart">❤️</div>
+              <div class="statusInputRow">
+                <div class="nav-avatar nav-avatar--small statusAvatar" id="statusAvatar">
+                  <img id="statusAvatarImg" alt="Foto de perfil" style="display: none" />
+                  <span id="statusAvatarFallback">U</span>
+                </div>
+                <textarea
+                  id="statusInput"
+                  class="statusInput"
+                  rows="3"
+                  placeholder="¿Cómo te sientes aprendiendo hoy?&#10;Puedes escribir en español o polaco 💛"
+                ></textarea>
+              </div>
+              <div class="statusTools">
+                <button class="statusChip" data-tag="estado" id="statusMood">😊 Estado</button>
+                <select id="statusMinutes" class="select statusSelect">
+                  <option value="">☕ Aprendizaje</option>
+                  <option value="5">5 min</option>
+                  <option value="10">10 min</option>
+                  <option value="15">15 min</option>
+                  <option value="20">20 min</option>
+                </select>
+                <select id="statusCourse" class="select statusSelect">
+                  <option value="">📘 Curso</option>
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="B1">B1</option>
+                  <option value="B2">B2</option>
+                </select>
+                <button class="statusChip" data-tag="motivacion" id="statusMotivation">❤️ Motivación</button>
+              </div>
+              <div class="statusActions">
+                <button class="btn-yellow" id="statusPostBtn" type="button" disabled>Publicar</button>
+                <span class="hintSmall" id="statusHint"></span>
+              </div>
+            </div>
+
+            <div class="feedList" id="feedList"></div>
+          </section>
+
+          <section class="profile-tab" id="tab-rewards">
+            <div class="card">
+              <div class="sectionTitle" style="margin-top: 0">Tus logros</div>
+              <div class="achievement-grid" id="rewardsGrid">
+                <div class="achievement-card" data-achievement="racha">
+                  <div class="achievement-title">🔥 Rachas</div>
+                  <div class="achievement-value" id="rewardStreak">0 días</div>
+                  <div class="achievement-meta" id="rewardStreakMeta">Nivel 1</div>
+                </div>
+                <div class="achievement-card" data-achievement="insignias">
+                  <div class="achievement-title">🏆 Insignias</div>
+                  <div class="achievement-value" id="rewardBadges">0</div>
+                  <div class="achievement-meta">Desbloqueadas</div>
+                </div>
+                <div class="achievement-card" data-achievement="dias">
+                  <div class="achievement-title">☕ Días de aprendizaje</div>
+                  <div class="achievement-value" id="rewardDays">0 días</div>
+                  <div class="achievement-meta">Constancia</div>
+                </div>
+                <div class="achievement-card" data-achievement="constancia">
+                  <div class="achievement-title">❤️ Constancia</div>
+                  <div class="achievement-value" id="rewardConsistency">0%</div>
+                  <div class="achievement-meta">Promedio semanal</div>
+                </div>
+              </div>
+              <div class="muted" id="rewardDetail" style="margin-top: 10px">
+                Haz clic en una tarjeta para ver el detalle.
+              </div>
+            </div>
+          </section>
+
+          <section class="profile-tab" id="tab-courses">
+            <div class="card">
+              <div class="sectionTitle" style="margin-top: 0">Tus cursos</div>
+              <div class="coursesList" id="coursesList"></div>
+            </div>
+          </section>
         </section>
 
         <aside class="profile-side">
           <div class="card">
+            <div class="sectionTitle" style="margin-top: 0">Comunidad</div>
+            <div class="social-stat">
+              <span>Amigos</span>
+              <strong id="friendsCount">0</strong>
+            </div>
+            <div class="sectionTitle" style="margin-top: 16px">Últimas reacciones</div>
+            <div class="muted" id="recentReactions">Sin reacciones aún.</div>
+            <div class="sectionTitle" style="margin-top: 16px">Sugerencias</div>
+            <div class="friendList" id="suggestionsList"></div>
+            <div class="metaRow" style="margin-top: 12px">
+              <a class="btn-yellow" id="inviteFriendsBtn" href="referidos.html">Invitar amigos</a>
+            </div>
+          </div>
+
+          <div class="card">
             <div class="sectionTitle" style="margin-top: 0">Invitaciones</div>
             <div class="muted" id="invitesHint">No tienes invitaciones pendientes.</div>
             <div class="friendList" id="invitesList" style="margin-top: 10px"></div>
-          </div>
-
-          <div class="card">
-            <div class="sectionTitle" style="margin-top: 0">Buscar amigos</div>
-            <div class="metaRow" style="gap: 10px; flex-wrap: wrap">
-              <input
-                id="friendSearchInput"
-                class="input"
-                placeholder="Usuario, idioma o nivel"
-                style="min-width: 200px; flex: 1"
-              />
-              <button id="friendSearchBtn" class="btn-white-outline" type="button">
-                Buscar
-              </button>
-            </div>
-            <div class="muted" id="friendSearchHint" style="margin-top: 10px">
-              Resultados de busqueda apareceran aqui.
-            </div>
-            <div class="friendList" id="friendSearchResults" style="margin-top: 10px"></div>
-          </div>
-
-          <div class="card">
-            <div class="sectionTitle" style="margin-top: 0">Ranking</div>
-            <div class="muted">Solo amigos, modo opt-in.</div>
-            <div class="rankingList" id="rankingList"></div>
           </div>
         </aside>
       </div>

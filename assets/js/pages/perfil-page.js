@@ -1,7 +1,9 @@
+﻿
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
   collection,
+  collectionGroup,
   doc,
   getDocs,
   getDoc,
@@ -18,6 +20,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 const $ = (id) => document.getElementById(id);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
 const qs = new URLSearchParams(location.search);
 const PROFILE_UID = (qs.get('uid') || '').trim();
 const PATH_HANDLE = (() => {
@@ -35,6 +39,8 @@ const btnChat = $('btnProfileChat');
 const btnBlock = $('btnProfileBlock');
 const avatarWrap = $('profileAvatarWrap');
 const avatarImg = $('profileAvatarImg');
+const avatarFallback = $('profileAvatarFallback');
+
 const statusCard = $('statusCard');
 const statusInput = $('statusInput');
 const statusPostBtn = $('statusPostBtn');
@@ -48,13 +54,40 @@ const statusAvatar = $('statusAvatar');
 const statusAvatarImg = $('statusAvatarImg');
 const statusAvatarFallback = $('statusAvatarFallback');
 const feedList = $('feedList');
+
+const infoWhy = $('infoWhy');
+const infoHard = $('infoHard');
+const infoGoal = $('infoGoal');
+const infoSaveBtn = $('infoSaveBtn');
+const infoSaveMsg = $('infoSaveMsg');
+
+const privacyPosts = $('privacyPosts');
+const privacyRewards = $('privacyRewards');
+const privacyStatus = $('privacyStatus');
+const privacyFriendReq = $('privacyFriendReq');
+const privacyMessages = $('privacyMessages');
+const privacyPublic = $('privacyPublic');
+
+const rewardsGrid = $('rewardsGrid');
+const rewardDetail = $('rewardDetail');
+const rewardStreak = $('rewardStreak');
+const rewardBadges = $('rewardBadges');
+const rewardDays = $('rewardDays');
+const rewardConsistency = $('rewardConsistency');
+
+const coursesList = $('coursesList');
+
+const friendsCount = $('friendsCount');
+const recentReactions = $('recentReactions');
+const suggestionsList = $('suggestionsList');
+const inviteFriendsBtn = $('inviteFriendsBtn');
+
 const invitesHint = $('invitesHint');
 const invitesList = $('invitesList');
-const friendSearchInput = $('friendSearchInput');
-const friendSearchBtn = $('friendSearchBtn');
-const friendSearchHint = $('friendSearchHint');
-const friendSearchResults = $('friendSearchResults');
-const rankingList = $('rankingList');
+
+const tabButtons = $$('.profile-tab-btn');
+const tabPanels = $$('.profile-tab');
+
 const statStreak = $('statStreak');
 const statExp = $('statExp');
 const statLeague = $('statLeague');
@@ -62,6 +95,8 @@ const statTop3 = $('statTop3');
 
 let FEED_ITEMS = [];
 let feedUnsub = null;
+const COMMENTS_CACHE = new Map();
+const COMMENTS_OPEN = new Set();
 
 function esc(text) {
   return String(text || '')
@@ -69,6 +104,10 @@ function esc(text) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function safeId(value) {
+  return String(value || '').replace(/[^a-z0-9_-]/gi, '_');
 }
 
 function toDateValue(ts) {
@@ -83,18 +122,42 @@ function formatTime(ts) {
   const date = toDateValue(ts);
   if (!date) return '';
   try {
-    return date.toLocaleTimeString('es-ES', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   } catch {
     return '';
   }
 }
 
+function formatDate(ts) {
+  const date = toDateValue(ts);
+  if (!date) return '';
+  try {
+    return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
+function withinMinutes(ts, minutes) {
+  const date = toDateValue(ts);
+  if (!date) return false;
+  return Date.now() - date.getTime() <= minutes * 60 * 1000;
+}
+
 function setStatusHint(text) {
   if (!statusHint) return;
   statusHint.textContent = text || '';
+}
+
+function setInfoMsg(text) {
+  if (!infoSaveMsg) return;
+  infoSaveMsg.textContent = text || '';
+}
+
+function setMsg(text, bad = false) {
+  if (!profileMsg) return;
+  profileMsg.textContent = text || '';
+  profileMsg.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
 }
 
 function toggleChip(btn) {
@@ -117,312 +180,34 @@ function playHeart() {
   setTimeout(() => statusCard.classList.remove('pulse-heart'), 700);
 }
 
-function renderFeed(list, myUid) {
-  if (!feedList) return;
-  feedList.innerHTML = '';
-  const sorted = [...list].sort((a, b) => {
-    const ap = a.pinned ? 1 : 0;
-    const bp = b.pinned ? 1 : 0;
-    if (ap !== bp) return bp - ap;
-    return (b.createdAt || 0) - (a.createdAt || 0);
+function applyActiveTab(tab) {
+  tabButtons.forEach((btn) => {
+    btn.classList.toggle('is-active', btn.dataset.tab === tab);
   });
-
-  if (!sorted.length) {
-    feedList.innerHTML =
-      '<div class="card muted">Aún no hay publicaciones. Escribe tu primer estado ✨</div>';
-    return;
-  }
-
-  sorted.forEach((post) => {
-    const card = document.createElement('div');
-    card.className = `post-card post-card--${post.type || 'user'}`;
-    const isMine = post.authorUid && myUid && post.authorUid === myUid;
-    const createdAt = toDateValue(post.createdAt);
-    const canEdit =
-      isMine && createdAt ? Date.now() - createdAt.getTime() < 10 * 60 * 1000 : false;
-    const tags = Array.isArray(post.tags) ? post.tags : [];
-    card.innerHTML = `
-      <div class="post-head">
-        <div class="post-title">${esc(post.authorName || 'AquiVivo')}</div>
-        <div class="post-time">${formatTime(post.createdAt)}</div>
-      </div>
-      <div class="post-body">${esc(post.text || '')}</div>
-      ${tags.length ? `<div class="post-meta">${tags.map((t) => `<span>• ${esc(t)}</span>`).join('')}</div>` : ''}
-      <div class="post-reactions">❤️ 🔥 ✨</div>
-      <div class="post-actions">
-        ${post.actionLabel ? `<button class="btn-white-outline" data-action="follow" data-id="${post.id}">${esc(post.actionLabel)}</button>` : ''}
-        ${canEdit ? `<button class="btn-white-outline" data-action="edit" data-id="${post.id}">Editar</button>` : ''}
-        ${isMine ? `<button class="btn-white-outline" data-action="delete" data-id="${post.id}">Eliminar</button>` : ''}
-      </div>
-    `;
-    feedList.appendChild(card);
+  tabPanels.forEach((panel) => {
+    panel.classList.toggle('is-active', panel.id === `tab-${tab}`);
   });
-}
-
-function subscribeFeed(targetUid, myUid) {
-  if (!targetUid) return;
-  if (feedUnsub) feedUnsub();
-  const q = query(
-    collection(db, 'user_feed', targetUid, 'posts'),
-    orderBy('createdAt', 'desc'),
-    limit(40),
-  );
-  feedUnsub = onSnapshot(
-    q,
-    (snap) => {
-      const items = snap.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...(docSnap.data() || {}),
-      }));
-      const hasPinned = items.some((p) => p.pinned);
-      if (!hasPinned) {
-        items.unshift({
-          id: 'sys_pinned_local',
-          type: 'system',
-          text: 'Tu progreso aparece aqui. Sigue aprendiendo 🔥',
-          createdAt: new Date(),
-          pinned: true,
-        });
-      }
-      FEED_ITEMS = items;
-      renderFeed(FEED_ITEMS, myUid);
-    },
-    (err) => {
-      console.warn('feed snapshot failed', err);
-      renderFeed([], myUid);
-    },
-  );
-}
-
-async function fetchPublicUser(uid) {
-  if (!uid) return null;
-  const snap = await getDoc(doc(db, 'public_users', uid));
-  return snap.exists() ? { id: snap.id, ...(snap.data() || {}) } : null;
-}
-
-async function loadInvites(myUid) {
-  if (!invitesList || !invitesHint) return;
-  invitesList.innerHTML = '';
-  invitesHint.textContent = 'Cargando...';
   try {
-    const snap = await getDocs(
-      query(
-        collection(db, 'friend_requests'),
-        where('toUid', '==', myUid),
-        where('status', '==', 'pending'),
-        limit(10),
-      ),
-    );
-    if (snap.empty) {
-      invitesHint.textContent = 'No tienes invitaciones pendientes.';
-      return;
-    }
-    invitesHint.textContent = '';
-    const items = await Promise.all(
-      snap.docs.map(async (docSnap) => {
-        const data = docSnap.data() || {};
-        const from = await fetchPublicUser(data.fromUid);
-        return { id: docSnap.id, data, from };
-      }),
-    );
-    items.forEach((item) => {
-      const name = item.from?.displayName || 'Usuario';
-      const handle = item.from?.handle ? `@${item.from.handle}` : '';
-      const wrap = document.createElement('div');
-      wrap.className = 'friendItem';
-      wrap.innerHTML = `
-        <div style="flex:1">
-          <div style="font-weight: 800">${esc(name)}</div>
-          <div class="muted">${esc(handle)}</div>
-        </div>
-        <div class="metaRow" style="gap:6px">
-          <button class="btn-white-outline" data-invite="accept" data-id="${item.id}">Seguir</button>
-          <button class="btn-white-outline" data-invite="decline" data-id="${item.id}">Ignorar</button>
-        </div>
-      `;
-      invitesList.appendChild(wrap);
-    });
-  } catch (e) {
-    console.warn('load invites failed', e);
-    invitesHint.textContent = 'No se pudieron cargar las invitaciones.';
+    localStorage.setItem('av_profile_tab', tab);
+  } catch {
+    // ignore
   }
 }
 
-async function handleInviteAction(myUid, inviteId, action) {
-  if (!inviteId) return;
-  const ref = doc(db, 'friend_requests', inviteId);
-  const status = action === 'accept' ? 'accepted' : 'declined';
-  await updateDoc(ref, { status, updatedAt: serverTimestamp() });
-  await loadInvites(myUid);
-}
-
-async function searchFriends(term, myUid) {
-  if (!friendSearchResults || !friendSearchHint) return;
-  friendSearchResults.innerHTML = '';
-  if (!term) {
-    friendSearchHint.textContent = 'Escribe un usuario para buscar.';
-    return;
-  }
-  friendSearchHint.textContent = 'Buscando...';
-  try {
-    const q = query(
-      collection(db, 'public_users'),
-      where('handleLower', '>=', term),
-      where('handleLower', '<=', `${term}\uf8ff`),
-      limit(10),
-    );
-    const snap = await getDocs(q);
-    if (snap.empty) {
-      friendSearchHint.textContent = 'Sin resultados.';
-      return;
-    }
-    friendSearchHint.textContent = '';
-    snap.docs.forEach((docSnap) => {
-      const data = docSnap.data() || {};
-      const uid = docSnap.id;
-      const name = data.displayName || 'Usuario';
-      const handle = data.handle ? `@${data.handle}` : '';
-      const wrap = document.createElement('div');
-      wrap.className = 'friendItem';
-      wrap.innerHTML = `
-        <div style="flex:1">
-          <div style="font-weight:800">${esc(name)}</div>
-          <div class="muted">${esc(handle)}</div>
-        </div>
-        <div>
-          ${
-            uid === myUid
-              ? '<span class="muted">Tú</span>'
-              : `<button class="btn-white-outline" data-add-friend="${uid}">Seguir</button>`
-          }
-        </div>
-      `;
-      friendSearchResults.appendChild(wrap);
-    });
-  } catch (e) {
-    console.warn('search friends failed', e);
-    friendSearchHint.textContent = 'Error al buscar.';
-  }
-}
-
-async function loadRanking() {
-  if (!rankingList) return;
-  rankingList.innerHTML = '<div class="muted">Cargando ranking...</div>';
-  try {
-    const snap = await getDocs(
-      query(collection(db, 'public_users'), orderBy('exp', 'desc'), limit(5)),
-    );
-    const rows = snap.docs
-      .map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() || {}) }))
-      .filter((item) => item.rankingOptIn !== false);
-    if (!rows.length) {
-      rankingList.innerHTML = '<div class="muted">Sin ranking disponible.</div>';
-      return;
-    }
-    rankingList.innerHTML = '';
-    rows.forEach((row, idx) => {
-      const name = row.displayName || row.handle || 'Usuario';
-      const exp = Number(row.exp || 0);
-      const item = document.createElement('div');
-      item.className = 'rankingItem';
-      item.innerHTML = `<span>#${idx + 1}</span><span>${esc(name)}</span><span>${exp}</span>`;
-      rankingList.appendChild(item);
-    });
-  } catch (e) {
-    console.warn('ranking failed', e);
-    rankingList.innerHTML = '<div class="muted">No se pudo cargar el ranking.</div>';
-  }
-}
-
-function bindFeedActions(myUid, displayName, targetUid) {
-  if (!feedList) return;
-  feedList.addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-action]');
-    if (!btn) return;
-    const id = btn.getAttribute('data-id');
-    const action = btn.getAttribute('data-action');
-    const idx = FEED_ITEMS.findIndex((p) => p.id === id);
-    if (idx < 0) return;
-
-    if (action === 'delete') {
-      deleteDoc(doc(db, 'user_feed', targetUid, 'posts', id)).catch((e) =>
-        console.warn('delete post failed', e),
-      );
-      return;
-    }
-
-    if (action === 'edit') {
-      const post = FEED_ITEMS[idx];
-      const updated = prompt('Editar tu estado:', post.text || '');
-      if (updated && updated.trim()) {
-        updateDoc(doc(db, 'user_feed', targetUid, 'posts', id), {
-          text: updated.trim(),
-          editedAt: serverTimestamp(),
-        }).catch((e) => console.warn('update post failed', e));
-      }
-      return;
-    }
-
-    if (action === 'follow') {
-      setStatusHint('Siguiendo ✅');
-      setTimeout(() => setStatusHint(''), 2000);
-    }
+function initTabs() {
+  if (!tabButtons.length) return;
+  tabButtons.forEach((btn) => {
+    btn.addEventListener('click', () => applyActiveTab(btn.dataset.tab));
   });
+  const saved = localStorage.getItem('av_profile_tab');
+  if (saved) applyActiveTab(saved);
 }
 
-function bindStatusComposer(myUid, displayName, isOwner) {
-  if (!statusCard) return;
-  if (!isOwner) {
-    statusCard.style.display = 'none';
-    return;
-  }
-  if (!statusInput || !statusPostBtn) return;
-
-  const updateBtn = () => {
-    statusPostBtn.disabled = !statusInput.value.trim();
-  };
-  statusInput.addEventListener('input', updateBtn);
-  updateBtn();
-
-  statusMood?.addEventListener('click', () => toggleChip(statusMood));
-  statusMotivation?.addEventListener('click', () => toggleChip(statusMotivation));
-
-  statusPostBtn.addEventListener('click', () => {
-    const text = statusInput.value.trim();
-    if (!text) return;
-    const tags = collectTags();
-    const post = {
-      type: 'user',
-      text,
-      createdAt: serverTimestamp(),
-      editedAt: null,
-      authorUid: myUid,
-      authorName: displayName || 'Usuario',
-      tags,
-    };
-    addDoc(collection(db, 'user_feed', myUid, 'posts'), post).catch((e) =>
-      console.warn('add post failed', e),
-    );
-    statusInput.value = '';
-    if (statusMinutes) statusMinutes.value = '';
-    if (statusCourse) statusCourse.value = '';
-    statusMood?.classList.remove('active');
-    statusMotivation?.classList.remove('active');
-    updateBtn();
-    setStatusHint('Publicado ✅');
-    playHeart();
-    setTimeout(() => setStatusHint(''), 2000);
-  });
-}
-
-function setMsg(text, bad = false) {
-  if (!profileMsg) return;
-  profileMsg.textContent = text || '';
-  profileMsg.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
-}
-
-function renderAvatar(url) {
+function renderAvatar(url, name) {
   if (!avatarWrap || !avatarImg) return;
+  const letter = (name || 'U').trim()[0]?.toUpperCase() || 'U';
+  if (avatarFallback) avatarFallback.textContent = letter;
+  if (statusAvatarFallback) statusAvatarFallback.textContent = letter;
   if (url) {
     avatarImg.src = url;
     avatarWrap.classList.add('hasImage');
@@ -449,6 +234,354 @@ async function resolveUidFromHandle(handle) {
   );
   if (snap.empty) return '';
   return snap.docs[0].id || '';
+}
+
+function renderFeed(list, ctx) {
+  if (!feedList) return;
+  const sorted = [...list].sort((a, b) => {
+    const ap = a.pinned ? 1 : 0;
+    const bp = b.pinned ? 1 : 0;
+    if (ap !== bp) return bp - ap;
+    return (b.createdAt || 0) - (a.createdAt || 0);
+  });
+
+  if (!sorted.length) {
+    feedList.innerHTML =
+      '<div class="card muted">Aún no hay publicaciones. Escribe tu primer estado ✨</div>';
+    return;
+  }
+
+  feedList.innerHTML = sorted
+    .map((post) => {
+      const isMine = post.authorUid && ctx.myUid && post.authorUid === ctx.myUid;
+      const canEdit = isMine && withinMinutes(post.createdAt, 10);
+      const tags = Array.isArray(post.tags) ? post.tags : [];
+      const postKey = safeId(post.id);
+      const comments = COMMENTS_CACHE.get(post.id) || [];
+      const isOpen = COMMENTS_OPEN.has(post.id);
+      const commentsHtml = comments.length
+        ? comments
+            .map((c) => {
+              const isOwner = c.authorUid === ctx.myUid;
+              const canEditComment = isOwner && withinMinutes(c.createdAt, 10);
+              return `
+                <div class="comment-item" data-comment-id="${esc(c.id)}">
+                  <div class="comment-meta">
+                    <span>${esc(c.authorName || 'Usuario')}</span>
+                    <span>${formatTime(c.createdAt)}</span>
+                  </div>
+                  <div class="comment-text">${esc(c.text || '')}</div>
+                  ${
+                    isOwner
+                      ? `<div class="comment-actions">
+                          ${
+                            canEditComment
+                              ? `<button class="btn-white-outline" data-comment-action="edit" data-post-id="${esc(
+                                  post.id,
+                                )}" data-comment-id="${esc(c.id)}">Editar</button>`
+                              : ''
+                          }
+                          <button class="btn-white-outline" data-comment-action="delete" data-post-id="${esc(
+                            post.id,
+                          )}" data-comment-id="${esc(c.id)}">Eliminar</button>
+                        </div>`
+                      : ''
+                  }
+                </div>
+              `;
+            })
+            .join('')
+        : '<div class="muted">Sin comentarios todavía.</div>';
+
+      const commentForm = ctx.canComment
+        ? `
+            <div class="comment-form">
+              <input class="input" id="commentInput_${postKey}" placeholder="Escribe un comentario..." />
+              <button class="btn-white-outline" data-comment="send" data-id="${esc(post.id)}">Enviar</button>
+            </div>
+          `
+        : '<div class="muted" style="margin-top:8px">Solo amigos pueden comentar.</div>';
+
+      return `
+        <div class="post-card post-card--${esc(post.type || 'user')}">
+          <div class="post-head">
+            <div class="post-title">${esc(post.authorName || 'AquiVivo')}</div>
+            <div class="post-time">${formatTime(post.createdAt)}</div>
+          </div>
+          <div class="post-body">${esc(post.text || '')}</div>
+          ${
+            tags.length
+              ? `<div class="post-meta">${tags.map((t) => `<span>• ${esc(t)}</span>`).join('')}</div>`
+              : ''
+          }
+          <div class="post-reactions">
+            <button type="button" data-reaction="heart" data-id="${esc(post.id)}">❤️</button>
+            <button type="button" data-reaction="fire" data-id="${esc(post.id)}">🔥</button>
+            <button type="button" data-reaction="spark" data-id="${esc(post.id)}">✨</button>
+          </div>
+          <div class="post-actions">
+            ${
+              canEdit
+                ? `<button class="btn-white-outline" data-action="edit" data-id="${esc(
+                    post.id,
+                  )}">Editar</button>`
+                : ''
+            }
+            ${
+              isMine
+                ? `<button class="btn-white-outline" data-action="delete" data-id="${esc(
+                    post.id,
+                  )}">Eliminar</button>`
+                : ''
+            }
+            <button class="btn-white-outline" data-comment="toggle" data-id="${esc(post.id)}">
+              Comentarios (${comments.length})
+            </button>
+          </div>
+          <div class="post-comments" id="comments_${postKey}" style="display:${
+        isOpen ? 'block' : 'none'
+      };"><div class="comment-list" id="commentsList_${postKey}">${commentsHtml}</div>${commentForm}</div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadComments(targetUid, postId) {
+  const snap = await getDocs(
+    query(
+      collection(db, 'user_feed', targetUid, 'posts', postId, 'comments'),
+      orderBy('createdAt', 'asc'),
+      limit(40),
+    ),
+  );
+  const items = snap.docs.map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() || {}) }));
+  COMMENTS_CACHE.set(postId, items);
+}
+
+async function toggleComments(targetUid, postId) {
+  if (!postId) return;
+  const isOpen = COMMENTS_OPEN.has(postId);
+  if (isOpen) {
+    COMMENTS_OPEN.delete(postId);
+    return;
+  }
+  if (!COMMENTS_CACHE.has(postId)) {
+    await loadComments(targetUid, postId);
+  }
+  COMMENTS_OPEN.add(postId);
+}
+
+async function sendComment(targetUid, postId, myUid, myName, text) {
+  if (!text) return;
+  await addDoc(collection(db, 'user_feed', targetUid, 'posts', postId, 'comments'), {
+    text,
+    createdAt: serverTimestamp(),
+    editedAt: null,
+    authorUid: myUid,
+    authorName: myName || 'Usuario',
+    postOwnerUid: targetUid,
+  });
+  await loadComments(targetUid, postId);
+}
+
+async function editComment(targetUid, postId, commentId, text) {
+  if (!text) return;
+  await updateDoc(doc(db, 'user_feed', targetUid, 'posts', postId, 'comments', commentId), {
+    text,
+    editedAt: serverTimestamp(),
+  });
+  await loadComments(targetUid, postId);
+}
+
+async function deleteComment(targetUid, postId, commentId) {
+  await deleteDoc(doc(db, 'user_feed', targetUid, 'posts', postId, 'comments', commentId));
+  await loadComments(targetUid, postId);
+}
+
+async function sendReaction(targetUid, postId, myUid, myName, type) {
+  if (!postId || !type) return;
+  const ref = doc(db, 'user_feed', targetUid, 'posts', postId, 'reactions', `${myUid}__${type}`);
+  await setDoc(ref, {
+    type,
+    userId: myUid,
+    userName: myName || 'Usuario',
+    createdAt: serverTimestamp(),
+    postOwnerUid: targetUid,
+  });
+}
+
+function subscribeFeed(targetUid, ctx) {
+  if (!targetUid) return;
+  if (feedUnsub) feedUnsub();
+  const q = query(
+    collection(db, 'user_feed', targetUid, 'posts'),
+    orderBy('createdAt', 'desc'),
+    limit(40),
+  );
+  feedUnsub = onSnapshot(
+    q,
+    (snap) => {
+      const items = snap.docs
+        .map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() || {}) }))
+        .filter((p) => ['user', 'system'].includes(p.type || 'user'));
+      const hasPinned = items.some((p) => p.pinned);
+      if (!hasPinned) {
+        items.unshift({
+          id: 'sys_pinned_local',
+          type: 'system',
+          text: 'Tu progreso aparece aquí. Sigue aprendiendo 🔥',
+          createdAt: new Date(),
+          pinned: true,
+        });
+      }
+      FEED_ITEMS = items;
+      renderFeed(FEED_ITEMS, ctx);
+    },
+    (err) => {
+      console.warn('feed snapshot failed', err);
+      renderFeed([], ctx);
+    },
+  );
+}
+
+function bindStatusComposer(ctx) {
+  if (!statusCard) return;
+  if (!ctx.isOwner) {
+    statusCard.style.display = 'none';
+    return;
+  }
+  if (!statusInput || !statusPostBtn) return;
+
+  const updateBtn = () => {
+    statusPostBtn.disabled = !statusInput.value.trim();
+  };
+  statusInput.addEventListener('input', updateBtn);
+  updateBtn();
+
+  statusMood?.addEventListener('click', () => toggleChip(statusMood));
+  statusMotivation?.addEventListener('click', () => toggleChip(statusMotivation));
+
+  statusPostBtn.addEventListener('click', async () => {
+    const text = statusInput.value.trim();
+    if (!text) return;
+    const tags = collectTags();
+    const post = {
+      type: 'user',
+      text,
+      createdAt: serverTimestamp(),
+      editedAt: null,
+      authorUid: ctx.myUid,
+      authorName: ctx.displayName || 'Usuario',
+      tags,
+    };
+    try {
+      await addDoc(collection(db, 'user_feed', ctx.myUid, 'posts'), post);
+      statusInput.value = '';
+      if (statusMinutes) statusMinutes.value = '';
+      if (statusCourse) statusCourse.value = '';
+      statusMood?.classList.remove('active');
+      statusMotivation?.classList.remove('active');
+      updateBtn();
+      setStatusHint('Publicado ✅');
+      playHeart();
+      setTimeout(() => setStatusHint(''), 2000);
+    } catch (e) {
+      console.warn('add post failed', e);
+      setStatusHint('No se pudo publicar.');
+    }
+  });
+}
+
+function bindFeedActions(ctx) {
+  if (!feedList || feedList.dataset.wired) return;
+  feedList.dataset.wired = '1';
+
+  feedList.addEventListener('click', async (event) => {
+    const actionBtn = event.target.closest('[data-action]');
+    if (actionBtn) {
+      const id = actionBtn.getAttribute('data-id');
+      const action = actionBtn.getAttribute('data-action');
+      const idx = FEED_ITEMS.findIndex((p) => p.id === id);
+      if (idx < 0) return;
+
+      if (action === 'delete') {
+        await deleteDoc(doc(db, 'user_feed', ctx.targetUid, 'posts', id));
+        return;
+      }
+
+      if (action === 'edit') {
+        const post = FEED_ITEMS[idx];
+        const updated = prompt('Editar tu estado:', post.text || '');
+        if (updated && updated.trim()) {
+          await updateDoc(doc(db, 'user_feed', ctx.targetUid, 'posts', id), {
+            text: updated.trim(),
+            editedAt: serverTimestamp(),
+          });
+        }
+        return;
+      }
+    }
+
+    const toggleBtn = event.target.closest('[data-comment="toggle"]');
+    if (toggleBtn) {
+      const postId = toggleBtn.getAttribute('data-id');
+      await toggleComments(ctx.targetUid, postId);
+      renderFeed(FEED_ITEMS, ctx);
+      return;
+    }
+
+    const sendBtn = event.target.closest('[data-comment="send"]');
+    if (sendBtn) {
+      const postId = sendBtn.getAttribute('data-id');
+      const input = document.getElementById(`commentInput_${safeId(postId)}`);
+      const value = input?.value?.trim() || '';
+      if (!value) return;
+      await sendComment(ctx.targetUid, postId, ctx.myUid, ctx.displayName, value);
+      if (input) input.value = '';
+      renderFeed(FEED_ITEMS, ctx);
+      await loadRecentReactions(ctx.targetUid);
+      return;
+    }
+
+    const commentAction = event.target.closest('[data-comment-action]');
+    if (commentAction) {
+      const postId = commentAction.getAttribute('data-post-id');
+      const commentId = commentAction.getAttribute('data-comment-id');
+      const type = commentAction.getAttribute('data-comment-action');
+      if (!postId || !commentId) return;
+      if (type === 'delete') {
+        await deleteComment(ctx.targetUid, postId, commentId);
+        renderFeed(FEED_ITEMS, ctx);
+        await loadRecentReactions(ctx.targetUid);
+        return;
+      }
+      if (type === 'edit') {
+        const current = (COMMENTS_CACHE.get(postId) || []).find((c) => c.id === commentId);
+        const updated = prompt('Editar comentario:', current?.text || '');
+        if (updated && updated.trim()) {
+          await editComment(ctx.targetUid, postId, commentId, updated.trim());
+          renderFeed(FEED_ITEMS, ctx);
+          await loadRecentReactions(ctx.targetUid);
+        }
+        return;
+      }
+    }
+
+    const reactionBtn = event.target.closest('[data-reaction]');
+    if (reactionBtn) {
+      const postId = reactionBtn.getAttribute('data-id');
+      const type = reactionBtn.getAttribute('data-reaction');
+      await sendReaction(ctx.targetUid, postId, ctx.myUid, ctx.displayName, type);
+      await loadRecentReactions(ctx.targetUid);
+    }
+  });
+}
+
+async function fetchPublicUser(uid) {
+  if (!uid) return null;
+  const snap = await getDoc(doc(db, 'public_users', uid));
+  return snap.exists() ? { id: snap.id, ...(snap.data() || {}) } : null;
 }
 
 async function getFriendStatus(myUid, targetUid) {
@@ -518,11 +651,307 @@ async function unblockUser(myUid, targetUid) {
   await deleteDoc(doc(db, 'user_blocks', `${myUid}__${targetUid}`));
 }
 
+async function loadInvites(myUid) {
+  if (!invitesList || !invitesHint) return;
+  invitesList.innerHTML = '';
+  invitesHint.textContent = 'Cargando...';
+  try {
+    const snap = await getDocs(
+      query(
+        collection(db, 'friend_requests'),
+        where('toUid', '==', myUid),
+        where('status', '==', 'pending'),
+        limit(10),
+      ),
+    );
+    if (snap.empty) {
+      invitesHint.textContent = 'No tienes invitaciones pendientes.';
+      return;
+    }
+    invitesHint.textContent = '';
+    const items = await Promise.all(
+      snap.docs.map(async (docSnap) => {
+        const data = docSnap.data() || {};
+        const from = await fetchPublicUser(data.fromUid);
+        return { id: docSnap.id, data, from };
+      }),
+    );
+    items.forEach((item) => {
+      const name = item.from?.displayName || 'Usuario';
+      const handle = item.from?.handle ? `@${item.from.handle}` : '';
+      const wrap = document.createElement('div');
+      wrap.className = 'friendItem';
+      wrap.innerHTML = `
+        <div style="flex:1">
+          <div style="font-weight: 800">${esc(name)}</div>
+          <div class="muted">${esc(handle)}</div>
+        </div>
+        <div class="metaRow" style="gap:6px">
+          <button class="btn-white-outline" data-invite="accept" data-id="${item.id}">Seguir</button>
+          <button class="btn-white-outline" data-invite="decline" data-id="${item.id}">Ignorar</button>
+        </div>
+      `;
+      invitesList.appendChild(wrap);
+    });
+  } catch (e) {
+    console.warn('load invites failed', e);
+    invitesHint.textContent = 'No se pudieron cargar las invitaciones.';
+  }
+}
+
+async function handleInviteAction(myUid, inviteId, action) {
+  if (!inviteId) return;
+  const ref = doc(db, 'friend_requests', inviteId);
+  const status = action === 'accept' ? 'accepted' : 'declined';
+  await updateDoc(ref, { status, updatedAt: serverTimestamp() });
+  await loadInvites(myUid);
+  await loadFriendCount(myUid);
+}
+
+async function loadFriendCount(uid) {
+  if (!friendsCount) return new Set();
+  try {
+    const [fromSnap, toSnap] = await Promise.all([
+      getDocs(
+        query(
+          collection(db, 'friend_requests'),
+          where('fromUid', '==', uid),
+          where('status', '==', 'accepted'),
+        ),
+      ),
+      getDocs(
+        query(
+          collection(db, 'friend_requests'),
+          where('toUid', '==', uid),
+          where('status', '==', 'accepted'),
+        ),
+      ),
+    ]);
+    const ids = new Set();
+    fromSnap.forEach((docSnap) => ids.add(docSnap.data().toUid));
+    toSnap.forEach((docSnap) => ids.add(docSnap.data().fromUid));
+    friendsCount.textContent = String(ids.size);
+    return ids;
+  } catch (e) {
+    console.warn('friends count failed', e);
+    friendsCount.textContent = '0';
+    return new Set();
+  }
+}
+
+async function loadSuggestions(myUid, excludeSet) {
+  if (!suggestionsList) return;
+  suggestionsList.innerHTML = '<div class="muted">Cargando...</div>';
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'public_users'), orderBy('exp', 'desc'), limit(8)),
+    );
+    const items = snap.docs
+      .map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() || {}) }))
+      .filter((item) => item.id !== myUid && !excludeSet.has(item.id));
+    if (!items.length) {
+      suggestionsList.innerHTML = '<div class="muted">Sin sugerencias por ahora.</div>';
+      return;
+    }
+    suggestionsList.innerHTML = '';
+    items.slice(0, 5).forEach((item) => {
+      const name = item.displayName || item.handle || 'Usuario';
+      const handle = item.handle ? `@${item.handle}` : '';
+      const row = document.createElement('div');
+      row.className = 'friendItem';
+      row.innerHTML = `
+        <div style="flex:1">
+          <div style="font-weight:800">${esc(name)}</div>
+          <div class="muted">${esc(handle)}</div>
+        </div>
+        <button class="btn-white-outline" data-add-friend="${esc(item.id)}">Seguir</button>
+      `;
+      suggestionsList.appendChild(row);
+    });
+  } catch (e) {
+    console.warn('suggestions failed', e);
+    suggestionsList.innerHTML = '<div class="muted">No se pudieron cargar sugerencias.</div>';
+  }
+}
+
+async function loadRecentReactions(targetUid) {
+  if (!recentReactions) return;
+  recentReactions.textContent = 'Cargando...';
+  try {
+    const snap = await getDocs(
+      query(
+        collectionGroup(db, 'reactions'),
+        where('postOwnerUid', '==', targetUid),
+        orderBy('createdAt', 'desc'),
+        limit(5),
+      ),
+    );
+    if (snap.empty) {
+      recentReactions.textContent = 'Sin reacciones aún.';
+      return;
+    }
+    const names = snap.docs.map((docSnap) => docSnap.data()?.userName || 'Usuario');
+    recentReactions.innerHTML = names.map((n) => `<div>❤️ ${esc(n)}</div>`).join('');
+  } catch (e) {
+    console.warn('recent reactions failed', e);
+    recentReactions.textContent = 'Sin reacciones aún.';
+  }
+}
+
+function renderRewards(profile) {
+  if (rewardStreak) rewardStreak.textContent = `${Number(profile.streakDays || profile.streak || 0)} días`;
+  if (rewardBadges) rewardBadges.textContent = String((profile.badges || []).length || 0);
+  if (rewardDays) rewardDays.textContent = `${Number(profile.studyDays || profile.daysLearned || 0)} días`;
+  if (rewardConsistency) rewardConsistency.textContent = `${Number(profile.consistencyPct || 0)}%`;
+}
+
+function bindRewards() {
+  if (!rewardsGrid || !rewardDetail) return;
+  rewardsGrid.addEventListener('click', (event) => {
+    const card = event.target.closest('.achievement-card');
+    if (!card) return;
+    const key = card.dataset.achievement || '';
+    const dateLabel = rewardDetail.dataset.date || '';
+    const map = {
+      racha: 'Racha: ¡cada día suma! Aquí verás tu nivel y la última fecha activa.',
+      insignias: 'Insignias: premios por completar temas y retos.',
+      dias: 'Días de aprendizaje: cuenta total de días con actividad.',
+      constancia: 'Constancia: promedio de estudio en la última semana.',
+    };
+    rewardDetail.textContent = `${map[key] || 'Detalle de tu logro.'}${dateLabel ? ` · ${dateLabel}` : ''}`;
+  });
+}
+
+async function loadCourseProgress(uid, levelsToShow) {
+  if (!coursesList) return;
+  coursesList.innerHTML = '<div class="muted">Cargando cursos...</div>';
+  try {
+    const levelSet = levelsToShow?.length ? levelsToShow : ['A1', 'A2', 'B1', 'B2'];
+    const courseSnap = await getDocs(
+      query(collection(db, 'courses'), where('level', 'in', levelSet)),
+    );
+    const totals = {};
+    courseSnap.forEach((docSnap) => {
+      const level = docSnap.data()?.level || '';
+      totals[level] = (totals[level] || 0) + 1;
+    });
+
+    const progressSnap = await getDocs(collection(db, 'user_progress', uid, 'topics'));
+    const completed = {};
+    progressSnap.forEach((docSnap) => {
+      const key = docSnap.id || '';
+      const level = key.split('__')[0] || '';
+      if (!levelSet.includes(level)) return;
+      if (docSnap.data()?.completed === true) {
+        completed[level] = (completed[level] || 0) + 1;
+      }
+    });
+
+    const rows = levelSet.map((level) => {
+      const total = totals[level] || 0;
+      const done = completed[level] || 0;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      return { level, total, done, pct };
+    });
+
+    coursesList.innerHTML = rows
+      .map((row) => {
+        const label = row.total ? `${row.done}/${row.total}` : '0/0';
+        const cta = row.pct > 0 ? 'Continuar' : 'Explorar';
+        return `
+          <div class="course-row">
+            <div class="course-info">
+              <div class="course-title">${esc(row.level)}</div>
+              <div class="muted">${esc(label)} completados</div>
+            </div>
+            <div class="course-progress">
+              <div class="progress-bar"><div class="progress-fill" style="width:${row.pct}%"></div></div>
+              <div class="progress-percent">${row.pct}%</div>
+              <a class="btn-white-outline" href="course.html?level=${encodeURIComponent(row.level)}">${cta}</a>
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+  } catch (e) {
+    console.warn('course progress failed', e);
+    coursesList.innerHTML = '<div class="muted">No se pudieron cargar los cursos.</div>';
+  }
+}
+
+async function saveProfileInfo(uid) {
+  if (!uid) return;
+  const updates = {
+    bioWhy: infoWhy?.value?.trim() || '',
+    bioHard: infoHard?.value?.trim() || '',
+    bioGoal: infoGoal?.value?.trim() || '',
+    postsVisibility: privacyPosts?.value || 'public',
+    rewardsVisibility: privacyRewards?.value || 'public',
+    statusVisibility: privacyStatus?.value || 'public',
+    publicProfile: privacyPublic?.value !== 'false',
+    allowFriendRequests: privacyFriendReq?.value !== 'false',
+    allowMessages: privacyMessages?.value !== 'false',
+    updatedAt: serverTimestamp(),
+  };
+  try {
+    await setDoc(doc(db, 'public_users', uid), updates, { merge: true });
+    await updateDoc(doc(db, 'users', uid), {
+      publicProfile: updates.publicProfile,
+      allowFriendRequests: updates.allowFriendRequests,
+      allowMessages: updates.allowMessages,
+      updatedAt: serverTimestamp(),
+    });
+    setInfoMsg('Guardado ✅');
+    setTimeout(() => setInfoMsg(''), 2000);
+  } catch (e) {
+    console.warn('save profile info failed', e);
+    setInfoMsg('No se pudo guardar.');
+  }
+}
+
+function bindInfoSave(uid, isOwner) {
+  if (!infoSaveBtn) return;
+  if (!isOwner) {
+    infoSaveBtn.style.display = 'none';
+    return;
+  }
+  infoSaveBtn.addEventListener('click', () => saveProfileInfo(uid));
+}
+
+function applyInfo(profile, isOwner) {
+  if (infoWhy) infoWhy.value = profile.bioWhy || '';
+  if (infoHard) infoHard.value = profile.bioHard || '';
+  if (infoGoal) infoGoal.value = profile.bioGoal || '';
+
+  if (!isOwner) {
+    [infoWhy, infoHard, infoGoal].forEach((el) => {
+      if (el) el.setAttribute('readonly', 'readonly');
+    });
+  }
+
+  if (privacyPosts) privacyPosts.value = profile.postsVisibility || 'public';
+  if (privacyRewards) privacyRewards.value = profile.rewardsVisibility || 'public';
+  if (privacyStatus) privacyStatus.value = profile.statusVisibility || 'public';
+  if (privacyFriendReq)
+    privacyFriendReq.value = profile.allowFriendRequests === false ? 'false' : 'true';
+  if (privacyMessages) privacyMessages.value = profile.allowMessages === false ? 'false' : 'true';
+  if (privacyPublic) privacyPublic.value = profile.publicProfile === false ? 'false' : 'true';
+
+  if (!isOwner) {
+    [privacyPosts, privacyRewards, privacyStatus, privacyFriendReq, privacyMessages, privacyPublic].forEach(
+      (el) => {
+        if (el) el.setAttribute('disabled', 'disabled');
+      },
+    );
+  }
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = 'login.html?next=perfil.html';
     return;
   }
+
   let targetUid = PROFILE_UID;
   if (!targetUid && PROFILE_HANDLE) {
     targetUid = await resolveUidFromHandle(PROFILE_HANDLE);
@@ -531,12 +960,14 @@ onAuthStateChanged(auth, async (user) => {
     setMsg('Falta el usuario.', true);
     return;
   }
+
   if (profileStatus) profileStatus.textContent = 'Cargando...';
 
   try {
-    const [profileSnap, blockedInfo] = await Promise.all([
+    const [profileSnap, blockedInfo, currentSnap] = await Promise.all([
       getDoc(doc(db, 'public_users', targetUid)),
       isBlockedPair(user.uid, targetUid),
+      getDoc(doc(db, 'users', user.uid)),
     ]);
 
     if (!profileSnap.exists()) {
@@ -545,31 +976,36 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const profile = profileSnap.data() || {};
-    const name = profile.displayName || 'Usuario';
+    const name = profile.displayName || profile.name || 'Usuario';
+    const isOwner = user.uid === targetUid;
+
     if (profileName) profileName.textContent = name;
-    if (profileHandle)
-      profileHandle.textContent = profile.handle ? `@${profile.handle}` : '';
-    renderAvatar(profile.photoURL || '');
-    if (statusAvatarFallback)
-      statusAvatarFallback.textContent = (name || 'U')[0].toUpperCase();
-    if (statStreak)
-      statStreak.textContent = Number(profile.streakDays || profile.streak || 0);
+    if (profileHandle) profileHandle.textContent = profile.handle ? `@${profile.handle}` : '';
+    renderAvatar(profile.photoURL || '', name);
+
+    if (statStreak) statStreak.textContent = Number(profile.streakDays || profile.streak || 0);
     if (statExp) statExp.textContent = Number(profile.exp || 0);
     if (statLeague) statLeague.textContent = profile.league || '—';
     if (statTop3) statTop3.textContent = Number(profile.top3 || 0);
 
-
-    if (blockedInfo.blockedByOther) {
-      if (profileStatus) profileStatus.textContent = 'No puedes interactuar.';
-      if (btnAdd) btnAdd.disabled = true;
-      if (btnChat) btnChat.style.pointerEvents = 'none';
+    renderRewards(profile);
+    if (rewardDetail) {
+      rewardDetail.dataset.date = formatDate(profile.updatedAt || profile.createdAt || new Date());
     }
+    bindRewards();
+
+    applyInfo(profile, isOwner);
+    bindInfoSave(user.uid, isOwner);
 
     const friendStatus = await getFriendStatus(user.uid, targetUid);
     const isFriend = friendStatus?.status === 'accepted';
     const canMessage = profile.allowMessages !== false;
 
-    if (profile.publicProfile === false && user.uid !== targetUid && !isFriend) {
+    const publicProfile = profile.publicProfile !== false;
+    const postsVisibility = profile.postsVisibility || (publicProfile ? 'public' : 'private');
+    const rewardsVisibility = profile.rewardsVisibility || 'public';
+
+    if (!isOwner && !publicProfile && !isFriend) {
       if (profileStatus) profileStatus.textContent = 'Perfil privado.';
       if (btnAdd) btnAdd.disabled = true;
       if (btnChat) btnChat.classList.add('disabled');
@@ -577,24 +1013,59 @@ onAuthStateChanged(auth, async (user) => {
       return;
     }
 
-    subscribeFeed(targetUid, user.uid);
-    bindFeedActions(user.uid, name, targetUid);
-    bindStatusComposer(user.uid, name, user.uid === targetUid);
+    if (blockedInfo.blockedByOther) {
+      if (profileStatus) profileStatus.textContent = 'No puedes interactuar.';
+      if (btnAdd) btnAdd.disabled = true;
+      if (btnChat) btnChat.style.pointerEvents = 'none';
+    }
+
+    const ctx = {
+      myUid: user.uid,
+      targetUid,
+      displayName: name,
+      isOwner,
+      canComment: isOwner || isFriend,
+    };
+
+    if (postsVisibility === 'private' && !isOwner) {
+      if (feedList) feedList.innerHTML = '<div class="card muted">Las publicaciones están ocultas.</div>';
+      if (statusCard) statusCard.style.display = 'none';
+    } else if (postsVisibility === 'friends' && !isOwner && !isFriend) {
+      if (feedList)
+        feedList.innerHTML = '<div class="card muted">Solo amigos pueden ver este feed.</div>';
+      if (statusCard) statusCard.style.display = 'none';
+    } else {
+      subscribeFeed(targetUid, ctx);
+      bindFeedActions(ctx);
+      bindStatusComposer(ctx);
+    }
+
+    if (rewardsVisibility === 'private' && !isOwner) {
+      const rewardsTab = $('tab-rewards');
+      if (rewardsTab) rewardsTab.innerHTML = '<div class="card muted">Las recompensas están ocultas.</div>';
+    }
 
     if (user.uid === targetUid) {
       loadInvites(user.uid);
     } else if (invitesList) {
       invitesList.innerHTML = '';
-      if (invitesHint) invitesHint.textContent = 'Solo visible para tu perfil.';
+      if (invitesHint) invitesHint.textContent = 'Solo visible en tu perfil.';
     }
 
-    loadRanking();
+    const friendSet = (await loadFriendCount(targetUid)) || new Set();
+    await loadRecentReactions(targetUid);
+    await loadSuggestions(user.uid, friendSet);
 
-    if (friendSearchBtn && !friendSearchBtn.dataset.wired) {
-      friendSearchBtn.dataset.wired = '1';
-      friendSearchBtn.addEventListener('click', () => {
-        const term = (friendSearchInput?.value || '').trim().toLowerCase();
-        searchFriends(term, user.uid);
+    const levelsToShow = currentSnap.exists() ? currentSnap.data()?.levels : null;
+    await loadCourseProgress(targetUid, levelsToShow);
+
+    if (suggestionsList && !suggestionsList.dataset.wired) {
+      suggestionsList.dataset.wired = '1';
+      suggestionsList.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-add-friend]');
+        if (!btn) return;
+        const target = btn.getAttribute('data-add-friend');
+        sendFriendRequest(user.uid, target).catch((e) => console.warn('send friend request failed', e));
       });
     }
 
@@ -605,21 +1076,7 @@ onAuthStateChanged(auth, async (user) => {
         if (!btn) return;
         const action = btn.getAttribute('data-invite');
         const id = btn.getAttribute('data-id');
-        handleInviteAction(user.uid, id, action).catch((e) =>
-          console.warn('invite action failed', e),
-        );
-      });
-    }
-
-    if (friendSearchResults && !friendSearchResults.dataset.wired) {
-      friendSearchResults.dataset.wired = '1';
-      friendSearchResults.addEventListener('click', (event) => {
-        const btn = event.target.closest('[data-add-friend]');
-        if (!btn) return;
-        const target = btn.getAttribute('data-add-friend');
-        sendFriendRequest(user.uid, target).catch((e) =>
-          console.warn('send friend request failed', e),
-        );
+        handleInviteAction(user.uid, id, action).catch((e) => console.warn('invite action failed', e));
       });
     }
 
@@ -633,7 +1090,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (btnChat) {
       btnChat.href = `mensajes.html?chat=${encodeURIComponent(targetUid)}`;
-      const enabled = isFriend && canMessage;
+      const enabled = (isFriend || isOwner) && canMessage;
       btnChat.style.pointerEvents = enabled ? '' : 'none';
       btnChat.style.opacity = enabled ? '' : '0.5';
     }
@@ -673,3 +1130,5 @@ onAuthStateChanged(auth, async (user) => {
     if (profileStatus) profileStatus.textContent = 'Error al cargar.';
   }
 });
+
+initTabs();

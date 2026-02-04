@@ -449,7 +449,6 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                 <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">${labels.verTodo}</a>
               </div>
             </div>
-            <a class="btn-yellow" href="espanel.html">${labels.libreta}</a>
             ${
               logged
                 ? `
@@ -492,11 +491,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                 : ''
             }
             <button class="btn-white-outline" id="btnBack" type="button">${labels.back}</button>
-            ${
-              logged
-                ? `<button class="btn-red" id="btnLogout" type="button">${labels.logout}</button>`
-                : `<a class="btn-white-outline" href="login.html">${labels.login}</a>`
-            }
+            ${logged ? '' : `<a class="btn-white-outline" href="login.html">${labels.login}</a>`}
           </div>
         </div>
 

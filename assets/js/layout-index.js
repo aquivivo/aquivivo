@@ -1,4 +1,4 @@
-import { auth } from './firebase-init.js';
+ï»¿import { auth } from './firebase-init.js';
 import './logger.js';
 import {
   onAuthStateChanged,
@@ -236,11 +236,11 @@ import {
     try {
       await updateDoc(userRef, payload);
       CURRENT_DOC = { ...(docData || {}), ...payload };
-      setTrialMessage('? Trial A1 activado por 7 días.', 'ok');
+      setTrialMessage('? Trial A1 activado por 7 dÃ­as.', 'ok');
       return true;
     } catch (e) {
       console.warn('[trial] activation failed', e);
-      setTrialMessage('No se pudo activar el trial. Inténtalo de nuevo.');
+      setTrialMessage('No se pudo activar el trial. IntÃ©ntalo de nuevo.');
       return false;
     }
   }
@@ -251,7 +251,7 @@ import {
 
     if (!CURRENT_USER) {
       btn.disabled = false;
-      setTrialMessage('Inicia sesión para activar tu prueba gratuita.');
+      setTrialMessage('Inicia sesiÃ³n para activar tu prueba gratuita.');
       return;
     }
 
@@ -276,7 +276,7 @@ import {
     const ok = isTrialEligible(CURRENT_DOC);
     btn.disabled = !ok;
     if (ok) {
-      setTrialMessage('Activa tu prueba gratuita de A1 (7 días).', 'ok');
+      setTrialMessage('Activa tu prueba gratuita de A1 (7 dÃ­as).', 'ok');
     } else {
       setTrialMessage(
         'Tu prueba ya fue usada. Vuelve cuando no tengas plan activo o tras un tiempo de inactividad.',
@@ -336,7 +336,6 @@ import {
 
             <a class="btn-white-outline" id="btnContacto" href="#appFooter">&#x1F495; Contacto</a>
 
-            <a class="btn-white-outline" id="btnPanel" href="${hrefPanel}">&#x1F3E0; Libreta</a>
 
             <div class="nav-profile" id="navProfile" style="display:none;">
               <a class="nav-icon-btn" href="notificaciones.html" title="Notificaciones">&#128276;</a>
@@ -369,14 +368,14 @@ import {
                   <a class="nav-profile-item" href="ayuda.html">&#129509; Ayuda / Reportar</a>
                   <a class="nav-profile-item" id="navProfileAdmin" href="esadmin.html" style="display:none;">&#128737; Admin</a>
                   <div class="nav-profile-sep"></div>
-                  <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">&#128682; Cerrar sesión</button>
+                  <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">&#128682; Cerrar sesiÃ³n</button>
                 </div>
               </div>
             </div>
 
             <a class="btn-yellow" id="btnLogin" href="${hrefLogin}" style="display:none;">&#x1F510; Iniciar sesi&oacute;n</a>
             <div class="nav-admin-stack" id="navAdminStack" style="display:none;">
-              <button class="btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesi&oacute;n</button>
+
               <a class="btn-yellow" id="btnAdmin" href="esadmin.html" style="display:none;">&#x1F6E1;&#xFE0F; Admin</a>
             </div>
           </div>
@@ -577,8 +576,6 @@ import {
 
   function setupAuthButtons() {
     const btnLogin = document.getElementById('btnLogin');
-    const btnLogout = document.getElementById('btnLogout');
-    const btnPanel = document.getElementById('btnPanel');
     const btnAdmin = document.getElementById('btnAdmin');
     const adminStack = document.getElementById('navAdminStack');
     const navProfile = document.getElementById('navProfile');
@@ -594,15 +591,7 @@ import {
     const navProfileAvatar = document.getElementById('navProfileAvatar');
     const navProfileAvatarImg = document.getElementById('navProfileAvatarImg');
     const navProfileAvatarFallback = document.getElementById('navProfileAvatarFallback');
-    if (!btnLogin || !btnLogout || !btnPanel) return;
-
-    btnLogout.addEventListener('click', async () => {
-      try {
-        await signOut(auth);
-      } finally {
-        location.href = 'index.html';
-      }
-    });
+    if (!btnLogin) return;
 
     onAuthStateChanged(auth, async (user) => {
       CURRENT_USER = user || null;
@@ -621,23 +610,10 @@ import {
         }
       }
 
-      if (loggedIn) {
-        btnLogin.style.display = 'none';
-        btnLogout.style.display = '';
-        btnPanel.style.display = '';
-      } else {
-        btnLogin.style.display = '';
-        btnLogout.style.display = 'none';
-        btnPanel.style.display = '';
-      }
+      btnLogin.style.display = loggedIn ? 'none' : '';
 
-      if (adminStack) {
-        adminStack.style.display = loggedIn ? 'flex' : 'none';
-      }
-
-      if (btnAdmin) {
-        btnAdmin.style.display = loggedIn && isAdmin ? '' : 'none';
-      }
+      if (adminStack) adminStack.style.display = loggedIn && isAdmin ? 'flex' : 'none';
+      if (btnAdmin) btnAdmin.style.display = loggedIn && isAdmin ? '' : 'none';
 
       if (navProfile) {
         if (!loggedIn) {
