@@ -63,6 +63,37 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     return Number.isNaN(d.getTime()) ? null : d;
   }
 
+  function esc(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function avatarInitial(nameOrEmail) {
+    const text = String(nameOrEmail || '').trim();
+    if (!text) return 'U';
+    return text[0].toUpperCase();
+  }
+
+  function usePrettyProfile() {
+    const host = location.hostname || '';
+    if (!host) return false;
+    if (host === 'localhost' || host === '127.0.0.1') return false;
+    return true;
+  }
+
+  function buildProfileHref(handle, uid) {
+    const safeHandle = String(handle || '').trim();
+    if (safeHandle) {
+      return usePrettyProfile()
+        ? `/perfil/${encodeURIComponent(safeHandle)}`
+        : `perfil.html?u=${encodeURIComponent(safeHandle)}`;
+    }
+    return `perfil.html?uid=${encodeURIComponent(uid || '')}`;
+  }
+
   function getUserLevels(docData) {
     const rawLevels = Array.isArray(docData?.levels)
       ? docData.levels.map((x) => String(x).toUpperCase())
@@ -289,8 +320,26 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     return mount;
   }
 
-  function buildHeader(user, isAdmin) {
+  function avatarInitial(nameOrEmail) {
+    const text = String(nameOrEmail || '').trim();
+    if (!text) return 'U';
+    return text[0].toUpperCase();
+  }
+
+  function buildHeader(user, isAdmin, profile) {
     const logged = !!user;
+    const photoURL = String(profile?.photoURL || user?.photoURL || '').trim();
+    const displayName = String(
+      profile?.displayName ||
+        profile?.name ||
+        user?.displayName ||
+        user?.email ||
+        '',
+    ).trim();
+    const handle = String(profile?.handle || '').trim();
+    const avatarLetter = avatarInitial(displayName || user?.email || '');
+    const profileHref = buildProfileHref(handle, user?.uid);
+    const profileName = displayName || user?.email || 'Usuario';
     const labels = isAdminPage
       ? {
           navLabel: 'Nawigacja',
@@ -305,6 +354,15 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
           ebooks: 'Ebooki',
           verTodo: 'Zobacz wszystko',
           libreta: 'Libreta',
+          profile: 'Profil',
+          myCourses: 'Moje kursy',
+          messages: 'Wiadomosci',
+          notifications: 'Powiadomienia',
+          refer: 'Polec znajomych',
+          settings: 'Ustawienia konta',
+          payments: 'Historia platnosci',
+          rewards: 'Moje nagrody',
+          help: 'Pomoc / Zglos problem',
           back: 'Wstecz',
           logout: 'Wyloguj',
         }
@@ -321,6 +379,15 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
           ebooks: 'Ebooks',
           verTodo: 'Ver todo',
           libreta: 'Libreta',
+          profile: 'Perfil',
+          myCourses: 'Mis cursos',
+          messages: 'Mensajes',
+          notifications: 'Notificaciones',
+          refer: 'Recomendar amigos',
+          settings: 'Ajustes de cuenta',
+          payments: 'Historial de pagos',
+          rewards: 'Mis recompensas',
+          help: 'Ayuda / Reportar',
           back: 'Atras',
           logout: 'Cerrar sesion',
         };
@@ -383,6 +450,47 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
               </div>
             </div>
             <a class="btn-yellow" href="espanel.html">${labels.libreta}</a>
+            ${
+              logged
+                ? `
+              <div class="nav-profile" id="navProfile">
+                <a class="nav-icon-btn" href="notificaciones.html" title="${labels.notifications}">🔔</a>
+                <a class="nav-icon-btn" href="mensajes.html" title="${labels.messages}">💬</a>
+                <button class="nav-avatar ${photoURL ? 'nav-avatar--img' : ''}" id="navProfileToggle" type="button" aria-haspopup="menu" aria-expanded="false">
+                  ${photoURL ? `<img src="${photoURL}" alt="Foto de perfil" />` : ''}
+                  <span>${avatarLetter}</span>
+                </button>
+                <div class="nav-profile-menu" id="navProfileMenu" role="menu" aria-label="${labels.profile}">
+                  <div class="nav-profile-head">
+                    <div class="nav-avatar nav-avatar--small ${photoURL ? 'nav-avatar--img' : ''}">
+                      ${photoURL ? `<img src="${photoURL}" alt="Foto de perfil" />` : ''}
+                      <span>${avatarLetter}</span>
+                    </div>
+                    <div>
+                      <div class="nav-profile-name">${esc(profileName)}</div>
+                      ${handle ? `<div class="nav-profile-handle">@${esc(handle)}</div>` : ''}
+                    </div>
+                  </div>
+                  <div class="nav-profile-list">
+                    <a class="nav-profile-item" href="${profileHref}">👤 ${labels.profile}</a>
+                    <a class="nav-profile-item" href="espanel.html">📒 ${labels.libreta}</a>
+                    <a class="nav-profile-item" href="espanel.html#cursos">📚 ${labels.myCourses}</a>
+                    <a class="nav-profile-item" href="mensajes.html">💬 ${labels.messages}</a>
+                    <a class="nav-profile-item" href="notificaciones.html">🔔 ${labels.notifications}</a>
+                    <a class="nav-profile-item" href="referidos.html">🤝 ${labels.refer}</a>
+                    <a class="nav-profile-item" href="ajustes.html">⚙️ ${labels.settings}</a>
+                    <a class="nav-profile-item" href="pagos.html">💳 ${labels.payments}</a>
+                    <a class="nav-profile-item" href="recompensas.html">🏆 ${labels.rewards}</a>
+                    <a class="nav-profile-item" href="ayuda.html">🆘 ${labels.help}</a>
+                    ${logged && isAdmin ? `<a class="nav-profile-item" href="esadmin.html">🛡️ ${labels.admin}</a>` : ''}
+                    <div class="nav-profile-sep"></div>
+                    <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">🚪 ${labels.logout}</button>
+                  </div>
+                </div>
+              </div>
+            `
+                : ''
+            }
             <button class="btn-white-outline" id="btnBack" type="button">${labels.back}</button>
             ${
               logged
@@ -480,6 +588,53 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         location.href = 'index.html';
       });
     }
+
+    const profileWrap = document.getElementById('navProfile');
+    const profileToggle = document.getElementById('navProfileToggle');
+    const profileMenu = document.getElementById('navProfileMenu');
+    if (profileWrap && profileToggle && profileMenu && !profileWrap.dataset.wired) {
+      profileWrap.dataset.wired = '1';
+
+      const open = () => {
+        profileWrap.classList.add('open');
+        profileToggle.setAttribute('aria-expanded', 'true');
+      };
+      const close = () => {
+        profileWrap.classList.remove('open');
+        profileToggle.setAttribute('aria-expanded', 'false');
+      };
+      const toggle = () => {
+        if (profileWrap.classList.contains('open')) close();
+        else open();
+      };
+
+      profileToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggle();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!profileWrap.contains(e.target)) close();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+      });
+    }
+
+    const profileLogout = document.getElementById('navProfileLogout');
+    if (profileLogout && !profileLogout.dataset.wired) {
+      profileLogout.dataset.wired = '1';
+      profileLogout.addEventListener('click', async () => {
+        try {
+          await signOut(auth);
+        } catch (e) {
+          console.error('Logout error', e);
+        }
+        location.href = 'index.html';
+      });
+    }
   }
 
   function setupAnchorScroll() {
@@ -532,7 +687,8 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       }
     }
 
-    mount.innerHTML = buildHeader(user, isAdmin);
+    const profile = CURRENT_DOC || {};
+    mount.innerHTML = buildHeader(user, isAdmin, profile);
     footerMount.innerHTML = buildFooter();
     wireHeader();
     setupAnchorScroll();

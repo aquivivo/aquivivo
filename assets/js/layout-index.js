@@ -46,7 +46,30 @@ import {
   let CURRENT_USER = null;
   let CURRENT_DOC = null;
 
-  function toDateMaybe(v) {
+  function avatarInitial(nameOrEmail) {
+    const text = String(nameOrEmail || '').trim();
+    if (!text) return 'U';
+    return text[0].toUpperCase();
+  }
+
+  function usePrettyProfile() {
+    const host = location.hostname || '';
+    if (!host) return false;
+    if (host === 'localhost' || host === '127.0.0.1') return false;
+    return true;
+  }
+
+  function buildProfileHref(handle, uid) {
+    const safeHandle = String(handle || '').trim();
+    if (safeHandle) {
+      return usePrettyProfile()
+        ? `/perfil/${encodeURIComponent(safeHandle)}`
+        : `perfil.html?u=${encodeURIComponent(safeHandle)}`;
+    }
+    return `perfil.html?uid=${encodeURIComponent(uid || '')}`;
+  }
+
+  function toDateMaybe(v) { {
     if (!v) return null;
     if (v instanceof Date) return v;
     if (typeof v.toDate === 'function') return v.toDate();
@@ -315,6 +338,42 @@ import {
 
             <a class="btn-white-outline" id="btnPanel" href="${hrefPanel}">&#x1F3E0; Libreta</a>
 
+            <div class="nav-profile" id="navProfile" style="display:none;">
+              <a class="nav-icon-btn" href="notificaciones.html" title="Notificaciones">&#128276;</a>
+              <a class="nav-icon-btn" href="mensajes.html" title="Mensajes">&#128172;</a>
+              <button class="nav-avatar" id="navAvatarLink" type="button" aria-haspopup="menu" aria-expanded="false">
+                <img id="navAvatarImg" alt="Foto de perfil" style="display:none;" />
+                <span id="navAvatarFallback">U</span>
+              </button>
+              <div class="nav-profile-menu" id="navProfileMenu" role="menu" aria-label="Perfil">
+                <div class="nav-profile-head">
+                  <div class="nav-avatar nav-avatar--small" id="navProfileAvatar">
+                    <img id="navProfileAvatarImg" alt="Foto de perfil" style="display:none;" />
+                    <span id="navProfileAvatarFallback">U</span>
+                  </div>
+                  <div>
+                    <div class="nav-profile-name" id="navProfileName">Usuario</div>
+                    <div class="nav-profile-handle" id="navProfileHandle"></div>
+                  </div>
+                </div>
+                <div class="nav-profile-list">
+                  <a class="nav-profile-item" id="navProfilePublic" href="#">&#128100; Perfil</a>
+                  <a class="nav-profile-item" href="${hrefPanel}">&#128210; Libreta</a>
+                  <a class="nav-profile-item" href="${hrefPanel}#cursos">&#128218; Mis cursos</a>
+                  <a class="nav-profile-item" href="mensajes.html">&#128172; Mensajes</a>
+                  <a class="nav-profile-item" href="notificaciones.html">&#128276; Notificaciones</a>
+                  <a class="nav-profile-item" href="referidos.html">&#129309; Recomendar amigos</a>
+                  <a class="nav-profile-item" href="ajustes.html">&#9881; Ajustes de cuenta</a>
+                  <a class="nav-profile-item" href="pagos.html">&#128179; Historial de pagos</a>
+                  <a class="nav-profile-item" href="recompensas.html">&#127942; Mis recompensas</a>
+                  <a class="nav-profile-item" href="ayuda.html">&#129509; Ayuda / Reportar</a>
+                  <a class="nav-profile-item" id="navProfileAdmin" href="esadmin.html" style="display:none;">&#128737; Admin</a>
+                  <div class="nav-profile-sep"></div>
+                  <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">&#128682; Cerrar sesión</button>
+                </div>
+              </div>
+            </div>
+
             <a class="btn-yellow" id="btnLogin" href="${hrefLogin}" style="display:none;">&#x1F510; Iniciar sesi&oacute;n</a>
             <div class="nav-admin-stack" id="navAdminStack" style="display:none;">
               <button class="btn-red" id="btnLogout" type="button" style="display:none;">Cerrar sesi&oacute;n</button>
@@ -522,6 +581,19 @@ import {
     const btnPanel = document.getElementById('btnPanel');
     const btnAdmin = document.getElementById('btnAdmin');
     const adminStack = document.getElementById('navAdminStack');
+    const navProfile = document.getElementById('navProfile');
+    const navAvatarLink = document.getElementById('navAvatarLink');
+    const navAvatarImg = document.getElementById('navAvatarImg');
+    const navAvatarFallback = document.getElementById('navAvatarFallback');
+    const navProfileMenu = document.getElementById('navProfileMenu');
+    const navProfileAdmin = document.getElementById('navProfileAdmin');
+    const navProfileLogout = document.getElementById('navProfileLogout');
+    const navProfilePublic = document.getElementById('navProfilePublic');
+    const navProfileName = document.getElementById('navProfileName');
+    const navProfileHandle = document.getElementById('navProfileHandle');
+    const navProfileAvatar = document.getElementById('navProfileAvatar');
+    const navProfileAvatarImg = document.getElementById('navProfileAvatarImg');
+    const navProfileAvatarFallback = document.getElementById('navProfileAvatarFallback');
     if (!btnLogin || !btnLogout || !btnPanel) return;
 
     btnLogout.addEventListener('click', async () => {
@@ -565,6 +637,95 @@ import {
 
       if (btnAdmin) {
         btnAdmin.style.display = loggedIn && isAdmin ? '' : 'none';
+      }
+
+      if (navProfile) {
+        if (!loggedIn) {
+          navProfile.style.display = 'none';
+        } else {
+          const photoURL = String(CURRENT_DOC?.photoURL || user?.photoURL || '').trim();
+          const displayName = String(
+            CURRENT_DOC?.displayName ||
+              CURRENT_DOC?.name ||
+              user?.displayName ||
+              user?.email ||
+              '',
+          ).trim();
+          const handle = String(CURRENT_DOC?.handle || '').trim();
+          const letter = avatarInitial(displayName || user?.email || '');
+          const profileHref = buildProfileHref(handle, user?.uid);
+
+          if (navAvatarFallback) navAvatarFallback.textContent = letter || 'U';
+          if (navProfileAvatarFallback) navProfileAvatarFallback.textContent = letter || 'U';
+          if (navProfileName) navProfileName.textContent = displayName || user?.email || 'Usuario';
+          if (navProfileHandle) navProfileHandle.textContent = handle ? `@${handle}` : '';
+          if (navProfilePublic) navProfilePublic.href = profileHref;
+
+          if (photoURL) {
+            if (navAvatarImg) {
+              navAvatarImg.src = photoURL;
+              navAvatarImg.style.display = 'block';
+            }
+            if (navProfileAvatarImg) {
+              navProfileAvatarImg.src = photoURL;
+              navProfileAvatarImg.style.display = 'block';
+            }
+            if (navAvatarLink) navAvatarLink.classList.add('nav-avatar--img');
+            if (navProfileAvatar) navProfileAvatar.classList.add('nav-avatar--img');
+          } else {
+            if (navAvatarImg) {
+              navAvatarImg.removeAttribute('src');
+              navAvatarImg.style.display = 'none';
+            }
+            if (navProfileAvatarImg) {
+              navProfileAvatarImg.removeAttribute('src');
+              navProfileAvatarImg.style.display = 'none';
+            }
+            if (navAvatarLink) navAvatarLink.classList.remove('nav-avatar--img');
+            if (navProfileAvatar) navProfileAvatar.classList.remove('nav-avatar--img');
+          }
+
+          if (navProfileAdmin) navProfileAdmin.style.display = loggedIn && isAdmin ? '' : 'none';
+          navProfile.style.display = 'inline-flex';
+        }
+      }
+
+      if (navProfile && navAvatarLink && navProfileMenu && !navProfile.dataset.wired) {
+        navProfile.dataset.wired = '1';
+        const open = () => {
+          navProfile.classList.add('open');
+          navAvatarLink.setAttribute('aria-expanded', 'true');
+        };
+        const close = () => {
+          navProfile.classList.remove('open');
+          navAvatarLink.setAttribute('aria-expanded', 'false');
+        };
+        const toggle = () => {
+          if (navProfile.classList.contains('open')) close();
+          else open();
+        };
+        navAvatarLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggle();
+        });
+        document.addEventListener('click', (e) => {
+          if (!navProfile.contains(e.target)) close();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') close();
+        });
+      }
+
+      if (navProfileLogout && !navProfileLogout.dataset.wired) {
+        navProfileLogout.dataset.wired = '1';
+        navProfileLogout.addEventListener('click', async () => {
+          try {
+            await signOut(auth);
+          } finally {
+            location.href = 'index.html';
+          }
+        });
       }
 
       idleEnabled = !!user && !isAdmin;

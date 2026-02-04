@@ -799,7 +799,6 @@ const friendReqStatus = $('friendReqStatus');
 const friendRequestsList = $('friendRequestsList');
 const friendsList = $('friendsList');
 const blockedList = $('blockedList');
-const blockedList = $('blockedList');
 const chatHeader = $('chatHeader');
 const chatMessages = $('chatMessages');
 const chatInput = $('chatInput');
