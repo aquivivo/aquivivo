@@ -2905,6 +2905,76 @@ async function toggleReportStatus(id) {
   }
 }
 
+/* ===== BROADCASTS ===== */
+let broadcastsCache = [];
+
+function renderBroadcasts() {
+  const list = $('broadcastList');
+  if (!list) return;
+  if (!broadcastsCache.length) {
+    list.innerHTML = '<div class="muted">Brak wiadomosci.</div>';
+    return;
+  }
+  list.innerHTML = broadcastsCache
+    .map((b) => {
+      const title = esc(b.title || 'Wiadomosc');
+      const body = esc(b.body || b.message || '');
+      const date = isoDateTimeLocal(b.createdAt) || '';
+      return `
+        <div class="listItem">
+          <div style="font-weight:900">${title}</div>
+          <div class="muted" style="margin-top:6px">${body}</div>
+          <div class="hintSmall" style="margin-top:6px">${date}</div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function loadBroadcasts() {
+  const status = $('broadcastStatus');
+  try {
+    setStatus(status, 'Ladowanie...');
+    const snap = await getDocs(
+      query(collection(db, 'broadcasts'), orderBy('createdAt', 'desc'), limit(50)),
+    );
+    broadcastsCache = [];
+    snap.forEach((d) => broadcastsCache.push({ id: d.id, ...(d.data() || {}) }));
+    renderBroadcasts();
+    setStatus(status, `Gotowe (${broadcastsCache.length})`);
+  } catch (e) {
+    console.error('[broadcasts]', e);
+    setStatus(status, 'Blad', true);
+  }
+}
+
+async function sendBroadcast() {
+  const titleEl = $('broadcastTitle');
+  const bodyEl = $('broadcastBody');
+  const status = $('broadcastStatus');
+  const body = String(bodyEl?.value || '').trim();
+  const title = String(titleEl?.value || '').trim();
+  if (!body) {
+    setStatus(status, 'Wpisz wiadomosc.', true);
+    return;
+  }
+  try {
+    setStatus(status, 'Wysylanie...');
+    await addDoc(collection(db, 'broadcasts'), {
+      title: title || 'Wiadomosc',
+      body,
+      createdAt: serverTimestamp(),
+    });
+    if (bodyEl) bodyEl.value = '';
+    if (titleEl) titleEl.value = '';
+    setStatus(status, 'Wyslano');
+    await loadBroadcasts();
+  } catch (e) {
+    console.error('[broadcast send]', e);
+    setStatus(status, 'Blad', true);
+  }
+}
+
 function ensureUserQuickButtons() {
   // Add missing quick buttons into the modal actions row (without editing HTML file).
   const statusEl = $('um_status');
@@ -3560,6 +3630,10 @@ function bindEvents() {
     if (id) toggleReportStatus(id);
   });
 
+  // komunikacja
+  $('btnSendBroadcast')?.addEventListener('click', sendBroadcast);
+  $('btnReloadBroadcasts')?.addEventListener('click', loadBroadcasts);
+
   // platnosci
   $('btnLoadPayments')?.addEventListener('click', loadPayments);
   $('paymentsStatus')?.addEventListener('change', renderPayments);
@@ -3608,6 +3682,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadReferralSettings();
     await loadPromoList();
     await loadServicesList();
+    await loadBroadcasts();
   });
 });
 

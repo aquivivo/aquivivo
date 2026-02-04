@@ -30,11 +30,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Pulpit
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Pulpit</summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
               Szybkie podsumowanie (liczniki z Firestore). Kliknij karte, aby
@@ -364,11 +360,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Platnosci
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Platnosci</summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
               Podglad platnosci Stripe oraz prob checkoutu.
@@ -439,11 +431,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Kody promo
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Kody promo</summary>
           <div class="hr"></div>
           <div class="sectionTitle" style="margin-top: 0">
             Ustawienia polecen
@@ -604,11 +592,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Segmentacja (marketing)
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Segmentacja (marketing)</summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
               Szybkie listy: wygasa wkrotce, premium aktywny, bez dostepu (ok.).
@@ -669,6 +653,28 @@
             <div class="list" id="segmentList"></div>
           </div>
         </details>
+        </div>
+
+        <div class="adminGroupTitle">Komunikacja</div>
+        <div class="adminGroup">
+          <details class="card" id="accBroadcasts">
+            <summary class="sectionTitle" style="cursor: pointer; list-style: none">
+              Wiadomosci do wszystkich
+            </summary>
+            <div style="margin-top: 10px">
+              <p class="subtitle">
+                Wyslij ogloszenie do wszystkich uzytkownikow (pojawi sie w ich panelu).
+              </p>
+              <div class="metaRow" style="flex-wrap: wrap; gap: 10px; align-items: flex-end">
+                <input class="input" id="broadcastTitle" placeholder="Tytul (opcjonalnie)" style="min-width: 220px; flex: 1" />
+                <textarea class="input" id="broadcastBody" placeholder="Wiadomosc..." style="min-width: 260px; flex: 2"></textarea>
+                <button class="btn-yellow" id="btnSendBroadcast" type="button">Wyslij</button>
+                <button class="btn-white-outline" id="btnReloadBroadcasts" type="button">Odswiez</button>
+                <span class="hintSmall" id="broadcastStatus"></span>
+              </div>
+              <div id="broadcastList" class="list" style="margin-top: 12px"></div>
+            </div>
+          </details>
         </div>
 
         <div class="adminGroupTitle">Tresc i publikacje</div>
@@ -789,11 +795,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Uzytkownicy
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Uzytkownicy</summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
               Szukaj po emailu, otworz edytor i zarzadzaj dostepem/planem/datami.
@@ -864,11 +866,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Postepy (analiza)
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Postepy (analiza)</summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
               Wybierz uzytkownika, aby zobaczyc trudne tematy i bledne odpowiedzi w tescie.
@@ -949,11 +947,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Fiszki (statystyki)
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Fiszki (statystyki)</summary>
           <div style="margin-top: 10px">
             <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
               <button class="btn-white-outline" id="btnLoadFlashcards" type="button">
@@ -986,11 +980,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Opinie i oceny
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Opinie i oceny</summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
               Lista opinii uzytkownikow o lekcjach/tematach/kursach.
@@ -1088,11 +1078,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Logi aplikacji
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Logi aplikacji</summary>
           <div style="margin-top: 10px">
             <p class="subtitle">
               Najnowsze bledy i odrzucenia (client-side). Filtry dzialaja po wczytaniu.
@@ -1136,11 +1122,7 @@
             class="sectionTitle"
             style="cursor: pointer; list-style: none"
           >
-            Biblioteka audio
-            <span class="hintSmall" style="font-weight: 600; margin-left: 8px"
-              >(kliknij aby otworzyc/zamknac)</span
-            >
-          </summary>
+            Biblioteka audio</summary>
           <div style="margin-top: 10px">
             <div class="metaRow" style="flex-wrap: wrap; gap: 10px; align-items: center">
               <input id="audioLibFile" type="file" accept="audio/*" />
@@ -1347,6 +1329,8 @@
     <script src="assets/js/pages/esadmin-page.js" type="module"></script>
   </body>
 </html>
+
+
 
 
 

@@ -63,11 +63,30 @@ service cloud.firestore {
       return hasGlobalAccess() || (signedIn() && notBlocked() && hasLevel(level));
     }
 
+    function friendReqDoc(a, b) {
+      return /databases/$(database)/documents/friend_requests/$(a + "__" + b);
+    }
+
+    function blockDoc(a, b) {
+      return /databases/$(database)/documents/user_blocks/$(a + "__" + b);
+    }
+
+    function isBlocked(a, b) {
+      return exists(blockDoc(a, b)) || exists(blockDoc(b, a));
+    }
+
+    function isFriends(a, b) {
+      return (
+        (exists(friendReqDoc(a, b)) && get(friendReqDoc(a, b)).data.status == "accepted")
+        || (exists(friendReqDoc(b, a)) && get(friendReqDoc(b, a)).data.status == "accepted")
+      );
+    }
+
     /* ===== USERS ===== */
 
     // User może zmieniać tylko "bezpieczne" pola profilu
     function userEditableKeys() {
-      return ["name","displayName","photoURL","photoPath","lang","gender","studyGoalMin","reviewReminders","note","noteUser","refCode","refCodeCreatedAt","reviewDailyMinutes","reviewDailyLimit","reviewDirection","updatedAt"];
+      return ["name","displayName","photoURL","photoPath","lang","gender","studyGoalMin","reviewReminders","publicProfile","allowFriendRequests","allowMessages","note","noteUser","refCode","refCodeCreatedAt","reviewDailyMinutes","reviewDailyLimit","reviewDirection","updatedAt"];
     }
 
     // Chronione – user nie może ich ruszać
@@ -271,6 +290,72 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create: if signedIn() && (isAdmin() || request.resource.data.userId == request.auth.uid);
       allow update, delete: if isAdmin();
+    }
+
+    /* ===== PUBLIC PROFILES ===== */
+    match /public_users/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isAdmin() || isOwner(uid);
+      allow delete: if isAdmin();
+    }
+
+    /* ===== FRIEND REQUESTS ===== */
+    match /friend_requests/{id} {
+      allow read: if isAdmin() || (signedIn() && (
+        resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid
+      ));
+
+      allow create: if signedIn()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.toUid is string
+        && request.resource.data.toUid != request.auth.uid
+        && !isBlocked(request.resource.data.fromUid, request.resource.data.toUid)
+        && request.resource.data.status == "pending";
+
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status","updatedAt"])
+        && (
+          isAdmin()
+          || (resource.data.toUid == request.auth.uid && request.resource.data.status in ["accepted","declined"])
+          || (resource.data.fromUid == request.auth.uid && request.resource.data.status == "cancelled")
+        );
+
+      allow delete: if isAdmin() || (signedIn() && (
+        resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid
+      ));
+    }
+
+    /* ===== USER MESSAGES ===== */
+    match /user_inbox/{uid}/messages/{msgId} {
+      allow read: if isAdmin() || isOwner(uid);
+      allow create: if signedIn()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.toUid is string
+        && isFriends(request.resource.data.fromUid, request.resource.data.toUid)
+        && !isBlocked(request.resource.data.fromUid, request.resource.data.toUid)
+        && (request.auth.uid == uid || request.resource.data.toUid == uid);
+      allow update: if isOwner(uid);
+      allow delete: if isAdmin() || isOwner(uid);
+    }
+
+    /* ===== USER BLOCKS ===== */
+    match /user_blocks/{id} {
+      allow read: if isAdmin() || (signedIn() && (
+        resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid
+      ));
+      allow create: if signedIn()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.toUid is string
+        && request.resource.data.toUid != request.auth.uid
+        && request.resource.id == request.auth.uid + "__" + request.resource.data.toUid;
+      allow delete: if isAdmin() || (signedIn() && resource.data.fromUid == request.auth.uid);
+      allow update: if false;
+    }
+
+    /* ===== BROADCASTS ===== */
+    match /broadcasts/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
     }
 
     /* ===== PAYMENTS ===== */

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Perfil | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <script src="assets/js/layout.js" type="module"></script>
+  </head>
+
+  <body data-page="profile">
+    <div id="appHeader"></div>
+
+    <main class="page">
+      <div class="container">
+        <div class="card" id="profileCard">
+          <div class="metaRow" style="gap: 16px; align-items: center; flex-wrap: wrap">
+            <div class="heroIcon heroIcon--avatar" id="profileAvatarWrap">
+              <img id="profileAvatarImg" alt="Foto de perfil" />
+              <span id="profileAvatarFallback">USR</span>
+            </div>
+            <div>
+              <h1 class="glow-text" id="profileName" style="margin: 0; font-size: 36px">
+                Perfil
+              </h1>
+              <div class="muted" id="profileStatus" style="margin-top: 6px">—</div>
+            </div>
+          </div>
+
+          <div class="metaRow" style="margin-top: 16px; gap: 10px; flex-wrap: wrap">
+            <button class="btn-yellow" id="btnProfileAdd" type="button">Agregar</button>
+            <a class="btn-white-outline" id="btnProfileChat" href="espanel.html">Mensaje</a>
+            <button class="btn-white-outline" id="btnProfileBlock" type="button">Bloquear</button>
+            <a class="btn-white-outline" href="espanel.html">Volver</a>
+            <span class="hintSmall" id="profileMsg"></span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="assets/js/pages/perfil-page.js"></script>
+  </body>
+</html>

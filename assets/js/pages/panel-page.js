@@ -16,12 +16,15 @@ import {
   arrayUnion,
   Timestamp,
   addDoc,
+  deleteDoc,
   collection,
   getDocs,
   query,
   where,
   limit,
   orderBy,
+  startAt,
+  endAt,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 import {
   ref as storageRef,
@@ -34,6 +37,7 @@ const $ = (id) => document.getElementById(id);
 
 const qs = new URLSearchParams(location.search);
 const AS_UID = (qs.get('as') || '').trim(); // admin preview
+const CHAT_UID = (qs.get('chat') || '').trim();
 
 function toCode(raw) {
   return String(raw || '')
@@ -311,6 +315,37 @@ async function loadReviewSummary(uid) {
     }
   } catch (e) {
     console.warn('loadReviewSummary failed', e);
+  }
+}
+
+async function loadInbox() {
+  if (!inboxList) return;
+  inboxList.innerHTML = '<div class="muted">Cargando...</div>';
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'broadcasts'), orderBy('createdAt', 'desc'), limit(10)),
+    );
+    const items = (snap.docs || []).map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    if (!items.length) {
+      inboxList.innerHTML = '<div class="muted">Sin novedades.</div>';
+      return;
+    }
+    inboxList.innerHTML = items
+      .map((b) => {
+        const title = String(b.title || 'Aviso');
+        const body = String(b.body || b.message || '');
+        return `
+          <div class="inboxItem">
+            <div class="inboxTitle">${title}</div>
+            <div class="inboxBody">${body}</div>
+            <div class="inboxDate">${formatDate(b.createdAt)}</div>
+          </div>
+        `;
+      })
+      .join('');
+  } catch (e) {
+    console.warn('loadInbox failed', e);
+    inboxList.innerHTML = '<div class="muted">No se pudo cargar.</div>';
   }
 }
 
@@ -737,6 +772,9 @@ const setGender = $('setGender');
 const setLang = $('setLang');
 const setGoal = $('setGoal');
 const setReviewReminders = $('setReviewReminders');
+const setPublicProfile = $('setPublicProfile');
+const setAllowFriendRequests = $('setAllowFriendRequests');
+const setAllowMessages = $('setAllowMessages');
 const btnSaveSettings = $('btnSaveSettings');
 const settingsMsg = $('settingsMsg');
 const userReportType = $('userReportType');
@@ -745,6 +783,33 @@ const userReportTopic = $('userReportTopic');
 const userReportMessage = $('userReportMessage');
 const btnUserReport = $('btnUserReport');
 const userReportStatus = $('userReportStatus');
+const inboxList = $('inboxList');
+const friendCode = $('friendCode');
+const btnCopyFriendCode = $('btnCopyFriendCode');
+const btnNewFriendCode = $('btnNewFriendCode');
+const friendCodeInfo = $('friendCodeInfo');
+const communitySearchInput = $('communitySearchInput');
+const btnCommunitySearch = $('btnCommunitySearch');
+const communitySearchStatus = $('communitySearchStatus');
+const communitySearchResults = $('communitySearchResults');
+const friendCodeSearch = $('friendCodeSearch');
+const btnSendFriendRequest = $('btnSendFriendRequest');
+const friendReqStatus = $('friendReqStatus');
+const friendRequestsList = $('friendRequestsList');
+const friendsList = $('friendsList');
+const blockedList = $('blockedList');
+const blockedList = $('blockedList');
+const chatHeader = $('chatHeader');
+const chatMessages = $('chatMessages');
+const chatInput = $('chatInput');
+const btnSendMessage = $('btnSendMessage');
+const chatStatus = $('chatStatus');
+const chatHint = $('chatHint');
+
+let activeChatUid = '';
+let activeChatProfile = null;
+const publicProfileCache = new Map();
+let blockedSet = new Set();
 
 function setAvatarMsg(text, bad = false) {
   if (!avatarMsg) return;
@@ -756,6 +821,12 @@ function setSettingsMsg(text, bad = false) {
   if (!settingsMsg) return;
   settingsMsg.textContent = text || '';
   settingsMsg.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+}
+
+function setCommunitySearchMsg(text, bad = false) {
+  if (!communitySearchStatus) return;
+  communitySearchStatus.textContent = text || '';
+  communitySearchStatus.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
 }
 
 function setUserReportMsg(text, bad = false) {
@@ -803,6 +874,764 @@ async function submitUserReport(uid, email) {
   }
 }
 
+function setFriendReqMsg(text, bad = false) {
+  if (!friendReqStatus) return;
+  friendReqStatus.textContent = text || '';
+  friendReqStatus.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+}
+
+function setChatMsg(text, bad = false) {
+  if (!chatStatus) return;
+  chatStatus.textContent = text || '';
+  chatStatus.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+}
+
+function genFriendCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < 6; i += 1) {
+    out += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return out;
+}
+
+function normName(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+async function generateUniqueFriendCode() {
+  for (let i = 0; i < 6; i += 1) {
+    const code = genFriendCode();
+    const snap = await getDocs(
+      query(collection(db, 'public_users'), where('friendCode', '==', code), limit(1)),
+    );
+    if (snap.empty) return code;
+  }
+  return `${genFriendCode()}${Math.floor(Math.random() * 9)}`;
+}
+
+async function getPublicProfile(uid) {
+  if (!uid) return null;
+  if (publicProfileCache.has(uid)) return publicProfileCache.get(uid);
+  const snap = await getDoc(doc(db, 'public_users', uid));
+  const data = snap.exists() ? snap.data() || {} : null;
+  publicProfileCache.set(uid, data);
+  return data;
+}
+
+async function upsertPublicProfile(uid, payload) {
+  if (!uid) return;
+  try {
+    const data = { ...payload, updatedAt: serverTimestamp() };
+    if (typeof payload?.displayName === 'string') {
+      data.displayNameLower = normName(payload.displayName);
+    }
+    await setDoc(
+      doc(db, 'public_users', uid),
+      data,
+      { merge: true },
+    );
+  } catch {}
+}
+
+async function ensurePublicProfile(uid, userDoc, email) {
+  if (!uid) return null;
+  const ref = doc(db, 'public_users', uid);
+  const snap = await getDoc(ref);
+  const displayName =
+    String(userDoc?.displayName || userDoc?.name || '') ||
+    String(email || '').split('@')[0];
+  const photoURL = String(userDoc?.photoURL || '');
+  const userEmail = String(email || '').trim();
+  const displayNameLower = normName(displayName);
+  const publicProfile = userDoc?.publicProfile !== false;
+  const allowFriendRequests = userDoc?.allowFriendRequests !== false;
+  const allowMessages = userDoc?.allowMessages !== false;
+
+  if (snap.exists()) {
+    const data = snap.data() || {};
+    const updates = {};
+    if (displayName && displayName !== data.displayName) updates.displayName = displayName;
+    if (photoURL !== data.photoURL) updates.photoURL = photoURL;
+    if (userEmail && userEmail !== data.email) updates.email = userEmail;
+    if (displayNameLower && displayNameLower !== data.displayNameLower)
+      updates.displayNameLower = displayNameLower;
+    if (data.publicProfile !== publicProfile) updates.publicProfile = publicProfile;
+    if (data.allowFriendRequests !== allowFriendRequests)
+      updates.allowFriendRequests = allowFriendRequests;
+    if (data.allowMessages !== allowMessages) updates.allowMessages = allowMessages;
+    if (!data.friendCode) updates.friendCode = await generateUniqueFriendCode();
+    if (Object.keys(updates).length) {
+      updates.updatedAt = serverTimestamp();
+      await updateDoc(ref, updates);
+      const merged = { ...data, ...updates };
+      publicProfileCache.set(uid, merged);
+      return merged;
+    }
+    publicProfileCache.set(uid, data);
+    return data;
+  }
+
+  const friendCode = await generateUniqueFriendCode();
+  const payload = {
+    displayName,
+    photoURL,
+    friendCode,
+    displayNameLower,
+    publicProfile,
+    allowFriendRequests,
+    allowMessages,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  if (userEmail) payload.email = userEmail;
+  await setDoc(ref, payload);
+  publicProfileCache.set(uid, payload);
+  return payload;
+}
+
+function renderFriendCode(profile) {
+  if (!friendCode) return;
+  const code = String(profile?.friendCode || '').trim();
+  friendCode.value = code;
+  if (friendCodeInfo) {
+    friendCodeInfo.textContent = code
+      ? 'Compártelo con tus amigos.'
+      : 'Generando código...';
+  }
+}
+
+function friendAvatarLetter(name) {
+  const safe = String(name || '').trim();
+  if (!safe) return 'AM';
+  const parts = safe.split(/\s+/).filter(Boolean);
+  const letters = parts.map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+  return letters || 'AM';
+}
+
+function renderFriendRequests(items) {
+  if (!friendRequestsList) return;
+  if (!items.length) {
+    friendRequestsList.innerHTML = '<div class="muted">Sin solicitudes.</div>';
+    return;
+  }
+  friendRequestsList.innerHTML = '';
+  items.forEach((req) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'friendItem';
+    wrap.innerHTML = `
+      <div class="friendMeta">
+        <span class="friendAvatar">${friendAvatarLetter(req.name)}</span>
+        <div>
+          <div class="friendName">${req.name || 'Usuario'}</div>
+        </div>
+      </div>
+      <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
+        <button class="btn-yellow" type="button" data-accept="${req.id}">Aceptar</button>
+        <button class="btn-white-outline" type="button" data-decline="${req.id}">Rechazar</button>
+      </div>
+    `;
+    friendRequestsList.appendChild(wrap);
+  });
+}
+
+function renderFriends(items) {
+  if (!friendsList) return;
+  if (!items.length) {
+    friendsList.innerHTML = '<div class="muted">Sin amigos todavía.</div>';
+    return;
+  }
+  friendsList.innerHTML = '';
+  items.forEach((friend) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'friendItem';
+    wrap.innerHTML = `
+      <div class="friendMeta">
+        <span class="friendAvatar">${friendAvatarLetter(friend.name)}</span>
+        <div>
+          <div class="friendName">${friend.name || 'Usuario'}</div>
+        </div>
+      </div>
+      <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
+        <a class="btn-white-outline" href="perfil.html?uid=${encodeURIComponent(
+          friend.uid,
+        )}">Perfil</a>
+        <button class="btn-white-outline" type="button" data-chat="${friend.uid}">Mensaje</button>
+        <button class="btn-white-outline" type="button" data-remove="${friend.uid}">Eliminar</button>
+        <button class="btn-white-outline" type="button" data-block="${friend.uid}">Bloquear</button>
+      </div>
+    `;
+    friendsList.appendChild(wrap);
+  });
+}
+
+function renderBlocked(items) {
+  if (!blockedList) return;
+  if (!items.length) {
+    blockedList.innerHTML = '<div class="muted">Sin bloqueos.</div>';
+    return;
+  }
+  blockedList.innerHTML = '';
+  items.forEach((item) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'friendItem';
+    wrap.innerHTML = `
+      <div class="friendMeta">
+        <span class="friendAvatar">${friendAvatarLetter(item.name)}</span>
+        <div>
+          <div class="friendName">${item.name || 'Usuario'}</div>
+        </div>
+      </div>
+      <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
+        <button class="btn-white-outline" type="button" data-unblock="${item.uid}">Desbloquear</button>
+      </div>
+    `;
+    blockedList.appendChild(wrap);
+  });
+}
+
+async function loadBlocked(uid) {
+  if (!uid) return [];
+  const snap = await getDocs(
+    query(collection(db, 'user_blocks'), where('fromUid', '==', uid)),
+  );
+  blockedSet = new Set();
+  const items = await Promise.all(
+    (snap.docs || []).map(async (d) => {
+      const data = d.data() || {};
+      const targetUid = data.toUid || String(d.id || '').split('__')[1];
+      if (targetUid) blockedSet.add(targetUid);
+      const profile = await getPublicProfile(targetUid);
+      return {
+        uid: targetUid,
+        name: profile?.displayName || '',
+      };
+    }),
+  );
+  renderBlocked(items.filter((i) => i.uid));
+  return items;
+}
+
+async function removeFriend(myUid, friendUid) {
+  if (!myUid || !friendUid) return;
+  const ids = [`${myUid}__${friendUid}`, `${friendUid}__${myUid}`];
+  for (const id of ids) {
+    const snap = await getDoc(doc(db, 'friend_requests', id));
+    if (snap.exists()) {
+      await deleteDoc(doc(db, 'friend_requests', id));
+    }
+  }
+}
+
+async function blockUser(myUid, friendUid) {
+  if (!myUid || !friendUid) return;
+  await setDoc(doc(db, 'user_blocks', `${myUid}__${friendUid}`), {
+    fromUid: myUid,
+    toUid: friendUid,
+    createdAt: serverTimestamp(),
+  });
+  await removeFriend(myUid, friendUid);
+}
+
+async function unblockUser(myUid, friendUid) {
+  if (!myUid || !friendUid) return;
+  await deleteDoc(doc(db, 'user_blocks', `${myUid}__${friendUid}`));
+}
+
+function renderMessages(list, myUid) {
+  if (!chatMessages) return;
+  if (!list.length) {
+    chatMessages.innerHTML = '<div class="muted">No hay mensajes todavía.</div>';
+    return;
+  }
+  chatMessages.innerHTML = '';
+  list.forEach((msg) => {
+    const isMine = msg.fromUid === myUid;
+    const wrap = document.createElement('div');
+    wrap.className = `chatMsg ${isMine ? 'chatMsg--me' : 'chatMsg--them'}`;
+    wrap.innerHTML = `
+      <div>${msg.text || ''}</div>
+      <div class="chatMeta">${formatDate(msg.createdAt)}</div>
+    `;
+    chatMessages.appendChild(wrap);
+  });
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function loadFriendRequests(uid) {
+  if (!uid) return [];
+  const snap = await getDocs(
+    query(collection(db, 'friend_requests'), where('toUid', '==', uid)),
+  );
+  const reqs = (snap.docs || [])
+    .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+    .filter((r) => r.status === 'pending');
+
+  const enriched = await Promise.all(
+    reqs.map(async (r) => {
+      if (blockedSet.has(r.fromUid)) return null;
+      const blockedByOther = await getDoc(
+        doc(db, 'user_blocks', `${r.fromUid}__${uid}`),
+      );
+      if (blockedByOther.exists()) return null;
+      const profile = await getPublicProfile(r.fromUid);
+      return {
+        ...r,
+        name: profile?.displayName || '',
+        email: profile?.email || '',
+      };
+    }),
+  );
+  const filtered = enriched.filter(Boolean);
+  renderFriendRequests(filtered);
+  return filtered;
+}
+
+async function loadFriends(uid) {
+  if (!uid) return [];
+  const incoming = await getDocs(
+    query(collection(db, 'friend_requests'), where('toUid', '==', uid)),
+  );
+  const outgoing = await getDocs(
+    query(collection(db, 'friend_requests'), where('fromUid', '==', uid)),
+  );
+  const all = [...(incoming.docs || []), ...(outgoing.docs || [])]
+    .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+    .filter((r) => r.status === 'accepted');
+
+  const friendUids = Array.from(
+    new Set(
+      all.map((r) => (r.fromUid === uid ? r.toUid : r.fromUid)).filter(Boolean),
+    ),
+  );
+
+  const profiles = await Promise.all(
+    friendUids.map(async (fuid) => {
+      if (blockedSet.has(fuid)) return null;
+      const blockedByOther = await getDoc(doc(db, 'user_blocks', `${fuid}__${uid}`));
+      if (blockedByOther.exists()) return null;
+      const profile = await getPublicProfile(fuid);
+      return {
+        uid: fuid,
+        name: profile?.displayName || '',
+        email: profile?.email || '',
+      };
+    }),
+  );
+  const cleaned = profiles.filter(Boolean);
+  renderFriends(cleaned);
+  return cleaned;
+}
+
+async function sendFriendRequestToUid(myUid, targetUid) {
+  if (!myUid || !targetUid) return;
+  if (targetUid === myUid) {
+    setFriendReqMsg('Ese código es tuyo.', true);
+    return;
+  }
+  const targetProfile = await getPublicProfile(targetUid);
+  if (targetProfile?.publicProfile === false) {
+    setFriendReqMsg('Perfil privado.', true);
+    return;
+  }
+  if (targetProfile?.allowFriendRequests === false) {
+    setFriendReqMsg('No acepta solicitudes.', true);
+    return;
+  }
+  const blockedMe = await getDoc(doc(db, 'user_blocks', `${targetUid}__${myUid}`));
+  if (blockedMe.exists()) {
+    setFriendReqMsg('No puedes enviar solicitud.', true);
+    return;
+  }
+  const blockedByMe = await getDoc(doc(db, 'user_blocks', `${myUid}__${targetUid}`));
+  if (blockedByMe.exists()) {
+    setFriendReqMsg('Desbloquea primero a este usuario.', true);
+    return;
+  }
+
+  const reverseId = `${targetUid}__${myUid}`;
+  const reverseSnap = await getDoc(doc(db, 'friend_requests', reverseId));
+  if (reverseSnap.exists()) {
+    const data = reverseSnap.data() || {};
+    if (data.status === 'pending') {
+      await updateDoc(doc(db, 'friend_requests', reverseId), {
+        status: 'accepted',
+        updatedAt: serverTimestamp(),
+      });
+      setFriendReqMsg('Solicitud aceptada automáticamente.');
+      return;
+    }
+    if (data.status === 'accepted') {
+      setFriendReqMsg('Ya son amigos.');
+      return;
+    }
+  }
+
+  const reqId = `${myUid}__${targetUid}`;
+  const existing = await getDoc(doc(db, 'friend_requests', reqId));
+  if (existing.exists()) {
+    const data = existing.data() || {};
+    if (data.status === 'pending') {
+      setFriendReqMsg('Solicitud pendiente.');
+      return;
+    }
+    if (data.status === 'accepted') {
+      setFriendReqMsg('Ya son amigos.');
+      return;
+    }
+  }
+
+  await setDoc(doc(db, 'friend_requests', reqId), {
+    fromUid: myUid,
+    toUid: targetUid,
+    status: 'pending',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  setFriendReqMsg('Solicitud enviada.');
+}
+
+async function sendFriendRequest(myUid, code) {
+  const clean = toCode(code);
+  if (!clean) {
+    setFriendReqMsg('Escribe el código.', true);
+    return;
+  }
+  setFriendReqMsg('Buscando...');
+
+  const snap = await getDocs(
+    query(collection(db, 'public_users'), where('friendCode', '==', clean), limit(1)),
+  );
+  if (snap.empty) {
+    setFriendReqMsg('No existe ese código.', true);
+    return;
+  }
+
+  const targetDoc = snap.docs[0];
+  const targetUid = targetDoc.id;
+  await sendFriendRequestToUid(myUid, targetUid);
+  if (friendCodeSearch) friendCodeSearch.value = '';
+}
+
+async function openChat(myUid, friendUid) {
+  if (!friendUid) return;
+  activeChatUid = friendUid;
+  activeChatProfile = await getPublicProfile(friendUid);
+  if (chatHeader) {
+    const name = activeChatProfile?.displayName || 'Usuario';
+    chatHeader.innerHTML = `
+      <span class="friendAvatar">${friendAvatarLetter(name)}</span>
+      <span>${name}</span>
+    `;
+  }
+  if (chatHint) chatHint.textContent = '';
+  await loadMessages(myUid, friendUid);
+}
+
+async function loadMessages(myUid, friendUid) {
+  if (!myUid || !friendUid) return;
+  const snap = await getDocs(
+    query(collection(db, 'user_inbox', myUid, 'messages'), where('peerUid', '==', friendUid)),
+  );
+  const list = (snap.docs || [])
+    .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+    .sort((a, b) => {
+      const ad = toDateMaybe(a.createdAt)?.getTime() || 0;
+      const bd = toDateMaybe(b.createdAt)?.getTime() || 0;
+      return ad - bd;
+    });
+  renderMessages(list, myUid);
+}
+
+async function sendMessage(myUid, friendUid, text) {
+  if (!myUid || !friendUid) return;
+  const msg = String(text || '').trim();
+  if (!msg) {
+    setChatMsg('Escribe un mensaje.', true);
+    return;
+  }
+  if (blockedSet.has(friendUid)) {
+    setChatMsg('Este usuario esta bloqueado.', true);
+    return;
+  }
+  const blockedByOther = await getDoc(doc(db, 'user_blocks', `${friendUid}__${myUid}`));
+  if (blockedByOther.exists()) {
+    setChatMsg('No puedes enviar mensajes.', true);
+    return;
+  }
+  const targetProfile = await getPublicProfile(friendUid);
+  if (targetProfile?.allowMessages === false) {
+    setChatMsg('Este usuario no acepta mensajes.', true);
+    return;
+  }
+  if (btnSendMessage) btnSendMessage.disabled = true;
+  setChatMsg('Enviando...');
+  const payload = {
+    fromUid: myUid,
+    toUid: friendUid,
+    peerUid: friendUid,
+    text: msg,
+    createdAt: serverTimestamp(),
+    read: false,
+  };
+  try {
+    await addDoc(collection(db, 'user_inbox', myUid, 'messages'), payload);
+    await addDoc(collection(db, 'user_inbox', friendUid, 'messages'), {
+      ...payload,
+      peerUid: myUid,
+    });
+    if (chatInput) chatInput.value = '';
+    setChatMsg('Enviado.');
+    await loadMessages(myUid, friendUid);
+  } catch (e) {
+    console.warn('send message failed', e);
+    setChatMsg('No se pudo enviar.', true);
+  } finally {
+    if (btnSendMessage) btnSendMessage.disabled = false;
+  }
+}
+
+function renderSearchResults(items, myUid) {
+  if (!communitySearchResults) return;
+  if (!items.length) {
+    communitySearchResults.innerHTML = '<div class="muted">Sin resultados.</div>';
+    return;
+  }
+  communitySearchResults.innerHTML = '';
+  items.forEach((item) => {
+    const name = item.displayName || item.name || 'Usuario';
+    const wrap = document.createElement('div');
+    wrap.className = 'friendItem';
+    wrap.innerHTML = `
+      <div class="friendMeta">
+        <span class="friendAvatar">${friendAvatarLetter(name)}</span>
+        <div>
+          <div class="friendName">${name}</div>
+        </div>
+      </div>
+      <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
+        <a class="btn-white-outline" href="perfil.html?uid=${encodeURIComponent(
+          item.uid,
+        )}">Ver perfil</a>
+        ${
+          item.uid !== myUid
+            ? `<button class="btn-white-outline" type="button" data-add="${item.uid}">Agregar</button>`
+            : ''
+        }
+      </div>
+    `;
+    communitySearchResults.appendChild(wrap);
+  });
+}
+
+async function searchPublicUsers(myUid, term) {
+  const q = normName(term);
+  if (!q) {
+    setCommunitySearchMsg('Escribe un nombre.', true);
+    return;
+  }
+  setCommunitySearchMsg('Buscando...');
+  try {
+    const snap = await getDocs(
+      query(
+        collection(db, 'public_users'),
+        orderBy('displayNameLower'),
+        startAt(q),
+        endAt(`${q}\uf8ff`),
+        limit(12),
+      ),
+    );
+    const results = (snap.docs || [])
+      .map((d) => ({ uid: d.id, ...(d.data() || {}) }))
+      .filter((d) => d.publicProfile !== false)
+      .filter((d) => d.uid !== myUid);
+    renderSearchResults(results, myUid);
+    setCommunitySearchMsg(`Resultados: ${results.length}`);
+  } catch (e) {
+    console.warn('search public users failed', e);
+    setCommunitySearchMsg('No se pudo buscar.', true);
+  }
+}
+
+async function initCommunity(viewUid, viewDoc, email, isPreview) {
+  if (!friendCode) return;
+  const profile = await ensurePublicProfile(viewUid, viewDoc, email);
+  renderFriendCode(profile);
+
+  if (isPreview) {
+    [
+      friendCodeSearch,
+      btnSendFriendRequest,
+      btnCopyFriendCode,
+      btnNewFriendCode,
+      communitySearchInput,
+      btnCommunitySearch,
+      chatInput,
+      btnSendMessage,
+    ].forEach((el) => {
+      if (el) el.disabled = true;
+    });
+    if (friendReqStatus) friendReqStatus.textContent = 'Vista previa (admin)';
+    if (chatHint) chatHint.textContent = 'Vista previa (admin)';
+    return;
+  }
+
+  if (btnCopyFriendCode && !btnCopyFriendCode.dataset.wired) {
+    btnCopyFriendCode.dataset.wired = '1';
+    btnCopyFriendCode.addEventListener('click', async () => {
+      const code = String(friendCode?.value || '').trim();
+      if (!code) return;
+      try {
+        await navigator.clipboard.writeText(code);
+        if (friendCodeInfo) friendCodeInfo.textContent = 'Copiado.';
+      } catch {
+        if (friendCodeInfo) friendCodeInfo.textContent = 'No se pudo copiar.';
+      }
+    });
+  }
+
+  if (btnNewFriendCode && !btnNewFriendCode.dataset.wired) {
+    btnNewFriendCode.dataset.wired = '1';
+    btnNewFriendCode.addEventListener('click', async () => {
+      const newCode = await generateUniqueFriendCode();
+      await upsertPublicProfile(viewUid, { friendCode: newCode });
+      renderFriendCode({ ...profile, friendCode: newCode });
+    });
+  }
+
+  if (btnSendFriendRequest && !btnSendFriendRequest.dataset.wired) {
+    btnSendFriendRequest.dataset.wired = '1';
+    btnSendFriendRequest.addEventListener('click', async () => {
+      const code = String(friendCodeSearch?.value || '').trim();
+      await sendFriendRequest(viewUid, code);
+      await loadFriendRequests(viewUid);
+      await loadFriends(viewUid);
+    });
+  }
+
+  if (btnCommunitySearch && !btnCommunitySearch.dataset.wired) {
+    btnCommunitySearch.dataset.wired = '1';
+    btnCommunitySearch.addEventListener('click', async () => {
+      await searchPublicUsers(viewUid, communitySearchInput?.value || '');
+    });
+  }
+  if (communitySearchInput && !communitySearchInput.dataset.wired) {
+    communitySearchInput.dataset.wired = '1';
+    communitySearchInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        await searchPublicUsers(viewUid, communitySearchInput.value);
+      }
+    });
+  }
+  if (communitySearchResults && !communitySearchResults.dataset.wired) {
+    communitySearchResults.dataset.wired = '1';
+    communitySearchResults.addEventListener('click', async (e) => {
+      const btn = e.target?.closest?.('button[data-add]');
+      if (!btn) return;
+      const targetUid = btn.getAttribute('data-add');
+      if (!targetUid) return;
+      await sendFriendRequestToUid(viewUid, targetUid);
+      await loadFriendRequests(viewUid);
+      await loadFriends(viewUid);
+    });
+  }
+
+  if (friendRequestsList && !friendRequestsList.dataset.wired) {
+    friendRequestsList.dataset.wired = '1';
+    friendRequestsList.addEventListener('click', async (e) => {
+      const btn = e.target?.closest('button');
+      if (!btn) return;
+      const acceptId = btn.getAttribute('data-accept');
+      const declineId = btn.getAttribute('data-decline');
+      if (acceptId) {
+        await updateDoc(doc(db, 'friend_requests', acceptId), {
+          status: 'accepted',
+          updatedAt: serverTimestamp(),
+        });
+      }
+      if (declineId) {
+        await updateDoc(doc(db, 'friend_requests', declineId), {
+          status: 'declined',
+          updatedAt: serverTimestamp(),
+        });
+      }
+      await loadFriendRequests(viewUid);
+      await loadFriends(viewUid);
+    });
+  }
+
+  if (friendsList && !friendsList.dataset.wired) {
+    friendsList.dataset.wired = '1';
+    friendsList.addEventListener('click', async (e) => {
+      const btn = e.target?.closest('button');
+      if (!btn) return;
+      const friendUid = btn.getAttribute('data-chat');
+      const removeUid = btn.getAttribute('data-remove');
+      const blockUid = btn.getAttribute('data-block');
+      if (friendUid) {
+        await openChat(viewUid, friendUid);
+        return;
+      }
+      if (removeUid) {
+        await removeFriend(viewUid, removeUid);
+        await loadBlocked(viewUid);
+        await loadFriends(viewUid);
+      }
+      if (blockUid) {
+        await blockUser(viewUid, blockUid);
+        await loadBlocked(viewUid);
+        await loadFriends(viewUid);
+      }
+    });
+  }
+
+  if (blockedList && !blockedList.dataset.wired) {
+    blockedList.dataset.wired = '1';
+    blockedList.addEventListener('click', async (e) => {
+      const btn = e.target?.closest('button');
+      if (!btn) return;
+      const unblockUid = btn.getAttribute('data-unblock');
+      if (!unblockUid) return;
+      await unblockUser(viewUid, unblockUid);
+      await loadBlocked(viewUid);
+      await loadFriends(viewUid);
+    });
+  }
+
+  if (btnSendMessage && !btnSendMessage.dataset.wired) {
+    btnSendMessage.dataset.wired = '1';
+    btnSendMessage.addEventListener('click', async () => {
+      if (!activeChatUid) {
+        setChatMsg('Selecciona un amigo.', true);
+        return;
+      }
+      await sendMessage(viewUid, activeChatUid, chatInput?.value || '');
+    });
+  }
+
+  if (chatInput && !chatInput.dataset.wired) {
+    chatInput.dataset.wired = '1';
+    chatInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!activeChatUid) {
+          setChatMsg('Selecciona un amigo.', true);
+          return;
+        }
+        await sendMessage(viewUid, activeChatUid, chatInput.value);
+      }
+    });
+  }
+
+  await loadBlocked(viewUid);
+  await loadFriendRequests(viewUid);
+  await loadFriends(viewUid);
+  if (CHAT_UID) {
+    await openChat(viewUid, CHAT_UID);
+  }
+}
+
 function renderAvatar(url) {
   if (!avatarWrap || !avatarImg) return;
   if (url) {
@@ -839,6 +1668,7 @@ async function uploadAvatar(uid, file, currentPath) {
         photoPath: path,
         updatedAt: serverTimestamp(),
       });
+      await upsertPublicProfile(uid, { photoURL: url });
 
       if (currentPath) {
         try {
@@ -888,6 +1718,7 @@ async function removeAvatar(uid, currentPath) {
       photoPath: '',
       updatedAt: serverTimestamp(),
     });
+    await upsertPublicProfile(uid, { photoURL: '' });
     if (currentPath) {
       try {
         await deleteObject(storageRef(storage, currentPath));
@@ -921,6 +1752,12 @@ function renderUserSettings(userDoc, isPreview) {
   if (setGoal) setGoal.value = String(userDoc?.studyGoalMin || 10);
   if (setReviewReminders)
     setReviewReminders.checked = userDoc?.reviewReminders !== false;
+  if (setPublicProfile)
+    setPublicProfile.checked = userDoc?.publicProfile !== false;
+  if (setAllowFriendRequests)
+    setAllowFriendRequests.checked = userDoc?.allowFriendRequests !== false;
+  if (setAllowMessages)
+    setAllowMessages.checked = userDoc?.allowMessages !== false;
 
   const inputs = [
     setDisplayName,
@@ -928,6 +1765,9 @@ function renderUserSettings(userDoc, isPreview) {
     setLang,
     setGoal,
     setReviewReminders,
+    setPublicProfile,
+    setAllowFriendRequests,
+    setAllowMessages,
     btnSaveSettings,
   ].filter(Boolean);
 
@@ -952,7 +1792,16 @@ function renderUserSettings(userDoc, isPreview) {
           lang: String(setLang?.value || 'es').trim(),
           studyGoalMin: Number(setGoal?.value || 10),
           reviewReminders: !!setReviewReminders?.checked,
+          publicProfile: !!setPublicProfile?.checked,
+          allowFriendRequests: !!setAllowFriendRequests?.checked,
+          allowMessages: !!setAllowMessages?.checked,
           updatedAt: serverTimestamp(),
+        });
+        await upsertPublicProfile(user.uid, {
+          displayName: String(setDisplayName?.value || '').trim(),
+          publicProfile: !!setPublicProfile?.checked,
+          allowFriendRequests: !!setAllowFriendRequests?.checked,
+          allowMessages: !!setAllowMessages?.checked,
         });
         setSettingsMsg('Guardado OK');
         setTimeout(() => setSettingsMsg(''), 2000);
@@ -1356,6 +2205,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       renderAvatar(viewDoc?.photoURL || '');
       renderUserSettings(viewDoc, !!AS_UID);
+      await initCommunity(
+        viewUid,
+        viewDoc,
+        AS_UID ? viewDoc?.email || '' : user.email || '',
+        !!AS_UID,
+      );
 
       // user report form
       if (btnUserReport && !btnUserReport.dataset.wired) {
@@ -1415,6 +2270,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderPlans(viewDoc, flags);
       await loadProgressSummary(viewUid);
       await loadReviewSummary(viewUid);
+      await loadInbox();
 
       if (btn) {
         btn.onclick = async () => {
