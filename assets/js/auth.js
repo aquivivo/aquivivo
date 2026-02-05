@@ -1,4 +1,4 @@
-// assets/js/auth.js
+﻿// assets/js/auth.js
 // Login / Register / Reset (modular)
 // ✅ Creates users/{uid} on register (with 7-day A1 trial)
 // ✅ Blocks access until email is verified
@@ -11,6 +11,8 @@ import {
   sendPasswordResetEmail,
   sendEmailVerification,
   signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 
 import {
@@ -35,14 +37,14 @@ function formatAuthError(err, context) {
   const code = String(err?.code || '');
   const map = {
     // login
-    'auth/invalid-credential': 'Contrasena incorrecta o usuario no existe.',
-    'auth/wrong-password': 'Contrasena incorrecta.',
+    'auth/invalid-credential': 'Contraseña incorrecta o usuario no existe.',
+    'auth/wrong-password': 'Contraseña incorrecta.',
     'auth/user-not-found': 'Usuario no existe.',
-    'auth/invalid-email': 'Email invalido.',
+    'auth/invalid-email': 'Email inválido.',
     'auth/user-disabled': 'Cuenta deshabilitada. Contacta soporte.',
     // register
     'auth/email-already-in-use': 'Este email ya esta registrado.',
-    'auth/weak-password': 'La contrasena es demasiado debil.',
+    'auth/weak-password': 'La contraseña es demasiado débil.',
     // reset
     'auth/missing-email': 'Ingresa tu email.',
   };
@@ -76,7 +78,7 @@ function initFromUrl() {
   const reason = getQueryParam('reason');
   if (reason === 'verify') {
     setMsg(
-      '📩 Tu cuenta requiere verificación de correo para acceder al panel y a los cursos. Inicia sesión y confirma tu email.',
+      '📧 Tu cuenta requiere verificación de correo para acceder al panel y a los cursos. Inicia sesión y confirma tu email.',
       'error',
     );
     ensureVerifyBox();
@@ -99,7 +101,7 @@ function ensureVerifyBox() {
     box.style.marginTop = '14px';
     box.style.padding = '14px';
     box.innerHTML = `
-      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">📩 Verifica tu correo</div>
+      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">📧 Verifica tu correo</div>
       <div class="subtitle" style="margin:0 0 12px;">
         Para acceder al panel y a los cursos, primero confirma tu email.
       </div>
@@ -260,6 +262,8 @@ async function ensureUserDoc(uid, email, displayNameOptional, genderOptional, ha
   // On first creation: no access by default (admin grants later).
   const ref = doc(db, 'users', uid);
   const snap = await getDoc(ref);
+  const publicRef = doc(db, 'public_users', uid);
+  const publicSnap = await getDoc(publicRef);
 
   if (!snap.exists()) {
     const emailLower = (email || '').toLowerCase() || null;
@@ -288,14 +292,14 @@ async function ensureUserDoc(uid, email, displayNameOptional, genderOptional, ha
       },
       { merge: true },
     );
-    if (handleOptional) {
+    if (!publicSnap.exists()) {
       await setDoc(
-        doc(db, 'public_users', uid),
+        publicRef,
         {
           displayName: displayNameOptional || null,
           name: displayNameOptional || null,
-          handle: handleOptional,
-          handleLower: normalizeHandle(handleOptional),
+          handle: handleOptional || null,
+          handleLower: handleOptional ? normalizeHandle(handleOptional) : null,
           emailLower,
           publicProfile: true,
           allowFriendRequests: true,
@@ -326,6 +330,26 @@ async function ensureUserDoc(uid, email, displayNameOptional, genderOptional, ha
 
   if (Object.keys(patch).length) {
     await setDoc(ref, patch, { merge: true });
+  }
+
+  if (!publicSnap.exists()) {
+    await setDoc(
+      publicRef,
+      {
+        displayName: displayNameOptional || data.displayName || data.name || null,
+        name: displayNameOptional || data.name || null,
+        handle: handleOptional || data.handle || null,
+        handleLower: handleOptional
+          ? normalizeHandle(handleOptional)
+          : data.handleLower || (data.handle ? normalizeHandle(data.handle) : null),
+        emailLower: (email || data.email || '').toLowerCase() || null,
+        publicProfile: true,
+        allowFriendRequests: true,
+        allowMessages: true,
+        createdAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
   }
 }
 
@@ -368,6 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerBtn = $('registerBtn');
   const resetBtn = $('resetPasswordBtn');
   const togglePassword = $('togglePassword');
+  const googleBtn = $('googleLoginBtn');
 
   let registerBusy = false;
   const setRegisterBusy = (yes) => {
@@ -425,9 +450,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function doLogin() {
     if (ensureCooldownMsg()) return;
-    const email = (emailInput?.value || '').trim();
+    const rawLogin = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
-    if (!email || !pass) return setMsg('Completa email y contraseña.', 'error');
+    if (!rawLogin || !pass)
+      return setMsg('Completa correo/usuario y contraseña.', 'error');
+
+    let email = rawLogin;
+    if (!rawLogin.includes('@')) {
+      try {
+        email = await resolveEmailFromHandle(rawLogin);
+      } catch (e) {
+        console.warn('resolve handle failed', e);
+      }
+      if (!email) {
+        return setMsg(
+          'Usuario no encontrado. Usa tu correo o revisa el login.',
+          'error',
+        );
+      }
+    }
 
     try {
       const cred = await signInWithEmailAndPassword(auth, email, pass);
@@ -466,21 +507,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  async function doGoogleLogin() {
+    if (ensureCooldownMsg()) return;
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const cred = await signInWithPopup(auth, provider);
+      await ensureUserDoc(
+        cred.user.uid,
+        cred.user.email,
+        cred.user.displayName || null,
+        null,
+        null,
+      );
+      try {
+        await updateDoc(doc(db, 'users', cred.user.uid), {
+          lastLoginAt: serverTimestamp(),
+        });
+      } catch (e) {
+        console.warn('[auth] lastLoginAt update failed', e);
+      }
+      setMsg('✅ Sesión iniciada con Google.', 'ok');
+      window.location.href = getNextUrl();
+    } catch (err) {
+      if (err?.code === 'auth/popup-closed-by-user') return;
+      setMsg(formatAuthError(err, 'login'), 'error');
+    }
+  }
+
   async function doRegister() {
     if (registerBusy) return;
     if (ensureCooldownMsg()) return;
     const name = (nameInput?.value || '').trim();
+    const handleRaw = (handleInput?.value || '').trim();
+    const handle = handleRaw ? normalizeHandle(handleRaw) : '';
     const gender = (
       document.querySelector('input[name="gender"]:checked')?.value || ''
     ).trim();
-    const email = (emailInput?.value || '').trim();
+    const rawEmail = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
-    if (!email || !pass) return setMsg('Completa email y contraseña.', 'error');
+    if (!rawEmail || !pass)
+      return setMsg('Completa correo y contraseña.', 'error');
+    if (!rawEmail.includes('@'))
+      return setMsg('Para registrarte usa tu correo.', 'error');
+    if (handle && !isHandleValid(handle)) {
+      return setMsg('Usuario inválido. Usa 3-20 letras/números y ._-', 'error');
+    }
     if (!gender) return setMsg('Elige Papi o Mami para registrarte.', 'error');
 
     try {
       setRegisterBusy(true);
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      if (handle) {
+        const handleSnap = await getDoc(doc(db, 'login_index', handle));
+        if (handleSnap.exists()) {
+          setMsg('Este usuario ya existe.', 'error');
+          return;
+        }
+      }
+
+      const cred = await createUserWithEmailAndPassword(auth, rawEmail, pass);
+      const emailLower = String(cred.user.email || rawEmail || '').toLowerCase();
 
       // Create users/{uid} doc with 7-day A1 trial
       await ensureUserDoc(
@@ -488,13 +574,27 @@ document.addEventListener('DOMContentLoaded', () => {
         cred.user.email,
         name || null,
         gender || null,
+        handle || null,
       );
+
+      if (handle) {
+        await setDoc(
+          doc(db, 'login_index', handle),
+          {
+            uid: cred.user.uid,
+            handleLower: handle,
+            emailLower,
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+      }
 
       // send verification email
       await sendEmailVerification(cred.user).catch(() => {});
 
       setMsg(
-        '🎉 Cuenta creada. 📩 Revisa tu correo y confirma tu email. Luego pulsa “Ya verifiqué”.',
+        '🎉 Cuenta creada. 📧 Revisa tu correo y confirma tu email. Luego pulsa “Ya verifiqué”.',
         'ok',
       );
       ensureVerifyBox();
@@ -510,18 +610,31 @@ document.addEventListener('DOMContentLoaded', () => {
       setRegisterBusy(false);
     }
   }
-
   async function doReset() {
     if (ensureCooldownMsg()) return;
-    const email = (emailInput?.value || '').trim();
-    if (!email)
+    const rawLogin = (emailInput?.value || '').trim();
+    if (!rawLogin)
       return setMsg(
-        'Ingresa tu correo para restablecer tu contraseña.',
+        'Ingresa tu correo o usuario para restablecer tu contraseña.',
         'error',
       );
     try {
+      let email = rawLogin;
+      if (!rawLogin.includes('@')) {
+        try {
+          email = await resolveEmailFromHandle(rawLogin);
+        } catch (e) {
+          console.warn('resolve handle failed', e);
+        }
+        if (!email) {
+          return setMsg(
+            'Usuario no encontrado. Usa tu correo o revisa el login.',
+            'error',
+          );
+        }
+      }
       await sendPasswordResetEmail(auth, email);
-      setMsg('📩 Se envió un correo para restablecer tu contraseña.', 'ok');
+      setMsg('📧 Se envió un correo para restablecer tu contraseña.', 'ok');
     } catch (err) {
       if (err?.code === 'auth/too-many-requests') {
         setCooldownMs(120_000);
@@ -535,6 +648,11 @@ document.addEventListener('DOMContentLoaded', () => {
   loginBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     doLogin();
+  });
+
+  googleBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    doGoogleLogin();
   });
 
   registerBtn?.addEventListener('click', (e) => {
@@ -555,4 +673,6 @@ document.addEventListener('DOMContentLoaded', () => {
     doLogin();
   });
 });
+
+
 

@@ -82,6 +82,10 @@ service cloud.firestore {
       );
     }
 
+    function idHasUid(id, uid) {
+      return id.matches("^" + uid + "__.*") || id.matches(".*__" + uid + "$");
+    }
+
     function publicUserDoc(uid) {
       return /databases/$(database)/documents/public_users/$(uid);
     }
@@ -321,6 +325,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    /* ===== PAGE VIEWS ===== */
+    match /page_views/{id} {
+      allow read: if isAdmin();
+      allow create: if signedIn();
+      allow update, delete: if false;
+    }
+
     /* ===== USER REPORTS ===== */
     match /user_reports/{id} {
       allow read: if isAdmin();
@@ -337,9 +348,7 @@ service cloud.firestore {
 
     /* ===== FRIEND REQUESTS ===== */
     match /friend_requests/{id} {
-      allow read: if isAdmin() || (signedIn() && (
-        resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid
-      ));
+      allow read: if isAdmin() || (signedIn() && idHasUid(id, request.auth.uid));
 
       allow create: if signedIn()
         && request.resource.data.fromUid == request.auth.uid
@@ -423,9 +432,7 @@ service cloud.firestore {
 
     /* ===== USER BLOCKS ===== */
     match /user_blocks/{id} {
-      allow read: if isAdmin() || (signedIn() && (
-        resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid
-      ));
+      allow read: if isAdmin() || (signedIn() && idHasUid(id, request.auth.uid));
       allow create: if signedIn()
         && request.resource.data.fromUid == request.auth.uid
         && request.resource.data.toUid is string

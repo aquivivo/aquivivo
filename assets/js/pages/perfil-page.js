@@ -855,6 +855,10 @@ async function loadRecentReactions(targetUid) {
     const names = snap.docs.map((docSnap) => docSnap.data()?.userName || 'Usuario');
     recentReactions.innerHTML = names.map((n) => `<div>❤️ ${esc(n)}</div>`).join('');
   } catch (e) {
+    if (String(e?.code || '') === 'permission-denied') {
+      recentReactions.textContent = 'Reacciones ocultas.';
+      return;
+    }
     console.warn('recent reactions failed', e);
     recentReactions.textContent = 'Sin reacciones aún.';
   }
@@ -1153,6 +1157,8 @@ onAuthStateChanged(auth, async (user) => {
     const profile = profileSnap.data() || {};
     CURRENT_PROFILE = profile;
     CURRENT_USER_DOC = currentSnap.exists() ? currentSnap.data() : null;
+    const isAdminUser =
+      CURRENT_USER_DOC?.role === 'admin' || CURRENT_USER_DOC?.admin === true;
     const name = profile.displayName || profile.name || 'Usuario';
     const isOwner = user.uid === targetUid;
 
@@ -1182,6 +1188,10 @@ onAuthStateChanged(auth, async (user) => {
     const publicProfile = profile.publicProfile !== false;
     const postsVisibility = profile.postsVisibility || (publicProfile ? 'public' : 'private');
     const rewardsVisibility = profile.rewardsVisibility || 'public';
+    const canViewFeed =
+      isOwner ||
+      postsVisibility === 'public' ||
+      (postsVisibility === 'friends' && isFriend);
 
     if (!isOwner && !publicProfile && !isFriend) {
       if (profileStatus) profileStatus.textContent = 'Perfil privado.';
@@ -1205,10 +1215,10 @@ onAuthStateChanged(auth, async (user) => {
       canComment: isOwner || isFriend,
     };
 
-    if (postsVisibility === 'private' && !isOwner) {
+    if (!canViewFeed && postsVisibility === 'private' && !isOwner) {
       if (feedList) feedList.innerHTML = '<div class="card muted">Las publicaciones están ocultas.</div>';
       if (statusCard) statusCard.style.display = 'none';
-    } else if (postsVisibility === 'friends' && !isOwner && !isFriend) {
+    } else if (!canViewFeed && postsVisibility === 'friends' && !isOwner && !isFriend) {
       if (feedList)
         feedList.innerHTML = '<div class="card muted">Solo amigos pueden ver este feed.</div>';
       if (statusCard) statusCard.style.display = 'none';
@@ -1231,11 +1241,20 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const friendSet = (await loadFriendCount(targetUid)) || new Set();
-    await loadRecentReactions(targetUid);
+    if (canViewFeed) {
+      await loadRecentReactions(targetUid);
+    } else if (recentReactions) {
+      recentReactions.textContent = 'Reacciones ocultas.';
+    }
     await loadSuggestions(user.uid, friendSet);
 
-    const levelsToShow = getAllowedLevels(CURRENT_USER_DOC);
-    await loadCourseProgress(targetUid, levelsToShow);
+    if (isOwner || isAdminUser) {
+      const levelsToShow = getAllowedLevels(CURRENT_USER_DOC);
+      await loadCourseProgress(targetUid, levelsToShow);
+    } else if (coursesList) {
+      coursesList.innerHTML =
+        '<div class="muted">El progreso detallado solo es visible en tu propio perfil.</div>';
+    }
 
     if (suggestionsList && !suggestionsList.dataset.wired) {
       suggestionsList.dataset.wired = '1';

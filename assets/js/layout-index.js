@@ -6,6 +6,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import { db } from './firebase-init.js';
 import {
+  addDoc,
   collection,
   doc,
   getDocs,
@@ -47,9 +48,99 @@ import {
   const INACTIVE_PLAN_MS = 5 * 30 * 24 * 60 * 60 * 1000;
   const NO_LOGIN_MS = 2 * 30 * 24 * 60 * 60 * 1000;
   const TRIAL_INTENT_KEY = 'av_trial_intent';
+  const POPUP_SEEN_PREFIX = 'av_popup_seen_';
 
   let CURRENT_USER = null;
   let CURRENT_DOC = null;
+
+  function popupKey(settings) {
+    const raw =
+      settings?.popupId ||
+      settings?.id ||
+      settings?.updatedAt?.seconds ||
+      settings?.updatedAt?.toMillis?.() ||
+      settings?.createdAt?.seconds ||
+      settings?.createdAt?.toMillis?.() ||
+      `${settings?.title || ''}|${settings?.body || ''}`;
+    return `${POPUP_SEEN_PREFIX}${String(raw).slice(0, 80)}`;
+  }
+
+  function shouldShowPopup(settings, loggedIn) {
+    if (!settings || settings.enabled === false) return false;
+    const showOn = String(settings.showOn || 'visit').toLowerCase();
+    if (showOn === 'login' && !loggedIn) return false;
+    return true;
+  }
+
+  function closePopup(seenKey) {
+    const overlay = document.getElementById('sitePopup');
+    if (overlay) overlay.remove();
+    if (seenKey) localStorage.setItem(seenKey, '1');
+  }
+
+  function renderPopup(settings) {
+    if (document.getElementById('sitePopup')) return;
+    const seenKey = popupKey(settings);
+    if (settings?.repeat !== true && localStorage.getItem(seenKey) === '1') return;
+
+    const title = String(settings?.title || 'Novedad');
+    const body = String(settings?.body || '');
+    const ctaLabel = String(settings?.ctaLabel || '').trim();
+    const ctaUrl = String(settings?.ctaUrl || '').trim();
+    const imageUrl = String(settings?.imageUrl || '').trim();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'sitePopup';
+    overlay.className = 'popup-overlay';
+    overlay.innerHTML = `
+      <div class="popup-card">
+        <button class="popup-close" type="button" aria-label="Cerrar">×</button>
+        ${imageUrl ? `<div class="popup-media"><img src="${imageUrl}" alt="banner" /></div>` : ''}
+        <div class="popup-title">${title.replace(/</g, '&lt;')}</div>
+        ${body ? `<div class="popup-body">${body.replace(/</g, '&lt;')}</div>` : ''}
+        ${ctaLabel && ctaUrl ? `<a class="btn-yellow popup-cta" href="${ctaUrl}">${ctaLabel.replace(/</g, '&lt;')}</a>` : ''}
+      </div>
+    `;
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closePopup(seenKey);
+    });
+    overlay.querySelector('.popup-close')?.addEventListener('click', () => closePopup(seenKey));
+    overlay.querySelector('.popup-cta')?.addEventListener('click', () => closePopup(seenKey));
+    document.body.appendChild(overlay);
+  }
+
+  async function loadPopupSettings(loggedIn) {
+    try {
+      const snap = await getDoc(doc(db, 'site_settings', 'popup'));
+      if (!snap.exists()) return;
+      const settings = snap.data() || {};
+      if (!shouldShowPopup(settings, loggedIn)) return;
+      renderPopup(settings);
+    } catch (e) {
+      console.warn('[popup] load failed', e);
+    }
+  }
+
+  async function logPageView(user, isAdmin) {
+    if (!user?.uid) return;
+    if (isAdmin) return;
+    const page = document.body?.dataset?.page || location.pathname.split('/').pop() || 'index';
+    const dayKey = new Date().toISOString().slice(0, 10);
+    const sessionKey = `av_view_${page}_${dayKey}`;
+    if (sessionStorage.getItem(sessionKey) === '1') return;
+    sessionStorage.setItem(sessionKey, '1');
+    try {
+      await addDoc(collection(db, 'page_views'), {
+        uid: user.uid,
+        page,
+        dayKey,
+        createdAt: serverTimestamp(),
+        isAdmin: !!isAdmin,
+      });
+    } catch (e) {
+      console.warn('[page_views] log failed', e);
+    }
+  }
 
   function avatarInitial(nameOrEmail) {
     const text = String(nameOrEmail || '').trim();
@@ -386,7 +477,7 @@ import {
                 </div>
                 <div class="nav-profile-list">
                   <a class="nav-profile-item" id="navProfilePublic" href="#">&#128100; Perfil</a>
-                  <a class="nav-profile-item" href="${hrefPanel}">&#128210; Libreta</a>
+                  <a class="nav-profile-item" href="${hrefPanel}">&#128211; Libreta</a>
                   <a class="nav-profile-item" href="${hrefPanel}#cursos">&#128218; Mis cursos</a>
                   <a class="nav-profile-item" href="referidos.html">&#129309; Recomendar amigos</a>
                   <a class="nav-profile-item" href="ajustes.html">&#9881; Ajustes de cuenta</a>
@@ -394,8 +485,8 @@ import {
                   <a class="nav-profile-item" href="recompensas.html">&#127942; Mis recompensas</a>
                   <a class="nav-profile-item" href="ayuda.html">&#129509; Ayuda / Reportar</a>
                   <a class="nav-profile-item" id="navProfileAdmin" href="esadmin.html" style="display:none;">&#128737; Admin</a>
-                  <div class="nav-profile-sep"></div>
-                  <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">&#128682; Cerrar sesión</button>
+                  <div class="nav-profile-sep" aria-hidden="true"></div>
+                  <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">🚪 Cerrar sesión</button>
                 </div>
               </div>
             </div>
@@ -605,8 +696,13 @@ import {
     if (!wrap || !btn || !menu || wrap.dataset.wired) return;
     wrap.dataset.wired = '1';
     const canHover = window.matchMedia('(hover: hover)').matches;
+    let closeTimer = null;
 
     const open = () => {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
       wrap.classList.add('open');
       btn.setAttribute('aria-expanded', 'true');
     };
@@ -614,20 +710,48 @@ import {
       wrap.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
     };
+    const scheduleClose = () => {
+      if (closeTimer) clearTimeout(closeTimer);
+      closeTimer = setTimeout(close, 160);
+    };
+    const cancelClose = () => {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+    };
     const toggle = () => {
       if (wrap.classList.contains('open')) close();
       else open();
     };
 
     if (canHover) {
-      wrap.addEventListener('mouseenter', open);
-      wrap.addEventListener('mouseleave', close);
+      wrap.addEventListener('mouseenter', () => {
+        cancelClose();
+        open();
+      });
+      wrap.addEventListener('mouseleave', (e) => {
+        if (menu.contains(e.relatedTarget)) return;
+        scheduleClose();
+      });
+      menu.addEventListener('mouseenter', () => {
+        cancelClose();
+        open();
+      });
+      menu.addEventListener('mouseleave', (e) => {
+        if (wrap.contains(e.relatedTarget)) return;
+        scheduleClose();
+      });
     }
 
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       toggle();
+    });
+
+    menu.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
 
     document.addEventListener('click', (e) => {
@@ -770,7 +894,10 @@ import {
           const snap = await getDoc(doc(db, 'users', user.uid));
           const data = snap.exists() ? snap.data() : {};
           CURRENT_DOC = data;
-          isAdmin = String(data?.role || 'user') === 'admin' || data?.admin === true;
+          isAdmin =
+            String(data?.role || 'user') === 'admin' ||
+            data?.admin === true ||
+            String(user?.email || '').toLowerCase() === 'aquivivo.pl@gmail.com';
         } catch (e) {
           console.warn('[layout-index] admin check failed', e);
         }
@@ -835,7 +962,12 @@ import {
       if (navProfile && navAvatarLink && navProfileMenu && !navProfile.dataset.wired) {
         navProfile.dataset.wired = '1';
         const canHover = window.matchMedia('(hover: hover)').matches;
+        let closeTimer = null;
         const open = () => {
+          if (closeTimer) {
+            clearTimeout(closeTimer);
+            closeTimer = null;
+          }
           navProfile.classList.add('open');
           navAvatarLink.setAttribute('aria-expanded', 'true');
         };
@@ -843,18 +975,45 @@ import {
           navProfile.classList.remove('open');
           navAvatarLink.setAttribute('aria-expanded', 'false');
         };
+        const scheduleClose = () => {
+          if (closeTimer) clearTimeout(closeTimer);
+          closeTimer = setTimeout(close, 180);
+        };
+        const cancelClose = () => {
+          if (closeTimer) {
+            clearTimeout(closeTimer);
+            closeTimer = null;
+          }
+        };
         const toggle = () => {
           if (navProfile.classList.contains('open')) close();
           else open();
         };
         if (canHover) {
-          navProfile.addEventListener('mouseenter', open);
-          navProfile.addEventListener('mouseleave', close);
+          navAvatarLink.addEventListener('mouseenter', () => {
+            cancelClose();
+            open();
+          });
+          navProfileMenu.addEventListener('mouseenter', () => {
+            cancelClose();
+            open();
+          });
+          navAvatarLink.addEventListener('mouseleave', (e) => {
+            if (navProfileMenu.contains(e.relatedTarget)) return;
+            scheduleClose();
+          });
+          navProfileMenu.addEventListener('mouseleave', (e) => {
+            if (navAvatarLink.contains(e.relatedTarget)) return;
+            scheduleClose();
+          });
         }
         navAvatarLink.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
           toggle();
+        });
+        navProfileMenu.addEventListener('click', (e) => {
+          e.stopPropagation();
         });
         document.addEventListener('click', (e) => {
           if (!navProfile.contains(e.target)) close();
@@ -898,6 +1057,9 @@ import {
         await activateTrial(user, CURRENT_DOC);
         updateTrialUI();
       }
+
+      if (loggedIn) await loadPopupSettings(true);
+      await logPageView(user, isAdmin);
     });
   }
 

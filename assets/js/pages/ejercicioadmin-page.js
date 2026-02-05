@@ -1335,7 +1335,7 @@ import {
         if (TEMPLATE_GROUPS.trueFalse.has(type)) {
           return {
             ...base,
-            prompt: 'Lee/Escucha y marca: Â¿verdadero o falso?',
+            prompt: 'Lee/Escucha y marca: ¿verdadero o falso?',
             optionsText: opt('true', 'false'),
             answer: 'true',
             category: 'both',
@@ -1776,7 +1776,7 @@ import {
         return `
           <div class="exercise ${REORDER_MODE && IS_ADMIN ? 'dragHint' : ''}" id="ex-${ex.id}" data-id="${ex.id}" ${REORDER_MODE && IS_ADMIN ? 'draggable="true"' : ''}>
             ${adminControls}
-            <div class="type">${escapeHtml(type)} Â· #${order} ${ex.category ? ` Â· <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ''}</div>
+            <div class="type">${escapeHtml(type)} · #${order} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ''}</div>
             <h3>${escapeHtml(prompt)}</h3>
             ${ex.imageUrl ? `<img src="${escapeHtml(ex.imageUrl)}" alt="" style="max-width:100%; border-radius:14px; border:1px solid rgba(0,0,0,0.08); margin: 10px 0 12px;" />` : ''}
             ${optionsHtml}

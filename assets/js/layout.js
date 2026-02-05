@@ -11,6 +11,7 @@ import {
   signOut,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
+  addDoc,
   collection,
   doc,
   getDocs,
@@ -56,6 +57,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
   const INACTIVE_PLAN_MS = 5 * 30 * 24 * 60 * 60 * 1000;
   const NO_LOGIN_MS = 2 * 30 * 24 * 60 * 60 * 1000;
   const TRIAL_INTENT_KEY = 'av_trial_intent';
+  const POPUP_SEEN_PREFIX = 'av_popup_seen_';
 
   let CURRENT_USER = null;
   let CURRENT_DOC = null;
@@ -80,6 +82,95 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     const text = String(nameOrEmail || '').trim();
     if (!text) return 'U';
     return text[0].toUpperCase();
+  }
+
+  function popupKey(settings) {
+    const raw =
+      settings?.popupId ||
+      settings?.id ||
+      settings?.updatedAt?.seconds ||
+      settings?.updatedAt?.toMillis?.() ||
+      settings?.createdAt?.seconds ||
+      settings?.createdAt?.toMillis?.() ||
+      `${settings?.title || ''}|${settings?.body || ''}`;
+    return `${POPUP_SEEN_PREFIX}${String(raw).slice(0, 80)}`;
+  }
+
+  function shouldShowPopup(settings, loggedIn) {
+    if (!settings || settings.enabled === false) return false;
+    const showOn = String(settings.showOn || 'visit').toLowerCase();
+    if (showOn === 'login' && !loggedIn) return false;
+    return true;
+  }
+
+  function closePopup(seenKey) {
+    const overlay = document.getElementById('sitePopup');
+    if (overlay) overlay.remove();
+    if (seenKey) localStorage.setItem(seenKey, '1');
+  }
+
+  function renderPopup(settings) {
+    if (document.getElementById('sitePopup')) return;
+    const seenKey = popupKey(settings);
+    if (settings?.repeat !== true && localStorage.getItem(seenKey) === '1') return;
+
+    const title = esc(settings?.title || 'Novedad');
+    const body = esc(settings?.body || '');
+    const ctaLabel = String(settings?.ctaLabel || '').trim();
+    const ctaUrl = String(settings?.ctaUrl || '').trim();
+    const imageUrl = String(settings?.imageUrl || '').trim();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'sitePopup';
+    overlay.className = 'popup-overlay';
+    overlay.innerHTML = `
+      <div class="popup-card">
+        <button class="popup-close" type="button" aria-label="Cerrar">×</button>
+        ${imageUrl ? `<div class="popup-media"><img src="${esc(imageUrl)}" alt="banner" /></div>` : ''}
+        <div class="popup-title">${title}</div>
+        ${body ? `<div class="popup-body">${body}</div>` : ''}
+        ${ctaLabel && ctaUrl ? `<a class="btn-yellow popup-cta" href="${esc(ctaUrl)}">${esc(ctaLabel)}</a>` : ''}
+      </div>
+    `;
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closePopup(seenKey);
+    });
+    overlay.querySelector('.popup-close')?.addEventListener('click', () => closePopup(seenKey));
+    overlay.querySelector('.popup-cta')?.addEventListener('click', () => closePopup(seenKey));
+    document.body.appendChild(overlay);
+  }
+
+  async function loadPopupSettings(loggedIn) {
+    try {
+      const snap = await getDoc(doc(db, 'site_settings', 'popup'));
+      if (!snap.exists()) return;
+      const settings = snap.data() || {};
+      if (!shouldShowPopup(settings, loggedIn)) return;
+      renderPopup(settings);
+    } catch (e) {
+      console.warn('[popup] load failed', e);
+    }
+  }
+
+  async function logPageView(user, isAdmin) {
+    if (!user?.uid) return;
+    if (isAdmin) return;
+    const page = document.body?.dataset?.page || location.pathname.split('/').pop() || 'page';
+    const dayKey = new Date().toISOString().slice(0, 10);
+    const sessionKey = `av_view_${page}_${dayKey}`;
+    if (sessionStorage.getItem(sessionKey) === '1') return;
+    sessionStorage.setItem(sessionKey, '1');
+    try {
+      await addDoc(collection(db, 'page_views'), {
+        uid: user.uid,
+        page,
+        dayKey,
+        createdAt: serverTimestamp(),
+        isAdmin: !!isAdmin,
+      });
+    } catch (e) {
+      console.warn('[page_views] log failed', e);
+    }
   }
 
   function usePrettyProfile() {
@@ -509,7 +600,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                     <a class="nav-profile-item" href="recompensas.html">🏆 ${labels.rewards}</a>
                     <a class="nav-profile-item" href="ayuda.html">🆘 ${labels.help}</a>
                     ${logged && isAdmin ? `<a class="nav-profile-item" href="esadmin.html">🛡️ ${labels.admin}</a>` : ''}
-                    <div class="nav-profile-sep"></div>
+                    <div class="nav-profile-sep" aria-hidden="true"></div>
                     <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">🚪 ${labels.logout}</button>
                   </div>
                 </div>
@@ -541,12 +632,64 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     `;
   }
 
+  function injectSidePanel() {
+    const page = document.body?.dataset?.page || '';
+    const allowed = new Set([
+      'panel',
+      'mensajes',
+      'notificaciones',
+      'pagos',
+      'recompensas',
+      'referidos',
+      'ajustes',
+      'ayuda',
+    ]);
+    if (!allowed.has(page)) return;
+    if (document.getElementById('sidePanel')) return;
+
+    document.body.classList.add('with-side-panel');
+
+    const panel = document.createElement('aside');
+    panel.id = 'sidePanel';
+    panel.className = 'side-panel';
+    panel.innerHTML = `
+      <a href="index.html" data-page="inicio">🏠 Inicio</a>
+      <a href="espanel.html" data-page="panel">📒 Libreta</a>
+      <a href="perfil.html" data-page="profile">👤 Perfil</a>
+      <a href="espanel.html#cursos" data-page="cursos">📚 Mis cursos</a>
+      <a href="review.html" data-page="practicar">🔁 Practicar</a>
+      <a href="mensajes.html" data-page="mensajes">💬 Mensajes</a>
+      <a href="notificaciones.html" data-page="notificaciones">🔔 Notificaciones</a>
+      <a href="recompensas.html" data-page="recompensas">🏆 Recompensas</a>
+      <a href="referidos.html" data-page="referidos">🤝 Recomendar</a>
+      <a href="ajustes.html" data-page="ajustes">⚙️ Ajustes</a>
+      <a href="pagos.html" data-page="pagos">💳 Pagos</a>
+      <a href="ayuda.html" data-page="ayuda">🆘 Ayuda</a>
+    `;
+
+    const header = document.getElementById('appHeader');
+    if (header) header.insertAdjacentElement('afterend', panel);
+    else document.body.insertAdjacentElement('afterbegin', panel);
+
+    const activeKey = page;
+    panel.querySelectorAll('a[data-page]').forEach((link) => {
+      if (link.dataset.page === activeKey) {
+        link.classList.add('is-active');
+      }
+    });
+  }
+
   function wireMiniMenu(wrap, btn, menu) {
     if (!wrap || !btn || !menu || wrap.dataset.wired) return;
     wrap.dataset.wired = '1';
     const canHover = window.matchMedia('(hover: hover)').matches;
+    let closeTimer = null;
 
     const open = () => {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
       wrap.classList.add('open');
       btn.setAttribute('aria-expanded', 'true');
     };
@@ -554,20 +697,48 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       wrap.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
     };
+    const scheduleClose = () => {
+      if (closeTimer) clearTimeout(closeTimer);
+      closeTimer = setTimeout(close, 160);
+    };
+    const cancelClose = () => {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+    };
     const toggle = () => {
       if (wrap.classList.contains('open')) close();
       else open();
     };
 
     if (canHover) {
-      wrap.addEventListener('mouseenter', open);
-      wrap.addEventListener('mouseleave', close);
+      wrap.addEventListener('mouseenter', () => {
+        cancelClose();
+        open();
+      });
+      wrap.addEventListener('mouseleave', (e) => {
+        if (menu.contains(e.relatedTarget)) return;
+        scheduleClose();
+      });
+      menu.addEventListener('mouseenter', () => {
+        cancelClose();
+        open();
+      });
+      menu.addEventListener('mouseleave', (e) => {
+        if (wrap.contains(e.relatedTarget)) return;
+        scheduleClose();
+      });
     }
 
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       toggle();
+    });
+
+    menu.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
 
     document.addEventListener('click', (e) => {
@@ -760,7 +931,12 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     if (profileWrap && profileToggle && profileMenu && !profileWrap.dataset.wired) {
       profileWrap.dataset.wired = '1';
       const canHover = window.matchMedia('(hover: hover)').matches;
+      let closeTimer = null;
       const open = () => {
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          closeTimer = null;
+        }
         profileWrap.classList.add('open');
         profileToggle.setAttribute('aria-expanded', 'true');
       };
@@ -768,18 +944,45 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         profileWrap.classList.remove('open');
         profileToggle.setAttribute('aria-expanded', 'false');
       };
+      const scheduleClose = () => {
+        if (closeTimer) clearTimeout(closeTimer);
+        closeTimer = setTimeout(close, 180);
+      };
+      const cancelClose = () => {
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          closeTimer = null;
+        }
+      };
       const toggle = () => {
         if (profileWrap.classList.contains('open')) close();
         else open();
       };
       if (canHover) {
-        profileWrap.addEventListener('mouseenter', open);
-        profileWrap.addEventListener('mouseleave', close);
+        profileToggle.addEventListener('mouseenter', () => {
+          cancelClose();
+          open();
+        });
+        profileMenu.addEventListener('mouseenter', () => {
+          cancelClose();
+          open();
+        });
+        profileToggle.addEventListener('mouseleave', (e) => {
+          if (profileMenu.contains(e.relatedTarget)) return;
+          scheduleClose();
+        });
+        profileMenu.addEventListener('mouseleave', (e) => {
+          if (profileToggle.contains(e.relatedTarget)) return;
+          scheduleClose();
+        });
       }
       profileToggle.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         toggle();
+      });
+      profileMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
       });
 
       document.addEventListener('click', (e) => {
@@ -849,7 +1052,10 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         const snap = await getDoc(doc(db, 'users', user.uid));
         const data = snap.exists() ? snap.data() : {};
         CURRENT_DOC = data;
-        isAdmin = String(data?.role || 'user') === 'admin';
+        isAdmin =
+          String(data?.role || 'user') === 'admin' ||
+          data?.admin === true ||
+          String(user?.email || '').toLowerCase() === 'aquivivo.pl@gmail.com';
       } catch (e) {
         console.warn('[layout] admin check failed', e);
       }
@@ -859,6 +1065,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     mount.innerHTML = buildHeader(user, isAdmin, profile);
     footerMount.innerHTML = buildFooter();
     wireHeader();
+    injectSidePanel();
     setupAnchorScroll();
 
     if (user?.uid) startBadgeRefresh(user.uid);
@@ -880,6 +1087,9 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       await activateTrial(user, CURRENT_DOC);
       updateTrialUI();
     }
+
+    if (user) await loadPopupSettings(true);
+    await logPageView(user, isAdmin);
   });
 
   const trialReady = () => {

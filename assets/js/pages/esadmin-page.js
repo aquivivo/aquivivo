@@ -31,6 +31,8 @@ import {
 
 const $ = (id) => document.getElementById(id);
 
+const ADMIN_UIDS = new Set(['OgXNeCbloJiSGoi1DsZ9UN0aU0I2']);
+
 function esc(s) {
   return String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -229,8 +231,6 @@ async function safeCountCol(colName, cap = 500) {
 async function ensureAdmin(user) {
   // DEV helper: allow-list specific UIDs to access admin UI even if users/{uid}.role is not set yet.
   // Security still depends on Firestore Rules (this only prevents accidental lock-out).
-  const ADMIN_UIDS = new Set(['OgXNeCbloJiSGoi1DsZ9UN0aU0I2']); // add more UIDs if needed
-
   try {
     if (ADMIN_UIDS.has(user.uid)) return true;
 
@@ -298,11 +298,140 @@ async function loadDashboard() {
     if ($('statBlocked')) $('statBlocked').textContent = String(blocked);
     if ($('statOneTopic')) $('statOneTopic').textContent = String(oneTopic);
 
+    await loadPageViewsStats();
+
     setStatus(st, 'Gotowe');
   } catch (e) {
     console.error('[dashboard]', e);
     setStatus(st, 'Blad: sprawdz rules / Console.', true);
   }
+}
+
+async function loadPageViewsStats() {
+  const elToday = $('statVisitsToday');
+  const elWeek = $('statVisitsWeek');
+  const elMonth = $('statVisitsMonth');
+  if (!elToday || !elWeek || !elMonth) return;
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'page_views'), orderBy('createdAt', 'desc'), limit(1000)),
+    );
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const weekStart = new Date(todayStart.getTime() - 6 * 86400000);
+    const monthStart = new Date(todayStart.getTime() - 29 * 86400000);
+
+    let today = 0;
+    let week = 0;
+    let month = 0;
+
+    snap.forEach((docSnap) => {
+      const v = docSnap.data() || {};
+      if (v.isAdmin === true) return;
+      if (v.uid && ADMIN_UIDS.has(v.uid)) return;
+      const dt = toDateMaybe(v.createdAt);
+      if (!dt) return;
+      const ts = dt.getTime();
+      if (ts >= monthStart.getTime()) {
+        month += 1;
+        if (ts >= weekStart.getTime()) {
+          week += 1;
+          if (ts >= todayStart.getTime()) today += 1;
+        }
+      }
+    });
+
+    elToday.textContent = String(today);
+    elWeek.textContent = String(week);
+    elMonth.textContent = String(month);
+  } catch (e) {
+    console.warn('[page_views]', e);
+    elToday.textContent = '-';
+    elWeek.textContent = '-';
+    elMonth.textContent = '-';
+  }
+}
+
+/* =========================
+   Popup / banner settings
+   ========================= */
+async function loadPopupSettingsAdmin() {
+  const status = $('popupStatus');
+  try {
+    setStatus(status, 'Ladowanie...');
+    const snap = await getDoc(doc(db, 'site_settings', 'popup'));
+    const data = snap.exists() ? snap.data() : {};
+    if ($('popupEnabled'))
+      $('popupEnabled').value = data.enabled === false ? 'false' : 'true';
+    if ($('popupShowOn')) $('popupShowOn').value = String(data.showOn || 'visit');
+    if ($('popupRepeat'))
+      $('popupRepeat').value = data.repeat === true ? 'true' : 'false';
+    if ($('popupTitle')) $('popupTitle').value = String(data.title || '');
+    if ($('popupBody')) $('popupBody').value = String(data.body || '');
+    if ($('popupCtaLabel')) $('popupCtaLabel').value = String(data.ctaLabel || '');
+    if ($('popupCtaUrl')) $('popupCtaUrl').value = String(data.ctaUrl || '');
+    if ($('popupImageUrl')) $('popupImageUrl').value = String(data.imageUrl || '');
+    setStatus(status, 'Gotowe');
+  } catch (e) {
+    console.warn('[popup settings]', e);
+    setStatus(status, 'Blad ladowania', true);
+  }
+}
+
+async function savePopupSettings() {
+  const status = $('popupStatus');
+  try {
+    setStatus(status, 'Zapisywanie...');
+    const payload = {
+      enabled: String($('popupEnabled')?.value || 'false') === 'true',
+      showOn: String($('popupShowOn')?.value || 'visit'),
+      repeat: String($('popupRepeat')?.value || 'false') === 'true',
+      title: String($('popupTitle')?.value || '').trim(),
+      body: String($('popupBody')?.value || '').trim(),
+      ctaLabel: String($('popupCtaLabel')?.value || '').trim(),
+      ctaUrl: String($('popupCtaUrl')?.value || '').trim(),
+      imageUrl: String($('popupImageUrl')?.value || '').trim(),
+      updatedAt: serverTimestamp(),
+    };
+    await setDoc(doc(db, 'site_settings', 'popup'), payload, { merge: true });
+    setStatus(status, 'Zapisano');
+  } catch (e) {
+    console.warn('[popup save]', e);
+    setStatus(status, 'Blad zapisu', true);
+  }
+}
+
+/* =========================
+   Quick nav (admin cards)
+   ========================= */
+function setupAdminQuickNav() {
+  const select = $('adminQuickNav');
+  if (!select) return;
+  const cards = Array.from(document.querySelectorAll('details.card[id]'));
+  const options = cards
+    .map((card) => {
+      const summary = card.querySelector('summary');
+      const label = summary ? summary.textContent.trim() : card.id;
+      return { id: card.id, label };
+    })
+    .filter((opt) => opt.id && opt.label);
+
+  select.innerHTML =
+    '<option value="">Skocz do sekcji...</option>' +
+    options.map((opt) => `<option value="${esc(opt.id)}">${esc(opt.label)}</option>`).join('');
+
+  select.addEventListener('change', (e) => {
+    const id = String(e.target?.value || '');
+    if (!id) return;
+    cards.forEach((card) => {
+      card.open = card.id === id;
+    });
+    const target = document.getElementById(id);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
 }
 
 /* Optional: statCard click -> show small details (first 20 emails) */
@@ -954,10 +1083,13 @@ function renderDrafts() {
     });
   }
 
-  $('draftsSummary')?.textContent =
-    draftsTotalCount > 0
-      ? `Szkice: ${draftsCache.length} / wszystkie: ${draftsTotalCount}`
-      : 'Brak danych.';
+  const draftsSummaryEl = $('draftsSummary');
+  if (draftsSummaryEl) {
+    draftsSummaryEl.textContent =
+      draftsTotalCount > 0
+        ? `Szkice: ${draftsCache.length} / wszystkie: ${draftsTotalCount}`
+        : 'Brak danych.';
+  }
 
   if (!items.length) {
     list.innerHTML = '<div class="hintSmall">Brak szkicow.</div>';
@@ -3506,6 +3638,10 @@ function bindEvents() {
       if (type) loadStatDetails(type);
     });
   });
+  setupAdminQuickNav();
+
+  // popup / banner
+  $('btnSavePopup')?.addEventListener('click', savePopupSettings);
 
   // referral
   $('btnSaveReferralSettings')?.addEventListener('click', saveReferralSettings);
@@ -3700,6 +3836,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load sections independently so one failure doesn't break others
     await loadDashboard();
+    await loadPopupSettingsAdmin();
     await loadReferralSettings();
     await loadPromoList();
     await loadServicesList();
