@@ -12,22 +12,19 @@
     <script src="assets/js/layout.js" type="module"></script>
   </head>
 
-  <body data-page="profile">
+  <body data-page="profile" class="with-side-panel">
     <div id="appHeader"></div>
+    <aside id="sidePanel" class="side-panel">
+      <a href="index.html" data-page="inicio">🏠 Inicio</a>
+      <a href="espanel.html#cursos" data-page="cursos">📚 Cursos</a>
+      <a href="review.html" data-page="practicar">🔁 Practicar</a>
+      <a href="recompensas.html" data-page="recompensas">🏆 Logros</a>
+      <a href="mensajes.html" data-page="mensajes">💬 Comunidad</a>
+      <a href="perfil.html" data-page="profile" class="is-active">👤 Perfil</a>
+    </aside>
 
     <main class="page profile-page">
       <div class="container profile-shell profile-shell--wide">
-        <aside class="profile-sidebar">
-          <div class="profile-nav">
-            <a class="profile-nav-item" href="index.html">🏠 Inicio</a>
-            <a class="profile-nav-item" href="espanel.html#cursos">📚 Cursos</a>
-            <a class="profile-nav-item" href="review.html">🔁 Practicar</a>
-            <a class="profile-nav-item" href="recompensas.html">🏆 Logros</a>
-            <a class="profile-nav-item" href="mensajes.html">💬 Comunidad</a>
-            <a class="profile-nav-item active" href="perfil.html">👤 Perfil</a>
-          </div>
-        </aside>
-
         <section class="profile-main">
           <div class="card profile-hero" id="profileCard">
             <div class="profileHeader">

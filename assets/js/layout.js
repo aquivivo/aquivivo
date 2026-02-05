@@ -1,5 +1,5 @@
 ﻿// assets/js/layout.js
-// Shared header for ALL pages except index.html (index uses layout-index.js)
+// Shared header/footer for ALL pages (including index.html)
 //  Safe injection (doesn't replace body -> footers remain)
 //  Uses firebase-init.js (matches your project)
 //  Shows Login when signed out, Logout when signed in
@@ -19,6 +19,8 @@ import {
   limit,
   orderBy,
   query,
+  where,
+  setDoc,
   updateDoc,
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
@@ -45,8 +47,6 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     'admin-wizard',
   ]);
   const isAdminPage = adminPages.has(document.body?.dataset?.page);
-  if (isIndex) return; // index uses layout-index.js
-
   const IDLE_LIMIT_MS = 15 * 60 * 1000;
   let idleTimer = null;
   let idleEnabled = false;
@@ -196,6 +196,32 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       : [];
     if (rawLevels.length) return rawLevels;
     return levelsFromPlan(docData?.plan);
+  }
+
+  async function upsertEmailIndex(user, profile) {
+    const email = String(user?.email || '').trim();
+    if (!email) return;
+    const emailLower = email.toLowerCase();
+    try {
+      await setDoc(
+        doc(db, 'email_index', emailLower),
+        {
+          uid: user.uid,
+          emailLower,
+          handle: String(profile?.handle || '').trim(),
+          displayName: String(
+            profile?.displayName ||
+              profile?.name ||
+              user?.displayName ||
+              '',
+          ).trim(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    } catch (e) {
+      console.warn('[email_index] update failed', e);
+    }
   }
 
   function hasActiveAccess(docData) {
@@ -512,8 +538,8 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     const hrefServiciosServicios = 'services.html#servicios';
     const hrefServiciosExtras = 'services.html#extras';
     const hrefServiciosEbooks = 'services.html#ebooks';
-    const hrefPolaco = 'index.html#metodo-disenado-para-ti';
-    const hrefTramites = 'index.html#mas-que-clases';
+    const hrefPolaco = isIndex ? '#metodo-disenado-para-ti' : 'index.html#metodo-disenado-para-ti';
+    const hrefTramites = isIndex ? '#mas-que-clases' : 'index.html#mas-que-clases';
 
     // Keep it simple and stable on app pages
 
@@ -536,15 +562,16 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                 ${labels.servicios} <span class="nav-dd-caret">v</span>
               </button>
               <div class="nav-dd-menu" id="menuServicios" role="menu" aria-label="${labels.servicios}">
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosPlanes}">${labels.planes}</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosServicios}">${labels.servicios}</a>
-                <a role="menuitem" class="nav-dd-item nav-dd-item--red" id="btnTramites" href="${hrefTramites}">${labels.tramites}</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosExtras}">${labels.extras}</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosEbooks}">${labels.ebooks}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosPlanes}">🧾 ${labels.planes}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosServicios}">🛠️ ${labels.servicios}</a>
+                <a role="menuitem" class="nav-dd-item nav-dd-item--red" id="btnTramites" href="${hrefTramites}">📄 ${labels.tramites}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosExtras}">✨ ${labels.extras}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosEbooks}">📚 ${labels.ebooks}</a>
                 <div class="nav-dd-sep" aria-hidden="true"></div>
-                <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">${labels.verTodo}</a>
+                <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">👀 ${labels.verTodo}</a>
               </div>
             </div>
+            ${isIndex ? `<a class="btn-white-outline" id="btnContacto" href="#contact">&#x1F495; Contacto</a>` : ''}
             ${
               logged
                 ? `
@@ -624,8 +651,8 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         <div class="nav-line nav-line-above"></div>
         <div class="footer-inner container">
           <div class="footer-text">
-            (c) 2026 AquiVivo. Todos los derechos reservados.<br />
-            Te ayudo a perder el miedo a hablar. 
+            &copy; 2026 AquiVivo. Todos los derechos reservados.<br />
+            Te ayudo a perder el miedo a hablar. &#x1F338;&#x1F90D;
           </div>
         </div>
       </footer>
@@ -810,13 +837,22 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     try {
       const snap = await getDocs(
         query(
-          collection(db, 'user_inbox', uid, 'messages'),
-          orderBy('createdAt', 'desc'),
+          collection(db, 'conversations'),
+          where('participants', 'array-contains', uid),
+          orderBy('lastAt', 'desc'),
           limit(8),
         ),
       );
-      const items = snap.docs.map((d) => d.data() || {});
-      const unread = items.filter((i) => i.read !== true).length;
+      const items = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+      const unread = items.filter((item) => {
+        const lastAt = toDateMaybe(item.lastAt);
+        if (!lastAt) return false;
+        if (item.lastMessage?.senderId === uid) return false;
+        const readRaw = item.reads ? item.reads[uid] : null;
+        const readAt = toDateMaybe(readRaw);
+        if (!readAt) return true;
+        return lastAt.getTime() > readAt.getTime();
+      }).length;
       setBadge(badge, unread);
       if (!items.length) {
         list.innerHTML = '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
@@ -824,10 +860,21 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       }
       list.innerHTML = items
         .map((item) => {
-          const name = String(item.fromName || item.fromEmail || 'Usuario');
-          const text = String(item.text || '');
-          return `<div class="nav-mini-item ${item.read ? '' : 'is-unread'}">
-            <div class="nav-mini-title">${name}</div>
+          const title =
+            item.title ||
+            (item.type === 'support' ? 'Soporte' : item.type === 'group' ? 'Grupo' : '') ||
+            item.lastMessage?.senderName ||
+            'Conversación';
+          const text = String(item.lastMessage?.text || '');
+          const lastAt = toDateMaybe(item.lastAt);
+          const readRaw = item.reads ? item.reads[uid] : null;
+          const readAt = toDateMaybe(readRaw);
+          const isUnread =
+            lastAt &&
+            item.lastMessage?.senderId !== uid &&
+            (!readAt || lastAt.getTime() > readAt.getTime());
+          return `<div class="nav-mini-item ${isUnread ? 'is-unread' : ''}">
+            <div class="nav-mini-title">${String(title || 'Conversación')}</div>
             ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
           </div>`;
         })
@@ -1071,6 +1118,9 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     }
 
     const profile = CURRENT_DOC || {};
+    if (user) {
+      await upsertEmailIndex(user, profile);
+    }
     mount.innerHTML = buildHeader(user, isAdmin, profile);
     footerMount.innerHTML = buildFooter();
     wireHeader();

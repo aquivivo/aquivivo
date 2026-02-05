@@ -1360,17 +1360,8 @@ async function sendFriendRequest(myUid, code) {
 
 async function openChat(myUid, friendUid) {
   if (!friendUid) return;
-  activeChatUid = friendUid;
-  activeChatProfile = await getPublicProfile(friendUid);
-  if (chatHeader) {
-    const name = activeChatProfile?.displayName || 'Usuario';
-    chatHeader.innerHTML = `
-      <span class="friendAvatar">${friendAvatarLetter(name)}</span>
-      <span>${name}</span>
-    `;
-  }
-  if (chatHint) chatHint.textContent = '';
-  await loadMessages(myUid, friendUid);
+  const url = `mensajes.html?chat=${encodeURIComponent(friendUid)}`;
+  window.location.href = url;
 }
 
 async function loadMessages(myUid, friendUid) {

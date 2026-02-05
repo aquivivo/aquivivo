@@ -398,3 +398,43 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 });
+
+// 3️⃣ Push notifications for chat messages
+exports.onConversationMessage = functions.firestore
+  .document('conversations/{convId}/messages/{msgId}')
+  .onCreate(async (snap, context) => {
+    const msg = snap.data() || {};
+    const convId = context.params.convId;
+    const convSnap = await db.doc(`conversations/${convId}`).get();
+    if (!convSnap.exists) return null;
+
+    const conv = convSnap.data() || {};
+    const participants = Array.isArray(conv.participants) ? conv.participants : [];
+    const senderId = String(msg.senderId || '');
+    const recipients = participants.filter((uid) => uid && uid !== senderId);
+    if (!recipients.length) return null;
+
+    const tokenSnaps = await Promise.all(
+      recipients.map((uid) =>
+        db.collection('user_push_tokens').doc(uid).collection('tokens').get(),
+      ),
+    );
+    const tokens = [];
+    tokenSnaps.forEach((s) => {
+      s.forEach((doc) => tokens.push(doc.id));
+    });
+    if (!tokens.length) return null;
+
+    const title =
+      conv.title ||
+      (conv.type === 'support' ? 'Soporte' : conv.type === 'group' ? 'Grupo' : 'Nuevo mensaje');
+    const body = msg.text || 'Adjunto';
+
+    await admin.messaging().sendEachForMulticast({
+      tokens,
+      notification: { title, body },
+      data: { convId },
+    });
+
+    return null;
+  });

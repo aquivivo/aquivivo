@@ -15,28 +15,180 @@
   <body data-page="mensajes">
     <div id="appHeader"></div>
 
-    <main class="page">
-      <div class="container">
-        <section class="heroBanner">
-          <div class="heroTitleRow">
-            <div class="heroIcon">&#128172;</div>
-            <div>
-              <h1 class="glow-text" style="margin: 0">Mensajes</h1>
-              <div class="subtitle" style="margin-top: 6px">
-                Conversaciones con tus amigos y el admin.
+    <main class="page messages-page">
+      <div class="container messages-shell">
+        <aside class="card messages-sidebar">
+          <div class="messages-sidebar-head">
+            <div class="sectionTitle" style="margin: 0">Mensajes</div>
+            <button class="btn-yellow" id="btnNewChat" type="button">Nuevo chat</button>
+          </div>
+
+          <div class="messages-tabs" role="tablist" aria-label="Secciones">
+            <button class="messages-tab is-active" data-tab="chats" type="button">Chats</button>
+            <button class="messages-tab" data-tab="groups" type="button">Grupos</button>
+            <button class="messages-tab" data-tab="support" id="tabSupport" type="button" hidden>
+              Soporte
+            </button>
+          </div>
+
+          <div class="messages-search">
+            <input
+              class="input"
+              id="messagesSearch"
+              type="text"
+              placeholder="Buscar conversaciones..."
+            />
+          </div>
+
+          <div class="messages-list" id="chatList"></div>
+          <div class="messages-list is-hidden" id="groupList"></div>
+          <div class="messages-list is-hidden" id="supportList"></div>
+
+          <div class="messages-sidebar-actions">
+            <button class="btn-white-outline" id="btnNewGroup" type="button">Crear grupo</button>
+            <button class="btn-white-outline" id="btnOpenSupport" type="button">Soporte</button>
+          </div>
+
+          <div class="messages-admin card" id="supportAdminBox" hidden>
+            <div class="sectionTitle" style="margin-top: 0">Agentes de soporte</div>
+            <div class="hintSmall">Agrega usuarios sin rol admin.</div>
+            <div class="metaRow" style="margin-top: 10px">
+              <input
+                class="input"
+                id="supportAgentInput"
+                type="text"
+                placeholder="@usuario o UID"
+              />
+              <button class="btn-white-outline" id="btnAddSupportAgent" type="button">
+                Agregar
+              </button>
+            </div>
+            <div class="support-agent-list" id="supportAgentList"></div>
+          </div>
+        </aside>
+
+        <section class="card messages-main">
+          <div class="messages-empty" id="messagesEmpty">
+            Selecciona una conversacion o crea un nuevo chat.
+          </div>
+
+          <div class="messages-thread" id="messagesThread" hidden>
+            <div class="thread-head">
+              <div class="thread-title">
+                <div class="thread-avatar" id="threadAvatar">AV</div>
+                <div>
+                  <div class="thread-name" id="threadName">Conversacion</div>
+                  <div class="thread-meta" id="threadMeta"></div>
+                  <div class="thread-typing" id="threadTyping"></div>
+                </div>
+              </div>
+              <div class="thread-actions">
+                <button class="btn-white-outline" id="btnJoinGroup" type="button" hidden>
+                  Unirme
+                </button>
+                <button class="btn-white-outline" id="btnLeaveGroup" type="button" hidden>
+                  Salir
+                </button>
+              </div>
+            </div>
+
+            <div class="thread-messages" id="threadMessages"></div>
+
+            <div class="thread-composer">
+              <div class="composer-tools">
+                <label class="composer-btn">
+                  📎
+                  <input id="fileInput" type="file" multiple />
+                </label>
+                <button class="composer-btn" id="btnRecord" type="button">🎙</button>
+                <div class="composer-hint" id="recordHint"></div>
+              </div>
+              <div class="composer-preview" id="attachmentsPreview"></div>
+              <div class="composer-row">
+                <textarea
+                  id="messageInput"
+                  rows="2"
+                  placeholder="Escribe un mensaje..."
+                ></textarea>
+                <button class="btn-yellow" id="btnSend" type="button">Enviar</button>
               </div>
             </div>
           </div>
         </section>
 
-        <section class="card" style="margin-top: 12px">
-          <div class="sectionTitle" style="margin-top: 0">Bandeja</div>
-          <div class="muted">Muy pronto veras aqui tus conversaciones.</div>
-          <div style="margin-top: 12px">
-            <a class="btn-yellow" href="espanel.html#mensajes">Abrir en Libreta</a>
-          </div>
-        </section>
+        <aside class="card messages-info" id="messagesInfo" hidden>
+          <div class="sectionTitle" style="margin-top: 0">Detalles</div>
+          <div class="info-body" id="infoBody"></div>
+          <div class="participants-box" id="participantsBox"></div>
+          <div class="requests-box" id="requestsBox"></div>
+        </aside>
       </div>
     </main>
+
+    <div class="modalOverlay" id="modalNewChat">
+      <div class="modalCard">
+        <div class="modalHead">
+          <div class="modalTitle">Nuevo chat</div>
+          <button class="btn-white-outline" id="closeNewChat" type="button">Cerrar</button>
+        </div>
+        <div class="modalBody">
+          <div class="info-field">
+            <label for="newChatInput">Buscar usuario</label>
+            <input
+              id="newChatInput"
+              class="input"
+              type="text"
+              placeholder="@usuario o nombre"
+            />
+          </div>
+          <div class="metaRow" style="margin-top: 10px">
+            <button class="btn-yellow" id="btnSearchUser" type="button">Buscar</button>
+            <span class="hintSmall" id="newChatHint"></span>
+          </div>
+          <div class="messages-list" id="newChatResults" style="margin-top: 12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modalOverlay" id="modalNewGroup">
+      <div class="modalCard">
+        <div class="modalHead">
+          <div class="modalTitle">Crear grupo</div>
+          <button class="btn-white-outline" id="closeNewGroup" type="button">Cerrar</button>
+        </div>
+        <div class="modalBody">
+          <div class="info-field">
+            <label for="groupName">Nombre del grupo</label>
+            <input id="groupName" class="input" type="text" placeholder="Nombre" />
+          </div>
+          <div class="info-field" style="margin-top: 10px">
+            <label for="groupDesc">Descripcion</label>
+            <textarea id="groupDesc" class="input" rows="3" placeholder="Opcional"></textarea>
+          </div>
+          <div class="info-grid" style="margin-top: 10px">
+            <div class="info-field">
+              <label for="groupPublic">Visibilidad</label>
+              <select id="groupPublic" class="select">
+                <option value="public">Publico</option>
+                <option value="private">Privado</option>
+              </select>
+            </div>
+            <div class="info-field">
+              <label for="groupJoinMode">Ingreso</label>
+              <select id="groupJoinMode" class="select">
+                <option value="open">Abierto</option>
+                <option value="approval">Con aprobacion</option>
+              </select>
+            </div>
+          </div>
+          <div class="metaRow" style="margin-top: 12px">
+            <button class="btn-yellow" id="btnCreateGroup" type="button">Crear</button>
+            <span class="hintSmall" id="newGroupHint"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="assets/js/pages/mensajes-page.js"></script>
   </body>
 </html>
