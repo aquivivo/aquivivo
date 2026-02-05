@@ -408,7 +408,7 @@ async function savePopupSettings() {
 function setupAdminQuickNav() {
   const select = $('adminQuickNav');
   if (!select) return;
-  const cards = Array.from(document.querySelectorAll('details.card[id]'));
+  const cards = Array.from(document.querySelectorAll('details.card[id^="acc"]'));
   const options = cards
     .map((card) => {
       const summary = card.querySelector('summary');
@@ -424,14 +424,197 @@ function setupAdminQuickNav() {
   select.addEventListener('change', (e) => {
     const id = String(e.target?.value || '');
     if (!id) return;
-    cards.forEach((card) => {
-      card.open = card.id === id;
-    });
-    const target = document.getElementById(id);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    openAdminSection(id);
+    select.value = '';
   });
+}
+
+/* =========================
+   Admin sidebar -> modal sections
+   ========================= */
+let adminSectionPool = null;
+let adminModal = null;
+let adminModalTitle = null;
+let adminModalBody = null;
+let activeAdminSectionId = '';
+
+function ensureAdminSectionPool() {
+  if (adminSectionPool) return adminSectionPool;
+  const pool = document.createElement('div');
+  pool.id = 'adminSectionPool';
+  pool.className = 'admin-section-pool';
+  pool.style.display = 'none';
+  document.body.appendChild(pool);
+  adminSectionPool = pool;
+  return pool;
+}
+
+function ensureAdminModal() {
+  if (adminModal) return adminModal;
+  const modal = document.createElement('div');
+  modal.id = 'adminSectionModal';
+  modal.className = 'admin-modal';
+  modal.innerHTML = `
+    <div class="admin-modal-box">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title" id="adminModalTitle">Seccion</div>
+        <button class="btn-white-outline admin-modal-close" id="adminModalClose" type="button">Cerrar</button>
+      </div>
+      <div class="admin-modal-body" id="adminModalBody"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  adminModal = modal;
+  adminModalTitle = modal.querySelector('#adminModalTitle');
+  adminModalBody = modal.querySelector('#adminModalBody');
+  const closeBtn = modal.querySelector('#adminModalClose');
+  closeBtn?.addEventListener('click', closeAdminSection);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeAdminSection();
+  });
+  return modal;
+}
+
+function getAdminSectionCards() {
+  return Array.from(document.querySelectorAll('details.card[id^="acc"]'));
+}
+
+function setActiveAdminLink(id) {
+  const sidePanel = document.getElementById('sidePanel');
+  if (!sidePanel) return;
+  sidePanel.querySelectorAll('.side-panel-link').forEach((link) => {
+    if (link.dataset.adminSection === id) link.classList.add('is-active');
+    else link.classList.remove('is-active');
+  });
+}
+
+function openAdminSection(id) {
+  if (!id) return;
+  const card = document.getElementById(id);
+  if (!card) return;
+  ensureAdminModal();
+  const pool = ensureAdminSectionPool();
+
+  if (activeAdminSectionId && adminModalBody?.firstElementChild) {
+    pool.appendChild(adminModalBody.firstElementChild);
+  }
+
+  const summary = card.querySelector('summary');
+  if (adminModalTitle) {
+    adminModalTitle.textContent = summary ? summary.textContent.trim() : id;
+  }
+  card.open = true;
+  adminModalBody?.appendChild(card);
+  adminModal?.classList.add('open');
+  document.body.classList.add('modal-open');
+  activeAdminSectionId = id;
+  setActiveAdminLink(id);
+}
+
+function closeAdminSection() {
+  if (!adminModal) return;
+  const pool = ensureAdminSectionPool();
+  if (adminModalBody?.firstElementChild) {
+    pool.appendChild(adminModalBody.firstElementChild);
+  }
+  adminModal.classList.remove('open');
+  document.body.classList.remove('modal-open');
+  activeAdminSectionId = '';
+  setActiveAdminLink('');
+}
+
+function setupAdminSidebarSections() {
+  const sidePanel = document.getElementById('sidePanel');
+  if (!sidePanel) return;
+  if (sidePanel.dataset.adminSidebar === '1') return;
+  document.body.classList.add('with-side-panel');
+  if (!sidePanel.classList.contains('side-panel'))
+    sidePanel.classList.add('side-panel');
+  const cards = getAdminSectionCards();
+  if (!cards.length) return;
+
+  document.body.classList.add('admin-sections-hidden');
+  ensureAdminSectionPool();
+  ensureAdminModal();
+
+  cards.forEach((card) => {
+    adminSectionPool.appendChild(card);
+  });
+
+  const hero = document.querySelector('.heroBanner');
+  if (hero) hero.classList.add('admin-hidden');
+  document.querySelectorAll('.adminGroupTitle, .adminGroup').forEach((el) => {
+    el.classList.add('admin-hidden');
+  });
+
+  sidePanel.classList.add('side-panel--admin');
+  sidePanel.dataset.adminSidebar = '1';
+  sidePanel.innerHTML = '';
+
+  const iconMap = {
+    accDashboard: '🧭',
+    accPopup: '📣',
+    accServices: '🛒',
+    accPayments: '💳',
+    accPromo: '🏷️',
+    accSegments: '🧩',
+    accBroadcasts: '📢',
+    accPublishing: '📝',
+    accMissing: '🧹',
+    accUsers: '👥',
+    accProgress: '📈',
+    accActivity: '📊',
+    accFlashcards: '🃏',
+    accReviews: '⭐',
+    accReports: '🆘',
+    accAppLogs: '🧾',
+    accAudioLib: '🎧',
+  };
+
+  const list = document.createElement('div');
+  list.className = 'side-panel-list';
+  cards.forEach((card) => {
+    const summary = card.querySelector('summary');
+    const label = summary ? summary.textContent.trim() : card.id;
+    if (!label) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'side-panel-link';
+    btn.dataset.adminSection = card.id;
+    const icon = iconMap[card.id] || '📌';
+    btn.innerHTML = `<span class="side-panel-ico">${icon}</span><span>${esc(label)}</span>`;
+    list.appendChild(btn);
+  });
+  sidePanel.appendChild(list);
+
+  sidePanel.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('[data-admin-section]');
+    if (!btn) return;
+    const id = String(btn.dataset.adminSection || '');
+    if (id) openAdminSection(id);
+  });
+}
+
+function watchAdminSidebar() {
+  if (document.body.dataset.adminSidebarWatch === '1') return;
+  document.body.dataset.adminSidebarWatch = '1';
+
+  const tryInit = () => {
+    const sidePanel = document.getElementById('sidePanel');
+    if (!sidePanel) return;
+    if (sidePanel.dataset.adminSidebar === '1') return;
+    setupAdminSidebarSections();
+  };
+
+  const obs = new MutationObserver(() => {
+    tryInit();
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+
+  // also try right away + a bit later (in case layout renders after auth)
+  tryInit();
+  setTimeout(tryInit, 300);
+  setTimeout(tryInit, 1000);
 }
 
 /* Optional: statCard click -> show small details (first 20 emails) */
@@ -1296,10 +1479,14 @@ function renderMissing() {
   if ($('missingTagsCount')) $('missingTagsCount').textContent = String(missingCache.tags.length);
   if ($('missingTransCount')) $('missingTransCount').textContent = String(missingCache.trans.length);
 
-  $('missingPriceInfo')?.textContent = `Pokazano: ${priceItems.length}`;
-  $('missingAudioInfo')?.textContent = `Pokazano: ${audioItems.length}`;
-  $('missingTagsInfo')?.textContent = `Pokazano: ${tagsItems.length}`;
-  $('missingTransInfo')?.textContent = `Pokazano: ${transItems.length}`;
+  const missingPriceInfo = $('missingPriceInfo');
+  const missingAudioInfo = $('missingAudioInfo');
+  const missingTagsInfo = $('missingTagsInfo');
+  const missingTransInfo = $('missingTransInfo');
+  if (missingPriceInfo) missingPriceInfo.textContent = `Pokazano: ${priceItems.length}`;
+  if (missingAudioInfo) missingAudioInfo.textContent = `Pokazano: ${audioItems.length}`;
+  if (missingTagsInfo) missingTagsInfo.textContent = `Pokazano: ${tagsItems.length}`;
+  if (missingTransInfo) missingTransInfo.textContent = `Pokazano: ${transItems.length}`;
 
   renderMissingList('missingPriceList', priceItems, 'Brak brakow.');
   renderMissingList('missingAudioList', audioItems, 'Brak brakow.');
@@ -3630,6 +3817,8 @@ function exportSegmentCSV() {
    BIND EVENTS
    ========================= */
 function bindEvents() {
+  watchAdminSidebar();
+  setupAdminSidebarSections();
   // dashboard refresh
   $('btnRefreshStats')?.addEventListener('click', loadDashboard);
   document.querySelectorAll('.statCard[data-expand]')?.forEach?.((el) => {

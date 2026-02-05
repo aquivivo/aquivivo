@@ -643,9 +643,18 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       'referidos',
       'ajustes',
       'ayuda',
+      'esadmin',
+      'admin-wizard',
+      'admin-select',
     ]);
     if (!allowed.has(page)) return;
-    if (document.getElementById('sidePanel')) return;
+    const existingPanel = document.getElementById('sidePanel');
+    if (existingPanel) {
+      document.body.classList.add('with-side-panel');
+      if (!existingPanel.classList.contains('side-panel'))
+        existingPanel.classList.add('side-panel');
+      return;
+    }
 
     document.body.classList.add('with-side-panel');
 

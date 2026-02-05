@@ -855,12 +855,13 @@ async function loadRecentReactions(targetUid) {
     const names = snap.docs.map((docSnap) => docSnap.data()?.userName || 'Usuario');
     recentReactions.innerHTML = names.map((n) => `<div>❤️ ${esc(n)}</div>`).join('');
   } catch (e) {
-    if (String(e?.code || '') === 'permission-denied') {
+    const code = String(e?.code || '');
+    const msg = String(e?.message || '');
+    if (code === 'permission-denied' || /permission/i.test(msg)) {
       recentReactions.textContent = 'Reacciones ocultas.';
-      return;
+    } else {
+      recentReactions.textContent = 'Sin reacciones aún.';
     }
-    console.warn('recent reactions failed', e);
-    recentReactions.textContent = 'Sin reacciones aún.';
   }
 }
 
@@ -1190,6 +1191,7 @@ onAuthStateChanged(auth, async (user) => {
     const rewardsVisibility = profile.rewardsVisibility || 'public';
     const canViewFeed =
       isOwner ||
+      isAdminUser ||
       postsVisibility === 'public' ||
       (postsVisibility === 'friends' && isFriend);
 
