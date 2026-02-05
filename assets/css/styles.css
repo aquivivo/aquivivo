@@ -573,6 +573,88 @@ body[data-page='index'] main.page {
   align-items: center;
   gap: 8px;
 }
+.nav-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.nav-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #04122f;
+  background: #ffd94a;
+  box-shadow: 0 0 0 2px rgba(5, 16, 40, 0.95);
+}
+.nav-badge--red {
+  background: #ff4b5c;
+  color: #fff;
+}
+.nav-mini-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 220px;
+  background: linear-gradient(160deg, rgba(12, 32, 70, 0.98), rgba(6, 18, 45, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 10px;
+  display: none;
+  z-index: 1002;
+  box-shadow: 0 16px 40px rgba(2, 12, 30, 0.4);
+}
+.nav-icon-wrap.open .nav-mini-menu {
+  display: block;
+}
+.nav-mini-head {
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.nav-mini-list {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow: auto;
+}
+.nav-mini-item {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+.nav-mini-item.is-unread {
+  border: 1px solid rgba(255, 217, 74, 0.35);
+}
+.nav-mini-title {
+  font-weight: 800;
+}
+.nav-mini-body {
+  opacity: 0.8;
+}
+.nav-mini-empty {
+  font-size: 12px;
+  opacity: 0.7;
+}
+.nav-mini-footer {
+  display: block;
+  margin-top: 8px;
+  font-weight: 800;
+  font-size: 12px;
+  color: #ffd94a;
+  text-align: right;
+}
 .nav-icon-btn {
   width: 36px;
   height: 36px;
@@ -633,7 +715,7 @@ body[data-page='index'] main.page {
   right: 0;
   top: 52px;
   min-width: 240px;
-  background: rgba(7, 18, 44, 0.96);
+  background: linear-gradient(160deg, rgba(12, 32, 70, 0.98), rgba(6, 18, 45, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 18px;
   box-shadow: 0 22px 50px rgba(0, 0, 0, 0.35);
@@ -1629,6 +1711,10 @@ p,
 }
 .heroIcon--avatar.hasImage span {
   display: none;
+}
+.heroIcon--lg {
+  width: 170px;
+  height: 170px;
 }
 
 @media (max-width: 720px) {
@@ -3924,6 +4010,12 @@ select:focus {
   align-items: start;
 }
 
+.profile-page .card {
+  background: rgba(10, 28, 64, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 46px rgba(3, 12, 30, 0.28);
+}
+
 .profile-sidebar {
   position: sticky;
   top: 110px;
@@ -3949,6 +4041,7 @@ select:focus {
   font-weight: 700;
   letter-spacing: 0.2px;
   transition: transform 0.15s ease, background 0.2s ease;
+  text-decoration: none;
 }
 
 .profile-nav-item:hover {
@@ -3978,6 +4071,22 @@ select:focus {
 .profileHeaderInfo {
   flex: 1;
   min-width: 220px;
+}
+
+.profile-basic {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.profile-avatar-edit {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+.profile-basic-fields {
+  display: grid;
+  gap: 12px;
 }
 
 .profileStats {
@@ -4437,6 +4546,9 @@ select:focus {
   }
   .profile-sidebar {
     position: static;
+  }
+  .profile-basic {
+    grid-template-columns: 1fr;
   }
   .profileStats {
     grid-template-columns: repeat(2, minmax(0, 1fr));

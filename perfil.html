@@ -80,6 +80,45 @@
 
           <section class="profile-tab is-active" id="tab-info">
             <div class="card">
+              <div class="sectionTitle" style="margin-top: 0">Datos básicos</div>
+              <div class="profile-basic">
+                <div class="profile-avatar-edit">
+                  <div class="heroIcon heroIcon--avatar heroIcon--lg" id="profileAvatarEdit">
+                    <img id="profileAvatarEditImg" alt="Avatar" />
+                    <span id="profileAvatarEditFallback">USR</span>
+                  </div>
+                  <input id="avatarInput" type="file" accept="image/*" hidden />
+                  <button class="btn-white-outline" id="avatarUploadBtn" type="button">
+                    Cambiar foto
+                  </button>
+                  <div class="hintSmall" id="avatarUploadHint"></div>
+                </div>
+                <div class="profile-basic-fields">
+                  <div class="info-field">
+                    <label for="basicName">Nombre visible</label>
+                    <input id="basicName" class="input" type="text" placeholder="Tu nombre" />
+                  </div>
+                  <div class="info-field">
+                    <label for="basicHandle">Usuario (login)</label>
+                    <input
+                      id="basicHandle"
+                      class="input"
+                      type="text"
+                      placeholder="tu_login"
+                    />
+                    <div class="hintSmall">
+                      Solo letras, números, guion y punto. Este usuario sirve para iniciar sesión.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="metaRow" style="margin-top: 12px">
+                <button class="btn-yellow" id="basicSaveBtn" type="button">Guardar</button>
+                <span class="hintSmall" id="basicSaveMsg"></span>
+              </div>
+            </div>
+
+            <div class="card">
               <div class="sectionTitle" style="margin-top: 0">Info / Sobre mí</div>
               <div class="info-grid">
                 <div class="info-field">

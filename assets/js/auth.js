@@ -55,6 +55,14 @@ function formatAuthError(err, context) {
   return 'Error de autenticacion.';
 }
 
+function normalizeHandle(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isHandleValid(value) {
+  return /^[a-z0-9._-]{3,20}$/.test(value || '');
+}
+
 function getQueryParam(name) {
   try {
     const qs = new URLSearchParams(location.search);
@@ -247,7 +255,7 @@ function computeTrialAccessUntil(days = 7) {
   return Timestamp.fromDate(d);
 }
 
-async function ensureUserDoc(uid, email, displayNameOptional, genderOptional) {
+async function ensureUserDoc(uid, email, displayNameOptional, genderOptional, handleOptional) {
   // Ensures users/{uid} exists and contains minimum contract fields used by the app/admin.
   // On first creation: no access by default (admin grants later).
   const ref = doc(db, 'users', uid);
@@ -261,6 +269,8 @@ async function ensureUserDoc(uid, email, displayNameOptional, genderOptional) {
         email: email || null,
         emailLower,
         name: displayNameOptional || null,
+        handle: handleOptional || null,
+        handleLower: handleOptional ? normalizeHandle(handleOptional) : null,
         gender: genderOptional || null,
 
         // access model
@@ -278,6 +288,23 @@ async function ensureUserDoc(uid, email, displayNameOptional, genderOptional) {
       },
       { merge: true },
     );
+    if (handleOptional) {
+      await setDoc(
+        doc(db, 'public_users', uid),
+        {
+          displayName: displayNameOptional || null,
+          name: displayNameOptional || null,
+          handle: handleOptional,
+          handleLower: normalizeHandle(handleOptional),
+          emailLower,
+          publicProfile: true,
+          allowFriendRequests: true,
+          allowMessages: true,
+          createdAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
     return;
   }
 
@@ -288,6 +315,8 @@ async function ensureUserDoc(uid, email, displayNameOptional, genderOptional) {
   if (!data.email && email) patch.email = email;
   if (!data.emailLower && email) patch.emailLower = String(email).toLowerCase();
   if (!data.name && displayNameOptional) patch.name = displayNameOptional;
+  if (!data.handle && handleOptional) patch.handle = handleOptional;
+  if (!data.handleLower && handleOptional) patch.handleLower = normalizeHandle(handleOptional);
   if (!data.gender && genderOptional) patch.gender = genderOptional;
 
   if (typeof data.admin !== 'boolean') patch.admin = false;
@@ -332,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 350);
 
   const nameInput = $('name');
+  const handleInput = $('handle');
   const emailInput = $('email');
   const passwordInput = $('password');
   const loginBtn = $('loginBtn');
@@ -384,6 +414,13 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       doLogin();
     });
+  }
+  async function resolveEmailFromHandle(handleValue) {
+    const handleLower = normalizeHandle(handleValue);
+    if (!handleLower) return '';
+    const snap = await getDoc(doc(db, 'login_index', handleLower));
+    if (!snap.exists()) return '';
+    return snap.data()?.emailLower || '';
   }
 
   async function doLogin() {
@@ -518,3 +555,4 @@ document.addEventListener('DOMContentLoaded', () => {
     doLogin();
   });
 });
+

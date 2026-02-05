@@ -2,6 +2,13 @@
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
+import {
   collection,
   collectionGroup,
   doc,
@@ -40,6 +47,16 @@ const btnBlock = $('btnProfileBlock');
 const avatarWrap = $('profileAvatarWrap');
 const avatarImg = $('profileAvatarImg');
 const avatarFallback = $('profileAvatarFallback');
+const avatarEdit = $('profileAvatarEdit');
+const avatarEditImg = $('profileAvatarEditImg');
+const avatarEditFallback = $('profileAvatarEditFallback');
+const avatarInput = $('avatarInput');
+const avatarUploadBtn = $('avatarUploadBtn');
+const avatarUploadHint = $('avatarUploadHint');
+const basicName = $('basicName');
+const basicHandle = $('basicHandle');
+const basicSaveBtn = $('basicSaveBtn');
+const basicSaveMsg = $('basicSaveMsg');
 
 const statusCard = $('statusCard');
 const statusInput = $('statusInput');
@@ -98,6 +115,10 @@ let feedUnsub = null;
 const COMMENTS_CACHE = new Map();
 const COMMENTS_OPEN = new Set();
 
+const storage = getStorage();
+let CURRENT_USER_DOC = null;
+let CURRENT_PROFILE = null;
+
 function esc(text) {
   return String(text || '')
     .replace(/&/g, '&amp;')
@@ -144,6 +165,31 @@ function withinMinutes(ts, minutes) {
   return Date.now() - date.getTime() <= minutes * 60 * 1000;
 }
 
+function normalizeHandle(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isHandleValid(value) {
+  return /^[a-z0-9._-]{3,20}$/.test(value || '');
+}
+
+function getAllowedLevels(docData) {
+  if (!docData) return ['A1'];
+  if (docData.admin === true || String(docData.role || '') === 'admin') {
+    return ['A1', 'A2', 'B1', 'B2'];
+  }
+  const until = toDateValue(docData.accessUntil);
+  const active = until && until.getTime() > Date.now();
+  if (!active) return ['A1'];
+  if (docData.access === true || String(docData.plan || '').toLowerCase() === 'premium') {
+    return ['A1', 'A2', 'B1', 'B2'];
+  }
+  if (Array.isArray(docData.levels) && docData.levels.length) {
+    return docData.levels.map((lvl) => String(lvl).toUpperCase());
+  }
+  return ['A1'];
+}
+
 function setStatusHint(text) {
   if (!statusHint) return;
   statusHint.textContent = text || '';
@@ -152,6 +198,11 @@ function setStatusHint(text) {
 function setInfoMsg(text) {
   if (!infoSaveMsg) return;
   infoSaveMsg.textContent = text || '';
+}
+
+function setBasicMsg(text) {
+  if (!basicSaveMsg) return;
+  basicSaveMsg.textContent = text || '';
 }
 
 function setMsg(text, bad = false) {
@@ -208,9 +259,15 @@ function renderAvatar(url, name) {
   const letter = (name || 'U').trim()[0]?.toUpperCase() || 'U';
   if (avatarFallback) avatarFallback.textContent = letter;
   if (statusAvatarFallback) statusAvatarFallback.textContent = letter;
+  if (avatarEditFallback) avatarEditFallback.textContent = letter;
   if (url) {
     avatarImg.src = url;
     avatarWrap.classList.add('hasImage');
+    if (avatarEdit) avatarEdit.classList.add('hasImage');
+    if (avatarEditImg) {
+      avatarEditImg.src = url;
+      avatarEditImg.style.display = 'block';
+    }
     if (statusAvatarImg) {
       statusAvatarImg.src = url;
       statusAvatarImg.style.display = 'block';
@@ -219,6 +276,11 @@ function renderAvatar(url, name) {
   } else {
     avatarImg.removeAttribute('src');
     avatarWrap.classList.remove('hasImage');
+    if (avatarEdit) avatarEdit.classList.remove('hasImage');
+    if (avatarEditImg) {
+      avatarEditImg.removeAttribute('src');
+      avatarEditImg.style.display = 'none';
+    }
     if (statusAvatarImg) {
       statusAvatarImg.removeAttribute('src');
       statusAvatarImg.style.display = 'none';
@@ -822,6 +884,60 @@ function bindRewards() {
   });
 }
 
+async function uploadAvatar(uid, emailLower, file) {
+  if (!uid || !file) return null;
+  const ext = (file.name || 'jpg').split('.').pop() || 'jpg';
+  const filePath = `avatars/${uid}/avatar_${Date.now()}.${ext}`;
+  const ref = storageRef(storage, filePath);
+  await uploadBytes(ref, file);
+  const url = await getDownloadURL(ref);
+  const updates = {
+    photoURL: url,
+    photoPath: filePath,
+    updatedAt: serverTimestamp(),
+  };
+  await updateDoc(doc(db, 'users', uid), updates);
+  await setDoc(doc(db, 'public_users', uid), {
+    photoURL: url,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+  return { url, path: filePath };
+}
+
+function setAvatarHint(text) {
+  if (!avatarUploadHint) return;
+  avatarUploadHint.textContent = text || '';
+}
+
+function bindAvatarUpload(uid, emailLower, isOwner) {
+  if (!avatarUploadBtn || !avatarInput) return;
+  if (!isOwner) {
+    avatarUploadBtn.style.display = 'none';
+    return;
+  }
+  avatarUploadBtn.addEventListener('click', () => avatarInput.click());
+  avatarInput.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      avatarUploadBtn.disabled = true;
+      setAvatarHint('Subiendo...');
+      const result = await uploadAvatar(uid, emailLower, file);
+      if (result?.url) {
+        renderAvatar(result.url, basicName?.value || profileName?.textContent || '');
+        setAvatarHint('Foto actualizada ✅');
+      }
+    } catch (err) {
+      console.warn('avatar upload failed', err);
+      setAvatarHint('No se pudo subir la foto.');
+    } finally {
+      avatarUploadBtn.disabled = false;
+      avatarInput.value = '';
+      setTimeout(() => setAvatarHint(''), 2000);
+    }
+  });
+}
+
 async function loadCourseProgress(uid, levelsToShow) {
   if (!coursesList) return;
   coursesList.innerHTML = '<div class="muted">Cargando cursos...</div>';
@@ -879,12 +995,50 @@ async function loadCourseProgress(uid, levelsToShow) {
   }
 }
 
+async function claimHandle(uid, handleLower, emailLower) {
+  if (!uid || !handleLower) return;
+  const ref = doc(db, 'login_index', handleLower);
+  const snap = await getDoc(ref);
+  if (snap.exists() && snap.data()?.uid && snap.data()?.uid !== uid) {
+    throw new Error('handle_taken');
+  }
+  await setDoc(
+    ref,
+    {
+      uid,
+      handleLower,
+      emailLower: emailLower || null,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+}
+
+async function releaseHandle(uid, handleLower) {
+  if (!uid || !handleLower) return;
+  const ref = doc(db, 'login_index', handleLower);
+  const snap = await getDoc(ref);
+  if (snap.exists() && snap.data()?.uid === uid) {
+    await deleteDoc(ref);
+  }
+}
+
 async function saveProfileInfo(uid) {
   if (!uid) return;
+  const displayName = basicName?.value?.trim() || '';
+  const handle = basicHandle?.value?.trim() || '';
+  const handleLower = normalizeHandle(handle);
+  if (handle && !isHandleValid(handleLower)) {
+    setBasicMsg('Usuario inválido. Usa 3-20 letras/números y ._-');
+    return;
+  }
   const updates = {
     bioWhy: infoWhy?.value?.trim() || '',
     bioHard: infoHard?.value?.trim() || '',
     bioGoal: infoGoal?.value?.trim() || '',
+    displayName: displayName || null,
+    handle: handle || null,
+    handleLower: handleLower || null,
     postsVisibility: privacyPosts?.value || 'public',
     rewardsVisibility: privacyRewards?.value || 'public',
     statusVisibility: privacyStatus?.value || 'public',
@@ -894,37 +1048,58 @@ async function saveProfileInfo(uid) {
     updatedAt: serverTimestamp(),
   };
   try {
+    if (handleLower && handleLower !== CURRENT_PROFILE?.handleLower) {
+      await claimHandle(uid, handleLower, CURRENT_USER_DOC?.emailLower);
+      if (CURRENT_PROFILE?.handleLower) {
+        await releaseHandle(uid, CURRENT_PROFILE.handleLower);
+      }
+    }
     await setDoc(doc(db, 'public_users', uid), updates, { merge: true });
     await updateDoc(doc(db, 'users', uid), {
+      displayName: displayName || null,
+      handle: handle || null,
+      handleLower: handleLower || null,
       publicProfile: updates.publicProfile,
       allowFriendRequests: updates.allowFriendRequests,
       allowMessages: updates.allowMessages,
       updatedAt: serverTimestamp(),
     });
     setInfoMsg('Guardado ✅');
-    setTimeout(() => setInfoMsg(''), 2000);
+    setBasicMsg('Guardado ✅');
+    setTimeout(() => {
+      setInfoMsg('');
+      setBasicMsg('');
+    }, 2000);
   } catch (e) {
     console.warn('save profile info failed', e);
-    setInfoMsg('No se pudo guardar.');
+    if (String(e?.message || '').includes('handle_taken')) {
+      setBasicMsg('Este usuario ya existe.');
+    } else {
+      setInfoMsg('No se pudo guardar.');
+      setBasicMsg('No se pudo guardar.');
+    }
   }
 }
 
 function bindInfoSave(uid, isOwner) {
-  if (!infoSaveBtn) return;
   if (!isOwner) {
-    infoSaveBtn.style.display = 'none';
+    if (infoSaveBtn) infoSaveBtn.style.display = 'none';
+    if (basicSaveBtn) basicSaveBtn.style.display = 'none';
     return;
   }
-  infoSaveBtn.addEventListener('click', () => saveProfileInfo(uid));
+  infoSaveBtn?.addEventListener('click', () => saveProfileInfo(uid));
+  basicSaveBtn?.addEventListener('click', () => saveProfileInfo(uid));
 }
 
 function applyInfo(profile, isOwner) {
   if (infoWhy) infoWhy.value = profile.bioWhy || '';
   if (infoHard) infoHard.value = profile.bioHard || '';
   if (infoGoal) infoGoal.value = profile.bioGoal || '';
+  if (basicName) basicName.value = profile.displayName || profile.name || '';
+  if (basicHandle) basicHandle.value = profile.handle || '';
 
   if (!isOwner) {
-    [infoWhy, infoHard, infoGoal].forEach((el) => {
+    [infoWhy, infoHard, infoGoal, basicName, basicHandle].forEach((el) => {
       if (el) el.setAttribute('readonly', 'readonly');
     });
   }
@@ -976,6 +1151,8 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const profile = profileSnap.data() || {};
+    CURRENT_PROFILE = profile;
+    CURRENT_USER_DOC = currentSnap.exists() ? currentSnap.data() : null;
     const name = profile.displayName || profile.name || 'Usuario';
     const isOwner = user.uid === targetUid;
 
@@ -996,6 +1173,7 @@ onAuthStateChanged(auth, async (user) => {
 
     applyInfo(profile, isOwner);
     bindInfoSave(user.uid, isOwner);
+    bindAvatarUpload(targetUid, CURRENT_USER_DOC?.emailLower, isOwner);
 
     const friendStatus = await getFriendStatus(user.uid, targetUid);
     const isFriend = friendStatus?.status === 'accepted';
@@ -1056,7 +1234,7 @@ onAuthStateChanged(auth, async (user) => {
     await loadRecentReactions(targetUid);
     await loadSuggestions(user.uid, friendSet);
 
-    const levelsToShow = currentSnap.exists() ? currentSnap.data()?.levels : null;
+    const levelsToShow = getAllowedLevels(CURRENT_USER_DOC);
     await loadCourseProgress(targetUid, levelsToShow);
 
     if (suggestionsList && !suggestionsList.dataset.wired) {
@@ -1093,6 +1271,7 @@ onAuthStateChanged(auth, async (user) => {
       const enabled = (isFriend || isOwner) && canMessage;
       btnChat.style.pointerEvents = enabled ? '' : 'none';
       btnChat.style.opacity = enabled ? '' : '0.5';
+      if (isOwner) btnChat.style.display = 'none';
     }
 
     if (btnAdd) {
@@ -1102,28 +1281,36 @@ onAuthStateChanged(auth, async (user) => {
         !isFriend &&
         friendStatus?.status !== 'pending';
       btnAdd.disabled = !canAdd;
-      btnAdd.addEventListener('click', async () => {
-        await sendFriendRequest(user.uid, targetUid);
-      });
+      if (isOwner) btnAdd.style.display = 'none';
+      if (!btnAdd.dataset.wired) {
+        btnAdd.dataset.wired = '1';
+        btnAdd.addEventListener('click', async () => {
+          await sendFriendRequest(user.uid, targetUid);
+        });
+      }
     }
 
     if (btnBlock) {
       let isBlocked = blockedInfo.blockedByMe;
       btnBlock.disabled = targetUid === user.uid;
+      if (isOwner) btnBlock.style.display = 'none';
       btnBlock.textContent = isBlocked ? 'Desbloquear' : 'Bloquear';
-      btnBlock.addEventListener('click', async () => {
-        if (targetUid === user.uid) return;
-        if (isBlocked) {
-          await unblockUser(user.uid, targetUid);
-          isBlocked = false;
-          btnBlock.textContent = 'Bloquear';
-          setMsg('Usuario desbloqueado.');
-        } else {
-          await blockUser(user.uid, targetUid);
-          isBlocked = true;
-          btnBlock.textContent = 'Desbloquear';
-        }
-      });
+      if (!btnBlock.dataset.wired) {
+        btnBlock.dataset.wired = '1';
+        btnBlock.addEventListener('click', async () => {
+          if (targetUid === user.uid) return;
+          if (isBlocked) {
+            await unblockUser(user.uid, targetUid);
+            isBlocked = false;
+            btnBlock.textContent = 'Bloquear';
+            setMsg('Usuario desbloqueado.');
+          } else {
+            await blockUser(user.uid, targetUid);
+            isBlocked = true;
+            btnBlock.textContent = 'Desbloquear';
+          }
+        });
+      }
     }
   } catch (e) {
     console.error('[perfil]', e);

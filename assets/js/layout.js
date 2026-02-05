@@ -11,8 +11,13 @@ import {
   signOut,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
+  collection,
   doc,
+  getDocs,
   getDoc,
+  limit,
+  orderBy,
+  query,
   updateDoc,
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
@@ -453,8 +458,32 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
               logged
                 ? `
               <div class="nav-profile" id="navProfile">
-                <a class="nav-icon-btn" href="notificaciones.html" title="${labels.notifications}">🔔</a>
-                <a class="nav-icon-btn" href="mensajes.html" title="${labels.messages}">💬</a>
+                <div class="nav-icon-wrap" id="navNotifWrap">
+                  <button class="nav-icon-btn" id="navNotifBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="${labels.notifications}">
+                    🔔
+                    <span class="nav-badge nav-badge--yellow" id="navNotifBadge" style="display:none;">0</span>
+                  </button>
+                  <div class="nav-mini-menu" id="navNotifMenu" role="menu" aria-label="${labels.notifications}">
+                    <div class="nav-mini-head">${labels.notifications}</div>
+                    <div class="nav-mini-list" id="navNotifList">
+                      <div class="nav-mini-empty">Sin notificaciones.</div>
+                    </div>
+                    <a class="nav-mini-footer" href="notificaciones.html">Ver todas</a>
+                  </div>
+                </div>
+                <div class="nav-icon-wrap" id="navMsgWrap">
+                  <button class="nav-icon-btn" id="navMsgBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="${labels.messages}">
+                    💬
+                    <span class="nav-badge nav-badge--red" id="navMsgBadge" style="display:none;">0</span>
+                  </button>
+                  <div class="nav-mini-menu" id="navMsgMenu" role="menu" aria-label="${labels.messages}">
+                    <div class="nav-mini-head">${labels.messages}</div>
+                    <div class="nav-mini-list" id="navMsgList">
+                      <div class="nav-mini-empty">Sin mensajes nuevos.</div>
+                    </div>
+                    <a class="nav-mini-footer" href="mensajes.html">Ver todos</a>
+                  </div>
+                </div>
                 <button class="nav-avatar ${photoURL ? 'nav-avatar--img' : ''}" id="navProfileToggle" type="button" aria-haspopup="menu" aria-expanded="false">
                   ${photoURL ? `<img src="${photoURL}" alt="Foto de perfil" />` : ''}
                   <span>${avatarLetter}</span>
@@ -474,8 +503,6 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                     <a class="nav-profile-item" href="${profileHref}">👤 ${labels.profile}</a>
                     <a class="nav-profile-item" href="espanel.html">📒 ${labels.libreta}</a>
                     <a class="nav-profile-item" href="espanel.html#cursos">📚 ${labels.myCourses}</a>
-                    <a class="nav-profile-item" href="mensajes.html">💬 ${labels.messages}</a>
-                    <a class="nav-profile-item" href="notificaciones.html">🔔 ${labels.notifications}</a>
                     <a class="nav-profile-item" href="referidos.html">🤝 ${labels.refer}</a>
                     <a class="nav-profile-item" href="ajustes.html">⚙️ ${labels.settings}</a>
                     <a class="nav-profile-item" href="pagos.html">💳 ${labels.payments}</a>
@@ -512,6 +539,139 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         </div>
       </footer>
     `;
+  }
+
+  function wireMiniMenu(wrap, btn, menu) {
+    if (!wrap || !btn || !menu || wrap.dataset.wired) return;
+    wrap.dataset.wired = '1';
+    const canHover = window.matchMedia('(hover: hover)').matches;
+
+    const open = () => {
+      wrap.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+    };
+    const close = () => {
+      wrap.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    };
+    const toggle = () => {
+      if (wrap.classList.contains('open')) close();
+      else open();
+    };
+
+    if (canHover) {
+      wrap.addEventListener('mouseenter', open);
+      wrap.addEventListener('mouseleave', close);
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggle();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) close();
+    });
+  }
+
+  function setBadge(el, count) {
+    if (!el) return;
+    const num = Number(count || 0);
+    if (!num) {
+      el.style.display = 'none';
+      el.textContent = '0';
+      return;
+    }
+    el.style.display = 'inline-flex';
+    el.textContent = num > 99 ? '99+' : String(num);
+  }
+
+  async function loadNotifDropdown(uid) {
+    const list = document.getElementById('navNotifList');
+    const badge = document.getElementById('navNotifBadge');
+    if (!uid || !list || !badge) return;
+    try {
+      const snap = await getDocs(
+        query(
+          collection(db, 'user_notifications', uid, 'items'),
+          orderBy('createdAt', 'desc'),
+          limit(6),
+        ),
+      );
+      const items = snap.docs.map((d) => d.data() || {});
+      const unread = items.filter((i) => i.read !== true).length;
+      setBadge(badge, unread);
+      if (!items.length) {
+        list.innerHTML = '<div class="nav-mini-empty">Sin notificaciones.</div>';
+        return;
+      }
+      list.innerHTML = items
+        .map((item) => {
+          const title = String(item.title || 'Notificación');
+          const body = String(item.body || '');
+          return `<div class="nav-mini-item ${item.read ? '' : 'is-unread'}">
+            <div class="nav-mini-title">${title}</div>
+            ${body ? `<div class="nav-mini-body">${body}</div>` : ''}
+          </div>`;
+        })
+        .join('');
+    } catch (e) {
+      console.warn('[notifications] load failed', e);
+      setBadge(badge, 0);
+      list.innerHTML = '<div class="nav-mini-empty">Sin notificaciones.</div>';
+    }
+  }
+
+  async function loadMsgDropdown(uid) {
+    const list = document.getElementById('navMsgList');
+    const badge = document.getElementById('navMsgBadge');
+    if (!uid || !list || !badge) return;
+    try {
+      const snap = await getDocs(
+        query(
+          collection(db, 'user_inbox', uid, 'messages'),
+          orderBy('createdAt', 'desc'),
+          limit(8),
+        ),
+      );
+      const items = snap.docs.map((d) => d.data() || {});
+      const unread = items.filter((i) => i.read !== true).length;
+      setBadge(badge, unread);
+      if (!items.length) {
+        list.innerHTML = '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
+        return;
+      }
+      list.innerHTML = items
+        .map((item) => {
+          const name = String(item.fromName || item.fromEmail || 'Usuario');
+          const text = String(item.text || '');
+          return `<div class="nav-mini-item ${item.read ? '' : 'is-unread'}">
+            <div class="nav-mini-title">${name}</div>
+            ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
+          </div>`;
+        })
+        .join('');
+    } catch (e) {
+      console.warn('[messages] load failed', e);
+      setBadge(badge, 0);
+      list.innerHTML = '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
+    }
+  }
+
+  let badgeTimer = null;
+  function startBadgeRefresh(uid) {
+    if (badgeTimer) {
+      clearInterval(badgeTimer);
+      badgeTimer = null;
+    }
+    if (!uid) return;
+    loadNotifDropdown(uid);
+    loadMsgDropdown(uid);
+    badgeTimer = setInterval(() => {
+      loadNotifDropdown(uid);
+      loadMsgDropdown(uid);
+    }, 30000);
   }
 
   function wireHeader() {
@@ -587,9 +747,19 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     const profileWrap = document.getElementById('navProfile');
     const profileToggle = document.getElementById('navProfileToggle');
     const profileMenu = document.getElementById('navProfileMenu');
+    const navNotifWrap = document.getElementById('navNotifWrap');
+    const navNotifBtn = document.getElementById('navNotifBtn');
+    const navNotifMenu = document.getElementById('navNotifMenu');
+    const navMsgWrap = document.getElementById('navMsgWrap');
+    const navMsgBtn = document.getElementById('navMsgBtn');
+    const navMsgMenu = document.getElementById('navMsgMenu');
+
+    wireMiniMenu(navNotifWrap, navNotifBtn, navNotifMenu);
+    wireMiniMenu(navMsgWrap, navMsgBtn, navMsgMenu);
+
     if (profileWrap && profileToggle && profileMenu && !profileWrap.dataset.wired) {
       profileWrap.dataset.wired = '1';
-
+      const canHover = window.matchMedia('(hover: hover)').matches;
       const open = () => {
         profileWrap.classList.add('open');
         profileToggle.setAttribute('aria-expanded', 'true');
@@ -602,7 +772,10 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         if (profileWrap.classList.contains('open')) close();
         else open();
       };
-
+      if (canHover) {
+        profileWrap.addEventListener('mouseenter', open);
+        profileWrap.addEventListener('mouseleave', close);
+      }
       profileToggle.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -687,6 +860,9 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     footerMount.innerHTML = buildFooter();
     wireHeader();
     setupAnchorScroll();
+
+    if (user?.uid) startBadgeRefresh(user.uid);
+    else startBadgeRefresh(null);
 
     idleEnabled = !!user && !isAdmin;
     if (idleEnabled) {

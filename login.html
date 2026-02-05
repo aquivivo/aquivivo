@@ -153,6 +153,18 @@
               />
             </div>
             <div class="field">
+              <label for="handle">Usuario (login)</label>
+              <input
+                class="input"
+                type="text"
+                id="handle"
+                placeholder="tu_login (solo en registro)"
+              />
+              <div class="hint" style="margin: 0">
+                Usa 3-20 caracteres: letras, números, guion o punto.
+              </div>
+            </div>
+            <div class="field">
               <label>Género (registro)</label>
               <div style="display: flex; gap: 14px; flex-wrap: wrap">
                 <label
@@ -180,12 +192,12 @@
               </div>
             </div>
             <div class="field">
-              <label for="email">Correo electrónico</label>
+              <label for="email">Correo o usuario</label>
               <input
                 class="input"
-                type="email"
+                type="text"
                 id="email"
-                placeholder="Correo electrónico"
+                placeholder="Correo o usuario"
               />
             </div>
             <div class="field">
@@ -243,3 +255,5 @@
     <script type="module" src="assets/js/auth.js"></script>
   </body>
 </html>
+
+

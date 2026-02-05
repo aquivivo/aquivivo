@@ -376,6 +376,21 @@ service cloud.firestore {
       allow delete: if isAdmin() || isOwner(uid);
     }
 
+    /* ===== NOTIFICATIONS ===== */
+    match /user_notifications/{uid}/items/{id} {
+      allow read: if isAdmin() || isOwner(uid);
+      allow create, update: if isAdmin() || isOwner(uid);
+      allow delete: if isAdmin();
+    }
+
+    /* ===== LOGIN INDEX ===== */
+    match /login_index/{handle} {
+      allow read: if true;
+      allow create, update: if signedIn()
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
     /* ===== USER FEED ===== */
     match /user_feed/{uid}/posts/{postId} {
       allow read: if canViewFeed(uid);
