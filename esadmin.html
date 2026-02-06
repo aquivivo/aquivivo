@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Admin | AquiVivo</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <link href="assets/css/styles.css?v=20260205c" rel="stylesheet" />
+    <link href="assets/css/styles.css?v=20260206a" rel="stylesheet" />
     <script src="assets/js/layout.js?v=20260205c" type="module"></script>
   </head>
   <body data-page="esadmin">
@@ -31,28 +31,34 @@
           </div>
         </section>
         <!-- Dashboard (akordeon - domyslnie otwarty) -->
-                <details class="card" id="accDashboard">
-          <summary
-            class="sectionTitle"
-            style="cursor: pointer; list-style: none"
-          >
-            Pulpit</summary>
-          <div style="margin-top: 10px">
-            <p class="subtitle">
-              Szybkie podsumowanie (liczniki z Firestore). Kliknij karte, aby
-              zobaczyc szczegoly.
-            </p>
-            <div class="metaRow" style="flex-wrap: wrap; gap: 10px">
-              <button
-                class="btn-white-outline"
-                id="btnRefreshStats"
-                type="button"
-              >
-                Odswiez
-              </button>
-              <span class="hintSmall" id="statsStatus"></span>
+        <details class="card" id="accDashboard" open>
+          <summary class="sectionTitle" style="cursor: pointer; list-style: none">
+            Pulpit
+          </summary>
+          <div class="admin-dashboard">
+            <div class="admin-dashboard-head">
+              <div>
+                <div class="admin-dashboard-title">Szybkie podsumowanie</div>
+                <div class="hintSmall">Kliknij karte, aby zobaczyc szczegoly.</div>
+              </div>
+              <div class="admin-dashboard-actions">
+                <button class="btn-white-outline" id="btnRefreshStats" type="button">
+                  Odswiez
+                </button>
+                <span class="hintSmall" id="statsStatus"></span>
+                <span class="hintSmall" id="statsUpdated"></span>
+              </div>
             </div>
-            <div class="panelGrid" style="margin-top: 12px">
+            <div class="admin-dashboard-quick">
+              <button class="admin-chip" type="button" data-open="accUsers">Uzytkownicy</button>
+              <button class="admin-chip" type="button" data-open="accPayments">Platnosci</button>
+              <button class="admin-chip" type="button" data-open="accServices">Uslugi</button>
+              <button class="admin-chip" type="button" data-open="accPromo">Kody promo</button>
+              <button class="admin-chip" type="button" data-open="accSegments">Segmentacja</button>
+              <button class="admin-chip" type="button" data-open="accBroadcasts">Wiadomosci</button>
+              <button class="admin-chip" type="button" data-open="accReports">Zgloszenia</button>
+            </div>
+            <div class="panelGrid admin-dashboard-grid">
               <div
                 class="card statCard"
                 data-details="statUsersDetails"
@@ -1403,7 +1409,7 @@
       </div>
     </div>
     <script src="assets/js/firebase-init.js" type="module"></script>
-    <script src="assets/js/pages/esadmin-page.js?v=20260205c" type="module"></script>
+    <script src="assets/js/pages/esadmin-page.js?v=20260206a" type="module"></script>
   </body>
 </html>
 

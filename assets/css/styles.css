@@ -1,5 +1,5 @@
-/* ================================
-   AquiVivo — Unified UI (🇨🇴)
+﻿/* ================================
+   AquiVivo â€” Unified UI (ðŸ‡¨ðŸ‡´)
    One stylesheet for all pages
    ================================ */
 
@@ -2233,12 +2233,12 @@ a:hover {
   display: none;
 }
 .refDetails summary::after {
-  content: '▾';
+  content: 'v';
   margin-left: auto;
   opacity: 0.9;
 }
 .refDetails[open] summary::after {
-  content: '▴';
+  content: 'â–´';
 }
 @media (max-width: 980px) {
   .panelHeroGrid {
@@ -2488,7 +2488,7 @@ a:hover {
 }
 
 /* ================================
-   INDEX — Contacto (landing)
+   INDEX â€” Contacto (landing)
    Fix: icon sizes + responsive grid
    ================================ */
 
@@ -2815,7 +2815,7 @@ a:hover {
   }
 }
 
-/* ===== Header dropdown (Servicios) — CSS-only (hover/focus-within) ===== */
+/* ===== Header dropdown (Servicios) â€” CSS-only (hover/focus-within) ===== */
 .nav-actions {
   display: flex;
   gap: 12px;
@@ -2973,7 +2973,7 @@ body[data-page*='admin'] details > div {
 }
 
 /* =====================================================
-   AQUIVIVO — Brand Rules Patch (v1.0.1)
+   AQUIVIVO â€” Brand Rules Patch (v1.0.1)
    PURPOSE: Apply Colombia palette (blue/yellow/red) across UI
    WITHOUT changing the page background you already have.
    - Strong, readable accents (not pastel/minimal)
@@ -3014,7 +3014,7 @@ body {
   color: #eaf0ff;
 }
 
-/* --- Typography emphasis (autorytet + czytelność) --- */
+/* --- Typography emphasis (autorytet + czytelnoÅ›Ä‡) --- */
 h1,
 h2,
 h3 {
@@ -3730,7 +3730,7 @@ h3 {
   color: var(--av-blue-ink);
 }
 
-/* Slight “glass” cards on blue backgrounds (for feature rows etc.) */
+/* Slight â€œglassâ€ cards on blue backgrounds (for feature rows etc.) */
 .featureCard,
 .hero-card {
   border-radius: var(--av-radius-xl);
@@ -3878,7 +3878,7 @@ select:focus {
 }
 
 /* =====================================================
-   COURSE TILES (espanel) — STRONG level colors
+   COURSE TILES (espanel) â€” STRONG level colors
    uses: data-levels="A1,A2" / "B1" / "B2"
    ===================================================== */
 .courseCard {
@@ -4517,7 +4517,7 @@ select:focus {
 }
 
 .side-panel-group-title::after {
-  content: '▾';
+  content: 'v';
   font-size: 12px;
   opacity: 0.7;
   transform: translateY(-1px);
@@ -4561,6 +4561,76 @@ select:focus {
   background: linear-gradient(120deg, rgba(255, 209, 51, 0.25), rgba(255, 209, 51, 0.1));
   box-shadow: 0 0 0 1px rgba(255, 209, 51, 0.35), 0 10px 25px rgba(10, 20, 40, 0.35);
   color: #ffe89b;
+}
+
+.admin-dashboard {
+  display: grid;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.admin-dashboard-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-dashboard-title {
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+
+.admin-dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-dashboard-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-chip {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.admin-chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.admin-dashboard-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.admin-sections-single #accDashboard {
+  margin-top: 0;
+}
+
+.admin-section-slot {
+  margin-top: 16px;
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .admin-dashboard-actions {
+    justify-content: flex-start;
+  }
 }
 
 .admin-hidden {
@@ -5508,3 +5578,4 @@ body.modal-open {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+

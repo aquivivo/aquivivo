@@ -106,10 +106,6 @@ service cloud.firestore {
       return !exists(publicUserDoc(uid)) || get(publicUserDoc(uid)).data.allowMessages != false;
     }
 
-    function isPublicProfile(uid) {
-      return !exists(publicUserDoc(uid)) || get(publicUserDoc(uid)).data.publicProfile != false;
-    }
-
     function postsVisibility(uid) {
       return !exists(publicUserDoc(uid))
         ? "public"
@@ -248,10 +244,10 @@ service cloud.firestore {
     match /course_meta/{docId} {
       allow read: if signedIn() && notBlocked() && (
         isAdmin()
-        || (docId.startsWith("A1__") && canReadLevel("A1"))
-        || (docId.startsWith("A2__") && canReadLevel("A2"))
-        || (docId.startsWith("B1__") && canReadLevel("B1"))
-        || (docId.startsWith("B2__") && canReadLevel("B2"))
+        || (docId.matches("^A1__.*") && canReadLevel("A1"))
+        || (docId.matches("^A2__.*") && canReadLevel("A2"))
+        || (docId.matches("^B1__.*") && canReadLevel("B1"))
+        || (docId.matches("^B2__.*") && canReadLevel("B2"))
       );
 
       allow write: if isAdmin();

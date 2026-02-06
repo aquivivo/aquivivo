@@ -301,6 +301,10 @@ async function loadDashboard() {
     await loadPageViewsStats();
 
     setStatus(st, 'Gotowe');
+    const updated = $('statsUpdated');
+    if (updated) {
+      updated.textContent = `Aktualizacja: ${new Date().toLocaleTimeString()}`;
+    }
   } catch (e) {
     console.error('[dashboard]', e);
     setStatus(st, 'Blad: sprawdz rules / Console.', true);
@@ -429,13 +433,12 @@ function setupAdminQuickNav() {
   });
 }
 
-/* =========================
-   Admin sidebar -> modal sections
-   ========================= */
+function getAdminSectionCards() {
+  return Array.from(document.querySelectorAll('details.card[id^="acc"]'));
+}
+
 let adminSectionPool = null;
-let adminModal = null;
-let adminModalTitle = null;
-let adminModalBody = null;
+let adminSectionSlot = null;
 let activeAdminSectionId = '';
 
 function ensureAdminSectionPool() {
@@ -449,34 +452,20 @@ function ensureAdminSectionPool() {
   return pool;
 }
 
-function ensureAdminModal() {
-  if (adminModal) return adminModal;
-  const modal = document.createElement('div');
-  modal.id = 'adminSectionModal';
-  modal.className = 'admin-modal';
-  modal.innerHTML = `
-    <div class="admin-modal-box">
-      <div class="admin-modal-header">
-        <div class="admin-modal-title" id="adminModalTitle">Seccion</div>
-        <button class="btn-white-outline admin-modal-close" id="adminModalClose" type="button">Cerrar</button>
-      </div>
-      <div class="admin-modal-body" id="adminModalBody"></div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  adminModal = modal;
-  adminModalTitle = modal.querySelector('#adminModalTitle');
-  adminModalBody = modal.querySelector('#adminModalBody');
-  const closeBtn = modal.querySelector('#adminModalClose');
-  closeBtn?.addEventListener('click', closeAdminSection);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeAdminSection();
-  });
-  return modal;
-}
-
-function getAdminSectionCards() {
-  return Array.from(document.querySelectorAll('details.card[id^="acc"]'));
+function ensureAdminSectionSlot() {
+  if (adminSectionSlot) return adminSectionSlot;
+  const slot = document.createElement('div');
+  slot.id = 'adminSectionSlot';
+  slot.className = 'admin-section-slot';
+  const dashboard = document.getElementById('accDashboard');
+  if (dashboard && dashboard.parentElement) {
+    dashboard.insertAdjacentElement('afterend', slot);
+  } else {
+    const container = document.querySelector('main.page .container');
+    container?.appendChild(slot);
+  }
+  adminSectionSlot = slot;
+  return slot;
 }
 
 function setActiveAdminLink(id) {
@@ -490,35 +479,55 @@ function setActiveAdminLink(id) {
 
 function openAdminSection(id) {
   if (!id) return;
+  if (id === 'accDashboard') {
+    setActiveAdminLink('accDashboard');
+    const dashboard = document.getElementById('accDashboard');
+    if (dashboard) {
+      dashboard.open = true;
+      const header = document.querySelector('.nav-glass');
+      const offset = header ? header.getBoundingClientRect().height + 12 : 12;
+      const top = dashboard.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+    return;
+  }
+
+  if (activeAdminSectionId === id) {
+    closeAdminSection();
+    return;
+  }
+
   const card = document.getElementById(id);
   if (!card) return;
-  ensureAdminModal();
+  const slot = ensureAdminSectionSlot();
   const pool = ensureAdminSectionPool();
 
-  if (activeAdminSectionId && adminModalBody?.firstElementChild) {
-    pool.appendChild(adminModalBody.firstElementChild);
+  if (slot.firstElementChild) {
+    const prev = slot.firstElementChild;
+    prev.open = false;
+    pool.appendChild(prev);
   }
 
-  const summary = card.querySelector('summary');
-  if (adminModalTitle) {
-    adminModalTitle.textContent = summary ? summary.textContent.trim() : id;
-  }
   card.open = true;
-  adminModalBody?.appendChild(card);
-  adminModal?.classList.add('open');
-  document.body.classList.add('modal-open');
-  activeAdminSectionId = id;
+  slot.appendChild(card);
+  slot.style.display = 'block';
   setActiveAdminLink(id);
+  activeAdminSectionId = id;
+  const header = document.querySelector('.nav-glass');
+  const offset = header ? header.getBoundingClientRect().height + 12 : 12;
+  const top = slot.getBoundingClientRect().top + window.pageYOffset - offset;
+  window.scrollTo({ top, behavior: 'smooth' });
 }
 
 function closeAdminSection() {
-  if (!adminModal) return;
+  const slot = ensureAdminSectionSlot();
   const pool = ensureAdminSectionPool();
-  if (adminModalBody?.firstElementChild) {
-    pool.appendChild(adminModalBody.firstElementChild);
+  if (slot.firstElementChild) {
+    const prev = slot.firstElementChild;
+    prev.open = false;
+    pool.appendChild(prev);
   }
-  adminModal.classList.remove('open');
-  document.body.classList.remove('modal-open');
+  slot.style.display = 'none';
   activeAdminSectionId = '';
   setActiveAdminLink('');
 }
@@ -533,12 +542,12 @@ function setupAdminSidebarSections() {
   const cards = getAdminSectionCards();
   if (!cards.length) return;
 
-  document.body.classList.add('admin-sections-hidden');
+  document.body.classList.add('admin-sections-single');
   ensureAdminSectionPool();
-  ensureAdminModal();
+  ensureAdminSectionSlot();
 
   cards.forEach((card) => {
-    adminSectionPool.appendChild(card);
+    if (card.id !== 'accDashboard') adminSectionPool.appendChild(card);
   });
 
   const hero = document.querySelector('.heroBanner');
@@ -571,27 +580,108 @@ function setupAdminSidebarSections() {
     accAudioLib: '🎧',
   };
 
-  const list = document.createElement('div');
-  list.className = 'side-panel-list';
-  cards.forEach((card) => {
-    const summary = card.querySelector('summary');
-    const label = summary ? summary.textContent.trim() : card.id;
-    if (!label) return;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'side-panel-link';
-    btn.dataset.adminSection = card.id;
-    const icon = iconMap[card.id] || '📌';
-    btn.innerHTML = `<span class="side-panel-ico">${icon}</span><span>${esc(label)}</span>`;
-    list.appendChild(btn);
+  const labelById = new Map(
+    cards.map((card) => {
+      const summary = card.querySelector('summary');
+      const label = summary ? summary.textContent.trim() : card.id;
+      return [card.id, label];
+    }),
+  );
+
+  const groupDefs = [
+    { title: 'Pulpit i ustawienia', items: ['accDashboard', 'accPopup'] },
+    {
+      title: 'Sprzedaz i marketing',
+      items: [
+        'accServices',
+        'accPayments',
+        'accPromo',
+        'accSegments',
+        'accBroadcasts',
+        'accPublishing',
+        'accMissing',
+      ],
+    },
+    {
+      title: 'Uzytkownicy i postep',
+      items: ['accUsers', 'accProgress', 'accActivity', 'accFlashcards'],
+    },
+    { title: 'Opinie i jakosc', items: ['accReviews', 'accReports'] },
+    { title: 'Techniczne i multimedia', items: ['accAppLogs', 'accAudioLib'] },
+  ];
+
+  const usedIds = new Set();
+  groupDefs.forEach((group) => {
+    const items = group.items.filter((id) => labelById.has(id));
+    if (!items.length) return;
+    const groupEl = document.createElement('details');
+    groupEl.className = 'side-panel-group';
+    groupEl.open = false;
+    const summary = document.createElement('summary');
+    summary.className = 'side-panel-group-title';
+    summary.textContent = group.title;
+    groupEl.appendChild(summary);
+
+    const list = document.createElement('div');
+    list.className = 'side-panel-group-list';
+    items.forEach((id) => {
+      const label = labelById.get(id);
+      if (!label) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'side-panel-link';
+      btn.dataset.adminSection = id;
+      const icon = iconMap[id] || '📌';
+      btn.innerHTML = `<span class="side-panel-ico">${icon}</span><span>${esc(label)}</span>`;
+      list.appendChild(btn);
+      usedIds.add(id);
+    });
+    groupEl.appendChild(list);
+    sidePanel.appendChild(groupEl);
   });
-  sidePanel.appendChild(list);
+
+  const remaining = cards
+    .map((card) => card.id)
+    .filter((id) => id && !usedIds.has(id));
+  if (remaining.length) {
+    const groupEl = document.createElement('details');
+    groupEl.className = 'side-panel-group';
+    groupEl.open = false;
+    const summary = document.createElement('summary');
+    summary.className = 'side-panel-group-title';
+    summary.textContent = 'Pozostale';
+    groupEl.appendChild(summary);
+    const list = document.createElement('div');
+    list.className = 'side-panel-group-list';
+    remaining.forEach((id) => {
+      const label = labelById.get(id);
+      if (!label) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'side-panel-link';
+      btn.dataset.adminSection = id;
+      const icon = iconMap[id] || '📌';
+      btn.innerHTML = `<span class="side-panel-ico">${icon}</span><span>${esc(label)}</span>`;
+      list.appendChild(btn);
+    });
+    groupEl.appendChild(list);
+    sidePanel.appendChild(groupEl);
+  }
 
   sidePanel.addEventListener('click', (e) => {
     const btn = e.target?.closest?.('[data-admin-section]');
     if (!btn) return;
     const id = String(btn.dataset.adminSection || '');
     if (id) openAdminSection(id);
+  });
+
+  document.querySelectorAll('[data-open]').forEach((btn) => {
+    if (btn.dataset.wired === '1') return;
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.open;
+      if (id) openAdminSection(id);
+    });
   });
 }
 
@@ -615,6 +705,14 @@ function watchAdminSidebar() {
   tryInit();
   setTimeout(tryInit, 300);
   setTimeout(tryInit, 1000);
+}
+
+function openSectionFromHash() {
+  const raw = String(window.location.hash || '').trim();
+  if (!raw || raw.length < 2) return;
+  const id = raw.slice(1);
+  const card = document.getElementById(id);
+  if (card) openAdminSection(id);
 }
 
 /* Optional: statCard click -> show small details (first 20 emails) */
@@ -4017,6 +4115,9 @@ function bindEvents() {
 
 document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
+  setTimeout(openSectionFromHash, 200);
+  window.addEventListener('hashchange', openSectionFromHash);
+  openAdminSection('accDashboard');
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) return; // layout.js should redirect anyway
