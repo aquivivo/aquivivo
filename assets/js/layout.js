@@ -658,19 +658,20 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
   }
 
   function buildFooter() {
+    const year = new Date().getFullYear();
     return `
       <footer class="site-footer">
         <div class="nav-line nav-line-above"></div>
         <div class="footer-inner container">
           <div class="footer-text">
-            &copy; 2026 AquiVivo. Wszelkie prawa zastrzeżone.<br />
+            &copy; ${year} AquiVivo. Todos los derechos reservados.<br />
             Te ayudo a perder el miedo a hablar. &#x1F338;&#x1F90D;
           </div>
-          <nav class="footer-nav" style="margin-top:12px;">
-            <a href="polityka-prywatnosci.html">Polityka prywatności</a> |
-            <a href="regulamin.html">Regulamin</a> |
-            <a href="zwroty.html">Zwroty</a> |
-            <a href="kontakt.html">Kontakt</a>
+          <nav class="footer-nav" aria-label="Enlaces">
+            <a href="polityka-prywatnosci.html">Pol&iacute;tica de privacidad</a>
+            <a href="regulamin.html">T&eacute;rminos</a>
+            <a href="zwroty.html">Devoluciones</a>
+            <a href="kontakt.html">Contacto</a>
           </nav>
         </div>
       </footer>

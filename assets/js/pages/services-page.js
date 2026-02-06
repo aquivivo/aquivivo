@@ -24,6 +24,18 @@ function esc(s) {
     .replaceAll("'", '&#039;');
 }
 
+function requireCheckoutConsent() {
+  const checkbox = $('checkoutConsent');
+  if (!checkbox) return true;
+  if (checkbox.checked) return true;
+  try {
+    checkbox.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  } catch {}
+  checkbox.focus?.();
+  alert('Antes de comprar, marca la casilla de aceptación.');
+  return false;
+}
+
 function renderCard(svc) {
   const title = svc.title ? esc(svc.title) : esc(svc.sku || 'Plan');
   const desc = svc.desc ? esc(svc.desc) : '';
@@ -286,6 +298,8 @@ async function loadServices() {
       btn.addEventListener('click', async () => {
         const planId = btn.getAttribute('data-plan');
         if (!planId) return;
+
+        if (!requireCheckoutConsent()) return;
 
         try {
           btn.disabled = true;
