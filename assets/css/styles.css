@@ -1,4 +1,55 @@
-﻿/* ================================
+﻿/* ===== Privacy, Terms, Returns, Contact: shared visual style ===== */
+body[data-page='privacy'],
+body[data-page='terms'],
+body[data-page='returns'],
+body[data-page='contact'] {
+  background: radial-gradient(1200px 600px at 20% 0%, rgba(0,56,147,0.45), transparent 60%),
+    radial-gradient(900px 520px at 90% 10%, rgba(252,209,22,0.25), transparent 55%),
+    linear-gradient(180deg, #03102b, #041a48 45%, #03102b);
+  color: #fff;
+  min-height: 100vh;
+}
+body[data-page='privacy'] .container,
+body[data-page='terms'] .container,
+body[data-page='returns'] .container,
+body[data-page='contact'] .container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  color: #0b1b3f;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px #0001;
+}
+body[data-page='privacy'] .card,
+body[data-page='terms'] .card,
+body[data-page='returns'] .card,
+body[data-page='contact'] .card {
+  background: rgba(11,27,63,0.06);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px #0001;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+}
+body[data-page='privacy'] .heroBanner,
+body[data-page='terms'] .heroBanner,
+body[data-page='returns'] .heroBanner,
+body[data-page='contact'] .heroBanner {
+  background: linear-gradient(90deg, #003893 60%, #fcd116 100%);
+  color: #fff;
+  border-radius: 14px;
+  padding: 24px 20px 18px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px #0002;
+}
+body[data-page='privacy'] .glow-text,
+body[data-page='terms'] .glow-text,
+body[data-page='returns'] .glow-text,
+body[data-page='contact'] .glow-text {
+  color: #fff;
+  text-shadow: 0 8px 32px #00389355, 0 1px 0 #fff;
+}
+/* ================================
    AquiVivo â€” Unified UI (ðŸ‡¨ðŸ‡´)
    One stylesheet for all pages
    ================================ */

@@ -112,7 +112,8 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
   function renderPopup(settings) {
     if (document.getElementById('sitePopup')) return;
     const seenKey = popupKey(settings);
-    if (settings?.repeat !== true && localStorage.getItem(seenKey) === '1') return;
+    if (settings?.repeat !== true && localStorage.getItem(seenKey) === '1')
+      return;
 
     const title = esc(settings?.title || 'Novedad');
     const body = esc(settings?.body || '');
@@ -135,8 +136,12 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) closePopup(seenKey);
     });
-    overlay.querySelector('.popup-close')?.addEventListener('click', () => closePopup(seenKey));
-    overlay.querySelector('.popup-cta')?.addEventListener('click', () => closePopup(seenKey));
+    overlay
+      .querySelector('.popup-close')
+      ?.addEventListener('click', () => closePopup(seenKey));
+    overlay
+      .querySelector('.popup-cta')
+      ?.addEventListener('click', () => closePopup(seenKey));
     document.body.appendChild(overlay);
   }
 
@@ -155,7 +160,10 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
   async function logPageView(user, isAdmin) {
     if (!user?.uid) return;
     if (isAdmin) return;
-    const page = document.body?.dataset?.page || location.pathname.split('/').pop() || 'page';
+    const page =
+      document.body?.dataset?.page ||
+      location.pathname.split('/').pop() ||
+      'page';
     const dayKey = new Date().toISOString().slice(0, 10);
     const sessionKey = `av_view_${page}_${dayKey}`;
     if (sessionStorage.getItem(sessionKey) === '1') return;
@@ -211,10 +219,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
           emailLower,
           handle: String(profile?.handle || '').trim(),
           displayName: String(
-            profile?.displayName ||
-              profile?.name ||
-              user?.displayName ||
-              '',
+            profile?.displayName || profile?.name || user?.displayName || '',
           ).trim(),
           updatedAt: serverTimestamp(),
         },
@@ -258,8 +263,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
 
     const inactivePlanOk =
       !!lastAccessEnd && now - lastAccessEnd.getTime() >= INACTIVE_PLAN_MS;
-    const noLoginOk =
-      !!lastLogin && now - lastLogin.getTime() >= NO_LOGIN_MS;
+    const noLoginOk = !!lastLogin && now - lastLogin.getTime() >= NO_LOGIN_MS;
 
     return inactivePlanOk || noLoginOk;
   }
@@ -333,7 +337,10 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       return;
     }
 
-    if (CURRENT_DOC.admin === true || String(CURRENT_DOC.role || '') === 'admin') {
+    if (
+      CURRENT_DOC.admin === true ||
+      String(CURRENT_DOC.role || '') === 'admin'
+    ) {
       btn.style.display = 'none';
       setTrialMessage('');
       return;
@@ -539,8 +546,12 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     const hrefServiciosServicios = 'services.html#servicios';
     const hrefServiciosExtras = 'services.html#extras';
     const hrefServiciosEbooks = 'services.html#ebooks';
-    const hrefPolaco = isIndex ? '#metodo-disenado-para-ti' : 'index.html#metodo-disenado-para-ti';
-    const hrefTramites = isIndex ? '#mas-que-clases' : 'index.html#mas-que-clases';
+    const hrefPolaco = isIndex
+      ? '#metodo-disenado-para-ti'
+      : 'index.html#metodo-disenado-para-ti';
+    const hrefTramites = isIndex
+      ? '#mas-que-clases'
+      : 'index.html#mas-que-clases';
 
     // Keep it simple and stable on app pages
 
@@ -652,9 +663,15 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         <div class="nav-line nav-line-above"></div>
         <div class="footer-inner container">
           <div class="footer-text">
-            &copy; 2026 AquiVivo. Todos los derechos reservados.<br />
+            &copy; 2026 AquiVivo. Todos los prawa zastrzeżone.<br />
             Te ayudo a perder el miedo a hablar. &#x1F338;&#x1F90D;
           </div>
+          <nav class="footer-nav" style="margin-top:12px;">
+            <a href="polityka-prywatnosci.html">Polityka prywatności</a> |
+            <a href="regulamin.html">Regulamin</a> |
+            <a href="zwroty.html">Zwroty</a> |
+            <a href="kontakt.html">Kontakt</a>
+          </nav>
         </div>
       </footer>
     `;
@@ -811,7 +828,8 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       const unread = items.filter((i) => i.read !== true).length;
       setBadge(badge, unread);
       if (!items.length) {
-        list.innerHTML = '<div class="nav-mini-empty">Sin notificaciones.</div>';
+        list.innerHTML =
+          '<div class="nav-mini-empty">Sin notificaciones.</div>';
         return;
       }
       list.innerHTML = items
@@ -870,7 +888,8 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       }).length;
       setBadge(badge, unread);
       if (!items.length) {
-        list.innerHTML = '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
+        list.innerHTML =
+          '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
         return;
       }
       const viewItems = items.slice(0, 8);
@@ -879,7 +898,11 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
           const href = `mensajes.html?conv=${encodeURIComponent(item.id)}`;
           const title =
             item.title ||
-            (item.type === 'support' ? 'Soporte' : item.type === 'group' ? 'Grupo' : '') ||
+            (item.type === 'support'
+              ? 'Soporte'
+              : item.type === 'group'
+                ? 'Grupo'
+                : '') ||
             item.lastMessage?.senderName ||
             'Conversación';
           const text = String(item.lastMessage?.text || '');
@@ -1001,7 +1024,12 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     wireMiniMenu(navNotifWrap, navNotifBtn, navNotifMenu);
     wireMiniMenu(navMsgWrap, navMsgBtn, navMsgMenu);
 
-    if (profileWrap && profileToggle && profileMenu && !profileWrap.dataset.wired) {
+    if (
+      profileWrap &&
+      profileToggle &&
+      profileMenu &&
+      !profileWrap.dataset.wired
+    ) {
       profileWrap.dataset.wired = '1';
       const canHover = window.matchMedia('(hover: hover)').matches;
       let closeTimer = null;
@@ -1178,4 +1206,3 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     trialReady();
   }
 })();
-
