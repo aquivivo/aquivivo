@@ -152,6 +152,7 @@ import {
     const host = location.hostname || '';
     if (!host) return false;
     if (host === 'localhost' || host === '127.0.0.1') return false;
+    if (host.endsWith('github.io')) return false;
     return true;
   }
 
