@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Redirecting...</title>
+    <meta http-equiv="refresh" content="3; url=index.html" />
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #0b1b3a;
+        color: #fff;
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px;
+      }
+      .card {
+        max-width: 520px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+      }
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .muted {
+        opacity: 0.8;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="title">Redirecting...</div>
+      <div class="muted">If you are not redirected, you can go back to the homepage.</div>
+    </div>
+
+    <script>
+      (function () {
+        var path = window.location.pathname || '';
+        var base = '';
+        if (path.indexOf('/aquivivo/') !== -1) base = '/aquivivo';
+
+        var rel = path;
+        if (base && rel.indexOf(base) === 0) {
+          rel = rel.slice(base.length);
+        }
+
+        var parts = rel.split('/').filter(Boolean);
+        if (parts.length >= 2 && parts[0].toLowerCase() === 'perfil') {
+          var handle = decodeURIComponent(parts[1] || '');
+          if (handle) {
+            var target =
+              base + '/perfil.html?u=' + encodeURIComponent(handle);
+            window.location.replace(target);
+            return;
+          }
+        }
+
+        window.location.replace(base + '/index.html');
+      })();
+    </script>
+  </body>
+</html>
