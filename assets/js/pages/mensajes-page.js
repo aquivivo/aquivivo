@@ -111,6 +111,7 @@ const profileCache = new Map();
 const lastNotified = new Map();
 const FCM_VAPID_KEY = '';
 const MAX_GROUP_MEMBERS = 200;
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
 function toDateMaybe(v) {
   if (!v) return null;
@@ -127,6 +128,15 @@ function formatTime(ts) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(d);
+}
+
+function lastAtMs(item) {
+  const last = toDateMaybe(item?.lastAt) || toDateMaybe(item?.createdAt);
+  return last ? last.getTime() : 0;
+}
+
+function sortByLastAt(list) {
+  return list.sort((a, b) => lastAtMs(b) - lastAtMs(a));
 }
 
 function normText(text) {
@@ -325,6 +335,7 @@ function resetComposer() {
   pendingFiles = [];
   renderAttachmentsPreview();
   if (messageInput) messageInput.value = '';
+  if (recordHint) recordHint.textContent = '';
 }
 
 function renderAttachmentsPreview() {
@@ -660,6 +671,7 @@ async function applyConversationState(convo) {
   btnLeaveGroup.hidden = true;
   if (convo.type === 'group') {
     const isMember = (convo.participants || []).includes(CURRENT_USER?.uid);
+    const isFull = count >= MAX_GROUP_MEMBERS;
     setComposerEnabled(isMember, 'Unete al grupo para escribir.');
     btnJoinGroup.hidden = isMember;
     btnLeaveGroup.hidden = !isMember;
@@ -671,12 +683,12 @@ async function applyConversationState(convo) {
         btnJoinGroup.textContent = 'Solicitud enviada';
         btnJoinGroup.disabled = true;
       } else {
-        btnJoinGroup.textContent = 'Solicitar';
-        btnJoinGroup.disabled = false;
+        btnJoinGroup.textContent = isFull ? 'Lleno' : 'Solicitar';
+        btnJoinGroup.disabled = isFull;
       }
     } else {
-      btnJoinGroup.textContent = 'Unirme';
-      btnJoinGroup.disabled = false;
+      btnJoinGroup.textContent = isFull ? 'Lleno' : 'Unirme';
+      btnJoinGroup.disabled = isFull;
     }
   } else {
     setComposerEnabled(true);
@@ -717,6 +729,7 @@ async function openConversation(id, convo) {
   if (!activeConversation) return;
   activeConversation.id = id;
   currentMessages = [];
+  resetComposer();
 
   document.querySelectorAll('.message-item').forEach((item) => {
     item.classList.toggle('is-active', item.dataset.id === id);
@@ -874,7 +887,19 @@ async function sendMessage() {
   try {
     const attachments = [];
     if (pendingFiles.length) {
+      const validFiles = pendingFiles.filter((file) => file.size <= MAX_UPLOAD_BYTES);
+      if (validFiles.length !== pendingFiles.length && recordHint) {
+        recordHint.textContent = `Algunos archivos superan ${Math.floor(MAX_UPLOAD_BYTES / (1024 * 1024))} MB y se omitieron.`;
+      }
+      pendingFiles = validFiles;
+      renderAttachmentsPreview();
       for (const file of pendingFiles) {
+        if (file.size > MAX_UPLOAD_BYTES) {
+          if (recordHint) {
+            recordHint.textContent = `Archivo demasiado grande (max ${Math.floor(MAX_UPLOAD_BYTES / (1024 * 1024))} MB).`;
+          }
+          continue;
+        }
         attachments.push(await uploadAttachment(activeConversationId, file));
       }
     }
@@ -947,11 +972,17 @@ async function handleJoinGroup(convo) {
     }
     return;
   }
-  await updateDoc(refConv, {
-    participants: arrayUnion(CURRENT_USER.uid),
-    memberCount: increment(1),
-    [`reads.${CURRENT_USER.uid}`]: serverTimestamp(),
-  });
+  try {
+    await updateDoc(refConv, {
+      participants: arrayUnion(CURRENT_USER.uid),
+      memberCount: increment(1),
+      [`reads.${CURRENT_USER.uid}`]: serverTimestamp(),
+    });
+  } catch (e) {
+    console.warn('[group] join failed', e);
+    if (threadMeta) threadMeta.textContent = 'No se pudo unir al grupo.';
+    return;
+  }
   if (activeConversationId === convo.id) {
     btnJoinGroup.hidden = true;
     btnLeaveGroup.hidden = false;
@@ -961,10 +992,14 @@ async function handleJoinGroup(convo) {
 
 async function handleLeaveGroup() {
   if (!activeConversationId || !CURRENT_USER) return;
-  await updateDoc(doc(db, 'conversations', activeConversationId), {
-    participants: arrayRemove(CURRENT_USER.uid),
-    memberCount: increment(-1),
-  });
+  try {
+    await updateDoc(doc(db, 'conversations', activeConversationId), {
+      participants: arrayRemove(CURRENT_USER.uid),
+      memberCount: increment(-1),
+    });
+  } catch (e) {
+    console.warn('[group] leave failed', e);
+  }
   messagesThread.hidden = true;
   messagesEmpty.hidden = false;
   messagesInfo.hidden = true;
@@ -1358,11 +1393,12 @@ function listenConversations() {
   const q = query(
     collection(db, 'conversations'),
     where('participants', 'array-contains', CURRENT_USER.uid),
-    orderBy('lastAt', 'desc'),
-    limit(60),
+    limit(200),
   );
   convoUnsub = onSnapshot(q, (snap) => {
-    const list = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    const list = sortByLastAt(
+      snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })),
+    );
     renderConversationList(list, chatList);
     applySearchFilter();
   });
@@ -1372,13 +1408,15 @@ function listenPublicGroups() {
   if (groupsUnsub) groupsUnsub();
   const q = query(
     collection(db, 'conversations'),
-    where('type', '==', 'group'),
     where('public', '==', true),
-    orderBy('lastAt', 'desc'),
-    limit(60),
+    limit(200),
   );
   groupsUnsub = onSnapshot(q, (snap) => {
-    const list = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    const list = sortByLastAt(
+      snap.docs
+        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+        .filter((item) => item.type === 'group'),
+    );
     renderPublicGroups(list);
     applySearchFilter();
   });
@@ -1391,11 +1429,12 @@ function listenSupportInbox() {
   const q = query(
     collection(db, 'conversations'),
     where('type', '==', 'support'),
-    orderBy('lastAt', 'desc'),
-    limit(60),
+    limit(200),
   );
   supportUnsub = onSnapshot(q, (snap) => {
-    const list = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    const list = sortByLastAt(
+      snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })),
+    );
     renderConversationList(list, supportList);
   });
 }
@@ -1425,6 +1464,11 @@ async function initFromAuth(user) {
 
   const params = new URLSearchParams(window.location.search);
   const chatUid = params.get('chat');
+  const convId = params.get('conv');
+  if (convId) {
+    await openConversation(convId);
+    return;
+  }
   if (chatUid) openDmWith(chatUid);
 }
 

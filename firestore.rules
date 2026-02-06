@@ -417,8 +417,25 @@ service cloud.firestore {
             && (resource.data.admins is list)
             && resource.data.admins.hasAny([request.auth.uid]));
       }
+      function joinModeOpen() {
+        return !("joinMode" in resource.data) || resource.data.joinMode == "open";
+      }
+      function participantsCount() {
+        return ("participants" in resource.data)
+          && (resource.data.participants is list)
+          ? resource.data.participants.size()
+          : 0;
+      }
+      function keepsExistingParticipants() {
+        return !("participants" in resource.data)
+          || !(resource.data.participants is list)
+          || request.resource.data.participants.hasAll(resource.data.participants);
+      }
       function participantUpdateAllowedKeys() {
         return ["lastAt","lastMessage","reads","typing","updatedAt"];
+      }
+      function joinUpdateAllowedKeys() {
+        return ["participants","memberCount","reads","updatedAt"];
       }
       function isBanned(uid) {
         return exists(/databases/$(database)/documents/conversations/$(convId)/bans/$(uid));
@@ -453,16 +470,20 @@ service cloud.firestore {
           )
           || (
             resource.data.type == "group"
-            && resource.data.joinMode == "open"
+            && joinModeOpen()
             && !isParticipant()
             && isParticipantNew()
             && !isBanned(request.auth.uid)
-            && request.resource.data.participants.size() == resource.data.participants.size() + 1
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(joinUpdateAllowedKeys())
+            && request.resource.data.participants.size() == participantsCount() + 1
+            && keepsExistingParticipants()
           )
           || (
             isParticipant()
             && !isParticipantNew()
-            && request.resource.data.participants.size() == resource.data.participants.size() - 1
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(joinUpdateAllowedKeys())
+            && request.resource.data.participants.size() == participantsCount() - 1
+            && resource.data.participants.hasAll(request.resource.data.participants)
           )
         );
 

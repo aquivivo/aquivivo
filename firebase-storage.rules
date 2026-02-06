@@ -52,7 +52,8 @@ service firebase.storage {
 
     match /chat/{convId}/{allPaths=**} {
       allow read: if canReadChat(convId);
-      allow write: if canWriteChat(convId);
+      allow write: if canWriteChat(convId)
+        && request.resource.size < 25 * 1024 * 1024;
     }
   }
 }

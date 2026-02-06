@@ -49,6 +49,17 @@
             <button class="btn-white-outline" id="btnOpenSupport" type="button">Soporte</button>
           </div>
 
+          <div class="messages-sidebar-toggles">
+            <label class="toggle-line">
+              <input type="checkbox" id="toggleArchived" />
+              <span>Ver archivados</span>
+            </label>
+            <label class="toggle-line">
+              <input type="checkbox" id="togglePush" />
+              <span>Push activo</span>
+            </label>
+          </div>
+
           <div class="messages-admin card" id="supportAdminBox" hidden>
             <div class="sectionTitle" style="margin-top: 0">Agentes de soporte</div>
             <div class="hintSmall">Agrega usuarios sin rol admin.</div>
@@ -64,6 +75,9 @@
               </button>
             </div>
             <div class="support-agent-list" id="supportAgentList"></div>
+
+            <div class="sectionTitle" style="margin-top: 16px">Reportes</div>
+            <div class="reports-list" id="reportsList"></div>
           </div>
         </aside>
 
@@ -79,6 +93,7 @@
                 <div>
                   <div class="thread-name" id="threadName">Conversacion</div>
                   <div class="thread-meta" id="threadMeta"></div>
+                  <div class="thread-status" id="threadStatus"></div>
                   <div class="thread-typing" id="threadTyping"></div>
                 </div>
               </div>
@@ -92,9 +107,35 @@
               </div>
             </div>
 
+            <div class="thread-tools">
+              <input
+                class="input"
+                id="threadSearch"
+                type="text"
+                placeholder="Buscar en este chat..."
+              />
+              <label class="toggle-line">
+                <input type="checkbox" id="threadSearchAttachments" />
+                <span>Solo adjuntos</span>
+              </label>
+              <div class="thread-filter-info" id="threadFilterInfo"></div>
+            </div>
+
             <div class="thread-messages" id="threadMessages"></div>
 
             <div class="thread-composer">
+              <div class="composer-edit" id="composerEdit" hidden>
+                <div class="composer-edit-text" id="composerEditText"></div>
+                <button class="btn-white-outline" id="btnCancelEdit" type="button">
+                  Cancelar edicion
+                </button>
+              </div>
+              <div class="composer-reply" id="composerReply" hidden>
+                <div class="composer-reply-text" id="composerReplyText"></div>
+                <button class="btn-white-outline" id="btnCancelReply" type="button">
+                  Cancelar respuesta
+                </button>
+              </div>
               <div class="composer-tools">
                 <label class="composer-btn">
                   📎
@@ -119,6 +160,8 @@
         <aside class="card messages-info" id="messagesInfo" hidden>
           <div class="sectionTitle" style="margin-top: 0">Detalles</div>
           <div class="info-body" id="infoBody"></div>
+          <div class="info-actions" id="infoActions"></div>
+          <div class="pinned-box" id="pinnedBox"></div>
           <div class="participants-box" id="participantsBox"></div>
           <div class="requests-box" id="requestsBox"></div>
         </aside>
@@ -184,6 +227,34 @@
           <div class="metaRow" style="margin-top: 12px">
             <button class="btn-yellow" id="btnCreateGroup" type="button">Crear</button>
             <span class="hintSmall" id="newGroupHint"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modalOverlay" id="modalReport">
+      <div class="modalCard">
+        <div class="modalHead">
+          <div class="modalTitle">Reportar</div>
+          <button class="btn-white-outline" id="closeReport" type="button">Cerrar</button>
+        </div>
+        <div class="modalBody">
+          <div class="info-field">
+            <label for="reportReason">Motivo</label>
+            <select id="reportReason" class="select">
+              <option value="spam">Spam</option>
+              <option value="abuse">Abuso</option>
+              <option value="scam">Estafa</option>
+              <option value="other">Otro</option>
+            </select>
+          </div>
+          <div class="info-field" style="margin-top: 10px">
+            <label for="reportDetails">Detalles</label>
+            <textarea id="reportDetails" class="input" rows="3" placeholder="Opcional"></textarea>
+          </div>
+          <div class="metaRow" style="margin-top: 12px">
+            <button class="btn-yellow" id="btnSubmitReport" type="button">Enviar reporte</button>
+            <span class="hintSmall" id="reportHint"></span>
           </div>
         </div>
       </div>

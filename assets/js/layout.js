@@ -839,11 +839,14 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         query(
           collection(db, 'conversations'),
           where('participants', 'array-contains', uid),
-          orderBy('lastAt', 'desc'),
-          limit(8),
         ),
       );
       const items = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+      items.sort((a, b) => {
+        const aTime = toDateMaybe(a.lastAt) || toDateMaybe(a.createdAt);
+        const bTime = toDateMaybe(b.lastAt) || toDateMaybe(b.createdAt);
+        return (bTime?.getTime() || 0) - (aTime?.getTime() || 0);
+      });
       const unread = items.filter((item) => {
         const lastAt = toDateMaybe(item.lastAt);
         if (!lastAt) return false;
@@ -858,8 +861,10 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         list.innerHTML = '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
         return;
       }
-      list.innerHTML = items
+      const viewItems = items.slice(0, 8);
+      list.innerHTML = viewItems
         .map((item) => {
+          const href = `mensajes.html?conv=${encodeURIComponent(item.id)}`;
           const title =
             item.title ||
             (item.type === 'support' ? 'Soporte' : item.type === 'group' ? 'Grupo' : '') ||
@@ -873,10 +878,10 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
             lastAt &&
             item.lastMessage?.senderId !== uid &&
             (!readAt || lastAt.getTime() > readAt.getTime());
-          return `<div class="nav-mini-item ${isUnread ? 'is-unread' : ''}">
+          return `<a class="nav-mini-item ${isUnread ? 'is-unread' : ''}" href="${href}">
             <div class="nav-mini-title">${String(title || 'Conversación')}</div>
             ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
-          </div>`;
+          </a>`;
         })
         .join('');
     } catch (e) {
