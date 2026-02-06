@@ -663,7 +663,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         <div class="nav-line nav-line-above"></div>
         <div class="footer-inner container">
           <div class="footer-text">
-            &copy; 2026 AquiVivo. Todos los prawa zastrzeżone.<br />
+            &copy; 2026 AquiVivo. Wszelkie prawa zastrzeżone.<br />
             Te ayudo a perder el miedo a hablar. &#x1F338;&#x1F90D;
           </div>
           <nav class="footer-nav" style="margin-top:12px;">

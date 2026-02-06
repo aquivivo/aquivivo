@@ -1,31 +1,62 @@
 <!doctype html>
 <html lang="pl">
   <head>
-    <meta charset="UTF-8" />
-    <title>Kontakt | Aquivivo</title>
-    <!-- ...existing code... -->
+    <meta charset="utf-8" />
+    <title>Kontakt &ndash; AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <script src="assets/js/layout.js" type="module"></script>
   </head>
-  <body>
-    <h1>Kontakt</h1>
-    <h2>Dane firmy</h2>
-    <p>
-      <strong>Magdalena Meller</strong><br />
-      ul. Katowicka 2F/6.01<br />
-      61-131 Poznań, Polska<br />
-      NIP: 7822348796<br />
-      REGON: 542556870
-    </p>
-    <h2>Kontakt</h2>
-    <p>
-      e-mail: <a href="mailto:aquivivo.pl@gmail.com">aquivivo.pl@gmail.com</a
-      ><br />
-      tel: <a href="tel:+48669697151">+48 669 697 151</a>
-    </p>
-    <h2>Godziny kontaktu</h2>
-    <p>
-      Kontakt mailowy: 7 dni w tygodniu<br />
-      Kontakt telefoniczny: poniedziałek–piątek, 10:00–16:00
-    </p>
-    <!-- ...existing code... -->
+
+  <body data-page="kontakt">
+    <div id="appHeader"></div>
+
+    <main class="page">
+      <div class="container">
+        <section class="heroBanner">
+          <div class="heroTitleRow">
+            <div class="heroIcon">&#128222;</div>
+            <div>
+              <h1 class="glow-text" style="margin: 0">Kontakt</h1>
+              <div class="subtitle" style="margin-top: 6px">
+                Dane kontaktowe i godziny dostępności.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top: 12px">
+          <div class="sectionTitle" style="margin-top: 0">Dane firmy</div>
+          <div class="muted">
+            <strong>Magdalena Meller</strong><br />
+            ul. Katowicka 2F/6.01<br />
+            61-131 Poznań, Polska<br />
+            NIP: 7822348796<br />
+            REGON: 542556870
+          </div>
+        </section>
+
+        <section class="card" style="margin-top: 12px">
+          <div class="sectionTitle" style="margin-top: 0">Kontakt</div>
+          <div class="muted">
+            E-mail:
+            <a href="mailto:aquivivo.pl@gmail.com">aquivivo.pl@gmail.com</a><br />
+            Tel.: <a href="tel:+48669697151">+48 669 697 151</a>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top: 12px">
+          <div class="sectionTitle" style="margin-top: 0">Godziny kontaktu</div>
+          <div class="muted">
+            Kontakt mailowy: 7 dni w tygodniu<br />
+            Kontakt telefoniczny: poniedziałek&ndash;piątek, 10:00&ndash;16:00
+          </div>
+        </section>
+      </div>
+    </main>
   </body>
 </html>
