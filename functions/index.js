@@ -60,6 +60,27 @@ function normalizePlan(planId) {
     .replace(/\s+/g, ' ');
 }
 
+function canonicalPlanKey(planId) {
+  const key = normalizePlan(planId);
+  if (!key) return key;
+  const has = (token) => key.includes(token);
+  if (has('premium') && has('a1') && has('a2')) return 'premium_a1';
+  if (has('premium') && has('b1')) return 'premium_b1';
+  if (has('premium') && has('b2')) return 'premium_b2';
+  if (has('vip') && has('a1') && has('a2') && has('b1') && has('b2'))
+    return 'vip a1 + a2 + b1 + b2';
+  if (has('vip') && has('a1') && has('a2') && has('b1'))
+    return 'vip a1 + a2 + b1';
+  if (has('tarjeta') && has('residencia')) return 'tarjeta de residencia';
+  if (has('plan premium a1 + a2')) return 'premium_a1';
+  return key;
+}
+
+function isStripeMissingPrice(err) {
+  const msg = String(err?.message || '').toLowerCase();
+  return err?.code === 'resource_missing' || msg.includes('no such price');
+}
+
 function parseAccessDays(value) {
   const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return null;
@@ -84,7 +105,7 @@ function normalizeAccessLevels(raw) {
 }
 
 async function getPriceFromServices(planIdRaw) {
-  const planKey = normalizePlan(planIdRaw);
+  const planKey = canonicalPlanKey(planIdRaw);
   if (!planIdRaw && !planKey) return null;
 
   let snap = await db
@@ -119,7 +140,7 @@ async function getPriceFromServices(planIdRaw) {
   const accessLevels = normalizeAccessLevels(data.accessLevels);
   let priceId = data.stripePriceId || data.priceId || '';
   if (!priceId) {
-    const docKey = normalizePlan(data.sku || doc.id);
+    const docKey = canonicalPlanKey(data.sku || doc.id);
     const fallback = PLAN_TO_PRICE_ID[planKey] || PLAN_TO_PRICE_ID[docKey];
     if (fallback) {
       priceId = fallback;
@@ -155,7 +176,7 @@ async function getServiceById(serviceId) {
   return {
     id: snap.id,
     sku: data.sku || snap.id,
-    planKey: normalizePlan(data.sku || snap.id),
+    planKey: canonicalPlanKey(data.sku || snap.id),
     active: data.active !== false,
     accessDays: parseAccessDays(data.accessDays),
     accessLevels: normalizeAccessLevels(data.accessLevels),
@@ -224,7 +245,7 @@ exports.createCheckoutSession = functions.https.onCall(
     const attemptRef = db.collection('payment_attempts').doc();
     const attemptData = {
       uid,
-      planId: service?.planKey || normalizePlan(planIdRaw),
+      planId: service?.planKey || canonicalPlanKey(planIdRaw),
       planSku: planIdRaw,
       serviceId: service?.id || '',
       priceId,
@@ -235,16 +256,20 @@ exports.createCheckoutSession = functions.https.onCall(
     await attemptRef.set(attemptData, { merge: true });
 
     let session;
-    try {
-      session = await stripe.checkout.sessions.create({
+    let usedPriceId = priceId;
+    const planKey = service?.planKey || canonicalPlanKey(planIdRaw);
+    const fallbackPriceId = PLAN_TO_PRICE_ID[planKey] || '';
+
+    const createSession = async (stripePriceId) =>
+      stripe.checkout.sessions.create({
         mode: 'payment',
-        line_items: [{ price: priceId, quantity: 1 }],
+        line_items: [{ price: stripePriceId, quantity: 1 }],
         success_url: `${safeBaseUrl}/services.html?success=1`,
         cancel_url: `${safeBaseUrl}/services.html?canceled=1`,
         client_reference_id: uid,
         metadata: {
           uid,
-          planId: service?.planKey || normalizePlan(planIdRaw),
+          planId: planKey,
           planSku: planIdRaw,
           serviceId: service?.id || '',
           attemptId: attemptRef.id,
@@ -252,25 +277,54 @@ exports.createCheckoutSession = functions.https.onCall(
         allow_promotion_codes: true,
       });
 
-      await attemptRef.set(
-        {
-          status: 'pending',
-          stripeSessionId: session.id,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true },
-      );
+    try {
+      session = await createSession(usedPriceId);
     } catch (err) {
-      await attemptRef.set(
-        {
-          status: 'failed',
-          error: err?.message || String(err),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true },
-      );
-      throw err;
+      if (
+        isStripeMissingPrice(err) &&
+        fallbackPriceId &&
+        fallbackPriceId !== usedPriceId
+      ) {
+        try {
+          usedPriceId = fallbackPriceId;
+          session = await createSession(usedPriceId);
+          if (service?.id) {
+            await db
+              .doc(`services/${service.id}`)
+              .set(
+                { stripePriceId: usedPriceId, updatedAt: admin.firestore.FieldValue.serverTimestamp() },
+                { merge: true },
+              );
+          }
+        } catch (err2) {
+          err = err2;
+        }
+      }
+      if (!session) {
+        await attemptRef.set(
+          {
+            status: 'failed',
+            error: err?.message || String(err),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+        const msg = isStripeMissingPrice(err)
+          ? `No such price: ${usedPriceId}. Sprawdz, czy Stripe secret jest w tym samym trybie (test/live) co ten price.`
+          : err?.message || 'Stripe error';
+        throw new functions.https.HttpsError('failed-precondition', msg);
+      }
     }
+
+    await attemptRef.set(
+      {
+        status: 'pending',
+        stripeSessionId: session.id,
+        priceId: usedPriceId,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
 
     return { url: session.url };
   },
@@ -299,7 +353,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
       const session = event.data.object;
       const uid = session.metadata?.uid || session.client_reference_id;
       const planSku = session.metadata?.planSku || session.metadata?.planId;
-      const planId = normalizePlan(planSku);
+      const planId = canonicalPlanKey(planSku);
       const serviceId = session.metadata?.serviceId;
       const attemptId = session.metadata?.attemptId;
 
