@@ -1,4 +1,4 @@
-import { app, auth, db, storage } from '../firebase-init.js';
+﻿import { app, auth, db, storage } from '../firebase-init.js';
 import '../logger.js';
 import {
   onAuthStateChanged,
@@ -21,6 +21,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 import {
   getDownloadURL,
@@ -46,17 +47,29 @@ const threadMessages = qs('#threadMessages');
 const threadName = qs('#threadName');
 const threadMeta = qs('#threadMeta');
 const threadAvatar = qs('#threadAvatar');
+const threadStatus = qs('#threadStatus');
 const threadTyping = qs('#threadTyping');
+const threadSearch = qs('#threadSearch');
+const threadSearchAttachments = qs('#threadSearchAttachments');
+const threadFilterInfo = qs('#threadFilterInfo');
 const btnJoinGroup = qs('#btnJoinGroup');
 const btnLeaveGroup = qs('#btnLeaveGroup');
 const messageInput = qs('#messageInput');
 const btnSend = qs('#btnSend');
 const fileInput = qs('#fileInput');
 const attachmentsPreview = qs('#attachmentsPreview');
+const composerEdit = qs('#composerEdit');
+const composerEditText = qs('#composerEditText');
+const btnCancelEdit = qs('#btnCancelEdit');
+const composerReply = qs('#composerReply');
+const composerReplyText = qs('#composerReplyText');
+const btnCancelReply = qs('#btnCancelReply');
 const btnRecord = qs('#btnRecord');
 const recordHint = qs('#recordHint');
 const messagesInfo = qs('#messagesInfo');
 const infoBody = qs('#infoBody');
+const infoActions = qs('#infoActions');
+const pinnedBox = qs('#pinnedBox');
 const participantsBox = qs('#participantsBox');
 const requestsBox = qs('#requestsBox');
 
@@ -84,6 +97,17 @@ const supportAdminBox = qs('#supportAdminBox');
 const supportAgentInput = qs('#supportAgentInput');
 const btnAddSupportAgent = qs('#btnAddSupportAgent');
 const supportAgentList = qs('#supportAgentList');
+const reportsList = qs('#reportsList');
+
+const toggleArchived = qs('#toggleArchived');
+const togglePush = qs('#togglePush');
+
+const modalReport = qs('#modalReport');
+const closeReport = qs('#closeReport');
+const reportReason = qs('#reportReason');
+const reportDetails = qs('#reportDetails');
+const btnSubmitReport = qs('#btnSubmitReport');
+const reportHint = qs('#reportHint');
 
 let CURRENT_USER = null;
 let CURRENT_PROFILE = null;
@@ -99,6 +123,7 @@ let conversationDocUnsub = null;
 let activeConversation = null;
 let activeConversationId = null;
 let currentMessages = [];
+let latestConversations = [];
 
 let pendingFiles = [];
 let recorder = null;
@@ -106,12 +131,38 @@ let recording = false;
 let recordChunks = [];
 let typingTimer = null;
 let lastTypingAt = 0;
+let searchTimer = null;
+let searchToken = 0;
+let searchMode = false;
+let searchResults = [];
+let activeReply = null;
+let activeEditId = null;
+let activeEditSnapshot = null;
+let showArchived = false;
+let settingsUnsub = null;
+let convSettings = new Map();
+let statusUnsub = null;
+let presenceTimer = null;
+let reportsUnsub = null;
+let reportTarget = null;
+let sendTimestamps = [];
+let USER_SETTINGS = {};
 
 const profileCache = new Map();
 const lastNotified = new Map();
 const FCM_VAPID_KEY = '';
 const MAX_GROUP_MEMBERS = 200;
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+const MAX_MESSAGE_LEN = 2000;
+const SEND_WINDOW_MS = 10000;
+const SEND_LIMIT = 5;
+const REACTIONS = [
+  { key: 'like', label: '👍' },
+  { key: 'love', label: '❤️' },
+  { key: 'laugh', label: '😂' },
+  { key: 'wow', label: '😮' },
+  { key: 'sad', label: '😢' },
+];
 
 function toDateMaybe(v) {
   if (!v) return null;
@@ -137,6 +188,43 @@ function lastAtMs(item) {
 
 function sortByLastAt(list) {
   return list.sort((a, b) => lastAtMs(b) - lastAtMs(a));
+}
+
+function formatDateTime(ts) {
+  const d = toDateMaybe(ts);
+  if (!d) return '';
+  return new Intl.DateTimeFormat('es-ES', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(d);
+}
+
+function extractTokens(text) {
+  const raw = String(text || '').toLowerCase();
+  const matches = raw.match(/[\p{L}\p{N}]{2,}/gu) || [];
+  const unique = [];
+  for (const token of matches) {
+    if (token.length > 32) continue;
+    if (!unique.includes(token)) unique.push(token);
+    if (unique.length >= 24) break;
+  }
+  return unique;
+}
+
+function buildMessageIndex(text, attachments, extraText = '') {
+  const attachmentNames = (attachments || [])
+    .map((a) => String(a?.name || '').toLowerCase())
+    .filter(Boolean)
+    .slice(0, 8);
+  const textLower = String(text || '').toLowerCase().trim();
+  const extraLower = String(extraText || '').toLowerCase().trim();
+  const tokens = extractTokens(`${textLower} ${extraLower} ${attachmentNames.join(' ')}`);
+  return {
+    textLower,
+    tokens,
+    hasAttachments: Array.isArray(attachments) && attachments.length > 0,
+    attachmentNames,
+  };
 }
 
 function normText(text) {
@@ -183,6 +271,54 @@ function convoUnread(convo) {
   const readAt = toDateMaybe(readRaw);
   if (!readAt) return true;
   return lastAt.getTime() > readAt.getTime();
+}
+
+function getConversationSetting(convId) {
+  return convSettings.get(convId) || {};
+}
+
+function isConversationMuted(convId) {
+  return getConversationSetting(convId).muted === true;
+}
+
+function isConversationArchived(convId) {
+  return getConversationSetting(convId).archived === true;
+}
+
+async function setConversationSetting(convId, patch) {
+  if (!CURRENT_USER || !convId) return;
+  const ref = doc(db, 'users', CURRENT_USER.uid, 'conversations', convId);
+  await setDoc(
+    ref,
+    {
+      ...patch,
+      updatedAt: serverTimestamp(),
+      convId,
+    },
+    { merge: true },
+  );
+}
+
+function listenConversationSettings() {
+  if (!CURRENT_USER) return;
+  if (settingsUnsub) settingsUnsub();
+  const ref = collection(db, 'users', CURRENT_USER.uid, 'conversations');
+  settingsUnsub = onSnapshot(ref, (snap) => {
+    const map = new Map();
+    snap.docs.forEach((d) => {
+      map.set(d.id, d.data() || {});
+    });
+    convSettings = map;
+    applySearchFilter();
+    if (chatList && chatList.children.length) {
+      const list = Array.from(chatList.querySelectorAll('.message-item'));
+      list.forEach((item) => {
+        if (!item.dataset.id) return;
+        const muted = isConversationMuted(item.dataset.id);
+        item.classList.toggle('is-muted', muted);
+      });
+    }
+  });
 }
 
 function readStatusForMessage(msg) {
@@ -247,6 +383,52 @@ async function clearTyping() {
   } catch (e) {
     console.warn('[typing] clear failed', e);
   }
+}
+
+async function setPresence(state) {
+  if (!CURRENT_USER) return;
+  const ref = doc(db, 'user_status', CURRENT_USER.uid);
+  const payload =
+    state === 'online'
+      ? { state: 'online', lastActiveAt: serverTimestamp() }
+      : { state: 'offline', lastSeenAt: serverTimestamp() };
+  try {
+    await setDoc(ref, payload, { merge: true });
+  } catch (e) {
+    console.warn('[presence] update failed', e);
+  }
+}
+
+function startPresence() {
+  if (!CURRENT_USER) return;
+  if (presenceTimer) clearInterval(presenceTimer);
+  setPresence('online');
+  presenceTimer = setInterval(() => setPresence('online'), 30000);
+  window.addEventListener('beforeunload', () => setPresence('offline'));
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) setPresence('offline');
+    else setPresence('online');
+  });
+}
+
+function listenUserStatus(uid) {
+  if (!uid || !threadStatus) return;
+  if (statusUnsub) statusUnsub();
+  statusUnsub = onSnapshot(doc(db, 'user_status', uid), (snap) => {
+    if (!snap.exists()) {
+      threadStatus.textContent = '';
+      return;
+    }
+    const data = snap.data() || {};
+    const state = data.state || 'offline';
+    if (state === 'online') {
+      threadStatus.textContent = 'En linea';
+      return;
+    }
+    const lastSeen = data.lastSeenAt || data.lastActiveAt;
+    const label = lastSeen ? `Visto ${formatDateTime(lastSeen)}` : 'Desconectado';
+    threadStatus.textContent = label;
+  });
 }
 
 async function updateTypingIndicator(convo) {
@@ -325,6 +507,33 @@ async function setupPush(user) {
   }
 }
 
+async function clearPushTokens() {
+  if (!CURRENT_USER) return;
+  try {
+    const snap = await getDocs(
+      collection(db, 'user_push_tokens', CURRENT_USER.uid, 'tokens'),
+    );
+    const deletions = snap.docs.map((d) => deleteDoc(d.ref));
+    await Promise.all(deletions);
+  } catch (e) {
+    console.warn('[push] clear tokens failed', e);
+  }
+}
+
+async function loadUserSettings() {
+  if (!CURRENT_USER) return;
+  try {
+    const snap = await getDoc(doc(db, 'user_settings', CURRENT_USER.uid));
+    USER_SETTINGS = snap.exists() ? snap.data() || {} : {};
+    if (togglePush) {
+      togglePush.checked = USER_SETTINGS.pushEnabled !== false;
+      togglePush.disabled = !FCM_VAPID_KEY;
+    }
+  } catch (e) {
+    console.warn('[settings] load failed', e);
+  }
+}
+
 function setModalOpen(el, open) {
   if (!el) return;
   el.classList.toggle('open', open);
@@ -336,6 +545,8 @@ function resetComposer() {
   renderAttachmentsPreview();
   if (messageInput) messageInput.value = '';
   if (recordHint) recordHint.textContent = '';
+  clearReplyMessage();
+  clearEditMessage();
 }
 
 function renderAttachmentsPreview() {
@@ -363,6 +574,7 @@ function renderMessageBubble(msg) {
   const wrap = document.createElement('div');
   const isMine = msg.senderId === CURRENT_USER?.uid;
   wrap.className = `msg-bubble ${isMine ? 'msg-bubble--me' : 'msg-bubble--them'}`;
+  if (msg.id) wrap.dataset.id = msg.id;
 
   if (msg.senderName && !isMine) {
     const sender = document.createElement('div');
@@ -371,48 +583,138 @@ function renderMessageBubble(msg) {
     wrap.appendChild(sender);
   }
 
-  if (msg.text) {
-    const body = document.createElement('div');
-    body.textContent = msg.text;
-    wrap.appendChild(body);
+  if (msg.replyTo) {
+    const reply = document.createElement('div');
+    reply.className = 'msg-reply';
+    const replyName = msg.replyTo.senderName || 'Usuario';
+    const replyText = String(msg.replyTo.text || '').slice(0, 120);
+    reply.textContent = `${replyName}: ${replyText}`;
+    wrap.appendChild(reply);
   }
 
-  if (Array.isArray(msg.attachments)) {
-    msg.attachments.forEach((att) => {
-      const box = document.createElement('div');
-      box.className = 'msg-attachment';
-      if (att.contentType && att.contentType.startsWith('image/')) {
-        const img = document.createElement('img');
-        img.src = att.url;
-        img.alt = att.name || 'imagen';
-        box.appendChild(img);
-      } else if (att.contentType && att.contentType.startsWith('video/')) {
-        const video = document.createElement('video');
-        video.controls = true;
-        video.src = att.url;
-        video.style.maxWidth = '100%';
-        box.appendChild(video);
-      } else if (att.contentType && att.contentType.startsWith('audio/')) {
-        const audio = document.createElement('audio');
-        audio.controls = true;
-        audio.src = att.url;
-        box.appendChild(audio);
-      } else {
-        const link = document.createElement('a');
-        link.href = att.url;
-        link.target = '_blank';
-        link.rel = 'noopener';
-        link.textContent = att.name || 'Archivo';
-        box.appendChild(link);
-      }
-      wrap.appendChild(box);
-    });
+  if (msg.deleted) {
+    const body = document.createElement('div');
+    body.className = 'muted';
+    body.textContent = 'Mensaje eliminado.';
+    wrap.appendChild(body);
+  } else {
+    if (msg.text) {
+      const body = document.createElement('div');
+      body.textContent = msg.text;
+      wrap.appendChild(body);
+    }
+
+    if (Array.isArray(msg.attachments)) {
+      msg.attachments.forEach((att) => {
+        const box = document.createElement('div');
+        box.className = 'msg-attachment';
+        if (att.contentType && att.contentType.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = att.url;
+          img.alt = att.name || 'imagen';
+          box.appendChild(img);
+        } else if (att.contentType && att.contentType.startsWith('video/')) {
+          const video = document.createElement('video');
+          video.controls = true;
+          video.src = att.url;
+          video.style.maxWidth = '100%';
+          box.appendChild(video);
+        } else if (att.contentType && att.contentType.startsWith('audio/')) {
+          const audio = document.createElement('audio');
+          audio.controls = true;
+          audio.src = att.url;
+          box.appendChild(audio);
+        } else {
+          const link = document.createElement('a');
+          link.href = att.url;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = att.name || 'Archivo';
+          box.appendChild(link);
+        }
+        wrap.appendChild(box);
+      });
+    }
   }
+
+  const reactions = msg.reactions || {};
+  const reactionRow = document.createElement('div');
+  reactionRow.className = 'msg-reactions';
+  let hasReactions = false;
+  REACTIONS.forEach((r) => {
+    const list = Array.isArray(reactions[r.key]) ? reactions[r.key] : [];
+    if (!list.length) return;
+    hasReactions = true;
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'msg-reaction';
+    if (list.includes(CURRENT_USER?.uid)) chip.classList.add('is-active');
+    chip.textContent = `${r.label} ${list.length}`;
+    chip.addEventListener('click', () => toggleReaction(msg, r.key));
+    reactionRow.appendChild(chip);
+  });
+  if (hasReactions) wrap.appendChild(reactionRow);
+
+  const actions = document.createElement('div');
+  actions.className = 'msg-actions';
+
+  const replyBtn = document.createElement('button');
+  replyBtn.type = 'button';
+  replyBtn.className = 'msg-action-btn';
+  replyBtn.textContent = 'Responder';
+  replyBtn.addEventListener('click', () => setReplyMessage(msg));
+  actions.appendChild(replyBtn);
+
+  REACTIONS.forEach((r) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'msg-action-btn';
+    btn.textContent = r.label;
+    btn.addEventListener('click', () => toggleReaction(msg, r.key));
+    actions.appendChild(btn);
+  });
+
+  if (canEditMessage(msg)) {
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'msg-action-btn';
+    editBtn.textContent = 'Editar';
+    editBtn.addEventListener('click', () => setEditMessage(msg));
+    actions.appendChild(editBtn);
+  }
+
+  if (canDeleteMessage(msg)) {
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'msg-action-btn';
+    delBtn.textContent = 'Borrar';
+    delBtn.addEventListener('click', () => deleteMessage(msg));
+    actions.appendChild(delBtn);
+  }
+
+  if (canPinMessage()) {
+    const pinBtn = document.createElement('button');
+    pinBtn.type = 'button';
+    pinBtn.className = 'msg-action-btn';
+    pinBtn.textContent = 'Fijar';
+    pinBtn.addEventListener('click', () => togglePinMessage(msg));
+    actions.appendChild(pinBtn);
+  }
+
+  const reportBtn = document.createElement('button');
+  reportBtn.type = 'button';
+  reportBtn.className = 'msg-action-btn';
+  reportBtn.textContent = 'Reportar';
+  reportBtn.addEventListener('click', () => openReportModal(msg));
+  actions.appendChild(reportBtn);
+
+  wrap.appendChild(actions);
 
   const meta = document.createElement('div');
   meta.className = 'msg-meta';
   const readStatus = readStatusForMessage(msg);
-  meta.textContent = [formatTime(msg.createdAt), readStatus].filter(Boolean).join(' · ');
+  const edited = msg.editedAt ? 'Editado' : '';
+  meta.textContent = [formatTime(msg.createdAt), edited, readStatus].filter(Boolean).join(' · ');
   wrap.appendChild(meta);
 
   return wrap;
@@ -424,7 +726,7 @@ function renderMessages(list) {
   if (!list.length) {
     const empty = document.createElement('div');
     empty.className = 'muted';
-    empty.textContent = 'No hay mensajes todavia.';
+    empty.textContent = searchMode ? 'Sin resultados.' : 'No hay mensajes todavia.';
     threadMessages.appendChild(empty);
     return;
   }
@@ -434,10 +736,212 @@ function renderMessages(list) {
   threadMessages.scrollTop = threadMessages.scrollHeight;
 }
 
+function updateThreadSearchInfo(count) {
+  if (!threadFilterInfo) return;
+  threadFilterInfo.textContent = count ? `${count} resultados` : '';
+}
+
+async function applyThreadSearch() {
+  if (!activeConversationId) return;
+  const term = String(threadSearch?.value || '').trim();
+  const onlyAttachments = !!threadSearchAttachments?.checked;
+  if (!term && !onlyAttachments) {
+    searchMode = false;
+    updateThreadSearchInfo(0);
+    renderMessages(currentMessages);
+    return;
+  }
+  const token = ++searchToken;
+  searchMode = true;
+  if (threadFilterInfo) threadFilterInfo.textContent = 'Buscando...';
+  const results = await searchMessages(activeConversationId, term, onlyAttachments);
+  if (token !== searchToken) return;
+  searchResults = results;
+  updateThreadSearchInfo(results.length);
+  renderMessages(results);
+}
+
+function scheduleThreadSearch() {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyThreadSearch, 350);
+}
+
+async function toggleReaction(msg, key) {
+  if (!activeConversationId || !CURRENT_USER || !msg?.id) return;
+  const list = Array.isArray(msg.reactions?.[key]) ? msg.reactions[key] : [];
+  const has = list.includes(CURRENT_USER.uid);
+  const ref = doc(db, 'conversations', activeConversationId, 'messages', msg.id);
+  try {
+    await updateDoc(ref, {
+      [`reactions.${key}`]: has ? arrayRemove(CURRENT_USER.uid) : arrayUnion(CURRENT_USER.uid),
+      updatedAt: serverTimestamp(),
+    });
+  } catch (e) {
+    console.warn('[reactions] update failed', e);
+  }
+}
+
+async function logAudit(action, msg, extra = {}) {
+  if (!activeConversationId || !CURRENT_USER) return;
+  try {
+    await addDoc(collection(db, 'conversations', activeConversationId, 'audit'), {
+      action,
+      messageId: msg?.id || '',
+      actorId: CURRENT_USER.uid,
+      actorName: userDisplay(CURRENT_PROFILE, 'Usuario'),
+      before: msg ? { text: msg.text || '', attachments: msg.attachments || [] } : {},
+      after: extra.after || {},
+      createdAt: serverTimestamp(),
+    });
+  } catch (e) {
+    console.warn('[audit] log failed', e);
+  }
+}
+
+async function deleteMessage(msg) {
+  if (!activeConversationId || !msg?.id) return;
+  if (!confirm('¿Borrar este mensaje?')) return;
+  const ref = doc(db, 'conversations', activeConversationId, 'messages', msg.id);
+  try {
+    await updateDoc(ref, {
+      deleted: true,
+      deletedAt: serverTimestamp(),
+      deletedBy: CURRENT_USER.uid,
+      text: '',
+      textLower: '',
+      tokens: [],
+      attachments: [],
+      attachmentNames: [],
+      hasAttachments: false,
+    });
+    await logAudit('delete', msg, { after: { deleted: true } });
+    if (activeConversation?.lastMessageId === msg.id) {
+      await updateDoc(doc(db, 'conversations', activeConversationId), {
+        lastMessage: { text: 'Mensaje eliminado', senderId: msg.senderId || '' },
+        lastAt: serverTimestamp(),
+      });
+    }
+  } catch (e) {
+    console.warn('[messages] delete failed', e);
+  }
+}
+
+async function togglePinMessage(msg) {
+  if (!activeConversationId || !msg?.id || !canPinMessage()) return;
+  const pinned = Array.isArray(activeConversation?.pinned)
+    ? activeConversation.pinned
+    : [];
+  const exists = pinned.includes(msg.id);
+  const maxPins = 5;
+  const next = exists
+    ? pinned.filter((id) => id !== msg.id)
+    : [...pinned, msg.id].slice(0, maxPins);
+  try {
+    await updateDoc(doc(db, 'conversations', activeConversationId), {
+      pinned: next,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (e) {
+    console.warn('[pin] update failed', e);
+  }
+}
+
+function openReportModal(msg) {
+  reportTarget = msg?.id || null;
+  if (reportHint) reportHint.textContent = '';
+  if (reportDetails) reportDetails.value = '';
+  setModalOpen(modalReport, true);
+}
+
+async function submitReport() {
+  if (!CURRENT_USER || !activeConversationId) return;
+  const payload = {
+    convId: activeConversationId,
+    messageId: reportTarget || '',
+    reason: reportReason?.value || 'other',
+    details: String(reportDetails?.value || '').trim(),
+    reportedBy: CURRENT_USER.uid,
+    reportedName: userDisplay(CURRENT_PROFILE, 'Usuario'),
+    createdAt: serverTimestamp(),
+    status: 'open',
+  };
+  try {
+    await addDoc(collection(db, 'reports'), payload);
+    if (reportHint) reportHint.textContent = 'Reporte enviado.';
+    reportTarget = null;
+    setTimeout(() => setModalOpen(modalReport, false), 600);
+  } catch (e) {
+    console.warn('[reports] send failed', e);
+    if (reportHint) reportHint.textContent = 'No se pudo enviar.';
+  }
+}
+
+async function exportConversation() {
+  if (!activeConversationId) return;
+  const data = {
+    conversation: activeConversationId,
+    exportedAt: new Date().toISOString(),
+    messages: currentMessages,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `conversation_${activeConversationId}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function deleteMyMessages() {
+  if (!activeConversationId || !CURRENT_USER) return;
+  if (!confirm('¿Borrar tus mensajes en esta conversación?')) return;
+  try {
+    const snap = await getDocs(
+      query(
+        collection(db, 'conversations', activeConversationId, 'messages'),
+        where('senderId', '==', CURRENT_USER.uid),
+        limit(200),
+      ),
+    );
+    if (snap.empty) return;
+    const batch = writeBatch(db);
+    snap.docs.forEach((docSnap) => {
+      batch.update(docSnap.ref, {
+        deleted: true,
+        deletedAt: serverTimestamp(),
+        deletedBy: CURRENT_USER.uid,
+        text: '',
+        textLower: '',
+        tokens: [],
+        attachments: [],
+        attachmentNames: [],
+        hasAttachments: false,
+      });
+    });
+    await batch.commit();
+  } catch (e) {
+    console.warn('[messages] bulk delete failed', e);
+  }
+}
+
+function scrollToMessage(msgId) {
+  if (!msgId || !threadMessages) return;
+  const el = threadMessages.querySelector(`[data-id="${msgId}"]`);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('is-highlight');
+    setTimeout(() => el.classList.remove('is-highlight'), 1200);
+  }
+}
+
 function maybeNotify(convId, list) {
   if (!list.length) return;
   const last = list[list.length - 1];
   if (!last || last.senderId === CURRENT_USER?.uid) return;
+  if (USER_SETTINGS.pushEnabled === false) return;
+  if (isConversationMuted(convId)) return;
   if (document.hasFocus() && activeConversationId === convId) return;
   if (lastNotified.get(convId) === last.id) return;
   lastNotified.set(convId, last.id);
@@ -467,6 +971,7 @@ function renderConversationItem(convo, target) {
   item.className = 'message-item';
   item.dataset.id = convo.id;
   item.addEventListener('click', () => openConversation(convo.id, convo));
+  if (isConversationMuted(convo.id)) item.classList.add('is-muted');
 
   const row = document.createElement('div');
   row.className = 'message-item-row';
@@ -491,6 +996,18 @@ function renderConversationItem(convo, target) {
     badge.className = 'message-item-badge';
     badge.textContent = badgeLabel;
     titleRow.appendChild(badge);
+  }
+  if (isConversationMuted(convo.id)) {
+    const muted = document.createElement('span');
+    muted.className = 'message-item-badge';
+    muted.textContent = 'Silenciado';
+    titleRow.appendChild(muted);
+  }
+  if (isConversationArchived(convo.id)) {
+    const archived = document.createElement('span');
+    archived.className = 'message-item-badge';
+    archived.textContent = 'Archivado';
+    titleRow.appendChild(archived);
   }
 
   titleRow.appendChild(title);
@@ -525,8 +1042,7 @@ function renderConversationItem(convo, target) {
     title.textContent = name;
     item.dataset.name = normText(name);
     avatar.textContent =
-      convo.type === 'support'
-        ? '🆘'
+      convo.type === 'support' ? '🆘'
         : convo.type === 'group'
           ? buildAvatarText(convo.title || name)
           : buildAvatarText(name);
@@ -538,14 +1054,17 @@ function renderConversationItem(convo, target) {
 function renderConversationList(list, target) {
   if (!target) return;
   target.innerHTML = '';
-  if (!list.length) {
+  const filtered = list.filter(
+    (c) => showArchived || !isConversationArchived(c.id),
+  );
+  if (!filtered.length) {
     const empty = document.createElement('div');
     empty.className = 'muted';
     empty.textContent = 'Sin conversaciones.';
     target.appendChild(empty);
     return;
   }
-  list.forEach((c) => renderConversationItem(c, target));
+  filtered.forEach((c) => renderConversationItem(c, target));
 }
 
 async function renderPublicGroups(list) {
@@ -636,7 +1155,10 @@ function applySearchFilter() {
   if (!listEl) return;
   listEl.querySelectorAll('.message-item').forEach((item) => {
     const name = item.dataset.name || '';
-    item.style.display = !q || name.includes(q) ? '' : 'none';
+    const archived = currentTab === 'chats' && isConversationArchived(item.dataset.id);
+    const shouldHide = (!showArchived && archived) || (q && !name.includes(q));
+    item.style.display = shouldHide ? 'none' : '';
+    item.classList.toggle('is-muted', isConversationMuted(item.dataset.id));
   });
 }
 
@@ -650,13 +1172,118 @@ function setComposerEnabled(enabled, placeholder = 'Escribe un mensaje...') {
   if (btnRecord) btnRecord.disabled = !enabled;
 }
 
+function canEditMessage(msg) {
+  return msg && CURRENT_USER && msg.senderId === CURRENT_USER.uid && !msg.deleted;
+}
+
+function canDeleteMessage(msg) {
+  return msg && CURRENT_USER && msg.senderId === CURRENT_USER.uid && !msg.deleted;
+}
+
+function canPinMessage() {
+  if (!activeConversation || !CURRENT_USER) return false;
+  return (
+    activeConversation.ownerId === CURRENT_USER.uid ||
+    (activeConversation.admins || []).includes(CURRENT_USER.uid)
+  );
+}
+
+function setReplyMessage(msg) {
+  if (!msg || !composerReply || !composerReplyText) return;
+  if (activeEditId) clearEditMessage();
+  activeReply = {
+    id: msg.id,
+    text: String(msg.text || '').slice(0, 120),
+    senderName: msg.senderName || 'Usuario',
+    senderId: msg.senderId || '',
+  };
+  composerReplyText.textContent = `Respondiendo a ${activeReply.senderName}: ${activeReply.text}`;
+  composerReply.hidden = false;
+}
+
+function clearReplyMessage() {
+  activeReply = null;
+  if (composerReply) composerReply.hidden = true;
+  if (composerReplyText) composerReplyText.textContent = '';
+}
+
+function setEditMessage(msg) {
+  if (!msg || !composerEdit || !composerEditText || !messageInput) return;
+  if (activeReply) clearReplyMessage();
+  activeEditId = msg.id;
+  activeEditSnapshot = { ...msg };
+  composerEditText.textContent = `Editando: ${String(msg.text || '').slice(0, 120)}`;
+  composerEdit.hidden = false;
+  messageInput.value = String(msg.text || '');
+  messageInput.focus();
+  if (btnSend) btnSend.textContent = 'Guardar';
+}
+
+function clearEditMessage() {
+  activeEditId = null;
+  activeEditSnapshot = null;
+  if (composerEdit) composerEdit.hidden = true;
+  if (composerEditText) composerEditText.textContent = '';
+  if (btnSend) btnSend.textContent = 'Enviar';
+}
+
+function messageMatchesSearch(msg, term, onlyAttachments) {
+  const q = normText(term);
+  if (onlyAttachments && !(msg?.attachments || []).length) return false;
+  if (!q) return true;
+  const text = String(msg?.textLower || msg?.text || '').toLowerCase();
+  if (text.includes(q)) return true;
+  const replyText = String(msg?.replyTo?.text || '').toLowerCase();
+  if (replyText && replyText.includes(q)) return true;
+  const names = Array.isArray(msg?.attachmentNames)
+    ? msg.attachmentNames
+    : (msg?.attachments || []).map((a) => String(a?.name || '').toLowerCase());
+  return names.some((n) => n.includes(q));
+}
+
+function dedupeMessages(list) {
+  const map = new Map();
+  list.forEach((msg) => {
+    if (msg?.id) map.set(msg.id, msg);
+  });
+  return Array.from(map.values());
+}
+
+async function searchMessages(convId, term, onlyAttachments) {
+  if (!convId) return [];
+  const token = extractTokens(term)[0];
+  let remote = [];
+  if (token) {
+    try {
+      const snap = await getDocs(
+        query(
+          collection(db, 'conversations', convId, 'messages'),
+          where('tokens', 'array-contains', token),
+          limit(200),
+        ),
+      );
+      remote = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    } catch (e) {
+      console.warn('[search] remote failed', e);
+    }
+  }
+  const local = currentMessages.filter((msg) => messageMatchesSearch(msg, term, onlyAttachments));
+  const merged = dedupeMessages([...local, ...remote]).filter((msg) =>
+    messageMatchesSearch(msg, term, onlyAttachments),
+  );
+  return merged.sort((a, b) => {
+    const aTime = toDateMaybe(a.createdAt)?.getTime() || 0;
+    const bTime = toDateMaybe(b.createdAt)?.getTime() || 0;
+    return aTime - bTime;
+  });
+}
+
 async function applyConversationState(convo) {
   if (!convo) return;
   const name = await resolveConversationTitle(convo);
   threadName.textContent = name;
   threadAvatar.textContent =
-    convo.type === 'support'
-      ? '🆘'
+    convo.type === 'support' ? '🆘'
       : convo.type === 'group'
         ? buildAvatarText(convo.title || name)
         : buildAvatarText(name);
@@ -665,6 +1292,16 @@ async function applyConversationState(convo) {
     ? `${count} miembros`
     : (convo.type === 'support' ? 'Soporte' : 'Directo');
   threadMeta.textContent = meta;
+  if (convo.type === 'dm') {
+    const otherUid = (convo.participants || []).find((id) => id !== CURRENT_USER?.uid);
+    listenUserStatus(otherUid);
+  } else if (threadStatus) {
+    threadStatus.textContent = '';
+    if (statusUnsub) {
+      statusUnsub();
+      statusUnsub = null;
+    }
+  }
   await updateTypingIndicator(convo);
 
   btnJoinGroup.hidden = true;
@@ -704,7 +1341,8 @@ function listenConversationDoc(id) {
     await applyConversationState(activeConversation);
     await renderInfoPanel(activeConversation);
     if (currentMessages.length) {
-      renderMessages(currentMessages);
+      if (searchMode) applyThreadSearch();
+      else renderMessages(currentMessages);
     }
   });
 }
@@ -730,6 +1368,13 @@ async function openConversation(id, convo) {
   activeConversation.id = id;
   currentMessages = [];
   resetComposer();
+  if (threadSearch) threadSearch.value = '';
+  if (threadSearchAttachments) threadSearchAttachments.checked = false;
+  searchMode = false;
+  updateThreadSearchInfo(0);
+  if (isConversationArchived(id)) {
+    setConversationSetting(id, { archived: false });
+  }
 
   document.querySelectorAll('.message-item').forEach((item) => {
     item.classList.toggle('is-active', item.dataset.id === id);
@@ -770,6 +1415,8 @@ async function renderInfoPanel(convo) {
   infoBody.innerHTML = '';
   requestsBox.innerHTML = '';
   participantsBox.innerHTML = '';
+  if (infoActions) infoActions.innerHTML = '';
+  if (pinnedBox) pinnedBox.innerHTML = '';
   const typeLabel = convo.type === 'group' ? 'Grupo' : (convo.type === 'support' ? 'Soporte' : 'Directo');
   const isPublic = convo.public ? 'Publico' : 'Privado';
   infoBody.innerHTML = `
@@ -778,6 +1425,47 @@ async function renderInfoPanel(convo) {
     ${convo.type === 'group' ? `<div><strong>Ingreso:</strong> ${convo.joinMode === 'approval' ? 'Con aprobacion' : 'Abierto'}</div>` : ''}
     <div><strong>Miembros:</strong> ${convo.memberCount || (convo.participants || []).length || 0}</div>
   `;
+
+  if (infoActions) {
+    const muted = isConversationMuted(convo.id);
+    const archived = isConversationArchived(convo.id);
+    infoActions.innerHTML = `
+      <button class="btn-white-outline" id="btnToggleMute" type="button">
+        ${muted ? 'Activar notificaciones' : 'Silenciar'}
+      </button>
+      <button class="btn-white-outline" id="btnToggleArchive" type="button">
+        ${archived ? 'Desarchivar' : 'Archivar'}
+      </button>
+      <button class="btn-white-outline" id="btnExport" type="button">Exportar</button>
+      <button class="btn-white-outline" id="btnReport" type="button">Reportar</button>
+      <button class="btn-white-outline" id="btnDeleteMine" type="button">Borrar mis mensajes</button>
+    `;
+  }
+
+  if (pinnedBox) {
+    const pinned = Array.isArray(convo.pinned) ? convo.pinned : [];
+    if (!pinned.length) {
+      const empty = document.createElement('div');
+      empty.className = 'muted';
+      empty.textContent = 'Sin mensajes fijados.';
+      pinnedBox.appendChild(empty);
+    } else {
+      pinned.forEach((id) => {
+        const msg = currentMessages.find((m) => m.id === id);
+        const text = msg?.text || msg?.replyTo?.text || 'Mensaje';
+        const item = document.createElement('div');
+        item.className = 'pinned-item';
+        item.innerHTML = `
+          <span>${String(text || '').slice(0, 80)}</span>
+          <div class="metaRow" style="gap: 6px">
+            <button class="btn-white-outline" data-jump="${id}">Ver</button>
+            ${canPinMessage() ? `<button class="btn-white-outline" data-unpin="${id}">Quitar</button>` : ''}
+          </div>
+        `;
+        pinnedBox.appendChild(item);
+      });
+    }
+  }
 
   if (convo.type === 'group') {
     const isAdmin = convo.ownerId === CURRENT_USER?.uid || (convo.admins || []).includes(CURRENT_USER?.uid);
@@ -851,7 +1539,9 @@ function listenMessages(convId) {
   messagesUnsub = onSnapshot(q, (snap) => {
     const list = (snap.docs || []).map((d) => ({ id: d.id, ...(d.data() || {}) }));
     currentMessages = list;
-    renderMessages(list);
+    if (searchMode) applyThreadSearch();
+    else renderMessages(list);
+    if (activeConversation?.pinned?.length) renderInfoPanel(activeConversation);
     maybeNotify(convId, list);
     if (document.hasFocus() && activeConversationId === convId) {
       const last = list[list.length - 1];
@@ -880,11 +1570,56 @@ async function uploadAttachment(convId, file) {
 async function sendMessage() {
   if (!activeConversationId || !CURRENT_USER) return;
   if (messageInput?.disabled) return;
-  const text = String(messageInput?.value || '').trim();
-  if (!text && pendingFiles.length === 0) return;
+  let text = String(messageInput?.value || '').trim();
+  if (text.length > MAX_MESSAGE_LEN) {
+    if (recordHint) recordHint.textContent = `Maximo ${MAX_MESSAGE_LEN} caracteres.`;
+    return;
+  }
+  if (!text && pendingFiles.length === 0 && !activeEditId) return;
+
+  const now = Date.now();
+  sendTimestamps = sendTimestamps.filter((t) => now - t < SEND_WINDOW_MS);
+  if (!activeEditId && sendTimestamps.length >= SEND_LIMIT) {
+    if (recordHint) recordHint.textContent = 'Demasiados mensajes. Espera un momento.';
+    return;
+  }
 
   btnSend.disabled = true;
   try {
+    if (activeEditId) {
+      if (!text) {
+        if (recordHint) recordHint.textContent = 'Escribe texto para editar.';
+        return;
+      }
+      const ref = doc(db, 'conversations', activeConversationId, 'messages', activeEditId);
+      const index = buildMessageIndex(
+        text,
+        activeEditSnapshot?.attachments || [],
+        activeEditSnapshot?.replyTo?.text || '',
+      );
+      await updateDoc(ref, {
+        text,
+        ...index,
+        editedAt: serverTimestamp(),
+        editedBy: CURRENT_USER.uid,
+      });
+      await logAudit('edit', activeEditSnapshot, { after: { text } });
+      if (activeConversation?.lastMessageId === activeEditId) {
+        await updateDoc(doc(db, 'conversations', activeConversationId), {
+          lastMessage: {
+            text: text.slice(0, 120),
+            senderId: CURRENT_USER.uid,
+            senderName: userDisplay(CURRENT_PROFILE, 'Usuario'),
+          },
+          lastAt: serverTimestamp(),
+        });
+      }
+      clearEditMessage();
+      clearReplyMessage();
+      if (messageInput) messageInput.value = '';
+      return;
+    }
+
     const attachments = [];
     if (pendingFiles.length) {
       const validFiles = pendingFiles.filter((file) => file.size <= MAX_UPLOAD_BYTES);
@@ -904,14 +1639,25 @@ async function sendMessage() {
       }
     }
 
+    const replyTo = activeReply
+      ? {
+          id: activeReply.id,
+          text: activeReply.text,
+          senderName: activeReply.senderName,
+          senderId: activeReply.senderId,
+        }
+      : null;
+    const index = buildMessageIndex(text, attachments, activeReply?.text || '');
     const msgPayload = {
       senderId: CURRENT_USER.uid,
       senderName: userDisplay(CURRENT_PROFILE, 'Usuario'),
       text,
       attachments,
+      replyTo,
+      ...index,
       createdAt: serverTimestamp(),
     };
-    await addDoc(collection(db, 'conversations', activeConversationId, 'messages'), msgPayload);
+    const msgRef = await addDoc(collection(db, 'conversations', activeConversationId, 'messages'), msgPayload);
 
     const preview = text
       ? text.slice(0, 120)
@@ -923,10 +1669,12 @@ async function sendMessage() {
         senderName: userDisplay(CURRENT_PROFILE, 'Usuario'),
       },
       lastAt: serverTimestamp(),
+      lastMessageId: msgRef.id,
     });
 
     await markRead(activeConversationId);
     await clearTyping();
+    sendTimestamps.push(now);
 
     resetComposer();
   } catch (e) {
@@ -1170,6 +1918,42 @@ async function loadSupportAgents() {
   });
 }
 
+function renderReports(list) {
+  if (!reportsList) return;
+  reportsList.innerHTML = '';
+  if (!list.length) {
+    const empty = document.createElement('div');
+    empty.className = 'muted';
+    empty.textContent = 'Sin reportes.';
+    reportsList.appendChild(empty);
+    return;
+  }
+  list.forEach((rep) => {
+    const item = document.createElement('div');
+    item.className = 'report-item';
+    item.innerHTML = `
+      <div><strong>${rep.reason || 'reporte'}</strong> · ${rep.status || 'open'}</div>
+      <div>${rep.reportedName || 'Usuario'}</div>
+      <div>${rep.details || ''}</div>
+      <div class="metaRow" style="gap: 6px">
+        <button class="btn-white-outline" data-open="${rep.convId}">Abrir chat</button>
+        <button class="btn-white-outline" data-resolve="${rep.id}">Resolver</button>
+      </div>
+    `;
+    reportsList.appendChild(item);
+  });
+}
+
+function listenReports() {
+  if (!IS_ADMIN && !IS_SUPPORT) return;
+  if (reportsUnsub) reportsUnsub();
+  const q = query(collection(db, 'reports'), orderBy('createdAt', 'desc'), limit(20));
+  reportsUnsub = onSnapshot(q, (snap) => {
+    const list = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    renderReports(list);
+  });
+}
+
 async function addSupportAgent(term) {
   if (!IS_ADMIN) return;
   const value = String(term || '').trim();
@@ -1207,7 +1991,7 @@ function setupRecording() {
     if (recording) {
       recorder?.stop();
       recording = false;
-      btnRecord.textContent = '🎙';
+      btnRecord.textContent = 'Voz';
       recordHint.textContent = '';
       return;
     }
@@ -1227,7 +2011,7 @@ function setupRecording() {
       };
       recorder.start();
       recording = true;
-      btnRecord.textContent = '⏹';
+      btnRecord.textContent = 'Detener';
       recordHint.textContent = 'Grabando...';
     } catch (e) {
       console.warn('[record] failed', e);
@@ -1248,10 +2032,35 @@ function wireUI() {
     messagesSearch.addEventListener('input', applySearchFilter);
   }
 
+  threadSearch?.addEventListener('input', scheduleThreadSearch);
+  threadSearchAttachments?.addEventListener('change', scheduleThreadSearch);
+
+  btnCancelEdit?.addEventListener('click', clearEditMessage);
+  btnCancelReply?.addEventListener('click', clearReplyMessage);
+
+  toggleArchived?.addEventListener('change', () => {
+    showArchived = !!toggleArchived.checked;
+    if (chatList && latestConversations.length) {
+      renderConversationList(latestConversations, chatList);
+    }
+    applySearchFilter();
+  });
+
+  togglePush?.addEventListener('change', async () => {
+    if (!CURRENT_USER) return;
+    const enabled = !!togglePush.checked;
+    USER_SETTINGS = { ...USER_SETTINGS, pushEnabled: enabled };
+    await setDoc(doc(db, 'user_settings', CURRENT_USER.uid), USER_SETTINGS, { merge: true });
+    if (enabled) await setupPush(CURRENT_USER);
+    else await clearPushTokens();
+  });
+
   btnNewChat?.addEventListener('click', () => setModalOpen(modalNewChat, true));
   closeNewChat?.addEventListener('click', () => setModalOpen(modalNewChat, false));
   btnNewGroup?.addEventListener('click', () => setModalOpen(modalNewGroup, true));
   closeNewGroup?.addEventListener('click', () => setModalOpen(modalNewGroup, false));
+  closeReport?.addEventListener('click', () => setModalOpen(modalReport, false));
+  btnSubmitReport?.addEventListener('click', submitReport);
 
   btnSearchUser?.addEventListener('click', async () => {
     const term = newChatInput?.value || '';
@@ -1366,12 +2175,74 @@ function wireUI() {
     }
   });
 
+  infoActions?.addEventListener('click', async (e) => {
+    if (!activeConversationId) return;
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.id === 'btnToggleMute') {
+      const muted = isConversationMuted(activeConversationId);
+      await setConversationSetting(activeConversationId, { muted: !muted });
+      await renderInfoPanel(activeConversation);
+      return;
+    }
+    if (target.id === 'btnToggleArchive') {
+      const archived = isConversationArchived(activeConversationId);
+      await setConversationSetting(activeConversationId, { archived: !archived });
+      await renderInfoPanel(activeConversation);
+      applySearchFilter();
+      return;
+    }
+    if (target.id === 'btnExport') {
+      await exportConversation();
+      return;
+    }
+    if (target.id === 'btnReport') {
+      openReportModal();
+      return;
+    }
+    if (target.id === 'btnDeleteMine') {
+      await deleteMyMessages();
+      return;
+    }
+  });
+
+  pinnedBox?.addEventListener('click', (e) => {
+    const jump = e.target.closest('[data-jump]');
+    const unpin = e.target.closest('[data-unpin]');
+    if (jump) {
+      const msgId = jump.getAttribute('data-jump');
+      scrollToMessage(msgId);
+    }
+    if (unpin) {
+      const msgId = unpin.getAttribute('data-unpin');
+      const msg = currentMessages.find((m) => m.id === msgId);
+      if (msg) togglePinMessage(msg);
+    }
+  });
+
   supportAgentList?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-remove]');
     if (!btn || !IS_ADMIN) return;
     const uid = btn.getAttribute('data-remove');
     await deleteDoc(doc(db, 'support_agents', uid));
     await loadSupportAgents();
+  });
+
+  reportsList?.addEventListener('click', async (e) => {
+    const resolve = e.target.closest('[data-resolve]');
+    const open = e.target.closest('[data-open]');
+    if (resolve) {
+      const id = resolve.getAttribute('data-resolve');
+      await updateDoc(doc(db, 'reports', id), {
+        status: 'resolved',
+        resolvedAt: serverTimestamp(),
+        resolvedBy: CURRENT_USER.uid,
+      });
+    }
+    if (open) {
+      const convId = open.getAttribute('data-open');
+      if (convId) openConversation(convId);
+    }
   });
 
   btnAddSupportAgent?.addEventListener('click', () => {
@@ -1399,6 +2270,7 @@ function listenConversations() {
     const list = sortByLastAt(
       snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })),
     );
+    latestConversations = list;
     renderConversationList(list, chatList);
     applySearchFilter();
   });
@@ -1451,16 +2323,27 @@ async function initFromAuth(user) {
   const supportSnap = await getDoc(doc(db, 'support_agents', user.uid));
   IS_SUPPORT = IS_ADMIN || supportSnap.exists();
 
-  if (IS_ADMIN) supportAdminBox.hidden = false;
+  if (IS_ADMIN || IS_SUPPORT) supportAdminBox.hidden = false;
+  if (!IS_ADMIN) {
+    if (supportAgentInput) supportAgentInput.style.display = 'none';
+    if (btnAddSupportAgent) btnAddSupportAgent.style.display = 'none';
+    if (supportAgentList) supportAgentList.style.display = 'none';
+  }
   if (IS_SUPPORT || IS_ADMIN) tabSupport.hidden = false;
 
   wireUI();
-  ensureNotificationPermission();
-  await setupPush(user);
+  await loadUserSettings();
+  if (USER_SETTINGS.pushEnabled !== false) {
+    ensureNotificationPermission();
+    await setupPush(user);
+  }
+  listenConversationSettings();
+  startPresence();
   listenConversations();
   listenPublicGroups();
   listenSupportInbox();
   if (IS_ADMIN) loadSupportAgents();
+  listenReports();
 
   const params = new URLSearchParams(window.location.search);
   const chatUid = params.get('chat');
@@ -1479,3 +2362,6 @@ onAuthStateChanged(auth, async (user) => {
   }
   await initFromAuth(user);
 });
+
+
+

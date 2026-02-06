@@ -432,7 +432,7 @@ service cloud.firestore {
           || request.resource.data.participants.hasAll(resource.data.participants);
       }
       function participantUpdateAllowedKeys() {
-        return ["lastAt","lastMessage","reads","typing","updatedAt"];
+        return ["lastAt","lastMessage","lastMessageId","reads","typing","updatedAt"];
       }
       function joinUpdateAllowedKeys() {
         return ["participants","memberCount","reads","updatedAt"];
@@ -490,20 +490,48 @@ service cloud.firestore {
       allow delete: if isAdmin() || isOwnerOrAdmin();
 
       match /messages/{msgId} {
+        function canMessageRead() {
+          return isAdmin()
+            || (isSupport() && get(/databases/$(database)/documents/conversations/$(convId)).data.type == "support")
+            || get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid]);
+        }
+        function senderUpdateKeys() {
+          return ["text","textLower","tokens","attachments","attachmentNames","hasAttachments","editedAt","editedBy","deleted","deletedAt","deletedBy","replyTo","updatedAt"];
+        }
+        function reactionUpdateKeys() {
+          return ["reactions","updatedAt"];
+        }
         allow read: if signedIn()
           && notBlocked()
-          && (
-            isAdmin()
-            || (isSupport() && get(/databases/$(database)/documents/conversations/$(convId)).data.type == "support")
-            || get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid])
-          );
+          && canMessageRead();
         allow create: if signedIn()
           && notBlocked()
           && request.resource.data.senderId == request.auth.uid
           && !isBanned(request.auth.uid)
           && get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid]);
-        allow update, delete: if isAdmin()
+        allow update: if isAdmin()
+          || (
+            request.auth.uid == resource.data.senderId
+            && request.resource.data.senderId == resource.data.senderId
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(senderUpdateKeys())
+          )
+          || (
+            signedIn()
+            && notBlocked()
+            && canMessageRead()
+            && request.resource.data.senderId == resource.data.senderId
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(reactionUpdateKeys())
+          );
+        allow delete: if isAdmin()
           || request.auth.uid == resource.data.senderId;
+      }
+
+      match /audit/{auditId} {
+        allow read: if isAdmin() || isSupport();
+        allow create: if signedIn()
+          && notBlocked()
+          && get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid]);
+        allow update, delete: if isAdmin();
       }
 
       match /requests/{reqId} {
@@ -549,6 +577,29 @@ service cloud.firestore {
     match /user_notifications/{uid}/items/{id} {
       allow read: if isAdmin() || isOwner(uid);
       allow create, update: if isAdmin() || isOwner(uid);
+      allow delete: if isAdmin();
+    }
+
+    /* ===== USER SETTINGS ===== */
+    match /user_settings/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    /* ===== USER STATUS (PRESENCE) ===== */
+    match /user_status/{uid} {
+      allow read: if signedIn();
+      allow write: if isOwner(uid);
+    }
+
+    /* ===== CONVERSATION SETTINGS (per user) ===== */
+    match /users/{uid}/conversations/{convId} {
+      allow read, write: if isOwner(uid);
+    }
+
+    /* ===== REPORTS ===== */
+    match /reports/{reportId} {
+      allow create: if signedIn() && notBlocked();
+      allow read, update: if isAdmin() || isSupport();
       allow delete: if isAdmin();
     }
 

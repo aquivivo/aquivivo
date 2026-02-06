@@ -1,4 +1,4 @@
-const functions = require('firebase-functions');
+﻿const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const Stripe = require('stripe');
 
@@ -24,7 +24,7 @@ function getBaseUrl() {
   return functions.config().app?.base_url || process.env.BASE_URL || '';
 }
 
-// ⏱️ czas dostępu (dni)
+// â±ï¸ czas dostÄ™pu (dni)
 const PLAN_TO_DAYS = {
   premium_a1: 90,
   premium_b1: 90,
@@ -33,7 +33,7 @@ const PLAN_TO_DAYS = {
   'vip a1 + a2 + b1 + b2': 90,
 };
 
-// 🔓 levele odblokowane przez plan
+// ðŸ”“ levele odblokowane przez plan
 const PLAN_TO_LEVELS = {
   premium_a1: ['A1', 'A2'],
   premium_b1: ['B1'],
@@ -42,7 +42,7 @@ const PLAN_TO_LEVELS = {
   'vip a1 + a2 + b1 + b2': ['A1', 'A2', 'B1', 'B2'],
 };
 
-// Fallback price IDs (Stripe) – used when services doc is missing stripePriceId.
+// Fallback price IDs (Stripe) â€“ used when services doc is missing stripePriceId.
 const PLAN_TO_PRICE_ID = {
   premium_a1: 'price_1Sw2t5CI9cIUEmOtYvVwzq30',
   premium_b1: 'price_1Sw2rUCI9cIUEmOtj7nhkJFQ',
@@ -176,11 +176,11 @@ function computeNextUntil(existingTs, days) {
   );
 }
 
-// 1️⃣ START CHECKOUT (callable)
+// 1ï¸âƒ£ START CHECKOUT (callable)
 exports.createCheckoutSession = functions.https.onCall(
   async (data, context) => {
     if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Zaloguj się.');
+      throw new functions.https.HttpsError('unauthenticated', 'Zaloguj siÄ™.');
     }
 
     const STRIPE_SECRET = getStripeSecret();
@@ -276,7 +276,7 @@ exports.createCheckoutSession = functions.https.onCall(
   },
 );
 
-// 2️⃣ WEBHOOK STRIPE → FIRESTORE
+// 2ï¸âƒ£ WEBHOOK STRIPE â†’ FIRESTORE
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   try {
     const sig = req.headers['stripe-signature'];
@@ -399,7 +399,45 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   }
 });
 
-// 3️⃣ Push notifications for chat messages
+// Sync email index for chat search
+exports.syncEmailIndex = functions.firestore
+  .document('users/{uid}')
+  .onWrite(async (change, context) => {
+    const after = change.after.exists ? change.after.data() || {} : null;
+    const before = change.before.exists ? change.before.data() || {} : null;
+    const uid = context.params.uid;
+
+    const beforeEmail = String(before?.email || '').trim().toLowerCase();
+    const afterEmail = String(after?.email || '').trim().toLowerCase();
+
+    if (!after) {
+      if (beforeEmail) {
+        await db.doc(`email_index/${beforeEmail}`).delete().catch(() => null);
+      }
+      return null;
+    }
+
+    if (!afterEmail) return null;
+
+    if (beforeEmail && beforeEmail !== afterEmail) {
+      await db.doc(`email_index/${beforeEmail}`).delete().catch(() => null);
+    }
+
+    const displayName = String(
+      after.displayName || after.name || after.email || '',
+    ).trim();
+    const payload = {
+      uid,
+      emailLower: afterEmail,
+      handle: String(after.handle || '').trim(),
+      displayName,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    await db.doc(`email_index/${afterEmail}`).set(payload, { merge: true });
+    return null;
+  });
+
+// Push notifications for chat messages
 exports.onConversationMessage = functions.firestore
   .document('conversations/{convId}/messages/{msgId}')
   .onCreate(async (snap, context) => {
@@ -414,8 +452,23 @@ exports.onConversationMessage = functions.firestore
     const recipients = participants.filter((uid) => uid && uid !== senderId);
     if (!recipients.length) return null;
 
+    const settingsSnaps = await Promise.all(
+      recipients.map((uid) => db.doc(`user_settings/${uid}`).get()),
+    );
+    const convSettingSnaps = await Promise.all(
+      recipients.map((uid) => db.doc(`users/${uid}/conversations/${convId}`).get()),
+    );
+    const filtered = recipients.filter((uid, idx) => {
+      const settings = settingsSnaps[idx].exists ? settingsSnaps[idx].data() || {} : {};
+      const convSettings = convSettingSnaps[idx].exists ? convSettingSnaps[idx].data() || {} : {};
+      if (settings.pushEnabled === false) return false;
+      if (convSettings.muted === true) return false;
+      return true;
+    });
+    if (!filtered.length) return null;
+
     const tokenSnaps = await Promise.all(
-      recipients.map((uid) =>
+      filtered.map((uid) =>
         db.collection('user_push_tokens').doc(uid).collection('tokens').get(),
       ),
     );
@@ -438,3 +491,4 @@ exports.onConversationMessage = functions.firestore
 
     return null;
   });
+

@@ -834,6 +834,17 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     const list = document.getElementById('navMsgList');
     const badge = document.getElementById('navMsgBadge');
     if (!uid || !list || !badge) return;
+    if (!list.dataset.wired) {
+      list.dataset.wired = '1';
+      list.addEventListener('click', (e) => {
+        const item = e.target.closest('[data-conv]');
+        if (!item) return;
+        const convId = item.dataset.conv;
+        if (!convId) return;
+        e.preventDefault();
+        location.href = `mensajes.html?conv=${encodeURIComponent(convId)}`;
+      });
+    }
     try {
       const snap = await getDocs(
         query(
@@ -878,7 +889,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
             lastAt &&
             item.lastMessage?.senderId !== uid &&
             (!readAt || lastAt.getTime() > readAt.getTime());
-          return `<a class="nav-mini-item ${isUnread ? 'is-unread' : ''}" href="${href}">
+          return `<a class="nav-mini-item ${isUnread ? 'is-unread' : ''}" href="${href}" data-conv="${item.id}">
             <div class="nav-mini-title">${String(title || 'Conversación')}</div>
             ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
           </a>`;
