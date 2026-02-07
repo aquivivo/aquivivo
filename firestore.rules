@@ -652,6 +652,38 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
     }
 
+    /* ===== USER SAVES (private) ===== */
+    match /user_saves/{uid}/collections/{colId} {
+      allow read, create, update, delete: if isAdmin() || isOwner(uid);
+    }
+    match /user_saves/{uid}/items/{saveId} {
+      allow read, create, update, delete: if isAdmin() || isOwner(uid);
+    }
+
+    /* ===== USER ACTIVITY (private) ===== */
+    match /user_activity/{uid}/days/{dayId} {
+      allow read, create, update, delete: if isAdmin() || isOwner(uid);
+    }
+
+    /* ===== USER FOLLOWS ===== */
+    match /user_follows/{id} {
+      allow read: if isAdmin() || (
+        signedIn()
+        && notBlocked()
+        && !isBlocked(request.auth.uid, resource.data.fromUid)
+        && !isBlocked(request.auth.uid, resource.data.toUid)
+      );
+      allow create: if signedIn()
+        && notBlocked()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.toUid is string
+        && request.resource.data.toUid != request.auth.uid
+        && !isBlocked(request.resource.data.fromUid, request.resource.data.toUid)
+        && request.resource.id == request.auth.uid + "__" + request.resource.data.toUid;
+      allow delete: if isAdmin() || (signedIn() && resource.data.fromUid == request.auth.uid);
+      allow update: if false;
+    }
+
     /* ===== USER BLOCKS ===== */
     match /user_blocks/{id} {
       allow read: if isAdmin() || (signedIn() && idHasUid(id, request.auth.uid));

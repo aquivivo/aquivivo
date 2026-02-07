@@ -113,6 +113,7 @@ let CURRENT_USER = null;
 let CURRENT_PROFILE = null;
 let IS_ADMIN = false;
 let IS_SUPPORT = false;
+let PENDING_SHARE = '';
 
 let convoUnsub = null;
 let supportUnsub = null;
@@ -547,6 +548,20 @@ function resetComposer() {
   if (recordHint) recordHint.textContent = '';
   clearReplyMessage();
   clearEditMessage();
+}
+
+function applyPendingShare() {
+  const value = String(PENDING_SHARE || '').trim();
+  if (!value) return false;
+  if (!messageInput || messageInput.disabled) return false;
+  if (String(messageInput.value || '').trim()) return false;
+  messageInput.value = value;
+  messageInput.focus();
+  PENDING_SHARE = '';
+  try {
+    sessionStorage.removeItem('av_pending_share');
+  } catch {}
+  return true;
 }
 
 function renderAttachmentsPreview() {
@@ -1398,6 +1413,7 @@ async function openConversation(id, convo) {
     await markRead(id);
   }
   await applyConversationState(activeConversation);
+  applyPendingShare();
   listenConversationDoc(id);
   const isMember = (activeConversation.participants || []).includes(CURRENT_USER?.uid);
   if (activeConversation.type === 'group' && !isMember) {
@@ -2346,6 +2362,34 @@ async function initFromAuth(user) {
   listenReports();
 
   const params = new URLSearchParams(window.location.search);
+  const share = params.get('share') || params.get('text');
+  if (share) {
+    PENDING_SHARE = String(share || '').trim();
+    if (PENDING_SHARE) {
+      try {
+        sessionStorage.setItem('av_pending_share', PENDING_SHARE);
+      } catch {}
+      if (messagesEmpty) {
+        messagesEmpty.textContent = 'Tienes un mensaje listo para enviar. Selecciona un chat.';
+      }
+    }
+    params.delete('share');
+    params.delete('text');
+    try {
+      const clean = params.toString();
+      history.replaceState({}, '', `${location.pathname}${clean ? `?${clean}` : ''}`);
+    } catch {}
+  } else {
+    try {
+      const stored = sessionStorage.getItem('av_pending_share');
+      if (stored) {
+        PENDING_SHARE = String(stored || '').trim();
+        if (messagesEmpty) {
+          messagesEmpty.textContent = 'Tienes un mensaje listo para enviar. Selecciona un chat.';
+        }
+      }
+    } catch {}
+  }
   const chatUid = params.get('chat');
   const convId = params.get('conv');
   if (convId) {

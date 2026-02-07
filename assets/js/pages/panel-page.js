@@ -789,8 +789,12 @@ const friendCode = $('friendCode');
 const btnCopyFriendCode = $('btnCopyFriendCode');
 const btnNewFriendCode = $('btnNewFriendCode');
 const friendCodeInfo = $('friendCodeInfo');
+const communitySearchAvatar = $('communitySearchAvatar');
+const communitySearchAvatarImg = $('communitySearchAvatarImg');
+const communitySearchAvatarFallback = $('communitySearchAvatarFallback');
 const communitySearchInput = $('communitySearchInput');
 const btnCommunitySearch = $('btnCommunitySearch');
+const btnCommunityClear = $('btnCommunityClear');
 const communitySearchStatus = $('communitySearchStatus');
 const communitySearchResults = $('communitySearchResults');
 const friendCodeSearch = $('friendCodeSearch');
@@ -810,6 +814,7 @@ let activeChatUid = '';
 let activeChatProfile = null;
 const publicProfileCache = new Map();
 let blockedSet = new Set();
+let followingSet = new Set();
 
 function setAvatarMsg(text, bad = false) {
   if (!avatarMsg) return;
@@ -827,6 +832,52 @@ function setCommunitySearchMsg(text, bad = false) {
   if (!communitySearchStatus) return;
   communitySearchStatus.textContent = text || '';
   communitySearchStatus.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+}
+
+function followDocId(fromUid, toUid) {
+  const a = String(fromUid || '').trim();
+  const b = String(toUid || '').trim();
+  return a && b ? `${a}__${b}` : '';
+}
+
+async function loadFollowingSet(myUid) {
+  const uid = String(myUid || '').trim();
+  if (!uid) return new Set();
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'user_follows'), where('fromUid', '==', uid), limit(500)),
+    );
+    followingSet = new Set();
+    snap.forEach((docSnap) => {
+      const data = docSnap.data() || {};
+      const toUid = String(data.toUid || '').trim();
+      if (toUid) followingSet.add(toUid);
+    });
+    return new Set(followingSet);
+  } catch (e) {
+    console.warn('load following set failed', e);
+    followingSet = new Set();
+    return new Set();
+  }
+}
+
+async function setFollowing(myUid, targetUid, follow) {
+  const from = String(myUid || '').trim();
+  const to = String(targetUid || '').trim();
+  const id = followDocId(from, to);
+  if (!id || from === to) return false;
+  if (follow) {
+    await setDoc(
+      doc(db, 'user_follows', id),
+      { fromUid: from, toUid: to, createdAt: serverTimestamp() },
+      { merge: true },
+    );
+    followingSet.add(to);
+    return true;
+  }
+  await deleteDoc(doc(db, 'user_follows', id));
+  followingSet.delete(to);
+  return false;
 }
 
 function setUserReportMsg(text, bad = false) {
@@ -1054,6 +1105,24 @@ function friendAvatarLetter(name) {
   const parts = safe.split(/\s+/).filter(Boolean);
   const letters = parts.map((p) => p[0]).join('').slice(0, 2).toUpperCase();
   return letters || 'AM';
+}
+
+function renderCommunitySearchAvatar(url, name) {
+  if (!communitySearchAvatar) return;
+  const safeName = String(name || '').trim();
+  if (communitySearchAvatarFallback)
+    communitySearchAvatarFallback.textContent = friendAvatarLetter(safeName || 'Usuario');
+
+  const imgUrl = String(url || '').trim();
+  if (communitySearchAvatarImg) {
+    if (imgUrl) {
+      communitySearchAvatarImg.src = imgUrl;
+      communitySearchAvatar.classList.add('hasImage');
+    } else {
+      communitySearchAvatarImg.removeAttribute('src');
+      communitySearchAvatar.classList.remove('hasImage');
+    }
+  }
 }
 
 function renderFriendRequests(items) {
@@ -1453,6 +1522,13 @@ function renderSearchResults(items, myUid) {
         <a class="btn-white-outline" href="${profileHref}">Ver perfil</a>
         ${
           item.uid !== myUid
+            ? `<button class="btn-white-outline" type="button" data-follow="${item.uid}" data-following="${
+                followingSet.has(item.uid) ? '1' : '0'
+              }">${followingSet.has(item.uid) ? 'Siguiendo' : 'Seguir'}</button>`
+            : ''
+        }
+        ${
+          item.uid !== myUid
             ? `<button class="btn-white-outline" type="button" data-add="${item.uid}">Agregar</button>`
             : ''
         }
@@ -1508,6 +1584,15 @@ async function initCommunity(viewUid, viewDoc, email, isPreview) {
   if (!friendCode) return;
   const profile = await ensurePublicProfile(viewUid, viewDoc, email);
   renderFriendCode(profile);
+  renderCommunitySearchAvatar(
+    profile?.photoURL || '',
+    profile?.displayName || viewDoc?.displayName || viewDoc?.name || '',
+  );
+  if (communitySearchInput) {
+    const displayName = String(profile?.displayName || viewDoc?.displayName || viewDoc?.name || '').trim();
+    const first = displayName ? displayName.split(/\s+/)[0] : '';
+    communitySearchInput.placeholder = first ? `¿A quién buscas, ${first}?` : 'Busca por nombre o @usuario…';
+  }
 
   if (isPreview) {
     [
@@ -1517,6 +1602,7 @@ async function initCommunity(viewUid, viewDoc, email, isPreview) {
       btnNewFriendCode,
       communitySearchInput,
       btnCommunitySearch,
+      btnCommunityClear,
       chatInput,
       btnSendMessage,
     ].forEach((el) => {
@@ -1526,6 +1612,8 @@ async function initCommunity(viewUid, viewDoc, email, isPreview) {
     if (chatHint) chatHint.textContent = 'Vista previa (admin)';
     return;
   }
+
+  await loadFollowingSet(viewUid);
 
   if (btnCopyFriendCode && !btnCopyFriendCode.dataset.wired) {
     btnCopyFriendCode.dataset.wired = '1';
@@ -1566,18 +1654,72 @@ async function initCommunity(viewUid, viewDoc, email, isPreview) {
       await searchPublicUsers(viewUid, communitySearchInput?.value || '');
     });
   }
+  if (btnCommunityClear && !btnCommunityClear.dataset.wired) {
+    btnCommunityClear.dataset.wired = '1';
+    btnCommunityClear.addEventListener('click', () => {
+      if (communitySearchInput) communitySearchInput.value = '';
+      if (communitySearchResults) communitySearchResults.innerHTML = '';
+      setCommunitySearchMsg('');
+      communitySearchInput?.focus();
+    });
+  }
   if (communitySearchInput && !communitySearchInput.dataset.wired) {
     communitySearchInput.dataset.wired = '1';
+    let searchTimer = null;
     communitySearchInput.addEventListener('keydown', async (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
         await searchPublicUsers(viewUid, communitySearchInput.value);
       }
     });
+    communitySearchInput.addEventListener('input', () => {
+      if (searchTimer) clearTimeout(searchTimer);
+      const value = String(communitySearchInput.value || '').trim();
+      if (!value) {
+        if (communitySearchResults) communitySearchResults.innerHTML = '';
+        setCommunitySearchMsg('');
+        return;
+      }
+      if (value.length < 2) {
+        setCommunitySearchMsg('Escribe 2+ letras...');
+        return;
+      }
+      setCommunitySearchMsg('Buscando...');
+      searchTimer = setTimeout(() => {
+        searchPublicUsers(viewUid, value).catch(() => {});
+      }, 360);
+    });
   }
   if (communitySearchResults && !communitySearchResults.dataset.wired) {
     communitySearchResults.dataset.wired = '1';
     communitySearchResults.addEventListener('click', async (e) => {
+      const followBtn = e.target?.closest?.('button[data-follow]');
+      if (followBtn) {
+        const targetUid = followBtn.getAttribute('data-follow');
+        if (!targetUid || targetUid === viewUid) return;
+        if (blockedSet.has(targetUid)) {
+          setCommunitySearchMsg('Usuario bloqueado.', true);
+          return;
+        }
+        const isFollowing =
+          followBtn.getAttribute('data-following') === '1' || followingSet.has(targetUid);
+        const next = !isFollowing;
+        try {
+          followBtn.disabled = true;
+          await setFollowing(viewUid, targetUid, next);
+          followBtn.setAttribute('data-following', next ? '1' : '0');
+          followBtn.textContent = next ? 'Siguiendo' : 'Seguir';
+          setCommunitySearchMsg(next ? 'Siguiendo ✅' : 'Listo ✅');
+          setTimeout(() => setCommunitySearchMsg(''), 1500);
+        } catch (err) {
+          console.warn('toggle follow failed', err);
+          setCommunitySearchMsg('No se pudo actualizar.', true);
+        } finally {
+          followBtn.disabled = false;
+        }
+        return;
+      }
+
       const btn = e.target?.closest?.('button[data-add]');
       if (!btn) return;
       const targetUid = btn.getAttribute('data-add');

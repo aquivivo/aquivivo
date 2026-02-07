@@ -184,9 +184,38 @@
                   <div id="friendCodeInfo" class="hintSmall" style="margin-top: 6px"></div>
                   <div class="hr"></div>
                   <div class="subtitle" style="margin: 0">Buscar personas</div>
-                  <div class="metaRow" style="margin-top: 8px; gap: 10px; flex-wrap: wrap">
-                    <input id="communitySearchInput" class="input" placeholder="Nombre o apellido" style="max-width: 220px" />
-                    <button id="btnCommunitySearch" class="btn-white-outline" type="button">Buscar</button>
+                  <div class="peopleSearchBar" style="margin-top: 10px">
+                    <div class="ps-avatar" id="communitySearchAvatar" aria-hidden="true">
+                      <img id="communitySearchAvatarImg" alt="" loading="lazy" />
+                      <span id="communitySearchAvatarFallback">U</span>
+                    </div>
+                    <input
+                      id="communitySearchInput"
+                      class="ps-input"
+                      placeholder="Busca por nombre o @usuario…"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                    <div class="ps-actions">
+                      <button
+                        id="btnCommunityClear"
+                        class="ps-icon"
+                        type="button"
+                        aria-label="Limpiar"
+                        title="Limpiar"
+                      >
+                        ×
+                      </button>
+                      <button
+                        id="btnCommunitySearch"
+                        class="ps-icon ps-icon--primary"
+                        type="button"
+                        aria-label="Buscar"
+                        title="Buscar"
+                      >
+                        🔎
+                      </button>
+                    </div>
                   </div>
                   <div id="communitySearchStatus" class="hintSmall" style="margin-top: 6px"></div>
                   <div id="communitySearchResults" class="friendList" style="margin-top: 8px"></div>

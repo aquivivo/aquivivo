@@ -16,6 +16,7 @@ import {
   doc,
   getDocs,
   getDoc,
+  increment,
   limit,
   orderBy,
   query,
@@ -178,6 +179,30 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       });
     } catch (e) {
       console.warn('[page_views] log failed', e);
+    }
+  }
+
+  async function trackDailyActivity(user, isAdmin) {
+    if (!user?.uid) return;
+    if (isAdmin) return;
+    const dayKey = new Date().toISOString().slice(0, 10);
+    const sessionKey = `av_activity_visit_${dayKey}`;
+    if (sessionStorage.getItem(sessionKey) === '1') return;
+    sessionStorage.setItem(sessionKey, '1');
+    try {
+      await setDoc(
+        doc(db, 'user_activity', user.uid, 'days', dayKey),
+        {
+          uid: user.uid,
+          dayKey,
+          visits: increment(1),
+          lastVisitAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    } catch (e) {
+      console.warn('[activity] track failed', e);
     }
   }
 
@@ -1195,6 +1220,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
 
     if (user) await loadPopupSettings(true);
     await logPageView(user, isAdmin);
+    await trackDailyActivity(user, isAdmin);
   });
 
   const trialReady = () => {
