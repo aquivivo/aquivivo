@@ -59,9 +59,20 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
   const NO_LOGIN_MS = 2 * 30 * 24 * 60 * 60 * 1000;
   const TRIAL_INTENT_KEY = 'av_trial_intent';
   const POPUP_SEEN_PREFIX = 'av_popup_seen_';
+  const ASSET_VERSION = '20260207';
 
   let CURRENT_USER = null;
   let CURRENT_DOC = null;
+
+  function bustStylesCache() {
+    const link = document.querySelector('link[rel="stylesheet"][href*="assets/css/styles.css"]');
+    if (!link) return;
+    const href = String(link.getAttribute('href') || '');
+    if (!href.includes('assets/css/styles.css')) return;
+    if (href.includes('v=')) return;
+    const sep = href.includes('?') ? '&' : '?';
+    link.setAttribute('href', `${href}${sep}v=${ASSET_VERSION}`);
+  }
 
   function toDateMaybe(v) {
     if (!v) return null;
@@ -708,21 +719,8 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
 
   function injectSidePanel() {
     const page = document.body?.dataset?.page || '';
-    const allowed = new Set([
-      'panel',
-      'buscar',
-      'mensajes',
-      'notificaciones',
-      'pagos',
-      'recompensas',
-      'referidos',
-      'ajustes',
-      'ayuda',
-      'esadmin',
-      'admin-wizard',
-      'admin-select',
-    ]);
-    if (!allowed.has(page)) return;
+    const blocked = new Set(['index', 'login']);
+    if (!page || blocked.has(page)) return;
     const existingPanel = document.getElementById('sidePanel');
     if (existingPanel) {
       document.body.classList.add('with-side-panel');
@@ -753,11 +751,66 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     if (header) header.insertAdjacentElement('afterend', panel);
     else document.body.insertAdjacentElement('afterbegin', panel);
 
-    const activeKey = page;
+    const activeAliases = {
+      review: 'practicar',
+      flashcards: 'practicar',
+      ejercicio: 'practicar',
+      course: 'cursos',
+      lessonpage: 'cursos',
+      lesson: 'cursos',
+    };
+    const activeKey = activeAliases[page] || page;
     panel.querySelectorAll('a[data-page]').forEach((link) => {
       if (link.dataset.page === activeKey) {
         link.classList.add('is-active');
       }
+    });
+  }
+
+  function upgradeInfoCardsToAccordions() {
+    const page = document.body?.dataset?.page || '';
+    const pages = new Set(['terms', 'privacy', 'returns', 'contacto']);
+    if (!pages.has(page)) return;
+
+    const container = document.querySelector('main.page .container');
+    if (!container) return;
+
+    const children = Array.from(container.children);
+    const cardSections = children.filter(
+      (el) => el?.tagName === 'SECTION' && el.classList?.contains('card'),
+    );
+    if (!cardSections.length) return;
+
+    cardSections.forEach((section, idx) => {
+      if (!section || section.dataset.accordionUpgraded === '1') return;
+      section.dataset.accordionUpgraded = '1';
+
+      const titleEl = section.querySelector('.sectionTitle');
+      if (!titleEl) return;
+
+      const details = document.createElement('details');
+      details.className = section.className || 'card';
+      details.classList.add('detailsCard');
+      if (section.id) details.id = section.id;
+      if (section.getAttribute('style'))
+        details.setAttribute('style', section.getAttribute('style'));
+      if (idx === 0) details.open = true;
+
+      const summary = document.createElement('summary');
+      summary.className = 'sectionTitle';
+      summary.textContent = String(titleEl.textContent || '').trim() || 'Detalles';
+      details.appendChild(summary);
+
+      titleEl.remove();
+
+      const bodyEl = section.querySelector('.muted');
+      if (bodyEl) bodyEl.classList.add('detailsBody');
+
+      while (section.firstChild) {
+        details.appendChild(section.firstChild);
+      }
+
+      section.replaceWith(details);
     });
   }
 
@@ -1168,8 +1221,11 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     });
   }
 
+  bustStylesCache();
   const mount = ensureMount();
   const footerMount = ensureFooterMount();
+  injectSidePanel();
+  upgradeInfoCardsToAccordions();
 
   // Render immediately + re-render on auth changes
   onAuthStateChanged(auth, async (user) => {
@@ -1178,8 +1234,33 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     let isAdmin = false;
     if (user?.uid) {
       try {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        const data = snap.exists() ? snap.data() : {};
+        const userRef = doc(db, 'users', user.uid);
+        const snap = await getDoc(userRef);
+
+        let data = snap.exists() ? snap.data() || {} : {};
+
+        // Ensure the user doc exists (needed by Firestore rules: notBlocked()/hasUserDoc()).
+        if (!snap.exists()) {
+          const email = String(user?.email || '').trim();
+          if (email) {
+            const payload = {
+              email,
+              emailLower: email.toLowerCase(),
+              admin: false,
+              blocked: false,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              lastLoginAt: serverTimestamp(),
+            };
+            try {
+              await setDoc(userRef, payload, { merge: true });
+              data = payload;
+            } catch (e) {
+              console.warn('[layout] failed to create user doc', e);
+            }
+          }
+        }
+
         CURRENT_DOC = data;
         isAdmin =
           String(data?.role || 'user') === 'admin' ||

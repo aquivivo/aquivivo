@@ -8,8 +8,8 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css" />
-    <script src="assets/js/layout.js" type="module"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260207" />
+    <script src="assets/js/layout.js?v=20260207" type="module"></script>
   </head>
 
   <body data-page="services">
@@ -60,6 +60,30 @@
           </div>
         </div>
 
+        <div class="card" id="paypalCard" style="margin-bottom: 18px">
+          <div class="sectionTitle" style="margin-top: 0">🅿️ PayPal</div>
+          <div class="muted">
+            Si prefieres PayPal, puedes pagar aquí (moneda: <b>PLN</b>).
+            <div class="hintSmall" style="margin-top: 6px">
+              Para habilitar el botón, marca la casilla de aceptación de arriba.
+            </div>
+          </div>
+
+          <div id="paypalHostedWrap" class="paypal-hosted-wrap" style="margin-top: 12px">
+            <div
+              id="paypal-container-JTQ246XQYF85C"
+              class="paypal-hosted"
+              data-paypal-hosted-button-id="JTQ246XQYF85C"
+              aria-label="Pagar con PayPal"
+            ></div>
+            <div class="paypal-hosted-overlay" id="paypalHostedOverlay" aria-hidden="true">
+              Marca la casilla de aceptación para habilitar PayPal.
+            </div>
+          </div>
+
+          <div class="hintSmall" id="paypalStatus" style="margin-top: 8px; display: none"></div>
+        </div>
+
         <section id="planes" class="services-section">
           <h2 class="sectionTitle" style="margin-top: 0">📌 Planes</h2>
           <div id="servicesPlansGrid" class="services-grid"></div>
@@ -90,6 +114,6 @@
       </div>
     </main>
 
-    <script type="module" src="assets/js/pages/services-page.js"></script>
+    <script type="module" src="assets/js/pages/services-page.js?v=20260207"></script>
   </body>
 </html>

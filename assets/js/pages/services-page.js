@@ -12,6 +12,7 @@ import {
   where,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+import { renderPayPalHostedButtons } from '../paypal-hosted-buttons.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -34,6 +35,68 @@ function requireCheckoutConsent() {
   checkbox.focus?.();
   alert('Antes de comprar, marca la casilla de aceptación.');
   return false;
+}
+
+const PAYPAL_CLIENT_ID =
+  'BAAtx6GPLaLeRMKMgh-3A28oPN2OTGftJ7XV3ceTcK93ioFgfgpqLSYTmvquATwDLR0NG2-1ngqa1_rP4';
+
+let paypalRendered = false;
+
+function setPayPalStatus(msg) {
+  const status = $('paypalStatus');
+  if (!status) return;
+  if (!msg) {
+    status.style.display = 'none';
+    status.textContent = '';
+    return;
+  }
+  status.style.display = 'block';
+  status.textContent = msg;
+}
+
+async function ensurePayPalRendered() {
+  if (paypalRendered) return;
+  paypalRendered = true;
+  setPayPalStatus('Cargando PayPal…');
+  try {
+    await renderPayPalHostedButtons({
+      clientId: PAYPAL_CLIENT_ID,
+      currency: 'PLN',
+      disableFunding: 'venmo',
+    });
+    setPayPalStatus('');
+  } catch (e) {
+    paypalRendered = false;
+    console.error('[paypal]', e);
+    setPayPalStatus('No se pudo cargar PayPal. Intenta recargar la página.');
+  }
+}
+
+function updatePayPalGate() {
+  const wrap = $('paypalHostedWrap');
+  const overlay = $('paypalHostedOverlay');
+  if (!wrap || !overlay) return;
+
+  const checkbox = $('checkoutConsent');
+  const enabled = !checkbox || checkbox.checked === true;
+
+  wrap.classList.toggle('is-enabled', enabled);
+  overlay.setAttribute('aria-hidden', enabled ? 'true' : 'false');
+
+  if (enabled) ensurePayPalRendered();
+}
+
+function initPayPal() {
+  const wrap = $('paypalHostedWrap');
+  if (!wrap) return;
+
+  const checkbox = $('checkoutConsent');
+  if (checkbox && !checkbox.dataset.paypalWired) {
+    checkbox.dataset.paypalWired = '1';
+    checkbox.addEventListener('change', updatePayPalGate);
+  }
+
+  updatePayPalGate();
 }
 
 function renderCard(svc) {
@@ -345,6 +408,9 @@ function init() {
 
   // Also load immediately (covers fast public access + avoids blank screen)
   loadServices();
+
+  // Optional: PayPal hosted button (render only after consent is checked)
+  initPayPal();
 }
 
 init();

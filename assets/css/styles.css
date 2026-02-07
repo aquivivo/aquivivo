@@ -948,8 +948,15 @@ body[data-page='index'] main.page {
 }
 
 /* Compact density on internal pages (less scrolling, still readable) */
+body:not([data-page='index']) main.page {
+  padding: 24px 0 56px;
+}
+body:not([data-page='index']) .page .container > * + * {
+  margin-top: 12px;
+}
 body:not([data-page='index']) .card {
-  padding: 14px 14px;
+  padding: 9px 9px;
+  border-radius: 16px;
 }
 .sectionTitle {
   margin: 18px 0 10px;
@@ -957,7 +964,7 @@ body:not([data-page='index']) .card {
   letter-spacing: 0.2px;
 }
 body:not([data-page='index']) .sectionTitle {
-  margin: 12px 0 8px;
+  margin: 10px 0 6px;
 }
 .subtitle,
 .hintSmall,
@@ -992,6 +999,66 @@ body:not([data-page='index']) .card .muted li {
   margin: 4px 0;
 }
 
+/* Reduce excessive inline spacing on internal pages */
+body:not([data-page='index']) main.page .container .card[style*='margin-top'] {
+  margin-top: 8px !important;
+}
+body:not([data-page='index']) main.page .container .card[style*='padding'] {
+  padding: 9px 9px !important;
+}
+
+/* Card accordion */
+.detailsCard > summary.sectionTitle {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+.detailsCard > summary.sectionTitle::-webkit-details-marker {
+  display: none;
+}
+.detailsCard > summary.sectionTitle::after {
+  content: '+';
+  margin-left: auto;
+  opacity: 0.85;
+  font-size: 16px;
+}
+.detailsCard[open] > summary.sectionTitle::after {
+  content: '-';
+}
+.detailsCard > .detailsBody {
+  margin-top: 8px;
+}
+
+/* PayPal hosted buttons (services page) */
+.paypal-hosted-wrap {
+  position: relative;
+  border-radius: 14px;
+}
+.paypal-hosted {
+  min-height: 48px;
+}
+.paypal-hosted-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  text-align: center;
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.92);
+}
+.paypal-hosted-wrap.is-enabled .paypal-hosted-overlay {
+  display: none;
+}
+
 /* Pills & meta rows */
 .metaRow {
   display: flex;
@@ -1022,8 +1089,8 @@ body:not([data-page='index']) .card .muted li {
   box-shadow: var(--shadow);
 }
 body:not([data-page='index']) .heroBanner {
-  margin: 6px 0 12px;
-  padding: 16px 16px;
+  margin: 3px 0 8px;
+  padding: 12px 12px;
 }
 .heroBanner.hero-main {
   padding: 28px 22px;
@@ -1645,7 +1712,14 @@ body.with-side-panel[data-page='recompensas'] .heroBanner,
 body.with-side-panel[data-page='referidos'] .heroBanner,
 body.with-side-panel[data-page='ayuda'] .heroBanner,
 body.with-side-panel[data-page='mensajes'] .heroBanner,
-body.with-side-panel[data-page='notificaciones'] .heroBanner {
+body.with-side-panel[data-page='notificaciones'] .heroBanner,
+body.with-side-panel[data-page='review'] .heroBanner,
+body.with-side-panel[data-page='flashcards'] .heroBanner,
+body.with-side-panel[data-page='terms'] .heroBanner,
+body.with-side-panel[data-page='privacy'] .heroBanner,
+body.with-side-panel[data-page='returns'] .heroBanner,
+body.with-side-panel[data-page='contacto'] .heroBanner,
+body.with-side-panel[data-page='services'] .heroBanner {
   margin: 2px 0 12px;
   padding: 0;
   background: transparent;
@@ -1661,7 +1735,14 @@ body.with-side-panel[data-page='recompensas'] .heroBanner .heroTitleRow,
 body.with-side-panel[data-page='referidos'] .heroBanner .heroTitleRow,
 body.with-side-panel[data-page='ayuda'] .heroBanner .heroTitleRow,
 body.with-side-panel[data-page='mensajes'] .heroBanner .heroTitleRow,
-body.with-side-panel[data-page='notificaciones'] .heroBanner .heroTitleRow {
+body.with-side-panel[data-page='notificaciones'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='review'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='flashcards'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='terms'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='privacy'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='returns'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='contacto'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='services'] .heroBanner .heroTitleRow {
   align-items: center;
   gap: 10px;
 }
@@ -1673,7 +1754,14 @@ body.with-side-panel[data-page='recompensas'] .heroBanner .heroIcon:not(.heroIco
 body.with-side-panel[data-page='referidos'] .heroBanner .heroIcon:not(.heroIcon--avatar),
 body.with-side-panel[data-page='ayuda'] .heroBanner .heroIcon:not(.heroIcon--avatar),
 body.with-side-panel[data-page='mensajes'] .heroBanner .heroIcon:not(.heroIcon--avatar),
-body.with-side-panel[data-page='notificaciones'] .heroBanner .heroIcon:not(.heroIcon--avatar) {
+body.with-side-panel[data-page='notificaciones'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='review'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='flashcards'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='terms'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='privacy'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='returns'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='contacto'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='services'] .heroBanner .heroIcon:not(.heroIcon--avatar) {
   font-size: 22px;
   line-height: 1;
   opacity: 0.95;
@@ -1694,7 +1782,21 @@ body.with-side-panel[data-page='ayuda'] .heroBanner .heroTitleRow .subtitle,
 body.with-side-panel[data-page='mensajes'] .heroBanner .heroTitleRow h1,
 body.with-side-panel[data-page='mensajes'] .heroBanner .heroTitleRow .subtitle,
 body.with-side-panel[data-page='notificaciones'] .heroBanner .heroTitleRow h1,
-body.with-side-panel[data-page='notificaciones'] .heroBanner .heroTitleRow .subtitle {
+body.with-side-panel[data-page='notificaciones'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='review'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='review'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='flashcards'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='flashcards'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='terms'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='terms'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='privacy'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='privacy'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='returns'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='returns'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='contacto'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='contacto'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='services'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='services'] .heroBanner .heroTitleRow .subtitle {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -2901,6 +3003,18 @@ a:hover {
 .services-card {
   padding: 28px;
   min-height: 100%;
+}
+
+/* Compact services grid on internal pages (less scroll) */
+body:not([data-page='index']) .services-section + .services-section {
+  margin-top: 24px;
+}
+body:not([data-page='index']) .services-grid {
+  margin-top: 16px;
+  gap: 18px;
+}
+body:not([data-page='index']) .services-card {
+  padding: 16px;
 }
 .services-card .sectionTitle {
   display: flex;
@@ -4340,7 +4454,7 @@ select:focus {
 .profile-page .container.profile-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 18px;
+  gap: 14px;
   align-items: start;
 }
 
@@ -4450,12 +4564,12 @@ select:focus {
 .profile-side {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .profileHeader {
   display: flex;
-  gap: 18px;
+  gap: 14px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -4505,12 +4619,12 @@ select:focus {
 .profileStats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .statCard {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(6, 18, 44, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 10px 12px;
@@ -4528,19 +4642,19 @@ select:focus {
 }
 
 .profileActions {
-  margin-top: 16px;
+  margin-top: 12px;
   gap: 10px;
   flex-wrap: wrap;
 }
 
 .profileCover {
   position: relative;
-  height: 168px;
+  height: 132px;
   border-radius: 18px;
   overflow: hidden;
   background: linear-gradient(120deg, rgba(0, 56, 147, 0.92), rgba(252, 209, 22, 0.55));
   border: 1px solid rgba(255, 255, 255, 0.12);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .profileCover img {
@@ -4578,7 +4692,7 @@ select:focus {
 }
 
 .profile-stories {
-  padding: 16px 18px;
+  padding: 14px 14px;
 }
 
 .storiesHead {
@@ -5129,7 +5243,7 @@ select:focus {
 }
 
 .profile-hero {
-  padding: 18px;
+  padding: 14px;
 }
 
 /* === Side panel (user pages) === */
@@ -5137,8 +5251,8 @@ select:focus {
   margin-left: 240px;
   width: calc(100% - 240px);
   max-width: calc(100% - 240px);
-  padding-left: 56px;
-  padding-right: 56px;
+  padding-left: 28px;
+  padding-right: 28px;
 }
 .with-side-panel .site-footer {
   padding-left: 240px;
