@@ -16,12 +16,16 @@
   <body data-page="profile" class="with-side-panel">
     <div id="appHeader"></div>
     <aside id="sidePanel" class="side-panel">
-      <a href="index.html" data-page="inicio">🏠 Inicio</a>
-      <a href="espanel.html#cursos" data-page="cursos">📚 Cursos</a>
-      <a href="review.html" data-page="practicar">🔁 Practicar</a>
-      <a href="recompensas.html" data-page="recompensas">🏆 Logros</a>
-      <a href="mensajes.html" data-page="mensajes">💬 Comunidad</a>
+      <a href="espanel.html" data-page="panel">📒 Libreta</a>
+      <a href="buscar.html" data-page="buscar">🔎 Buscar</a>
       <a href="perfil.html" data-page="profile" class="is-active">👤 Perfil</a>
+      <a href="espanel.html#cursos" data-page="cursos">📚 Mis cursos</a>
+      <a href="review.html" data-page="practicar">🔁 Practicar</a>
+      <a href="recompensas.html" data-page="recompensas">🏆 Recompensas</a>
+      <a href="referidos.html" data-page="referidos">🤝 Recomendar</a>
+      <a href="ajustes.html" data-page="ajustes">⚙️ Ajustes</a>
+      <a href="pagos.html" data-page="pagos">💳 Pagos</a>
+      <a href="ayuda.html" data-page="ayuda">🆘 Ayuda</a>
     </aside>
 
     <main class="page profile-page">
@@ -40,9 +44,18 @@
             </div>
 
             <div class="profileHeader">
-              <div class="heroIcon heroIcon--avatar" id="profileAvatarWrap">
-                <img id="profileAvatarImg" alt="Foto de perfil" />
-                <span id="profileAvatarFallback">USR</span>
+              <div class="profileAvatarStack">
+                <div class="heroIcon heroIcon--avatar" id="profileAvatarWrap">
+                  <img id="profileAvatarImg" alt="Foto de perfil" />
+                  <span id="profileAvatarFallback">USR</span>
+                </div>
+                <div class="profileAvatarActions">
+                  <input id="avatarInput" type="file" accept="image/*" hidden />
+                  <button class="btn-white-outline" id="avatarUploadBtn" type="button">
+                    Cambiar foto
+                  </button>
+                  <div class="hintSmall" id="avatarUploadHint"></div>
+                </div>
               </div>
               <div class="profileHeaderInfo">
                 <h1 class="glow-text" id="profileName" style="margin: 0; font-size: 36px">
@@ -81,6 +94,71 @@
               <a class="btn-white-outline" href="espanel.html">Volver</a>
               <span class="hintSmall" id="profileMsg"></span>
             </div>
+          </div>
+
+          <div class="card">
+            <div class="sectionTitle" style="margin-top: 0">Comunidad</div>
+            <div class="social-stat">
+              <span>Amigos</span>
+              <strong id="friendsCount">0</strong>
+            </div>
+            <div class="social-stat">
+              <span>Seguidores</span>
+              <strong id="followersCount">0</strong>
+            </div>
+            <div class="social-stat">
+              <span>Siguiendo</span>
+              <strong id="followingCount">0</strong>
+            </div>
+            <div class="sectionTitle" style="margin-top: 16px">Buscar personas</div>
+            <div class="peopleSearchBar" style="margin-top: 10px">
+              <div class="ps-avatar" id="profileSearchAvatar" aria-hidden="true">
+                <img id="profileSearchAvatarImg" alt="" loading="lazy" />
+                <span id="profileSearchAvatarFallback">U</span>
+              </div>
+              <input
+                id="profileSearchInput"
+                class="ps-input"
+                placeholder="Busca por nombre o @usuario..."
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <div class="ps-actions">
+                <button
+                  id="btnProfileSearchClear"
+                  class="ps-icon"
+                  type="button"
+                  aria-label="Limpiar"
+                  title="Limpiar"
+                >
+                  &times;
+                </button>
+                <button
+                  id="btnProfileSearch"
+                  class="ps-icon ps-icon--primary"
+                  type="button"
+                  aria-label="Buscar"
+                  title="Buscar"
+                >
+                  &#128269;
+                </button>
+              </div>
+            </div>
+            <div id="profileSearchStatus" class="hintSmall" style="margin-top: 6px"></div>
+            <div id="profileSearchResults" class="friendList" style="margin-top: 8px"></div>
+            <div class="sectionTitle" style="margin-top: 16px">Últimas reacciones</div>
+            <div class="muted" id="recentReactions">Sin reacciones aún.</div>
+            <div class="sectionTitle" style="margin-top: 16px">Sugerencias</div>
+            <div class="friendList" id="suggestionsList"></div>
+            <div class="metaRow" style="margin-top: 12px">
+              <a class="btn-yellow" id="inviteFriendsBtn" href="referidos.html">Invitar amigos</a>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="sectionTitle" style="margin-top: 0">Invitaciones</div>
+            <div class="muted" id="invitesHint">No tienes invitaciones pendientes.</div>
+            <div class="friendList" id="invitesList" style="margin-top: 10px"></div>
           </div>
 
           <div class="card profile-stories" id="storiesCard">
@@ -208,162 +286,13 @@
               <div class="hintSmall" id="activitySummary" style="margin-top: 10px"></div>
             </div>
 
-            <div id="profileEditSection">
-              <div class="card">
-                <div class="sectionTitle" style="margin-top: 0">Datos básicos</div>
-                <div class="profile-basic">
-                  <div class="profile-avatar-edit">
-                    <div class="heroIcon heroIcon--avatar heroIcon--lg" id="profileAvatarEdit">
-                      <img id="profileAvatarEditImg" alt="Avatar" />
-                      <span id="profileAvatarEditFallback">USR</span>
-                    </div>
-                    <input id="avatarInput" type="file" accept="image/*" hidden />
-                    <button class="btn-white-outline" id="avatarUploadBtn" type="button">
-                      Cambiar foto
-                    </button>
-                    <div class="hintSmall" id="avatarUploadHint"></div>
-                  </div>
-                  <div class="profile-basic-fields">
-                    <div class="info-field">
-                      <label for="basicName">Nombre visible</label>
-                      <input id="basicName" class="input" type="text" placeholder="Tu nombre" />
-                    </div>
-                    <div class="info-field">
-                      <label for="basicHandle">Usuario (login)</label>
-                      <input id="basicHandle" class="input" type="text" placeholder="tu_login" />
-                      <div class="hintSmall">
-                        Solo letras, números, guion y punto. Este usuario sirve para iniciar sesión.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="metaRow" style="margin-top: 12px">
-                  <button class="btn-yellow" id="basicSaveBtn" type="button">Guardar</button>
-                  <span class="hintSmall" id="basicSaveMsg"></span>
-                </div>
+            <div class="card" id="profileEditHintCard" style="display: none">
+              <div class="sectionTitle" style="margin-top: 0">Editar perfil</div>
+              <div class="muted">
+                La edición de tu información, privacidad y preferencias está en Ajustes.
               </div>
-
-              <div class="card">
-                <div class="sectionTitle" style="margin-top: 0">Info / Sobre mí</div>
-                <div class="info-grid">
-                  <div class="info-field">
-                    <label for="infoWhy">¿Por qué aprendo polaco?</label>
-                    <textarea
-                      id="infoWhy"
-                      class="input"
-                      rows="3"
-                      placeholder="Comparte tu motivo..."
-                    ></textarea>
-                  </div>
-                  <div class="info-field">
-                    <label for="infoHard">¿Qué me cuesta más?</label>
-                    <textarea
-                      id="infoHard"
-                      class="input"
-                      rows="3"
-                      placeholder="Lo que se te hace difícil..."
-                    ></textarea>
-                  </div>
-                  <div class="info-field">
-                    <label for="infoGoal">Mi meta</label>
-                    <textarea
-                      id="infoGoal"
-                      class="input"
-                      rows="3"
-                      placeholder="Tu objetivo principal..."
-                    ></textarea>
-                  </div>
-                  <div class="info-field">
-                    <label for="infoLocation">Ubicación</label>
-                    <input
-                      id="infoLocation"
-                      class="input"
-                      type="text"
-                      placeholder="Ciudad, País"
-                    />
-                  </div>
-                  <div class="info-field">
-                    <label for="infoWebsite">Sitio web / Instagram</label>
-                    <input
-                      id="infoWebsite"
-                      class="input"
-                      type="url"
-                      placeholder="https://... o @usuario"
-                    />
-                    <div class="hintSmall">Puedes poner un link o tu @usuario.</div>
-                  </div>
-                  <div class="info-field">
-                    <label for="infoLanguages">Idiomas</label>
-                    <input
-                      id="infoLanguages"
-                      class="input"
-                      type="text"
-                      placeholder="es, pl, en..."
-                    />
-                  </div>
-                  <div class="info-field">
-                    <label for="infoInterests">Intereses</label>
-                    <input
-                      id="infoInterests"
-                      class="input"
-                      type="text"
-                      placeholder="Viajes, cultura, música..."
-                    />
-                  </div>
-                </div>
-                <div class="metaRow" style="margin-top: 12px">
-                  <button class="btn-yellow" id="infoSaveBtn" type="button">Guardar</button>
-                  <span class="hintSmall" id="infoSaveMsg"></span>
-                </div>
-              </div>
-
-              <div class="card">
-                <div class="sectionTitle" style="margin-top: 0">Privacidad</div>
-                <div class="privacy-grid">
-                  <div class="privacy-item">
-                    <label for="privacyPosts">Visibilidad de publicaciones</label>
-                    <select id="privacyPosts" class="select">
-                      <option value="public">Públicas</option>
-                      <option value="friends">Solo amigos</option>
-                      <option value="private">Solo yo</option>
-                    </select>
-                  </div>
-                  <div class="privacy-item">
-                    <label for="privacyRewards">Recompensas visibles</label>
-                    <select id="privacyRewards" class="select">
-                      <option value="public">Sí</option>
-                      <option value="private">Ocultas</option>
-                    </select>
-                  </div>
-                  <div class="privacy-item">
-                    <label for="privacyStatus">Estado visible</label>
-                    <select id="privacyStatus" class="select">
-                      <option value="public">Siempre</option>
-                      <option value="private">Solo yo</option>
-                    </select>
-                  </div>
-                  <div class="privacy-item">
-                    <label for="privacyFriendReq">Solicitudes de amistad</label>
-                    <select id="privacyFriendReq" class="select">
-                      <option value="true">Permitir</option>
-                      <option value="false">No permitir</option>
-                    </select>
-                  </div>
-                  <div class="privacy-item">
-                    <label for="privacyMessages">Mensajes directos</label>
-                    <select id="privacyMessages" class="select">
-                      <option value="true">Permitir</option>
-                      <option value="false">No permitir</option>
-                    </select>
-                  </div>
-                  <div class="privacy-item">
-                    <label for="privacyPublic">Perfil público</label>
-                    <select id="privacyPublic" class="select">
-                      <option value="true">Visible</option>
-                      <option value="false">Privado</option>
-                    </select>
-                  </div>
-                </div>
+              <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
+                <a class="btn-yellow" href="ajustes.html#perfil">Abrir Ajustes</a>
               </div>
             </div>
           </section>
@@ -423,6 +352,14 @@
                   style="max-width: 260px"
                 />
                 <button class="btn-white-outline" id="btnFeedClear" type="button">Limpiar</button>
+                <button
+                  class="btn-white-outline"
+                  id="btnHiddenClear"
+                  type="button"
+                  style="display: none"
+                >
+                  Mostrar ocultos
+                </button>
                 <span class="hintSmall" id="feedFilterHint"></span>
               </div>
             </div>
@@ -559,72 +496,6 @@
           </section>
         </section>
 
-        <aside class="profile-side">
-          <div class="card">
-            <div class="sectionTitle" style="margin-top: 0">Comunidad</div>
-            <div class="social-stat">
-              <span>Amigos</span>
-              <strong id="friendsCount">0</strong>
-            </div>
-            <div class="social-stat">
-              <span>Seguidores</span>
-              <strong id="followersCount">0</strong>
-            </div>
-            <div class="social-stat">
-              <span>Siguiendo</span>
-              <strong id="followingCount">0</strong>
-            </div>
-            <div class="sectionTitle" style="margin-top: 16px">Buscar personas</div>
-            <div class="peopleSearchBar" style="margin-top: 10px">
-              <div class="ps-avatar" id="profileSearchAvatar" aria-hidden="true">
-                <img id="profileSearchAvatarImg" alt="" loading="lazy" />
-                <span id="profileSearchAvatarFallback">U</span>
-              </div>
-              <input
-                id="profileSearchInput"
-                class="ps-input"
-                placeholder="Busca por nombre o @usuario..."
-                autocomplete="off"
-                spellcheck="false"
-              />
-              <div class="ps-actions">
-                <button
-                  id="btnProfileSearchClear"
-                  class="ps-icon"
-                  type="button"
-                  aria-label="Limpiar"
-                  title="Limpiar"
-                >
-                  &times;
-                </button>
-                <button
-                  id="btnProfileSearch"
-                  class="ps-icon ps-icon--primary"
-                  type="button"
-                  aria-label="Buscar"
-                  title="Buscar"
-                >
-                  &#128269;
-                </button>
-              </div>
-            </div>
-            <div id="profileSearchStatus" class="hintSmall" style="margin-top: 6px"></div>
-            <div id="profileSearchResults" class="friendList" style="margin-top: 8px"></div>
-            <div class="sectionTitle" style="margin-top: 16px">Últimas reacciones</div>
-            <div class="muted" id="recentReactions">Sin reacciones aún.</div>
-            <div class="sectionTitle" style="margin-top: 16px">Sugerencias</div>
-            <div class="friendList" id="suggestionsList"></div>
-            <div class="metaRow" style="margin-top: 12px">
-              <a class="btn-yellow" id="inviteFriendsBtn" href="referidos.html">Invitar amigos</a>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="sectionTitle" style="margin-top: 0">Invitaciones</div>
-            <div class="muted" id="invitesHint">No tienes invitaciones pendientes.</div>
-            <div class="friendList" id="invitesList" style="margin-top: 10px"></div>
-          </div>
-        </aside>
       </div>
     </main>
 

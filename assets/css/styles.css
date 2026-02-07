@@ -946,10 +946,18 @@ body[data-page='index'] main.page {
   box-shadow: var(--shadow);
   backdrop-filter: blur(12px);
 }
+
+/* Compact density on internal pages (less scrolling, still readable) */
+body:not([data-page='index']) .card {
+  padding: 14px 14px;
+}
 .sectionTitle {
   margin: 18px 0 10px;
   font-weight: 900;
   letter-spacing: 0.2px;
+}
+body:not([data-page='index']) .sectionTitle {
+  margin: 12px 0 8px;
 }
 .subtitle,
 .hintSmall,
@@ -960,6 +968,28 @@ body[data-page='index'] main.page {
 .hintSmall {
   font-size: 12px;
   line-height: 1.45;
+}
+
+body:not([data-page='index']) .card .muted {
+  font-size: 14px;
+  line-height: 1.45;
+}
+body:not([data-page='index']) .card .muted p {
+  margin: 8px 0;
+}
+body:not([data-page='index']) .card .muted p:first-child {
+  margin-top: 0;
+}
+body:not([data-page='index']) .card .muted p:last-child {
+  margin-bottom: 0;
+}
+body:not([data-page='index']) .card .muted ul,
+body:not([data-page='index']) .card .muted ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+body:not([data-page='index']) .card .muted li {
+  margin: 4px 0;
 }
 
 /* Pills & meta rows */
@@ -990,6 +1020,10 @@ body[data-page='index'] main.page {
   border: 1px solid rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow);
+}
+body:not([data-page='index']) .heroBanner {
+  margin: 6px 0 12px;
+  padding: 16px 16px;
 }
 .heroBanner.hero-main {
   padding: 28px 22px;
@@ -1196,6 +1230,9 @@ textarea:focus {
   height: 1px;
   background: rgba(255, 255, 255, 0.12);
   margin: 12px 0;
+}
+body:not([data-page='index']) .hr {
+  margin: 8px 0;
 }
 
 /* ===== Panel layout (espanel) ===== */
@@ -1600,6 +1637,75 @@ body:not([data-page='index']) .heroBanner .glow-text {
   line-height: 1.06;
 }
 
+/* Compact page headers on side-panel pages (left nav already shows the section) */
+body.with-side-panel[data-page='ajustes'] .heroBanner,
+body.with-side-panel[data-page='buscar'] .heroBanner,
+body.with-side-panel[data-page='pagos'] .heroBanner,
+body.with-side-panel[data-page='recompensas'] .heroBanner,
+body.with-side-panel[data-page='referidos'] .heroBanner,
+body.with-side-panel[data-page='ayuda'] .heroBanner,
+body.with-side-panel[data-page='mensajes'] .heroBanner,
+body.with-side-panel[data-page='notificaciones'] .heroBanner {
+  margin: 2px 0 12px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+body.with-side-panel[data-page='ajustes'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='buscar'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='pagos'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='recompensas'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='referidos'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='ayuda'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='mensajes'] .heroBanner .heroTitleRow,
+body.with-side-panel[data-page='notificaciones'] .heroBanner .heroTitleRow {
+  align-items: center;
+  gap: 10px;
+}
+
+body.with-side-panel[data-page='ajustes'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='buscar'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='pagos'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='recompensas'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='referidos'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='ayuda'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='mensajes'] .heroBanner .heroIcon:not(.heroIcon--avatar),
+body.with-side-panel[data-page='notificaciones'] .heroBanner .heroIcon:not(.heroIcon--avatar) {
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.95;
+}
+
+body.with-side-panel[data-page='ajustes'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='ajustes'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='buscar'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='buscar'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='pagos'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='pagos'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='recompensas'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='recompensas'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='referidos'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='referidos'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='ayuda'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='ayuda'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='mensajes'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='mensajes'] .heroBanner .heroTitleRow .subtitle,
+body.with-side-panel[data-page='notificaciones'] .heroBanner .heroTitleRow h1,
+body.with-side-panel[data-page='notificaciones'] .heroBanner .heroTitleRow .subtitle {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 @media (max-width: 980px) {
   .heroGrid {
     grid-template-columns: 1fr;
@@ -1711,8 +1817,8 @@ p,
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
 }
 
-/* Hero stats: opaque white cards */
-.statCard {
+/* Hero stats (landing): opaque white cards */
+.stats-band .statCard {
   background: #ffffff !important;
   border: 1px solid rgba(10, 31, 68, 0.12) !important;
   box-shadow: none !important;
@@ -1722,7 +1828,7 @@ p,
   height: 120px;
   margin: 0 auto;
 }
-.statCard .muted {
+.stats-band .statCard .muted {
   color: var(--blue) !important;
   font-weight: 800 !important;
 }
@@ -4233,7 +4339,7 @@ select:focus {
 /* === Perfil / Dashboard === */
 .profile-page .container.profile-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
@@ -4242,6 +4348,64 @@ select:focus {
   background: rgba(10, 28, 64, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 18px 46px rgba(3, 12, 30, 0.28);
+}
+
+/* === Buscar (Explore) === */
+.buscar-page .container.buscar-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 18px;
+  align-items: start;
+}
+.buscar-page .card {
+  background: rgba(10, 28, 64, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 46px rgba(3, 12, 30, 0.28);
+}
+
+/* === Ajustes === */
+.ajustes-page .card {
+  background: rgba(10, 28, 64, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 46px rgba(3, 12, 30, 0.28);
+}
+
+.ajustes-page .settings-grid {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+.ajustes-page .settings-avatar {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.ajustes-page .settings-actions {
+  justify-content: center;
+}
+
+.ajustes-page .settings-actions .btn-white-outline {
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+.ajustes-page .settings-toggles {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+  .ajustes-page .settings-grid {
+    grid-template-columns: 1fr;
+  }
+  .ajustes-page .info-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .profile-sidebar {
@@ -4296,6 +4460,27 @@ select:focus {
   flex-wrap: wrap;
 }
 
+.profileAvatarStack {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.profileAvatarActions {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+.profileAvatarActions .btn-white-outline {
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+.profileAvatarActions .hintSmall {
+  text-align: center;
+}
+
 .profileHeaderInfo {
   flex: 1;
   min-width: 220px;
@@ -4303,7 +4488,7 @@ select:focus {
 
 .profile-basic {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
@@ -4915,6 +5100,8 @@ select:focus {
   margin-top: 10px;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .profileMiniActions {
@@ -4938,7 +5125,7 @@ select:focus {
 }
 
 .profile-page .container.profile-shell.profile-shell--wide {
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .profile-hero {
@@ -6202,5 +6389,9 @@ body.modal-open {
   }
   .profileStats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .buscar-page .container.buscar-shell {
+    grid-template-columns: 1fr;
   }
 }

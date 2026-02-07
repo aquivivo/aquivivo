@@ -508,11 +508,12 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
           extras: 'Dodatki',
           ebooks: 'Ebooki',
           verTodo: 'Zobacz wszystko',
-          libreta: 'Libreta',
-          profile: 'Profil',
-          myCourses: 'Moje kursy',
-          messages: 'Wiadomosci',
-          notifications: 'Powiadomienia',
+           libreta: 'Libreta',
+           search: 'Szukaj',
+           profile: 'Profil',
+           myCourses: 'Moje kursy',
+           messages: 'Wiadomosci',
+           notifications: 'Powiadomienia',
           refer: 'Polec znajomych',
           settings: 'Ustawienia konta',
           payments: 'Historia platnosci',
@@ -533,11 +534,12 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
           extras: 'Extras',
           ebooks: 'Ebooks',
           verTodo: 'Ver todo',
-          libreta: 'Libreta',
-          profile: 'Perfil',
-          myCourses: 'Mis cursos',
-          messages: 'Mensajes',
-          notifications: 'Notificaciones',
+           libreta: 'Libreta',
+           search: 'Buscar',
+           profile: 'Perfil',
+           myCourses: 'Mis cursos',
+           messages: 'Mensajes',
+           notifications: 'Notificaciones',
           refer: 'Recomendar amigos',
           settings: 'Ajustes de cuenta',
           payments: 'Historial de pagos',
@@ -657,6 +659,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                   <div class="nav-profile-list">
                     <a class="nav-profile-item" href="${profileHref}">👤 ${labels.profile}</a>
                     <a class="nav-profile-item" href="espanel.html">📒 ${labels.libreta}</a>
+                    <a class="nav-profile-item" href="buscar.html">🔎 ${labels.search}</a>
                     <a class="nav-profile-item" href="espanel.html#cursos">📚 ${labels.myCourses}</a>
                     <a class="nav-profile-item" href="referidos.html">🤝 ${labels.refer}</a>
                     <a class="nav-profile-item" href="ajustes.html">⚙️ ${labels.settings}</a>
@@ -707,6 +710,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     const page = document.body?.dataset?.page || '';
     const allowed = new Set([
       'panel',
+      'buscar',
       'mensajes',
       'notificaciones',
       'pagos',
@@ -733,13 +737,11 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     panel.id = 'sidePanel';
     panel.className = 'side-panel';
     panel.innerHTML = `
-      <a href="index.html" data-page="inicio">🏠 Inicio</a>
       <a href="espanel.html" data-page="panel">📒 Libreta</a>
+      <a href="buscar.html" data-page="buscar">🔎 Buscar</a>
       <a href="perfil.html" data-page="profile">👤 Perfil</a>
       <a href="espanel.html#cursos" data-page="cursos">📚 Mis cursos</a>
       <a href="review.html" data-page="practicar">🔁 Practicar</a>
-      <a href="mensajes.html" data-page="mensajes">💬 Mensajes</a>
-      <a href="notificaciones.html" data-page="notificaciones">🔔 Notificaciones</a>
       <a href="recompensas.html" data-page="recompensas">🏆 Recompensas</a>
       <a href="referidos.html" data-page="referidos">🤝 Recomendar</a>
       <a href="ajustes.html" data-page="ajustes">⚙️ Ajustes</a>

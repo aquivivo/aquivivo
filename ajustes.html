@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>Ajustes de cuenta | AquiVivo</title>
+    <title>Ajustes | AquiVivo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap"
@@ -15,28 +15,305 @@
   <body data-page="ajustes">
     <div id="appHeader"></div>
 
-    <main class="page">
+    <main class="page ajustes-page">
       <div class="container">
         <section class="heroBanner">
           <div class="heroTitleRow">
             <div class="heroIcon">&#9881;</div>
             <div>
-              <h1 class="glow-text" style="margin: 0">Ajustes de cuenta</h1>
-              <div class="subtitle" style="margin-top: 6px">
-                Nombre, idioma, avatar y privacidad.
+              <h1 class="glow-text" style="margin: 0">Ajustes</h1>
+              <div class="subtitle" style="margin-top: 6px">Configura tu cuenta y tu experiencia.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="perfil" style="margin-top: 12px">
+          <div class="sectionTitle" style="margin-top: 0">Perfil</div>
+          <div class="muted">Nombre, usuario y foto.</div>
+
+          <div class="settings-grid">
+            <div class="settings-avatar">
+              <div class="heroIcon heroIcon--avatar" id="settingsAvatarWrap">
+                <img id="settingsAvatarImg" alt="Foto de perfil" loading="lazy" />
+                <span id="settingsAvatarFallback">U</span>
+              </div>
+
+              <input id="settingsAvatarFile" type="file" accept="image/*" hidden />
+
+              <div class="metaRow settings-actions">
+                <button class="btn-white-outline" id="btnSettingsAvatarUpload" type="button">
+                  Cambiar foto
+                </button>
+                <button class="btn-white-outline" id="btnSettingsAvatarRemove" type="button">
+                  Quitar foto
+                </button>
+              </div>
+
+              <div class="hintSmall" id="settingsAvatarMsg"></div>
+            </div>
+
+            <div>
+              <div class="info-grid" style="margin-top: 0">
+                <div class="info-field">
+                  <label for="settingsDisplayName">Nombre visible</label>
+                  <input
+                    id="settingsDisplayName"
+                    class="input"
+                    type="text"
+                    placeholder="Tu nombre"
+                    autocomplete="name"
+                  />
+                </div>
+
+                <div class="info-field">
+                  <label for="settingsHandle">Usuario (login)</label>
+                  <input
+                    id="settingsHandle"
+                    class="input"
+                    type="text"
+                    placeholder="tu_usuario"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <div class="hintSmall">3–20 caracteres: letras, números y . _ -</div>
+                </div>
+              </div>
+
+              <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
+                <button class="btn-yellow" id="btnSettingsSaveProfile" type="button">Guardar</button>
+                <span class="hintSmall" id="settingsProfileMsg"></span>
+              </div>
+
+              <div class="hr"></div>
+
+              <div class="sectionTitle" style="margin-top: 0">Preferencias</div>
+              <div class="info-grid">
+                <div class="info-field">
+                  <label for="settingsLang">Idioma</label>
+                  <select id="settingsLang" class="select">
+                    <option value="es">Español</option>
+                    <option value="pl">Polski</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+
+                <div class="info-field">
+                  <label for="settingsGender">Estilo</label>
+                  <select id="settingsGender" class="select">
+                    <option value="">Normal</option>
+                    <option value="mami">Mami</option>
+                    <option value="papi">Papi</option>
+                  </select>
+                  <div class="hintSmall">Afecta algunos saludos.</div>
+                </div>
+
+                <div class="info-field">
+                  <label for="settingsGoal">Meta diaria (minutos)</label>
+                  <select id="settingsGoal" class="select">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="settings-toggles">
+                <label class="toggle-line">
+                  <input id="settingsReviewReminders" type="checkbox" />
+                  Recordatorios de repaso
+                </label>
+              </div>
+
+              <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
+                <button class="btn-yellow" id="btnSettingsSavePrefs" type="button">
+                  Guardar preferencias
+                </button>
+                <span class="hintSmall" id="settingsPrefsMsg"></span>
               </div>
             </div>
           </div>
         </section>
 
+        <section class="card" id="sobre-mi" style="margin-top: 12px">
+          <div class="sectionTitle" style="margin-top: 0">Sobre mí</div>
+          <div class="muted">Esto se muestra en tu perfil público (si lo permites).</div>
+
+          <div class="info-grid" style="margin-top: 12px">
+            <div class="info-field">
+              <label for="settingsBioWhy">¿Por qué aprendo polaco?</label>
+              <textarea
+                id="settingsBioWhy"
+                class="input"
+                rows="3"
+                placeholder="Comparte tu motivo..."
+              ></textarea>
+            </div>
+
+            <div class="info-field">
+              <label for="settingsBioHard">¿Qué me cuesta más?</label>
+              <textarea
+                id="settingsBioHard"
+                class="input"
+                rows="3"
+                placeholder="Lo que se te hace difícil..."
+              ></textarea>
+            </div>
+
+            <div class="info-field">
+              <label for="settingsBioGoal">Mi meta</label>
+              <textarea
+                id="settingsBioGoal"
+                class="input"
+                rows="3"
+                placeholder="Tu objetivo principal..."
+              ></textarea>
+            </div>
+
+            <div class="info-field">
+              <label for="settingsBioLocation">Ubicación</label>
+              <input
+                id="settingsBioLocation"
+                class="input"
+                type="text"
+                placeholder="Ciudad, País"
+              />
+            </div>
+
+            <div class="info-field">
+              <label for="settingsBioWebsite">Sitio web / Instagram</label>
+              <input
+                id="settingsBioWebsite"
+                class="input"
+                type="text"
+                placeholder="https://... o @usuario"
+              />
+              <div class="hintSmall">Puedes poner un link o tu @usuario.</div>
+            </div>
+
+            <div class="info-field">
+              <label for="settingsBioLanguages">Idiomas</label>
+              <input
+                id="settingsBioLanguages"
+                class="input"
+                type="text"
+                placeholder="es, pl, en..."
+              />
+            </div>
+
+            <div class="info-field">
+              <label for="settingsBioInterests">Intereses</label>
+              <input
+                id="settingsBioInterests"
+                class="input"
+                type="text"
+                placeholder="Viajes, cultura, música..."
+              />
+            </div>
+          </div>
+
+          <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
+            <button class="btn-yellow" id="btnSettingsSaveBio" type="button">Guardar</button>
+            <span class="hintSmall" id="settingsBioMsg"></span>
+          </div>
+        </section>
+
+        <section class="card" id="privacidad" style="margin-top: 12px">
+          <div class="sectionTitle" style="margin-top: 0">Privacidad</div>
+          <div class="muted">Controla quién puede ver y contactarte.</div>
+
+          <div class="privacy-grid" style="margin-top: 12px">
+            <div class="privacy-item">
+              <label for="settingsPostsVisibility">Visibilidad de publicaciones</label>
+              <select id="settingsPostsVisibility" class="select">
+                <option value="public">Públicas</option>
+                <option value="friends">Solo amigos</option>
+                <option value="private">Solo yo</option>
+              </select>
+            </div>
+
+            <div class="privacy-item">
+              <label for="settingsRewardsVisibility">Recompensas visibles</label>
+              <select id="settingsRewardsVisibility" class="select">
+                <option value="public">Sí</option>
+                <option value="private">Ocultas</option>
+              </select>
+            </div>
+
+            <div class="privacy-item">
+              <label for="settingsStatusVisibility">Estado visible</label>
+              <select id="settingsStatusVisibility" class="select">
+                <option value="public">Siempre</option>
+                <option value="private">Solo yo</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settings-toggles" style="margin-top: 12px">
+            <label class="toggle-line">
+              <input id="settingsPublicProfile" type="checkbox" />
+              Perfil público
+            </label>
+            <label class="toggle-line">
+              <input id="settingsAllowFriendRequests" type="checkbox" />
+              Permitir solicitudes de amistad
+            </label>
+            <label class="toggle-line">
+              <input id="settingsAllowMessages" type="checkbox" />
+              Permitir mensajes
+            </label>
+          </div>
+
+          <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
+            <button class="btn-yellow" id="btnSettingsSavePrivacy" type="button">
+              Guardar privacidad
+            </button>
+            <span class="hintSmall" id="settingsPrivacyMsg"></span>
+          </div>
+        </section>
+
+        <section class="card" id="repaso" style="margin-top: 12px">
+          <div class="sectionTitle" style="margin-top: 0">Plan de repaso</div>
+          <div class="muted">Ajusta tu plan diario de tarjetas.</div>
+
+          <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
+            <label class="hintSmall" style="font-weight: 900">Plan diario</label>
+            <select id="settingsReviewMinutes" class="select" style="min-width: 160px">
+              <option value="5">5 min</option>
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
+            </select>
+
+            <label class="hintSmall" style="font-weight: 900">Tarjetas/día</label>
+            <select id="settingsReviewLimit" class="select" style="min-width: 160px">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+            </select>
+
+            <label class="hintSmall" style="font-weight: 900">Dirección</label>
+            <select id="settingsReviewDirection" class="select" style="min-width: 200px">
+              <option value="pl_es">PL → ES</option>
+              <option value="es_pl">ES → PL</option>
+              <option value="mixed">Mixto</option>
+            </select>
+
+            <button class="btn-yellow" id="settingsReviewSave" type="button">Guardar</button>
+            <span class="hintSmall" id="settingsReviewSaveStatus"></span>
+          </div>
+        </section>
+
         <section class="card" style="margin-top: 12px">
-          <div class="sectionTitle" style="margin-top: 0">Preferencias</div>
-          <div class="muted">Configura tu perfil y tu experiencia.</div>
-          <div style="margin-top: 12px">
-            <a class="btn-yellow" href="espanel.html#ajustes">Abrir en Libreta</a>
+          <div class="sectionTitle" style="margin-top: 0">Accesos rápidos</div>
+          <div class="metaRow" style="margin-top: 10px; gap: 10px; flex-wrap: wrap">
+            <a class="btn-white-outline" href="espanel.html">Volver a Libreta</a>
+            <a class="btn-white-outline" href="perfil.html">Ir a Perfil</a>
           </div>
         </section>
       </div>
     </main>
+
+    <script type="module" src="assets/js/pages/ajustes-page.js"></script>
   </body>
 </html>

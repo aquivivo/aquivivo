@@ -92,6 +92,7 @@ const activityGrid = $('activityGrid');
 const activitySummary = $('activitySummary');
 
 const profileEditSection = $('profileEditSection');
+const profileEditHintCard = $('profileEditHintCard');
 
 const storiesCard = $('storiesCard');
 const storiesHint = $('storiesHint');
@@ -133,6 +134,7 @@ const feedFiltersCard = $('feedFiltersCard');
 const feedFiltersRow = $('feedFiltersRow');
 const feedSearchInput = $('feedSearchInput');
 const btnFeedClear = $('btnFeedClear');
+const btnHiddenClear = $('btnHiddenClear');
 const feedFilterHint = $('feedFilterHint');
 
 const infoWhy = $('infoWhy');
@@ -229,6 +231,8 @@ let FEED_SEARCH = '';
 let feedUnsub = null;
 const COMMENTS_CACHE = new Map();
 const COMMENTS_OPEN = new Set();
+let HIDDEN_SET = new Set();
+let HIDDEN_UID = '';
 
 let MEDIA_FILE = null;
 let MEDIA_PREVIEW_URL = '';
@@ -316,19 +320,103 @@ function postMatchesQuery(post, query) {
   return hay.includes(q);
 }
 
+function hiddenStorageKey(uid) {
+  const id = String(uid || '').trim();
+  return id ? `av_hidden_posts_${id}` : 'av_hidden_posts';
+}
+
+function hiddenPostKey(ownerUid, postId) {
+  const a = String(ownerUid || '').trim();
+  const b = String(postId || '').trim();
+  return a && b ? `${a}__${b}` : '';
+}
+
+function hiddenCountForOwner(ownerUid) {
+  const uid = String(ownerUid || '').trim();
+  if (!uid || !HIDDEN_SET?.size) return 0;
+  const prefix = `${uid}__`;
+  let n = 0;
+  HIDDEN_SET.forEach((k) => {
+    if (String(k || '').startsWith(prefix)) n += 1;
+  });
+  return n;
+}
+
+function clearHiddenForOwner(ownerUid) {
+  const uid = String(ownerUid || '').trim();
+  if (!uid || !HIDDEN_SET?.size) return;
+  const prefix = `${uid}__`;
+  const next = new Set();
+  HIDDEN_SET.forEach((k) => {
+    const value = String(k || '').trim();
+    if (value && !value.startsWith(prefix)) next.add(value);
+  });
+  HIDDEN_SET = next;
+}
+
+function loadHiddenSet(myUid) {
+  const uid = String(myUid || '').trim();
+  HIDDEN_UID = uid;
+  HIDDEN_SET = new Set();
+  if (!uid) return HIDDEN_SET;
+  try {
+    const raw = localStorage.getItem(hiddenStorageKey(uid));
+    if (!raw) return HIDDEN_SET;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return HIDDEN_SET;
+    arr.forEach((k) => {
+      const value = String(k || '').trim();
+      if (value) HIDDEN_SET.add(value);
+    });
+  } catch {
+    // ignore
+  }
+  return HIDDEN_SET;
+}
+
+function persistHiddenSet() {
+  if (!HIDDEN_UID) return;
+  try {
+    localStorage.setItem(
+      hiddenStorageKey(HIDDEN_UID),
+      JSON.stringify(Array.from(HIDDEN_SET).slice(0, 800)),
+    );
+  } catch {
+    // ignore
+  }
+}
+
+function updateHiddenClearBtn() {
+  if (!btnHiddenClear) return;
+  const ownerUid = String(PROFILE_CTX?.targetUid || '').trim();
+  const n = hiddenCountForOwner(ownerUid);
+  btnHiddenClear.style.display = n ? '' : 'none';
+  btnHiddenClear.textContent = n ? `Restablecer ocultos (${n})` : 'Restablecer ocultos';
+}
+
 function getBaseFeedList() {
-  if (FEED_FILTER === 'all') return Array.isArray(FEED_ITEMS) ? FEED_ITEMS : [];
-  if (FEED_FILTER === 'pinned')
-    return (Array.isArray(FEED_ITEMS) ? FEED_ITEMS : []).filter((p) => p && p.pinned);
-  if (FEED_FILTER === 'photos')
-    return (Array.isArray(FEED_SOURCE) ? FEED_SOURCE : []).filter(
+  let list = [];
+  if (FEED_FILTER === 'all') list = Array.isArray(FEED_ITEMS) ? FEED_ITEMS : [];
+  else if (FEED_FILTER === 'pinned')
+    list = (Array.isArray(FEED_ITEMS) ? FEED_ITEMS : []).filter((p) => p && p.pinned);
+  else if (FEED_FILTER === 'photos')
+    list = (Array.isArray(FEED_SOURCE) ? FEED_SOURCE : []).filter(
       (p) => p && p.imageURL && (p.type || 'user') !== 'system',
     );
-  if (FEED_FILTER === 'status')
-    return (Array.isArray(FEED_SOURCE) ? FEED_SOURCE : []).filter(
+  else if (FEED_FILTER === 'status')
+    list = (Array.isArray(FEED_SOURCE) ? FEED_SOURCE : []).filter(
       (p) => p && !p.imageURL && (p.type || 'user') === 'user',
     );
-  return Array.isArray(FEED_SOURCE) ? FEED_SOURCE : [];
+  else list = Array.isArray(FEED_SOURCE) ? FEED_SOURCE : [];
+
+  const ownerUid = String(PROFILE_CTX?.targetUid || '').trim();
+  if (!ownerUid || !HIDDEN_SET?.size) return list;
+
+  return list.filter((p) => {
+    const id = String(p?.id || '').trim();
+    const key = hiddenPostKey(ownerUid, id);
+    return !key || !HIDDEN_SET.has(key);
+  });
 }
 
 function getActiveFeedList() {
@@ -357,8 +445,12 @@ function renderFeedFiltersUI() {
     const baseCount = getBaseFeedList().length;
     const shown = getActiveFeedList().length;
     const suffix = FEED_SEARCH ? ` · filtro: ${FEED_SEARCH}` : '';
-    feedFilterHint.textContent = `Mostrando ${shown}/${baseCount}${suffix}`;
+    const ownerUid = String(PROFILE_CTX?.targetUid || '').trim();
+    const hidden = hiddenCountForOwner(ownerUid);
+    const hiddenSuffix = hidden ? ` · ocultos: ${hidden}` : '';
+    feedFilterHint.textContent = `Mostrando ${shown}/${baseCount}${suffix}${hiddenSuffix}`;
   }
+  updateHiddenClearBtn();
 }
 
 function renderActiveFeed(ctx) {
@@ -391,6 +483,20 @@ function bindFeedFilters() {
     if (feedSearchInput) feedSearchInput.value = '';
     persistFeedState();
     renderActiveFeed(PROFILE_CTX);
+  });
+
+  btnHiddenClear?.addEventListener('click', () => {
+    const ownerUid = String(PROFILE_CTX?.targetUid || '').trim();
+    const n = hiddenCountForOwner(ownerUid);
+    if (!n) return;
+    const ok = confirm('¿Restablecer publicaciones ocultas en este perfil?');
+    if (!ok) return;
+    clearHiddenForOwner(ownerUid);
+    persistHiddenSet();
+    updateHiddenClearBtn();
+    renderActiveFeed(PROFILE_CTX);
+    setMsg('Listo ✅');
+    setTimeout(() => setMsg(''), 1200);
   });
 
   if (feedSearchInput) {
@@ -787,6 +893,7 @@ function renderFeed(list, ctx) {
       const canSharePost = !isSystem;
       const canReportPost = !isMine && !isSystem;
       const canSavePost = !isSystem;
+      const canHidePost = canSavePost && post.id !== 'sys_pinned_local';
       const saveKey = saveDocId(ctx.targetUid, post.id);
       const isSaved = !!saveKey && SAVED_SET.has(saveKey);
       const isFocused = !!focusPostId && post.id === focusPostId;
@@ -865,32 +972,46 @@ function renderFeed(list, ctx) {
              <button type="button" data-reaction="spark" data-id="${esc(post.id)}">✨</button>
            </div>
            <div class="post-actions">
-              ${
-                canSharePost
-                  ? `<button class="btn-white-outline" data-action="share" data-id="${esc(
-                      post.id,
-                    )}">Compartir</button>`
-                  : ''
-              }
-              ${
-                canSharePost
-                  ? `<button class="btn-white-outline" data-action="dm" data-id="${esc(
-                      post.id,
-                    )}">Enviar</button>`
-                  : ''
-              }
-              ${
-                canSavePost
-                  ? `<button class="btn-white-outline" data-action="save" data-id="${esc(
-                      post.id,
-                    )}">${isSaved ? 'Guardado' : 'Guardar'}</button>`
-                  : ''
-              }
-              ${
-                isMine && (post.type || 'user') !== 'system'
-                  ? `<button class="btn-white-outline" data-action="pin" data-id="${esc(
-                      post.id,
-                    )}">${post.pinned ? 'Desfijar' : 'Fijar'}</button>`
+               ${
+                 canSharePost
+                   ? `<button class="btn-white-outline" data-action="share" data-id="${esc(
+                       post.id,
+                     )}">Compartir</button>`
+                   : ''
+               }
+               ${
+                 canSharePost
+                   ? `<button class="btn-white-outline" data-action="copy" data-id="${esc(
+                       post.id,
+                     )}">Copiar enlace</button>`
+                   : ''
+               }
+               ${
+                 canSharePost
+                   ? `<button class="btn-white-outline" data-action="dm" data-id="${esc(
+                       post.id,
+                     )}">Enviar</button>`
+                   : ''
+               }
+               ${
+                 canSavePost
+                   ? `<button class="btn-white-outline" data-action="save" data-id="${esc(
+                       post.id,
+                     )}">${isSaved ? 'Guardado' : 'Guardar'}</button>`
+                   : ''
+               }
+               ${
+                 canHidePost
+                   ? `<button class="btn-white-outline" data-action="hide" data-id="${esc(
+                       post.id,
+                     )}">Ocultar</button>`
+                   : ''
+               }
+               ${
+                 isMine && (post.type || 'user') !== 'system'
+                   ? `<button class="btn-white-outline" data-action="pin" data-id="${esc(
+                       post.id,
+                     )}">${post.pinned ? 'Desfijar' : 'Fijar'}</button>`
                  : ''
              }
              ${
@@ -2177,6 +2298,14 @@ function bindFeedActions(ctx) {
         return;
       }
 
+      if (action === 'copy') {
+        const url = buildPostShareUrl(CURRENT_PROFILE?.handle, ctx.targetUid, id);
+        const ok = await copyToClipboard(url);
+        setMsg(ok ? 'Enlace copiado ✅' : 'No se pudo copiar.', !ok);
+        if (ok) setTimeout(() => setMsg(''), 1500);
+        return;
+      }
+
       if (action === 'share') {
         const url = buildPostShareUrl(CURRENT_PROFILE?.handle, ctx.targetUid, id);
         const ok = await shareUrl(url, 'AquiVivo');
@@ -2189,6 +2318,22 @@ function bindFeedActions(ctx) {
         const url = buildPostShareUrl(CURRENT_PROFILE?.handle, ctx.targetUid, id);
         const text = `Te comparto esto: ${url}`;
         window.location.href = `mensajes.html?share=${encodeURIComponent(text)}`;
+        return;
+      }
+
+      if (action === 'hide') {
+        const post = FEED_ITEMS[idx] || {};
+        if ((post.type || 'user') === 'system' || post.id === 'sys_pinned_local') return;
+        const ok = confirm('¿Ocultar esta publicación para ti?');
+        if (!ok) return;
+        const key = hiddenPostKey(ctx.targetUid, id);
+        if (!key) return;
+        HIDDEN_SET.add(key);
+        persistHiddenSet();
+        updateHiddenClearBtn();
+        setMsg('Publicación oculta.');
+        setTimeout(() => setMsg(''), 1500);
+        renderActiveFeed(ctx);
         return;
       }
 
@@ -3406,14 +3551,25 @@ function setAvatarHint(text) {
 
 function bindAvatarUpload(uid, emailLower, isOwner) {
   if (!avatarUploadBtn || !avatarInput) return;
-  if (!isOwner) {
-    avatarUploadBtn.style.display = 'none';
-    return;
-  }
+  avatarUploadBtn.style.display = isOwner ? '' : 'none';
+  if (!isOwner) return;
+  if (avatarUploadBtn.dataset.wired) return;
+  avatarUploadBtn.dataset.wired = '1';
+
   avatarUploadBtn.addEventListener('click', () => avatarInput.click());
   avatarInput.addEventListener('change', async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!String(file.type || '').startsWith('image/')) {
+      setAvatarHint('Selecciona una imagen.');
+      avatarInput.value = '';
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setAvatarHint('La imagen es demasiado grande (máx. 10MB).');
+      avatarInput.value = '';
+      return;
+    }
     try {
       avatarUploadBtn.disabled = true;
       setAvatarHint('Subiendo...');
@@ -3665,6 +3821,12 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
+  try {
+    loadHiddenSet(user.uid);
+  } catch {
+    // ignore
+  }
+
   const requestedUid = PROFILE_UID;
   const requestedHandle = PROFILE_HANDLE;
 
@@ -3718,7 +3880,7 @@ onAuthStateChanged(auth, async (user) => {
     renderAvatar(profile.photoURL || '', name);
     renderCover(profile.coverURL || '');
     renderPublicCard(profile, isOwner);
-    if (profileEditSection) profileEditSection.style.display = isOwner ? '' : 'none';
+    if (profileEditHintCard) profileEditHintCard.style.display = isOwner ? '' : 'none';
 
     if (btnShare) {
       btnShare.dataset.share = toAbsoluteUrl(buildProfileHref(profile.handle, targetUid));

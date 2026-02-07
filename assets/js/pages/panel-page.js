@@ -228,7 +228,7 @@ async function loadReviewSummary(uid) {
   if (overEl) overEl.textContent = 'Atrasadas: -';
   if (newEl) newEl.textContent = 'Nuevas: -';
   if (hintEl) hintEl.textContent = '';
-  if (planEl) planEl.textContent = 'Plan: 10 min al día';
+  if (planEl) planEl.textContent = 'Plan: -';
   if (weekEl) weekEl.innerHTML = '';
 
   try {
@@ -245,7 +245,10 @@ async function loadReviewSummary(uid) {
     if (minutesEl) minutesEl.value = String(minutes);
     if (limitEl) limitEl.value = String(limit);
     if (directionEl) directionEl.value = direction;
-    if (planEl) planEl.textContent = `Plan: ${minutes} min al día`;
+    const dirLabel =
+      direction === 'es_pl' ? 'ES → PL' : direction === 'mixed' ? 'Mixto' : 'PL → ES';
+    if (planEl)
+      planEl.textContent = `Plan: ${minutes} min al día · ${limit} tarjetas/día · ${dirLabel}`;
 
     if (saveBtn && !saveBtn.dataset.wired) {
       saveBtn.dataset.wired = '1';
@@ -267,7 +270,9 @@ async function loadReviewSummary(uid) {
           setTimeout(() => {
             if (saveStatus) saveStatus.textContent = '';
           }, 2000);
-          if (planEl) planEl.textContent = `Plan: ${m} min al día`;
+          const dirLabel2 = dir === 'es_pl' ? 'ES → PL' : dir === 'mixed' ? 'Mixto' : 'PL → ES';
+          if (planEl)
+            planEl.textContent = `Plan: ${m} min al día · ${l} tarjetas/día · ${dirLabel2}`;
         } catch (e) {
           console.warn('save review settings failed', e);
           if (saveStatus) saveStatus.textContent = 'Error al guardar';
