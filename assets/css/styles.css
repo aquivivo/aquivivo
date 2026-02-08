@@ -3022,6 +3022,63 @@ a:hover {
 }
 
 /* ===== Services (pricing) grid ===== */
+.servicesTopGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+  max-width: 920px;
+  margin: 0 auto;
+}
+.servicesTopGrid > .card {
+  margin: 0 !important;
+}
+.servicesTopGrid #checkoutCard {
+  grid-column: 1 / -1;
+}
+@media (max-width: 980px) {
+  .servicesTopGrid {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+  .servicesTopGrid #checkoutCard {
+    grid-column: auto;
+  }
+}
+
+.consentDetails {
+  margin-top: 10px;
+}
+.consentDetails > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+  opacity: 0.9;
+}
+.consentDetails > summary::-webkit-details-marker {
+  display: none;
+}
+.consentDetails > summary::after {
+  content: '+';
+  font-size: 14px;
+  opacity: 0.85;
+}
+.consentDetails[open] > summary::after {
+  content: '-';
+}
+.consentDetailsBody a {
+  color: rgba(252, 209, 22, 0.95);
+  font-weight: 900;
+  text-decoration: none;
+}
+.consentDetailsBody a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .services-section + .services-section {
   margin-top: 44px;
 }
@@ -5283,18 +5340,30 @@ select:focus {
 }
 
 /* === Side panel (user pages) === */
+.with-side-panel main.page {
+  padding-left: 260px;
+}
 .with-side-panel main.page .container {
-  margin-left: 240px;
-  width: calc(100% - 240px);
-  max-width: calc(100% - 240px);
+  max-width: 1040px;
   padding-left: 28px;
   padding-right: 28px;
 }
+.with-side-panel main.page .container > .card {
+  max-width: 880px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.with-side-panel main.page .container > .card.card--full {
+  max-width: none;
+}
 .with-side-panel .site-footer {
-  padding-left: 240px;
+  padding-left: 260px;
 }
 .with-side-panel .site-footer .footer-inner {
-  margin-left: 0;
+  margin: 0 auto;
+  max-width: 1040px;
+  padding-left: 28px;
+  padding-right: 28px;
 }
 
 .side-panel {
@@ -5307,10 +5376,21 @@ select:focus {
   gap: 8px;
   padding: 14px;
   border-radius: 18px;
-  background: rgba(12, 34, 78, 0.78);
+  background: rgba(12, 34, 78, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 18px 46px rgba(3, 12, 30, 0.28);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   z-index: 25;
+}
+
+/* Narrower content blocks (prevents “full width stretched” look) */
+@media (min-width: 981px) {
+  body.with-side-panel[data-page='profile'] .profile-main {
+    max-width: 880px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 .side-panel a {
@@ -5586,15 +5666,21 @@ body.modal-open {
 }
 
 @media (max-width: 980px) {
+  .with-side-panel main.page {
+    padding-left: 0;
+  }
   .with-side-panel main.page .container {
-    margin-left: 0;
-    width: 100%;
     max-width: 1280px;
     padding-left: 24px;
     padding-right: 24px;
   }
   .with-side-panel .site-footer {
     padding-left: 0;
+  }
+  .with-side-panel .site-footer .footer-inner {
+    max-width: 1280px;
+    padding-left: 24px;
+    padding-right: 24px;
   }
   .side-panel {
     position: static;

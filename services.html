@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
@@ -8,8 +8,8 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260207" />
-    <script src="assets/js/layout.js?v=20260207" type="module"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260208c" />
+    <script src="assets/js/layout.js?v=20260208c" type="module"></script>
   </head>
 
   <body
@@ -37,70 +37,87 @@
           </div>
         </div>
 
-        <div class="card" style="margin-bottom: 18px">
-          <div class="sectionTitle" style="margin-top: 0">🎁 Prueba gratis A1</div>
-          <div class="metaRow" style="margin-top: 10px; gap: 10px; flex-wrap: wrap">
-            <button class="btn-yellow" id="btnTrialA1" type="button">
-              Activa A1 gratis 7 días
-            </button>
-          </div>
-          <div class="hintSmall" id="trialMsg" style="margin-top: 8px; display: none"></div>
-        </div>
+        <div class="servicesTopGrid" id="servicesTop">
+          <div class="card" id="checkoutCard">
+            <div class="sectionTitle" style="margin-top: 0">✅ Antes de comprar</div>
 
-        <div class="card" style="margin-bottom: 18px">
-          <div class="sectionTitle" style="margin-top: 0">✅ Antes de comprar</div>
-          <div class="muted">
-            <div class="hintSmall" style="margin-top: 6px">
-              Al iniciar el pago aceptas los <a href="regulamin.html">Términos</a> y la
-              <a href="polityka-prywatnosci.html">Política de privacidad</a>. Si tu compra
-              incluye contenido digital con acceso inmediato, solicitas la entrega inmediata
-              y reconoces la posible pérdida del derecho de desistimiento una vez otorgado el
-              acceso (ver <a href="zwroty.html">Devoluciones</a>).
-            </div>
-            <div class="metaRow" style="margin-top: 10px; align-items: flex-start; gap: 10px">
+            <div
+              class="metaRow"
+              style="margin-top: 10px; align-items: flex-start; gap: 10px"
+            >
               <input id="checkoutConsent" type="checkbox" />
               <label for="checkoutConsent" style="margin: 0">
                 He leído y acepto lo anterior.
               </label>
             </div>
-          </div>
-        </div>
 
-        <div class="card" id="paypalCard" style="margin-bottom: 18px">
-          <div class="sectionTitle" style="margin-top: 0">🅿️ PayPal</div>
-          <div class="muted">
-            Si prefieres PayPal, puedes pagar aquí (moneda: <b>PLN</b>).
-            <div class="hintSmall" style="margin-top: 6px">
-              Para habilitar el botón, marca la casilla de aceptación de arriba.
-            </div>
-            <div class="hintSmall" style="margin-top: 6px">
-              Si el botón no carga, usa “Abrir PayPal”.
-            </div>
-          </div>
-
-          <div id="paypalHostedWrap" class="paypal-hosted-wrap" style="margin-top: 12px">
-            <div
-              id="paypal-container-JTQ246XQYF85C"
-              class="paypal-hosted"
-              data-paypal-hosted-button-id="JTQ246XQYF85C"
-              aria-label="Pagar con PayPal"
-            ></div>
-            <div class="paypal-hosted-overlay" id="paypalHostedOverlay" aria-hidden="true">
-              Marca la casilla de aceptación para habilitar PayPal.
-            </div>
+            <details class="consentDetails">
+              <summary class="hintSmall">Ver detalles</summary>
+              <div class="hintSmall consentDetailsBody">
+                <ul style="margin: 8px 0 0; padding-left: 18px">
+                  <li>
+                    Aceptas los <a href="regulamin.html">Términos</a> y la
+                    <a href="polityka-prywatnosci.html">Política de privacidad</a>.
+                  </li>
+                  <li>
+                    Si tu compra incluye contenido digital con acceso inmediato, solicitas la
+                    entrega inmediata.
+                  </li>
+                  <li>
+                    Puede aplicarse pérdida del derecho de desistimiento una vez otorgado el
+                    acceso (ver <a href="zwroty.html">Devoluciones</a>).
+                  </li>
+                </ul>
+              </div>
+            </details>
           </div>
 
-          <div class="hintSmall" id="paypalStatus" style="margin-top: 8px; display: none"></div>
-          <div class="metaRow" style="margin-top: 10px; gap: 10px; flex-wrap: wrap">
-            <a
-              id="paypalFallbackLink"
-              class="btn-white-outline"
-              href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JTQ246XQYF85C"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Abrir PayPal
-            </a>
+          <div class="card" id="trialCard">
+            <div class="sectionTitle" style="margin-top: 0">🎁 Prueba gratis A1</div>
+            <div class="metaRow" style="margin-top: 10px; gap: 10px; flex-wrap: wrap">
+              <button class="btn-yellow" id="btnTrialA1" type="button">
+                Activa A1 gratis 7 días
+              </button>
+            </div>
+            <div class="hintSmall" id="trialMsg" style="margin-top: 8px; display: none"></div>
+          </div>
+
+          <div class="card" id="paypalCard">
+            <div class="sectionTitle" style="margin-top: 0">🅿️ PayPal</div>
+            <div class="muted">
+              Si prefieres PayPal, puedes pagar aquí (moneda: <b>PLN</b>).
+              <div class="hintSmall" style="margin-top: 6px">
+                Para habilitar el botón, marca la casilla de aceptación de arriba.
+              </div>
+              <div class="hintSmall" style="margin-top: 6px">
+                Si el botón no carga, usa “Abrir PayPal”.
+              </div>
+            </div>
+
+            <div id="paypalHostedWrap" class="paypal-hosted-wrap" style="margin-top: 12px">
+              <div
+                id="paypal-container-JTQ246XQYF85C"
+                class="paypal-hosted"
+                data-paypal-hosted-button-id="JTQ246XQYF85C"
+                aria-label="Pagar con PayPal"
+              ></div>
+              <div class="paypal-hosted-overlay" id="paypalHostedOverlay" aria-hidden="true">
+                Marca la casilla de aceptación para habilitar PayPal.
+              </div>
+            </div>
+
+            <div class="hintSmall" id="paypalStatus" style="margin-top: 8px; display: none"></div>
+            <div class="metaRow" style="margin-top: 10px; gap: 10px; flex-wrap: wrap">
+              <a
+                id="paypalFallbackLink"
+                class="btn-white-outline"
+                href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JTQ246XQYF85C"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Abrir PayPal
+              </a>
+            </div>
           </div>
         </div>
 
@@ -134,6 +151,9 @@
       </div>
     </main>
 
-    <script type="module" src="assets/js/pages/services-page.js?v=20260207"></script>
+    <script type="module" src="assets/js/pages/services-page.js?v=20260208c"></script>
   </body>
 </html>
+
+
+

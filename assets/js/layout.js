@@ -59,19 +59,31 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
   const NO_LOGIN_MS = 2 * 30 * 24 * 60 * 60 * 1000;
   const TRIAL_INTENT_KEY = 'av_trial_intent';
   const POPUP_SEEN_PREFIX = 'av_popup_seen_';
-  const ASSET_VERSION = '20260207';
+  const ASSET_VERSION = '20260208c';
 
   let CURRENT_USER = null;
   let CURRENT_DOC = null;
+
+  function getRuntimeAssetVersion() {
+    try {
+      const host = String(location.hostname || '').toLowerCase();
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return String(Date.now());
+      }
+    } catch {}
+    return ASSET_VERSION;
+  }
 
   function bustStylesCache() {
     const link = document.querySelector('link[rel="stylesheet"][href*="assets/css/styles.css"]');
     if (!link) return;
     const href = String(link.getAttribute('href') || '');
     if (!href.includes('assets/css/styles.css')) return;
-    if (href.includes('v=')) return;
-    const sep = href.includes('?') ? '&' : '?';
-    link.setAttribute('href', `${href}${sep}v=${ASSET_VERSION}`);
+    const v = getRuntimeAssetVersion();
+    const withUpdatedV = href.match(/[?&]v=/)
+      ? href.replace(/([?&]v=)[^&]+/, `$1${v}`)
+      : `${href}${href.includes('?') ? '&' : '?'}v=${v}`;
+    if (withUpdatedV !== href) link.setAttribute('href', withUpdatedV);
   }
 
   function toDateMaybe(v) {

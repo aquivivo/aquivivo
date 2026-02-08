@@ -12,7 +12,7 @@ import {
   where,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { renderPayPalHostedButtons } from '../paypal-hosted-buttons.js?v=20260207';
+import { renderPayPalHostedButtons } from '../paypal-hosted-buttons.js?v=20260208c';
 
 const $ = (id) => document.getElementById(id);
 
