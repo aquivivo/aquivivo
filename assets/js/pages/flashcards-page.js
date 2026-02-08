@@ -1,4 +1,4 @@
-﻿// assets/js/pages/flashcards-page.js
+// assets/js/pages/flashcards-page.js
 // Modo fichas tipo Quizlet (sin SRS)
 
 import { auth, db } from '../firebase-init.js';
@@ -66,7 +66,7 @@ function parseCardLine(raw) {
 
   let parts = line.split('|').map((p) => p.trim()).filter(Boolean);
   if (parts.length < 2) {
-    parts = line.split(/->|=>|—|–|-/).map((p) => p.trim()).filter(Boolean);
+    parts = line.split(/->|=>|�|�|-/).map((p) => p.trim()).filter(Boolean);
   }
   if (parts.length < 2) return null;
 
@@ -193,7 +193,7 @@ function renderCard() {
   }
 
   if (fcCard) fcCard.classList.toggle('isFlipped', isFlipped);
-  if (fcFav) fcFav.textContent = card.favorite ? '★ Favorito' : '☆ Favorito';
+  if (fcFav) fcFav.textContent = card.favorite ? '? Favorito' : '? Favorito';
   if (fcExampleAudio) fcExampleAudio.disabled = !card.example;
   setStatus(`Tarjeta ${currentIndex + 1} de ${cards.length}`);
 }
@@ -357,7 +357,7 @@ function bindActions() {
     currentIndex = 0;
     isFlipped = false;
     renderCard();
-    setStatus(`Barajadas · ${cards.length} tarjetas`);
+    setStatus(`Barajadas � ${cards.length} tarjetas`);
   });
 
   fcFlip?.addEventListener('click', () => {

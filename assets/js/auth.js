@@ -1,8 +1,8 @@
-ï»¿// assets/js/auth.js
+// assets/js/auth.js
 // Login / Register / Reset (modular)
-// âœ… Creates users/{uid} on register (with 7-day A1 trial)
-// âœ… Blocks access until email is verified
-// âœ… Adds emailLower for admin assignment/search
+// ? Creates users/{uid} on register (with 7-day A1 trial)
+// ? Blocks access until email is verified
+// ? Adds emailLower for admin assignment/search
 
 import { auth, db } from './firebase-init.js';
 import {
@@ -37,14 +37,14 @@ function formatAuthError(err, context) {
   const code = String(err?.code || '');
   const map = {
     // login
-    'auth/invalid-credential': 'ContraseÃ±a incorrecta o usuario no existe.',
-    'auth/wrong-password': 'ContraseÃ±a incorrecta.',
+    'auth/invalid-credential': 'Contraseña incorrecta o usuario no existe.',
+    'auth/wrong-password': 'Contraseña incorrecta.',
     'auth/user-not-found': 'Usuario no existe.',
-    'auth/invalid-email': 'Email invÃ¡lido.',
+    'auth/invalid-email': 'Email inválido.',
     'auth/user-disabled': 'Cuenta deshabilitada. Contacta soporte.',
     // register
     'auth/email-already-in-use': 'Este email ya esta registrado.',
-    'auth/weak-password': 'La contraseÃ±a es demasiado dÃ©bil.',
+    'auth/weak-password': 'La contraseña es demasiado débil.',
     // reset
     'auth/missing-email': 'Ingresa tu email.',
   };
@@ -78,12 +78,12 @@ function initFromUrl() {
   const reason = getQueryParam('reason');
   if (reason === 'verify') {
     setMsg(
-      'ğŸ“§ Tu cuenta requiere verificaciÃ³n de correo para acceder al panel y a los cursos. Inicia sesiÃ³n y confirma tu email.',
+      '?? Tu cuenta requiere verificación de correo para acceder al panel y a los cursos. Inicia sesión y confirma tu email.',
       'error',
     );
     ensureVerifyBox();
     setVerifyHint(
-      'DespuÃ©s de iniciar sesiÃ³n, revisa tu correo y pulsa â€œYa verifiquÃ©â€.',
+      'Después de iniciar sesión, revisa tu correo y pulsa “Ya verifiqué”.',
     );
   }
 }
@@ -101,13 +101,13 @@ function ensureVerifyBox() {
     box.style.marginTop = '14px';
     box.style.padding = '14px';
     box.innerHTML = `
-      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">ğŸ“§ Verifica tu correo</div>
+      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">?? Verifica tu correo</div>
       <div class="subtitle" style="margin:0 0 12px;">
         Para acceder al panel y a los cursos, primero confirma tu email.
       </div>
       <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
         <button id="btnResendVerify" class="btn-white-outline" type="button">Reenviar email</button>
-        <button id="btnIVerified" class="btn-yellow" type="button">Ya verifiquÃ©</button>
+        <button id="btnIVerified" class="btn-yellow" type="button">Ya verifiqué</button>
       </div>
       <div class="hintSmall" id="verifyHint" style="margin-top:10px; display:none;"></div>
     `;
@@ -157,10 +157,10 @@ function ensureLogoutBox() {
     box.style.marginTop = '14px';
     box.style.padding = '14px';
     box.innerHTML = `
-      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">ğŸ‘¤ Cuenta activa</div>
+      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">?? Cuenta activa</div>
       <div class="subtitle" id="logoutSubtitle" style="margin:0 0 12px;"></div>
       <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
-        <button id="btnLogoutHere" class="btn-red" type="button">Cerrar sesiÃ³n</button>
+        <button id="btnLogoutHere" class="btn-red" type="button">Cerrar sesión</button>
       </div>
     `;
 
@@ -178,10 +178,10 @@ function ensureLogoutBox() {
     btnLogout.addEventListener('click', async () => {
       try {
         await signOut(auth);
-        setMsg('SesiÃ³n cerrada. Ahora puedes iniciar con otra cuenta.', 'ok');
+        setMsg('Sesión cerrada. Ahora puedes iniciar con otra cuenta.', 'ok');
       } catch (e) {
         console.error(e);
-        setMsg('Error al cerrar sesiÃ³n. Intenta de nuevo.', 'error');
+        setMsg('Error al cerrar sesión. Intenta de nuevo.', 'error');
       }
     });
   }
@@ -195,7 +195,7 @@ async function resendVerification() {
   try {
     const u = auth.currentUser;
     if (!u) {
-      setVerifyHint('Primero inicia sesiÃ³n.');
+      setVerifyHint('Primero inicia sesión.');
       return;
     }
     const now = Date.now();
@@ -206,10 +206,10 @@ async function resendVerification() {
     }
     await sendEmailVerification(u);
     __resendCooldownUntil = Date.now() + 30_000;
-    setVerifyHint('âœ… Email reenviado. Revisa tu bandeja de entrada y Spam.');
+    setVerifyHint('? Email reenviado. Revisa tu bandeja de entrada y Spam.');
   } catch (e) {
     console.error(e);
-    setVerifyHint('âŒ No se pudo reenviar. Intenta de nuevo en un momento.');
+    setVerifyHint('? No se pudo reenviar. Intenta de nuevo en un momento.');
   }
 }
 
@@ -217,21 +217,21 @@ async function checkVerification() {
   try {
     const u = auth.currentUser;
     if (!u) {
-      setVerifyHint('Primero inicia sesiÃ³n.');
+      setVerifyHint('Primero inicia sesión.');
       return;
     }
     await u.reload();
     if (u.emailVerified) {
-      setVerifyHint('âœ… Verificado. Entrandoâ€¦');
+      setVerifyHint('? Verificado. Entrando…');
       window.location.href = getNextUrl();
     } else {
       setVerifyHint(
-        'AÃºn no estÃ¡ verificado. Abre el enlace del email y vuelve aquÃ­.',
+        'Aún no está verificado. Abre el enlace del email y vuelve aquí.',
       );
     }
   } catch (e) {
     console.error(e);
-    setVerifyHint('âŒ Error al comprobar. Intenta de nuevo.');
+    setVerifyHint('? Error al comprobar. Intenta de nuevo.');
   }
 }
 
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const reason = qs.get('reason');
     if (reason === 'verify') {
       ensureVerifyBox();
-      setMsg('âš ï¸ Antes de continuar, confirma tu email.', 'warn');
+      setMsg('?? Antes de continuar, confirma tu email.', 'warn');
     }
   } catch {}
 
@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const box = ensureLogoutBox();
     const sub = document.getElementById('logoutSubtitle');
     if (box && sub) {
-      sub.textContent = `EstÃ¡s conectado como ${u.email || 'â€”'}.`;
+      sub.textContent = `Estás conectado como ${u.email || '—'}.`;
     }
   }, 350);
 
@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // âœ… prevent form submit reload (mobile/Enter key issues)
+  // ? prevent form submit reload (mobile/Enter key issues)
   const form =
     (loginBtn && loginBtn.closest('form')) ||
     (emailInput && emailInput.closest('form')) ||
@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rawLogin = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
     if (!rawLogin || !pass)
-      return setMsg('Completa correo/usuario y contraseÃ±a.', 'error');
+      return setMsg('Completa correo/usuario y contraseña.', 'error');
 
     let email = rawLogin;
     if (!rawLogin.includes('@')) {
@@ -487,15 +487,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cred.user && !cred.user.emailVerified) {
         await sendEmailVerification(cred.user).catch(() => {});
         setMsg(
-          'âš ï¸ Confirma tu correo para acceder. Te reenviÃ© el email de verificaciÃ³n.',
+          '?? Confirma tu correo para acceder. Te reenvié el email de verificación.',
           'error',
         );
         ensureVerifyBox();
-        setVerifyHint('Abre el correo, confirma y luego pulsa â€œYa verifiquÃ©â€.');
+        setVerifyHint('Abre el correo, confirma y luego pulsa “Ya verifiqué”.');
         return;
       }
 
-      setMsg('âœ… SesiÃ³n iniciada.', 'ok');
+      setMsg('? Sesión iniciada.', 'ok');
       window.location.href = getNextUrl();
     } catch (err) {
       if (err?.code === 'auth/too-many-requests') {
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {
         console.warn('[auth] lastLoginAt update failed', e);
       }
-      setMsg('âœ… SesiÃ³n iniciada con Google.', 'ok');
+      setMsg('? Sesión iniciada con Google.', 'ok');
       window.location.href = getNextUrl();
     } catch (err) {
       if (err?.code === 'auth/popup-closed-by-user') return;
@@ -547,11 +547,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const rawEmail = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
     if (!rawEmail || !pass)
-      return setMsg('Completa correo y contraseÃ±a.', 'error');
+      return setMsg('Completa correo y contraseña.', 'error');
     if (!rawEmail.includes('@'))
       return setMsg('Para registrarte usa tu correo.', 'error');
     if (handle && !isHandleValid(handle)) {
-      return setMsg('Usuario invÃ¡lido. Usa 3-20 letras/nÃºmeros y ._-', 'error');
+      return setMsg('Usuario inválido. Usa 3-20 letras/números y ._-', 'error');
     }
     if (!gender) return setMsg('Elige Papi o Mami para registrarte.', 'error');
 
@@ -594,11 +594,11 @@ document.addEventListener('DOMContentLoaded', () => {
       await sendEmailVerification(cred.user).catch(() => {});
 
       setMsg(
-        'ğŸ‰ Cuenta creada. ğŸ“§ Revisa tu correo y confirma tu email. Luego pulsa â€œYa verifiquÃ©â€.',
+        '?? Cuenta creada. ?? Revisa tu correo y confirma tu email. Luego pulsa “Ya verifiqué”.',
         'ok',
       );
       ensureVerifyBox();
-      setVerifyHint('Si no ves el correo, revisa Spam y usa â€œReenviar emailâ€.');
+      setVerifyHint('Si no ves el correo, revisa Spam y usa “Reenviar email”.');
     } catch (err) {
       if (err?.code === 'auth/too-many-requests') {
         setCooldownMs(120_000);
@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rawLogin = (emailInput?.value || '').trim();
     if (!rawLogin)
       return setMsg(
-        'Ingresa tu correo o usuario para restablecer tu contraseÃ±a.',
+        'Ingresa tu correo o usuario para restablecer tu contraseña.',
         'error',
       );
     try {
@@ -634,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       await sendPasswordResetEmail(auth, email);
-      setMsg('ğŸ“§ Se enviÃ³ un correo para restablecer tu contraseÃ±a.', 'ok');
+      setMsg('?? Se envió un correo para restablecer tu contraseña.', 'ok');
     } catch (err) {
       if (err?.code === 'auth/too-many-requests') {
         setCooldownMs(120_000);

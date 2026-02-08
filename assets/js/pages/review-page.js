@@ -1,4 +1,4 @@
-ï»¿// assets/js/pages/review-page.js
+// assets/js/pages/review-page.js
 // Simple spaced repetition (Leitner-like) for flashcards from "Tarjetas interactivas"
 
 import { auth, db } from '../firebase-init.js';
@@ -54,7 +54,7 @@ function parseCardLine(raw) {
 
   let parts = line.split('|').map((p) => p.trim()).filter(Boolean);
   if (parts.length < 2) {
-    parts = line.split(/->|=>|â€”|â€“|-/).map((p) => p.trim()).filter(Boolean);
+    parts = line.split(/->|=>|—|–|-/).map((p) => p.trim()).filter(Boolean);
   }
   if (parts.length < 2) return null;
 
@@ -270,7 +270,7 @@ function renderCard() {
   if (btnExampleAudio) btnExampleAudio.disabled = !currentCard.example;
   if (btnFav) {
     btnFav.disabled = false;
-    btnFav.textContent = currentCard.favorite ? 'â˜… Favorito' : 'â˜† Favorito';
+    btnFav.textContent = currentCard.favorite ? '? Favorito' : '? Favorito';
   }
   if (btnCorrect) btnCorrect.disabled = true;
   if (btnWrong) btnWrong.disabled = true;
@@ -385,7 +385,7 @@ function bindActions() {
     cardEl?.classList.add('isFlipped');
     if (btnCorrect) btnCorrect.disabled = false;
     if (btnWrong) btnWrong.disabled = false;
-    if (hintEl) hintEl.textContent = 'EvalÃºa tu respuesta: "La sÃ©" o "No lo sÃ©".';
+    if (hintEl) hintEl.textContent = 'Evalúa tu respuesta: "La sé" o "No lo sé".';
   });
 
   btnAudio?.addEventListener('click', () => {

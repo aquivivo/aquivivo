@@ -1,4 +1,4 @@
-﻿// assets/js/pages/esadmin-page.js
+// assets/js/pages/esadmin-page.js
 // AquiVivo Admin (RESTORE+FIX): Dashboard + Uzytkownicy + Kody + Referral + Uslugi + Segmentacja (MVP)
 // Architecture: no inline JS. Page logic lives here.
 
@@ -562,23 +562,23 @@ function setupAdminSidebarSections() {
   sidePanel.innerHTML = '';
 
   const iconMap = {
-    accDashboard: '🧭',
-    accPopup: '📣',
-    accServices: '🛒',
-    accPayments: '💳',
-    accPromo: '🏷️',
-    accSegments: '🧩',
-    accBroadcasts: '📢',
-    accPublishing: '📝',
-    accMissing: '🧹',
-    accUsers: '👥',
-    accProgress: '📈',
-    accActivity: '📊',
-    accFlashcards: '🃏',
-    accReviews: '⭐',
-    accReports: '🆘',
-    accAppLogs: '🧾',
-    accAudioLib: '🎧',
+    accDashboard: '??',
+    accPopup: '??',
+    accServices: '??',
+    accPayments: '??',
+    accPromo: '???',
+    accSegments: '??',
+    accBroadcasts: '??',
+    accPublishing: '??',
+    accMissing: '??',
+    accUsers: '??',
+    accProgress: '??',
+    accActivity: '??',
+    accFlashcards: '??',
+    accReviews: '?',
+    accReports: '??',
+    accAppLogs: '??',
+    accAudioLib: '??',
   };
 
   const labelById = new Map(
@@ -632,7 +632,7 @@ function setupAdminSidebarSections() {
       btn.type = 'button';
       btn.className = 'side-panel-link';
       btn.dataset.adminSection = id;
-      const icon = iconMap[id] || '📌';
+      const icon = iconMap[id] || '??';
       btn.innerHTML = `<span class="side-panel-ico">${icon}</span><span>${esc(label)}</span>`;
       list.appendChild(btn);
       usedIds.add(id);
@@ -661,7 +661,7 @@ function setupAdminSidebarSections() {
       btn.type = 'button';
       btn.className = 'side-panel-link';
       btn.dataset.adminSection = id;
-      const icon = iconMap[id] || '📌';
+      const icon = iconMap[id] || '??';
       btn.innerHTML = `<span class="side-panel-ico">${icon}</span><span>${esc(label)}</span>`;
       list.appendChild(btn);
     });
@@ -2367,7 +2367,7 @@ async function toggleProgressErrors(key) {
 
     let parts = line.split('|').map((p) => p.trim()).filter(Boolean);
     if (parts.length < 2) {
-      parts = line.split(/->|=>|—|–|-/).map((p) => p.trim()).filter(Boolean);
+      parts = line.split(/->|=>|�|�|-/).map((p) => p.trim()).filter(Boolean);
     }
     if (parts.length < 2) return null;
     return { front: parts[0], back: parts[1] };
@@ -2411,7 +2411,7 @@ async function toggleProgressErrors(key) {
     const totalExercises = rows.reduce((sum, r) => sum + (r.exercises || 0), 0);
 
     if (summary) {
-      summary.textContent = `Razem kart: ${totalCards} · Tematow: ${totalTopics} · Cwiczen: ${totalExercises}`;
+      summary.textContent = `Razem kart: ${totalCards} � Tematow: ${totalTopics} � Cwiczen: ${totalExercises}`;
     }
 
     if (!rows.length) {
@@ -2423,7 +2423,7 @@ async function toggleProgressErrors(key) {
       .map((r) => {
         const title = esc(r.title || r.topicId || '(bez tytulu)');
         const lvl = esc(String(r.level || '-'));
-        return `<div style="margin-bottom:8px;">${lvl} · <b>${title}</b> — karty: ${r.cards} (cwiczenia: ${r.exercises})</div>`;
+        return `<div style="margin-bottom:8px;">${lvl} � <b>${title}</b> � karty: ${r.cards} (cwiczenia: ${r.exercises})</div>`;
       })
       .join('');
   }
@@ -2625,7 +2625,7 @@ function summarizePayments() {
     return parts.length ? parts.join(' / ') : '-';
   };
 
-  el.textContent = `Dzis: ${agg.today.count} ( ${fmtTotals(agg.today.totals)} )  ·  7 dni: ${agg.week.count} ( ${fmtTotals(agg.week.totals)} )`;
+  el.textContent = `Dzis: ${agg.today.count} ( ${fmtTotals(agg.today.totals)} )  �  7 dni: ${agg.week.count} ( ${fmtTotals(agg.week.totals)} )`;
 }
 
 function summarizeAttempts() {
@@ -2660,7 +2660,7 @@ function summarizeAttempts() {
     }
   }
 
-  el.textContent = `Dzis: ${today} (blad/wygasle: ${todayFailed})  ·  7 dni: ${week} (blad/wygasle: ${weekFailed})`;
+  el.textContent = `Dzis: ${today} (blad/wygasle: ${todayFailed})  �  7 dni: ${week} (blad/wygasle: ${weekFailed})`;
 }
 
 function renderPayments() {
@@ -2903,7 +2903,7 @@ function renderAppLogs() {
         <div class="listItem">
           <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
             <div>
-              <div style="font-weight:900;">${typeTxt.toUpperCase()} ${when ? '· ' + when : ''}</div>
+              <div style="font-weight:900;">${typeTxt.toUpperCase()} ${when ? '� ' + when : ''}</div>
               <div class="hintSmall">strona: ${pageTxt}  -  user: ${who}</div>
               <div class="hintSmall logMessage">${msg}</div>
             </div>
@@ -3078,7 +3078,7 @@ async function uploadAudioLibrary() {
       updatedAt: serverTimestamp(),
     });
 
-    setStatus(st, 'Wgrano ✅');
+    setStatus(st, 'Wgrano ?');
     if (labelInput) labelInput.value = '';
     if (fileInput) fileInput.value = '';
     await loadAudioLibrary();
@@ -3104,7 +3104,7 @@ async function copyAudioUrl(url) {
   if (!url) return;
   try {
     await navigator.clipboard.writeText(url);
-    setStatus($('audioLibStatus'), 'Skopiowano ✅');
+    setStatus($('audioLibStatus'), 'Skopiowano ?');
   } catch (e) {
     console.warn('[audio copy]', e);
     setStatus($('audioLibStatus'), 'Nie udalo sie skopiowac.', true);

@@ -1,4 +1,4 @@
-﻿const functions = require('firebase-functions');
+const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const Stripe = require('stripe');
 
@@ -24,7 +24,7 @@ function getBaseUrl() {
   return functions.config().app?.base_url || process.env.BASE_URL || '';
 }
 
-// â±ï¸ czas dostÄ™pu (dni)
+// ⏱️ czas dostępu (dni)
 const PLAN_TO_DAYS = {
   premium_a1: 90,
   premium_b1: 90,
@@ -33,7 +33,7 @@ const PLAN_TO_DAYS = {
   'vip a1 + a2 + b1 + b2': 90,
 };
 
-// ðŸ”“ levele odblokowane przez plan
+// 🔓 levele odblokowane przez plan
 const PLAN_TO_LEVELS = {
   premium_a1: ['A1', 'A2'],
   premium_b1: ['B1'],
@@ -42,7 +42,7 @@ const PLAN_TO_LEVELS = {
   'vip a1 + a2 + b1 + b2': ['A1', 'A2', 'B1', 'B2'],
 };
 
-// Fallback price IDs (Stripe) â€“ used when services doc is missing stripePriceId.
+// Fallback price IDs (Stripe) – used when services doc is missing stripePriceId.
 const PLAN_TO_PRICE_ID = {
   premium_a1: 'price_1Sw2t5CI9cIUEmOtYvVwzq30',
   premium_b1: 'price_1Sw2rUCI9cIUEmOtj7nhkJFQ',
@@ -197,11 +197,11 @@ function computeNextUntil(existingTs, days) {
   );
 }
 
-// 1ï¸âƒ£ START CHECKOUT (callable)
+// 1️⃣ START CHECKOUT (callable)
 exports.createCheckoutSession = functions.https.onCall(
   async (data, context) => {
     if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Zaloguj siÄ™.');
+      throw new functions.https.HttpsError('unauthenticated', 'Zaloguj się.');
     }
 
     const STRIPE_SECRET = getStripeSecret();
@@ -330,7 +330,7 @@ exports.createCheckoutSession = functions.https.onCall(
   },
 );
 
-// 2ï¸âƒ£ WEBHOOK STRIPE â†’ FIRESTORE
+// 2️⃣ WEBHOOK STRIPE → FIRESTORE
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   try {
     const sig = req.headers['stripe-signature'];

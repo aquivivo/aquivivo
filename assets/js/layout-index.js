@@ -1,4 +1,4 @@
-ï»¿import { auth } from './firebase-init.js';
+import { auth } from './firebase-init.js';
 import './logger.js';
 import {
   onAuthStateChanged,
@@ -94,7 +94,7 @@ import {
     overlay.className = 'popup-overlay';
     overlay.innerHTML = `
       <div class="popup-card">
-        <button class="popup-close" type="button" aria-label="Cerrar">Ã—</button>
+        <button class="popup-close" type="button" aria-label="Cerrar">×</button>
         ${imageUrl ? `<div class="popup-media"><img src="${imageUrl}" alt="banner" /></div>` : ''}
         <div class="popup-title">${title.replace(/</g, '&lt;')}</div>
         ${body ? `<div class="popup-body">${body.replace(/</g, '&lt;')}</div>` : ''}
@@ -333,11 +333,11 @@ import {
     try {
       await updateDoc(userRef, payload);
       CURRENT_DOC = { ...(docData || {}), ...payload };
-      setTrialMessage('? Trial A1 activado por 7 dÃ­as.', 'ok');
+      setTrialMessage('? Trial A1 activado por 7 días.', 'ok');
       return true;
     } catch (e) {
       console.warn('[trial] activation failed', e);
-      setTrialMessage('No se pudo activar el trial. IntÃ©ntalo de nuevo.');
+      setTrialMessage('No se pudo activar el trial. Inténtalo de nuevo.');
       return false;
     }
   }
@@ -348,7 +348,7 @@ import {
 
     if (!CURRENT_USER) {
       btn.disabled = false;
-      setTrialMessage('Inicia sesiÃ³n para activar tu prueba gratuita.');
+      setTrialMessage('Inicia sesión para activar tu prueba gratuita.');
       return;
     }
 
@@ -373,7 +373,7 @@ import {
     const ok = isTrialEligible(CURRENT_DOC);
     btn.disabled = !ok;
     if (ok) {
-      setTrialMessage('Activa tu prueba gratuita de A1 (7 dÃ­as).', 'ok');
+      setTrialMessage('Activa tu prueba gratuita de A1 (7 días).', 'ok');
     } else {
       setTrialMessage(
         'Tu prueba ya fue usada. Vuelve cuando no tengas plan activo o tras un tiempo de inactividad.',
@@ -487,7 +487,7 @@ import {
                   <a class="nav-profile-item" href="ayuda.html">&#129509; Ayuda / Reportar</a>
                   <a class="nav-profile-item" id="navProfileAdmin" href="esadmin.html" style="display:none;">&#128737; Admin</a>
                   <div class="nav-profile-sep" aria-hidden="true"></div>
-                  <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">ðŸšª Cerrar sesiÃ³n</button>
+                  <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">?? Cerrar sesión</button>
                 </div>
               </div>
             </div>
@@ -693,6 +693,16 @@ import {
     });
   }
 
+  function setupServicesPlusCTAs() {
+    const tramites = document.getElementById('btnServicesTramites');
+    const business = document.getElementById('btnServicesBusiness');
+    const go = (hash) => {
+      location.href = `services.html${hash || ''}`;
+    };
+    if (tramites) tramites.addEventListener('click', () => go('#servicios'));
+    if (business) business.addEventListener('click', () => go('#extras'));
+  }
+
   function wireMiniMenu(wrap, btn, menu) {
     if (!wrap || !btn || !menu || wrap.dataset.wired) return;
     wrap.dataset.wired = '1';
@@ -793,7 +803,7 @@ import {
       }
       list.innerHTML = items
         .map((item) => {
-          const title = String(item.title || 'NotificaciÃ³n');
+          const title = String(item.title || 'Notificación');
           const body = String(item.body || '');
           return `<div class="nav-mini-item ${item.read ? '' : 'is-unread'}">
             <div class="nav-mini-title">${title}</div>
@@ -1072,6 +1082,7 @@ import {
   setupTramitesScroll();
   setupAnchorScroll();
   setupCursosScroll();
+  setupServicesPlusCTAs();
   setupAuthButtons();
   setupTrialButton();
 })();

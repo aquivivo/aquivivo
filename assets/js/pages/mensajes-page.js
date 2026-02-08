@@ -1,4 +1,4 @@
-﻿import { app, auth, db, storage } from '../firebase-init.js';
+import { app, auth, db, storage } from '../firebase-init.js';
 import '../logger.js';
 import {
   onAuthStateChanged,
@@ -158,11 +158,11 @@ const MAX_MESSAGE_LEN = 2000;
 const SEND_WINDOW_MS = 10000;
 const SEND_LIMIT = 5;
 const REACTIONS = [
-  { key: 'like', label: '👍' },
-  { key: 'love', label: '❤️' },
-  { key: 'laugh', label: '😂' },
-  { key: 'wow', label: '😮' },
-  { key: 'sad', label: '😢' },
+  { key: 'like', label: '??' },
+  { key: 'love', label: '??' },
+  { key: 'laugh', label: '??' },
+  { key: 'wow', label: '??' },
+  { key: 'sad', label: '??' },
 ];
 
 function toDateMaybe(v) {
@@ -457,8 +457,8 @@ async function updateTypingIndicator(convo) {
   );
   const label =
     names.length === 1
-      ? `${names[0]} está escribiendo...`
-      : `${names[0]} y ${names[1]} están escribiendo...`;
+      ? `${names[0]} est� escribiendo...`
+      : `${names[0]} y ${names[1]} est�n escribiendo...`;
   threadTyping.textContent = label;
 }
 
@@ -729,7 +729,7 @@ function renderMessageBubble(msg) {
   meta.className = 'msg-meta';
   const readStatus = readStatusForMessage(msg);
   const edited = msg.editedAt ? 'Editado' : '';
-  meta.textContent = [formatTime(msg.createdAt), edited, readStatus].filter(Boolean).join(' · ');
+  meta.textContent = [formatTime(msg.createdAt), edited, readStatus].filter(Boolean).join(' � ');
   wrap.appendChild(meta);
 
   return wrap;
@@ -815,7 +815,7 @@ async function logAudit(action, msg, extra = {}) {
 
 async function deleteMessage(msg) {
   if (!activeConversationId || !msg?.id) return;
-  if (!confirm('¿Borrar este mensaje?')) return;
+  if (!confirm('�Borrar este mensaje?')) return;
   const ref = doc(db, 'conversations', activeConversationId, 'messages', msg.id);
   try {
     await updateDoc(ref, {
@@ -911,7 +911,7 @@ async function exportConversation() {
 
 async function deleteMyMessages() {
   if (!activeConversationId || !CURRENT_USER) return;
-  if (!confirm('¿Borrar tus mensajes en esta conversación?')) return;
+  if (!confirm('�Borrar tus mensajes en esta conversaci�n?')) return;
   try {
     const snap = await getDocs(
       query(
@@ -1057,7 +1057,7 @@ function renderConversationItem(convo, target) {
     title.textContent = name;
     item.dataset.name = normText(name);
     avatar.textContent =
-      convo.type === 'support' ? '🆘'
+      convo.type === 'support' ? '??'
         : convo.type === 'group'
           ? buildAvatarText(convo.title || name)
           : buildAvatarText(name);
@@ -1298,7 +1298,7 @@ async function applyConversationState(convo) {
   const name = await resolveConversationTitle(convo);
   threadName.textContent = name;
   threadAvatar.textContent =
-    convo.type === 'support' ? '🆘'
+    convo.type === 'support' ? '??'
       : convo.type === 'group'
         ? buildAvatarText(convo.title || name)
         : buildAvatarText(name);
@@ -1515,7 +1515,7 @@ async function renderInfoPanel(convo) {
       if (participants.length > 20) {
         const more = document.createElement('div');
         more.className = 'muted';
-        more.textContent = `+${participants.length - 20} miembros más`;
+        more.textContent = `+${participants.length - 20} miembros m�s`;
         participantsBox.appendChild(more);
       }
     }
@@ -1948,7 +1948,7 @@ function renderReports(list) {
     const item = document.createElement('div');
     item.className = 'report-item';
     item.innerHTML = `
-      <div><strong>${rep.reason || 'reporte'}</strong> · ${rep.status || 'open'}</div>
+      <div><strong>${rep.reason || 'reporte'}</strong> � ${rep.status || 'open'}</div>
       <div>${rep.reportedName || 'Usuario'}</div>
       <div>${rep.details || ''}</div>
       <div class="metaRow" style="gap: 6px">

@@ -1,4 +1,4 @@
-﻿// assets/js/layout.js
+// assets/js/layout.js
 // Shared header/footer for ALL pages (including index.html)
 //  Safe injection (doesn't replace body -> footers remain)
 //  Uses firebase-init.js (matches your project)
@@ -59,7 +59,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
   const NO_LOGIN_MS = 2 * 30 * 24 * 60 * 60 * 1000;
   const TRIAL_INTENT_KEY = 'av_trial_intent';
   const POPUP_SEEN_PREFIX = 'av_popup_seen_';
-  const ASSET_VERSION = '20260208c';
+  const ASSET_VERSION = '20260208d';
 
   let CURRENT_USER = null;
   let CURRENT_DOC = null;
@@ -150,7 +150,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     overlay.className = 'popup-overlay';
     overlay.innerHTML = `
       <div class="popup-card">
-        <button class="popup-close" type="button" aria-label="Cerrar">×</button>
+        <button class="popup-close" type="button" aria-label="Cerrar">�</button>
         ${imageUrl ? `<div class="popup-media"><img src="${esc(imageUrl)}" alt="banner" /></div>` : ''}
         <div class="popup-title">${title}</div>
         ${body ? `<div class="popup-body">${body}</div>` : ''}
@@ -599,6 +599,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     const hrefPolaco = isIndex
       ? '#metodo-disenado-para-ti'
       : 'index.html#metodo-disenado-para-ti';
+    const hrefContacto = isIndex ? '#contact' : 'index.html#contact';
     const hrefTramites = isIndex
       ? '#mas-que-clases'
       : 'index.html#mas-que-clases';
@@ -624,23 +625,23 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                 ${labels.servicios} <span class="nav-dd-caret">v</span>
               </button>
               <div class="nav-dd-menu" id="menuServicios" role="menu" aria-label="${labels.servicios}">
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosPlanes}">🧾 ${labels.planes}</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosServicios}">🛠️ ${labels.servicios}</a>
-                <a role="menuitem" class="nav-dd-item nav-dd-item--red" id="btnTramites" href="${hrefTramites}">📄 ${labels.tramites}</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosExtras}">✨ ${labels.extras}</a>
-                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosEbooks}">📚 ${labels.ebooks}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosPlanes}">?? ${labels.planes}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosServicios}">??? ${labels.servicios}</a>
+                <a role="menuitem" class="nav-dd-item nav-dd-item--red" id="btnTramites" href="${hrefTramites}">?? ${labels.tramites}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosExtras}">? ${labels.extras}</a>
+                <a role="menuitem" class="nav-dd-item" href="${hrefServiciosEbooks}">?? ${labels.ebooks}</a>
                 <div class="nav-dd-sep" aria-hidden="true"></div>
-                <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">👀 ${labels.verTodo}</a>
+                <a role="menuitem" class="nav-dd-item nav-dd-item-strong" href="${hrefServicios}">?? ${labels.verTodo}</a>
               </div>
             </div>
-            ${isIndex ? `<a class="btn-white-outline" id="btnContacto" href="#contact">&#x1F495; Contacto</a>` : ''}
+            <a class="btn-white-outline" id="btnContacto" href="${hrefContacto}">&#x1F495; Contacto</a>
             ${
               logged
                 ? `
               <div class="nav-profile" id="navProfile">
                 <div class="nav-icon-wrap" id="navNotifWrap">
                   <button class="nav-icon-btn" id="navNotifBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="${labels.notifications}">
-                    🔔
+                    ??
                     <span class="nav-badge nav-badge--yellow" id="navNotifBadge" style="display:none;">0</span>
                   </button>
                   <div class="nav-mini-menu" id="navNotifMenu" role="menu" aria-label="${labels.notifications}">
@@ -653,7 +654,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                 </div>
                 <div class="nav-icon-wrap" id="navMsgWrap">
                   <button class="nav-icon-btn" id="navMsgBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="${labels.messages}">
-                    💬
+                    ??
                     <span class="nav-badge nav-badge--red" id="navMsgBadge" style="display:none;">0</span>
                   </button>
                   <div class="nav-mini-menu" id="navMsgMenu" role="menu" aria-label="${labels.messages}">
@@ -680,18 +681,18 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                     </div>
                   </div>
                   <div class="nav-profile-list">
-                    <a class="nav-profile-item" href="${profileHref}">👤 ${labels.profile}</a>
-                    <a class="nav-profile-item" href="espanel.html">📒 ${labels.libreta}</a>
-                    <a class="nav-profile-item" href="buscar.html">🔎 ${labels.search}</a>
-                    <a class="nav-profile-item" href="espanel.html#cursos">📚 ${labels.myCourses}</a>
-                    <a class="nav-profile-item" href="referidos.html">🤝 ${labels.refer}</a>
-                    <a class="nav-profile-item" href="ajustes.html">⚙️ ${labels.settings}</a>
-                    <a class="nav-profile-item" href="pagos.html">💳 ${labels.payments}</a>
-                    <a class="nav-profile-item" href="recompensas.html">🏆 ${labels.rewards}</a>
-                    <a class="nav-profile-item" href="ayuda.html">🆘 ${labels.help}</a>
-                    ${logged && isAdmin ? `<a class="nav-profile-item" href="esadmin.html">🛡️ ${labels.admin}</a>` : ''}
+                    <a class="nav-profile-item" href="${profileHref}">?? ${labels.profile}</a>
+                    <a class="nav-profile-item" href="espanel.html">?? ${labels.libreta}</a>
+                    <a class="nav-profile-item" href="buscar.html">?? ${labels.search}</a>
+                    <a class="nav-profile-item" href="espanel.html#cursos">?? ${labels.myCourses}</a>
+                    <a class="nav-profile-item" href="referidos.html">?? ${labels.refer}</a>
+                    <a class="nav-profile-item" href="ajustes.html">?? ${labels.settings}</a>
+                    <a class="nav-profile-item" href="pagos.html">?? ${labels.payments}</a>
+                    <a class="nav-profile-item" href="recompensas.html">?? ${labels.rewards}</a>
+                    <a class="nav-profile-item" href="ayuda.html">?? ${labels.help}</a>
+                    ${logged && isAdmin ? `<a class="nav-profile-item" href="esadmin.html">??? ${labels.admin}</a>` : ''}
                     <div class="nav-profile-sep" aria-hidden="true"></div>
-                    <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">🚪 ${labels.logout}</button>
+                    <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">?? ${labels.logout}</button>
                   </div>
                 </div>
               </div>
@@ -747,16 +748,16 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     panel.id = 'sidePanel';
     panel.className = 'side-panel';
     panel.innerHTML = `
-      <a href="espanel.html" data-page="panel">📒 Libreta</a>
-      <a href="buscar.html" data-page="buscar">🔎 Buscar</a>
-      <a href="perfil.html" data-page="profile">👤 Perfil</a>
-      <a href="espanel.html#cursos" data-page="cursos">📚 Mis cursos</a>
-      <a href="review.html" data-page="practicar">🔁 Practicar</a>
-      <a href="recompensas.html" data-page="recompensas">🏆 Recompensas</a>
-      <a href="referidos.html" data-page="referidos">🤝 Recomendar</a>
-      <a href="ajustes.html" data-page="ajustes">⚙️ Ajustes</a>
-      <a href="pagos.html" data-page="pagos">💳 Pagos</a>
-      <a href="ayuda.html" data-page="ayuda">🆘 Ayuda</a>
+      <a href="espanel.html" data-page="panel">?? Libreta</a>
+      <a href="buscar.html" data-page="buscar">?? Buscar</a>
+      <a href="perfil.html" data-page="profile">?? Perfil</a>
+      <a href="espanel.html#cursos" data-page="cursos">?? Mis cursos</a>
+      <a href="review.html" data-page="practicar">?? Practicar</a>
+      <a href="recompensas.html" data-page="recompensas">?? Recompensas</a>
+      <a href="referidos.html" data-page="referidos">?? Recomendar</a>
+      <a href="ajustes.html" data-page="ajustes">?? Ajustes</a>
+      <a href="pagos.html" data-page="pagos">?? Pagos</a>
+      <a href="ayuda.html" data-page="ayuda">?? Ayuda</a>
     `;
 
     const header = document.getElementById('appHeader');
@@ -927,7 +928,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       }
       list.innerHTML = items
         .map((item) => {
-          const title = String(item.title || 'Notificación');
+          const title = String(item.title || 'Notificaci�n');
           const body = String(item.body || '');
           return `<div class="nav-mini-item ${item.read ? '' : 'is-unread'}">
             <div class="nav-mini-title">${title}</div>
@@ -997,7 +998,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
                 ? 'Grupo'
                 : '') ||
             item.lastMessage?.senderName ||
-            'Conversación';
+            'Conversaci�n';
           const text = String(item.lastMessage?.text || '');
           const lastAt = toDateMaybe(item.lastAt);
           const readRaw = item.reads ? item.reads[uid] : null;
@@ -1007,7 +1008,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
             item.lastMessage?.senderId !== uid &&
             (!readAt || lastAt.getTime() > readAt.getTime());
           return `<a class="nav-mini-item ${isUnread ? 'is-unread' : ''}" href="${href}" data-conv="${item.id}">
-            <div class="nav-mini-title">${String(title || 'Conversación')}</div>
+            <div class="nav-mini-title">${String(title || 'Conversaci�n')}</div>
             ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
           </a>`;
         })
@@ -1233,6 +1234,49 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     });
   }
 
+  function scrollToSection(hash, extraOffset = 0) {
+    if (!hash || !hash.startsWith('#')) return false;
+    const target = document.getElementById(hash.slice(1));
+    if (!target) return false;
+    const header = document.querySelector('.nav-glass');
+    const offset = header ? header.getBoundingClientRect().height + extraOffset : extraOffset;
+    const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+    history.replaceState(null, '', hash);
+    return true;
+  }
+
+  function setupHeroShortcuts() {
+    const polacoBtn = document.getElementById('btnPolaco');
+    if (polacoBtn && !polacoBtn.dataset.wired) {
+      polacoBtn.dataset.wired = '1';
+      polacoBtn.addEventListener('click', (e) => {
+        const hash = polacoBtn.getAttribute('href') || '#metodo-disenado-para-ti';
+        if (!hash.startsWith('#')) return; // external/absolute link: let browser navigate
+        e.preventDefault();
+        const ok = scrollToSection(hash, 8);
+        if (!ok) {
+          // Section not on this page (e.g., clicked from otro HTML) -> fallback to full link
+          window.location.href = polacoBtn.href;
+        }
+      });
+    }
+
+    const contactoBtn = document.getElementById('btnContacto');
+    if (contactoBtn && !contactoBtn.dataset.wired) {
+      contactoBtn.dataset.wired = '1';
+      contactoBtn.addEventListener('click', (e) => {
+        const hash = contactoBtn.getAttribute('href') || '#contact';
+        if (!hash.startsWith('#')) return;
+        e.preventDefault();
+        const ok = scrollToSection(hash, 8);
+        if (!ok) {
+          window.location.href = contactoBtn.href;
+        }
+      });
+    }
+  }
+
   bustStylesCache();
   const mount = ensureMount();
   const footerMount = ensureFooterMount();
@@ -1296,6 +1340,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     footerMount.innerHTML = buildFooter();
     wireHeader();
     injectSidePanel();
+    setupHeroShortcuts();
     setupAnchorScroll();
 
     if (user?.uid) startBadgeRefresh(user.uid);

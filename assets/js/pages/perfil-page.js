@@ -1,4 +1,4 @@
-Ôªø
+
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
@@ -444,10 +444,10 @@ function renderFeedFiltersUI() {
   if (feedFilterHint) {
     const baseCount = getBaseFeedList().length;
     const shown = getActiveFeedList().length;
-    const suffix = FEED_SEARCH ? ` ¬∑ filtro: ${FEED_SEARCH}` : '';
+    const suffix = FEED_SEARCH ? ` ∑ filtro: ${FEED_SEARCH}` : '';
     const ownerUid = String(PROFILE_CTX?.targetUid || '').trim();
     const hidden = hiddenCountForOwner(ownerUid);
-    const hiddenSuffix = hidden ? ` ¬∑ ocultos: ${hidden}` : '';
+    const hiddenSuffix = hidden ? ` ∑ ocultos: ${hidden}` : '';
     feedFilterHint.textContent = `Mostrando ${shown}/${baseCount}${suffix}${hiddenSuffix}`;
   }
   updateHiddenClearBtn();
@@ -489,13 +489,13 @@ function bindFeedFilters() {
     const ownerUid = String(PROFILE_CTX?.targetUid || '').trim();
     const n = hiddenCountForOwner(ownerUid);
     if (!n) return;
-    const ok = confirm('¬øRestablecer publicaciones ocultas en este perfil?');
+    const ok = confirm('øRestablecer publicaciones ocultas en este perfil?');
     if (!ok) return;
     clearHiddenForOwner(ownerUid);
     persistHiddenSet();
     updateHiddenClearBtn();
     renderActiveFeed(PROFILE_CTX);
-    setMsg('Listo ‚úÖ');
+    setMsg('Listo ?');
     setTimeout(() => setMsg(''), 1200);
   });
 
@@ -730,7 +730,7 @@ function toggleChip(btn) {
 function collectTags() {
   const tags = [];
   if (statusMood?.classList.contains('active')) tags.push('Estado');
-  if (statusMotivation?.classList.contains('active')) tags.push('Motivaci√≥n');
+  if (statusMotivation?.classList.contains('active')) tags.push('MotivaciÛn');
   if (statusMinutes?.value) tags.push(`${statusMinutes.value} min`);
   if (statusCourse?.value) tags.push(statusCourse.value);
   return tags;
@@ -822,9 +822,9 @@ function renderPublicCard(profile, isOwner) {
   const languagesText = String(profile?.bioLanguages || '').trim();
   const interestsText = String(profile?.bioInterests || '').trim();
 
-  if (publicBioWhy) publicBioWhy.textContent = why || '‚Äî';
-  if (publicBioHard) publicBioHard.textContent = hard || '‚Äî';
-  if (publicBioGoal) publicBioGoal.textContent = goal || '‚Äî';
+  if (publicBioWhy) publicBioWhy.textContent = why || 'ó';
+  if (publicBioHard) publicBioHard.textContent = hard || 'ó';
+  if (publicBioGoal) publicBioGoal.textContent = goal || 'ó';
 
   const website = normalizeWebsite(profile?.bioWebsite);
   if (publicWebsiteWrap && publicBioWebsite) {
@@ -853,7 +853,7 @@ function renderPublicCard(profile, isOwner) {
   }
 
   if (publicCardHint) {
-    publicCardHint.textContent = isOwner ? 'Vista previa: as√≠ ven tu perfil otros usuarios.' : '';
+    publicCardHint.textContent = isOwner ? 'Vista previa: asÌ ven tu perfil otros usuarios.' : '';
   }
 }
 
@@ -877,7 +877,7 @@ function renderFeed(list, ctx) {
 
   if (!sorted.length) {
     feedList.innerHTML =
-      '<div class="card muted">A√∫n no hay publicaciones. Escribe tu primer estado ‚ú®</div>';
+      '<div class="card muted">A˙n no hay publicaciones. Escribe tu primer estado ?</div>';
     return;
   }
 
@@ -887,8 +887,8 @@ function renderFeed(list, ctx) {
       const canEdit = isMine && withinMinutes(post.createdAt, 10);
       const tags = Array.isArray(post.tags) ? post.tags : [];
       const metaLabels = [];
-      if (post.pinned) metaLabels.push('üìå Fijado');
-      tags.forEach((t) => metaLabels.push(`‚Ä¢ ${t}`));
+      if (post.pinned) metaLabels.push('?? Fijado');
+      tags.forEach((t) => metaLabels.push(`ï ${t}`));
       const isSystem = (post.type || 'user') === 'system' || post.id === 'sys_pinned_local';
       const canSharePost = !isSystem;
       const canReportPost = !isMine && !isSystem;
@@ -932,7 +932,7 @@ function renderFeed(list, ctx) {
               `;
             })
             .join('')
-        : '<div class="muted">Sin comentarios todav√≠a.</div>';
+        : '<div class="muted">Sin comentarios todavÌa.</div>';
 
       const commentForm = ctx.canComment
         ? `
@@ -967,9 +967,9 @@ function renderFeed(list, ctx) {
                : ''
            }
            <div class="post-reactions">
-             <button type="button" data-reaction="heart" data-id="${esc(post.id)}">‚ù§Ô∏è</button>
-             <button type="button" data-reaction="fire" data-id="${esc(post.id)}">üî•</button>
-             <button type="button" data-reaction="spark" data-id="${esc(post.id)}">‚ú®</button>
+             <button type="button" data-reaction="heart" data-id="${esc(post.id)}">??</button>
+             <button type="button" data-reaction="fire" data-id="${esc(post.id)}">??</button>
+             <button type="button" data-reaction="spark" data-id="${esc(post.id)}">?</button>
            </div>
            <div class="post-actions">
                ${
@@ -1055,7 +1055,7 @@ function renderMediaGrid(list) {
     .sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt));
 
   if (!items.length) {
-    mediaGrid.innerHTML = '<div class="muted">A√∫n no hay fotos.</div>';
+    mediaGrid.innerHTML = '<div class="muted">A˙n no hay fotos.</div>';
     return;
   }
 
@@ -1091,7 +1091,7 @@ function storyTitle(story, fallback = 'Historia') {
     String(story?.highlightTitle || '').trim() ||
     String(story?.text || '').trim() ||
     fallback;
-  return title.length > 22 ? `${title.slice(0, 22)}‚Ä¶` : title;
+  return title.length > 22 ? `${title.slice(0, 22)}Ö` : title;
 }
 
 function setStoryModalMsg(text, bad = false) {
@@ -1129,7 +1129,7 @@ function renderStoryModal() {
   const isOwner = !!ctx?.isOwner;
   const handle = String(CURRENT_PROFILE?.handle || '').trim();
   const head = handle ? `@${handle}` : String(story.authorName || 'Usuario');
-  const createdLabel = `${formatTime(story.createdAt)} ¬∑ ${formatDate(story.createdAt)}`.trim();
+  const createdLabel = `${formatTime(story.createdAt)} ∑ ${formatDate(story.createdAt)}`.trim();
 
   let expLabel = '';
   const exp = storyExpiresAt(story);
@@ -1137,13 +1137,13 @@ function renderStoryModal() {
   if (exp && active) {
     const diff = exp.getTime() - Date.now();
     const hours = Math.max(1, Math.round(diff / (60 * 60 * 1000)));
-    expLabel = ` ¬∑ expira en ${hours}h`;
+    expLabel = ` ∑ expira en ${hours}h`;
   } else if (exp && !active) {
-    expLabel = ' ¬∑ expirada';
+    expLabel = ' ∑ expirada';
   }
 
   if (storyModalTitle) storyModalTitle.textContent = storyTitle(story, 'Historia');
-  if (storyModalMeta) storyModalMeta.textContent = `${head}${createdLabel ? ` ¬∑ ${createdLabel}` : ''}${expLabel}`;
+  if (storyModalMeta) storyModalMeta.textContent = `${head}${createdLabel ? ` ∑ ${createdLabel}` : ''}${expLabel}`;
   if (storyModalCaption) storyModalCaption.textContent = String(story.text || '').trim();
 
   const imgUrl = String(story.imageURL || '').trim();
@@ -1192,7 +1192,7 @@ function renderStoryRow(rootEl, list, kind) {
   if (!rootEl) return;
   const items = Array.isArray(list) ? list : [];
   if (!items.length) {
-    rootEl.innerHTML = '<div class="muted">‚Äî</div>';
+    rootEl.innerHTML = '<div class="muted">ó</div>';
     return;
   }
   rootEl.innerHTML = items
@@ -1200,14 +1200,14 @@ function renderStoryRow(rootEl, list, kind) {
       const title = storyTitle(story, kind === 'highlights' ? 'Destacado' : 'Historia');
       const ringClass = kind === 'highlights' ? 'storyRing storyRing--highlight' : 'storyRing';
       const img = String(story.imageURL || '').trim();
-      const badge = kind === 'highlights' ? '<span class="storyBadge">‚òÖ</span>' : '';
+      const badge = kind === 'highlights' ? '<span class="storyBadge">?</span>' : '';
       return `
         <button class="storyBubble" type="button" data-story-kind="${esc(kind)}" data-story-id="${esc(
           story.id,
         )}">
           <div class="${ringClass}">
             <div class="storyInner">
-              ${img ? `<img src="${esc(img)}" alt="" loading="lazy" />` : '<span>üì∑</span>'}
+              ${img ? `<img src="${esc(img)}" alt="" loading="lazy" />` : '<span>??</span>'}
               ${badge}
             </div>
           </div>
@@ -1226,7 +1226,7 @@ function renderStoriesSection(ctx) {
 
   if (storiesHint) {
     storiesHint.textContent = STORY_ITEMS.length
-      ? `${STORY_ITEMS.length} activas ¬∑ duran 24h`
+      ? `${STORY_ITEMS.length} activas ∑ duran 24h`
       : isOwner
         ? 'Comparte algo (dura 24h).'
         : 'Sin historias por ahora.';
@@ -1317,7 +1317,7 @@ function bindStoriesUI(ctx) {
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setMsg('La imagen es demasiado grande (m√°x. 10MB).', true);
+      setMsg('La imagen es demasiado grande (m·x. 10MB).', true);
       storyFileInput.value = '';
       return;
     }
@@ -1346,7 +1346,7 @@ function bindStoriesUI(ctx) {
       });
       bumpActivity(ctx.myUid, { stories: 1 }).catch(() => {});
 
-      setMsg('Historia publicada ‚úÖ');
+      setMsg('Historia publicada ?');
       setTimeout(() => setMsg(''), 1500);
     } catch (err) {
       console.warn('story upload failed', err);
@@ -1394,7 +1394,7 @@ function bindStoriesUI(ctx) {
       const storyId = storyShareBtn.dataset.storyId || '';
       const url = buildPostShareUrl(CURRENT_PROFILE?.handle, STORY_MODAL_CTX?.targetUid, storyId);
       const ok = await shareUrl(url, 'AquiVivo');
-      setStoryModalMsg(ok ? 'Enlace listo ‚úÖ' : 'No se pudo compartir.', !ok);
+      setStoryModalMsg(ok ? 'Enlace listo ?' : 'No se pudo compartir.', !ok);
       if (ok) setTimeout(() => setStoryModalMsg(''), 1500);
     });
 
@@ -1410,7 +1410,7 @@ function bindStoriesUI(ctx) {
       const storyId = storyReportBtn.dataset.storyId || '';
       const story = STORY_MODAL_LIST?.[STORY_MODAL_INDEX] || {};
       if (!ctx?.myUid || !ctx.targetUid || !storyId) return;
-      const reason = prompt('Reportar historia: ¬øqu√© pas√≥?');
+      const reason = prompt('Reportar historia: øquÈ pasÛ?');
       const text = String(reason || '').trim();
       if (!text) return;
       try {
@@ -1426,7 +1426,7 @@ function bindStoriesUI(ctx) {
           page: 'perfil',
           createdAt: serverTimestamp(),
         });
-        setStoryModalMsg('Reporte enviado. Gracias ‚úÖ');
+        setStoryModalMsg('Reporte enviado. Gracias ?');
         setTimeout(() => setStoryModalMsg(''), 2000);
       } catch (e) {
         console.warn('report story failed', e);
@@ -1438,7 +1438,7 @@ function bindStoriesUI(ctx) {
       const ctx = STORY_MODAL_CTX;
       const story = STORY_MODAL_LIST?.[STORY_MODAL_INDEX] || {};
       if (!ctx?.isOwner) return;
-      const ok = confirm('¬øEliminar esta historia?');
+      const ok = confirm('øEliminar esta historia?');
       if (!ok) return;
 
       const storyId = story.id || storyDeleteBtn.dataset.storyId || '';
@@ -1508,7 +1508,7 @@ function bindStoriesUI(ctx) {
         if (CURRENT_PROFILE) {
           CURRENT_PROFILE.highlights = HIGHLIGHT_IDS.slice();
         }
-        setStoryModalMsg('Listo ‚úÖ');
+        setStoryModalMsg('Listo ?');
         setTimeout(() => setStoryModalMsg(''), 1200);
         renderStoryModal();
         await refreshHighlights(ctx.targetUid, ctx);
@@ -1554,11 +1554,11 @@ function renderSavedCollections() {
     )}">${esc(label)}</button>
   `;
   chips.push(mk('all', 'Todas'));
-  chips.push(mk('_none', 'Sin colecci√≥n'));
+  chips.push(mk('_none', 'Sin colecciÛn'));
   cols.forEach((c) => {
     const id = String(c.id || '').trim();
     if (!id) return;
-    chips.push(mk(id, String(c.name || 'Colecci√≥n').trim() || 'Colecci√≥n'));
+    chips.push(mk(id, String(c.name || 'ColecciÛn').trim() || 'ColecciÛn'));
   });
 
   savedCollectionsRow.innerHTML = chips.join('');
@@ -1575,7 +1575,7 @@ function renderSavedGrid() {
   if (!savedGrid) return;
   const items = getFilteredSavedItems();
   if (!items.length) {
-    savedGrid.innerHTML = '<div class="muted">A√∫n no tienes guardados.</div>';
+    savedGrid.innerHTML = '<div class="muted">A˙n no tienes guardados.</div>';
     return;
   }
 
@@ -1585,7 +1585,7 @@ function renderSavedGrid() {
       const ownerHandle = String(item.ownerHandle || '').trim();
       const postId = String(item.postId || '').trim();
       const href = ownerUid && postId ? buildPostShareUrl(ownerHandle, ownerUid, postId) : '#';
-      const title = ownerHandle ? `@${ownerHandle}` : 'Publicaci√≥n guardada';
+      const title = ownerHandle ? `@${ownerHandle}` : 'PublicaciÛn guardada';
       const text = String(item.postText || '').trim();
       const img = String(item.postImageURL || '').trim();
 
@@ -1650,7 +1650,7 @@ function bindSavedUI(ctx) {
   if (btnNewCollection && !btnNewCollection.dataset.wired) {
     btnNewCollection.dataset.wired = '1';
     btnNewCollection.addEventListener('click', async () => {
-      const name = prompt('Nombre de la colecci√≥n:', '') ?? '';
+      const name = prompt('Nombre de la colecciÛn:', '') ?? '';
       const value = String(name || '').trim();
       if (!value) return;
       try {
@@ -1660,7 +1660,7 @@ function bindSavedUI(ctx) {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-        setSavedStatus('Listo ‚úÖ');
+        setSavedStatus('Listo ?');
         setTimeout(() => setSavedStatus(''), 1200);
       } catch (e) {
         console.warn('create collection failed', e);
@@ -1710,7 +1710,7 @@ function bindSavedUI(ctx) {
           ACTIVE_SAVE_COLLECTION !== 'all' && ACTIVE_SAVE_COLLECTION !== '_none'
             ? SAVE_COLLECTIONS.find((c) => c.id === ACTIVE_SAVE_COLLECTION)?.name || ''
             : '';
-        const name = prompt('Mover a colecci√≥n (vac√≠o = sin colecci√≥n):', suggested) ?? '';
+        const name = prompt('Mover a colecciÛn (vacÌo = sin colecciÛn):', suggested) ?? '';
         const value = String(name || '').trim();
         try {
           setSavedStatus('Actualizando...');
@@ -1719,7 +1719,7 @@ function bindSavedUI(ctx) {
             collectionId: colId || null,
             updatedAt: serverTimestamp(),
           });
-          setSavedStatus('Listo ‚úÖ');
+          setSavedStatus('Listo ?');
           setTimeout(() => setSavedStatus(''), 1200);
         } catch (err) {
           console.warn('move saved failed', err);
@@ -1853,13 +1853,13 @@ function renderActivityCalendar() {
     const score = activityScore(day);
     const lv = activityLevel(score);
     const cls = lv ? ` lv${lv}` : '';
-    const title = `${k} ¬∑ visitas ${visits}, posts ${posts}, historias ${stories}, fotos ${photos}, min ${minutes}`;
+    const title = `${k} ∑ visitas ${visits}, posts ${posts}, historias ${stories}, fotos ${photos}, min ${minutes}`;
     return `<div class="activityCell${cls}" title="${esc(title)}"></div>`;
   });
   activityGrid.innerHTML = cells.join('');
 
   if (activityHint) {
-    activityHint.textContent = '√öltimos 35 d√≠as (se actualiza autom√°ticamente).';
+    activityHint.textContent = '⁄ltimos 35 dÌas (se actualiza autom·ticamente).';
   }
 
   if (activitySummary) {
@@ -1875,7 +1875,7 @@ function renderActivityCalendar() {
       s += Number(day.stories || 0) || 0;
       m += Number(day.minutes || 0) || 0;
     });
-    activitySummary.textContent = `7 d√≠as: ${v} visitas ¬∑ ${p} posts ¬∑ ${s} historias ¬∑ ${m} min`;
+    activitySummary.textContent = `7 dÌas: ${v} visitas ∑ ${p} posts ∑ ${s} historias ∑ ${m} min`;
   }
 }
 
@@ -2014,7 +2014,7 @@ function subscribeFeed(targetUid, ctx) {
         items.unshift({
           id: 'sys_pinned_local',
           type: 'system',
-          text: 'Tu progreso aparece aqu√≠. Sigue aprendiendo üî•',
+          text: 'Tu progreso aparece aquÌ. Sigue aprendiendo ??',
           createdAt: new Date(),
           pinned: true,
         });
@@ -2104,7 +2104,7 @@ function bindStatusComposer(ctx) {
       statusMood?.classList.remove('active');
       statusMotivation?.classList.remove('active');
       updateBtn();
-      setStatusHint('Publicado ‚úÖ');
+      setStatusHint('Publicado ?');
       playHeart();
       setTimeout(() => setStatusHint(''), 2000);
     } catch (e) {
@@ -2154,7 +2154,7 @@ function bindMediaComposer(ctx) {
   if (!ctx.isOwner) {
     mediaComposer.style.display = 'none';
     clearMediaSelection(true);
-    if (mediaHint) mediaHint.textContent = 'Las fotos las publica el due√±o del perfil.';
+    if (mediaHint) mediaHint.textContent = 'Las fotos las publica el dueÒo del perfil.';
     return;
   }
 
@@ -2182,7 +2182,7 @@ function bindMediaComposer(ctx) {
     }
     const tooBig = file.size > 10 * 1024 * 1024;
     if (tooBig) {
-      setMediaMsg('La imagen es demasiado grande (m√°x. 10MB).', true);
+      setMediaMsg('La imagen es demasiado grande (m·x. 10MB).', true);
       clearMediaSelection();
       return;
     }
@@ -2222,7 +2222,7 @@ function bindMediaComposer(ctx) {
 
       const post = {
         type: 'user',
-        text: caption || 'üì∑ Foto',
+        text: caption || '?? Foto',
         imageURL: upload.url,
         imagePath: upload.path || null,
         createdAt: serverTimestamp(),
@@ -2235,7 +2235,7 @@ function bindMediaComposer(ctx) {
       await addDoc(collection(db, 'user_feed', ctx.myUid, 'posts'), post);
       bumpActivity(ctx.myUid, { posts: 1, photos: 1 }).catch(() => {});
       clearMediaSelection(true);
-      setMediaMsg('Publicado ‚úÖ');
+      setMediaMsg('Publicado ?');
       playHeart();
       setTimeout(() => setMediaMsg(''), 2000);
     } catch (e) {
@@ -2301,7 +2301,7 @@ function bindFeedActions(ctx) {
       if (action === 'copy') {
         const url = buildPostShareUrl(CURRENT_PROFILE?.handle, ctx.targetUid, id);
         const ok = await copyToClipboard(url);
-        setMsg(ok ? 'Enlace copiado ‚úÖ' : 'No se pudo copiar.', !ok);
+        setMsg(ok ? 'Enlace copiado ?' : 'No se pudo copiar.', !ok);
         if (ok) setTimeout(() => setMsg(''), 1500);
         return;
       }
@@ -2309,7 +2309,7 @@ function bindFeedActions(ctx) {
       if (action === 'share') {
         const url = buildPostShareUrl(CURRENT_PROFILE?.handle, ctx.targetUid, id);
         const ok = await shareUrl(url, 'AquiVivo');
-        setMsg(ok ? 'Enlace listo ‚úÖ' : 'No se pudo compartir.', !ok);
+        setMsg(ok ? 'Enlace listo ?' : 'No se pudo compartir.', !ok);
         if (ok) setTimeout(() => setMsg(''), 1500);
         return;
       }
@@ -2324,14 +2324,14 @@ function bindFeedActions(ctx) {
       if (action === 'hide') {
         const post = FEED_ITEMS[idx] || {};
         if ((post.type || 'user') === 'system' || post.id === 'sys_pinned_local') return;
-        const ok = confirm('¬øOcultar esta publicaci√≥n para ti?');
+        const ok = confirm('øOcultar esta publicaciÛn para ti?');
         if (!ok) return;
         const key = hiddenPostKey(ctx.targetUid, id);
         if (!key) return;
         HIDDEN_SET.add(key);
         persistHiddenSet();
         updateHiddenClearBtn();
-        setMsg('Publicaci√≥n oculta.');
+        setMsg('PublicaciÛn oculta.');
         setTimeout(() => setMsg(''), 1500);
         renderActiveFeed(ctx);
         return;
@@ -2365,7 +2365,7 @@ function bindFeedActions(ctx) {
               },
               { merge: true },
             );
-            setMsg('Guardado ‚úÖ');
+            setMsg('Guardado ?');
           }
           setTimeout(() => setMsg(''), 1500);
         } catch (e) {
@@ -2378,7 +2378,7 @@ function bindFeedActions(ctx) {
       if (action === 'report') {
         const post = FEED_ITEMS[idx] || {};
         if (post.authorUid && post.authorUid === ctx.myUid) return;
-        const reason = prompt('Reportar post: ¬øqu√© pas√≥?');
+        const reason = prompt('Reportar post: øquÈ pasÛ?');
         const text = String(reason || '').trim();
         if (!text) return;
         try {
@@ -2394,7 +2394,7 @@ function bindFeedActions(ctx) {
             page: 'perfil',
             createdAt: serverTimestamp(),
           });
-          setMsg('Reporte enviado. Gracias ‚úÖ');
+          setMsg('Reporte enviado. Gracias ?');
           setTimeout(() => setMsg(''), 2000);
         } catch (e) {
           console.warn('report post failed', e);
@@ -2828,8 +2828,8 @@ async function loadFriendsTab(ctx) {
   if (!friendsHint || !friendsList) return;
 
   if (!ctx.isOwner) {
-    friendsHint.textContent = 'La lista completa de amigos solo es visible para el due√±o del perfil.';
-    friendsList.innerHTML = '<div class="muted">‚Äî</div>';
+    friendsHint.textContent = 'La lista completa de amigos solo es visible para el dueÒo del perfil.';
+    friendsList.innerHTML = '<div class="muted">ó</div>';
     if (friendsTotal) friendsTotal.textContent = '0';
     if (friendsSearch) friendsSearch.style.display = 'none';
     return;
@@ -2842,12 +2842,12 @@ async function loadFriendsTab(ctx) {
     FRIENDS_CACHE = await fetchFriendsAccepted(ctx.targetUid);
     friendsHint.textContent = FRIENDS_CACHE.length
       ? `Tienes ${FRIENDS_CACHE.length} amigos.`
-      : 'A√∫n no tienes amigos. ¬°Conecta con la comunidad!';
+      : 'A˙n no tienes amigos. °Conecta con la comunidad!';
     renderFriendsTab(ctx);
   } catch (e) {
     console.warn('load friends tab failed', e);
     friendsHint.textContent = 'No se pudieron cargar tus amigos.';
-    friendsList.innerHTML = '<div class="muted">‚Äî</div>';
+    friendsList.innerHTML = '<div class="muted">ó</div>';
   }
 
   if (friendsSearch && !friendsSearch.dataset.wired) {
@@ -2862,13 +2862,13 @@ async function loadFriendsTab(ctx) {
       if (!btn) return;
       const otherUid = btn.getAttribute('data-friend-remove');
       if (!otherUid) return;
-      const ok = confirm('¬øEliminar esta amistad?');
+      const ok = confirm('øEliminar esta amistad?');
       if (!ok) return;
       try {
         await removeFriendConnection(ctx.myUid, otherUid);
         await loadFriendCount(ctx.myUid);
         await loadFriendsTab(ctx);
-        setMsg('Amigo eliminado ‚úÖ');
+        setMsg('Amigo eliminado ?');
         setTimeout(() => setMsg(''), 2000);
       } catch (e) {
         console.warn('remove friend failed', e);
@@ -2940,7 +2940,7 @@ function renderFollowersTab(ctx) {
   if (followersTotal) followersTotal.textContent = String(filtered.length);
 
   if (!filtered.length) {
-    followersList.innerHTML = '<div class="muted">A√∫n no tienes seguidores.</div>';
+    followersList.innerHTML = '<div class="muted">A˙n no tienes seguidores.</div>';
     return;
   }
 
@@ -3005,7 +3005,7 @@ function renderFollowingTab(ctx) {
   if (followingTotal) followingTotal.textContent = String(filtered.length);
 
   if (!filtered.length) {
-    followingList.innerHTML = '<div class="muted">A√∫n no sigues a nadie.</div>';
+    followingList.innerHTML = '<div class="muted">A˙n no sigues a nadie.</div>';
     return;
   }
 
@@ -3065,12 +3065,12 @@ async function loadFollowersTab(ctx) {
       ? (ctx.isOwner
           ? `Tienes ${FOLLOWERS_CACHE.length} seguidores.`
           : `Seguidores: ${FOLLOWERS_CACHE.length}`)
-      : 'A√∫n no hay seguidores.';
+      : 'A˙n no hay seguidores.';
     renderFollowersTab(ctx);
   } catch (e) {
     console.warn('load followers tab failed', e);
     followersHint.textContent = 'No se pudo cargar la lista.';
-    followersList.innerHTML = '<div class="muted">‚Äî</div>';
+    followersList.innerHTML = '<div class="muted">ó</div>';
   }
 
   if (followersSearch && !followersSearch.dataset.wired) {
@@ -3093,7 +3093,7 @@ async function loadFollowersTab(ctx) {
         btn.setAttribute('data-following', next ? '1' : '0');
         btn.textContent = next ? 'Dejar de seguir' : 'Seguir';
         await loadFollowCounts(ctx.targetUid);
-        setMsg(next ? 'Siguiendo ‚úÖ' : 'Listo ‚úÖ');
+        setMsg(next ? 'Siguiendo ?' : 'Listo ?');
         setTimeout(() => setMsg(''), 1500);
       } catch (e) {
         console.warn('toggle follow failed', e);
@@ -3117,12 +3117,12 @@ async function loadFollowingTab(ctx) {
       ? (ctx.isOwner
           ? `Sigues a ${FOLLOWING_CACHE.length} personas.`
           : `Siguiendo: ${FOLLOWING_CACHE.length}`)
-      : 'A√∫n no sigue a nadie.';
+      : 'A˙n no sigue a nadie.';
     renderFollowingTab(ctx);
   } catch (e) {
     console.warn('load following tab failed', e);
     followingHint.textContent = 'No se pudo cargar la lista.';
-    followingList.innerHTML = '<div class="muted">‚Äî</div>';
+    followingList.innerHTML = '<div class="muted">ó</div>';
   }
 
   if (followingSearch && !followingSearch.dataset.wired) {
@@ -3143,7 +3143,7 @@ async function loadFollowingTab(ctx) {
         FOLLOWING_CACHE = (FOLLOWING_CACHE || []).filter((x) => x.otherUid !== otherUid);
         renderFollowingTab(ctx);
         await loadFollowCounts(ctx.targetUid);
-        setMsg('Listo ‚úÖ');
+        setMsg('Listo ?');
         setTimeout(() => setMsg(''), 1500);
       } catch (e) {
         console.warn('unfollow failed', e);
@@ -3285,7 +3285,7 @@ function initProfilePeopleSearch(opts) {
 
   if (profileSearchInput) {
     profileSearchInput.placeholder = first
-      ? `¬øA qui√©n buscas, ${first}?`
+      ? `øA quiÈn buscas, ${first}?`
       : 'Busca por nombre o @usuario...';
   }
   renderProfileSearchAvatar(viewerPhotoURL, viewerName || 'Usuario');
@@ -3349,7 +3349,7 @@ function initProfilePeopleSearch(opts) {
           followBtn.setAttribute('data-following', next ? '1' : '0');
           followBtn.textContent = next ? 'Siguiendo' : 'Seguir';
           if (opts?.isOwner) await loadFollowCounts(opts.targetUid || myUid);
-          setProfileSearchMsg(next ? 'Siguiendo ‚úÖ' : 'Listo ‚úÖ');
+          setProfileSearchMsg(next ? 'Siguiendo ?' : 'Listo ?');
           setTimeout(() => setProfileSearchMsg(''), 1500);
         } catch (err) {
           console.warn('follow from profile search failed', err);
@@ -3423,26 +3423,26 @@ async function loadRecentReactions(targetUid) {
       ),
     );
     if (snap.empty) {
-      recentReactions.textContent = 'Sin reacciones a√∫n.';
+      recentReactions.textContent = 'Sin reacciones a˙n.';
       return;
     }
     const names = snap.docs.map((docSnap) => docSnap.data()?.userName || 'Usuario');
-    recentReactions.innerHTML = names.map((n) => `<div>‚ù§Ô∏è ${esc(n)}</div>`).join('');
+    recentReactions.innerHTML = names.map((n) => `<div>?? ${esc(n)}</div>`).join('');
   } catch (e) {
     const code = String(e?.code || '');
     const msg = String(e?.message || '');
     if (code === 'permission-denied' || /permission/i.test(msg)) {
       recentReactions.textContent = 'Reacciones ocultas.';
     } else {
-      recentReactions.textContent = 'Sin reacciones a√∫n.';
+      recentReactions.textContent = 'Sin reacciones a˙n.';
     }
   }
 }
 
 function renderRewards(profile) {
-  if (rewardStreak) rewardStreak.textContent = `${Number(profile.streakDays || profile.streak || 0)} d√≠as`;
+  if (rewardStreak) rewardStreak.textContent = `${Number(profile.streakDays || profile.streak || 0)} dÌas`;
   if (rewardBadges) rewardBadges.textContent = String((profile.badges || []).length || 0);
-  if (rewardDays) rewardDays.textContent = `${Number(profile.studyDays || profile.daysLearned || 0)} d√≠as`;
+  if (rewardDays) rewardDays.textContent = `${Number(profile.studyDays || profile.daysLearned || 0)} dÌas`;
   if (rewardConsistency) rewardConsistency.textContent = `${Number(profile.consistencyPct || 0)}%`;
 }
 
@@ -3454,12 +3454,12 @@ function bindRewards() {
     const key = card.dataset.achievement || '';
     const dateLabel = rewardDetail.dataset.date || '';
     const map = {
-      racha: 'Racha: ¬°cada d√≠a suma! Aqu√≠ ver√°s tu nivel y la √∫ltima fecha activa.',
+      racha: 'Racha: °cada dÌa suma! AquÌ ver·s tu nivel y la ˙ltima fecha activa.',
       insignias: 'Insignias: premios por completar temas y retos.',
-      dias: 'D√≠as de aprendizaje: cuenta total de d√≠as con actividad.',
-      constancia: 'Constancia: promedio de estudio en la √∫ltima semana.',
+      dias: 'DÌas de aprendizaje: cuenta total de dÌas con actividad.',
+      constancia: 'Constancia: promedio de estudio en la ˙ltima semana.',
     };
-    rewardDetail.textContent = `${map[key] || 'Detalle de tu logro.'}${dateLabel ? ` ¬∑ ${dateLabel}` : ''}`;
+    rewardDetail.textContent = `${map[key] || 'Detalle de tu logro.'}${dateLabel ? ` ∑ ${dateLabel}` : ''}`;
   });
 }
 
@@ -3521,7 +3521,7 @@ function bindCoverUpload(uid, isOwner) {
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setMsg('La imagen es demasiado grande (m√°x. 10MB).', true);
+      setMsg('La imagen es demasiado grande (m·x. 10MB).', true);
       coverInput.value = '';
       return;
     }
@@ -3531,7 +3531,7 @@ function bindCoverUpload(uid, isOwner) {
       const result = await uploadCover(uid, file);
       if (result?.url) {
         renderCover(result.url);
-        setMsg('Portada actualizada ‚úÖ');
+        setMsg('Portada actualizada ?');
       }
     } catch (err) {
       console.warn('cover upload failed', err);
@@ -3566,7 +3566,7 @@ function bindAvatarUpload(uid, emailLower, isOwner) {
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setAvatarHint('La imagen es demasiado grande (m√°x. 10MB).');
+      setAvatarHint('La imagen es demasiado grande (m·x. 10MB).');
       avatarInput.value = '';
       return;
     }
@@ -3576,7 +3576,7 @@ function bindAvatarUpload(uid, emailLower, isOwner) {
       const result = await uploadAvatar(uid, emailLower, file);
       if (result?.url) {
         renderAvatar(result.url, basicName?.value || profileName?.textContent || '');
-        setAvatarHint('Foto actualizada ‚úÖ');
+        setAvatarHint('Foto actualizada ?');
       }
     } catch (err) {
       console.warn('avatar upload failed', err);
@@ -3680,7 +3680,7 @@ async function saveProfileInfo(uid) {
   const handle = basicHandle?.value?.trim() || '';
   const handleLower = normalizeHandle(handle);
   if (handle && !isHandleValid(handleLower)) {
-    setBasicMsg('Usuario inv√°lido. Usa 3-20 letras/n√∫meros y ._-');
+    setBasicMsg('Usuario inv·lido. Usa 3-20 letras/n˙meros y ._-');
     return;
   }
   const updates = {
@@ -3744,8 +3744,8 @@ async function saveProfileInfo(uid) {
     renderPublicCard(CURRENT_PROFILE, true);
     if (btnShare) btnShare.dataset.share = toAbsoluteUrl(buildProfileHref(handle, uid));
 
-    setInfoMsg('Guardado ‚úÖ');
-    setBasicMsg('Guardado ‚úÖ');
+    setInfoMsg('Guardado ?');
+    setBasicMsg('Guardado ?');
     setTimeout(() => {
       setInfoMsg('');
       setBasicMsg('');
@@ -3889,7 +3889,7 @@ onAuthStateChanged(auth, async (user) => {
         btnShare.addEventListener('click', async () => {
           const href = btnShare.dataset.share || '';
           const ok = await copyToClipboard(href);
-          setMsg(ok ? 'Enlace copiado ‚úÖ' : 'No se pudo copiar.', !ok);
+          setMsg(ok ? 'Enlace copiado ?' : 'No se pudo copiar.', !ok);
           if (ok) setTimeout(() => setMsg(''), 1500);
         });
       }
@@ -3904,7 +3904,7 @@ onAuthStateChanged(auth, async (user) => {
         btnReport.addEventListener('click', async () => {
           const target = btnReport.dataset.targetUid || '';
           if (!target || target === user.uid) return;
-          const reason = prompt('¬øQu√© pas√≥? Describe el problema en 1‚Äì2 frases:');
+          const reason = prompt('øQuÈ pasÛ? Describe el problema en 1ñ2 frases:');
           const text = String(reason || '').trim();
           if (!text) return;
           try {
@@ -3916,7 +3916,7 @@ onAuthStateChanged(auth, async (user) => {
               page: 'perfil',
               createdAt: serverTimestamp(),
             });
-            setMsg('Reporte enviado. Gracias ‚úÖ');
+            setMsg('Reporte enviado. Gracias ?');
             setTimeout(() => setMsg(''), 2000);
           } catch (e) {
             console.warn('report failed', e);
@@ -3928,7 +3928,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (statStreak) statStreak.textContent = Number(profile.streakDays || profile.streak || 0);
     if (statExp) statExp.textContent = Number(profile.exp || 0);
-    if (statLeague) statLeague.textContent = profile.league || '‚Äî';
+    if (statLeague) statLeague.textContent = profile.league || 'ó';
     if (statTop3) statTop3.textContent = Number(profile.top3 || 0);
 
     renderRewards(profile);
@@ -4003,7 +4003,7 @@ onAuthStateChanged(auth, async (user) => {
             if (profileStatus && !isOwner && !isFriend && friendStatus?.status !== 'pending') {
               profileStatus.textContent = next ? 'Siguiendo' : 'No conectado';
             }
-            setMsg(next ? 'Siguiendo ‚úÖ' : 'Listo ‚úÖ');
+            setMsg(next ? 'Siguiendo ?' : 'Listo ?');
             setTimeout(() => setMsg(''), 1500);
           } catch (e) {
             console.warn('toggle follow failed', e);
@@ -4024,15 +4024,15 @@ onAuthStateChanged(auth, async (user) => {
       if (mediaComposer) mediaComposer.style.display = 'none';
       if (mediaGrid) mediaGrid.innerHTML = '<div class="muted">Contenido oculto.</div>';
       if (friendsHint) friendsHint.textContent = 'Contenido oculto.';
-      if (friendsList) friendsList.innerHTML = '<div class="muted">‚Äî</div>';
+      if (friendsList) friendsList.innerHTML = '<div class="muted">ó</div>';
       if (friendsSearch) friendsSearch.style.display = 'none';
       if (friendsTotal) friendsTotal.textContent = '0';
       if (followersHint) followersHint.textContent = 'Contenido oculto.';
-      if (followersList) followersList.innerHTML = '<div class="muted">‚Äî</div>';
+      if (followersList) followersList.innerHTML = '<div class="muted">ó</div>';
       if (followersSearch) followersSearch.style.display = 'none';
       if (followersTotal) followersTotal.textContent = '0';
       if (followingHint) followingHint.textContent = 'Contenido oculto.';
-      if (followingList) followingList.innerHTML = '<div class="muted">‚Äî</div>';
+      if (followingList) followingList.innerHTML = '<div class="muted">ó</div>';
       if (followingSearch) followingSearch.style.display = 'none';
       if (followingTotal) followingTotal.textContent = '0';
       return;
@@ -4070,9 +4070,9 @@ onAuthStateChanged(auth, async (user) => {
       if (statusCard) statusCard.style.display = 'none';
       if (mediaGrid) mediaGrid.innerHTML = '<div class="muted">Contenido oculto.</div>';
     } else if (!canViewFeed && postsVisibility === 'private' && !isOwner) {
-      if (feedList) feedList.innerHTML = '<div class="card muted">Las publicaciones est√°n ocultas.</div>';
+      if (feedList) feedList.innerHTML = '<div class="card muted">Las publicaciones est·n ocultas.</div>';
       if (statusCard) statusCard.style.display = 'none';
-      if (mediaGrid) mediaGrid.innerHTML = '<div class="muted">Las fotos est√°n ocultas.</div>';
+      if (mediaGrid) mediaGrid.innerHTML = '<div class="muted">Las fotos est·n ocultas.</div>';
     } else if (!canViewFeed && postsVisibility === 'friends' && !isOwner && !isFriend) {
       if (feedList)
         feedList.innerHTML = '<div class="card muted">Solo amigos pueden ver este feed.</div>';
@@ -4086,7 +4086,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (rewardsVisibility === 'private' && !isOwner) {
       const rewardsTab = $('tab-rewards');
-      if (rewardsTab) rewardsTab.innerHTML = '<div class="card muted">Las recompensas est√°n ocultas.</div>';
+      if (rewardsTab) rewardsTab.innerHTML = '<div class="card muted">Las recompensas est·n ocultas.</div>';
     }
 
     if (user.uid === targetUid) {
@@ -4165,7 +4165,7 @@ onAuthStateChanged(auth, async (user) => {
           if (user.uid === targetUid) {
             await loadFollowCounts(user.uid);
           }
-          setMsg('Siguiendo ‚úÖ');
+          setMsg('Siguiendo ?');
           setTimeout(() => setMsg(''), 1500);
         } catch (e) {
           console.warn('follow from suggestion failed', e);
