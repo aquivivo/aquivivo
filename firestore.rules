@@ -208,7 +208,9 @@ service cloud.firestore {
       // Minimalny kontrakt: email + admin/access/blocked (reszta może dopełnić admin/panel)
       allow create: if isAdmin() || (
         isOwner(uid)
-        && request.resource.data.email == request.auth.token.email
+        && (request.resource.data.email is string)
+        && (request.auth.token.email is string)
+        && request.resource.data.email.lower() == request.auth.token.email.lower()
         // emailLower opcjonalne (jeśli jest – musi pasować)
         && ( !("emailLower" in request.resource.data) || request.resource.data.emailLower == request.auth.token.email.lower() )
         && ( !("admin" in request.resource.data) || request.resource.data.admin == false )

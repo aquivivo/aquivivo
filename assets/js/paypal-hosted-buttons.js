@@ -3,7 +3,10 @@
 
 let sdkPromise = null;
 
-function buildSdkUrl({ clientId, currency, disableFunding }) {
+function buildSdkUrl({ sdkSrc, clientId, currency, disableFunding }) {
+  const cleanedSrc = String(sdkSrc || '').trim();
+  if (cleanedSrc) return cleanedSrc;
+
   const params = new URLSearchParams();
   params.set('client-id', String(clientId || '').trim());
   params.set('components', 'hosted-buttons');
@@ -19,6 +22,7 @@ function safeId(raw) {
 }
 
 export function ensurePayPalHostedButtonsSdk({
+  sdkSrc,
   clientId,
   currency = 'PLN',
   disableFunding = 'venmo',
@@ -26,9 +30,10 @@ export function ensurePayPalHostedButtonsSdk({
   if (typeof window === 'undefined') {
     return Promise.reject(new Error('PayPal SDK can only run in the browser.'));
   }
+  const cleanedSrc = String(sdkSrc || '').trim();
   const cleanedClientId = String(clientId || '').trim();
-  if (!cleanedClientId) {
-    return Promise.reject(new Error('Missing PayPal clientId.'));
+  if (!cleanedSrc && !cleanedClientId) {
+    return Promise.reject(new Error('Missing PayPal SDK configuration.'));
   }
 
   if (window.paypal?.HostedButtons) return Promise.resolve(window.paypal);
@@ -37,8 +42,15 @@ export function ensurePayPalHostedButtonsSdk({
   sdkPromise = new Promise((resolve, reject) => {
     const existing = document.querySelector('script[data-paypal-hosted-sdk="1"]');
     if (existing) {
-      const done = () => resolve(window.paypal);
-      if (window.paypal?.HostedButtons) return done();
+      const done = () => {
+        const paypal = window.paypal;
+        if (!paypal) {
+          reject(new Error('PayPal SDK did not initialize (check client-id).'));
+          return;
+        }
+        resolve(paypal);
+      };
+      if (window.paypal) return done();
       existing.addEventListener('load', done, { once: true });
       existing.addEventListener(
         'error',
@@ -50,13 +62,25 @@ export function ensurePayPalHostedButtonsSdk({
 
     const script = document.createElement('script');
     script.src = buildSdkUrl({
+      sdkSrc: cleanedSrc,
       clientId: cleanedClientId,
       currency,
       disableFunding,
     });
     script.async = true;
     script.dataset.paypalHostedSdk = '1';
-    script.addEventListener('load', () => resolve(window.paypal), { once: true });
+    script.addEventListener(
+      'load',
+      () => {
+        const paypal = window.paypal;
+        if (!paypal) {
+          reject(new Error('PayPal SDK did not initialize (check client-id).'));
+          return;
+        }
+        resolve(paypal);
+      },
+      { once: true },
+    );
     script.addEventListener(
       'error',
       () => reject(new Error('Failed to load PayPal SDK.')),
@@ -69,6 +93,7 @@ export function ensurePayPalHostedButtonsSdk({
 }
 
 export async function renderPayPalHostedButtons({
+  sdkSrc,
   clientId,
   currency = 'PLN',
   disableFunding = 'venmo',
@@ -78,6 +103,7 @@ export async function renderPayPalHostedButtons({
   if (!nodes.length) return;
 
   const paypal = await ensurePayPalHostedButtonsSdk({
+    sdkSrc,
     clientId,
     currency,
     disableFunding,
@@ -106,4 +132,3 @@ export async function renderPayPalHostedButtons({
     }
   }
 }
-

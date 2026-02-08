@@ -922,6 +922,22 @@ body[data-page='index'] main.page {
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
 }
 
+.btn.is-disabled,
+.btn-white-outline.is-disabled,
+.btn-yellow.is-disabled,
+.btn-red.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn.is-disabled:hover,
+.btn-white-outline.is-disabled:hover,
+.btn-yellow.is-disabled:hover,
+.btn-red.is-disabled:hover {
+  transform: none;
+  filter: none;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.14);
+}
+
 .btn-white-outline {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.42);
@@ -1112,6 +1128,26 @@ body:not([data-page='index']) .heroBanner {
 }
 .glow-text {
   text-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+/* Extra compact page headers when the left side panel is present */
+body.with-side-panel .heroBanner {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+}
+body.with-side-panel .heroTitleRow {
+  gap: 10px;
+}
+body.with-side-panel .heroIcon {
+  font-size: 30px;
+}
+body.with-side-panel .heroBanner .glow-text {
+  font-size: 28px !important;
+  line-height: 1.1;
+}
+body.with-side-panel .heroBanner .subtitle {
+  display: none;
 }
 
 /* Inputs */

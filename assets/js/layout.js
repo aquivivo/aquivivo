@@ -1241,7 +1241,12 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
 
         // Ensure the user doc exists (needed by Firestore rules: notBlocked()/hasUserDoc()).
         if (!snap.exists()) {
-          const email = String(user?.email || '').trim();
+          let email = String(user?.email || '').trim();
+          try {
+            const token = await user.getIdTokenResult?.();
+            const tokenEmail = String(token?.claims?.email || '').trim();
+            if (tokenEmail) email = tokenEmail;
+          } catch {}
           if (email) {
             const payload = {
               email,

@@ -12,7 +12,7 @@ import {
   where,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { renderPayPalHostedButtons } from '../paypal-hosted-buttons.js';
+import { renderPayPalHostedButtons } from '../paypal-hosted-buttons.js?v=20260207';
 
 const $ = (id) => document.getElementById(id);
 
@@ -23,6 +23,16 @@ function esc(s) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
+}
+
+function getPayPalConfig() {
+  const body = document.body || {};
+  const sdkSrc = String(body.dataset.paypalSdkSrc || '').trim();
+  const clientId = String(body.dataset.paypalClientId || '').trim();
+  const currency = String(body.dataset.paypalCurrency || 'PLN').trim() || 'PLN';
+  const disableFunding =
+    String(body.dataset.paypalDisableFunding || 'venmo').trim() || 'venmo';
+  return { sdkSrc, clientId, currency, disableFunding };
 }
 
 function requireCheckoutConsent() {
@@ -36,9 +46,6 @@ function requireCheckoutConsent() {
   alert('Antes de comprar, marca la casilla de aceptación.');
   return false;
 }
-
-const PAYPAL_CLIENT_ID =
-  'BAAtx6GPLaLeRMKMgh-3A28oPN2OTGftJ7XV3ceTcK93ioFgfgpqLSYTmvquATwDLR0NG2-1ngqa1_rP4';
 
 let paypalRendered = false;
 
@@ -59,26 +66,44 @@ async function ensurePayPalRendered() {
   paypalRendered = true;
   setPayPalStatus('Cargando PayPal…');
   try {
+    const { sdkSrc, clientId, currency, disableFunding } = getPayPalConfig();
     await renderPayPalHostedButtons({
-      clientId: PAYPAL_CLIENT_ID,
-      currency: 'PLN',
-      disableFunding: 'venmo',
+      sdkSrc,
+      clientId,
+      currency,
+      disableFunding,
     });
     setPayPalStatus('');
   } catch (e) {
     paypalRendered = false;
     console.error('[paypal]', e);
-    setPayPalStatus('No se pudo cargar PayPal. Intenta recargar la página.');
+    const msg = String(e?.message || '').trim();
+    setPayPalStatus(
+      msg
+        ? `No se pudo cargar PayPal (${msg}).`
+        : 'No se pudo cargar PayPal. Intenta recargar la página.',
+    );
   }
 }
 
 function updatePayPalGate() {
   const wrap = $('paypalHostedWrap');
   const overlay = $('paypalHostedOverlay');
-  if (!wrap || !overlay) return;
+  const link = $('paypalFallbackLink');
 
   const checkbox = $('checkoutConsent');
   const enabled = !checkbox || checkbox.checked === true;
+
+  if (link) {
+    link.classList.toggle('is-disabled', !enabled);
+    link.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+  }
+
+  if (!wrap || !overlay) return;
+
+  const { sdkSrc, clientId } = getPayPalConfig();
+  const configured = Boolean(sdkSrc || clientId);
+  if (!configured) return;
 
   wrap.classList.toggle('is-enabled', enabled);
   overlay.setAttribute('aria-hidden', enabled ? 'true' : 'false');
@@ -88,7 +113,20 @@ function updatePayPalGate() {
 
 function initPayPal() {
   const wrap = $('paypalHostedWrap');
-  if (!wrap) return;
+  const { sdkSrc, clientId } = getPayPalConfig();
+  const configured = Boolean(sdkSrc || clientId);
+
+  if (wrap) wrap.style.display = configured ? '' : 'none';
+
+  const link = $('paypalFallbackLink');
+  if (link && !link.dataset.wired) {
+    link.dataset.wired = '1';
+    link.addEventListener('click', (e) => {
+      if (!requireCheckoutConsent()) {
+        e.preventDefault();
+      }
+    });
+  }
 
   const checkbox = $('checkoutConsent');
   if (checkbox && !checkbox.dataset.paypalWired) {

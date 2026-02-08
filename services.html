@@ -12,7 +12,13 @@
     <script src="assets/js/layout.js?v=20260207" type="module"></script>
   </head>
 
-  <body data-page="services">
+  <body
+    data-page="services"
+    data-paypal-currency="PLN"
+    data-paypal-disable-funding="venmo"
+    data-paypal-client-id=""
+    data-paypal-sdk-src=""
+  >
     <div id="appHeader"></div>
 
     <main class="page">
@@ -67,6 +73,9 @@
             <div class="hintSmall" style="margin-top: 6px">
               Para habilitar el botón, marca la casilla de aceptación de arriba.
             </div>
+            <div class="hintSmall" style="margin-top: 6px">
+              Si el botón no carga, usa “Abrir PayPal”.
+            </div>
           </div>
 
           <div id="paypalHostedWrap" class="paypal-hosted-wrap" style="margin-top: 12px">
@@ -82,6 +91,17 @@
           </div>
 
           <div class="hintSmall" id="paypalStatus" style="margin-top: 8px; display: none"></div>
+          <div class="metaRow" style="margin-top: 10px; gap: 10px; flex-wrap: wrap">
+            <a
+              id="paypalFallbackLink"
+              class="btn-white-outline"
+              href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JTQ246XQYF85C"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Abrir PayPal
+            </a>
+          </div>
         </div>
 
         <section id="planes" class="services-section">

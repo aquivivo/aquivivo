@@ -354,6 +354,17 @@ async function loadInbox() {
   }
 }
 
+async function getAuthEmail(user) {
+  const fallback = String(user?.email || '').trim();
+  try {
+    const token = await user?.getIdTokenResult?.();
+    const tokenEmail = String(token?.claims?.email || '').trim();
+    return tokenEmail || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 async function ensureUserDoc(user) {
   if (!user?.uid) return { admin: false, access: false, plan: 'free' };
 
@@ -370,20 +381,23 @@ async function ensureUserDoc(user) {
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
+      const email = await getAuthEmail(user);
       await setDoc(
         ref,
         {
-          email: user.email || '',
+          email,
+          emailLower: email ? email.toLowerCase() : '',
           admin: false,
           access: false,
           plan: 'free',
           promoCodes: [],
           blocked: false,
           createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
         },
         { merge: true },
       );
-      return { ...defaults, email: user.email || '' };
+      return { ...defaults, email };
     }
 
     const data = snap.data() || {};
