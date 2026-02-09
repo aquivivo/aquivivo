@@ -407,6 +407,10 @@ function getBaseFeedList() {
     list = (Array.isArray(FEED_SOURCE) ? FEED_SOURCE : []).filter(
       (p) => p && !p.imageURL && (p.type || 'user') === 'user',
     );
+  else if (FEED_FILTER === 'corrections')
+    list = (Array.isArray(FEED_SOURCE) ? FEED_SOURCE : []).filter(
+      (p) => p && (p.type || 'user') === 'correction',
+    );
   else list = Array.isArray(FEED_SOURCE) ? FEED_SOURCE : [];
 
   const ownerUid = String(PROFILE_CTX?.targetUid || '').trim();
@@ -518,7 +522,7 @@ function bindFeedFilters() {
 function initFeedDefaults() {
   try {
     const filter = String(localStorage.getItem('av_feed_filter') || '').trim();
-    if (['all', 'pinned', 'photos', 'status'].includes(filter)) FEED_FILTER = filter;
+    if (['all', 'pinned', 'photos', 'status', 'corrections'].includes(filter)) FEED_FILTER = filter;
     const search = String(localStorage.getItem('av_feed_search') || '').trim();
     if (search) FEED_SEARCH = search.slice(0, 60);
     if (feedSearchInput) feedSearchInput.value = FEED_SEARCH;
@@ -887,6 +891,9 @@ function renderFeed(list, ctx) {
       const canEdit = isMine && withinMinutes(post.createdAt, 10);
       const tags = Array.isArray(post.tags) ? post.tags : [];
       const metaLabels = [];
+      const postType = String(post.type || 'user');
+      if (postType === 'correction') metaLabels.push('Correcci\u00f3n');
+      if (postType === 'correction' && post.resolved === true) metaLabels.push('Resuelto');
       if (post.pinned) metaLabels.push('Fijado');
       tags.forEach((t) => metaLabels.push(`• ${t}`));
       const isSystem = (post.type || 'user') === 'system' || post.id === 'sys_pinned_local';
@@ -1008,10 +1015,17 @@ function renderFeed(list, ctx) {
                    : ''
                }
                ${
-                 isMine && (post.type || 'user') !== 'system'
+               isMine && (post.type || 'user') !== 'system'
                    ? `<button class="btn-white-outline" data-action="pin" data-id="${esc(
                        post.id,
                      )}">${post.pinned ? 'Desfijar' : 'Fijar'}</button>`
+                 : ''
+             }
+             ${
+               isMine && (post.type || 'user') === 'correction'
+                 ? `<button class="btn-white-outline" data-action="resolve" data-id="${esc(
+                     post.id,
+                   )}">${post.resolved ? 'Reabrir' : 'Marcar resuelto'}</button>`
                  : ''
              }
              ${
@@ -2289,6 +2303,17 @@ function bindFeedActions(ctx) {
         await updateDoc(doc(db, 'user_feed', ctx.targetUid, 'posts', id), {
           pinned: nextPinned,
           pinnedAt: nextPinned ? serverTimestamp() : null,
+          updatedAt: serverTimestamp(),
+        });
+        return;
+      }
+
+      if (action === 'resolve') {
+        const post = FEED_ITEMS[idx] || {};
+        const nextResolved = post.resolved !== true;
+        await updateDoc(doc(db, 'user_feed', ctx.targetUid, 'posts', id), {
+          resolved: nextResolved,
+          resolvedAt: nextResolved ? serverTimestamp() : null,
           updatedAt: serverTimestamp(),
         });
         return;

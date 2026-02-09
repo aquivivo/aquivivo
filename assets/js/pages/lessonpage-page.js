@@ -36,6 +36,69 @@ function isAdminUser(userDoc, email) {
   );
 }
 
+function clampGlyph(raw, { maxChars = 6 } = {}) {
+  const s = String(raw ?? '').trim();
+  if (!s) return '';
+  return Array.from(s)
+    .slice(0, Math.max(1, Number(maxChars || 6)))
+    .join('');
+}
+
+function guessTopicEmoji(topic) {
+  const title = String(topic?.title || topic?.name || '').toLowerCase();
+  const slug = String(topic?.slug || topic?.id || '').toLowerCase();
+  const tags = Array.isArray(topic?.tags) ? topic.tags.join(' ').toLowerCase() : '';
+  const hay = `${title} ${slug} ${tags}`;
+
+  const table = [
+    [/miast|ciudad|city|miejsc|lugar/, '\uD83C\uDFD9\uFE0F'], // 🏙️
+    [/dom|casa|hogar|mieszka|viviend/, '\uD83C\uDFE0'], // 🏠
+    [/rodzin|familia|amig|friend/, '\uD83D\uDC6A'], // 👪
+    [/jedzen|comida|restaur|cocin|food/, '\uD83C\uDF72'], // 🍲
+    [/kaw|caf\u00e9|cafe|cafetera/, '\u2615'], // ☕
+    [/zakup|compras|tiend|shop|super/, '\uD83D\uDED2'], // 🛒
+    [/podr\u00f3\u017c|podroz|viaj|travel|aeropuert|av[i\u00ed]on|samolot/, '\u2708\uFE0F'], // ✈️
+    [/transport|metro|autob|bus|tren|train/, '\uD83D\uDE8C'], // 🚌
+    [/prac|trabaj|oficin|job/, '\uD83D\uDCBC'], // 💼
+    [/studi|estudi|univers|escuel|school/, '\uD83C\uDF93'], // 🎓
+    [/zdrow|salud|doctor|medic|clinic/, '\uD83E\uDE7A'], // 🩺
+    [/czas|tiempo|hora|reloj|time/, '\u23F0'], // ⏰
+    [/pogon|pogod|clima|weather/, '\uD83C\uDF24\uFE0F'], // 🌤️
+    [/muzyk|m\u00fasica|musica|music/, '\uD83C\uDFB6'], // 🎶
+    [/fiest|imprez|party/, '\uD83C\uDF89'], // 🎉
+    [/telefon|tel[e\u00e9]fon|llamar|call/, '\uD83D\uDCDE'], // 📞
+  ];
+
+  for (const [re, icon] of table) {
+    if (re.test(hay)) return icon;
+  }
+
+  const rawType = String(topic?.type || topic?.category || '').toLowerCase();
+  if (rawType.includes('vocab')) return '\uD83D\uDD24'; // 🔤
+  if (rawType.includes('both') || rawType.includes('+')) return '\uD83E\uDDE9'; // 🧩
+  return '\uD83D\uDCD8'; // 📘
+}
+
+function setLessonHeroVisual(topic) {
+  const host = $('lessonHeroIcon');
+  if (!host) return;
+
+  const imgUrl = String(topic?.imageUrl || '').trim();
+  const icon = clampGlyph(topic?.icon || '', { maxChars: 6 }) || guessTopicEmoji(topic);
+
+  host.textContent = '';
+  host.innerHTML = '';
+  if (imgUrl) {
+    const img = document.createElement('img');
+    img.alt = '';
+    img.loading = 'lazy';
+    img.src = imgUrl;
+    host.appendChild(img);
+  } else {
+    host.textContent = icon || '\uD83D\uDCD6';
+  }
+}
+
 function showAccessLocked() {
   const wrap = document.querySelector('.container') || document.body;
   const card = document.createElement('section');
@@ -428,6 +491,8 @@ async function loadLesson(user) {
     console.error(e);
   }
   currentTopic = topic;
+
+  setLessonHeroVisual(topic || {});
 
   const topicTitle = topic?.title || topic?.name || 'Leccion';
   const topicDesc = topic?.desc || topic?.description || '';

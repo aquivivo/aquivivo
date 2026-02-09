@@ -64,7 +64,7 @@ function renderItems(docs, { append = false } = {}) {
 
   docs.forEach((snap) => {
     const item = snap.data() || {};
-    const title = String(item.title || 'NotificaciÃ³n');
+    const title = String(item.title || 'Notificación');
     const body = String(item.body || '');
     const dateText = formatDate(item.createdAt);
     const href = String(item.link || '').trim();
@@ -199,7 +199,7 @@ if (listEl && !listEl.dataset.wired) {
 onAuthStateChanged(auth, async (user) => {
   currentUid = user?.uid || null;
   if (!currentUid) {
-    if (hintEl) hintEl.textContent = 'Inicia sesiÃ³n para ver tus notificaciones.';
+    if (hintEl) hintEl.textContent = 'Inicia sesión para ver tus notificaciones.';
     if (btnMore) btnMore.hidden = true;
     if (btnMarkRead) btnMarkRead.hidden = true;
     if (listEl) listEl.innerHTML = '';
@@ -209,4 +209,3 @@ onAuthStateChanged(auth, async (user) => {
   if (btnMarkRead) btnMarkRead.hidden = false;
   await loadPage({ reset: true });
 });
-

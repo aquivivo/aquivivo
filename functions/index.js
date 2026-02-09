@@ -344,6 +344,24 @@ function textFor(lang, key, vars = {}) {
     };
   }
 
+  if (key === 'correction_comment') {
+    const who = String(vars.who || '').trim();
+    return {
+      title: t({ pl: 'Nowa korekta', es: 'Nueva correccion', en: 'New correction' }),
+      body: t({
+        pl: who
+          ? `${who} skomentowal(-a) Twoja prosbe o korekte.`
+          : 'Ktos skomentowal Twoja prosbe o korekte.',
+        es: who
+          ? `${who} comento tu solicitud de correccion.`
+          : 'Tienes una nueva correccion.',
+        en: who
+          ? `${who} commented on your correction request.`
+          : 'You have a new correction.',
+      }),
+    };
+  }
+
   return { title: 'Notificacion', body: '' };
 }
 
@@ -1060,6 +1078,112 @@ exports.onFriendRequestWrite = functions.firestore
         toUid,
       });
     }
+
+    return null;
+  });
+
+// Community corrections index (for global list)
+exports.onCorrectionPostWrite = functions.firestore
+  .document('user_feed/{uid}/posts/{postId}')
+  .onWrite(async (change, context) => {
+    const uid = String(context.params.uid || '').trim();
+    const postId = String(context.params.postId || '').trim();
+    if (!uid || !postId) return null;
+
+    const before = change.before.exists ? change.before.data() || {} : null;
+    const after = change.after.exists ? change.after.data() || {} : null;
+
+    const beforeType = String(before?.type || '').trim().toLowerCase();
+    const afterType = String(after?.type || '').trim().toLowerCase();
+
+    const indexRef = db.doc(`community_corrections/${postId}`);
+
+    // Delete index if the post was deleted or changed away from "correction"
+    if (!after || afterType !== 'correction') {
+      if (beforeType === 'correction') {
+        try {
+          await indexRef.delete();
+        } catch {}
+      }
+      return null;
+    }
+
+    const rawText = String(after.text || '').trim();
+    const snippet = rawText.length > 220 ? `${rawText.slice(0, 220)}…` : rawText;
+
+    const payload = {
+      ownerUid: uid,
+      ownerName: String(after.authorName || '').trim() || 'Usuario',
+      level: String(after.level || '').trim() || '',
+      topicId: String(after.topicId || '').trim() || null,
+      topicTitle: String(after.topicTitle || '').trim() || null,
+      snippet,
+      resolved: after.resolved === true,
+      hasVoice: !!String(after.voiceUrl || '').trim(),
+      createdAt: after.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    try {
+      await indexRef.set(payload, { merge: true });
+    } catch (e) {
+      console.warn('[correction] index write failed', e);
+    }
+
+    return null;
+  });
+
+// Notifications: community corrections (comments on correction requests)
+exports.onCorrectionCommentCreated = functions.firestore
+  .document('user_feed/{uid}/posts/{postId}/comments/{commentId}')
+  .onCreate(async (snap, context) => {
+    const uid = String(context.params.uid || '').trim();
+    const postId = String(context.params.postId || '').trim();
+    const commentId = String(context.params.commentId || '').trim();
+    if (!uid || !postId) return null;
+
+    const comment = snap.data() || {};
+    const fromUid = String(comment.authorUid || '').trim();
+    if (!fromUid || fromUid === uid) return null;
+
+    // Only notify for correction posts
+    let post = null;
+    try {
+      const pSnap = await db.doc(`user_feed/${uid}/posts/${postId}`).get();
+      if (!pSnap.exists) return null;
+      post = pSnap.data() || {};
+    } catch (e) {
+      console.warn('[correction] post read failed', e);
+      return null;
+    }
+
+    const type = String(post.type || '').trim().toLowerCase();
+    if (type !== 'correction') return null;
+
+    let userLang = 'es';
+    try {
+      const uSnap = await db.doc(`users/${uid}`).get();
+      if (uSnap.exists) userLang = normalizeLang(uSnap.data()?.lang);
+    } catch {}
+
+    const who = String(comment.authorName || '').trim() || fromUid;
+    const { title, body } = textFor(userLang, 'correction_comment', { who });
+
+    const notifId = `corr_comment_${context.eventId}`;
+    const link = `correccion.html?uid=${encodeURIComponent(uid)}&post=${encodeURIComponent(postId)}`;
+
+    await createUserNotification(uid, notifId, {
+      type: 'correction',
+      title,
+      body,
+      data: { postId, commentId, fromUid },
+      link,
+    });
+    await sendPushToUser(uid, title, body, {
+      kind: 'correction_comment',
+      postId,
+      fromUid,
+    });
 
     return null;
   });

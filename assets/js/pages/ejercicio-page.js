@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.classList.add('uiMotion');
 });
 
-import { auth, db } from '../firebase-init.js';
+import { auth, db, storage } from '../firebase-init.js';
 import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   onAuthStateChanged,
@@ -10,6 +10,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
   collection,
+  addDoc,
   query,
   where,
   orderBy,
@@ -21,6 +22,11 @@ import {
   serverTimestamp,
   increment,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import {
+  getDownloadURL,
+  ref as storageRef,
+  uploadBytes,
+} from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
 
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
@@ -64,6 +70,26 @@ const btnClearFilters = document.getElementById('btnClearFilters');
   const btnReview = document.getElementById('btnReview');
   const btnFlashcards = document.getElementById('btnFlashcards');
 
+const correctionModal = document.getElementById('correctionModal');
+const btnFinishCorrection = document.getElementById('btnFinishCorrection');
+const btnCorrectionClose = document.getElementById('btnCorrectionClose');
+const btnCorrectionCancel = document.getElementById('btnCorrectionCancel');
+const btnCorrectionPublish = document.getElementById('btnCorrectionPublish');
+const correctionText = document.getElementById('correctionText');
+const correctionMeta = document.getElementById('correctionMeta');
+const correctionMsg = document.getElementById('correctionMsg');
+const btnCorrectionRecord = document.getElementById('btnCorrectionRecord');
+const btnCorrectionClearAudio = document.getElementById('btnCorrectionClearAudio');
+const correctionRecordHint = document.getElementById('correctionRecordHint');
+const correctionAudioPreview = document.getElementById('correctionAudioPreview');
+
+let corrRecorder = null;
+let corrRecording = false;
+let corrStream = null;
+let corrChunks = [];
+let corrAudioFile = null;
+let corrAudioObjectUrl = '';
+
 let cachedExercises = [];
 let VIEW_EXERCISES = [];
 let CURRENT_UID = null;
@@ -99,6 +125,305 @@ function setToast(msg, type = 'ok') {
   showToast(msg, type, 2400);
 }
 
+function setCorrectionMsg(text, bad = false) {
+  if (!correctionMsg) return;
+  correctionMsg.textContent = text || '';
+  correctionMsg.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.85)';
+}
+
+function setCorrectionRecordHint(text, bad = false) {
+  if (!correctionRecordHint) return;
+  correctionRecordHint.textContent = text || '';
+  correctionRecordHint.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.85)';
+}
+
+function clearCorrectionAudio({ stopRecording = true } = {}) {
+  if (stopRecording && corrRecording) {
+    try {
+      corrRecorder?.stop();
+    } catch {}
+    corrRecording = false;
+  }
+
+  try {
+    corrStream?.getTracks?.()?.forEach((t) => t.stop());
+  } catch {}
+
+  corrStream = null;
+  corrRecorder = null;
+  corrChunks = [];
+
+  corrAudioFile = null;
+  if (corrAudioObjectUrl) {
+    try {
+      URL.revokeObjectURL(corrAudioObjectUrl);
+    } catch {}
+  }
+  corrAudioObjectUrl = '';
+
+  if (correctionAudioPreview) {
+    try {
+      correctionAudioPreview.pause?.();
+    } catch {}
+    correctionAudioPreview.removeAttribute('src');
+    correctionAudioPreview.style.display = 'none';
+  }
+  if (btnCorrectionClearAudio) btnCorrectionClearAudio.style.display = 'none';
+  if (btnCorrectionRecord) btnCorrectionRecord.textContent = 'Grabar voz';
+  setCorrectionRecordHint('');
+}
+
+function canRecordVoice() {
+  return (
+    typeof window !== 'undefined' &&
+    'MediaRecorder' in window &&
+    !!navigator.mediaDevices?.getUserMedia
+  );
+}
+
+function ttsTextForExercise(ex) {
+  const direct = extractTtsText(ex);
+  if (direct) return direct;
+
+  const prompt = String(ex?.prompt || '').trim();
+  const answers = parseAnswerList(ex?.answer || '');
+
+  if (prompt.includes('___') && answers.length) {
+    let i = 0;
+    return prompt.replaceAll('___', () => answers[i++] ?? answers[0]);
+  }
+
+  if (answers.length) return answers.join(' ');
+  return prompt;
+}
+
+function speakPolish(text) {
+  const t = String(text || '').trim();
+  if (!t) return;
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
+
+  try {
+    const utter = new SpeechSynthesisUtterance(t);
+    utter.lang = 'pl-PL';
+    const voices = window.speechSynthesis?.getVoices?.() || [];
+    const plVoice = voices.find((v) =>
+      String(v.lang || '').toLowerCase().startsWith('pl'),
+    );
+    if (plVoice) utter.voice = plVoice;
+
+    window.speechSynthesis?.cancel?.();
+    window.speechSynthesis?.speak?.(utter);
+  } catch {}
+}
+
+function playAudioUrl(url) {
+  const u = String(url || '').trim();
+  if (!u) return;
+  try {
+    const audio = new Audio(u);
+    audio.play().catch(() => {});
+  } catch {}
+}
+
+function playExerciseAudio(ex) {
+  const audioUrl = extractAudioUrl(ex);
+  if (audioUrl) {
+    playAudioUrl(audioUrl);
+    return;
+  }
+  speakPolish(ttsTextForExercise(ex));
+}
+
+async function toggleCorrectionRecording() {
+  if (!btnCorrectionRecord) return;
+
+  if (!canRecordVoice()) {
+    setCorrectionRecordHint('Tu navegador no soporta grabación.', true);
+    return;
+  }
+
+  if (corrRecording) {
+    try {
+      corrRecorder?.stop();
+    } catch {}
+    corrRecording = false;
+    btnCorrectionRecord.textContent = 'Grabar voz';
+    setCorrectionRecordHint('');
+    return;
+  }
+
+  try {
+    clearCorrectionAudio({ stopRecording: false });
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    corrStream = stream;
+    corrRecorder = new MediaRecorder(stream);
+    corrChunks = [];
+
+    corrRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size) corrChunks.push(e.data);
+    };
+
+    corrRecorder.onstop = () => {
+      const blob = new Blob(corrChunks, { type: corrRecorder?.mimeType || 'audio/webm' });
+      const file = new File([blob], `correction_${Date.now()}.webm`, { type: blob.type });
+      corrAudioFile = file;
+
+      if (corrAudioObjectUrl) {
+        try {
+          URL.revokeObjectURL(corrAudioObjectUrl);
+        } catch {}
+      }
+      corrAudioObjectUrl = URL.createObjectURL(blob);
+
+      if (correctionAudioPreview) {
+        correctionAudioPreview.src = corrAudioObjectUrl;
+        correctionAudioPreview.style.display = 'block';
+      }
+      if (btnCorrectionClearAudio) btnCorrectionClearAudio.style.display = '';
+
+      try {
+        corrStream?.getTracks?.()?.forEach((t) => t.stop());
+      } catch {}
+      corrStream = null;
+      corrRecorder = null;
+      corrChunks = [];
+
+      setCorrectionRecordHint('Voz lista.');
+    };
+
+    corrRecorder.start();
+    corrRecording = true;
+    btnCorrectionRecord.textContent = 'Detener';
+    setCorrectionRecordHint('Grabando...');
+  } catch (e) {
+    console.warn('[correction] record failed', e);
+    clearCorrectionAudio();
+    setCorrectionRecordHint('No se pudo grabar.', true);
+  }
+}
+
+function openCorrectionModal() {
+  if (!correctionModal) return;
+  const title = String(currentTopic?.title || currentTopic?.name || currentTopic?.slug || '').trim();
+  const meta = `Nivel ${LEVEL}${title ? ` · Tema: ${title}` : ''}`;
+  if (correctionMeta) correctionMeta.textContent = meta;
+  setCorrectionMsg('');
+  setCorrectionRecordHint('');
+  if (btnCorrectionRecord) btnCorrectionRecord.disabled = !canRecordVoice();
+  correctionModal.style.display = 'flex';
+  document.body.classList.add('modal-open');
+  if (correctionText) correctionText.focus();
+}
+
+function closeCorrectionModal() {
+  if (!correctionModal) return;
+  clearCorrectionAudio();
+  correctionModal.style.display = 'none';
+  document.body.classList.remove('modal-open');
+  setCorrectionMsg('');
+}
+
+async function getMyDisplayName(uid, email) {
+  const fallback = String(email || '').trim() || 'Usuario';
+  const short = fallback.includes('@') ? fallback.split('@')[0] : fallback;
+  const fromAuth = String(auth.currentUser?.displayName || '').trim();
+  if (fromAuth) return fromAuth;
+  try {
+    const snap = await getDoc(doc(db, 'public_users', uid));
+    if (snap.exists()) {
+      const d = snap.data() || {};
+      const name = String(d.displayName || d.name || '').trim();
+      const handle = String(d.handle || '').trim();
+      if (name) return name;
+      if (handle) return `@${handle}`;
+    }
+  } catch {}
+  return short || 'Usuario';
+}
+
+async function publishCorrectionRequest() {
+  if (!CURRENT_UID) return;
+  if (!currentTopic?.id) return;
+  const raw = String(correctionText?.value || '').trim();
+  if (raw.length < 6) {
+    setCorrectionMsg('Escribe al menos una frase.', true);
+    return;
+  }
+  if (raw.length > 2200) {
+    setCorrectionMsg('El texto es demasiado largo (m\u00e1x. 2200 caracteres).', true);
+    return;
+  }
+  if (corrRecording) {
+    setCorrectionMsg('Det\u00e9n la grabaci\u00f3n primero.', true);
+    return;
+  }
+
+  try {
+    if (btnCorrectionPublish) btnCorrectionPublish.disabled = true;
+    setCorrectionMsg('Publicando...');
+
+    const topicTitle = String(currentTopic?.title || currentTopic?.name || '').trim();
+    const authorName = await getMyDisplayName(CURRENT_UID, auth.currentUser?.email);
+
+    const tags = [
+      'Correcci\u00f3n',
+      `Nivel ${LEVEL}`,
+      topicTitle ? `Tema: ${topicTitle}` : '',
+    ].filter(Boolean);
+
+    const header = `Correcci\u00f3n (Nivel ${LEVEL}${topicTitle ? ` \u00b7 ${topicTitle}` : ''})`;
+    const text = `${header}\n\n${raw}`;
+
+    const voice = corrAudioFile;
+    let voiceUrl = '';
+    let voicePath = '';
+    if (voice) {
+      const MAX_VOICE_BYTES = 10 * 1024 * 1024;
+      if (voice.size > MAX_VOICE_BYTES) {
+        setCorrectionMsg('Audio demasiado grande (m\u00e1x. 10MB).', true);
+        return;
+      }
+      setCorrectionMsg('Subiendo voz...');
+      const safeName = String(voice.name || 'voice').replace(/[^\w.\-]+/g, '_');
+      const path = `audio/corrections/${CURRENT_UID}/${Date.now()}_${safeName}`;
+      const fileRef = storageRef(storage, path);
+      await uploadBytes(fileRef, voice);
+      voiceUrl = await getDownloadURL(fileRef);
+      voicePath = path;
+    }
+
+    const ref = await addDoc(collection(db, 'user_feed', CURRENT_UID, 'posts'), {
+      type: 'correction',
+      text,
+      tags,
+      level: LEVEL,
+      topicId: String(currentTopic.id),
+      topicTitle: topicTitle || null,
+      voiceUrl: voiceUrl || null,
+      voicePath: voicePath || null,
+      voiceContentType: voice?.type || null,
+      voiceSize: voice ? Number(voice.size || 0) : null,
+      createdAt: serverTimestamp(),
+      authorUid: CURRENT_UID,
+      authorName: authorName || 'Usuario',
+      resolved: false,
+      updatedAt: serverTimestamp(),
+    });
+
+    closeCorrectionModal();
+    showToast('Publicado en la comunidad.', 'ok', 1800);
+    setTimeout(() => {
+      window.location.href = `correccion.html?uid=${encodeURIComponent(CURRENT_UID)}&post=${encodeURIComponent(ref.id)}`;
+    }, 400);
+  } catch (e) {
+    console.warn('[correction] publish failed', e);
+    setCorrectionMsg('No se pudo publicar.', true);
+  } finally {
+    if (btnCorrectionPublish) btnCorrectionPublish.disabled = false;
+  }
+}
+
 function normalizeText(value) {
   return String(value || '')
     .toLowerCase()
@@ -126,6 +451,94 @@ function normalizeTags(raw) {
       .filter(Boolean);
   }
   return [];
+}
+
+function sanitizeUrl(raw) {
+  const u = String(raw || '').trim();
+  if (!u) return '';
+  return u.replace(/[)\],.]+$/g, '');
+}
+
+function extractAudioUrl(ex) {
+  const direct = String(ex?.audioUrl || ex?.audio || '').trim();
+  if (/^https?:\/\//i.test(direct)) return sanitizeUrl(direct);
+
+  const notes = String(ex?.notes || '').trim();
+  if (!notes) return '';
+
+  const m =
+    notes.match(/(?:^|\s)AUDIO_URL\s*:\s*(https?:\/\/\S+)/i) ||
+    notes.match(/(?:^|\s)AUDIO\s*:\s*(https?:\/\/\S+)/i) ||
+    notes.match(/(?:^|\s)URL\s*:\s*(https?:\/\/\S+)/i);
+  if (m && m[1]) return sanitizeUrl(m[1]);
+
+  const any = notes.match(/https?:\/\/\S+/i);
+  return any ? sanitizeUrl(any[0]) : '';
+}
+
+function extractTtsText(ex) {
+  const direct = String(ex?.ttsText || '').trim();
+  if (direct) return direct;
+  const notes = String(ex?.notes || '').trim();
+  if (!notes) return '';
+  const m =
+    notes.match(/(?:^|\s)TTS_PL\s*:\s*(.+)$/im) ||
+    notes.match(/(?:^|\s)TTS\s*:\s*(.+)$/im);
+  return m && m[1] ? String(m[1] || '').trim() : '';
+}
+
+function isCardsExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return t.includes('tarjeta');
+}
+
+function isSpeakingExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('repetir') ||
+    t.includes('voz') ||
+    t.includes('grab') ||
+    t.includes('monologo') ||
+    t.includes('dialogo') ||
+    t.includes('entrevista') ||
+    t.includes('historia') ||
+    t.includes('debate') ||
+    t.includes('mision') ||
+    t.includes('rol')
+  );
+}
+
+function isChoiceExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('opcion') ||
+    t.includes('elegir') ||
+    t.includes('elige') ||
+    t.includes('eleccion') ||
+    t.includes('verdadero') ||
+    t.includes('falso') ||
+    t.includes('quiz') ||
+    t.includes('marcar')
+  );
+}
+
+function isFillExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  const prompt = String(ex?.prompt || '');
+  return (
+    t.includes('rellenar') ||
+    t.includes('completar') ||
+    t.includes('dictado') ||
+    t.includes('espacios') ||
+    t.includes('preposicion') ||
+    t.includes('terminacion') ||
+    prompt.includes('___')
+  );
+}
+
+function isListenExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return t.includes('escuchar') || t.includes('audio') || t.includes('dictado');
 }
 
 function isTestExercise(ex) {
@@ -582,21 +995,421 @@ function makeExerciseCard(ex) {
       setResultText(resultEl, prev.correct === true);
     }
   } else {
-    const btn = document.createElement('button');
-    btn.className = 'btn-white-outline';
-    const done = progressState.doneIds.has(String(ex.id));
-    btn.textContent = done ? 'Hecho' : 'Marcar hecho';
-    btn.disabled = done;
+    const exId = String(ex.id);
+    const done = progressState.doneIds.has(exId);
 
-    btn.addEventListener('click', async () => {
-      progressState.doneIds.add(String(ex.id));
-      btn.textContent = 'Hecho';
-      btn.disabled = true;
+    const markDone = async () => {
+      progressState.doneIds.add(exId);
       await saveProgress();
       setProgressUI();
+    };
+
+    if (isCardsExercise(ex)) {
+      const hint = document.createElement('div');
+      hint.className = 'exerciseHint';
+      hint.textContent = 'Este ejercicio crea fichas. Usa el modo Fichas para practicar.';
+      card.appendChild(hint);
+
+      const params = `level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(currentTopic?.id || TOPIC_ID)}`;
+      const open = document.createElement('a');
+      open.className = 'btn-white-outline';
+      open.href = `flashcards.html?${params}`;
+      open.textContent = 'Abrir fichas';
+      actions.appendChild(open);
+
+      const btnDone = document.createElement('button');
+      btnDone.className = 'btn-white-outline';
+      btnDone.textContent = done ? 'Hecho' : 'Marcar hecho';
+      btnDone.disabled = done;
+      btnDone.addEventListener('click', async () => {
+        await markDone();
+        btnDone.textContent = 'Hecho';
+        btnDone.disabled = true;
+      });
+
+      actions.appendChild(btnDone);
+      card.appendChild(actions);
+      return card;
+    }
+
+    if (isSpeakingExercise(ex)) {
+      const hint = document.createElement('div');
+      hint.className = 'exerciseHint';
+      hint.textContent = 'Lee en voz alta. Escucha y luego graba tu voz.';
+      card.appendChild(hint);
+
+      const canRec = canRecordVoice();
+      let recording = false;
+      let recorder = null;
+      let stream = null;
+      let chunks = [];
+      let objectUrl = '';
+      let hasAudio = false;
+
+      const btnListen = document.createElement('button');
+      btnListen.className = 'btn-white-outline';
+      btnListen.type = 'button';
+      btnListen.textContent = 'Escuchar';
+      btnListen.disabled = done;
+      btnListen.addEventListener('click', () => playExerciseAudio(ex));
+
+      const btnRec = document.createElement('button');
+      btnRec.className = 'btn-white-outline';
+      btnRec.type = 'button';
+      btnRec.textContent = 'Grabar voz';
+      btnRec.disabled = done || !canRec;
+
+      const btnClear = document.createElement('button');
+      btnClear.className = 'btn-white-outline';
+      btnClear.type = 'button';
+      btnClear.textContent = 'Quitar voz';
+      btnClear.style.display = 'none';
+      btnClear.disabled = done;
+
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.className = 'exerciseAudioPreview';
+      audio.style.display = 'none';
+
+      const cleanup = () => {
+        try {
+          stream?.getTracks?.()?.forEach((t) => t.stop());
+        } catch {}
+        stream = null;
+        recorder = null;
+        chunks = [];
+        recording = false;
+      };
+
+      const clearAudio = () => {
+        hasAudio = false;
+        if (objectUrl) {
+          try {
+            URL.revokeObjectURL(objectUrl);
+          } catch {}
+        }
+        objectUrl = '';
+        try {
+          audio.pause?.();
+        } catch {}
+        audio.removeAttribute('src');
+        audio.style.display = 'none';
+        btnClear.style.display = 'none';
+      };
+
+      const btnDone = document.createElement('button');
+      btnDone.className = 'btn-yellow';
+      btnDone.type = 'button';
+      btnDone.textContent = done ? 'Hecho' : 'Marcar hecho';
+      btnDone.disabled = done || (canRec && !hasAudio);
+
+      btnDone.addEventListener('click', async () => {
+        await markDone();
+        btnDone.textContent = 'Hecho';
+        btnDone.disabled = true;
+        btnListen.disabled = true;
+        btnRec.disabled = true;
+        btnClear.disabled = true;
+        cleanup();
+      });
+
+      btnClear.addEventListener('click', () => {
+        if (done) return;
+        clearAudio();
+        btnDone.disabled = canRec;
+      });
+
+      btnRec.addEventListener('click', async () => {
+        if (done) return;
+        if (!canRec) {
+          showToast('Tu navegador no soporta grabación.', 'warn', 2200);
+          return;
+        }
+
+        if (recording) {
+          try {
+            recorder?.stop();
+          } catch {}
+          return;
+        }
+
+        try {
+          clearAudio();
+          cleanup();
+
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          recorder = new MediaRecorder(stream);
+          chunks = [];
+
+          recorder.ondataavailable = (e) => {
+            if (e.data && e.data.size) chunks.push(e.data);
+          };
+
+          recorder.onstop = () => {
+            recording = false;
+            btnRec.textContent = 'Grabar voz';
+
+            const blob = new Blob(chunks, { type: recorder?.mimeType || 'audio/webm' });
+            objectUrl = URL.createObjectURL(blob);
+            audio.src = objectUrl;
+            audio.style.display = 'block';
+            btnClear.style.display = '';
+            hasAudio = true;
+            btnDone.disabled = false;
+
+            cleanup();
+          };
+
+          recorder.start();
+          recording = true;
+          btnRec.textContent = 'Detener';
+        } catch (e) {
+          console.warn('[speaking] record failed', e);
+          cleanup();
+          showToast('No se pudo grabar.', 'bad', 2400);
+        }
+      });
+
+      if (!canRec) {
+        const warn = document.createElement('div');
+        warn.className = 'hintSmall';
+        warn.style.marginTop = '8px';
+        warn.textContent = 'Grabación no disponible en este navegador.';
+        card.appendChild(warn);
+        btnDone.disabled = done;
+      }
+
+      actions.appendChild(btnListen);
+      actions.appendChild(btnRec);
+      actions.appendChild(btnClear);
+      actions.appendChild(btnDone);
+      card.appendChild(actions);
+      card.appendChild(audio);
+
+      if (done) {
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      }
+
+      return card;
+    }
+
+    if (isChoiceExercise(ex) && options.length && String(ex.answer || '').trim()) {
+      let selectedValue = '';
+      let selectedLabel = '';
+
+      const optsWrap = document.createElement('div');
+      optsWrap.className = 'exerciseOptions';
+      const groupName = `pr_${ex.id}`;
+
+      options.forEach((opt, idx) => {
+        const label = optionLabelFromIndex(idx);
+        const cleaned = cleanOptionText(opt);
+        const optionText = cleaned ? `${label}) ${cleaned}` : `${label}) ${opt}`;
+        const row = makeOptionRow({
+          name: groupName,
+          value: cleaned || opt,
+          label: optionText,
+          checked: false,
+          onChange: (ev) => {
+            selectedValue = ev.target.value;
+            selectedLabel = label;
+          },
+        });
+        if (done) {
+          const input = row.querySelector('input[type="radio"]');
+          if (input) input.disabled = true;
+        }
+        optsWrap.appendChild(row);
+      });
+      card.appendChild(optsWrap);
+
+      const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
+      if (wantsListen) {
+        const btnListen = document.createElement('button');
+        btnListen.className = 'btn-white-outline';
+        btnListen.type = 'button';
+        btnListen.textContent = 'Escuchar';
+        btnListen.disabled = done;
+        btnListen.addEventListener('click', () => playExerciseAudio(ex));
+        actions.appendChild(btnListen);
+      }
+
+      const btnCheck = document.createElement('button');
+      btnCheck.className = 'btn-yellow';
+      btnCheck.type = 'button';
+      btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+      btnCheck.disabled = done;
+
+      btnCheck.addEventListener('click', async () => {
+        if (done) return;
+        const userAnswer = String(selectedValue || '').trim();
+        if (!userAnswer) {
+          showToast('Elige una respuesta.', 'warn', 1800);
+          return;
+        }
+
+        const answers = parseAnswerList(ex.answer || '');
+        const answerNorms = answers.map((a) => normalizeText(a));
+        const answerNormsClean = answers.map((a) => normalizeText(cleanOptionText(a)));
+        const userNorm = normalizeText(userAnswer);
+        const labelNorm = normalizeText(selectedLabel || '');
+
+        let correct = false;
+        if (answerNorms.includes(userNorm) || answerNormsClean.includes(userNorm)) correct = true;
+        if (
+          !correct &&
+          labelNorm &&
+          (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm))
+        ) {
+          correct = true;
+        }
+
+        setResultText(resultEl, correct, correct ? 'Correcto.' : 'Intenta de nuevo.');
+        card.appendChild(resultEl);
+
+        if (!correct) return;
+
+        await markDone();
+        btnCheck.textContent = 'Hecho';
+        btnCheck.disabled = true;
+        optsWrap.querySelectorAll('input[type="radio"]').forEach((i) => (i.disabled = true));
+      });
+
+      actions.appendChild(btnCheck);
+      card.appendChild(actions);
+
+      if (done) {
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      }
+
+      return card;
+    }
+
+    if (isFillExercise(ex) && String(ex.answer || '').trim()) {
+      const promptText = String(ex.prompt || '');
+      const blankInputs = [];
+      let inputBox = null;
+
+      if (promptText.includes('___')) {
+        prompt.textContent = '';
+        const parts = promptText.split('___');
+        parts.forEach((part, idx) => {
+          prompt.appendChild(document.createTextNode(part));
+          if (idx === parts.length - 1) return;
+
+          const inp = document.createElement('input');
+          inp.className = 'exerciseInlineInput';
+          inp.type = 'text';
+          inp.placeholder = '...';
+          inp.autocomplete = 'off';
+          inp.spellcheck = false;
+          inp.disabled = done;
+          blankInputs.push(inp);
+          prompt.appendChild(inp);
+        });
+      } else {
+        const inp = document.createElement('input');
+        inp.className = 'input';
+        inp.placeholder = 'Escribe tu respuesta...';
+        inp.autocomplete = 'off';
+        inp.spellcheck = false;
+        inp.disabled = done;
+        inputBox = inp;
+        blankInputs.push(inp);
+        answerWrap.appendChild(inp);
+        card.appendChild(answerWrap);
+      }
+
+      const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
+      if (wantsListen) {
+        const btnListen = document.createElement('button');
+        btnListen.className = 'btn-white-outline';
+        btnListen.type = 'button';
+        btnListen.textContent = 'Escuchar';
+        btnListen.disabled = done;
+        btnListen.addEventListener('click', () => playExerciseAudio(ex));
+        actions.appendChild(btnListen);
+      }
+
+      const btnCheck = document.createElement('button');
+      btnCheck.className = 'btn-yellow';
+      btnCheck.type = 'button';
+      btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+      btnCheck.disabled = done;
+
+      const parseExpected = (rawAnswer, blanksCount) => {
+        const raw = String(rawAnswer || '').trim().replaceAll('/', '|');
+        if (!raw) return [];
+        if (raw.includes('||')) {
+          return raw
+            .split('||')
+            .map((p) => parseAnswerList(p));
+        }
+        const list = parseAnswerList(raw);
+        if (blanksCount <= 1) return [list];
+        if (list.length === blanksCount) return list.map((x) => parseAnswerList(x));
+        return Array.from({ length: blanksCount }, () => list);
+      };
+
+      btnCheck.addEventListener('click', async () => {
+        if (done) return;
+        const blanksCount = blankInputs.length || 1;
+        const expectedByBlank = parseExpected(ex.answer || '', blanksCount);
+        const values = blankInputs.map((i) => String(i.value || '').trim());
+
+        if (values.some((v) => !v)) {
+          showToast('Completa los espacios.', 'warn', 1800);
+          return;
+        }
+
+        let ok = true;
+        for (let i = 0; i < values.length; i += 1) {
+          const accepted = expectedByBlank[i] || expectedByBlank[0] || [];
+          const u = normalizeText(values[i]);
+          const acc = accepted.map((x) => normalizeText(x));
+          if (!acc.includes(u)) {
+            ok = false;
+            break;
+          }
+        }
+
+        setResultText(resultEl, ok, ok ? 'Correcto.' : 'Intenta de nuevo.');
+        card.appendChild(resultEl);
+
+        if (!ok) return;
+
+        blankInputs.forEach((i) => (i.disabled = true));
+        await markDone();
+        btnCheck.textContent = 'Hecho';
+        btnCheck.disabled = true;
+      });
+
+      actions.appendChild(btnCheck);
+      card.appendChild(actions);
+
+      if (done) {
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      }
+
+      return card;
+    }
+
+    // fallback: simple done
+    const btnDone = document.createElement('button');
+    btnDone.className = 'btn-white-outline';
+    btnDone.textContent = done ? 'Hecho' : 'Marcar hecho';
+    btnDone.disabled = done;
+
+    btnDone.addEventListener('click', async () => {
+      await markDone();
+      btnDone.textContent = 'Hecho';
+      btnDone.disabled = true;
     });
 
-    actions.appendChild(btn);
+    actions.appendChild(btnDone);
     card.appendChild(actions);
   }
 
@@ -812,6 +1625,15 @@ function showFinishModal(stats) {
   const close = () => {
     modal.style.display = 'none';
   };
+
+  if (btnFinishCorrection) {
+    btnFinishCorrection.disabled = false;
+    btnFinishCorrection.onclick = () => {
+      close();
+      openCorrectionModal();
+    };
+  }
+
   const closeBtn = document.getElementById('btnCloseFinish');
   if (closeBtn) closeBtn.onclick = close;
   modal.addEventListener(
@@ -864,6 +1686,18 @@ onAuthStateChanged(auth, async (user) => {
   if (filterTag) filterTag.addEventListener('change', () => applyFilters());
 
   if (!TOPIC_ID && !SLUG) return;
+
+  if (correctionModal && !correctionModal.dataset.wired) {
+    correctionModal.dataset.wired = '1';
+    btnCorrectionClose?.addEventListener('click', closeCorrectionModal);
+    btnCorrectionCancel?.addEventListener('click', closeCorrectionModal);
+    btnCorrectionPublish?.addEventListener('click', publishCorrectionRequest);
+    btnCorrectionRecord?.addEventListener('click', toggleCorrectionRecording);
+    btnCorrectionClearAudio?.addEventListener('click', () => clearCorrectionAudio());
+    correctionModal.addEventListener('click', (e) => {
+      if (e.target === correctionModal) closeCorrectionModal();
+    });
+  }
 
   try {
     showToast('Cargando tema...', 'warn', 1200);

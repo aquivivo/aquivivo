@@ -837,6 +837,7 @@ import {
     panel.innerHTML = `
       <a href="espanel.html" data-page="panel"><span class="side-panel-ico" aria-hidden="true">&#x1F4D3;</span><span>Libreta</span></a>
       <a href="buscar.html" data-page="buscar"><span class="side-panel-ico" aria-hidden="true">&#x1F50D;</span><span>Buscar</span></a>
+      <a href="correcciones.html" data-page="correcciones"><span class="side-panel-ico" aria-hidden="true">&#x270D;&#xFE0F;</span><span>Correcciones</span></a>
       <a href="perfil.html" data-page="profile"><span class="side-panel-ico" aria-hidden="true">&#x1F464;</span><span>Perfil</span></a>
       <a href="espanel.html#cursos" data-page="cursos"><span class="side-panel-ico" aria-hidden="true">&#x1F4DA;</span><span>Mis cursos</span></a>
       <a href="review.html" data-page="practicar"><span class="side-panel-ico" aria-hidden="true">&#x1F3AF;</span><span>Practicar</span></a>
@@ -858,6 +859,7 @@ import {
       course: 'cursos',
       lessonpage: 'cursos',
       lesson: 'cursos',
+      correccion: 'correcciones',
     };
     const activeKey = activeAliases[page] || page;
     panel.querySelectorAll('a[data-page]').forEach((link) => {

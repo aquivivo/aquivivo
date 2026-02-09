@@ -126,6 +126,11 @@ service cloud.firestore {
       );
     }
 
+    function isCorrectionPost(uid, postId) {
+      return exists(/databases/$(database)/documents/user_feed/$(uid)/posts/$(postId))
+        && get(/databases/$(database)/documents/user_feed/$(uid)/posts/$(postId)).data.type == "correction";
+    }
+
     /* ===== USERS ===== */
 
     // User może zmieniać tylko "bezpieczne" pola profilu
@@ -626,17 +631,28 @@ service cloud.firestore {
 
     /* ===== USER FEED ===== */
     match /user_feed/{uid}/posts/{postId} {
-      allow read: if canViewFeed(uid);
+      allow read: if canViewFeed(uid) || (
+        signedIn()
+        && notBlocked()
+        && !isBlocked(request.auth.uid, uid)
+        && resource.data.type == "correction"
+      );
       allow create: if isOwner(uid)
         && request.resource.data.authorUid == request.auth.uid;
       allow update, delete: if isOwner(uid) || isAdmin();
     }
 
     match /user_feed/{uid}/posts/{postId}/comments/{commentId} {
-      allow read: if canViewFeed(uid);
-      allow create: if signedIn()
+      allow read: if canViewFeed(uid) || (
+        signedIn()
+        && notBlocked()
         && !isBlocked(request.auth.uid, uid)
-        && (isOwner(uid) || isFriends(request.auth.uid, uid))
+        && isCorrectionPost(uid, postId)
+      );
+      allow create: if signedIn()
+        && notBlocked()
+        && !isBlocked(request.auth.uid, uid)
+        && (isOwner(uid) || isFriends(request.auth.uid, uid) || isCorrectionPost(uid, postId))
         && request.resource.data.authorUid == request.auth.uid;
       allow update, delete: if isAdmin() || (
         signedIn()
@@ -645,13 +661,26 @@ service cloud.firestore {
     }
 
     match /user_feed/{uid}/posts/{postId}/reactions/{reactionId} {
-      allow read: if canViewFeed(uid);
+      allow read: if canViewFeed(uid) || (
+        signedIn()
+        && notBlocked()
+        && !isBlocked(request.auth.uid, uid)
+        && isCorrectionPost(uid, postId)
+      );
       allow create: if signedIn()
+        && notBlocked()
         && !isBlocked(request.auth.uid, uid)
         && request.resource.data.userId == request.auth.uid;
       allow update, delete: if signedIn()
+        && notBlocked()
         && !isBlocked(request.auth.uid, uid)
         && resource.data.userId == request.auth.uid;
+    }
+
+    /* ===== COMMUNITY CORRECTIONS INDEX (read-only for users) ===== */
+    match /community_corrections/{id} {
+      allow read: if signedIn() && notBlocked();
+      allow create, update, delete: if isAdmin();
     }
 
     /* ===== USER SAVES (private) ===== */

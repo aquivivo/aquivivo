@@ -1419,6 +1419,340 @@ body[data-page='course'] .courseCard.isInProgress .card {
   border: 2px solid rgba(255, 107, 107, 0.65) !important;
   box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.2);
 }
+
+/* ===== Course route (Duolingo-like path) ===== */
+body[data-page='course'] .heroBanner--course {
+  margin: 3px 0 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+}
+body[data-page='course'] .heroBanner--course .heroBanner__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+body[data-page='course'] .heroBanner--course .heroBanner__content {
+  flex: 1;
+  min-width: 240px;
+}
+body[data-page='course'] .heroBanner--course .heroIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(188, 211, 255, 0.22);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+}
+body[data-page='course'] .heroBanner--course .glow-text.heroTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1.12;
+  letter-spacing: 0;
+  text-shadow: none;
+  margin: 0;
+}
+body[data-page='course'] .heroBanner--course .levelSubtitle {
+  margin: 6px 0 0;
+  font-size: 14px;
+  opacity: 0.85;
+}
+body[data-page='course'] .heroBanner--course .levelButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+body[data-page='course'] .heroBanner--course .levelButtons .btn-white-outline {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 999px;
+}
+
+body[data-page='course'] .courseRouteCard {
+  padding: 16px;
+}
+body[data-page='course'] .courseRouteHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+@media (max-width: 780px) {
+  body[data-page='course'] .courseRouteHead {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+body[data-page='course'] .courseRouteProgress {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  margin-top: 12px;
+}
+body[data-page='course'] .courseRouteProgressFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(252, 209, 22, 0.95),
+    rgba(188, 211, 255, 0.9)
+  );
+}
+
+body[data-page='course'] .coursePath {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+body[data-page='course'] .pathUnitHead {
+  margin-top: 12px;
+  margin-bottom: 2px;
+}
+body[data-page='course'] .pathUnitTitle {
+  font-weight: 900;
+  letter-spacing: 0.1px;
+  font-size: 12px;
+  opacity: 0.78;
+  text-transform: none;
+}
+body[data-page='course'] .pathLoading {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  opacity: 0.85;
+}
+
+body[data-page='course'] .pathStep {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+@media (min-width: 860px) {
+  body[data-page='course'] .pathStep:not(.is-alt) .pathRail {
+    transform: none;
+  }
+  body[data-page='course'] .pathStep.is-alt .pathRail {
+    transform: none;
+  }
+}
+body[data-page='course'] .pathRail {
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+body[data-page='course'] .pathConnector {
+  flex: 1;
+  width: 3px;
+  border-radius: 999px;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  min-height: 16px;
+}
+body[data-page='course'] .pathStep.is-last .pathConnector {
+  display: none;
+}
+
+body[data-page='course'] .pathNode {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(188, 211, 255, 0.24);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease,
+    background 0.12s ease;
+}
+body[data-page='course'] .pathNode[data-accent='yellow'] {
+  border-color: rgba(252, 209, 22, 0.38);
+}
+body[data-page='course'] .pathNode[data-accent='red'] {
+  border-color: rgba(206, 17, 38, 0.32);
+}
+body[data-page='course'] .pathNode[data-accent='blue'] {
+  border-color: rgba(188, 211, 255, 0.32);
+}
+body[data-page='course'] .pathNode:hover,
+body[data-page='course'] .pathNode:focus {
+  transform: none;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+}
+
+body[data-page='course'] .pathRing {
+  position: absolute;
+  inset: -6px;
+  width: 76px;
+  height: 76px;
+  pointer-events: none;
+}
+body[data-page='course'] .pathRing circle {
+  fill: none;
+  stroke-width: 5;
+}
+body[data-page='course'] .pathRingBg {
+  stroke: rgba(255, 255, 255, 0.12);
+}
+body[data-page='course'] .pathRingFg {
+  stroke: rgba(252, 209, 22, 0.92);
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+body[data-page='course'] .pathNode[data-accent='blue'] .pathRingFg {
+  stroke: rgba(188, 211, 255, 0.92);
+}
+body[data-page='course'] .pathNode[data-accent='red'] .pathRingFg {
+  stroke: rgba(206, 17, 38, 0.88);
+}
+body[data-page='course'] .pathStep.is-done .pathRingFg {
+  stroke: rgba(188, 211, 255, 0.92);
+}
+body[data-page='course'] .pathStep.is-new .pathRingFg {
+  stroke: rgba(255, 255, 255, 0.22);
+}
+
+body[data-page='course'] .pathNodeInner {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 16px;
+  background: rgba(7, 18, 44, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+body[data-page='course'] .pathStep.is-current .pathNodeInner {
+  background: rgba(252, 209, 22, 0.22);
+  border-color: rgba(252, 209, 22, 0.35);
+}
+body[data-page='course'] .pathStep.is-current .pathNode {
+  box-shadow:
+    0 0 0 6px rgba(252, 209, 22, 0.14),
+    0 18px 52px rgba(0, 0, 0, 0.32);
+}
+
+body[data-page='course'] .pathCard {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+body[data-page='course'] .pathCard[data-accent='yellow'] {
+  border-left: 6px solid rgba(252, 209, 22, 0.35);
+}
+body[data-page='course'] .pathCard[data-accent='blue'] {
+  border-left: 6px solid rgba(188, 211, 255, 0.28);
+}
+body[data-page='course'] .pathCard[data-accent='red'] {
+  border-left: 6px solid rgba(206, 17, 38, 0.22);
+}
+body[data-page='course'] .pathCard:hover,
+body[data-page='course'] .pathCard:focus {
+  transform: none;
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(252, 209, 22, 0.18);
+}
+body[data-page='course'] .pathStep.is-current .pathCard {
+  border-color: rgba(252, 209, 22, 0.34);
+  background: rgba(252, 209, 22, 0.06);
+}
+body[data-page='course'] .pathCardTop {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+body[data-page='course'] .pathCardText {
+  flex: 1;
+  min-width: 0;
+}
+body[data-page='course'] .topicThumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(7, 18, 44, 0.45);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  flex: 0 0 auto;
+}
+body[data-page='course'] .topicThumb[data-accent='yellow'] {
+  border-color: rgba(252, 209, 22, 0.35);
+}
+body[data-page='course'] .topicThumb[data-accent='blue'] {
+  border-color: rgba(188, 211, 255, 0.28);
+}
+body[data-page='course'] .topicThumb[data-accent='red'] {
+  border-color: rgba(206, 17, 38, 0.22);
+}
+body[data-page='course'] .topicThumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+body[data-page='course'] .topicThumbEmoji {
+  font-size: 22px;
+  line-height: 1;
+}
+body[data-page='course'] .pathCardTitle {
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 0.1px;
+}
+body[data-page='course'] .pathCardDesc {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0.82;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+body[data-page='course'] .pathCardMeta {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body[data-page='course'] .pathCardMeta .pill {
+  border-width: 1px;
+  padding: 4px 10px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+}
+body[data-page='course'] .pathStep.is-readonly .pathNode,
+body[data-page='course'] .pathStep.is-readonly .pathCard {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 .courseCard .courseTop {
   display: flex;
   align-items: flex-start;
@@ -2031,6 +2365,26 @@ p,
 }
 
 /* Avatar */
+.heroIcon--topic {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+  font-size: 28px;
+  line-height: 1;
+}
+.heroIcon--topic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .heroIcon--avatar {
   width: 150px;
   height: 150px;
@@ -4522,6 +4876,36 @@ select:focus {
   margin-top: 10px;
   line-height: 1.45;
 }
+.exerciseHint {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.5;
+}
+.exerciseInlineInput {
+  display: inline-block;
+  min-width: 96px;
+  max-width: 200px;
+  padding: 8px 10px;
+  margin: 0 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 14px;
+  outline: none;
+}
+.exerciseInlineInput:focus {
+  border-color: rgba(252, 209, 22, 0.65);
+  box-shadow: 0 0 0 4px rgba(252, 209, 22, 0.12);
+}
+.exerciseAudioPreview {
+  width: 100%;
+  margin-top: 10px;
+}
 .exerciseImage {
   width: 100%;
   max-height: 260px;
@@ -5267,6 +5651,11 @@ select:focus {
 .post-card--community {
   background: rgba(9, 58, 64, 0.85);
   border-color: rgba(120, 255, 214, 0.2);
+}
+
+.post-card--correction {
+  background: rgba(15, 41, 90, 0.92);
+  border-color: rgba(252, 209, 22, 0.28);
 }
 
 .post-head {

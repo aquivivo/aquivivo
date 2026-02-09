@@ -27,9 +27,11 @@ const btnLoadEditTopics = $('btnLoadEditTopics');
 const courseLevel = $('courseLevel');
 const courseTitle = $('courseTitle');
 const courseSlug = $('courseSlug');
+const courseIcon = $('courseIcon');
 const courseType = $('courseType');
 const courseDesc = $('courseDesc');
 const courseOrder = $('courseOrder');
+const courseImageUrl = $('courseImageUrl');
 const btnSaveCourse = $('btnSaveCourse');
 const courseStatus = $('courseStatus');
 const wizCopyFromLevel = $('wizCopyFromLevel');
@@ -421,9 +423,11 @@ function resetCourseForm() {
   if (courseLevel) courseLevel.value = 'A1';
   if (courseTitle) courseTitle.value = '';
   if (courseSlug) courseSlug.value = '';
+  if (courseIcon) courseIcon.value = '';
   if (courseType) courseType.value = 'grammar';
   if (courseDesc) courseDesc.value = '';
   if (courseOrder) courseOrder.value = '';
+  if (courseImageUrl) courseImageUrl.value = '';
   currentCourseId = null;
   currentCourseLevel = null;
   currentCourseSlug = null;
@@ -452,6 +456,7 @@ function setCourseFormFromDoc(docData, docId) {
   if (courseLevel) courseLevel.value = currentCourseLevel || 'A1';
   if (courseTitle) courseTitle.value = currentCourseTitle || '';
   if (courseSlug) courseSlug.value = currentCourseSlug || '';
+  if (courseIcon) courseIcon.value = String(data.icon || '').trim();
   if (courseType) courseType.value = String(data.type || 'grammar');
   if (courseDesc)
     courseDesc.value = String(
@@ -459,6 +464,7 @@ function setCourseFormFromDoc(docData, docId) {
     );
   if (courseOrder)
     courseOrder.value = data.order != null ? String(data.order) : '';
+  if (courseImageUrl) courseImageUrl.value = String(data.imageUrl || '').trim();
 
   if (courseLevel) courseLevel.disabled = MODE === 'edit';
 }
@@ -706,6 +712,8 @@ async function saveCourse() {
   const type = String(courseType?.value || 'grammar');
   const desc = String(courseDesc?.value || '').trim();
   let slug = String(courseSlug?.value || '').trim();
+  const icon = String(courseIcon?.value || '').trim();
+  const imageUrl = String(courseImageUrl?.value || '').trim();
   let order = Number(courseOrder?.value || 0);
 
   if (!title) {
@@ -725,6 +733,8 @@ async function saveCourse() {
     subtitle: desc,
     type,
     order,
+    icon: icon || null,
+    imageUrl: imageUrl || null,
     updatedAt: serverTimestamp(),
   };
 

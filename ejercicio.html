@@ -179,10 +179,71 @@
           <a class="btn-yellow" id="btnFinishLesson" href="#"
             >Volver a la leccion</a
           >
+          <button class="btn-white-outline" id="btnFinishCorrection" type="button">
+            Pedir correcci&oacute;n
+          </button>
           <a class="btn-white-outline" id="btnFinishCourse" href="#"
             >Ver temas</a
           >
           <a class="btn" id="btnFinishPanel" href="espanel.html">Libreta</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community correction request modal (Busuu-like) -->
+    <div id="correctionModal" class="modalOverlay" style="display: none">
+      <div class="modalCard" style="max-width: 620px">
+        <div class="modalHead">
+          <div class="modalTitle">Comunidad &middot; Pide una correcci&oacute;n</div>
+          <button class="btn-white-outline" id="btnCorrectionClose" type="button">
+            X
+          </button>
+        </div>
+        <div class="hr"></div>
+
+        <div class="subtitle" id="correctionMeta">Nivel &middot; Tema</div>
+
+        <div style="margin-top: 12px">
+          <label class="mutedStrong" for="correctionText">Tu texto</label>
+          <textarea
+            id="correctionText"
+            class="input"
+            rows="6"
+            placeholder="Escribe aqu&iacute; 2-4 frases para que otros puedan corregirte..."
+          ></textarea>
+          <div class="hintSmall" style="margin-top: 8px">
+            Se publicar&aacute; en la comunidad para que otros estudiantes puedan ayudarte.
+          </div>
+
+          <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
+            <button class="btn-white-outline" id="btnCorrectionRecord" type="button">
+              Grabar voz
+            </button>
+            <button
+              class="btn-white-outline"
+              id="btnCorrectionClearAudio"
+              type="button"
+              style="display: none"
+            >
+              Quitar voz
+            </button>
+            <span class="hintSmall" id="correctionRecordHint"></span>
+          </div>
+          <audio
+            id="correctionAudioPreview"
+            controls
+            style="display: none; width: 100%; margin-top: 10px"
+          ></audio>
+        </div>
+
+        <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
+          <button class="btn-yellow" id="btnCorrectionPublish" type="button">
+            Publicar
+          </button>
+          <button class="btn-white-outline" id="btnCorrectionCancel" type="button">
+            Cancelar
+          </button>
+          <span class="hintSmall" id="correctionMsg"></span>
         </div>
       </div>
     </div>

@@ -38,26 +38,43 @@
           </div>
         </section>
 
-        <div class="card card--info">
-          <div class="rowBetween">
-            <div class="mutedStrong">
-              Elige un tema para abrir la lecci&oacute;n. Los badges muestran:
-              &#x2705; lecci&oacute;n publicada &middot; &#x1F7E1; borrador
-              &middot; &#x1F9E9; ejercicios.
+        <section class="card courseRouteCard" style="margin-top: 12px">
+          <div class="courseRouteHead">
+            <div>
+              <div class="sectionTitle" style="margin-top: 0">Tu ruta</div>
+              <div class="mutedStrong" id="courseRouteHint">
+                Cargando...
+              </div>
             </div>
 
-            <a
-              class="btn-yellow"
-              href="admin-wizard.html"
-              id="adminQuickLesson"
-              style="display: none"
-            >
-              &#x1F6E0;&#xFE0F; Admin
-            </a>
+            <div class="metaRow" style="gap: 10px; flex-wrap: wrap">
+              <a
+                class="btn-white-outline"
+                href="admin-wizard.html"
+                id="adminQuickLesson"
+                style="display: none; text-decoration: none"
+              >
+                Admin
+              </a>
+              <a class="btn-white-outline" href="espanel.html" style="text-decoration: none">
+                Volver
+              </a>
+              <a class="btn-yellow" id="btnCourseContinue" href="#" style="display: none; text-decoration: none">
+                Continuar
+              </a>
+            </div>
           </div>
-        </div>
 
-        <div id="topicsList" class="coursesGrid"></div>
+          <div class="courseRouteProgress" aria-hidden="true">
+            <div class="courseRouteProgressFill" id="courseRouteProgressFill" style="width: 0%"></div>
+          </div>
+
+          <div class="hintSmall" style="margin-top: 10px">
+            Consejo: completa la lecci&oacute;n y luego practica para avanzar m&aacute;s r&aacute;pido.
+          </div>
+        </section>
+
+        <div id="topicsList" class="coursePath" aria-label="Ruta del curso"></div>
       </div>
     </main>
 
