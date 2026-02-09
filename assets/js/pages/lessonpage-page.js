@@ -545,12 +545,29 @@ async function loadLesson(user) {
     }
 
     if (vocab.length) {
+      const VOCAB_PREVIEW_MAX = 18;
+      const preview = vocab.slice(0, VOCAB_PREVIEW_MAX);
+      const rest = vocab.slice(VOCAB_PREVIEW_MAX);
       blocks.push(`
         <div class="card lessonExtraCard">
           <div class="sectionTitle" style="margin-top:0;">Vocabulario clave</div>
           <div class="lessonExtraList">
-            ${vocab.map((v) => `<div class="lessonExtraItem">${v}</div>`).join('')}
+            ${preview.map((v) => `<div class="lessonExtraItem">${v}</div>`).join('')}
           </div>
+          ${
+            rest.length
+              ? `
+                <details class="lessonVocabMore" style="margin-top:10px;">
+                  <summary class="btn-white-outline" style="list-style:none; cursor:pointer;">
+                    Mostrar ${rest.length} más
+                  </summary>
+                  <div class="lessonExtraList" style="margin-top:10px;">
+                    ${rest.map((v) => `<div class="lessonExtraItem">${v}</div>`).join('')}
+                  </div>
+                </details>
+              `
+              : ''
+          }
         </div>
       `);
     }
@@ -633,6 +650,8 @@ async function loadLesson(user) {
     return;
   }
 
+  renderExtras(meta || {});
+
   const html = String(meta?.html || '').trim();
   if (!html) {
     renderEmpty('Todavia no hay contenido de leccion para este tema.');
@@ -644,8 +663,6 @@ async function loadLesson(user) {
     contentEl.innerHTML = html;
     contentEl.style.display = 'block';
   }
-
-  renderExtras(meta || {});
 
   if (topic) setupRatingCard(user, topic);
 

@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>A1 Official (2 pierwsze tematy) → Firestore (AquiVivo)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../assets/css/styles.css?v=20260209a" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      button {
+        padding: 12px 16px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .box {
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+      }
+      .ok {
+        color: var(--success-ink);
+        font-weight: 900;
+      }
+      .err {
+        color: var(--danger-ink);
+        font-weight: 900;
+      }
+      code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .muted {
+        color: var(--ink-muted);
+      }
+      .topicLine {
+        margin-top: 6px;
+        line-height: 1.55;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        background: var(--yellow);
+        color: var(--blue);
+        padding: 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      "
+    >
+      Sesión activa:
+      <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
+        >Cargando...</strong
+      >
+    </div>
+
+    <h2>🧩 Oficjalne: 2 pierwsze tematy A1 (pełna lekcja + ćwiczenia + fiszki)</h2>
+    <p>
+      Ta strona uzupełnia Firestore: <code>course_meta</code> (treść lekcji) i
+      <code>exercises</code> (zadania) dla <b>pierwszych 2 tematów</b> w trasie A1
+      (gramatyka + słownictwo przeplatane jak w Duolingo/Busuu).
+    </p>
+    <p class="muted">
+      Wymaga admin: <code>aquivivo.pl@gmail.com</code>. Import jest idempotentny
+      (ponowne uruchomienie tylko aktualizuje te same dokumenty).
+    </p>
+
+    <button id="importBtn">WGRYWAJ: 2 lekcje A1 (pierwsze 2 tematy)</button>
+    <div id="preview" class="box">Tematy: (jeszcze nie wczytano)</div>
+    <div id="log" class="box">Status: gotowe.</div>
+
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        collection,
+        doc,
+        getDocs,
+        query,
+        where,
+        orderBy,
+        setDoc,
+        serverTimestamp,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+        authDomain: 'aquivivo-platform.firebaseapp.com',
+        projectId: 'aquivivo-platform',
+        storageBucket: 'aquivivo-platform.firebasestorage.app',
+        messagingSenderId: '116115622011',
+        appId: '1:116115622011:web:33a4a583eba4368071bade',
+      };
+
+      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+      const LEVEL = 'A1';
+      const SEED_VERSION = 'a1_official_v1_2026-02-09';
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const logEl = document.getElementById('log');
+      const previewEl = document.getElementById('preview');
+      const sessionEl = document.getElementById('sessionEmail');
+      function log(msg, type = '') {
+        logEl.innerHTML = `<div class="${type}">${msg}</div>`;
+      }
+
+      function esc(s) {
+        return String(s || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      let IS_ADMIN = false;
+
+      onAuthStateChanged(auth, (user) => {
+        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesión)';
+        IS_ADMIN =
+          !!user &&
+          String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        if (!IS_ADMIN) {
+          log(
+            `❌ Zaloguj się jako admin (${esc(ADMIN_EMAIL)}), potem wróć na tę stronę.`,
+            'err',
+          );
+        }
+      });
+
+      function topicTypeKey(topic) {
+        const raw = String(topic?.type || topic?.category || '')
+          .trim()
+          .toLowerCase();
+        if (!raw) return 'grammar';
+
+        if (
+          raw === 'vocab' ||
+          raw === 'vocabulary' ||
+          raw === 'vocabulario' ||
+          raw === 'slownictwo' ||
+          raw === 'słownictwo'
+        )
+          return 'vocabulary';
+
+        if (
+          raw === 'grammar' ||
+          raw === 'gramatyka' ||
+          raw === 'gramatica' ||
+          raw === 'gramática'
+        )
+          return 'grammar';
+
+        if (
+          raw === 'both' ||
+          raw === 'mix' ||
+          raw === 'mixed' ||
+          raw === 'mieszane' ||
+          raw.includes('+')
+        )
+          return 'both';
+
+        return raw;
+      }
+
+      function buildMixedRoute(topics) {
+        const grammar = [];
+        const vocab = [];
+        const both = [];
+        const other = [];
+
+        (topics || []).forEach((t) => {
+          const k = topicTypeKey(t);
+          if (k === 'vocabulary') vocab.push(t);
+          else if (k === 'grammar') grammar.push(t);
+          else if (k === 'both') both.push(t);
+          else other.push(t);
+        });
+
+        if (!grammar.length || !vocab.length) return topics || [];
+
+        const mixed = [];
+        const max = Math.max(grammar.length, vocab.length, both.length);
+        for (let i = 0; i < max; i += 1) {
+          if (grammar[i]) mixed.push(grammar[i]);
+          if (vocab[i]) mixed.push(vocab[i]);
+          if (both[i]) mixed.push(both[i]);
+        }
+        return [...mixed, ...other];
+      }
+
+      function metaDocId(level, courseId) {
+        return `${level}__${courseId}`;
+      }
+
+      function exerciseDocId(level, topicId, seq) {
+        const n = String(seq).padStart(3, '0');
+        return `${level}__${topicId}__OFF__${n}`;
+      }
+
+      const HTML_A1_PRESENTACION = `
+        <h2>🎯 Objetivo</h2>
+        <p>Vas a presentarte en polaco y decir de dónde eres con frases naturales.</p>
+
+        <h2>🧠 Gramática rápida: <i>być</i> (ser/estar) en presente</h2>
+        <div class="card" style="padding:12px; margin:12px 0;">
+          <div style="font-weight:900;">Formas básicas</div>
+          <div style="margin-top:8px; line-height:1.75;">
+            <b>ja</b> — <b>jestem</b> (yo soy/estoy)<br/>
+            <b>ty</b> — <b>jesteś</b> (tú eres/estás)<br/>
+            <b>on/ona</b> — <b>jest</b> (él/ella es/está)
+          </div>
+        </div>
+
+        <h2>🧩 Frases listas (chunking)</h2>
+        <ul>
+          <li><b>Dzień dobry!</b> — ¡Buenos días!</li>
+          <li><b>Cześć!</b> — ¡Hola! (informal)</li>
+          <li><b>Mam na imię…</b> — Me llamo…</li>
+          <li><b>Jestem z Hiszpanii.</b> — Soy de España.</li>
+          <li><b>A ty?</b> — ¿Y tú?</li>
+        </ul>
+
+        <h2>📚 Vocabulario clave</h2>
+        <ul>
+          <li><b>proszę</b> — por favor / de nada</li>
+          <li><b>dziękuję</b> — gracias</li>
+          <li><b>przepraszam</b> — perdón</li>
+          <li><b>Polska</b> — Polonia</li>
+          <li><b>Hiszpania</b> — España</li>
+        </ul>
+
+        <h2>💬 Mini diálogo</h2>
+        <p style="line-height:1.7;">
+          <b>A:</b> Dzień dobry! Jak masz na imię?<br/>
+          <b>B:</b> Mam na imię Juan. A ty?<br/>
+          <b>A:</b> Mam na imię Ania. Skąd jesteś?<br/>
+          <b>B:</b> Jestem z Hiszpanii.
+        </p>
+
+        <div class="hintSmall" style="margin-top:12px;">
+          Dalej: zrób <b>Ejercicios</b>, potem przejdź do <b>Fichas</b>. Na ćwiczeniach z ikoną 🎙️ możesz nagrać głos.
+        </div>
+      `;
+
+      const HTML_A1_CAFE_NUMEROS = `
+        <h2>🎯 Objetivo</h2>
+        <p>Vas a pedir algo en una cafetería y entender precios sencillos.</p>
+
+        <h2>🧠 Gramática rápida: <i>Poproszę…</i> (quisiera…)</h2>
+        <p>
+          En A1 lo tratamos como <b>frase lista</b>. Úsala para pedir con educación:
+          <b>Poproszę kawę</b>, <b>Poproszę wodę</b>, <b>Poproszę herbatę</b>.
+        </p>
+
+        <h2>🔢 Números (1–10)</h2>
+        <div class="card" style="padding:12px; margin:12px 0; line-height:1.7;">
+          1 <b>jeden</b>, 2 <b>dwa</b>, 3 <b>trzy</b>, 4 <b>cztery</b>, 5 <b>pięć</b><br/>
+          6 <b>sześć</b>, 7 <b>siedem</b>, 8 <b>osiem</b>, 9 <b>dziewięć</b>, 10 <b>dziesięć</b>
+        </div>
+
+        <h2>📚 Vocabulario clave</h2>
+        <ul>
+          <li><b>kawa</b> — café</li>
+          <li><b>herbata</b> — té</li>
+          <li><b>woda</b> — agua</li>
+          <li><b>ile kosztuje?</b> — ¿cuánto cuesta?</li>
+          <li><b>rachunek, proszę</b> — la cuenta, por favor</li>
+        </ul>
+
+        <h2>💬 Mini diálogo</h2>
+        <p style="line-height:1.7;">
+          <b>A:</b> Dzień dobry. Co podać?<br/>
+          <b>B:</b> Poproszę kawę i wodę, proszę.<br/>
+          <b>A:</b> Jasne. To kosztuje cztery złote.<br/>
+          <b>B:</b> Dziękuję!
+        </p>
+
+        <div class="hintSmall" style="margin-top:12px;">
+          Dalej: <b>Ejercicios</b> (z audio i nagrywaniem), potem <b>Fichas</b>.
+        </div>
+      `;
+
+      function buildSeedForTopic(topic, idx) {
+        const topicTitle = String(topic?.title || topic?.name || '').trim();
+        const topicSlug = String(topic?.slug || '').trim();
+        const base = {
+          published: true,
+          durationMin: 10,
+          resources: [],
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+          seedVersion: SEED_VERSION,
+        };
+
+        if (idx === 0) {
+          return {
+            meta: {
+              ...base,
+              level: LEVEL,
+              courseId: topic.id,
+              titleEs: 'A1 — Saludos y presentación',
+              descriptionEs:
+                'Frases clave + być (jestem/jesteś) + mini diálogo + voz.',
+              html: HTML_A1_PRESENTACION,
+              summary:
+                'Te presentas y dices de dónde eres. Practicas “być” en presente con audio y grabación.',
+              vocab: ['dzień dobry', 'cześć', 'mam na imię', 'jestem', 'proszę', 'dziękuję', 'Polska', 'Hiszpania'],
+              homework:
+                'Nagraj 3 frases: “Dzień dobry”, “Mam na imię…”, “Jestem z …”.',
+            },
+            exercises: [
+              {
+                order: 1,
+                type: 'Rellenar los espacios',
+                prompt: 'Ja ___ z Hiszpanii.',
+                answer: 'jestem',
+                notes: 'być (ja) = jestem',
+                tags: ['a1', 'official', 'grammar'],
+              },
+              {
+                order: 2,
+                type: 'Opción múltiple',
+                prompt: 'Elige: Ty ___ z Meksyku.',
+                options: ['A) jestem', 'B) jesteś', 'C) jest'],
+                answer: 'B',
+                notes: 'być (ty) = jesteś',
+                tags: ['a1', 'official', 'grammar'],
+              },
+              {
+                order: 3,
+                type: 'Escuchar y completar los espacios',
+                prompt: 'Dzień ___!',
+                answer: 'dobry',
+                notes: 'TTS_PL: Dzień dobry!',
+                tags: ['a1', 'official', 'listening'],
+              },
+              {
+                order: 4,
+                type: 'Rellenar los espacios',
+                prompt: 'Mam na ___…',
+                answer: 'imię',
+                notes: 'Frase lista: Mam na imię…',
+                tags: ['a1', 'official', 'grammar'],
+              },
+              {
+                order: 5,
+                type: 'Escuchar y repetir (voz)',
+                prompt: 'Powtórz: Mam na imię Juan. Jestem z Hiszpanii.',
+                answer: '',
+                notes: 'TTS_PL: Mam na imię Juan. Jestem z Hiszpanii.',
+                tags: ['a1', 'official', 'speaking'],
+              },
+              {
+                order: 6,
+                type: 'Tarjetas interactivas',
+                prompt: 'Fichas del tema',
+                options: [
+                  '1) PL: dzień dobry | ES: buenos días | EX: Dzień dobry! Jak się masz?',
+                  '2) PL: cześć | ES: hola (informal) | EX: Cześć! Co słychać?',
+                  '3) PL: proszę | ES: por favor / de nada | EX: Proszę, usiądź.',
+                  '4) PL: dziękuję | ES: gracias | EX: Dziękuję bardzo!',
+                  '5) PL: przepraszam | ES: perdón | EX: Przepraszam, gdzie jest toaleta?',
+                ],
+                answer: '',
+                notes: 'Abre “Fichas” para practicar tipo Quizlet.',
+                tags: ['a1', 'official', 'flashcards'],
+              },
+              {
+                order: 7,
+                type: 'Test final del tema',
+                prompt: 'Elige la frase correcta: “I am from Spain.”',
+                options: ['A) Jestem z Hiszpanii.', 'B) Jesteś z Hiszpanii.', 'C) Jest z Hiszpanii.'],
+                answer: 'A',
+                notes: 'Test: jestem (yo).',
+                tags: ['a1', 'official', 'test'],
+              },
+            ],
+          };
+        }
+
+        return {
+          meta: {
+            ...base,
+            level: LEVEL,
+            courseId: topic.id,
+            titleEs: 'A1 — En la cafetería (pedir + precios)',
+            descriptionEs:
+              'Poproszę… + números 1–10 + Ile kosztuje? + audio + voz.',
+            html: HTML_A1_CAFE_NUMEROS,
+            summary:
+              'Pides en una cafetería y practicas números y precios con audio y grabación.',
+            vocab: ['poproszę', 'kawa', 'herbata', 'woda', 'ile kosztuje', 'rachunek', 'złoty'],
+            homework:
+              'Nagraj: “Poproszę kawę”, “Poproszę wodę”, “Rachunek, proszę”.',
+          },
+          exercises: [
+            {
+              order: 1,
+              type: 'Opción múltiple',
+              prompt: 'Elige: Poproszę ___.',
+              options: ['A) kawę', 'B) kawa', 'C) kawy'],
+              answer: 'A',
+              notes: 'Frase lista (A1): Poproszę kawę.',
+              tags: ['a1', 'official', 'vocab'],
+            },
+            {
+              order: 2,
+              type: 'Rellenar los espacios',
+              prompt: 'To kosztuje ___ złote.',
+              answer: 'cztery|4',
+              notes: 'Números: 4 = cztery',
+              tags: ['a1', 'official', 'grammar'],
+            },
+            {
+              order: 3,
+              type: 'Escuchar y completar los espacios',
+              prompt: 'Dzień dobry. Poproszę ___ i ___, proszę.',
+              answer: 'kawę||wodę',
+              notes: 'TTS_PL: Dzień dobry. Poproszę kawę i wodę, proszę.',
+              tags: ['a1', 'official', 'listening'],
+            },
+            {
+              order: 4,
+              type: 'Escuchar y repetir (voz)',
+              prompt: 'Powtórz: Rachunek, proszę.',
+              answer: '',
+              notes: 'TTS_PL: Rachunek, proszę.',
+              tags: ['a1', 'official', 'speaking'],
+            },
+            {
+              order: 5,
+              type: 'Tarjetas interactivas',
+              prompt: 'Fichas del tema',
+              options: [
+                '1) PL: poproszę | ES: quisiera | EX: Poproszę kawę.',
+                '2) PL: kawa | ES: café | EX: Poproszę kawę, proszę.',
+                '3) PL: herbata | ES: té | EX: Poproszę herbatę.',
+                '4) PL: woda | ES: agua | EX: Poproszę wodę.',
+                '5) PL: ile kosztuje? | ES: ¿cuánto cuesta? | EX: Ile kosztuje kawa?',
+                '6) PL: rachunek, proszę | ES: la cuenta, por favor | EX: Rachunek, proszę.',
+              ],
+              answer: '',
+              notes: 'Abre “Fichas” para practicar tipo Quizlet.',
+              tags: ['a1', 'official', 'flashcards'],
+            },
+            {
+              order: 6,
+              type: 'Test final del tema',
+              prompt: 'Elige: ¿Cómo preguntas por el precio?',
+              options: ['A) Ile kosztuje?', 'B) Skąd jesteś?', 'C) Jak masz na imię?'],
+              answer: 'A',
+              notes: 'Test: frase clave',
+              tags: ['a1', 'official', 'test'],
+            },
+          ],
+        };
+      }
+
+      async function loadA1Topics() {
+        const q = query(
+          collection(db, 'courses'),
+          where('level', '==', LEVEL),
+          orderBy('order'),
+        );
+        const snap = await getDocs(q);
+        return snap.docs
+          .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+          .filter((t) => t.isArchived !== true);
+      }
+
+      function renderPreview(selected) {
+        if (!previewEl) return;
+        if (!selected?.length) {
+          previewEl.innerHTML = 'Tematy: (brak)';
+          return;
+        }
+        previewEl.innerHTML = `
+          <div style="font-weight:900;">Wykryte tematy (ruta A1 → pierwsze 2):</div>
+          ${selected
+            .map((t, i) => {
+              const tt = esc(t?.title || t?.name || '(bez tytułu)');
+              const ty = esc(String(t?.type || ''));
+              const sl = esc(String(t?.slug || ''));
+              return `<div class="topicLine">
+                <b>#${i + 1}</b> ${tt}
+                <div class="muted">id: <code>${esc(t.id)}</code> · type: <code>${ty || '-'}</code> · slug: <code>${sl || '-'}</code></div>
+              </div>`;
+            })
+            .join('')}
+        `;
+      }
+
+      async function upsertTopicMetaAndExercises(topic, idx) {
+        const seed = buildSeedForTopic(topic, idx);
+
+        const metaRef = doc(db, 'course_meta', metaDocId(LEVEL, topic.id));
+        await setDoc(
+          metaRef,
+          {
+            level: LEVEL,
+            courseId: topic.id,
+            published: seed.meta.published === true,
+            titleEs: seed.meta.titleEs,
+            descriptionEs: seed.meta.descriptionEs,
+            durationMin: seed.meta.durationMin || null,
+            html: seed.meta.html,
+            summary: seed.meta.summary || '',
+            vocab: seed.meta.vocab || [],
+            resources: seed.meta.resources || [],
+            homework: seed.meta.homework || '',
+            seedVersion: seed.meta.seedVersion || SEED_VERSION,
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+
+        const topicSlug = String(topic?.slug || '').trim();
+        for (let i = 0; i < seed.exercises.length; i += 1) {
+          const ex = seed.exercises[i];
+          const exId = exerciseDocId(LEVEL, topic.id, ex.order);
+          const exRef = doc(db, 'exercises', exId);
+          await setDoc(
+            exRef,
+            {
+              level: LEVEL,
+              topicId: topic.id,
+              topicSlug: topicSlug || topic.id,
+              order: ex.order,
+              type: ex.type,
+              prompt: ex.prompt,
+              options: ex.options || [],
+              answer: ex.answer || '',
+              notes: ex.notes || '',
+              tags: ex.tags || [],
+              category: 'both',
+              seedVersion: SEED_VERSION,
+              updatedAt: serverTimestamp(),
+              createdAt: serverTimestamp(),
+            },
+            { merge: true },
+          );
+        }
+      }
+
+      document.getElementById('importBtn').onclick = async () => {
+        if (!IS_ADMIN) {
+          alert('Nie jesteś adminem.');
+          return;
+        }
+        try {
+          log('⏳ Wczytuję tematy A1...', '');
+          const all = await loadA1Topics();
+          if (!all.length) {
+            renderPreview([]);
+            log('❌ Brak tematów A1 w collection courses.', 'err');
+            return;
+          }
+
+          const route = buildMixedRoute(all);
+          const selected = route.slice(0, 2);
+          renderPreview(selected);
+
+          if (selected.length < 2) {
+            log('❌ Potrzebuję minimum 2 tematy A1.', 'err');
+            return;
+          }
+
+          log('⏳ Wgrywam 2 oficjalne lekcje A1...', '');
+          for (let i = 0; i < selected.length; i += 1) {
+            await upsertTopicMetaAndExercises(selected[i], i);
+          }
+
+          log(
+            '✅ Gotowe. Otwórz: <code>course.html?level=A1</code> → wybierz temat #1/#2 → potem <code>Ejercicios</code> i <code>Fichas</code>.',
+            'ok',
+          );
+        } catch (e) {
+          console.error(e);
+          log('❌ Błąd importu. Sprawdź konsolę.', 'err');
+        }
+      };
+    </script>
+  </body>
+</html>
+

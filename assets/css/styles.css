@@ -2599,6 +2599,16 @@ p,
     border-color: rgba(255, 255, 255, 0.35);
     background: rgba(255, 255, 255, 0.12);
   }
+
+  .lessonVocabMore summary {
+    list-style: none;
+  }
+  .lessonVocabMore summary::-webkit-details-marker {
+    display: none;
+  }
+  .lessonVocabMore[open] summary {
+    margin-bottom: 10px;
+  }
 .reviewDay {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
