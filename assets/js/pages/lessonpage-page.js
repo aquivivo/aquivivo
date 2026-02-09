@@ -3,7 +3,7 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { levelsFromPlan } from '../plan-levels.js';
+import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   collection,
   doc,
@@ -137,10 +137,8 @@ async function getUserFlags(uid) {
     const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
     const isUntilValid = hasUntil ? untilDate.getTime() > Date.now() : false;
 
-    const rawLevels = Array.isArray(d.levels)
-      ? d.levels.map((x) => String(x).toUpperCase())
-      : [];
-    const levels = rawLevels.length ? rawLevels : levelsFromPlan(d.plan);
+    const rawLevels = normalizeLevelList(d.levels);
+    const levels = rawLevels.length ? rawLevels : normalizeLevelList(levelsFromPlan(d.plan));
 
     const plan = String(d.plan || '').toLowerCase();
     const hasGlobalAccess = plan === 'premium' || (d.access === true && levels.length === 0);

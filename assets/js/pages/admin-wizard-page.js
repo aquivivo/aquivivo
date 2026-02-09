@@ -757,7 +757,7 @@ async function saveCourse() {
 }
 
 function escapeHtml(s) {
-  return String(s '')
+  return String(s ?? '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')

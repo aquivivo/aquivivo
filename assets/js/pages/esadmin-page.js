@@ -34,7 +34,7 @@ const $ = (id) => document.getElementById(id);
 const ADMIN_UIDS = new Set(['OgXNeCbloJiSGoi1DsZ9UN0aU0I2']);
 
 function esc(s) {
-  return String(s '')
+  return String(s ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -543,6 +543,12 @@ function setupAdminSidebarSections() {
   const cards = getAdminSectionCards();
   if (!cards.length) return;
 
+  const cleanLabel = (txt) =>
+    String(txt || '')
+      .replace(/\s*\([^)]*\)/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
   document.body.classList.add('admin-sections-single');
   ensureAdminSectionPool();
   ensureAdminSectionSlot();
@@ -562,37 +568,38 @@ function setupAdminSidebarSections() {
   sidePanel.innerHTML = '';
 
   const iconMap = {
-    accDashboard: '',
-    accPopup: '',
-    accServices: '',
-    accPayments: '',
-    accPromo: '',
-    accSegments: '',
-    accBroadcasts: '',
-    accPublishing: '',
-    accMissing: '',
-    accUsers: '',
-    accProgress: '',
-    accActivity: '',
-    accFlashcards: '',
-    accReviews: '?',
-    accReports: '',
-    accAppLogs: '',
-    accAudioLib: '',
+    accDashboard: '📊',
+    accPopup: '🎈',
+    accServices: '🛒',
+    accPayments: '💳',
+    accPromo: '🏷️',
+    accSegments: '🧩',
+    accBroadcasts: '📢',
+    accPublishing: '📝',
+    accMissing: '🧹',
+    accUsers: '👥',
+    accProgress: '📈',
+    accActivity: '⏱️',
+    accFlashcards: '🃏',
+    accReviews: '⭐',
+    accReports: '🧾',
+    accAppLogs: '🖥️',
+    accAudioLib: '🎧',
   };
 
   const labelById = new Map(
     cards.map((card) => {
       const summary = card.querySelector('summary');
-      const label = summary ? summary.textContent.trim() : card.id;
+      const raw = summary ? summary.textContent.trim() : card.id;
+      const label = cleanLabel(raw);
       return [card.id, label];
     }),
   );
 
   const groupDefs = [
-    { title: 'Pulpit i ustawienia', items: ['accDashboard', 'accPopup'] },
+    { title: '📂 Pulpit i ustawienia', items: ['accDashboard', 'accPopup'] },
     {
-      title: 'Sprzedaz i marketing',
+      title: '📈 Sprzedaz i marketing',
       items: [
         'accServices',
         'accPayments',
@@ -603,12 +610,9 @@ function setupAdminSidebarSections() {
         'accMissing',
       ],
     },
-    {
-      title: 'Uzytkownicy i postep',
-      items: ['accUsers', 'accProgress', 'accActivity', 'accFlashcards'],
-    },
-    { title: 'Opinie i jakosc', items: ['accReviews', 'accReports'] },
-    { title: 'Techniczne i multimedia', items: ['accAppLogs', 'accAudioLib'] },
+    { title: '👥 Uzytkownicy i postep', items: ['accUsers', 'accProgress', 'accActivity', 'accFlashcards'] },
+    { title: '⭐ Opinie i jakosc', items: ['accReviews', 'accReports'] },
+    { title: '🛠️ Techniczne i multimedia', items: ['accAppLogs', 'accAudioLib'] },
   ];
 
   const usedIds = new Set();
@@ -783,8 +787,8 @@ async function loadReferralSettings() {
   try {
     const snap = await getDoc(doc(db, 'promo_codes', '_REFERRAL_SETTINGS'));
     const data = snap.exists() ? snap.data() : {};
-    p.value = data?.percent '';
-    s.value = data?.scope '';
+    p.value = String(data?.percent ?? '');
+    s.value = String(data?.scope ?? '');
   } catch (e) {
     console.error('[referral load]', e);
     setStatus(st, 'Blad ladowania.', true);
@@ -1213,7 +1217,7 @@ async function saveService() {
     desc: String($('svcDesc')?.value || '').trim(),
     price: String($('svcPrice')?.value || '').trim(),
     badge: String($('svcBadge')?.value || '').trim(),
-    accessDays: accessDays null,
+    accessDays: accessDays ?? null,
     accessLevels: accessLevels.length ? accessLevels : null,
     order: Number($('svcOrder')?.value || 0),
     ctaType: String($('svcCtaType')?.value || 'info').trim(),
@@ -2602,7 +2606,7 @@ function summarizePayments() {
     if (status !== 'succeeded' && status !== 'paid') continue;
     const d = toDateMaybe(p.createdAt || p.updatedAt || p.stripeCreatedAt);
     if (!d) continue;
-    const amount = Number(p.amountTotal p.amount_total);
+    const amount = Number(p.amountTotal ?? p.amount_total);
     const currency = String(p.currency || '').toUpperCase();
     if (d >= startToday) {
       agg.today.count += 1;

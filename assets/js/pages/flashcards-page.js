@@ -3,7 +3,7 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { levelsFromPlan } from '../plan-levels.js';
+import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   collection,
   query,
@@ -132,12 +132,10 @@ function getUserLevels(userDoc, email) {
     String(userDoc?.role || '').toLowerCase() === 'admin';
   if (isAdmin) return ['A1', 'A2', 'B1', 'B2'];
 
-  const raw = Array.isArray(userDoc?.levels)
-    ? userDoc.levels.map((x) => String(x).toUpperCase())
-    : [];
+  const raw = normalizeLevelList(userDoc?.levels);
   if (raw.length) return raw;
 
-  const fromPlan = levelsFromPlan(userDoc?.plan);
+  const fromPlan = normalizeLevelList(levelsFromPlan(userDoc?.plan));
   return fromPlan.length ? fromPlan : ['A1'];
 }
 
@@ -193,7 +191,7 @@ function renderCard() {
   }
 
   if (fcCard) fcCard.classList.toggle('isFlipped', isFlipped);
-  if (fcFav) fcFav.textContent = card.favorite ? '? Favorito' : '? Favorito';
+  if (fcFav) fcFav.textContent = card.favorite ? '\u2B50 Favorito' : '\u2606 Favorito';
   if (fcExampleAudio) fcExampleAudio.disabled = !card.example;
   setStatus(`Tarjeta ${currentIndex + 1} de ${cards.length}`);
 }

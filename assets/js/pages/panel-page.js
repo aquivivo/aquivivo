@@ -6,7 +6,7 @@
 
 import { auth, db, storage } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { levelsFromPlan } from '../plan-levels.js';
+import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   doc,
   getDoc,
@@ -556,17 +556,16 @@ function parseAccessLevels(userDoc) {
   // ✅ Primary source of truth: users.levels (A1/A2/B1/B2)
   const rawLevels = userDoc?.levels;
   if (Array.isArray(rawLevels)) {
-    return rawLevels.map((x) => String(x).toUpperCase()).filter(Boolean);
+    return normalizeLevelList(rawLevels);
   }
 
   // Backward compatibility: users.accessLevels
   const raw = userDoc?.accessLevels;
-  if (Array.isArray(raw))
-    return raw.map((x) => String(x).toUpperCase()).filter(Boolean);
+  if (Array.isArray(raw)) return normalizeLevelList(raw);
 
   // Fallback: plan mapping (legacy + Stripe planId)
   const fromPlan = levelsFromPlan(userDoc?.plan);
-  return fromPlan;
+  return normalizeLevelList(fromPlan);
 }
 
 function hasLevelAccess(flags, userDoc, level) {
@@ -589,11 +588,22 @@ function renderPlans(userDoc, flags) {
   const levels = parseAccessLevels(userDoc);
   const hasAnyLevel = levels.length > 0;
 
+  const untilRaw = userDoc?.accessUntil || null;
+  const untilDate = untilRaw?.toDate
+    ? untilRaw.toDate()
+    : untilRaw
+      ? new Date(untilRaw)
+      : null;
+  const untilOk = !!untilDate && !Number.isNaN(untilDate.getTime());
+  const untilTxt = untilOk ? untilDate.toISOString().slice(0, 10) : '';
+
   const chunks = [];
+  if (flags?.blocked) chunks.push('bloqueado');
   if (flags?.isAdmin) chunks.push('admin');
   if (flags?.hasAccess && !flags?.isAdmin && !hasAnyLevel)
     chunks.push('premium');
   if (hasAnyLevel) chunks.push(`niveles: ${levels.join(', ')}`);
+  if (untilTxt) chunks.push(flags?.isUntilValid ? `hasta ${untilTxt}` : `caducó ${untilTxt}`);
   if (!chunks.length) chunks.push('sin acceso');
 
   if (status) {

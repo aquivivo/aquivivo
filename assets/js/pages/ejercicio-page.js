@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 import { auth, db } from '../firebase-init.js';
-import { levelsFromPlan } from '../plan-levels.js';
+import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   onAuthStateChanged,
   signOut,
@@ -710,10 +710,8 @@ async function computeHasAccess(uid) {
     const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
     const timeOk = hasUntil ? untilDate.getTime() > Date.now() : false;
 
-    const rawLevels = Array.isArray(d.levels)
-      ? d.levels.map((x) => String(x).toUpperCase())
-      : [];
-    const levels = rawLevels.length ? rawLevels : levelsFromPlan(d.plan);
+    const rawLevels = normalizeLevelList(d.levels);
+    const levels = rawLevels.length ? rawLevels : normalizeLevelList(levelsFromPlan(d.plan));
 
     return timeOk && levels.includes(String(LEVEL).toUpperCase());
   } catch (e) {

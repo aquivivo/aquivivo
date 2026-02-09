@@ -206,10 +206,10 @@ async function resendVerification() {
     }
     await sendEmailVerification(u);
     __resendCooldownUntil = Date.now() + 30_000;
-    setVerifyHint('? Email reenviado. Revisa tu bandeja de entrada y Spam.');
+    setVerifyHint('\u2709\uFE0F Email reenviado. Revisa tu bandeja de entrada y Spam.');
   } catch (e) {
     console.error(e);
-    setVerifyHint('? No se pudo reenviar. Intenta de nuevo en un momento.');
+    setVerifyHint('\u26A0\uFE0F No se pudo reenviar. Intenta de nuevo en un momento.');
   }
 }
 
@@ -222,7 +222,7 @@ async function checkVerification() {
     }
     await u.reload();
     if (u.emailVerified) {
-      setVerifyHint('? Verificado. Entrando…');
+      setVerifyHint('\u2705 Verificado. Entrando…');
       window.location.href = getNextUrl();
     } else {
       setVerifyHint(
@@ -231,7 +231,7 @@ async function checkVerification() {
     }
   } catch (e) {
     console.error(e);
-    setVerifyHint('? Error al comprobar. Intenta de nuevo.');
+    setVerifyHint('\u26A0\uFE0F Error al comprobar. Intenta de nuevo.');
   }
 }
 
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      setMsg('? Sesión iniciada.', 'ok');
+      setMsg('\u2705 Sesión iniciada.', 'ok');
       window.location.href = getNextUrl();
     } catch (err) {
       if (err?.code === 'auth/too-many-requests') {
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {
         console.warn('[auth] lastLoginAt update failed', e);
       }
-      setMsg('? Sesión iniciada con Google.', 'ok');
+      setMsg('\u2705 Sesión iniciada con Google.', 'ok');
       window.location.href = getNextUrl();
     } catch (err) {
       if (err?.code === 'auth/popup-closed-by-user') return;

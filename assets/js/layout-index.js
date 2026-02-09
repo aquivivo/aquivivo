@@ -182,6 +182,27 @@ import {
       .replace(/\s+/g, ' ');
   }
 
+  const KNOWN_LEVELS = ['A1', 'A2', 'B1', 'B2'];
+
+  function normalizeLevelList(raw) {
+    const set = new Set();
+    const push = (lvl) => {
+      if (KNOWN_LEVELS.includes(lvl)) set.add(lvl);
+    };
+
+    const addFromValue = (value) => {
+      const s = String(value ?? '').toUpperCase();
+      const matches = s.match(/A1|A2|B1|B2/g);
+      if (!matches) return;
+      matches.forEach(push);
+    };
+
+    if (Array.isArray(raw)) raw.forEach(addFromValue);
+    else addFromValue(raw);
+
+    return Array.from(set);
+  }
+
   function levelsFromPlan(planId) {
     const key = normalizePlanKey(planId);
     const map = {
@@ -200,11 +221,9 @@ import {
   }
 
   function getUserLevels(docData) {
-    const rawLevels = Array.isArray(docData?.levels)
-      ? docData.levels.map((x) => String(x).toUpperCase())
-      : [];
+    const rawLevels = normalizeLevelList(docData?.levels);
     if (rawLevels.length) return rawLevels;
-    return levelsFromPlan(docData?.plan);
+    return normalizeLevelList(levelsFromPlan(docData?.plan));
   }
 
   function hasActiveAccess(docData) {
@@ -333,7 +352,7 @@ import {
     try {
       await updateDoc(userRef, payload);
       CURRENT_DOC = { ...(docData || {}), ...payload };
-      setTrialMessage('? Trial A1 activado por 7 días.', 'ok');
+      setTrialMessage('\u2705 Trial A1 activado por 7 días.', 'ok');
       return true;
     } catch (e) {
       console.warn('[trial] activation failed', e);
@@ -354,7 +373,7 @@ import {
 
     if (!CURRENT_DOC) {
       btn.disabled = true;
-      setTrialMessage('? Cargando tu estado...');
+      setTrialMessage('\u23F3 Cargando tu estado...');
       return;
     }
 

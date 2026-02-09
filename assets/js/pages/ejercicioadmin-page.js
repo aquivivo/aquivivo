@@ -384,7 +384,7 @@ import {
 
       // ===== helpers =====
       function escapeHtml(s) {
-        return String(s '')
+        return String(s ?? '')
           .replaceAll('&', '&amp;')
           .replaceAll('<', '&lt;')
           .replaceAll('>', '&gt;')
@@ -393,11 +393,11 @@ import {
       }
 
       function normalizeAnswer(a) {
-        return String(a '').trim();
+        return String(a ?? '').trim();
       }
 
       function parseOptions(raw) {
-        return String(raw '')
+        return String(raw ?? '')
           .split('\n')
           .map((x) => x.trim())
           .filter(Boolean);

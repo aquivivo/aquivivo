@@ -1322,7 +1322,7 @@ function bindStoriesUI(ctx) {
       return;
     }
 
-    const caption = prompt('Texto (opcional):') '';
+    const caption = prompt('Texto (opcional):') ?? '';
 
     try {
       if (storyAddBtn) storyAddBtn.disabled = true;
@@ -1495,7 +1495,11 @@ function bindStoriesUI(ctx) {
           });
           HIGHLIGHT_IDS = HIGHLIGHT_IDS.filter((x) => x !== storyId);
         } else {
-          const title = prompt('Nombre del destacado (opcional):', storyTitle(story, 'Destacado')) '';
+          const title =
+            prompt(
+              'Nombre del destacado (opcional):',
+              storyTitle(story, 'Destacado'),
+            ) ?? '';
           await updateDoc(doc(db, 'public_users', ctx.targetUid), { highlights: arrayUnion(storyId) });
           await updateDoc(doc(db, 'user_feed', ctx.targetUid, 'posts', storyId), {
             highlighted: true,
@@ -1508,7 +1512,7 @@ function bindStoriesUI(ctx) {
         if (CURRENT_PROFILE) {
           CURRENT_PROFILE.highlights = HIGHLIGHT_IDS.slice();
         }
-        setStoryModalMsg('Listo ?');
+        setStoryModalMsg('Listo ✅');
         setTimeout(() => setStoryModalMsg(''), 1200);
         renderStoryModal();
         await refreshHighlights(ctx.targetUid, ctx);
@@ -1650,7 +1654,7 @@ function bindSavedUI(ctx) {
   if (btnNewCollection && !btnNewCollection.dataset.wired) {
     btnNewCollection.dataset.wired = '1';
     btnNewCollection.addEventListener('click', async () => {
-      const name = prompt('Nombre de la colección:', '') '';
+      const name = prompt('Nombre de la colección:', '') ?? '';
       const value = String(name || '').trim();
       if (!value) return;
       try {
@@ -1660,7 +1664,7 @@ function bindSavedUI(ctx) {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-        setSavedStatus('Listo ?');
+        setSavedStatus('Listo ✅');
         setTimeout(() => setSavedStatus(''), 1200);
       } catch (e) {
         console.warn('create collection failed', e);
@@ -1710,7 +1714,11 @@ function bindSavedUI(ctx) {
           ACTIVE_SAVE_COLLECTION !== 'all' && ACTIVE_SAVE_COLLECTION !== '_none'
             ? SAVE_COLLECTIONS.find((c) => c.id === ACTIVE_SAVE_COLLECTION)?.name || ''
             : '';
-        const name = prompt('Mover a colección (vacío = sin colección):', suggested) '';
+        const name =
+          prompt(
+            'Mover a colección (vacío = sin colección):',
+            suggested,
+          ) ?? '';
         const value = String(name || '').trim();
         try {
           setSavedStatus('Actualizando...');
@@ -1719,7 +1727,7 @@ function bindSavedUI(ctx) {
             collectionId: colId || null,
             updatedAt: serverTimestamp(),
           });
-          setSavedStatus('Listo ?');
+          setSavedStatus('Listo ✅');
           setTimeout(() => setSavedStatus(''), 1200);
         } catch (err) {
           console.warn('move saved failed', err);

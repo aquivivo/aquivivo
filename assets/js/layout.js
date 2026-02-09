@@ -25,7 +25,12 @@ import {
   updateDoc,
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
-import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
+import {
+  normalizePlanKey,
+  normalizeLevelList,
+  resolveAccessUntil,
+  levelsFromPlan,
+} from './plan-levels.js';
 
 (function () {
   const path = (location.pathname || '').toLowerCase();
@@ -92,6 +97,18 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     if (typeof v.toDate === 'function') return v.toDate();
     const d = new Date(v);
     return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function formatYmd(d) {
+    try {
+      if (!(d instanceof Date)) return '';
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    } catch {
+      return '';
+    }
   }
 
   function esc(s) {
@@ -248,11 +265,20 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
   }
 
   function getUserLevels(docData) {
-    const rawLevels = Array.isArray(docData?.levels)
-      ? docData.levels.map((x) => String(x).toUpperCase())
-      : [];
+    const rawLevels = normalizeLevelList(docData?.levels);
     if (rawLevels.length) return rawLevels;
-    return levelsFromPlan(docData?.plan);
+    return normalizeLevelList(levelsFromPlan(docData?.plan));
+  }
+
+  function summarizeAccess(docData) {
+    if (!docData) return '';
+    const levels = getUserLevels(docData);
+    const until = resolveAccessUntil(docData);
+    const untilTxt = until ? formatYmd(until) : '';
+    const parts = [];
+    if (untilTxt) parts.push(`hasta ${untilTxt}`);
+    if (levels.length) parts.push(`niveles: ${levels.join(', ')}`);
+    return parts.join(' · ');
   }
 
   async function upsertEmailIndex(user, profile) {
@@ -282,7 +308,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     if (!docData) return false;
     const levels = getUserLevels(docData);
     const plan = normalizePlanKey(docData?.plan);
-    const untilDate = toDateMaybe(docData?.accessUntil);
+    const untilDate = resolveAccessUntil(docData);
     const hasUntil = !!untilDate;
     const isUntilValid = hasUntil ? untilDate.getTime() > Date.now() : false;
     const hasGlobalAccess =
@@ -306,8 +332,7 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       toDateMaybe(docData.lastLoginAt) ||
       toDateMaybe(docData.lastSeenAt) ||
       toDateMaybe(docData.createdAt);
-    const lastAccessEnd =
-      toDateMaybe(docData.accessUntil) || trialUsedAt || lastLogin;
+    const lastAccessEnd = resolveAccessUntil(docData) || trialUsedAt || lastLogin;
 
     const inactivePlanOk =
       !!lastAccessEnd && now - lastAccessEnd.getTime() >= INACTIVE_PLAN_MS;
@@ -372,9 +397,14 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
   function updateTrialUI() {
     const btn = document.getElementById('btnTrialA1');
     if (!btn) return;
+    if (!btn.dataset.defaultLabel) {
+      btn.dataset.defaultLabel = String(btn.textContent || '').trim() || 'Activa A1 gratis 7 dias';
+    }
+    const defaultLabel = btn.dataset.defaultLabel;
 
     if (!CURRENT_USER) {
       btn.disabled = false;
+      btn.textContent = defaultLabel;
       setTrialMessage('Inicia sesion para activar tu prueba gratuita.');
       return;
     }
@@ -394,20 +424,34 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       return;
     }
 
-    if (hasActiveAccess(CURRENT_DOC)) {
+    if (CURRENT_DOC.blocked === true) {
       btn.disabled = true;
-      setTrialMessage('Ya tienes acceso activo.');
+      btn.textContent = defaultLabel;
+      setTrialMessage(
+        '\u26D4\uFE0F Tu cuenta est\u00e1 bloqueada. Contacta con el administrador.',
+      );
+      return;
+    }
+
+    if (hasActiveAccess(CURRENT_DOC)) {
+      btn.disabled = false;
+      btn.textContent = 'Ir al panel';
+      const summary = summarizeAccess(CURRENT_DOC);
+      setTrialMessage(
+        summary ? `Ya tienes acceso activo (${summary}).` : 'Ya tienes acceso activo.',
+      );
       return;
     }
 
     const ok = isTrialEligible(CURRENT_DOC);
-    btn.disabled = !ok;
     if (ok) {
+      btn.disabled = false;
+      btn.textContent = defaultLabel;
       setTrialMessage('Activa tu prueba gratuita de A1 (7 dias).', 'ok');
     } else {
-      setTrialMessage(
-        'Tu prueba ya fue usada. Vuelve cuando no tengas plan activo o tras un tiempo de inactividad.',
-      );
+      btn.disabled = false;
+      btn.textContent = 'Ver planes';
+      setTrialMessage('Tu prueba ya fue usada. Compra o renueva tu acceso en Servicios.');
     }
   }
 
@@ -422,8 +466,34 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
         location.href = 'login.html?next=' + encodeURIComponent(getNextPath());
         return;
       }
+
+      if (!CURRENT_DOC) {
+        updateTrialUI();
+        return;
+      }
+
+      if (CURRENT_DOC.blocked === true) {
+        updateTrialUI();
+        return;
+      }
+
+      if (hasActiveAccess(CURRENT_DOC)) {
+        location.href = 'espanel.html';
+        return;
+      }
+
+      if (!isTrialEligible(CURRENT_DOC)) {
+        location.href = 'services.html';
+        return;
+      }
+
       const ok = await activateTrial(CURRENT_USER, CURRENT_DOC);
-      if (ok) updateTrialUI();
+      if (ok) {
+        updateTrialUI();
+      } else {
+        // fallback: if trial can't be activated, show plans instead
+        location.href = 'services.html';
+      }
     });
   }
 
@@ -735,6 +805,27 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       document.body.classList.add('with-side-panel');
       if (!existingPanel.classList.contains('side-panel'))
         existingPanel.classList.add('side-panel');
+
+      // Admin page renders its own sidebar. If that script fails (syntax/runtime),
+      // don't leave an empty panel – show a simple hash-nav based on the HTML sections.
+      if (page === 'esadmin' && existingPanel.childElementCount === 0) {
+        existingPanel.classList.add('side-panel--admin');
+        const cards = Array.from(document.querySelectorAll('details.card[id^="acc"]'));
+        if (cards.length) {
+          existingPanel.innerHTML = '';
+          cards.forEach((card) => {
+            const id = String(card?.id || '').trim();
+            if (!id) return;
+            const summary = card.querySelector('summary');
+            const label = summary ? summary.textContent.trim() : id;
+            if (!label) return;
+            const a = document.createElement('a');
+            a.href = `#${id}`;
+            a.innerHTML = `<span class="side-panel-ico" aria-hidden="true">&#x1F4CC;</span><span>${esc(label)}</span>`;
+            existingPanel.appendChild(a);
+          });
+        }
+      }
       return;
     }
 
@@ -823,19 +914,27 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     });
   }
 
-  function wireMiniMenu(wrap, btn, menu) {
+  function wireMiniMenu(wrap, btn, menu, onOpen) {
     if (!wrap || !btn || !menu || wrap.dataset.wired) return;
     wrap.dataset.wired = '1';
     const canHover = window.matchMedia('(hover: hover)').matches;
     let closeTimer = null;
 
     const open = () => {
+      const wasOpen = wrap.classList.contains('open');
       if (closeTimer) {
         clearTimeout(closeTimer);
         closeTimer = null;
       }
       wrap.classList.add('open');
       btn.setAttribute('aria-expanded', 'true');
+      if (!wasOpen && typeof onOpen === 'function') {
+        try {
+          onOpen();
+        } catch (e) {
+          console.warn('[mini-menu] onOpen failed', e);
+        }
+      }
     };
     const close = () => {
       wrap.classList.remove('open');
@@ -936,6 +1035,40 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
       console.warn('[notifications] load failed', e);
       setBadge(badge, 0);
       list.innerHTML = '<div class="nav-mini-empty">Sin notificaciones.</div>';
+    }
+  }
+
+  let notifMarkBusy = false;
+  async function markRecentNotifsRead(uid, max = 20) {
+    if (!uid || notifMarkBusy) return;
+    notifMarkBusy = true;
+    try {
+      const safeMax = Math.max(1, Math.min(50, Number(max) || 20));
+      const snap = await getDocs(
+        query(
+          collection(db, 'user_notifications', uid, 'items'),
+          orderBy('createdAt', 'desc'),
+          limit(safeMax),
+        ),
+      );
+      const unreadIds = snap.docs
+        .filter((d) => (d.data() || {}).read !== true)
+        .map((d) => d.id);
+      if (!unreadIds.length) return;
+      await Promise.all(
+        unreadIds.map((id) =>
+          updateDoc(doc(db, 'user_notifications', uid, 'items', id), {
+            read: true,
+            readAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          }).catch(() => null),
+        ),
+      );
+      await loadNotifDropdown(uid);
+    } catch (e) {
+      console.warn('[notifications] mark read failed', e);
+    } finally {
+      notifMarkBusy = false;
     }
   }
 
@@ -1111,7 +1244,9 @@ import { normalizePlanKey, levelsFromPlan } from './plan-levels.js';
     const navMsgBtn = document.getElementById('navMsgBtn');
     const navMsgMenu = document.getElementById('navMsgMenu');
 
-    wireMiniMenu(navNotifWrap, navNotifBtn, navNotifMenu);
+    wireMiniMenu(navNotifWrap, navNotifBtn, navNotifMenu, () => {
+      if (CURRENT_USER?.uid) markRecentNotifsRead(CURRENT_USER.uid);
+    });
     wireMiniMenu(navMsgWrap, navMsgBtn, navMsgMenu);
 
     if (

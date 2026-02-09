@@ -3,7 +3,7 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { levelsFromPlan } from '../plan-levels.js';
+import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   collection,
   query,
@@ -122,11 +122,9 @@ function getUserLevels(docData) {
   if (docData?.admin === true || String(docData?.role || '') === 'admin') {
     return ['A1', 'A2', 'B1', 'B2'];
   }
-  const rawLevels = Array.isArray(docData?.levels)
-    ? docData.levels.map((x) => String(x).toUpperCase())
-    : [];
+  const rawLevels = normalizeLevelList(docData?.levels);
   if (rawLevels.length) return rawLevels;
-  return levelsFromPlan(docData?.plan);
+  return normalizeLevelList(levelsFromPlan(docData?.plan));
 }
 
 async function loadExercisesForLevels(levels, topicId) {
@@ -224,8 +222,6 @@ function renderCard() {
   const exampleEl = $('reviewExample');
   const btnCorrect = $('btnCorrect');
   const btnWrong = $('btnWrong');
-  const btnExampleAudio = $('btnExampleAudio');
-  const btnFav = $('btnFav');
   const empty = $('reviewEmpty');
 
   if (!queue.length) {
@@ -270,7 +266,7 @@ function renderCard() {
   if (btnExampleAudio) btnExampleAudio.disabled = !currentCard.example;
   if (btnFav) {
     btnFav.disabled = false;
-    btnFav.textContent = currentCard.favorite ? '? Favorito' : '? Favorito';
+    btnFav.textContent = currentCard.favorite ? '\u2B50 Favorito' : '\u2606 Favorito';
   }
   if (btnCorrect) btnCorrect.disabled = true;
   if (btnWrong) btnWrong.disabled = true;
