@@ -1753,6 +1753,102 @@ body[data-page='course'] .pathStep.is-readonly .pathCard {
   opacity: 0.7;
   cursor: not-allowed;
 }
+.passportGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  align-items: start;
+}
+.passportStamp {
+  display: block;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.passportStamp:hover,
+.passportStamp:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(252, 209, 22, 0.22);
+}
+.passportStamp.is-locked {
+  opacity: 0.65;
+}
+.passportStampTop {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.passportStampEmoji {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(7, 18, 44, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  font-size: 26px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.passportStampTitle {
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 1.15;
+}
+.passportStampMeta {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.82;
+  line-height: 1.35;
+}
+.passportStampPillRow {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body[data-page='recompensas'] .passportStampPillRow .pill {
+  border-width: 1px;
+  padding: 4px 10px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.stampBodyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+.stampTextBox {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  line-height: 1.6;
+}
+.stampChallenge {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+}
+.stampChallengePrompt {
+  font-weight: 900;
+  line-height: 1.6;
+}
+.stampChallengeResult {
+  margin-top: 8px;
+  font-weight: 900;
+}
+.stampChallengeResult.ok {
+  color: #b7f7c3;
+}
+.stampChallengeResult.bad {
+  color: #ffd1d6;
+}
 .courseCard .courseTop {
   display: flex;
   align-items: flex-start;

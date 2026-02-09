@@ -1101,7 +1101,7 @@ function makeExerciseCard(ex) {
       btnDone.className = 'btn-yellow';
       btnDone.type = 'button';
       btnDone.textContent = done ? 'Hecho' : 'Marcar hecho';
-      btnDone.disabled = done || (canRec && !hasAudio);
+      btnDone.disabled = done;
 
       btnDone.addEventListener('click', async () => {
         await markDone();
@@ -1116,7 +1116,6 @@ function makeExerciseCard(ex) {
       btnClear.addEventListener('click', () => {
         if (done) return;
         clearAudio();
-        btnDone.disabled = canRec;
       });
 
       btnRec.addEventListener('click', async () => {

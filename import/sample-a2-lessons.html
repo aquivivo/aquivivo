@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sample A2 lessons → Firestore (AquiVivo)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../assets/css/styles.css?v=20260209" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      button {
+        padding: 12px 16px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .box {
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+      }
+      .ok {
+        color: var(--success-ink);
+        font-weight: 900;
+      }
+      .err {
+        color: var(--danger-ink);
+        font-weight: 900;
+      }
+      code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .muted {
+        color: var(--ink-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        background: var(--yellow);
+        color: var(--blue);
+        padding: 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      "
+    >
+      Sesión activa:
+      <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
+        >Cargando...</strong
+      >
+    </div>
+
+    <h2>🔧 Sample: 2 lecciones A2 (gramática + ejercicios + fichas)</h2>
+    <p>
+      Crea 2 temas demo en <code>courses</code>, su lección en
+      <code>course_meta</code> y ejercicios en <code>exercises</code>.
+    </p>
+    <p class="muted">
+      Requiere admin: <code>aquivivo.pl@gmail.com</code>
+    </p>
+
+    <button id="importBtn">IMPORTAR A2 DEMO (idempotente)</button>
+    <div id="log" class="box">Status: listo.</div>
+
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        doc,
+        setDoc,
+        serverTimestamp,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+        authDomain: 'aquivivo-platform.firebaseapp.com',
+        projectId: 'aquivivo-platform',
+        storageBucket: 'aquivivo-platform.firebasestorage.app',
+        messagingSenderId: '116115622011',
+        appId: '1:116115622011:web:33a4a583eba4368071bade',
+      };
+
+      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const logEl = document.getElementById('log');
+      const sessionEl = document.getElementById('sessionEmail');
+      function log(msg, type = '') {
+        logEl.innerHTML = `<div class="${type}">${msg}</div>`;
+      }
+
+      function esc(s) {
+        return String(s || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      let IS_ADMIN = false;
+
+      onAuthStateChanged(auth, (user) => {
+        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesión)';
+        IS_ADMIN =
+          !!user &&
+          String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        if (!IS_ADMIN) {
+          log(
+            `❌ Zaloguj się jako admin (${esc(ADMIN_EMAIL)}), potem wróć na tę stronę.`,
+            'err',
+          );
+        }
+      });
+
+      const HTML_CAFE = `
+        <h2>Objetivo</h2>
+        <p>Hoy vas a pedir en una cafetería en Polonia con frases naturales.</p>
+
+        <h2>Gramática rápida: <i>Poproszę + biernik</i></h2>
+        <p><b>Poproszę</b> + objeto en <b>biernik</b> (accusativo):</p>
+        <ul>
+          <li>kawa → <b>kawę</b></li>
+          <li>herbata → <b>herbatę</b></li>
+          <li>woda → <b>wodę</b></li>
+        </ul>
+
+        <div class="card" style="padding:12px; margin:12px 0;">
+          <div style="font-weight:900;">Ejemplo</div>
+          <div style="margin-top:6px; line-height:1.6;">
+            <b>PL:</b> Poproszę czarną kawę i sernik.<br/>
+            <b>ES:</b> Quisiera un café solo y un pastel de queso.
+          </div>
+        </div>
+
+        <h2>Vocabulario clave</h2>
+        <ul>
+          <li><b>kawa</b> — café</li>
+          <li><b>herbata</b> — té</li>
+          <li><b>woda niegazowana</b> — agua sin gas</li>
+          <li><b>ciasto</b> — pastel</li>
+        </ul>
+
+        <h2>Mini diálogo</h2>
+        <p>
+          <b>A:</b> Dzień dobry. Co podać?<br/>
+          <b>B:</b> Poproszę czarną kawę. I wodę niegazowaną, proszę.<br/>
+          <b>A:</b> Jasne. Coś jeszcze?<br/>
+          <b>B:</b> To wszystko. Dziękuję.
+        </p>
+        <div class="hintSmall" style="margin-top:12px;">
+          Dalej: zrób <b>Ejercicios</b>, potem przejdź do <b>Fichas</b>.
+        </div>
+      `;
+
+      const HTML_TRANSPORTE = `
+        <h2>Objetivo</h2>
+        <p>Vas a moverte por la ciudad: metro, tranvía y billetes.</p>
+
+        <h2>Gramática rápida: <i>na + miejscownik</i></h2>
+        <p>
+          Para hablar de ubicación en lugares “de superficie” usamos <b>na</b> +
+          <b>miejscownik</b>:
+        </p>
+        <ul>
+          <li>na przystanku</li>
+          <li>na dworcu</li>
+          <li>na ulicy</li>
+        </ul>
+
+        <div class="card" style="padding:12px; margin:12px 0;">
+          <div style="font-weight:900;">Ejemplo</div>
+          <div style="margin-top:6px; line-height:1.6;">
+            <b>PL:</b> Jestem na przystanku. Poproszę bilet.<br/>
+            <b>ES:</b> Estoy en la parada. Quisiera un billete.
+          </div>
+        </div>
+
+        <h2>Vocabulario clave</h2>
+        <ul>
+          <li><b>przystanek</b> — parada</li>
+          <li><b>bilet</b> — billete</li>
+          <li><b>tramwaj</b> — tranvía</li>
+          <li><b>metro</b> — metro</li>
+        </ul>
+
+        <h2>Tip</h2>
+        <p>En Polonia: <b>Poproszę bilet</b> es una frase súper útil.</p>
+      `;
+
+      const DEMOS = [
+        {
+          id: 'A2_DEMO_CAFE_KRAKOW',
+          level: 'A2',
+          type: 'both',
+          title: 'Kraków: En la cafetería (DEMO)',
+          desc: 'Biernik + pedir en una cafetería. Ejercicios + fichas + voz.',
+          slug: 'demo-cafe-krakow',
+          icon: '☕',
+          order: 980,
+          meta: {
+            published: true,
+            titleEs: 'Kraków: En la cafetería',
+            descriptionEs: 'Pedir con “Poproszę” + biernik, con mini práctica.',
+            durationMin: 10,
+            html: HTML_CAFE,
+            summary:
+              'Aprendes a pedir en una cafetería: formas en biernik + frases de cortesía.',
+            vocab: [
+              'Poproszę…',
+              'kawa / herbatę / wodę',
+              'czarna → czarną',
+              'To wszystko.',
+            ],
+            homework:
+              'Nagraj 1 minuto: co pides en una cafetería (PL). Luego pide corrección en la comunidad.',
+          },
+          exercises: [
+            {
+              id: 'A2__DEMO_CAFE__001',
+              order: 1,
+              type: 'Rellenar los espacios',
+              prompt: 'Poproszę ___ kawę.',
+              answer: 'czarną',
+              notes: 'kawa → kawę; czarna → czarną (biernik, rodzaj żeński)',
+              tags: ['demo', 'a2', 'grammar'],
+            },
+            {
+              id: 'A2__DEMO_CAFE__002',
+              order: 2,
+              type: 'Opción múltiple',
+              prompt: 'Elige la forma correcta: Poproszę ___ herbatę.',
+              options: ['A) dobra', 'B) dobrą', 'C) dobry'],
+              answer: 'B',
+              notes: 'herbata (f) → herbatę; dobra → dobrą',
+              tags: ['demo', 'a2', 'grammar'],
+            },
+            {
+              id: 'A2__DEMO_CAFE__003',
+              order: 3,
+              type: 'Escuchar y completar los espacios',
+              prompt: 'W Krakowie ___ dobrą kawę.',
+              answer: 'piję',
+              notes: 'Escucha (TTS) y completa.',
+              tags: ['demo', 'a2', 'listening'],
+            },
+            {
+              id: 'A2__DEMO_CAFE__004',
+              order: 4,
+              type: 'Escuchar y repetir',
+              prompt: 'Powtórz: Poproszę jeszcze jedną herbatę, proszę.',
+              answer: '',
+              notes: 'Escucha (TTS) y graba tu voz.',
+              tags: ['demo', 'a2', 'speaking'],
+            },
+            {
+              id: 'A2__DEMO_CAFE__005',
+              order: 5,
+              type: 'Tarjetas interactivas',
+              prompt: 'Fichas del tema',
+              options: [
+                '1) PL: kawa | ES: café | EX: Poproszę kawę.',
+                '2) PL: herbata | ES: té | EX: Poproszę herbatę.',
+                '3) PL: ciasto | ES: pastel | EX: To ciasto jest dobre.',
+                '4) PL: woda niegazowana | ES: agua sin gas | EX: Poproszę wodę niegazowaną.',
+              ],
+              answer: '',
+              notes: 'Abre “Fichas” para practicar tipo Quizlet.',
+              tags: ['demo', 'a2', 'flashcards'],
+            },
+            {
+              id: 'A2__DEMO_CAFE__006',
+              order: 6,
+              type: 'Test final del tema',
+              prompt: 'Elige: Poproszę ___ wodę.',
+              options: ['A) zimna', 'B) zimną', 'C) zimny'],
+              answer: 'B',
+              notes: 'Test: biernik + przymiotnik (f).',
+              tags: ['demo', 'a2', 'test'],
+            },
+          ],
+        },
+        {
+          id: 'A2_DEMO_TRANSPORTE_WARSZAWA',
+          level: 'A2',
+          type: 'both',
+          title: 'Warszawa: Transporte público (DEMO)',
+          desc: 'na + miejscownik. Billetes, parada, metro. Ejercicios + voz.',
+          slug: 'demo-transporte-warszawa',
+          icon: '🚋',
+          order: 990,
+          meta: {
+            published: true,
+            titleEs: 'Varsovia: Transporte público',
+            descriptionEs: 'Frases útiles: na przystanku, poproszę bilet, etc.',
+            durationMin: 10,
+            html: HTML_TRANSPORTE,
+            summary:
+              'Aprendes frases básicas para moverte por la ciudad y usar “na + miejscownik”.',
+            vocab: ['przystanek', 'bilet', 'tramwaj', 'metro', 'poproszę'],
+            homework:
+              'Nagraj: 5 frases (PL) para ir al metro y comprar un billete.',
+          },
+          exercises: [
+            {
+              id: 'A2__DEMO_TRAN__001',
+              order: 1,
+              type: 'Rellenar los espacios',
+              prompt: 'Jestem ___ przystanku.',
+              answer: 'na',
+              notes: 'na + miejscownik: na przystanku',
+              tags: ['demo', 'a2', 'grammar'],
+            },
+            {
+              id: 'A2__DEMO_TRAN__002',
+              order: 2,
+              type: 'Opción múltiple',
+              prompt: 'Elige: Idę ___ metro.',
+              options: ['A) do', 'B) na', 'C) w'],
+              answer: 'B',
+              notes: 'Frase natural: iść na metro.',
+              tags: ['demo', 'a2', 'grammar'],
+            },
+            {
+              id: 'A2__DEMO_TRAN__003',
+              order: 3,
+              type: 'Escuchar y completar los espacios',
+              prompt: 'Bilet kosztuje ___ złote.',
+              answer: 'cztery',
+              notes: 'Escucha (TTS) y completa.',
+              tags: ['demo', 'a2', 'listening'],
+            },
+            {
+              id: 'A2__DEMO_TRAN__004',
+              order: 4,
+              type: 'Escuchar y repetir',
+              prompt: 'Powtórz: Poproszę bilet ulgowy, proszę.',
+              answer: '',
+              notes: 'Escucha (TTS) y graba tu voz.',
+              tags: ['demo', 'a2', 'speaking'],
+            },
+            {
+              id: 'A2__DEMO_TRAN__005',
+              order: 5,
+              type: 'Tarjetas interactivas',
+              prompt: 'Fichas del tema',
+              options: [
+                '1) PL: przystanek | ES: parada | EX: Jestem na przystanku.',
+                '2) PL: bilet | ES: billete | EX: Poproszę bilet.',
+                '3) PL: tramwaj | ES: tranvía | EX: Jadę tramwajem.',
+                '4) PL: metro | ES: metro | EX: Idę na metro.',
+              ],
+              answer: '',
+              notes: 'Abre “Fichas” para practicar.',
+              tags: ['demo', 'a2', 'flashcards'],
+            },
+            {
+              id: 'A2__DEMO_TRAN__006',
+              order: 6,
+              type: 'Test final del tema',
+              prompt: 'Elige: Jestem ___ przystanku.',
+              options: ['A) do', 'B) na', 'C) w'],
+              answer: 'B',
+              notes: 'Test: na + miejscownik.',
+              tags: ['demo', 'a2', 'test'],
+            },
+          ],
+        },
+      ];
+
+      async function upsertTopic(demo) {
+        const courseRef = doc(db, 'courses', demo.id);
+        await setDoc(
+          courseRef,
+          {
+            level: demo.level,
+            type: demo.type,
+            title: demo.title,
+            name: demo.title,
+            desc: demo.desc,
+            subtitle: demo.desc,
+            slug: demo.slug,
+            icon: demo.icon,
+            order: demo.order,
+            free: false,
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+
+        const metaRef = doc(db, 'course_meta', `${demo.level}__${demo.id}`);
+        await setDoc(
+          metaRef,
+          {
+            level: demo.level,
+            courseId: demo.id,
+            published: demo.meta.published === true,
+            titleEs: demo.meta.titleEs,
+            descriptionEs: demo.meta.descriptionEs,
+            durationMin: demo.meta.durationMin || null,
+            html: demo.meta.html,
+            summary: demo.meta.summary || '',
+            vocab: demo.meta.vocab || [],
+            resources: [],
+            homework: demo.meta.homework || '',
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+
+        for (const ex of demo.exercises) {
+          const exRef = doc(db, 'exercises', ex.id);
+          await setDoc(
+            exRef,
+            {
+              level: demo.level,
+              topicId: demo.id,
+              topicSlug: demo.slug,
+              order: ex.order,
+              type: ex.type,
+              prompt: ex.prompt,
+              options: ex.options || [],
+              answer: ex.answer || '',
+              notes: ex.notes || '',
+              tags: ex.tags || [],
+              category: 'both',
+              updatedAt: serverTimestamp(),
+              createdAt: serverTimestamp(),
+            },
+            { merge: true },
+          );
+        }
+      }
+
+      document.getElementById('importBtn').onclick = async () => {
+        if (!IS_ADMIN) {
+          alert('Nie jesteś adminem.');
+          return;
+        }
+        try {
+          log('⏳ Importuję demo A2...', '');
+          for (const demo of DEMOS) {
+            await upsertTopic(demo);
+          }
+          log(
+            '✅ Gotowe. Otwórz: <code>course.html?level=A2</code> i znajdziesz 2 tematy (DEMO).',
+            'ok',
+          );
+        } catch (e) {
+          console.error(e);
+          log('❌ Błąd importu. Sprawdź konsolę.', 'err');
+        }
+      };
+    </script>
+  </body>
+</html>
+
