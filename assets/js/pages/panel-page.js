@@ -1,8 +1,8 @@
-// assets/js/pages/panel-page.js
-// Panel użytkownika: status dostępu + kody promo
+﻿// assets/js/pages/panel-page.js
+// Panel uÅ¼ytkownika: status dostÄ™pu + kody promo
 // Dodatki:
-// - jeśli w URL jest ?as=UID i zalogowany jest admin, pokazuje podgląd panelu danego usera (read-only)
-// - jeśli layout.js przekierował z reason=blocked, pokazuje komunikat
+// - jeÅ›li w URL jest ?as=UID i zalogowany jest admin, pokazuje podglÄ…d panelu danego usera (read-only)
+// - jeÅ›li layout.js przekierowaÅ‚ z reason=blocked, pokazuje komunikat
 
 import { auth, db, storage } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
@@ -198,7 +198,9 @@ async function loadProgressSummary(uid) {
       cEl.textContent = `Completados: ${summary.topicsCompleted}/${summary.topicsTotal}`;
     if (pEl)
       pEl.textContent =
-        summary.practiceAvg == null ? 'Práctica: -' : `Práctica: ${summary.practiceAvg}%`;
+        summary.practiceAvg == null
+          ? 'Práctica: -'
+          : `Práctica: ${summary.practiceAvg}%`;
     if (teEl)
       teEl.textContent = summary.testAvg == null ? 'Test: -' : `Test: ${summary.testAvg}%`;
     if (lEl) {
@@ -270,7 +272,8 @@ async function loadReviewSummary(uid) {
           setTimeout(() => {
             if (saveStatus) saveStatus.textContent = '';
           }, 2000);
-          const dirLabel2 = dir === 'es_pl' ? 'ES → PL' : dir === 'mixed' ? 'Mixto' : 'PL → ES';
+          const dirLabel2 =
+            dir === 'es_pl' ? 'ES → PL' : dir === 'mixed' ? 'Mixto' : 'PL → ES';
           if (planEl)
             planEl.textContent = `Plan: ${m} min al día · ${l} tarjetas/día · ${dirLabel2}`;
         } catch (e) {
@@ -522,8 +525,8 @@ function renderCourses(userDoc, flags) {
         return `
           <a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">
             <div class="courseTop">
-              <div class="courseBadge">📚 ${lvl}</div>
-                <div class="muted" style="font-weight:900;">Entrar →</div>
+              <div class="courseBadge"><span aria-hidden="true">&#x1F4DA;</span> ${lvl}</div>
+                <div class="muted" style="font-weight:900;">Entrar &#x2192;</div>
             </div>
             <div class="courseTitle" style="margin-top:10px;">${title}</div>
             <div class="muted" style="margin-top:6px;">${subtitle}</div>
@@ -534,7 +537,7 @@ function renderCourses(userDoc, flags) {
       return `
         <div class="courseCard" style="opacity:.55; filter:saturate(.75); cursor:not-allowed;">
           <div class="courseTop">
-            <div class="courseBadge">🔒 ${lvl}</div>
+            <div class="courseBadge"><span aria-hidden="true">&#x1F512;</span> ${lvl}</div>
             <div class="muted" style="font-weight:900;">Bloqueado</div>
           </div>
           <div class="courseTitle" style="margin-top:10px;">${title}</div>
@@ -653,7 +656,7 @@ function renderPromoList(userDoc) {
     .slice(0, 20)
     .map(
       (c) =>
-        `<span style="margin-right:8px; margin-bottom:8px; display:inline-flex;">🏷️ ${String(c)}</span>`,
+        `<span style="margin-right:8px; margin-bottom:8px; display:inline-flex;">&#x1F3F7;&#xFE0F; ${String(c)}</span>`,
     )
     .join('');
 }
@@ -1610,7 +1613,9 @@ async function initCommunity(viewUid, viewDoc, email, isPreview) {
   if (communitySearchInput) {
     const displayName = String(profile?.displayName || viewDoc?.displayName || viewDoc?.name || '').trim();
     const first = displayName ? displayName.split(/\s+/)[0] : '';
-    communitySearchInput.placeholder = first ? `¿A quién buscas, ${first}?` : 'Busca por nombre o @usuario…';
+    communitySearchInput.placeholder = first
+      ? `¿A quién buscas, ${first}?`
+      : 'Busca por nombre o @usuario…';
   }
 
   if (isPreview) {
@@ -1844,11 +1849,31 @@ async function initCommunity(viewUid, viewDoc, email, isPreview) {
   }
 }
 
-function renderAvatar(url) {
+function renderAvatar(url, fallbackText) {
   if (!avatarWrap || !avatarImg) return;
-  if (url) {
-    avatarImg.src = url;
-    avatarWrap.classList.add('hasImage');
+
+  if (typeof fallbackText !== 'undefined') {
+    const safeFallback = String(fallbackText || '').trim();
+    if (avatarFallback)
+      avatarFallback.textContent = safeFallback ? safeFallback[0].toUpperCase() : '';
+  }
+
+  if (!avatarImg.dataset.wired) {
+    avatarImg.dataset.wired = '1';
+    avatarImg.addEventListener('load', () => {
+      avatarWrap?.classList?.add?.('hasImage');
+    });
+    avatarImg.addEventListener('error', () => {
+      avatarImg.removeAttribute('src');
+      avatarWrap?.classList?.remove?.('hasImage');
+    });
+  }
+
+  const imgUrl = String(url || '').trim();
+  if (imgUrl) {
+    // Keep fallback visible until the image is loaded.
+    avatarWrap.classList.remove('hasImage');
+    avatarImg.src = imgUrl;
   } else {
     avatarImg.removeAttribute('src');
     avatarWrap.classList.remove('hasImage');
@@ -2125,8 +2150,8 @@ async function getReferralSettings() {
     const snap = await getDoc(doc(db, 'promo_codes', '_REFERRAL_SETTINGS'));
     const d = snap.exists() ? snap.data() || {} : {};
     return {
-      friendPercent: Number(d.refFriendPercent ?? 0),
-      ownerPercent: Number(d.refOwnerPercent ?? 0),
+      friendPercent: Number(d.refFriendPercent || 0),
+      ownerPercent: Number(d.refOwnerPercent || 0),
       scope: String(d.refRewardScope || 'otros servicios'),
     };
   } catch {
@@ -2426,12 +2451,27 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           if (panelTitle) panelTitle.textContent = '¡Buenas!';
           if (panelSubtitle)
-            panelSubtitle.textContent =
-              'Aquí tienes tu libreta! ¡Qué chimba verte!';
+            panelSubtitle.innerHTML =
+              'Aquí tienes tu libreta!<br />¡Qué chimba verte!';
         }
       }
 
-      renderAvatar(viewDoc?.photoURL || '');
+      const isSelfView = viewUid === user.uid;
+      const nameForAvatar = String(
+        viewDoc?.displayName ||
+          viewDoc?.name ||
+          viewDoc?.email ||
+          (isSelfView ? user.displayName || user.email : '') ||
+          '',
+      ).trim();
+      const fallbackLetterSource = nameForAvatar.replace(/^@+/, '');
+      const fallbackLetter = fallbackLetterSource
+        ? fallbackLetterSource[0].toUpperCase()
+        : '';
+      const photoURL = String(
+        viewDoc?.photoURL || (isSelfView ? user.photoURL : '') || '',
+      ).trim();
+      renderAvatar(photoURL, fallbackLetter);
       renderUserSettings(viewDoc, !!AS_UID);
       await initCommunity(
         viewUid,
@@ -2529,4 +2569,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+
+
 

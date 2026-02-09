@@ -163,7 +163,7 @@ async function loadTopics() {
         id: d.id,
         title: data.title || data.name || data.topicTitle || '',
         subtitle: data.subtitle || data.desc || data.description || '',
-        order: data.order ?? 9999
+        order: data.order 9999
       };
     });
 

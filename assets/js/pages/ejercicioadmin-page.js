@@ -384,7 +384,7 @@ import {
 
       // ===== helpers =====
       function escapeHtml(s) {
-        return String(s ?? '')
+        return String(s '')
           .replaceAll('&', '&amp;')
           .replaceAll('<', '&lt;')
           .replaceAll('>', '&gt;')
@@ -393,11 +393,11 @@ import {
       }
 
       function normalizeAnswer(a) {
-        return String(a ?? '').trim();
+        return String(a '').trim();
       }
 
       function parseOptions(raw) {
-        return String(raw ?? '')
+        return String(raw '')
           .split('\n')
           .map((x) => x.trim())
           .filter(Boolean);
@@ -553,7 +553,7 @@ import {
         if (!cols.length) return [];
         return cols.map((c, idx) => ({
           idx,
-          label: `${idx + 1}: ${c.slice(0, 18)}${c.length > 18 ? '…' : ''}`,
+          label: `${idx + 1}: ${c.slice(0, 18)}${c.length > 18 ? 'â€¦' : ''}`,
         }));
       }
 
@@ -567,8 +567,8 @@ import {
         if (!selectEl) return;
         const options = buildMapOptionsFromSample();
         selectEl.innerHTML = '';
-        selectEl.appendChild(new Option(`${label} — auto`, ''));
-        selectEl.appendChild(new Option(`${label} — brak`, '-1'));
+        selectEl.appendChild(new Option(`${label} â€” auto`, ''));
+        selectEl.appendChild(new Option(`${label} â€” brak`, '-1'));
         options.forEach((o) => {
           selectEl.appendChild(new Option(o.label, String(o.idx + 1)));
         });
@@ -716,9 +716,9 @@ import {
             label: 'A1 - Saludos y presentaciones',
             items: [
               {
-                type: 'Opción múltiple',
-                prompt: 'Elige la respuesta correcta: "Buenos días" significa...',
-                options: ['A) Buenas noches', 'B) Buenas tardes', 'C) Buenos días'],
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: 'Elige la respuesta correcta: "Buenos dÃ­as" significa...',
+                options: ['A) Buenas noches', 'B) Buenas tardes', 'C) Buenos dÃ­as'],
                 answer: 'C',
                 category: 'vocab',
                 notes: '',
@@ -732,15 +732,15 @@ import {
               },
               {
                 type: 'Verdadero o falso',
-                prompt: '"Adiós" es un saludo de despedida.',
+                prompt: '"AdiÃ³s" es un saludo de despedida.',
                 options: ['true', 'false'],
                 answer: 'true',
                 category: 'vocab',
               },
               {
-                type: 'Opción múltiple',
-                prompt: '¿Cómo te llamas? — ____.',
-                options: ['A) Me llamo Ana', 'B) Soy en casa', 'C) Estoy 20 años'],
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: 'Â¿CÃ³mo te llamas? â€” ____.',
+                options: ['A) Me llamo Ana', 'B) Soy en casa', 'C) Estoy 20 aÃ±os'],
                 answer: 'A',
                 category: 'grammar',
               },
@@ -751,9 +751,9 @@ import {
             label: 'A1 - Numeros y tiempo',
             items: [
               {
-                type: 'Opción múltiple',
-                prompt: '¿Cómo se dice "15"?',
-                options: ['A) quince', 'B) cincuenta', 'C) dieciséis'],
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: 'Â¿CÃ³mo se dice "15"?',
+                options: ['A) quince', 'B) cincuenta', 'C) diecisÃ©is'],
                 answer: 'A',
                 category: 'vocab',
               },
@@ -765,7 +765,7 @@ import {
               },
               {
                 type: 'Verdadero o falso',
-                prompt: '"Hoy es lunes" habla del día de la semana.',
+                prompt: '"Hoy es lunes" habla del dÃ­a de la semana.',
                 options: ['true', 'false'],
                 answer: 'true',
                 category: 'vocab',
@@ -778,8 +778,8 @@ import {
             items: [
               {
                 type: 'Rellenar los espacios',
-                prompt: 'Madrid ___ en España.',
-                answer: 'está',
+                prompt: 'Madrid ___ en EspaÃ±a.',
+                answer: 'estÃ¡',
                 category: 'grammar',
                 notes: 'Ubicacion -> estar.',
               },
@@ -790,9 +790,9 @@ import {
                 category: 'grammar',
               },
               {
-                type: 'Opción múltiple',
+                type: 'OpciÃ³n mÃºltiple',
                 prompt: 'Ella ___ cansada hoy.',
-                options: ['A) es', 'B) está', 'C) soy'],
+                options: ['A) es', 'B) estÃ¡', 'C) soy'],
                 answer: 'B',
                 category: 'grammar',
               },
@@ -810,7 +810,7 @@ import {
             label: 'A1 - Familia y personas',
             items: [
               {
-                type: 'Opción múltiple',
+                type: 'OpciÃ³n mÃºltiple',
                 prompt: 'Selecciona la palabra: "hermana" =',
                 options: ['A) hermano', 'B) hermana', 'C) padre'],
                 answer: 'B',
@@ -823,9 +823,9 @@ import {
                 category: 'vocab',
               },
               {
-                type: 'Opción múltiple',
-                prompt: '¿Quién es la hija de tu madre?',
-                options: ['A) tía', 'B) hermana', 'C) abuelo'],
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: 'Â¿QuiÃ©n es la hija de tu madre?',
+                options: ['A) tÃ­a', 'B) hermana', 'C) abuelo'],
                 answer: 'B',
                 category: 'vocab',
               },
@@ -835,7 +835,7 @@ import {
         A2: [
           {
             id: 'a2_pasado',
-            label: 'A2 - Pretérito perfecto',
+            label: 'A2 - PretÃ©rito perfecto',
             items: [
               {
                 type: 'Rellenar los espacios',
@@ -844,15 +844,15 @@ import {
                 category: 'grammar',
               },
               {
-                type: 'Opción múltiple',
-                prompt: '¿Has ___ al museo?',
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: 'Â¿Has ___ al museo?',
                 options: ['A) ido', 'B) ido a', 'C) iendo'],
                 answer: 'A',
                 category: 'grammar',
               },
               {
                 type: 'Verdadero o falso',
-                prompt: '"Hemos visto" es pretérito perfecto.',
+                prompt: '"Hemos visto" es pretÃ©rito perfecto.',
                 options: ['true', 'false'],
                 answer: 'true',
                 category: 'grammar',
@@ -864,9 +864,9 @@ import {
             label: 'A2 - Viajes y transporte',
             items: [
               {
-                type: 'Opción múltiple',
-                prompt: '¿Cómo se dice "platforma" en español?',
-                options: ['A) andén', 'B) estación', 'C) billete'],
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: 'Â¿CÃ³mo se dice "platforma" en espaÃ±ol?',
+                options: ['A) andÃ©n', 'B) estaciÃ³n', 'C) billete'],
                 answer: 'A',
                 category: 'vocab',
               },
@@ -890,9 +890,9 @@ import {
             label: 'A2 - Compras y precios',
             items: [
               {
-                type: 'Opción múltiple',
-                prompt: '¿Cuánto cuesta? =',
-                options: ['A) ¿Qué quieres?', 'B) ¿Qué precio tiene?', 'C) ¿Dónde está?'],
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: 'Â¿CuÃ¡nto cuesta? =',
+                options: ['A) Â¿QuÃ© quieres?', 'B) Â¿QuÃ© precio tiene?', 'C) Â¿DÃ³nde estÃ¡?'],
                 answer: 'B',
                 category: 'vocab',
               },
@@ -903,7 +903,7 @@ import {
                 category: 'grammar',
               },
               {
-                type: 'Opción múltiple',
+                type: 'OpciÃ³n mÃºltiple',
                 prompt: 'Selecciona: "rebaja" significa...',
                 options: ['A) descuento', 'B) subida', 'C) caja'],
                 answer: 'A',
@@ -917,12 +917,12 @@ import {
             items: [
               {
                 type: 'Rellenar los espacios',
-                prompt: '¿Ves a Juan? Sí, ___ veo.',
+                prompt: 'Â¿Ves a Juan? SÃ­, ___ veo.',
                 answer: 'lo',
                 category: 'grammar',
               },
               {
-                type: 'Opción múltiple',
+                type: 'OpciÃ³n mÃºltiple',
                 prompt: 'Doy el libro a Ana ? Yo ___ doy.',
                 options: ['A) lo', 'B) le', 'C) me'],
                 answer: 'B',
@@ -938,12 +938,12 @@ import {
             items: [
               {
                 type: 'Rellenar los espacios',
-                prompt: 'Espero que tú ___ (venir) mañana.',
+                prompt: 'Espero que tÃº ___ (venir) maÃ±ana.',
                 answer: 'vengas',
                 category: 'grammar',
               },
               {
-                type: 'Opción múltiple',
+                type: 'OpciÃ³n mÃºltiple',
                 prompt: 'Es importante que ellos ___.',
                 options: ['A) estudian', 'B) estudien', 'C) estudiar'],
                 answer: 'B',
@@ -956,16 +956,16 @@ import {
             label: 'B1 - Estilo indirecto',
             items: [
               {
-                type: 'Opción múltiple',
-                prompt: 'Ella dijo: "Voy mañana". ? Ella dijo que ___ mañana.',
-                options: ['A) voy', 'B) iba', 'C) irá'],
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: 'Ella dijo: "Voy maÃ±ana". ? Ella dijo que ___ maÃ±ana.',
+                options: ['A) voy', 'B) iba', 'C) irÃ¡'],
                 answer: 'B',
                 category: 'grammar',
               },
               {
                 type: 'Rellenar los espacios',
-                prompt: 'Me contó que ___ (tener) trabajo.',
-                answer: 'tenía',
+                prompt: 'Me contÃ³ que ___ (tener) trabajo.',
+                answer: 'tenÃ­a',
                 category: 'grammar',
               },
             ],
@@ -975,7 +975,7 @@ import {
             label: 'B1 - Expresar opinion',
             items: [
               {
-                type: 'Opción múltiple',
+                type: 'OpciÃ³n mÃºltiple',
                 prompt: 'Elige la expresion de opinion:',
                 options: ['A) Creo que...', 'B) Tengo que...', 'C) Voy a...'],
                 answer: 'A',
@@ -983,8 +983,8 @@ import {
               },
               {
                 type: 'Rellenar los espacios',
-                prompt: 'En mi ___, es mejor estudiar cada día.',
-                answer: 'opinión',
+                prompt: 'En mi ___, es mejor estudiar cada dÃ­a.',
+                answer: 'opiniÃ³n',
                 category: 'vocab',
               },
             ],
@@ -995,8 +995,8 @@ import {
             items: [
               {
                 type: 'Rellenar los espacios',
-                prompt: 'Si tuviera tiempo, ___ (viajar) más.',
-                answer: 'viajaría',
+                prompt: 'Si tuviera tiempo, ___ (viajar) mÃ¡s.',
+                answer: 'viajarÃ­a',
                 category: 'grammar',
               },
               {
@@ -1015,7 +1015,7 @@ import {
             label: 'B2 - Conectores y discurso',
             items: [
               {
-                type: 'Opción múltiple',
+                type: 'OpciÃ³n mÃºltiple',
                 prompt: 'Elige el conector correcto: ___, no puedo venir.',
                 options: ['A) Sin embargo', 'B) A pesar de', 'C) Por ejemplo'],
                 answer: 'A',
@@ -1040,9 +1040,9 @@ import {
                 category: 'grammar',
               },
               {
-                type: 'Opción múltiple',
-                prompt: 'Si yo ___ más tiempo, estudiaría cada día.',
-                options: ['A) tuviera', 'B) tengo', 'C) tendría'],
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: 'Si yo ___ mÃ¡s tiempo, estudiarÃ­a cada dÃ­a.',
+                options: ['A) tuviera', 'B) tengo', 'C) tendrÃ­a'],
                 answer: 'A',
                 category: 'grammar',
               },
@@ -1216,14 +1216,14 @@ import {
       const TASK_OPTIONS = [
         'Rellenar los espacios',
         'Relacionar palabra con imagen',
-        'Relacionar palabra con traducción',
+        'Relacionar palabra con traducciÃ³n',
         'Elegir la palabra correcta',
         'Tarjetas interactivas',
         'Agrupar palabras',
         'Verdadero o falso',
         'Completar la frase con una imagen',
         'Juego de memoria (pares)',
-        'Opción múltiple',
+        'OpciÃ³n mÃºltiple',
         'Completar la forma correcta',
         'Elegir la forma correcta',
         'Transformaciones',
@@ -1231,16 +1231,16 @@ import {
         'Ordenar palabras para formar una frase',
         'Corregir errores',
         'Unir dos partes de la frase',
-        'Completar con preposición o terminación',
-        'Opción única',
+        'Completar con preposiciÃ³n o terminaciÃ³n',
+        'OpciÃ³n Ãºnica',
         'Escribir tu propia respuesta',
-        'Repetir después del narrador',
+        'Repetir despuÃ©s del narrador',
         'Completar la frase con tu voz',
         'Responder a una pregunta',
         'Describir una imagen',
         'Juego de roles',
-        'Mini-monólogo',
-        'Diálogo semiabierto',
+        'Mini-monÃ³logo',
+        'DiÃ¡logo semiabierto',
         'Decirlo de otra manera',
         'Escuchar y elegir la respuesta',
         'Escuchar y completar los espacios',
@@ -1249,23 +1249,23 @@ import {
         'Escuchar y ordenar la secuencia',
         'Dictado con audio',
         'Escuchar y repetir',
-        'Diálogo interactivo',
-        'Misión del día',
+        'DiÃ¡logo interactivo',
+        'MisiÃ³n del dÃ­a',
         'Quiz situacional',
         'Video con preguntas',
         'Test final del tema',
         'Debate grabado',
         'Contar una historia',
-        'Simulación de entrevista de trabajo',
-        'Retroalimentación por voz',
+        'SimulaciÃ³n de entrevista de trabajo',
+        'RetroalimentaciÃ³n por voz',
       ];
 
       // ===== Szablony (1:1 z TASK_OPTIONS) =====
       // Uwaga: nie zmieniamy struktury Firestore. Szablony wypelniaja istniejace pola formularza.
       const TEMPLATE_GROUPS = {
         choice: new Set([
-          'Opción múltiple',
-          'Opción única',
+          'OpciÃ³n mÃºltiple',
+          'OpciÃ³n Ãºnica',
           'Elegir la palabra correcta',
           'Elegir la forma correcta',
           'Escuchar y elegir la respuesta',
@@ -1280,13 +1280,13 @@ import {
         fill: new Set([
           'Rellenar los espacios',
           'Completar la forma correcta',
-          'Completar con preposición o terminación',
+          'Completar con preposiciÃ³n o terminaciÃ³n',
           'Escuchar y completar los espacios',
           'Dictado con audio',
         ]),
         matching: new Set([
           'Relacionar palabra con imagen',
-          'Relacionar palabra con traducción',
+          'Relacionar palabra con traducciÃ³n',
           'Relacionar pregunta con respuesta',
           'Escuchar y relacionar personas',
           'Unir dos partes de la frase',
@@ -1297,19 +1297,19 @@ import {
         ]),
         speaking: new Set([
           'Escribir tu propia respuesta',
-          'Repetir después del narrador',
+          'Repetir despuÃ©s del narrador',
           'Completar la frase con tu voz',
           'Responder a una pregunta',
           'Juego de roles',
-          'Mini-monólogo',
-          'Diálogo semiabierto',
-          'Diálogo interactivo',
+          'Mini-monÃ³logo',
+          'DiÃ¡logo semiabierto',
+          'DiÃ¡logo interactivo',
           'Debate grabado',
           'Contar una historia',
-          'Simulación de entrevista de trabajo',
-          'Retroalimentación por voz',
+          'SimulaciÃ³n de entrevista de trabajo',
+          'RetroalimentaciÃ³n por voz',
           'Escuchar y repetir',
-          'Misión del día',
+          'MisiÃ³n del dÃ­a',
           'Describir una imagen',
           'Decirlo de otra manera',
         ]),
@@ -1335,7 +1335,7 @@ import {
         if (TEMPLATE_GROUPS.trueFalse.has(type)) {
           return {
             ...base,
-            prompt: 'Lee/Escucha y marca: ¿verdadero o falso?',
+            prompt: 'Lee/Escucha y marca: Â¿verdadero o falso?',
             optionsText: opt('true', 'false'),
             answer: 'true',
             category: 'both',
@@ -1776,7 +1776,7 @@ import {
         return `
           <div class="exercise ${REORDER_MODE && IS_ADMIN ? 'dragHint' : ''}" id="ex-${ex.id}" data-id="${ex.id}" ${REORDER_MODE && IS_ADMIN ? 'draggable="true"' : ''}>
             ${adminControls}
-            <div class="type">${escapeHtml(type)} · #${order} ${ex.category ? ` · <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ''}</div>
+            <div class="type">${escapeHtml(type)} Â· #${order} ${ex.category ? ` Â· <span class="pill pill-blue" style="padding:2px 8px; font-size:12px">${escapeHtml(ex.category)}</span>` : ''}</div>
             <h3>${escapeHtml(prompt)}</h3>
             ${ex.imageUrl ? `<img src="${escapeHtml(ex.imageUrl)}" alt="" style="max-width:100%; border-radius:14px; border:1px solid rgba(0,0,0,0.08); margin: 10px 0 12px;" />` : ''}
             ${optionsHtml}
@@ -2049,7 +2049,7 @@ import {
           });
         };
         wireQuick('btnTplFill', 'Rellenar los espacios');
-        wireQuick('btnTplChoice', 'Opción múltiple');
+        wireQuick('btnTplChoice', 'OpciÃ³n mÃºltiple');
         wireQuick('btnTplTF', 'Verdadero o falso');
 
         // First paint: ensure options visibility matches current type
@@ -2166,7 +2166,7 @@ import {
           if (exImageUrl) exImageUrl.value = '';
           exOrder.value = next;
         } else if (kind === 'choice') {
-          exType.value = 'Opción múltiple';
+          exType.value = 'OpciÃ³n mÃºltiple';
           exPrompt.value = 'Elige la forma Poprawna: Ona ___ w domu.';
           exOptions.value = 'A) jestem\nB) jest\nC) sa';
           exAnswer.value = 'B';
@@ -2555,7 +2555,7 @@ import {
         const options = parseOptions(exOptions.value);
         const needsOptions =
           options.length > 0 ||
-          type === 'Opción múltiple' ||
+          type === 'OpciÃ³n mÃºltiple' ||
           type === 'Verdadero o falso';
 
         if (needsOptions && options.length < 2) {

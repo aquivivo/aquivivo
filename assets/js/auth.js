@@ -37,14 +37,14 @@ function formatAuthError(err, context) {
   const code = String(err?.code || '');
   const map = {
     // login
-    'auth/invalid-credential': 'ContraseÒa incorrecta o usuario no existe.',
-    'auth/wrong-password': 'ContraseÒa incorrecta.',
+    'auth/invalid-credential': 'Contrase√±a incorrecta o usuario no existe.',
+    'auth/wrong-password': 'Contrase√±a incorrecta.',
     'auth/user-not-found': 'Usuario no existe.',
-    'auth/invalid-email': 'Email inv·lido.',
+    'auth/invalid-email': 'Email inv√°lido.',
     'auth/user-disabled': 'Cuenta deshabilitada. Contacta soporte.',
     // register
     'auth/email-already-in-use': 'Este email ya esta registrado.',
-    'auth/weak-password': 'La contraseÒa es demasiado dÈbil.',
+    'auth/weak-password': 'La contrase√±a es demasiado d√©bil.',
     // reset
     'auth/missing-email': 'Ingresa tu email.',
   };
@@ -78,12 +78,12 @@ function initFromUrl() {
   const reason = getQueryParam('reason');
   if (reason === 'verify') {
     setMsg(
-      '?? Tu cuenta requiere verificaciÛn de correo para acceder al panel y a los cursos. Inicia sesiÛn y confirma tu email.',
+      'Tu cuenta requiere verificaci√≥n de correo para acceder al panel y a los cursos. Inicia sesi√≥n y confirma tu email.',
       'error',
     );
     ensureVerifyBox();
     setVerifyHint(
-      'DespuÈs de iniciar sesiÛn, revisa tu correo y pulsa ìYa verifiquÈî.',
+      'Despu√©s de iniciar sesi√≥n, revisa tu correo y pulsa ‚ÄúYa verifiqu√©‚Äù.',
     );
   }
 }
@@ -101,13 +101,13 @@ function ensureVerifyBox() {
     box.style.marginTop = '14px';
     box.style.padding = '14px';
     box.innerHTML = `
-      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">?? Verifica tu correo</div>
+      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">Verifica tu correo</div>
       <div class="subtitle" style="margin:0 0 12px;">
         Para acceder al panel y a los cursos, primero confirma tu email.
       </div>
       <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
         <button id="btnResendVerify" class="btn-white-outline" type="button">Reenviar email</button>
-        <button id="btnIVerified" class="btn-yellow" type="button">Ya verifiquÈ</button>
+        <button id="btnIVerified" class="btn-yellow" type="button">Ya verifiqu√©</button>
       </div>
       <div class="hintSmall" id="verifyHint" style="margin-top:10px; display:none;"></div>
     `;
@@ -157,10 +157,10 @@ function ensureLogoutBox() {
     box.style.marginTop = '14px';
     box.style.padding = '14px';
     box.innerHTML = `
-      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">?? Cuenta activa</div>
+      <div class="sectionTitle" style="font-size:18px; margin:0 0 6px;">Cuenta activa</div>
       <div class="subtitle" id="logoutSubtitle" style="margin:0 0 12px;"></div>
       <div class="metaRow" style="flex-wrap:wrap; gap:10px;">
-        <button id="btnLogoutHere" class="btn-red" type="button">Cerrar sesiÛn</button>
+        <button id="btnLogoutHere" class="btn-red" type="button">Cerrar sesi√≥n</button>
       </div>
     `;
 
@@ -178,10 +178,10 @@ function ensureLogoutBox() {
     btnLogout.addEventListener('click', async () => {
       try {
         await signOut(auth);
-        setMsg('SesiÛn cerrada. Ahora puedes iniciar con otra cuenta.', 'ok');
+        setMsg('Sesi√≥n cerrada. Ahora puedes iniciar con otra cuenta.', 'ok');
       } catch (e) {
         console.error(e);
-        setMsg('Error al cerrar sesiÛn. Intenta de nuevo.', 'error');
+        setMsg('Error al cerrar sesi√≥n. Intenta de nuevo.', 'error');
       }
     });
   }
@@ -195,7 +195,7 @@ async function resendVerification() {
   try {
     const u = auth.currentUser;
     if (!u) {
-      setVerifyHint('Primero inicia sesiÛn.');
+      setVerifyHint('Primero inicia sesi√≥n.');
       return;
     }
     const now = Date.now();
@@ -217,16 +217,16 @@ async function checkVerification() {
   try {
     const u = auth.currentUser;
     if (!u) {
-      setVerifyHint('Primero inicia sesiÛn.');
+      setVerifyHint('Primero inicia sesi√≥n.');
       return;
     }
     await u.reload();
     if (u.emailVerified) {
-      setVerifyHint('? Verificado. EntrandoÖ');
+      setVerifyHint('? Verificado. Entrando‚Ä¶');
       window.location.href = getNextUrl();
     } else {
       setVerifyHint(
-        'A˙n no est· verificado. Abre el enlace del email y vuelve aquÌ.',
+        'A√∫n no est√° verificado. Abre el enlace del email y vuelve aqu√≠.',
       );
     }
   } catch (e) {
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const reason = qs.get('reason');
     if (reason === 'verify') {
       ensureVerifyBox();
-      setMsg('?? Antes de continuar, confirma tu email.', 'warn');
+      setMsg('Antes de continuar, confirma tu email.', 'warn');
     }
   } catch {}
 
@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const box = ensureLogoutBox();
     const sub = document.getElementById('logoutSubtitle');
     if (box && sub) {
-      sub.textContent = `Est·s conectado como ${u.email || 'ó'}.`;
+      sub.textContent = `Est√°s conectado como ${u.email || '‚Äî'}.`;
     }
   }, 350);
 
@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rawLogin = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
     if (!rawLogin || !pass)
-      return setMsg('Completa correo/usuario y contraseÒa.', 'error');
+      return setMsg('Completa correo/usuario y contrase√±a.', 'error');
 
     let email = rawLogin;
     if (!rawLogin.includes('@')) {
@@ -487,15 +487,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cred.user && !cred.user.emailVerified) {
         await sendEmailVerification(cred.user).catch(() => {});
         setMsg(
-          '?? Confirma tu correo para acceder. Te reenviÈ el email de verificaciÛn.',
+          'Confirma tu correo para acceder. Te reenvi√© el email de verificaci√≥n.',
           'error',
         );
         ensureVerifyBox();
-        setVerifyHint('Abre el correo, confirma y luego pulsa ìYa verifiquÈî.');
+        setVerifyHint('Abre el correo, confirma y luego pulsa ‚ÄúYa verifiqu√©‚Äù.');
         return;
       }
 
-      setMsg('? SesiÛn iniciada.', 'ok');
+      setMsg('? Sesi√≥n iniciada.', 'ok');
       window.location.href = getNextUrl();
     } catch (err) {
       if (err?.code === 'auth/too-many-requests') {
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {
         console.warn('[auth] lastLoginAt update failed', e);
       }
-      setMsg('? SesiÛn iniciada con Google.', 'ok');
+      setMsg('? Sesi√≥n iniciada con Google.', 'ok');
       window.location.href = getNextUrl();
     } catch (err) {
       if (err?.code === 'auth/popup-closed-by-user') return;
@@ -547,11 +547,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const rawEmail = (emailInput?.value || '').trim();
     const pass = (passwordInput?.value || '').trim();
     if (!rawEmail || !pass)
-      return setMsg('Completa correo y contraseÒa.', 'error');
+      return setMsg('Completa correo y contrase√±a.', 'error');
     if (!rawEmail.includes('@'))
       return setMsg('Para registrarte usa tu correo.', 'error');
     if (handle && !isHandleValid(handle)) {
-      return setMsg('Usuario inv·lido. Usa 3-20 letras/n˙meros y ._-', 'error');
+      return setMsg('Usuario inv√°lido. Usa 3-20 letras/n√∫meros y ._-', 'error');
     }
     if (!gender) return setMsg('Elige Papi o Mami para registrarte.', 'error');
 
@@ -594,11 +594,11 @@ document.addEventListener('DOMContentLoaded', () => {
       await sendEmailVerification(cred.user).catch(() => {});
 
       setMsg(
-        '?? Cuenta creada. ?? Revisa tu correo y confirma tu email. Luego pulsa ìYa verifiquÈî.',
+        'Cuenta creada. Revisa tu correo y confirma tu email. Luego pulsa ‚ÄúYa verifiqu√©‚Äù.',
         'ok',
       );
       ensureVerifyBox();
-      setVerifyHint('Si no ves el correo, revisa Spam y usa ìReenviar emailî.');
+      setVerifyHint('Si no ves el correo, revisa Spam y usa ‚ÄúReenviar email‚Äù.');
     } catch (err) {
       if (err?.code === 'auth/too-many-requests') {
         setCooldownMs(120_000);
@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rawLogin = (emailInput?.value || '').trim();
     if (!rawLogin)
       return setMsg(
-        'Ingresa tu correo o usuario para restablecer tu contraseÒa.',
+        'Ingresa tu correo o usuario para restablecer tu contrase√±a.',
         'error',
       );
     try {
@@ -634,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       await sendPasswordResetEmail(auth, email);
-      setMsg('?? Se enviÛ un correo para restablecer tu contraseÒa.', 'ok');
+      setMsg('Se envi√≥ un correo para restablecer tu contrase√±a.', 'ok');
     } catch (err) {
       if (err?.code === 'auth/too-many-requests') {
         setCooldownMs(120_000);

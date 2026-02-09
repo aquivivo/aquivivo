@@ -54,7 +54,7 @@ function parseCardLine(raw) {
 
   let parts = line.split('|').map((p) => p.trim()).filter(Boolean);
   if (parts.length < 2) {
-    parts = line.split(/->|=>|—|–|-/).map((p) => p.trim()).filter(Boolean);
+    parts = line.split(/->|=>|â€”|â€“|-/).map((p) => p.trim()).filter(Boolean);
   }
   if (parts.length < 2) return null;
 
@@ -385,7 +385,7 @@ function bindActions() {
     cardEl?.classList.add('isFlipped');
     if (btnCorrect) btnCorrect.disabled = false;
     if (btnWrong) btnWrong.disabled = false;
-    if (hintEl) hintEl.textContent = 'Evalúa tu respuesta: "La sé" o "No lo sé".';
+    if (hintEl) hintEl.textContent = 'EvalÃºa tu respuesta: "La sÃ©" o "No lo sÃ©".';
   });
 
   btnAudio?.addEventListener('click', () => {

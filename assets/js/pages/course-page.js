@@ -230,7 +230,7 @@ function initLevelButtonsGuard() {
 }
 
 function safeText(v) {
-  return String(v ?? '').replace(/[<>&"]/g, (ch) => ({
+  return String(v '').replace(/[<>&"]/g, (ch) => ({
     '<': '&lt;',
     '>': '&gt;',
     '&': '&amp;',

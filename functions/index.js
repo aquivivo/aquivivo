@@ -404,7 +404,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
           serviceId: serviceId || '',
           stripeSessionId: session.id,
           stripePaymentIntentId: session.payment_intent || '',
-          amountTotal: session.amount_total ?? null,
+          amountTotal: session.amount_total null,
           currency: session.currency || '',
           status: paymentStatus,
           stripeCreatedAt:

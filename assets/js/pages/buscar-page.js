@@ -36,7 +36,7 @@ const buscarTrends = $('buscarTrends');
 let MY_FOLLOWING_SET = new Set();
 
 function esc(s) {
-  return String(s ?? '')
+  return String(s '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

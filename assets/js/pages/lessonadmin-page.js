@@ -117,7 +117,7 @@ async function isAdminUid(uid) {
     }
 
     function escapeHtml(s){
-      return String(s ?? "")
+      return String(s "")
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
@@ -574,8 +574,8 @@ async function isAdminUid(uid) {
         wrap.querySelectorAll("[data-k]").forEach((el)=>{
           const k = el.getAttribute("data-k");
           if(!k) return;
-          if(el.tagName === "SELECT") el.value = (b[k] ?? "");
-          else el.value = (b[k] ?? "");
+          if(el.tagName === "SELECT") el.value = (b[k] "");
+          else el.value = (b[k] "");
           el.addEventListener("input", ()=>{
             b[k] = el.value;
             syncHtmlFromBlocks();
@@ -719,7 +719,7 @@ async function isAdminUid(uid) {
       titleInput.value = d.title || "";
       descInput.value = d.desc || "";
       typeSelect.value = d.type || "";
-      durationInput.value = (d.durationMin ?? "") === 0 ? "" : (d.durationMin ?? "");
+      durationInput.value = (d.durationMin "") === 0 ? "" : (d.durationMin "");
       publishedToggle.value = d.published ? "true" : "false";
       htmlArea.value = d.html || "";
       if(extraSummary) extraSummary.value = d.summary || "";

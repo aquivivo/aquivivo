@@ -444,10 +444,10 @@ function renderFeedFiltersUI() {
   if (feedFilterHint) {
     const baseCount = getBaseFeedList().length;
     const shown = getActiveFeedList().length;
-    const suffix = FEED_SEARCH ? ` · filtro: ${FEED_SEARCH}` : '';
+    const suffix = FEED_SEARCH ? ` Â· filtro: ${FEED_SEARCH}` : '';
     const ownerUid = String(PROFILE_CTX?.targetUid || '').trim();
     const hidden = hiddenCountForOwner(ownerUid);
-    const hiddenSuffix = hidden ? ` · ocultos: ${hidden}` : '';
+    const hiddenSuffix = hidden ? ` Â· ocultos: ${hidden}` : '';
     feedFilterHint.textContent = `Mostrando ${shown}/${baseCount}${suffix}${hiddenSuffix}`;
   }
   updateHiddenClearBtn();
@@ -489,7 +489,7 @@ function bindFeedFilters() {
     const ownerUid = String(PROFILE_CTX?.targetUid || '').trim();
     const n = hiddenCountForOwner(ownerUid);
     if (!n) return;
-    const ok = confirm('¿Restablecer publicaciones ocultas en este perfil?');
+    const ok = confirm('Â¿Restablecer publicaciones ocultas en este perfil?');
     if (!ok) return;
     clearHiddenForOwner(ownerUid);
     persistHiddenSet();
@@ -730,7 +730,7 @@ function toggleChip(btn) {
 function collectTags() {
   const tags = [];
   if (statusMood?.classList.contains('active')) tags.push('Estado');
-  if (statusMotivation?.classList.contains('active')) tags.push('Motivación');
+  if (statusMotivation?.classList.contains('active')) tags.push('MotivaciÃ³n');
   if (statusMinutes?.value) tags.push(`${statusMinutes.value} min`);
   if (statusCourse?.value) tags.push(statusCourse.value);
   return tags;
@@ -822,9 +822,9 @@ function renderPublicCard(profile, isOwner) {
   const languagesText = String(profile?.bioLanguages || '').trim();
   const interestsText = String(profile?.bioInterests || '').trim();
 
-  if (publicBioWhy) publicBioWhy.textContent = why || '—';
-  if (publicBioHard) publicBioHard.textContent = hard || '—';
-  if (publicBioGoal) publicBioGoal.textContent = goal || '—';
+  if (publicBioWhy) publicBioWhy.textContent = why || 'â€”';
+  if (publicBioHard) publicBioHard.textContent = hard || 'â€”';
+  if (publicBioGoal) publicBioGoal.textContent = goal || 'â€”';
 
   const website = normalizeWebsite(profile?.bioWebsite);
   if (publicWebsiteWrap && publicBioWebsite) {
@@ -853,7 +853,7 @@ function renderPublicCard(profile, isOwner) {
   }
 
   if (publicCardHint) {
-    publicCardHint.textContent = isOwner ? 'Vista previa: así ven tu perfil otros usuarios.' : '';
+    publicCardHint.textContent = isOwner ? 'Vista previa: asÃ­ ven tu perfil otros usuarios.' : '';
   }
 }
 
@@ -877,7 +877,7 @@ function renderFeed(list, ctx) {
 
   if (!sorted.length) {
     feedList.innerHTML =
-      '<div class="card muted">Aún no hay publicaciones. Escribe tu primer estado ?</div>';
+      '<div class="card muted">AÃºn no hay publicaciones. Escribe tu primer estado ?</div>';
     return;
   }
 
@@ -887,8 +887,8 @@ function renderFeed(list, ctx) {
       const canEdit = isMine && withinMinutes(post.createdAt, 10);
       const tags = Array.isArray(post.tags) ? post.tags : [];
       const metaLabels = [];
-      if (post.pinned) metaLabels.push('?? Fijado');
-      tags.forEach((t) => metaLabels.push(`• ${t}`));
+      if (post.pinned) metaLabels.push('Fijado');
+      tags.forEach((t) => metaLabels.push(`â€¢ ${t}`));
       const isSystem = (post.type || 'user') === 'system' || post.id === 'sys_pinned_local';
       const canSharePost = !isSystem;
       const canReportPost = !isMine && !isSystem;
@@ -932,7 +932,7 @@ function renderFeed(list, ctx) {
               `;
             })
             .join('')
-        : '<div class="muted">Sin comentarios todavía.</div>';
+        : '<div class="muted">Sin comentarios todavÃ­a.</div>';
 
       const commentForm = ctx.canComment
         ? `
@@ -967,8 +967,8 @@ function renderFeed(list, ctx) {
                : ''
            }
            <div class="post-reactions">
-             <button type="button" data-reaction="heart" data-id="${esc(post.id)}">??</button>
-             <button type="button" data-reaction="fire" data-id="${esc(post.id)}">??</button>
+             <button type="button" data-reaction="heart" data-id="${esc(post.id)}"></button>
+             <button type="button" data-reaction="fire" data-id="${esc(post.id)}"></button>
              <button type="button" data-reaction="spark" data-id="${esc(post.id)}">?</button>
            </div>
            <div class="post-actions">
@@ -1055,7 +1055,7 @@ function renderMediaGrid(list) {
     .sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt));
 
   if (!items.length) {
-    mediaGrid.innerHTML = '<div class="muted">Aún no hay fotos.</div>';
+    mediaGrid.innerHTML = '<div class="muted">AÃºn no hay fotos.</div>';
     return;
   }
 
@@ -1091,7 +1091,7 @@ function storyTitle(story, fallback = 'Historia') {
     String(story?.highlightTitle || '').trim() ||
     String(story?.text || '').trim() ||
     fallback;
-  return title.length > 22 ? `${title.slice(0, 22)}…` : title;
+  return title.length > 22 ? `${title.slice(0, 22)}â€¦` : title;
 }
 
 function setStoryModalMsg(text, bad = false) {
@@ -1129,7 +1129,7 @@ function renderStoryModal() {
   const isOwner = !!ctx?.isOwner;
   const handle = String(CURRENT_PROFILE?.handle || '').trim();
   const head = handle ? `@${handle}` : String(story.authorName || 'Usuario');
-  const createdLabel = `${formatTime(story.createdAt)} · ${formatDate(story.createdAt)}`.trim();
+  const createdLabel = `${formatTime(story.createdAt)} Â· ${formatDate(story.createdAt)}`.trim();
 
   let expLabel = '';
   const exp = storyExpiresAt(story);
@@ -1137,13 +1137,13 @@ function renderStoryModal() {
   if (exp && active) {
     const diff = exp.getTime() - Date.now();
     const hours = Math.max(1, Math.round(diff / (60 * 60 * 1000)));
-    expLabel = ` · expira en ${hours}h`;
+    expLabel = ` Â· expira en ${hours}h`;
   } else if (exp && !active) {
-    expLabel = ' · expirada';
+    expLabel = ' Â· expirada';
   }
 
   if (storyModalTitle) storyModalTitle.textContent = storyTitle(story, 'Historia');
-  if (storyModalMeta) storyModalMeta.textContent = `${head}${createdLabel ? ` · ${createdLabel}` : ''}${expLabel}`;
+  if (storyModalMeta) storyModalMeta.textContent = `${head}${createdLabel ? ` Â· ${createdLabel}` : ''}${expLabel}`;
   if (storyModalCaption) storyModalCaption.textContent = String(story.text || '').trim();
 
   const imgUrl = String(story.imageURL || '').trim();
@@ -1192,7 +1192,7 @@ function renderStoryRow(rootEl, list, kind) {
   if (!rootEl) return;
   const items = Array.isArray(list) ? list : [];
   if (!items.length) {
-    rootEl.innerHTML = '<div class="muted">—</div>';
+    rootEl.innerHTML = '<div class="muted">â€”</div>';
     return;
   }
   rootEl.innerHTML = items
@@ -1207,7 +1207,7 @@ function renderStoryRow(rootEl, list, kind) {
         )}">
           <div class="${ringClass}">
             <div class="storyInner">
-              ${img ? `<img src="${esc(img)}" alt="" loading="lazy" />` : '<span>??</span>'}
+              ${img ? `<img src="${esc(img)}" alt="" loading="lazy" />` : '<span></span>'}
               ${badge}
             </div>
           </div>
@@ -1226,7 +1226,7 @@ function renderStoriesSection(ctx) {
 
   if (storiesHint) {
     storiesHint.textContent = STORY_ITEMS.length
-      ? `${STORY_ITEMS.length} activas · duran 24h`
+      ? `${STORY_ITEMS.length} activas Â· duran 24h`
       : isOwner
         ? 'Comparte algo (dura 24h).'
         : 'Sin historias por ahora.';
@@ -1317,12 +1317,12 @@ function bindStoriesUI(ctx) {
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setMsg('La imagen es demasiado grande (máx. 10MB).', true);
+      setMsg('La imagen es demasiado grande (mÃ¡x. 10MB).', true);
       storyFileInput.value = '';
       return;
     }
 
-    const caption = prompt('Texto (opcional):') ?? '';
+    const caption = prompt('Texto (opcional):') '';
 
     try {
       if (storyAddBtn) storyAddBtn.disabled = true;
@@ -1410,7 +1410,7 @@ function bindStoriesUI(ctx) {
       const storyId = storyReportBtn.dataset.storyId || '';
       const story = STORY_MODAL_LIST?.[STORY_MODAL_INDEX] || {};
       if (!ctx?.myUid || !ctx.targetUid || !storyId) return;
-      const reason = prompt('Reportar historia: ¿qué pasó?');
+      const reason = prompt('Reportar historia: Â¿quÃ© pasÃ³?');
       const text = String(reason || '').trim();
       if (!text) return;
       try {
@@ -1438,7 +1438,7 @@ function bindStoriesUI(ctx) {
       const ctx = STORY_MODAL_CTX;
       const story = STORY_MODAL_LIST?.[STORY_MODAL_INDEX] || {};
       if (!ctx?.isOwner) return;
-      const ok = confirm('¿Eliminar esta historia?');
+      const ok = confirm('Â¿Eliminar esta historia?');
       if (!ok) return;
 
       const storyId = story.id || storyDeleteBtn.dataset.storyId || '';
@@ -1495,7 +1495,7 @@ function bindStoriesUI(ctx) {
           });
           HIGHLIGHT_IDS = HIGHLIGHT_IDS.filter((x) => x !== storyId);
         } else {
-          const title = prompt('Nombre del destacado (opcional):', storyTitle(story, 'Destacado')) ?? '';
+          const title = prompt('Nombre del destacado (opcional):', storyTitle(story, 'Destacado')) '';
           await updateDoc(doc(db, 'public_users', ctx.targetUid), { highlights: arrayUnion(storyId) });
           await updateDoc(doc(db, 'user_feed', ctx.targetUid, 'posts', storyId), {
             highlighted: true,
@@ -1554,11 +1554,11 @@ function renderSavedCollections() {
     )}">${esc(label)}</button>
   `;
   chips.push(mk('all', 'Todas'));
-  chips.push(mk('_none', 'Sin colección'));
+  chips.push(mk('_none', 'Sin colecciÃ³n'));
   cols.forEach((c) => {
     const id = String(c.id || '').trim();
     if (!id) return;
-    chips.push(mk(id, String(c.name || 'Colección').trim() || 'Colección'));
+    chips.push(mk(id, String(c.name || 'ColecciÃ³n').trim() || 'ColecciÃ³n'));
   });
 
   savedCollectionsRow.innerHTML = chips.join('');
@@ -1575,7 +1575,7 @@ function renderSavedGrid() {
   if (!savedGrid) return;
   const items = getFilteredSavedItems();
   if (!items.length) {
-    savedGrid.innerHTML = '<div class="muted">Aún no tienes guardados.</div>';
+    savedGrid.innerHTML = '<div class="muted">AÃºn no tienes guardados.</div>';
     return;
   }
 
@@ -1585,7 +1585,7 @@ function renderSavedGrid() {
       const ownerHandle = String(item.ownerHandle || '').trim();
       const postId = String(item.postId || '').trim();
       const href = ownerUid && postId ? buildPostShareUrl(ownerHandle, ownerUid, postId) : '#';
-      const title = ownerHandle ? `@${ownerHandle}` : 'Publicación guardada';
+      const title = ownerHandle ? `@${ownerHandle}` : 'PublicaciÃ³n guardada';
       const text = String(item.postText || '').trim();
       const img = String(item.postImageURL || '').trim();
 
@@ -1650,7 +1650,7 @@ function bindSavedUI(ctx) {
   if (btnNewCollection && !btnNewCollection.dataset.wired) {
     btnNewCollection.dataset.wired = '1';
     btnNewCollection.addEventListener('click', async () => {
-      const name = prompt('Nombre de la colección:', '') ?? '';
+      const name = prompt('Nombre de la colecciÃ³n:', '') '';
       const value = String(name || '').trim();
       if (!value) return;
       try {
@@ -1710,7 +1710,7 @@ function bindSavedUI(ctx) {
           ACTIVE_SAVE_COLLECTION !== 'all' && ACTIVE_SAVE_COLLECTION !== '_none'
             ? SAVE_COLLECTIONS.find((c) => c.id === ACTIVE_SAVE_COLLECTION)?.name || ''
             : '';
-        const name = prompt('Mover a colección (vacío = sin colección):', suggested) ?? '';
+        const name = prompt('Mover a colecciÃ³n (vacÃ­o = sin colecciÃ³n):', suggested) '';
         const value = String(name || '').trim();
         try {
           setSavedStatus('Actualizando...');
@@ -1853,13 +1853,13 @@ function renderActivityCalendar() {
     const score = activityScore(day);
     const lv = activityLevel(score);
     const cls = lv ? ` lv${lv}` : '';
-    const title = `${k} · visitas ${visits}, posts ${posts}, historias ${stories}, fotos ${photos}, min ${minutes}`;
+    const title = `${k} Â· visitas ${visits}, posts ${posts}, historias ${stories}, fotos ${photos}, min ${minutes}`;
     return `<div class="activityCell${cls}" title="${esc(title)}"></div>`;
   });
   activityGrid.innerHTML = cells.join('');
 
   if (activityHint) {
-    activityHint.textContent = 'Últimos 35 días (se actualiza automáticamente).';
+    activityHint.textContent = 'Ãšltimos 35 dÃ­as (se actualiza automÃ¡ticamente).';
   }
 
   if (activitySummary) {
@@ -1875,7 +1875,7 @@ function renderActivityCalendar() {
       s += Number(day.stories || 0) || 0;
       m += Number(day.minutes || 0) || 0;
     });
-    activitySummary.textContent = `7 días: ${v} visitas · ${p} posts · ${s} historias · ${m} min`;
+    activitySummary.textContent = `7 dÃ­as: ${v} visitas Â· ${p} posts Â· ${s} historias Â· ${m} min`;
   }
 }
 
@@ -2014,7 +2014,7 @@ function subscribeFeed(targetUid, ctx) {
         items.unshift({
           id: 'sys_pinned_local',
           type: 'system',
-          text: 'Tu progreso aparece aquí. Sigue aprendiendo ??',
+          text: 'Tu progreso aparece aquÃ­. Sigue aprendiendo ',
           createdAt: new Date(),
           pinned: true,
         });
@@ -2154,7 +2154,7 @@ function bindMediaComposer(ctx) {
   if (!ctx.isOwner) {
     mediaComposer.style.display = 'none';
     clearMediaSelection(true);
-    if (mediaHint) mediaHint.textContent = 'Las fotos las publica el dueño del perfil.';
+    if (mediaHint) mediaHint.textContent = 'Las fotos las publica el dueÃ±o del perfil.';
     return;
   }
 
@@ -2182,7 +2182,7 @@ function bindMediaComposer(ctx) {
     }
     const tooBig = file.size > 10 * 1024 * 1024;
     if (tooBig) {
-      setMediaMsg('La imagen es demasiado grande (máx. 10MB).', true);
+      setMediaMsg('La imagen es demasiado grande (mÃ¡x. 10MB).', true);
       clearMediaSelection();
       return;
     }
@@ -2222,7 +2222,7 @@ function bindMediaComposer(ctx) {
 
       const post = {
         type: 'user',
-        text: caption || '?? Foto',
+        text: caption || 'Foto',
         imageURL: upload.url,
         imagePath: upload.path || null,
         createdAt: serverTimestamp(),
@@ -2324,14 +2324,14 @@ function bindFeedActions(ctx) {
       if (action === 'hide') {
         const post = FEED_ITEMS[idx] || {};
         if ((post.type || 'user') === 'system' || post.id === 'sys_pinned_local') return;
-        const ok = confirm('¿Ocultar esta publicación para ti?');
+        const ok = confirm('Â¿Ocultar esta publicaciÃ³n para ti?');
         if (!ok) return;
         const key = hiddenPostKey(ctx.targetUid, id);
         if (!key) return;
         HIDDEN_SET.add(key);
         persistHiddenSet();
         updateHiddenClearBtn();
-        setMsg('Publicación oculta.');
+        setMsg('PublicaciÃ³n oculta.');
         setTimeout(() => setMsg(''), 1500);
         renderActiveFeed(ctx);
         return;
@@ -2378,7 +2378,7 @@ function bindFeedActions(ctx) {
       if (action === 'report') {
         const post = FEED_ITEMS[idx] || {};
         if (post.authorUid && post.authorUid === ctx.myUid) return;
-        const reason = prompt('Reportar post: ¿qué pasó?');
+        const reason = prompt('Reportar post: Â¿quÃ© pasÃ³?');
         const text = String(reason || '').trim();
         if (!text) return;
         try {
@@ -2828,8 +2828,8 @@ async function loadFriendsTab(ctx) {
   if (!friendsHint || !friendsList) return;
 
   if (!ctx.isOwner) {
-    friendsHint.textContent = 'La lista completa de amigos solo es visible para el dueño del perfil.';
-    friendsList.innerHTML = '<div class="muted">—</div>';
+    friendsHint.textContent = 'La lista completa de amigos solo es visible para el dueÃ±o del perfil.';
+    friendsList.innerHTML = '<div class="muted">â€”</div>';
     if (friendsTotal) friendsTotal.textContent = '0';
     if (friendsSearch) friendsSearch.style.display = 'none';
     return;
@@ -2842,12 +2842,12 @@ async function loadFriendsTab(ctx) {
     FRIENDS_CACHE = await fetchFriendsAccepted(ctx.targetUid);
     friendsHint.textContent = FRIENDS_CACHE.length
       ? `Tienes ${FRIENDS_CACHE.length} amigos.`
-      : 'Aún no tienes amigos. ¡Conecta con la comunidad!';
+      : 'AÃºn no tienes amigos. Â¡Conecta con la comunidad!';
     renderFriendsTab(ctx);
   } catch (e) {
     console.warn('load friends tab failed', e);
     friendsHint.textContent = 'No se pudieron cargar tus amigos.';
-    friendsList.innerHTML = '<div class="muted">—</div>';
+    friendsList.innerHTML = '<div class="muted">â€”</div>';
   }
 
   if (friendsSearch && !friendsSearch.dataset.wired) {
@@ -2862,7 +2862,7 @@ async function loadFriendsTab(ctx) {
       if (!btn) return;
       const otherUid = btn.getAttribute('data-friend-remove');
       if (!otherUid) return;
-      const ok = confirm('¿Eliminar esta amistad?');
+      const ok = confirm('Â¿Eliminar esta amistad?');
       if (!ok) return;
       try {
         await removeFriendConnection(ctx.myUid, otherUid);
@@ -2940,7 +2940,7 @@ function renderFollowersTab(ctx) {
   if (followersTotal) followersTotal.textContent = String(filtered.length);
 
   if (!filtered.length) {
-    followersList.innerHTML = '<div class="muted">Aún no tienes seguidores.</div>';
+    followersList.innerHTML = '<div class="muted">AÃºn no tienes seguidores.</div>';
     return;
   }
 
@@ -3005,7 +3005,7 @@ function renderFollowingTab(ctx) {
   if (followingTotal) followingTotal.textContent = String(filtered.length);
 
   if (!filtered.length) {
-    followingList.innerHTML = '<div class="muted">Aún no sigues a nadie.</div>';
+    followingList.innerHTML = '<div class="muted">AÃºn no sigues a nadie.</div>';
     return;
   }
 
@@ -3065,12 +3065,12 @@ async function loadFollowersTab(ctx) {
       ? (ctx.isOwner
           ? `Tienes ${FOLLOWERS_CACHE.length} seguidores.`
           : `Seguidores: ${FOLLOWERS_CACHE.length}`)
-      : 'Aún no hay seguidores.';
+      : 'AÃºn no hay seguidores.';
     renderFollowersTab(ctx);
   } catch (e) {
     console.warn('load followers tab failed', e);
     followersHint.textContent = 'No se pudo cargar la lista.';
-    followersList.innerHTML = '<div class="muted">—</div>';
+    followersList.innerHTML = '<div class="muted">â€”</div>';
   }
 
   if (followersSearch && !followersSearch.dataset.wired) {
@@ -3117,12 +3117,12 @@ async function loadFollowingTab(ctx) {
       ? (ctx.isOwner
           ? `Sigues a ${FOLLOWING_CACHE.length} personas.`
           : `Siguiendo: ${FOLLOWING_CACHE.length}`)
-      : 'Aún no sigue a nadie.';
+      : 'AÃºn no sigue a nadie.';
     renderFollowingTab(ctx);
   } catch (e) {
     console.warn('load following tab failed', e);
     followingHint.textContent = 'No se pudo cargar la lista.';
-    followingList.innerHTML = '<div class="muted">—</div>';
+    followingList.innerHTML = '<div class="muted">â€”</div>';
   }
 
   if (followingSearch && !followingSearch.dataset.wired) {
@@ -3285,7 +3285,7 @@ function initProfilePeopleSearch(opts) {
 
   if (profileSearchInput) {
     profileSearchInput.placeholder = first
-      ? `¿A quién buscas, ${first}?`
+      ? `Â¿A quiÃ©n buscas, ${first}?`
       : 'Busca por nombre o @usuario...';
   }
   renderProfileSearchAvatar(viewerPhotoURL, viewerName || 'Usuario');
@@ -3423,26 +3423,26 @@ async function loadRecentReactions(targetUid) {
       ),
     );
     if (snap.empty) {
-      recentReactions.textContent = 'Sin reacciones aún.';
+      recentReactions.textContent = 'Sin reacciones aÃºn.';
       return;
     }
     const names = snap.docs.map((docSnap) => docSnap.data()?.userName || 'Usuario');
-    recentReactions.innerHTML = names.map((n) => `<div>?? ${esc(n)}</div>`).join('');
+    recentReactions.innerHTML = names.map((n) => `<div>${esc(n)}</div>`).join('');
   } catch (e) {
     const code = String(e?.code || '');
     const msg = String(e?.message || '');
     if (code === 'permission-denied' || /permission/i.test(msg)) {
       recentReactions.textContent = 'Reacciones ocultas.';
     } else {
-      recentReactions.textContent = 'Sin reacciones aún.';
+      recentReactions.textContent = 'Sin reacciones aÃºn.';
     }
   }
 }
 
 function renderRewards(profile) {
-  if (rewardStreak) rewardStreak.textContent = `${Number(profile.streakDays || profile.streak || 0)} días`;
+  if (rewardStreak) rewardStreak.textContent = `${Number(profile.streakDays || profile.streak || 0)} dÃ­as`;
   if (rewardBadges) rewardBadges.textContent = String((profile.badges || []).length || 0);
-  if (rewardDays) rewardDays.textContent = `${Number(profile.studyDays || profile.daysLearned || 0)} días`;
+  if (rewardDays) rewardDays.textContent = `${Number(profile.studyDays || profile.daysLearned || 0)} dÃ­as`;
   if (rewardConsistency) rewardConsistency.textContent = `${Number(profile.consistencyPct || 0)}%`;
 }
 
@@ -3454,12 +3454,12 @@ function bindRewards() {
     const key = card.dataset.achievement || '';
     const dateLabel = rewardDetail.dataset.date || '';
     const map = {
-      racha: 'Racha: ¡cada día suma! Aquí verás tu nivel y la última fecha activa.',
+      racha: 'Racha: Â¡cada dÃ­a suma! AquÃ­ verÃ¡s tu nivel y la Ãºltima fecha activa.',
       insignias: 'Insignias: premios por completar temas y retos.',
-      dias: 'Días de aprendizaje: cuenta total de días con actividad.',
-      constancia: 'Constancia: promedio de estudio en la última semana.',
+      dias: 'DÃ­as de aprendizaje: cuenta total de dÃ­as con actividad.',
+      constancia: 'Constancia: promedio de estudio en la Ãºltima semana.',
     };
-    rewardDetail.textContent = `${map[key] || 'Detalle de tu logro.'}${dateLabel ? ` · ${dateLabel}` : ''}`;
+    rewardDetail.textContent = `${map[key] || 'Detalle de tu logro.'}${dateLabel ? ` Â· ${dateLabel}` : ''}`;
   });
 }
 
@@ -3521,7 +3521,7 @@ function bindCoverUpload(uid, isOwner) {
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setMsg('La imagen es demasiado grande (máx. 10MB).', true);
+      setMsg('La imagen es demasiado grande (mÃ¡x. 10MB).', true);
       coverInput.value = '';
       return;
     }
@@ -3566,7 +3566,7 @@ function bindAvatarUpload(uid, emailLower, isOwner) {
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setAvatarHint('La imagen es demasiado grande (máx. 10MB).');
+      setAvatarHint('La imagen es demasiado grande (mÃ¡x. 10MB).');
       avatarInput.value = '';
       return;
     }
@@ -3680,7 +3680,7 @@ async function saveProfileInfo(uid) {
   const handle = basicHandle?.value?.trim() || '';
   const handleLower = normalizeHandle(handle);
   if (handle && !isHandleValid(handleLower)) {
-    setBasicMsg('Usuario inválido. Usa 3-20 letras/números y ._-');
+    setBasicMsg('Usuario invÃ¡lido. Usa 3-20 letras/nÃºmeros y ._-');
     return;
   }
   const updates = {
@@ -3904,7 +3904,7 @@ onAuthStateChanged(auth, async (user) => {
         btnReport.addEventListener('click', async () => {
           const target = btnReport.dataset.targetUid || '';
           if (!target || target === user.uid) return;
-          const reason = prompt('¿Qué pasó? Describe el problema en 1–2 frases:');
+          const reason = prompt('Â¿QuÃ© pasÃ³? Describe el problema en 1â€“2 frases:');
           const text = String(reason || '').trim();
           if (!text) return;
           try {
@@ -3928,7 +3928,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (statStreak) statStreak.textContent = Number(profile.streakDays || profile.streak || 0);
     if (statExp) statExp.textContent = Number(profile.exp || 0);
-    if (statLeague) statLeague.textContent = profile.league || '—';
+    if (statLeague) statLeague.textContent = profile.league || 'â€”';
     if (statTop3) statTop3.textContent = Number(profile.top3 || 0);
 
     renderRewards(profile);
@@ -4024,15 +4024,15 @@ onAuthStateChanged(auth, async (user) => {
       if (mediaComposer) mediaComposer.style.display = 'none';
       if (mediaGrid) mediaGrid.innerHTML = '<div class="muted">Contenido oculto.</div>';
       if (friendsHint) friendsHint.textContent = 'Contenido oculto.';
-      if (friendsList) friendsList.innerHTML = '<div class="muted">—</div>';
+      if (friendsList) friendsList.innerHTML = '<div class="muted">â€”</div>';
       if (friendsSearch) friendsSearch.style.display = 'none';
       if (friendsTotal) friendsTotal.textContent = '0';
       if (followersHint) followersHint.textContent = 'Contenido oculto.';
-      if (followersList) followersList.innerHTML = '<div class="muted">—</div>';
+      if (followersList) followersList.innerHTML = '<div class="muted">â€”</div>';
       if (followersSearch) followersSearch.style.display = 'none';
       if (followersTotal) followersTotal.textContent = '0';
       if (followingHint) followingHint.textContent = 'Contenido oculto.';
-      if (followingList) followingList.innerHTML = '<div class="muted">—</div>';
+      if (followingList) followingList.innerHTML = '<div class="muted">â€”</div>';
       if (followingSearch) followingSearch.style.display = 'none';
       if (followingTotal) followingTotal.textContent = '0';
       return;
@@ -4070,9 +4070,9 @@ onAuthStateChanged(auth, async (user) => {
       if (statusCard) statusCard.style.display = 'none';
       if (mediaGrid) mediaGrid.innerHTML = '<div class="muted">Contenido oculto.</div>';
     } else if (!canViewFeed && postsVisibility === 'private' && !isOwner) {
-      if (feedList) feedList.innerHTML = '<div class="card muted">Las publicaciones están ocultas.</div>';
+      if (feedList) feedList.innerHTML = '<div class="card muted">Las publicaciones estÃ¡n ocultas.</div>';
       if (statusCard) statusCard.style.display = 'none';
-      if (mediaGrid) mediaGrid.innerHTML = '<div class="muted">Las fotos están ocultas.</div>';
+      if (mediaGrid) mediaGrid.innerHTML = '<div class="muted">Las fotos estÃ¡n ocultas.</div>';
     } else if (!canViewFeed && postsVisibility === 'friends' && !isOwner && !isFriend) {
       if (feedList)
         feedList.innerHTML = '<div class="card muted">Solo amigos pueden ver este feed.</div>';
@@ -4086,7 +4086,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (rewardsVisibility === 'private' && !isOwner) {
       const rewardsTab = $('tab-rewards');
-      if (rewardsTab) rewardsTab.innerHTML = '<div class="card muted">Las recompensas están ocultas.</div>';
+      if (rewardsTab) rewardsTab.innerHTML = '<div class="card muted">Las recompensas estÃ¡n ocultas.</div>';
     }
 
     if (user.uid === targetUid) {

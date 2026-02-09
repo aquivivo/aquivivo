@@ -337,9 +337,12 @@ body {
   margin: 0;
   font-family:
     'Montserrat',
+    'Segoe UI Emoji',
+    'Noto Color Emoji',
+    'Apple Color Emoji',
     system-ui,
     -apple-system,
-    Segoe UI,
+    'Segoe UI',
     Roboto,
     Arial,
     sans-serif;
@@ -2880,7 +2883,7 @@ a:hover {
    ================================ */
 
 .contactSection {
-  padding: 40px 0 2px;
+  padding: 40px 0 90px;
 }
 
 .contactHead {
@@ -3769,6 +3772,10 @@ h3 {
   font-size: 18px;
   line-height: 1;
   margin-top: 2px;
+  position: relative;
+}
+.method-list .check::before {
+  content: '✓';
 }
 .method-card--yellow {
   background: #fcd116;

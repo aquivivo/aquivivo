@@ -34,7 +34,7 @@ const $ = (id) => document.getElementById(id);
 const ADMIN_UIDS = new Set(['OgXNeCbloJiSGoi1DsZ9UN0aU0I2']);
 
 function esc(s) {
-  return String(s ?? '')
+  return String(s '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -562,23 +562,23 @@ function setupAdminSidebarSections() {
   sidePanel.innerHTML = '';
 
   const iconMap = {
-    accDashboard: '??',
-    accPopup: '??',
-    accServices: '??',
-    accPayments: '??',
-    accPromo: '???',
-    accSegments: '??',
-    accBroadcasts: '??',
-    accPublishing: '??',
-    accMissing: '??',
-    accUsers: '??',
-    accProgress: '??',
-    accActivity: '??',
-    accFlashcards: '??',
+    accDashboard: '',
+    accPopup: '',
+    accServices: '',
+    accPayments: '',
+    accPromo: '',
+    accSegments: '',
+    accBroadcasts: '',
+    accPublishing: '',
+    accMissing: '',
+    accUsers: '',
+    accProgress: '',
+    accActivity: '',
+    accFlashcards: '',
     accReviews: '?',
-    accReports: '??',
-    accAppLogs: '??',
-    accAudioLib: '??',
+    accReports: '',
+    accAppLogs: '',
+    accAudioLib: '',
   };
 
   const labelById = new Map(
@@ -632,7 +632,7 @@ function setupAdminSidebarSections() {
       btn.type = 'button';
       btn.className = 'side-panel-link';
       btn.dataset.adminSection = id;
-      const icon = iconMap[id] || '??';
+      const icon = iconMap[id] || '';
       btn.innerHTML = `<span class="side-panel-ico">${icon}</span><span>${esc(label)}</span>`;
       list.appendChild(btn);
       usedIds.add(id);
@@ -661,7 +661,7 @@ function setupAdminSidebarSections() {
       btn.type = 'button';
       btn.className = 'side-panel-link';
       btn.dataset.adminSection = id;
-      const icon = iconMap[id] || '??';
+      const icon = iconMap[id] || '';
       btn.innerHTML = `<span class="side-panel-ico">${icon}</span><span>${esc(label)}</span>`;
       list.appendChild(btn);
     });
@@ -783,8 +783,8 @@ async function loadReferralSettings() {
   try {
     const snap = await getDoc(doc(db, 'promo_codes', '_REFERRAL_SETTINGS'));
     const data = snap.exists() ? snap.data() : {};
-    p.value = data?.percent ?? '';
-    s.value = data?.scope ?? '';
+    p.value = data?.percent '';
+    s.value = data?.scope '';
   } catch (e) {
     console.error('[referral load]', e);
     setStatus(st, 'Blad ladowania.', true);
@@ -1213,7 +1213,7 @@ async function saveService() {
     desc: String($('svcDesc')?.value || '').trim(),
     price: String($('svcPrice')?.value || '').trim(),
     badge: String($('svcBadge')?.value || '').trim(),
-    accessDays: accessDays ?? null,
+    accessDays: accessDays null,
     accessLevels: accessLevels.length ? accessLevels : null,
     order: Number($('svcOrder')?.value || 0),
     ctaType: String($('svcCtaType')?.value || 'info').trim(),
@@ -2367,7 +2367,7 @@ async function toggleProgressErrors(key) {
 
     let parts = line.split('|').map((p) => p.trim()).filter(Boolean);
     if (parts.length < 2) {
-      parts = line.split(/->|=>|—|–|-/).map((p) => p.trim()).filter(Boolean);
+      parts = line.split(/->|=>|â€”|â€“|-/).map((p) => p.trim()).filter(Boolean);
     }
     if (parts.length < 2) return null;
     return { front: parts[0], back: parts[1] };
@@ -2411,7 +2411,7 @@ async function toggleProgressErrors(key) {
     const totalExercises = rows.reduce((sum, r) => sum + (r.exercises || 0), 0);
 
     if (summary) {
-      summary.textContent = `Razem kart: ${totalCards} · Tematow: ${totalTopics} · Cwiczen: ${totalExercises}`;
+      summary.textContent = `Razem kart: ${totalCards} Â· Tematow: ${totalTopics} Â· Cwiczen: ${totalExercises}`;
     }
 
     if (!rows.length) {
@@ -2423,7 +2423,7 @@ async function toggleProgressErrors(key) {
       .map((r) => {
         const title = esc(r.title || r.topicId || '(bez tytulu)');
         const lvl = esc(String(r.level || '-'));
-        return `<div style="margin-bottom:8px;">${lvl} · <b>${title}</b> — karty: ${r.cards} (cwiczenia: ${r.exercises})</div>`;
+        return `<div style="margin-bottom:8px;">${lvl} Â· <b>${title}</b> â€” karty: ${r.cards} (cwiczenia: ${r.exercises})</div>`;
       })
       .join('');
   }
@@ -2602,7 +2602,7 @@ function summarizePayments() {
     if (status !== 'succeeded' && status !== 'paid') continue;
     const d = toDateMaybe(p.createdAt || p.updatedAt || p.stripeCreatedAt);
     if (!d) continue;
-    const amount = Number(p.amountTotal ?? p.amount_total);
+    const amount = Number(p.amountTotal p.amount_total);
     const currency = String(p.currency || '').toUpperCase();
     if (d >= startToday) {
       agg.today.count += 1;
@@ -2625,7 +2625,7 @@ function summarizePayments() {
     return parts.length ? parts.join(' / ') : '-';
   };
 
-  el.textContent = `Dzis: ${agg.today.count} ( ${fmtTotals(agg.today.totals)} )  ·  7 dni: ${agg.week.count} ( ${fmtTotals(agg.week.totals)} )`;
+  el.textContent = `Dzis: ${agg.today.count} ( ${fmtTotals(agg.today.totals)} )  Â·  7 dni: ${agg.week.count} ( ${fmtTotals(agg.week.totals)} )`;
 }
 
 function summarizeAttempts() {
@@ -2660,7 +2660,7 @@ function summarizeAttempts() {
     }
   }
 
-  el.textContent = `Dzis: ${today} (blad/wygasle: ${todayFailed})  ·  7 dni: ${week} (blad/wygasle: ${weekFailed})`;
+  el.textContent = `Dzis: ${today} (blad/wygasle: ${todayFailed})  Â·  7 dni: ${week} (blad/wygasle: ${weekFailed})`;
 }
 
 function renderPayments() {
@@ -2903,7 +2903,7 @@ function renderAppLogs() {
         <div class="listItem">
           <div class="rowBetween" style="gap:10px; flex-wrap:wrap;">
             <div>
-              <div style="font-weight:900;">${typeTxt.toUpperCase()} ${when ? '· ' + when : ''}</div>
+              <div style="font-weight:900;">${typeTxt.toUpperCase()} ${when ? 'Â· ' + when : ''}</div>
               <div class="hintSmall">strona: ${pageTxt}  -  user: ${who}</div>
               <div class="hintSmall logMessage">${msg}</div>
             </div>

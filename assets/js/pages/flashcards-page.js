@@ -66,7 +66,7 @@ function parseCardLine(raw) {
 
   let parts = line.split('|').map((p) => p.trim()).filter(Boolean);
   if (parts.length < 2) {
-    parts = line.split(/->|=>|—|–|-/).map((p) => p.trim()).filter(Boolean);
+    parts = line.split(/->|=>|â€”|â€“|-/).map((p) => p.trim()).filter(Boolean);
   }
   if (parts.length < 2) return null;
 
@@ -357,7 +357,7 @@ function bindActions() {
     currentIndex = 0;
     isFlipped = false;
     renderCard();
-    setStatus(`Barajadas · ${cards.length} tarjetas`);
+    setStatus(`Barajadas Â· ${cards.length} tarjetas`);
   });
 
   fcFlip?.addEventListener('click', () => {
