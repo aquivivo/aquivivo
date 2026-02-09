@@ -30,6 +30,7 @@ const courseSlug = $('courseSlug');
 const courseIcon = $('courseIcon');
 const courseType = $('courseType');
 const courseDesc = $('courseDesc');
+const courseTrack = $('courseTrack');
 const courseOrder = $('courseOrder');
 const courseImageUrl = $('courseImageUrl');
 const btnSaveCourse = $('btnSaveCourse');
@@ -426,6 +427,7 @@ function resetCourseForm() {
   if (courseIcon) courseIcon.value = '';
   if (courseType) courseType.value = 'grammar';
   if (courseDesc) courseDesc.value = '';
+  if (courseTrack) courseTrack.value = '';
   if (courseOrder) courseOrder.value = '';
   if (courseImageUrl) courseImageUrl.value = '';
   currentCourseId = null;
@@ -462,6 +464,7 @@ function setCourseFormFromDoc(docData, docId) {
     courseDesc.value = String(
       data.desc || data.subtitle || data.description || '',
     );
+  if (courseTrack) courseTrack.value = String(data.track || '').trim();
   if (courseOrder)
     courseOrder.value = data.order != null ? String(data.order) : '';
   if (courseImageUrl) courseImageUrl.value = String(data.imageUrl || '').trim();
@@ -711,6 +714,7 @@ async function saveCourse() {
   const title = String(courseTitle?.value || '').trim();
   const type = String(courseType?.value || 'grammar');
   const desc = String(courseDesc?.value || '').trim();
+  const track = String(courseTrack?.value || '').trim();
   let slug = String(courseSlug?.value || '').trim();
   const icon = String(courseIcon?.value || '').trim();
   const imageUrl = String(courseImageUrl?.value || '').trim();
@@ -721,7 +725,10 @@ async function saveCourse() {
     return false;
   }
 
-  if (!slug) slug = slugify(title);
+  if (!slug) {
+    const trackKey = slugify(track);
+    slug = trackKey ? `${trackKey}-${slugify(title)}` : slugify(title);
+  }
   if (!order || order < 1) order = await getNextCourseOrder(level);
 
   const payload = {
@@ -733,6 +740,7 @@ async function saveCourse() {
     subtitle: desc,
     type,
     order,
+    track: track || null,
     icon: icon || null,
     imageUrl: imageUrl || null,
     updatedAt: serverTimestamp(),

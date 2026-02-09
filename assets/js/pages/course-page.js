@@ -20,6 +20,12 @@ import {
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
+const TRACK = String(params.get('track') || document.body?.dataset?.track || '')
+  .trim()
+  .toLowerCase();
+const COURSE_VIEW = String(params.get('view') || document.body?.dataset?.courseview || '')
+  .trim()
+  .toLowerCase();
 const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
 
 function isAdminUser(userDoc, email) {
@@ -261,6 +267,26 @@ function clampGlyph(raw, { maxChars = 6 } = {}) {
   return Array.from(s)
     .slice(0, Math.max(1, Number(maxChars || 6)))
     .join('');
+}
+
+function normalizeTrack(raw) {
+  return String(raw || '')
+    .trim()
+    .toLowerCase();
+}
+
+function topicTrackList(topic) {
+  const raw = topic?.track;
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map(normalizeTrack).filter(Boolean);
+  const one = normalizeTrack(raw);
+  return one ? [one] : [];
+}
+
+function topicMatchesTrack(topic) {
+  const tracks = topicTrackList(topic);
+  if (TRACK) return tracks.includes(TRACK);
+  return tracks.length === 0;
 }
 
 function guessTopicEmoji(topic) {
@@ -507,7 +533,9 @@ function renderPathStep({
 }) {
   const title = safeText(topic?.title || 'Tema');
   const desc = safeText(truncateText(topic?.desc || '', 120));
-  const href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
+  let href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
+  if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
+  if (COURSE_VIEW) href += `&view=${encodeURIComponent(COURSE_VIEW)}`;
   const st = progressState(progress);
   const accent = topicAccent(topic);
 
@@ -646,11 +674,12 @@ async function loadTopics(user) {
 
   const topics = snap.docs
     .map((d) => ({ id: d.id, ...(d.data() || {}) }))
-    .filter((t) => t.isArchived !== true);
+    .filter((t) => t.isArchived !== true)
+    .filter(topicMatchesTrack);
 
   if (snap.empty || !topics.length) {
-    host.innerHTML = `<div class="card" style="padding:16px;">No hay temas para este nivel.</div>`;
-    if (courseRouteHint) courseRouteHint.textContent = 'No hay temas todavia.';
+    host.innerHTML = `<div class="card" style="padding:16px;">${TRACK ? 'No hay temas para esta ruta.' : 'No hay temas para este nivel.'}</div>`;
+    if (courseRouteHint) courseRouteHint.textContent = TRACK ? 'No hay temas para esta ruta todavía.' : 'No hay temas todavía.';
     if (courseRouteProgressFill) courseRouteProgressFill.style.width = '0%';
     if (btnCourseContinue) btnCourseContinue.style.display = 'none';
     return;
@@ -719,7 +748,10 @@ async function loadTopics(user) {
         }
         btnCourseContinue.style.display = '';
         btnCourseContinue.textContent = 'Continuar';
-        btnCourseContinue.href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(current.id)}`;
+        let href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(current.id)}`;
+        if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
+        if (COURSE_VIEW) href += `&view=${encodeURIComponent(COURSE_VIEW)}`;
+        btnCourseContinue.href = href;
       }
     }
   }
@@ -748,6 +780,20 @@ async function loadTopics(user) {
 document.addEventListener('DOMContentLoaded', () => {
   const heroIcon = document.getElementById('heroLevelIcon');
   if (heroIcon) heroIcon.textContent = LEVEL;
+
+  document.querySelectorAll('.levelButtons a[href]').forEach((link) => {
+    try {
+      const raw = link.getAttribute('href') || '';
+      const url = new URL(raw, location.href);
+      const level = (url.searchParams.get('level') || '').toUpperCase();
+      if (!level) return;
+      if (url.pathname !== location.pathname) return;
+      if (TRACK) url.searchParams.set('track', TRACK);
+      if (COURSE_VIEW) url.searchParams.set('view', COURSE_VIEW);
+      link.setAttribute('href', `${url.pathname}${url.search}`);
+    } catch {}
+  });
+
   initLevelButtonsGuard();
   onAuthStateChanged(auth, (user) => {
     if (!user) return;

@@ -32,10 +32,33 @@ const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
 const TOPIC_ID = String(params.get('id') || '').trim();
 const SLUG = String(params.get('slug') || '').trim();
+const TRACK = String(params.get('track') || '').trim().toLowerCase();
+const COURSE_VIEW = String(params.get('view') || '').trim().toLowerCase();
 
 const PRACTICE_COMPLETE_PCT = 80;
 const TEST_PASS_PCT = 80;
 const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
+
+function navParams() {
+  const parts = [];
+  if (TRACK) parts.push(`track=${encodeURIComponent(TRACK)}`);
+  if (COURSE_VIEW) parts.push(`view=${encodeURIComponent(COURSE_VIEW)}`);
+  return parts.length ? `&${parts.join('&')}` : '';
+}
+
+function coursePageName() {
+  if (COURSE_VIEW === 'latam') return 'curso-latam.html';
+  if (COURSE_VIEW === 'pro') return 'kurs-pl.html';
+  return 'course.html';
+}
+
+function courseHref(level = LEVEL) {
+  const page = coursePageName();
+  const lvl = String(level || LEVEL).toUpperCase();
+  let href = `${page}?level=${encodeURIComponent(lvl)}`;
+  if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
+  return href;
+}
 
 const toast = document.getElementById('toast');
 const sessionEmail = document.getElementById('sessionEmail');
@@ -459,6 +482,22 @@ function sanitizeUrl(raw) {
   return u.replace(/[)\],.]+$/g, '');
 }
 
+function splitNotesParts(raw) {
+  return String(raw || '')
+    .split(/\r?\n/)
+    .flatMap((line) => line.split('|'))
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+function stripNoteLabel(part) {
+  const idx = String(part || '').indexOf(':');
+  if (idx < 0) return '';
+  return String(part || '')
+    .slice(idx + 1)
+    .trim();
+}
+
 function extractAudioUrl(ex) {
   const direct = String(ex?.audioUrl || ex?.audio || '').trim();
   if (/^https?:\/\//i.test(direct)) return sanitizeUrl(direct);
@@ -481,10 +520,12 @@ function extractTtsText(ex) {
   if (direct) return direct;
   const notes = String(ex?.notes || '').trim();
   if (!notes) return '';
-  const m =
-    notes.match(/(?:^|\s)TTS_PL\s*:\s*(.+)$/im) ||
-    notes.match(/(?:^|\s)TTS\s*:\s*(.+)$/im);
-  return m && m[1] ? String(m[1] || '').trim() : '';
+  const parts = splitNotesParts(notes);
+  const pl = parts.find((p) => /^tts_pl\s*:/i.test(p));
+  if (pl) return stripNoteLabel(pl);
+  const any = parts.find((p) => /^tts\s*:/i.test(p));
+  if (any) return stripNoteLabel(any);
+  return '';
 }
 
 function isCardsExercise(ex) {
@@ -546,6 +587,40 @@ function isTestExercise(ex) {
   return t.includes('test final');
 }
 
+function isMatchingExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('relacionar') ||
+    t.includes('unir') ||
+    t.includes('emparejar') ||
+    t.includes('pares') ||
+    t.includes('matching') ||
+    t.includes('match')
+  );
+}
+
+function isOrderingExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('ordenar') ||
+    t.includes('orden') ||
+    t.includes('secuencia') ||
+    t.includes('ordenar la secuencia')
+  );
+}
+
+function isWritingExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('escribir') ||
+    t.includes('respuesta') ||
+    t.includes('responder') ||
+    t.includes('describir') ||
+    t.includes('decirlo de otra') ||
+    t.includes('otra manera')
+  );
+}
+
 function parseAnswerList(raw) {
   return String(raw || '')
     .split(/[\n;|]+/)
@@ -572,6 +647,84 @@ function optionLabelFromIndex(idx) {
 
 function cleanOptionText(opt) {
   return String(opt || '').replace(/^[A-D]\s*[)\.:-]\s*/i, '').trim();
+}
+
+function shuffleArray(list) {
+  const arr = Array.isArray(list) ? [...list] : [];
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function stripLeadLabel(raw) {
+  return String(raw || '').replace(/^\s*([A-Z]|\d+)\s*[)\.:-]\s*/i, '').trim();
+}
+
+function parseMatchAnswerMap(raw) {
+  const txt = String(raw || '').trim();
+  if (!txt) return null;
+  const pairs = txt
+    .split(/[,\n;|]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!pairs.length) return null;
+  const map = {};
+  pairs.forEach((p) => {
+    const m = p.match(/^\s*([A-Z])\s*[-=]\s*(\d+)\s*$/i);
+    if (!m) return;
+    map[String(m[1] || '').toUpperCase()] = String(m[2] || '');
+  });
+  return Object.keys(map).length ? map : null;
+}
+
+function parseMatchPairs(options, answerRaw) {
+  const lines = Array.isArray(options)
+    ? options.map((o) => String(o || '').trim()).filter(Boolean)
+    : [];
+  if (!lines.length) return null;
+
+  const left = [];
+  const right = [];
+  const derivedMap = {}; // leftLabel -> rightLabel
+
+  let autoLetter = 0;
+  let autoNum = 1;
+
+  lines.forEach((line) => {
+    const parts = line.split(/\s*(?:=|->|→|â€”|—)\s*/);
+    if (parts.length < 2) return;
+
+    const leftRaw = parts[0];
+    const rightRaw = parts.slice(1).join(' - ');
+
+    const lm = String(leftRaw).match(/^\s*([A-Z])\s*[)\.:-]\s*(.+)$/i);
+    const rm = String(rightRaw).match(/^\s*(\d+)\s*[)\.:-]\s*(.+)$/i);
+
+    const leftLabel = lm
+      ? String(lm[1] || '').toUpperCase()
+      : String.fromCharCode(65 + (autoLetter++ % 26));
+    const leftText = stripLeadLabel(lm ? lm[2] : leftRaw);
+
+    const rightLabel = rm ? String(rm[1] || '') : String(autoNum++);
+    const rightText = stripLeadLabel(rm ? rm[2] : rightRaw);
+
+    left.push({ label: leftLabel, text: leftText });
+    right.push({ label: rightLabel, text: rightText });
+    derivedMap[leftLabel] = rightLabel;
+  });
+
+  if (!left.length || !right.length) return null;
+
+  const fromAnswer = parseMatchAnswerMap(answerRaw);
+  const correctMap = fromAnswer || derivedMap;
+
+  return {
+    left,
+    right: shuffleArray(right),
+    correctMap,
+  };
 }
 
 function topicKeyFrom(topic) {
@@ -1396,6 +1549,390 @@ function makeExerciseCard(ex) {
       return card;
     }
 
+    if (isMatchingExercise(ex) && options.length) {
+      const parsed = parseMatchPairs(options, ex.answer || '');
+      if (!parsed) {
+        // If we can't parse it, fall back to the simple done button below.
+      } else {
+        const leftItems = parsed.left;
+        const rightItems = parsed.right;
+        const correctMap = parsed.correctMap || {};
+
+        let selectedLeft = '';
+        const userMap = {}; // leftLabel -> rightLabel
+        const rightToLeft = {}; // rightLabel -> leftLabel
+
+        const grid = document.createElement('div');
+        grid.className = 'exerciseMatchGrid';
+
+        const colLeft = document.createElement('div');
+        colLeft.className = 'exerciseMatchCol';
+        const colRight = document.createElement('div');
+        colRight.className = 'exerciseMatchCol';
+
+        const leftBtns = new Map();
+        const rightBtns = new Map();
+
+        const renderState = () => {
+          leftBtns.forEach((btn, label) => {
+            const paired = userMap[label] || '';
+            const isSelected = selectedLeft === label;
+            btn.classList.toggle('isSelected', isSelected);
+            btn.classList.toggle('isPaired', !!paired);
+            const badge = btn.querySelector('.exerciseMatchBadge');
+            if (badge) badge.textContent = paired ? `→ ${paired}` : '';
+          });
+          rightBtns.forEach((btn, label) => {
+            const usedBy = rightToLeft[label] || '';
+            btn.classList.toggle('isPaired', !!usedBy);
+          });
+        };
+
+        const assignPair = (leftLabel, rightLabel) => {
+          if (!leftLabel || !rightLabel) return;
+
+          const prevRight = userMap[leftLabel] || '';
+          if (prevRight && rightToLeft[prevRight] === leftLabel) {
+            delete rightToLeft[prevRight];
+          }
+
+          const prevLeft = rightToLeft[rightLabel] || '';
+          if (prevLeft && userMap[prevLeft] === rightLabel) {
+            delete userMap[prevLeft];
+          }
+
+          userMap[leftLabel] = rightLabel;
+          rightToLeft[rightLabel] = leftLabel;
+          renderState();
+        };
+
+        const resetPairs = () => {
+          selectedLeft = '';
+          Object.keys(userMap).forEach((k) => delete userMap[k]);
+          Object.keys(rightToLeft).forEach((k) => delete rightToLeft[k]);
+          renderState();
+        };
+
+        leftItems.forEach((it) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn-white-outline exerciseMatchBtn';
+          btn.disabled = done;
+          btn.innerHTML = `
+            <div class="exerciseMatchBtnTop">
+              <span class="exerciseMatchLabel">${safeText(it.label)})</span>
+              <span class="exerciseMatchBadge"></span>
+            </div>
+            <div class="exerciseMatchText">${safeText(it.text)}</div>
+          `;
+          btn.addEventListener('click', () => {
+            if (done) return;
+            selectedLeft = selectedLeft === it.label ? '' : it.label;
+            renderState();
+          });
+          leftBtns.set(it.label, btn);
+          colLeft.appendChild(btn);
+        });
+
+        rightItems.forEach((it) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn-white-outline exerciseMatchBtn';
+          btn.disabled = done;
+          btn.innerHTML = `
+            <div class="exerciseMatchBtnTop">
+              <span class="exerciseMatchLabel">${safeText(it.label)})</span>
+            </div>
+            <div class="exerciseMatchText">${safeText(it.text)}</div>
+          `;
+          btn.addEventListener('click', () => {
+            if (done) return;
+            if (!selectedLeft) {
+              showToast('Elige un elemento de la izquierda.', 'warn', 1600);
+              return;
+            }
+            assignPair(selectedLeft, it.label);
+            selectedLeft = '';
+            renderState();
+          });
+          rightBtns.set(it.label, btn);
+          colRight.appendChild(btn);
+        });
+
+        grid.appendChild(colLeft);
+        grid.appendChild(colRight);
+        card.appendChild(grid);
+
+        const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
+        if (wantsListen) {
+          const btnListen = document.createElement('button');
+          btnListen.className = 'btn-white-outline';
+          btnListen.type = 'button';
+          btnListen.textContent = 'Escuchar';
+          btnListen.disabled = done;
+          btnListen.addEventListener('click', () => playExerciseAudio(ex));
+          actions.appendChild(btnListen);
+        }
+
+        const btnReset = document.createElement('button');
+        btnReset.className = 'btn-white-outline';
+        btnReset.type = 'button';
+        btnReset.textContent = 'Reiniciar';
+        btnReset.disabled = done;
+        btnReset.addEventListener('click', resetPairs);
+        actions.appendChild(btnReset);
+
+        const btnCheck = document.createElement('button');
+        btnCheck.className = 'btn-yellow';
+        btnCheck.type = 'button';
+        btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+        btnCheck.disabled = done;
+
+        btnCheck.addEventListener('click', async () => {
+          if (done) return;
+          const needs = leftItems.length;
+          const picked = Object.keys(userMap).length;
+          if (picked < needs) {
+            showToast('Completa todas las parejas.', 'warn', 1800);
+            return;
+          }
+
+          let ok = true;
+          for (const it of leftItems) {
+            const expected = String(correctMap[it.label] || '').trim();
+            const got = String(userMap[it.label] || '').trim();
+            if (!expected || expected !== got) {
+              ok = false;
+              break;
+            }
+          }
+
+          setResultText(resultEl, ok, ok ? 'Correcto.' : 'Intenta de nuevo.');
+          card.appendChild(resultEl);
+          if (!ok) return;
+
+          await markDone();
+          btnCheck.textContent = 'Hecho';
+          btnCheck.disabled = true;
+          btnReset.disabled = true;
+          leftBtns.forEach((b) => (b.disabled = true));
+          rightBtns.forEach((b) => (b.disabled = true));
+        });
+
+        actions.appendChild(btnCheck);
+        card.appendChild(actions);
+
+        if (done) {
+          setResultText(resultEl, true, 'Hecho.');
+          card.appendChild(resultEl);
+          leftBtns.forEach((b) => (b.disabled = true));
+          rightBtns.forEach((b) => (b.disabled = true));
+        } else {
+          renderState();
+        }
+
+        return card;
+      }
+    }
+
+    if (isOrderingExercise(ex) && options.length && String(ex.answer || '').trim()) {
+      const rawTokens = options.map((o) => stripLeadLabel(o)).filter(Boolean);
+      if (!rawTokens.length) {
+        // fall back below
+      } else {
+        const tokens = shuffleArray(rawTokens.map((t, idx) => ({ id: String(idx), text: t })));
+        const selected = [];
+        const available = new Map(tokens.map((t) => [t.id, t]));
+
+        const wrap = document.createElement('div');
+        wrap.className = 'exerciseOrderWrap';
+
+        const built = document.createElement('div');
+        built.className = 'exerciseOrderBuilt';
+        built.textContent = '';
+
+        const bank = document.createElement('div');
+        bank.className = 'exerciseOrderBank';
+
+        const render = () => {
+          const sentence = selected.map((t) => t.text).join(' ').replace(/\s+([?.!,;:])/g, '$1');
+          built.textContent = sentence || '—';
+
+          bank.innerHTML = '';
+          tokens.forEach((t) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-white-outline exerciseOrderToken';
+            btn.textContent = t.text;
+            btn.disabled = done || !available.has(t.id);
+            btn.addEventListener('click', () => {
+              if (done) return;
+              if (!available.has(t.id)) return;
+              available.delete(t.id);
+              selected.push(t);
+              render();
+            });
+            bank.appendChild(btn);
+          });
+        };
+
+        const reset = () => {
+          if (done) return;
+          selected.length = 0;
+          available.clear();
+          tokens.forEach((t) => available.set(t.id, t));
+          render();
+        };
+
+        const undo = () => {
+          if (done) return;
+          const last = selected.pop();
+          if (last) available.set(last.id, last);
+          render();
+        };
+
+        const labelBuilt = document.createElement('div');
+        labelBuilt.className = 'exerciseHint';
+        labelBuilt.textContent = 'Construye la frase:';
+        wrap.appendChild(labelBuilt);
+        wrap.appendChild(built);
+
+        const labelBank = document.createElement('div');
+        labelBank.className = 'exerciseHint';
+        labelBank.style.marginTop = '10px';
+        labelBank.textContent = 'Palabras:';
+        wrap.appendChild(labelBank);
+        wrap.appendChild(bank);
+
+        card.appendChild(wrap);
+
+        const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
+        if (wantsListen) {
+          const btnListen = document.createElement('button');
+          btnListen.className = 'btn-white-outline';
+          btnListen.type = 'button';
+          btnListen.textContent = 'Escuchar';
+          btnListen.disabled = done;
+          btnListen.addEventListener('click', () => playExerciseAudio(ex));
+          actions.appendChild(btnListen);
+        }
+
+        const btnUndo = document.createElement('button');
+        btnUndo.className = 'btn-white-outline';
+        btnUndo.type = 'button';
+        btnUndo.textContent = 'Borrar \u00faltima';
+        btnUndo.disabled = done;
+        btnUndo.addEventListener('click', undo);
+        actions.appendChild(btnUndo);
+
+        const btnReset = document.createElement('button');
+        btnReset.className = 'btn-white-outline';
+        btnReset.type = 'button';
+        btnReset.textContent = 'Reiniciar';
+        btnReset.disabled = done;
+        btnReset.addEventListener('click', reset);
+        actions.appendChild(btnReset);
+
+        const btnCheck = document.createElement('button');
+        btnCheck.className = 'btn-yellow';
+        btnCheck.type = 'button';
+        btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+        btnCheck.disabled = done;
+
+        btnCheck.addEventListener('click', async () => {
+          if (done) return;
+          if (!selected.length) {
+            showToast('Ordena la frase primero.', 'warn', 1800);
+            return;
+          }
+          const sentence = selected.map((t) => t.text).join(' ').replace(/\s+([?.!,;:])/g, '$1');
+          const accepted = parseAnswerList(ex.answer || '').map((x) => normalizeText(x));
+          const got = normalizeText(sentence);
+          const ok = accepted.length ? accepted.includes(got) : got === normalizeText(ex.answer || '');
+
+          setResultText(resultEl, ok, ok ? 'Correcto.' : 'Intenta de nuevo.');
+          card.appendChild(resultEl);
+          if (!ok) return;
+
+          await markDone();
+          btnCheck.textContent = 'Hecho';
+          btnCheck.disabled = true;
+          btnUndo.disabled = true;
+          btnReset.disabled = true;
+          render();
+        });
+
+        actions.appendChild(btnCheck);
+        card.appendChild(actions);
+
+        if (done) {
+          setResultText(resultEl, true, 'Hecho.');
+          card.appendChild(resultEl);
+        }
+
+        render();
+        return card;
+      }
+    }
+
+    if (isWritingExercise(ex)) {
+      const hint = document.createElement('div');
+      hint.className = 'exerciseHint';
+      hint.textContent = 'Escribe tu respuesta. Luego marca hecho.';
+      card.appendChild(hint);
+
+      const box = document.createElement('textarea');
+      box.className = 'input';
+      box.rows = 3;
+      box.placeholder = 'Escribe aquí...';
+      box.autocomplete = 'off';
+      box.spellcheck = true;
+      box.disabled = done;
+      answerWrap.appendChild(box);
+      card.appendChild(answerWrap);
+
+      const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
+      if (wantsListen) {
+        const btnListen = document.createElement('button');
+        btnListen.className = 'btn-white-outline';
+        btnListen.type = 'button';
+        btnListen.textContent = 'Escuchar';
+        btnListen.disabled = done;
+        btnListen.addEventListener('click', () => playExerciseAudio(ex));
+        actions.appendChild(btnListen);
+      }
+
+      const btnDone = document.createElement('button');
+      btnDone.className = 'btn-yellow';
+      btnDone.textContent = done ? 'Hecho' : 'Marcar hecho';
+      btnDone.disabled = done;
+
+      btnDone.addEventListener('click', async () => {
+        if (done) return;
+        const val = String(box.value || '').trim();
+        if (!val) {
+          showToast('Escribe una respuesta primero.', 'warn', 1800);
+          return;
+        }
+        box.disabled = true;
+        await markDone();
+        btnDone.textContent = 'Hecho';
+        btnDone.disabled = true;
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      });
+
+      actions.appendChild(btnDone);
+      card.appendChild(actions);
+
+      if (done) {
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      }
+
+      return card;
+    }
+
     // fallback: simple done
     const btnDone = document.createElement('button');
     btnDone.className = 'btn-white-outline';
@@ -1616,9 +2153,9 @@ function showFinishModal(stats) {
   const btnCourse = document.getElementById('btnFinishCourse');
   const btnPanel = document.getElementById('btnFinishPanel');
   if (btnLesson && currentTopic?.id)
-    btnLesson.href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(currentTopic.id)}`;
+    btnLesson.href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(currentTopic.id)}${navParams()}`;
   if (btnCourse)
-    btnCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+    btnCourse.href = courseHref(LEVEL);
   if (btnPanel) btnPanel.href = 'espanel.html';
 
   const close = () => {
@@ -1739,18 +2276,18 @@ onAuthStateChanged(auth, async (user) => {
 
       if (pillLessonLink && topic.id) {
         pillLessonLink.style.display = 'inline-flex';
-        const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
+        const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
         pillLessonLink.href = url;
         if (btnBackLesson) btnBackLesson.href = url;
       }
       if (btnReview && topic.id) {
-        btnReview.href = `review.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
+        btnReview.href = `review.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
       }
       if (btnFlashcards && topic.id) {
-        btnFlashcards.href = `flashcards.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}`;
+        btnFlashcards.href = `flashcards.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
       }
     if (btnBackCourse) {
-      btnBackCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
+      btnBackCourse.href = courseHref(LEVEL);
     }
 
     const hasAccess = await computeHasAccess(CURRENT_UID);

@@ -13,6 +13,11 @@ import {
 
 const $ = (id) => document.getElementById(id);
 
+const QS = new URLSearchParams(window.location.search);
+const PRE_LEVEL = String(QS.get('level') || '').toUpperCase();
+const TRACK = String(QS.get('track') || '').trim().toLowerCase();
+const COURSE_VIEW = String(QS.get('view') || '').trim().toLowerCase();
+
 const passportHint = $('passportHint');
 const passportLevel = $('passportLevel');
 const passportGrid = $('passportGrid');
@@ -130,6 +135,26 @@ function normalizeText(value) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
+}
+
+function normalizeTrack(raw) {
+  return String(raw || '')
+    .trim()
+    .toLowerCase();
+}
+
+function topicTrackList(topic) {
+  const raw = topic?.track;
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map(normalizeTrack).filter(Boolean);
+  const one = normalizeTrack(raw);
+  return one ? [one] : [];
+}
+
+function topicMatchesTrack(topic) {
+  const tracks = topicTrackList(topic);
+  if (TRACK) return tracks.includes(TRACK);
+  return tracks.length === 0;
 }
 
 function parseList(raw) {
@@ -263,6 +288,7 @@ async function loadTopics(level) {
     snap.forEach((d) => {
       const t = { id: d.id, ...(d.data() || {}) };
       if (t.isArchived === true) return;
+      if (!topicMatchesTrack(t)) return;
       list.push(t);
     });
   } catch (e) {
@@ -662,7 +688,12 @@ onAuthStateChanged(auth, async (user) => {
   USER_DOC = await getUserDoc(user.uid);
 
   const levels = computeAvailableLevels(USER_DOC, user.email);
-  const preferred = levels.includes('A2') ? 'A2' : levels[0] || 'A1';
+  const preferred =
+    PRE_LEVEL && levels.includes(PRE_LEVEL)
+      ? PRE_LEVEL
+      : levels.includes('A2')
+        ? 'A2'
+        : levels[0] || 'A1';
   fillLevelSelect(levels, preferred);
 
   passportLevel?.addEventListener('change', () => loadForLevel(passportLevel.value));

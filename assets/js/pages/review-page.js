@@ -19,6 +19,10 @@ import {
 
 const $ = (id) => document.getElementById(id);
 
+const NAV_QS = new URLSearchParams(window.location.search);
+const TRACK = String(NAV_QS.get('track') || '').trim().toLowerCase();
+const COURSE_VIEW = String(NAV_QS.get('view') || '').trim().toLowerCase();
+
 const DEFAULT_DAILY_LIMIT = 20;
 const BOX_INTERVALS = [0, 1, 3, 7, 14, 30];
 const CARD_TYPE_HINT = 'tarjeta';
@@ -45,6 +49,26 @@ function normalizeText(value) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
+}
+
+function normalizeTrack(raw) {
+  return String(raw || '')
+    .trim()
+    .toLowerCase();
+}
+
+function topicTrackList(topic) {
+  const raw = topic?.track;
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map(normalizeTrack).filter(Boolean);
+  const one = normalizeTrack(raw);
+  return one ? [one] : [];
+}
+
+function topicMatchesTrack(topic) {
+  const tracks = topicTrackList(topic);
+  if (TRACK) return tracks.includes(TRACK);
+  return tracks.length === 0;
 }
 
 function parseCardLine(raw) {
@@ -127,9 +151,33 @@ function getUserLevels(docData) {
   return normalizeLevelList(levelsFromPlan(docData?.plan));
 }
 
+async function loadAllowedTopicSets(levels) {
+  const idSet = new Set();
+  const slugSet = new Set();
+  for (const lvl of levels || []) {
+    try {
+      const snap = await getDocs(
+        query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
+      );
+      snap.forEach((d) => {
+        const topic = { id: d.id, ...(d.data() || {}) };
+        if (topic.isArchived === true) return;
+        if (!topicMatchesTrack(topic)) return;
+        idSet.add(String(topic.id));
+        const slug = String(topic.slug || topic.id || '').trim();
+        if (slug) slugSet.add(slug);
+      });
+    } catch (e) {
+      console.warn('[review] load allowed topics failed', e);
+    }
+  }
+  return { idSet, slugSet };
+}
+
 async function loadExercisesForLevels(levels, topicId) {
   const all = [];
   if (!levels.length) return all;
+  const allowed = topicId ? null : await loadAllowedTopicSets(levels);
   for (const lvl of levels) {
     try {
       let q = query(collection(db, 'exercises'), where('level', '==', lvl));
@@ -141,7 +189,18 @@ async function loadExercisesForLevels(levels, topicId) {
         );
       }
       const snap = await getDocs(q);
-      snap.forEach((d) => all.push({ id: d.id, ...(d.data() || {}) }));
+      snap.forEach((d) => {
+        const ex = { id: d.id, ...(d.data() || {}) };
+        if (allowed) {
+          const tid = String(ex.topicId || '').trim();
+          const tslug = String(ex.topicSlug || '').trim();
+          const ok =
+            (tid && (allowed.idSet.has(tid) || allowed.slugSet.has(tid))) ||
+            (tslug && (allowed.idSet.has(tslug) || allowed.slugSet.has(tslug)));
+          if (!ok) return;
+        }
+        all.push(ex);
+      });
     } catch (e) {
       console.warn('[review] load exercises failed', e);
     }
@@ -322,6 +381,30 @@ function speakPolish(text) {
   window.speechSynthesis?.speak?.(utter);
 }
 
+function polishSpeechText(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return '';
+
+  const stripKnownLabel = (part) => {
+    const p = String(part || '').trim();
+    const m = p.match(/^(?:tts_pl|tts|pl)\s*:\s*(.+)$/i);
+    return m && m[1] ? String(m[1]).trim() : p;
+  };
+
+  if (!text.includes('|')) return stripKnownLabel(text);
+
+  const parts = text
+    .split('|')
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const prefer = parts.find((p) => /^(?:tts_pl|pl)\s*:/i.test(p));
+  if (prefer) return stripKnownLabel(prefer);
+
+  const fallback = parts.find((p) => !/^(?:es|en)\s*:/i.test(p));
+  return fallback ? stripKnownLabel(fallback) : '';
+}
+
 function playPolish(card) {
   if (!card) return;
   if (card.audioUrl) {
@@ -329,7 +412,7 @@ function playPolish(card) {
     audio.play().catch(() => {});
     return;
   }
-  speakPolish(card.plText || card.front || '');
+  speakPolish(polishSpeechText(card.plText));
 }
 
 function playExample(card) {
@@ -339,7 +422,7 @@ function playExample(card) {
     audio.play().catch(() => {});
     return;
   }
-  speakPolish(card.example);
+  speakPolish(polishSpeechText(card.example));
 }
 
 async function toggleFavorite(card) {
@@ -413,7 +496,9 @@ async function loadTopicsForLevel(level) {
       query(collection(db, 'courses'), where('level', '==', level), orderBy('order')),
     );
     snap.forEach((d) => {
-      const t = d.data() || {};
+      const t = { id: d.id, ...(d.data() || {}) };
+      if (t.isArchived === true) return;
+      if (!topicMatchesTrack(t)) return;
       const opt = document.createElement('option');
       opt.value = d.id;
       opt.textContent = t.title || t.slug || d.id;

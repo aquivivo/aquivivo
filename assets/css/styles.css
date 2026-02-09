@@ -1753,6 +1753,214 @@ body[data-page='course'] .pathStep.is-readonly .pathCard {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+/* ===== Course (variant): Kurs PL / Ruta PRO ===== */
+body[data-page='course'][data-ui='kurs-pl'] .kpUnits {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+body[data-page='course'][data-ui='kurs-pl'] .kpUnit {
+  padding: 0;
+  overflow: hidden;
+}
+
+body[data-page='course'][data-ui='kurs-pl'] .kpUnitSummary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpUnitSummary::-webkit-details-marker {
+  display: none;
+}
+
+body[data-page='course'][data-ui='kurs-pl'] .kpUnitLeft {
+  min-width: 0;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpUnitTitle {
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpUnitSub {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.82;
+  line-height: 1.35;
+}
+
+body[data-page='course'][data-ui='kurs-pl'] .kpUnitRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpUnitPct {
+  font-weight: 900;
+  font-size: 12px;
+  opacity: 0.9;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpUnitCaret {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 900;
+  opacity: 0.85;
+  transition: transform 0.12s ease;
+}
+body[data-page='course'][data-ui='kurs-pl'] details[open].kpUnit .kpUnitCaret {
+  transform: rotate(180deg);
+}
+
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonList {
+  padding: 0 8px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body[data-page='course'][data-ui='kurs-pl'] .kpLesson {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 12px;
+  align-items: stretch;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 16px;
+  padding: 12px 12px;
+  margin-top: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLesson:hover,
+body[data-page='course'][data-ui='kurs-pl'] .kpLesson:focus {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(252, 209, 22, 0.22);
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLesson.isReadOnly {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLesson.isReadOnly:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonRail {
+  width: 54px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonDot {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  background: rgba(7, 18, 44, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonDotInner {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+body[data-page='course'][data-ui='kurs-pl'] .kpRing {
+  position: absolute;
+  inset: -6px;
+  width: 56px;
+  height: 56px;
+  pointer-events: none;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpRing circle {
+  fill: none;
+  stroke-width: 5;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpRingBg {
+  stroke: rgba(255, 255, 255, 0.12);
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpRingFg {
+  stroke: rgba(252, 209, 22, 0.92);
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpRing[data-accent='blue'] .kpRingFg {
+  stroke: rgba(188, 211, 255, 0.92);
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpRing[data-accent='red'] .kpRingFg {
+  stroke: rgba(206, 17, 38, 0.88);
+}
+
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonBody {
+  min-width: 0;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonTop {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonText {
+  flex: 1;
+  min-width: 0;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonTitle {
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 0.1px;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonDesc {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0.82;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonMeta {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body[data-page='course'][data-ui='kurs-pl'] .kpLessonMeta .pill {
+  border-width: 1px;
+  padding: 4px 10px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 720px) {
+  body[data-page='course'][data-ui='kurs-pl'] .kpLesson {
+    grid-template-columns: 48px 1fr;
+    padding: 12px 10px;
+  }
+  body[data-page='course'][data-ui='kurs-pl'] .kpLessonRail {
+    width: 48px;
+  }
+}
 .passportGrid {
   display: grid;
   gap: 12px;
@@ -5071,6 +5279,108 @@ select:focus {
 }
 .exerciseResult.bad {
   color: #ffd1d6;
+}
+
+/* =====================================================
+   Exercise: Matching (pairs)
+   ===================================================== */
+.exerciseMatchGrid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.exerciseMatchCol {
+  display: grid;
+  gap: 8px;
+}
+.exerciseMatchBtn {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  transition: transform 0.1s ease, background 0.1s ease, border-color 0.1s ease,
+    box-shadow 0.1s ease;
+}
+.exerciseMatchBtn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+}
+.exerciseMatchBtnTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.exerciseMatchLabel {
+  font-weight: 900;
+  font-size: 12px;
+  opacity: 0.88;
+}
+.exerciseMatchBadge {
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(252, 209, 22, 0.96);
+}
+.exerciseMatchText {
+  margin-top: 6px;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1.35;
+}
+.exerciseMatchBtn.isSelected {
+  border-color: rgba(252, 209, 22, 0.7);
+  box-shadow: 0 0 0 4px rgba(252, 209, 22, 0.14);
+}
+.exerciseMatchBtn.isPaired {
+  background: rgba(255, 255, 255, 0.09);
+}
+.exerciseMatchBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 720px) {
+  .exerciseMatchGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =====================================================
+   Exercise: Ordering (build a sentence)
+   ===================================================== */
+.exerciseOrderWrap {
+  margin-top: 12px;
+}
+.exerciseOrderBuilt {
+  margin-top: 8px;
+  padding: 12px 12px;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 900;
+  line-height: 1.5;
+}
+.exerciseOrderBank {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.exerciseOrderToken {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 900;
+  font-size: 13px;
+}
+.exerciseOrderToken:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* === Perfil / Dashboard === */

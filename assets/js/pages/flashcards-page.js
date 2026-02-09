@@ -21,6 +21,8 @@ const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
 const PRE_LEVEL = String(params.get('level') || '').toUpperCase();
 const PRE_TOPIC = String(params.get('id') || params.get('topic') || '').trim();
+const TRACK = String(params.get('track') || '').trim().toLowerCase();
+const COURSE_VIEW = String(params.get('view') || '').trim().toLowerCase();
 
 const fcLevel = $('fcLevel');
 const fcTopic = $('fcTopic');
@@ -50,6 +52,7 @@ let cards = [];
 let currentIndex = 0;
 let isFlipped = false;
 let favMap = new Map();
+let allowedTopicCache = new Map();
 
 function normalizeText(value) {
   return String(value || '')
@@ -57,6 +60,26 @@ function normalizeText(value) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
+}
+
+function normalizeTrack(raw) {
+  return String(raw || '')
+    .trim()
+    .toLowerCase();
+}
+
+function topicTrackList(topic) {
+  const raw = topic?.track;
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map(normalizeTrack).filter(Boolean);
+  const one = normalizeTrack(raw);
+  return one ? [one] : [];
+}
+
+function topicMatchesTrack(topic) {
+  const tracks = topicTrackList(topic);
+  if (TRACK) return tracks.includes(TRACK);
+  return tracks.length === 0;
 }
 
 function parseCardLine(raw) {
@@ -209,6 +232,30 @@ function speakPolish(text) {
   window.speechSynthesis?.speak?.(utter);
 }
 
+function polishSpeechText(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return '';
+
+  const stripKnownLabel = (part) => {
+    const p = String(part || '').trim();
+    const m = p.match(/^(?:tts_pl|tts|pl)\s*:\s*(.+)$/i);
+    return m && m[1] ? String(m[1]).trim() : p;
+  };
+
+  if (!text.includes('|')) return stripKnownLabel(text);
+
+  const parts = text
+    .split('|')
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const prefer = parts.find((p) => /^(?:tts_pl|pl)\s*:/i.test(p));
+  if (prefer) return stripKnownLabel(prefer);
+
+  const fallback = parts.find((p) => !/^(?:es|en)\s*:/i.test(p));
+  return fallback ? stripKnownLabel(fallback) : '';
+}
+
 function playPolish(card) {
   if (!card) return;
   if (card.audioUrl) {
@@ -216,7 +263,7 @@ function playPolish(card) {
     audio.play().catch(() => {});
     return;
   }
-  speakPolish(card.plText || card.front || '');
+  speakPolish(polishSpeechText(card.plText));
 }
 
 function playExample(card) {
@@ -226,7 +273,7 @@ function playExample(card) {
     audio.play().catch(() => {});
     return;
   }
-  speakPolish(card.example);
+  speakPolish(polishSpeechText(card.example));
 }
 
 async function toggleFavorite(card) {
@@ -291,7 +338,8 @@ async function loadTopics(level, selectedId) {
     );
     const topics = snap.docs
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
-      .filter((t) => t.isArchived !== true);
+      .filter((t) => t.isArchived !== true)
+      .filter(topicMatchesTrack);
 
     topics.forEach((t) => {
       const opt = document.createElement('option');
@@ -306,6 +354,35 @@ async function loadTopics(level, selectedId) {
   } catch (e) {
     console.warn('[flashcards] loadTopics failed', e);
   }
+}
+
+async function loadAllowedTopicSetsForLevel(level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!lvl) return { idSet: new Set(), slugSet: new Set() };
+  const cached = allowedTopicCache.get(lvl);
+  if (cached) return cached;
+
+  const idSet = new Set();
+  const slugSet = new Set();
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
+    );
+    snap.forEach((d) => {
+      const topic = { id: d.id, ...(d.data() || {}) };
+      if (topic.isArchived === true) return;
+      if (!topicMatchesTrack(topic)) return;
+      idSet.add(String(topic.id));
+      const slug = String(topic.slug || topic.id || '').trim();
+      if (slug) slugSet.add(slug);
+    });
+  } catch (e) {
+    console.warn('[flashcards] loadAllowedTopicSetsForLevel failed', e);
+  }
+
+  const out = { idSet, slugSet };
+  allowedTopicCache.set(lvl, out);
+  return out;
 }
 
 async function loadCards() {
@@ -328,8 +405,20 @@ async function loadCards() {
     }
     const snap = await getDocs(q);
     const exercises = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    const allowed =
+      topicId && topicId !== 'all' ? null : await loadAllowedTopicSetsForLevel(level);
+    const visibleExercises = allowed
+      ? exercises.filter((ex) => {
+          const tid = String(ex.topicId || '').trim();
+          const tslug = String(ex.topicSlug || '').trim();
+          return (
+            (tid && (allowed.idSet.has(tid) || allowed.slugSet.has(tid))) ||
+            (tslug && (allowed.idSet.has(tslug) || allowed.slugSet.has(tslug)))
+          );
+        })
+      : exercises;
 
-    const base = exercises
+    const base = visibleExercises
       .filter(isCardExercise)
       .flatMap(buildCardsFromExercise)
       .map((c) => ({ ...c, favorite: favMap.get(c.id)?.favorite === true }));

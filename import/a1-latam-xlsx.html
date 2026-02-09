@@ -1,0 +1,1310 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>A1 (LATAM) vocab .xlsx → Firestore (AquiVivo)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../assets/css/styles.css?v=20260209a" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .box {
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+      }
+      button {
+        padding: 10px 14px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .ok {
+        color: var(--success-ink);
+        font-weight: 900;
+      }
+      .err {
+        color: var(--danger-ink);
+        font-weight: 900;
+      }
+      .muted {
+        color: var(--ink-muted);
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      @media (max-width: 860px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      .mapTable {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .mapTable th,
+      .mapTable td {
+        text-align: left;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 10px 8px;
+        vertical-align: top;
+      }
+      .mapTable th {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .small {
+        font-size: 12px;
+      }
+      .pillMini {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.06);
+        font-size: 12px;
+        font-weight: 800;
+        margin-left: 6px;
+      }
+      .select {
+        padding: 10px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border-light);
+        font-weight: 700;
+        min-width: 260px;
+      }
+      .input {
+        padding: 10px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border-light);
+        font-weight: 700;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .row label {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        font-weight: 800;
+      }
+      .logLine {
+        margin-top: 6px;
+        line-height: 1.5;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <div
+      style="
+        background: var(--yellow);
+        color: var(--blue);
+        padding: 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      "
+    >
+      Sesión activa:
+      <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
+        >Cargando...</strong
+      >
+    </div>
+
+    <h2>📚 Import: A1 vocab .xlsx → Ruta LATAM (A1)</h2>
+    <p class="muted">
+      Tworzy automatycznie tematy (<code>courses</code>) z <code>track=latam</code>,
+      wgrywa słownictwo do <code>course_meta.vocab</code> (+ <code>published=true</code>)
+      i generuje ćwiczenia w <code>exercises</code> (fiszki, luki, wybór, listening,
+      speaking, prawda/fałsz, matching, ordering, pisanie, test). Wymaga admin:
+      <code>aquivivo.pl@gmail.com</code>.
+    </p>
+
+    <div class="grid2">
+      <div class="box">
+        <div style="font-weight: 900">1) Plik XLSX</div>
+        <div class="row" style="margin-top: 10px">
+          <input id="xlsxFile" type="file" accept=".xlsx" />
+          <button id="btnParse" class="btn-white-outline" type="button">
+            Wczytaj XLSX
+          </button>
+          <span id="fileStatus" class="muted small"></span>
+        </div>
+        <div class="muted small" style="margin-top: 10px">
+          Wykryję zakładki i przygotuję plan lekcji (auto-split większych tematów).
+        </div>
+      </div>
+
+      <div class="box">
+        <div style="font-weight: 900">2) Ruta LATAM (auto)</div>
+        <div class="muted small" style="margin-top: 10px">
+          Ten importer tworzy/aktualizuje tematy po ID i ustawia <code>track=latam</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="box" style="margin-top: 12px">
+      <div style="font-weight: 900">3) Opcje importu</div>
+
+      <div class="row" style="margin-top: 10px">
+        <label
+          ><input id="optUpdateMeta" type="checkbox" checked /> Zapisz
+          <code>course_meta.vocab</code></label
+        >
+        <label
+          ><input id="optCleanup" type="checkbox" checked /> Usuń poprzednie
+          ćwiczenia z tego importu</label
+        >
+      </div>
+
+      <div class="row" style="margin-top: 10px">
+        <label class="small"
+          >Track:
+          <input id="optTrack" class="input" style="width: 120px" value="latam" />
+        </label>
+        <label class="small"
+          >Max słów na lekcję:
+          <input
+            id="optMaxRows"
+            class="input"
+            style="width: 90px"
+            type="number"
+            value="32"
+            min="10"
+            max="80"
+        /></label>
+      </div>
+
+      <div class="row" style="margin-top: 10px">
+        <label
+          ><input id="optCards" type="checkbox" checked /> Fiszki (Quizlet)</label
+        >
+        <label
+          ><input id="optFill" type="checkbox" checked /> Luki (pisanie)</label
+        >
+        <label
+          ><input id="optChoice" type="checkbox" checked /> Wybór (quiz)</label
+        >
+        <label
+          ><input id="optListenFill" type="checkbox" checked /> Listening + luki</label
+        >
+        <label
+          ><input id="optListenChoice" type="checkbox" checked /> Listening + wybór</label
+        >
+        <label
+          ><input id="optSpeak" type="checkbox" checked /> Speaking (nagrywanie)</label
+        >
+        <label
+          ><input id="optTF" type="checkbox" checked /> Prawda / fałsz</label
+        >
+        <label
+          ><input id="optMatch" type="checkbox" checked /> Dopasuj pary (matching)</label
+        >
+        <label
+          ><input id="optOrder" type="checkbox" checked /> Ułóż zdanie (ordering)</label
+        >
+        <label
+          ><input id="optWrite" type="checkbox" checked /> Pisanie (writing)</label
+        >
+        <label
+          ><input id="optTest" type="checkbox" checked /> Test końcowy</label
+        >
+      </div>
+
+      <div class="row" style="margin-top: 10px">
+        <label class="small"
+          >Limit na typ / temat (0 = wszystko):
+          <input
+            id="optLimit"
+            class="input"
+            style="width: 90px"
+            type="number"
+            value="0"
+            min="0"
+        /></label>
+        <label class="small"
+          >Pytania w teście:
+          <input
+            id="optTestN"
+            class="input"
+            style="width: 90px"
+            type="number"
+            value="6"
+            min="1"
+            max="30"
+        /></label>
+        <label class="small"
+          >Fiszki na 1 dokument:
+          <input
+            id="optCardsChunk"
+            class="input"
+            style="width: 90px"
+            type="number"
+            value="40"
+            min="10"
+            max="120"
+        /></label>
+      </div>
+
+      <div class="muted small" style="margin-top: 10px">
+        Tip: Jeśli chcesz „wszystko”, ustaw limit na <code>0</code>. Przy dużych
+        setach może to chwilę potrwać.
+      </div>
+    </div>
+
+    <div class="box" style="margin-top: 12px">
+      <div style="font-weight: 900">4) Podgląd: zakładka XLSX → temat (LATAM)</div>
+      <div id="mappingWrap" class="muted small" style="margin-top: 10px">
+        (najpierw wczytaj XLSX)
+      </div>
+    </div>
+
+    <button id="btnImportAll" class="btn-yellow" style="margin-top: 12px">
+      IMPORTUJ WSZYSTKO (A1 · LATAM)
+    </button>
+
+    <div id="log" class="box">
+      <div class="logLine">Status: gotowe.</div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        collection,
+        doc,
+        getDocs,
+        query,
+        where,
+        orderBy,
+        setDoc,
+        serverTimestamp,
+        writeBatch,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+        authDomain: 'aquivivo-platform.firebaseapp.com',
+        projectId: 'aquivivo-platform',
+        storageBucket: 'aquivivo-platform.firebasestorage.app',
+        messagingSenderId: '116115622011',
+        appId: '1:116115622011:web:33a4a583eba4368071bade',
+      };
+
+      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+      const LEVEL = 'A1';
+      const SEED_SOURCE = 'a1_latam_vocab_xlsx';
+      const SEED_VERSION = 'a1_latam_vocab_xlsx_v1_2026-02-09';
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const $ = (id) => document.getElementById(id);
+
+      const sessionEl = $('sessionEmail');
+      const fileStatus = $('fileStatus');
+      const mappingWrap = $('mappingWrap');
+      const logEl = $('log');
+
+      function log(line, type = '') {
+        const div = document.createElement('div');
+        div.className = `logLine ${type}`.trim();
+        div.innerHTML = line;
+        logEl.appendChild(div);
+      }
+
+      function esc(s) {
+        return String(s || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      function normalizeText(value) {
+        return String(value || '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, ' ')
+          .trim();
+      }
+
+      function stripSheetName(name) {
+        let s = String(name || '').trim();
+        s = s.replace(/^[^A-Za-z0-9]+\s*/g, '');
+        s = s.replace(/^a1\s*[-—:]+?\s*/i, '');
+        s = s.replace(/^vocabulario\s*a1\s*[-—:]+?\s*/i, '');
+        s = s.replace(/^vocabulario\s*[-—:]+?\s*/i, '');
+        return s.trim();
+      }
+
+      function bestTopicMatch(sheetName, topics) {
+        const raw = stripSheetName(sheetName);
+        const sheetKey = normalizeText(raw);
+        if (!sheetKey) return '';
+
+        let best = { score: 0, id: '' };
+        for (const t of topics || []) {
+          const title = String(t?.title || t?.name || '').trim();
+          const slug = String(t?.slug || '').trim();
+          const key = normalizeText(title || slug);
+          if (!key) continue;
+
+          let score = 0;
+          const tokens = sheetKey.split(' ').filter(Boolean);
+          const hits = tokens.filter((tok) => key.includes(tok)).length;
+          score += hits * 2;
+          if (key.includes(sheetKey) || sheetKey.includes(key)) score += 6;
+          if (normalizeText(title).includes(sheetKey)) score += 4;
+          if (normalizeText(slug).includes(sheetKey)) score += 2;
+          if (score > best.score) best = { score, id: t.id };
+        }
+        return best.score >= 4 ? best.id : '';
+      }
+
+      function safeCell(v) {
+        return String(v ?? '').trim();
+      }
+
+      function pickRowValue(row, keys) {
+        const obj = row || {};
+        for (const k of keys) {
+          if (k in obj) return safeCell(obj[k]);
+        }
+        const want = keys.map((x) => normalizeText(x));
+        for (const [kk, vv] of Object.entries(obj)) {
+          const n = normalizeText(kk);
+          if (!n) continue;
+          if (want.some((w) => w && n.includes(w))) return safeCell(vv);
+        }
+        return '';
+      }
+
+      function sanitizeCardText(s) {
+        return String(s || '').replaceAll('|', ' / ').replaceAll('\n', ' ').trim();
+      }
+
+      function escapeRegExp(s) {
+        return String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      function aliasesForTerm(pl) {
+        const raw = String(pl || '').trim();
+        if (!raw) return [];
+        const noParen = raw.replace(/\([^)]*\)/g, '').trim();
+        const parts = raw
+          .split('/')
+          .map((p) => p.replace(/\([^)]*\)/g, '').trim())
+          .filter(Boolean);
+        const base = noParen || raw;
+        const list = [...new Set([base, ...parts].filter(Boolean))];
+        return list.sort((a, b) => b.length - a.length);
+      }
+
+      function blankExample(examplePl, plTerm) {
+        const text = String(examplePl || '').trim();
+        if (!text) return '';
+        const aliases = aliasesForTerm(plTerm);
+        for (const a of aliases) {
+          const re = new RegExp(escapeRegExp(a), 'i');
+          if (re.test(text)) return text.replace(re, '___');
+        }
+        return '';
+      }
+
+      function sampleRows(rows, n) {
+        const list = Array.isArray(rows) ? rows : [];
+        const limit = Number(n || 0);
+        if (!limit || limit <= 0) return list;
+        return list.slice(0, limit);
+      }
+
+      function shuffledUnique(list, seed) {
+        const arr = [...new Set((list || []).filter(Boolean))];
+        if (!arr.length) return arr;
+        const s = Math.abs(Number(seed || 0)) % arr.length;
+        return arr.slice(s).concat(arr.slice(0, s));
+      }
+
+      function buildChoiceOptions(correct, pool, want = 4) {
+        const uniq = [...new Set(pool.filter(Boolean))].filter((x) => x !== correct);
+        const out = [correct];
+        for (const x of uniq) {
+          if (out.length >= want) break;
+          out.push(x);
+        }
+        return out;
+      }
+
+      function makeExerciseDoc({ topic, order, type, prompt, options, answer, notes, tags }) {
+        return {
+          level: LEVEL,
+          topicId: topic.id,
+          topicSlug: String(topic.slug || topic.id),
+          order: Number(order || 0),
+          type: String(type || ''),
+          prompt: String(prompt || ''),
+          options: Array.isArray(options) ? options : [],
+          answer: String(answer || ''),
+          notes: String(notes || ''),
+          tags: Array.isArray(tags) ? tags : [],
+          category: 'vocabulary',
+          seedSource: SEED_SOURCE,
+          seedVersion: SEED_VERSION,
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+        };
+      }
+
+      function exId(topicId, kind, seq) {
+        const n = String(seq).padStart(3, '0');
+        const k = String(kind || 'X').toUpperCase().replace(/[^A-Z0-9_]+/g, '_');
+        return `${LEVEL}__${topicId}__LATAM_XLSX__${k}__${n}`;
+      }
+
+      let IS_ADMIN = false;
+      let rawSheets = []; // [{name, rows:[{pl,es,phon,exPl,exEs,section}], rawCount}]
+      let plannedLessons = []; // [{sheetName, partIdx, partCount, rows, topic}]
+
+      onAuthStateChanged(auth, (user) => {
+        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesión)';
+        IS_ADMIN =
+          !!user &&
+          String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        if (!IS_ADMIN) {
+          log(
+            `❌ Zaloguj się jako admin (${esc(ADMIN_EMAIL)}), potem wróć na tę stronę.`,
+            'err',
+          );
+        }
+      });
+
+      function rebuildMappingUI() {
+        if (!mappingWrap) return;
+        if (!plannedLessons.length) {
+          mappingWrap.textContent = '(najpierw wczytaj XLSX)';
+          return;
+        }
+
+        const rowsHtml = plannedLessons
+          .map((l) => {
+            const topic = l.topic || {};
+            const sheetLabel =
+              l.partCount > 1
+                ? `${l.sheetName} (część ${Number(l.partIdx) + 1}/${Number(l.partCount)})`
+                : l.sheetName;
+            return `
+              <tr>
+                <td>
+                  <div style="font-weight:900;">${esc(sheetLabel)}</div>
+                  <div class="muted small">
+                    ${esc(stripSheetName(l.sheetName)) || '-'}
+                    <span class="pillMini">${Number(l.rows?.length || 0)} słów</span>
+                  </div>
+                </td>
+                <td>
+                  <div style="font-weight:900;">${esc(topic.title || '')}</div>
+                  <div class="muted small">
+                    ID/slug: <code>${esc(topic.id || '')}</code>
+                    <span class="pillMini">order ${Number(topic.order || 0)}</span>
+                  </div>
+                </td>
+              </tr>
+            `;
+          })
+          .join('');
+
+        mappingWrap.innerHTML = `
+          <table class="mapTable">
+            <thead>
+              <tr>
+                <th>Zakładka (XLSX)</th>
+                <th>Temat (LATAM)</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+          <div class="muted small" style="margin-top:10px;">
+            Import tworzy tematy automatycznie. Po imporcie otwórz:
+            <code>curso-latam.html?level=A1</code>.
+          </div>
+        `;
+      }
+
+      function parseXlsxFile(file) {
+        return new Promise((resolve, reject) => {
+          try {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              try {
+                const data = new Uint8Array(e.target.result);
+                const wb = XLSX.read(data, { type: 'array' });
+                resolve(wb);
+              } catch (err) {
+                reject(err);
+              }
+            };
+            reader.onerror = () => reject(reader.error);
+            reader.readAsArrayBuffer(file);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+
+      function sheetRowsFromWorkbook(wb) {
+        const out = [];
+        const sheetNames = wb?.SheetNames || [];
+        sheetNames.forEach((name) => {
+          const ws = wb.Sheets[name];
+          if (!ws) return;
+          const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+          const rows = (json || [])
+            .map((row) => {
+              const pl = pickRowValue(row, ['Polski', 'PL', 'Polaco']);
+              const es = pickRowValue(row, [
+                'Español (LATAM)',
+                'Espanol (LATAM)',
+                'Español',
+                'Espanol',
+                'ES',
+                'Español (ES)',
+              ]);
+              const phon = pickRowValue(row, [
+                'Fonetyka',
+                'Fonetyka (para latinos – lectura del polaco)',
+                'Fonetyka (para latinos - lectura del polaco)',
+              ]);
+              const section = pickRowValue(row, ['Sección', 'Seccion', 'Sekcja']);
+              const exPl = pickRowValue(row, [
+                'Ejemplo de uso (PL)',
+                'Ejemplo (PL)',
+                'Przykład (PL)',
+              ]);
+              const exEs = pickRowValue(row, [
+                'Ejemplo de uso (ES)',
+                'Ejemplo (ES)',
+                'Przykład (ES)',
+              ]);
+
+              return {
+                pl: safeCell(pl),
+                es: safeCell(es),
+                phon: safeCell(phon),
+                section: safeCell(section),
+                exPl: safeCell(exPl),
+                exEs: safeCell(exEs),
+              };
+            })
+            .filter((r) => r.pl || r.es || r.exPl);
+
+          out.push({ name, rows, rawCount: rows.length });
+        });
+        return out;
+      }
+
+      function slugify(value) {
+        const n = normalizeText(value).replace(/\s+/g, '-').replace(/-+/g, '-').trim();
+        return n.replace(/^-+|-+$/g, '').slice(0, 64);
+      }
+
+      function splitRowsEven(rows, maxPerLesson) {
+        const list = Array.isArray(rows) ? rows : [];
+        const max = Math.max(10, Number(maxPerLesson || 0) || 32);
+        if (list.length <= max) return [list];
+        const parts = Math.ceil(list.length / max);
+        const size = Math.ceil(list.length / parts);
+        const out = [];
+        for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
+        return out.filter((c) => c.length);
+      }
+
+      function makeTopicFromSheet({ sheetName, partIdx, partCount, order, track }) {
+        const base = stripSheetName(sheetName);
+        const key = normalizeText(base);
+        let icon = null;
+        if (key.includes('saludos') || key.includes('presentacion')) icon = '👋';
+        else if (key.includes('paises') || key.includes('nacionalidades')) icon = '🌍';
+        else if (key.includes('informacion')) icon = '🧾';
+        else if (key.includes('famil')) icon = '👪';
+        else if (key.includes('casa') || key.includes('vivienda') || key.includes('dom') || key.includes('mieszkan'))
+          icon = '🏠';
+        else if (key.includes('comida') || key.includes('bebida') || key.includes('jedzen'))
+          icon = '🍽️';
+        else if (key.includes('compr') || key.includes('tienda') || key.includes('sklep') || key.includes('zakup'))
+          icon = '🛒';
+        else if (key.includes('ciudad') || key.includes('lugar') || key.includes('miasto'))
+          icon = '🏙️';
+        else if (key.includes('rutina') || key.includes('diaria') || key.includes('czas') || key.includes('tiempo'))
+          icon = '⏰';
+        else if (key.includes('descripcion') || key.includes('opis')) icon = '📝';
+
+        const trackKey = slugify(track);
+        const idPart = slugify(base) || `tema-${order}`;
+        const partKey = partCount > 1 ? `${idPart}-p${partIdx + 1}` : idPart;
+        const id = trackKey ? `${trackKey}-a1-${partKey}` : `a1-${partKey}`;
+        const partSuffix = partCount > 1 ? ` — Parte ${partIdx + 1}` : '';
+        return {
+          id,
+          slug: id,
+          level: LEVEL,
+          title: `${base}${partSuffix}`,
+          subtitle: 'Vocabulario y práctica comunicativa.',
+          desc: 'Vocabulario y práctica comunicativa.',
+          type: 'vocab',
+          order: Number(order || 0),
+          track: trackKey || null,
+          icon,
+          imageUrl: null,
+          isArchived: false,
+        };
+      }
+
+      function rebuildPlan() {
+        const maxRows = Number($('optMaxRows')?.value || 32);
+        const track = String($('optTrack')?.value || 'latam').trim().toLowerCase();
+        plannedLessons = [];
+        let order = 1;
+        rawSheets.forEach((s) => {
+          const chunks = splitRowsEven(s.rows, maxRows);
+          chunks.forEach((chunk, partIdx) => {
+            plannedLessons.push({
+              sheetName: s.name,
+              partIdx,
+              partCount: chunks.length,
+              rows: chunk,
+              topic: makeTopicFromSheet({
+                sheetName: s.name,
+                partIdx,
+                partCount: chunks.length,
+                order,
+                track,
+              }),
+            });
+            order += 1;
+          });
+        });
+      }
+
+      $('btnParse').addEventListener('click', async () => {
+        if (!IS_ADMIN) {
+          alert('Nie jesteś adminem.');
+          return;
+        }
+        const file = $('xlsxFile')?.files?.[0] || null;
+        if (!file) {
+          alert('Wybierz plik .xlsx.');
+          return;
+        }
+        if (fileStatus) fileStatus.textContent = '⏳ Wczytuję...';
+        try {
+          const wb = await parseXlsxFile(file);
+          const sheets = sheetRowsFromWorkbook(wb);
+          rawSheets = sheets.filter((s) => !normalizeText(s.name).includes('rodzaje zadan'));
+          rebuildPlan();
+          if (fileStatus)
+            fileStatus.textContent = `✅ OK (${rawSheets.length} zakładek)`;
+          log(
+            `✅ XLSX wczytany. Zakładki: <code>${esc(rawSheets.map((s) => s.name).join(' | '))}</code>`,
+            'ok',
+          );
+          rebuildMappingUI();
+        } catch (e) {
+          console.error(e);
+          if (fileStatus) fileStatus.textContent = '❌ Błąd';
+          log('❌ Nie mogę wczytać XLSX. Sprawdź konsolę.', 'err');
+        }
+      });
+
+      ['optTrack', 'optMaxRows'].forEach((id) => {
+        const el = $(id);
+        el?.addEventListener('input', () => {
+          if (!rawSheets.length) return;
+          rebuildPlan();
+          rebuildMappingUI();
+        });
+        el?.addEventListener('change', () => {
+          if (!rawSheets.length) return;
+          rebuildPlan();
+          rebuildMappingUI();
+        });
+      });
+
+      async function deleteOldSeededExercisesForTopic(topicId) {
+        const snap = await getDocs(
+          query(collection(db, 'exercises'), where('topicId', '==', topicId)),
+        );
+        const refs = [];
+        snap.forEach((d) => {
+          const data = d.data() || {};
+          if (String(data.seedSource || '') === SEED_SOURCE) refs.push(d.ref);
+        });
+        if (!refs.length) return 0;
+
+        let deleted = 0;
+        for (let i = 0; i < refs.length; i += 450) {
+          const batch = writeBatch(db);
+          refs.slice(i, i + 450).forEach((r) => batch.delete(r));
+          await batch.commit();
+          deleted += Math.min(450, refs.length - i);
+        }
+        return deleted;
+      }
+
+      async function commitSetDocs(pairs) {
+        let done = 0;
+        for (let i = 0; i < pairs.length; i += 450) {
+          const batch = writeBatch(db);
+          pairs.slice(i, i + 450).forEach((p) => batch.set(p.ref, p.data, { merge: true }));
+          await batch.commit();
+          done += Math.min(450, pairs.length - i);
+        }
+        return done;
+      }
+
+      function buildVocabItems(rows) {
+        const out = [];
+        const seen = new Set();
+        (rows || []).forEach((r) => {
+          const pl = String(r.pl || '').trim();
+          const es = String(r.es || '').trim();
+          if (!pl && !es) return;
+          const line = pl && es ? `${pl} — ${es}` : pl || es;
+          const key = normalizeText(line);
+          if (!key || seen.has(key)) return;
+          seen.add(key);
+          out.push(line);
+        });
+        return out;
+      }
+
+      function buildExercisesForTopic(topic, sheetName, rows, opt) {
+        const limit = Number(opt.limit || 0);
+        const testN = Math.max(1, Number(opt.testN || 6));
+        const chunkSize = Math.max(10, Number(opt.cardsChunk || 40));
+
+        const plPool = rows.map((r) => String(r.pl || '').trim()).filter(Boolean);
+        const esPool = rows.map((r) => String(r.es || '').trim()).filter(Boolean);
+
+        const exercises = [];
+        let order = 1;
+
+        const tagBase = [
+          'a1',
+          'latam',
+          'xlsx',
+          'vocab',
+          `sheet:${stripSheetName(sheetName)}`.slice(0, 40),
+        ];
+
+        if (opt.fill) {
+          const fillRows = sampleRows(
+            rows.filter((r) => r.pl && (r.exPl || r.es)),
+            limit,
+          );
+          fillRows.forEach((r, idx) => {
+            const pl = String(r.pl || '').trim();
+            const es = String(r.es || '').trim();
+            const exPl = String(r.exPl || '').trim();
+            const exEs = String(r.exEs || '').trim();
+            const blank =
+              blankExample(exPl, pl) ||
+              (es ? `Traduce al polaco: ${es} → ___` : 'Completa: ___');
+            const notes = [
+              r.phon ? `Pron: ${sanitizeCardText(r.phon)}` : '',
+              exEs ? `ES: ${sanitizeCardText(exEs)}` : '',
+            ]
+              .filter(Boolean)
+              .join(' | ');
+
+            exercises.push({
+              id: exId(topic.id, 'FILL', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Rellenar los espacios',
+                prompt: blank,
+                options: [],
+                answer: pl,
+                notes,
+                tags: [...tagBase, 'type:fill'],
+              }),
+            });
+          });
+        }
+
+        if (opt.choice) {
+          const choiceRows = sampleRows(rows.filter((r) => r.pl && r.es), limit);
+          choiceRows.forEach((r, idx) => {
+            const pl = String(r.pl || '').trim();
+            const es = String(r.es || '').trim();
+            const pool = shuffledUnique(plPool, idx + 3);
+            const opts = buildChoiceOptions(pl, pool, 4);
+            const options = shuffledUnique(opts, idx + 1);
+            const notes = r.phon ? `Pron: ${sanitizeCardText(r.phon)}` : '';
+
+            exercises.push({
+              id: exId(topic.id, 'CHOICE', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Opción múltiple',
+                prompt: `¿Cómo se dice en polaco: "${es}"?`,
+                options,
+                answer: pl,
+                notes,
+                tags: [...tagBase, 'type:choice'],
+              }),
+            });
+          });
+        }
+
+        if (opt.listenFill) {
+          const listenFillRows = sampleRows(
+            rows.filter((r) => (r.exPl || r.pl) && r.pl),
+            limit ? Math.max(1, Math.floor(limit * 0.75)) : 0,
+          );
+          listenFillRows.forEach((r, idx) => {
+            const pl = String(r.pl || '').trim();
+            const exPl = String(r.exPl || '').trim();
+            const exEs = String(r.exEs || '').trim();
+            const blank = blankExample(exPl, pl) || 'Completa: ___';
+            const tts = exPl || pl;
+            const notes = [
+              `TTS_PL: ${sanitizeCardText(tts)}`,
+              exEs ? `ES: ${sanitizeCardText(exEs)}` : '',
+            ]
+              .filter(Boolean)
+              .join(' | ');
+
+            exercises.push({
+              id: exId(topic.id, 'LISTEN_FILL', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Escuchar y completar los espacios',
+                prompt: blank,
+                options: [],
+                answer: pl,
+                notes,
+                tags: [...tagBase, 'type:listen_fill'],
+              }),
+            });
+          });
+        }
+
+        if (opt.listenChoice) {
+          const listenChoiceRows = sampleRows(
+            rows.filter((r) => r.pl && r.es),
+            limit ? Math.max(1, Math.floor(limit * 0.75)) : 0,
+          );
+          listenChoiceRows.forEach((r, idx) => {
+            const pl = String(r.pl || '').trim();
+            const es = String(r.es || '').trim();
+            const pool = shuffledUnique(esPool, idx + 7);
+            const opts = buildChoiceOptions(es, pool, 4);
+            const options = shuffledUnique(opts, idx + 2);
+            const notes = `TTS_PL: ${sanitizeCardText(pl)}`;
+
+            exercises.push({
+              id: exId(topic.id, 'LISTEN_CHOICE', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Escuchar y elegir la respuesta',
+                prompt: 'Escucha (PL) y elige la traducción en español.',
+                options,
+                answer: es,
+                notes,
+                tags: [...tagBase, 'type:listen_choice'],
+              }),
+            });
+          });
+        }
+
+        if (opt.speak) {
+          const speakRows = sampleRows(
+            rows.filter((r) => r.exPl || r.pl),
+            limit ? Math.max(1, Math.floor(limit * 0.5)) : 0,
+          );
+          speakRows.forEach((r, idx) => {
+            const tts = String(r.exPl || r.pl || '').trim();
+            if (!tts) return;
+            const notes = [
+              `TTS_PL: ${sanitizeCardText(tts)}`,
+              r.exEs ? `ES: ${sanitizeCardText(r.exEs)}` : '',
+            ]
+              .filter(Boolean)
+              .join(' | ');
+
+            exercises.push({
+              id: exId(topic.id, 'SPEAK', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Escuchar y repetir (voz)',
+                prompt: `Powtórz: ${tts}`,
+                options: [],
+                answer: '',
+                notes,
+                tags: [...tagBase, 'type:speak'],
+              }),
+            });
+          });
+        }
+
+        if (opt.tf) {
+          const tfRows = sampleRows(
+            rows.filter((r) => r.pl && r.es),
+            limit ? Math.max(1, Math.floor(limit * 0.5)) : 0,
+          );
+          tfRows.forEach((r, idx) => {
+            const pl = String(r.pl || '').trim();
+            const es = String(r.es || '').trim();
+            const wrong =
+              shuffledUnique(esPool.filter((x) => x !== es), idx + 9)[0] || '';
+            const makeFalse = idx % 2 === 1 && !!wrong;
+            const shown = makeFalse ? wrong : es;
+            const answer = makeFalse ? 'Falso' : 'Verdadero';
+
+            exercises.push({
+              id: exId(topic.id, 'TF', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Verdadero o falso',
+                prompt: `Verdadero/Falso: "${pl}" = "${shown}"`,
+                options: ['Verdadero', 'Falso'],
+                answer,
+                notes: '',
+                tags: [...tagBase, 'type:tf'],
+              }),
+            });
+          });
+        }
+
+        if (opt.match) {
+          const pairRows = rows.filter((r) => r.pl && r.es);
+          const chunk = 8;
+          let seq = 1;
+          for (let i = 0; i < pairRows.length; i += chunk, seq += 1) {
+            const slice = pairRows.slice(i, i + chunk);
+            const options = slice
+              .map((r) => `${String(r.pl || '').trim()} = ${String(r.es || '').trim()}`)
+              .filter(Boolean);
+            if (options.length < 2) continue;
+            exercises.push({
+              id: exId(topic.id, 'MATCH', seq),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Relacionar (pares)',
+                prompt: 'Relaciona el polaco con el español.',
+                options,
+                answer: '',
+                notes: '',
+                tags: [...tagBase, 'type:match'],
+              }),
+            });
+          }
+        }
+
+        if (opt.order) {
+          const candidates = rows
+            .map((r) => String(r.exPl || '').trim())
+            .filter((s) => s && s.split(/\s+/).filter(Boolean).length >= 3)
+            .slice(0, 10);
+          candidates.forEach((sent, idx) => {
+            const tokens = String(sent || '')
+              .replace(/([?.!,;:])/g, ' $1 ')
+              .split(/\s+/)
+              .map((t) => t.trim())
+              .filter(Boolean);
+            if (tokens.length < 3) return;
+            exercises.push({
+              id: exId(topic.id, 'ORDER', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Escuchar y ordenar',
+                prompt: 'Ordena las palabras para formar una frase.',
+                options: tokens,
+                answer: sent,
+                notes: `TTS_PL: ${sanitizeCardText(sent)}`,
+                tags: [...tagBase, 'type:order'],
+              }),
+            });
+          });
+        }
+
+        if (opt.write) {
+          const base = stripSheetName(sheetName);
+          const hints = rows
+            .map((r) => String(r.pl || '').trim())
+            .filter(Boolean)
+            .slice(0, 4);
+          const prompts = [
+            `Escribe 4–6 frases sobre: ${base}.`,
+            `Escribe un mini-diálogo (4 líneas) sobre: ${base}.`,
+            hints.length ? `Escribe 3 frases usando: ${hints.join(', ')}.` : 'Escribe 3 frases usando el vocabulario del tema.',
+          ];
+          prompts.forEach((p, idx) => {
+            exercises.push({
+              id: exId(topic.id, 'WRITE', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Escribir (producción)',
+                prompt: p,
+                options: [],
+                answer: '',
+                notes: '',
+                tags: [...tagBase, 'type:write'],
+              }),
+            });
+          });
+        }
+
+        if (opt.cards) {
+          const all = rows.filter((r) => r.pl && r.es);
+          const lines = all.map((r) => {
+            const pl = sanitizeCardText(r.pl);
+            const es = sanitizeCardText(r.es);
+            const phon = r.phon ? `Pron: ${sanitizeCardText(r.phon)} · ` : '';
+            const exPl = r.exPl ? sanitizeCardText(r.exPl) : '';
+            const exEs = r.exEs ? sanitizeCardText(r.exEs) : '';
+            const ex = `${phon}${exPl}${exEs ? ` / ES: ${exEs}` : ''}`.trim();
+            return `PL: ${pl} | ES: ${es}${ex ? ` | EX: ${ex}` : ''}`;
+          });
+
+          const chunks = [];
+          for (let i = 0; i < lines.length; i += chunkSize) {
+            chunks.push(lines.slice(i, i + chunkSize));
+          }
+
+          chunks.forEach((opts, idx) => {
+            exercises.push({
+              id: exId(topic.id, 'CARDS', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Tarjetas interactivas',
+                prompt:
+                  chunks.length > 1
+                    ? `Fichas del tema (${idx + 1}/${chunks.length})`
+                    : 'Fichas del tema',
+                options: opts,
+                answer: '',
+                notes: 'Abre “Fichas” para practicar tipo Quizlet.',
+                tags: [...tagBase, 'type:cards'],
+              }),
+            });
+          });
+        }
+
+        if (opt.test) {
+          const testRows = sampleRows(rows.filter((r) => r.pl && r.es), testN);
+          testRows.forEach((r, idx) => {
+            const pl = String(r.pl || '').trim();
+            const es = String(r.es || '').trim();
+            const pool = shuffledUnique(plPool, idx + 12);
+            const options = shuffledUnique(buildChoiceOptions(pl, pool, 4), idx + 5);
+
+            exercises.push({
+              id: exId(topic.id, 'TEST', idx + 1),
+              data: makeExerciseDoc({
+                topic,
+                order: order++,
+                type: 'Test final del tema',
+                prompt: `Test: ¿Cómo se dice en polaco: "${es}"?`,
+                options,
+                answer: pl,
+                notes: '',
+                tags: [...tagBase, 'type:test'],
+              }),
+            });
+          });
+        }
+
+        return exercises;
+      }
+
+      function buildLessonHtml(topic, vocabItems) {
+        const title = String(topic?.title || topic?.name || '').trim() || 'Lección';
+        const desc = String(topic?.desc || topic?.subtitle || '').trim();
+        const preview = Array.isArray(vocabItems) ? vocabItems.slice(0, 14) : [];
+        return `
+          <div class="card" style="padding:14px; margin-top:12px;">
+            <div class="sectionTitle" style="margin-top:0;">${esc(title)}</div>
+            ${desc ? `<div class="muted" style="margin-top:6px; line-height:1.6;">${esc(desc)}</div>` : ''}
+
+            <h2 class="sectionTitle" style="margin-top:14px;">Objetivo</h2>
+            <ul>
+              <li>Aprender vocabulario clave en contexto.</li>
+              <li>Practicar comprensión y producción (hablar/escribir).</li>
+              <li>Consolidar con fichas y repaso (SRS).</li>
+            </ul>
+
+            <h2 class="sectionTitle" style="margin-top:14px;">Vocabulario clave</h2>
+            ${preview.length ? `<ul>${preview.map((v) => `<li>${esc(v)}</li>`).join('')}</ul>` : '<div class="muted">—</div>'}
+
+            <h2 class="sectionTitle" style="margin-top:14px;">Tarea comunicativa</h2>
+            <div class="muted" style="line-height:1.6;">
+              Escribe 4–6 frases usando el vocabulario del tema.
+            </div>
+          </div>
+        `;
+      }
+
+      $('btnImportAll').addEventListener('click', async () => {
+        if (!IS_ADMIN) {
+          alert('Nie jesteś adminem.');
+          return;
+        }
+        if (!rawSheets.length) {
+          alert('Najpierw wczytaj XLSX.');
+          return;
+        }
+        rebuildPlan();
+        rebuildMappingUI();
+        if (!plannedLessons.length) {
+          alert('Brak tematów do importu.');
+          return;
+        }
+
+        const opt = {
+          updateMeta: $('optUpdateMeta').checked,
+          cleanup: $('optCleanup').checked,
+          track: String($('optTrack')?.value || 'latam').trim().toLowerCase(),
+          maxRows: Number($('optMaxRows')?.value || 32),
+          cards: $('optCards').checked,
+          fill: $('optFill').checked,
+          choice: $('optChoice').checked,
+          listenFill: $('optListenFill').checked,
+          listenChoice: $('optListenChoice').checked,
+          speak: $('optSpeak').checked,
+          tf: $('optTF').checked,
+          match: $('optMatch')?.checked === true,
+          order: $('optOrder')?.checked === true,
+          write: $('optWrite')?.checked === true,
+          test: $('optTest').checked,
+          limit: Number($('optLimit').value || 0),
+          testN: Number($('optTestN').value || 6),
+          cardsChunk: Number($('optCardsChunk').value || 40),
+        };
+
+        log('—', '');
+        log(
+          `⏳ Start importu. Tematy: <code>${plannedLessons.length}</code> · track: <code>${esc(opt.track)}</code> · seed: <code>${esc(SEED_VERSION)}</code>`,
+          '',
+        );
+
+        try {
+          for (const lesson of plannedLessons) {
+            const topic = lesson.topic;
+            log(
+              `⏳ Temat: <b>${esc(topic.title || topic.name || topic.id)}</b> (zakładka: <code>${esc(lesson.sheetName)}</code>)`,
+              '',
+            );
+
+            // courses (create/update)
+            await setDoc(
+              doc(db, 'courses', topic.id),
+              {
+                level: LEVEL,
+                title: topic.title || null,
+                slug: topic.slug || topic.id,
+                subtitle: topic.subtitle || null,
+                desc: topic.desc || null,
+                type: topic.type || 'vocab',
+                order: Number(topic.order || 0),
+                track: topic.track || null,
+                icon: topic.icon || null,
+                imageUrl: topic.imageUrl || null,
+                isArchived: false,
+                updatedAt: serverTimestamp(),
+                createdAt: serverTimestamp(),
+              },
+              { merge: true },
+            );
+
+            if (opt.cleanup) {
+              const deleted = await deleteOldSeededExercisesForTopic(topic.id);
+              log(`🧹 Usunięto stare ćwiczenia importu: <code>${deleted}</code>`, 'muted');
+            }
+
+            const vocabItems = buildVocabItems(lesson.rows);
+            if (opt.updateMeta) {
+              const metaRef = doc(db, 'course_meta', `${LEVEL}__${topic.id}`);
+              await setDoc(
+                metaRef,
+                {
+                  level: LEVEL,
+                  courseId: topic.id,
+                  track: topic.track || null,
+                  titleEs: topic.title || null,
+                  descriptionEs: topic.desc || topic.subtitle || null,
+                  summary: topic.desc || topic.subtitle || null,
+                  vocab: vocabItems,
+                  vocabCount: vocabItems.length,
+                  html: buildLessonHtml(topic, vocabItems),
+                  type: 'Vocabulario',
+                  durationMin: 20,
+                  published: true,
+                  vocabSeedSource: SEED_SOURCE,
+                  vocabSeedVersion: SEED_VERSION,
+                  updatedAt: serverTimestamp(),
+                  createdAt: serverTimestamp(),
+                },
+                { merge: true },
+              );
+              log(`✅ course_meta.vocab: <code>${vocabItems.length}</code>`, 'ok');
+            }
+
+            const exList = buildExercisesForTopic(
+              topic,
+              lesson.sheetName,
+              lesson.rows,
+              opt,
+            );
+            const pairs = exList.map((x) => ({
+              ref: doc(db, 'exercises', x.id),
+              data: x.data,
+            }));
+            const written = await commitSetDocs(pairs);
+            log(`✅ exercises zapisane: <code>${written}</code>`, 'ok');
+          }
+
+          log(
+            `✅ Gotowe. Sprawdź: <code>curso-latam.html?level=A1</code> → temat → <b>Ejercicios</b> + <b>Fichas</b>.`,
+            'ok',
+          );
+        } catch (e) {
+          console.error(e);
+          log('❌ Błąd importu. Sprawdź konsolę.', 'err');
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -67,3 +67,7 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Local XLSX parsing temp
+.tmp_a1_vocab_*.zip
+.tmp_xlsx_a1_*/

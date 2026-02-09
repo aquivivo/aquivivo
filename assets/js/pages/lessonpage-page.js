@@ -22,6 +22,8 @@ const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(window.location.search);
 const LEVEL = (qs.get('level') || 'A1').toUpperCase();
 const COURSE_ID = (qs.get('id') || '').trim();
+const TRACK = String(qs.get('track') || '').trim().toLowerCase();
+const COURSE_VIEW = String(qs.get('view') || '').trim().toLowerCase();
 let currentTopic = null;
 
 let selectedRating = 0;
@@ -181,6 +183,47 @@ function metaDocId(level, courseId) {
   return `${level}__${courseId}`;
 }
 
+function navParams() {
+  const parts = [];
+  if (TRACK) parts.push(`track=${encodeURIComponent(TRACK)}`);
+  if (COURSE_VIEW) parts.push(`view=${encodeURIComponent(COURSE_VIEW)}`);
+  return parts.length ? `&${parts.join('&')}` : '';
+}
+
+function coursePageName() {
+  if (COURSE_VIEW === 'latam') return 'curso-latam.html';
+  if (COURSE_VIEW === 'pro') return 'kurs-pl.html';
+  return 'course.html';
+}
+
+function courseHref(level = LEVEL) {
+  const lvl = String(level || LEVEL).toUpperCase();
+  const page = coursePageName();
+  let href = `${page}?level=${encodeURIComponent(lvl)}`;
+  if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
+  return href;
+}
+
+function normalizeTrack(raw) {
+  return String(raw || '')
+    .trim()
+    .toLowerCase();
+}
+
+function courseTrackList(course) {
+  const raw = course?.track;
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map(normalizeTrack).filter(Boolean);
+  const one = normalizeTrack(raw);
+  return one ? [one] : [];
+}
+
+function courseMatchesTrack(course) {
+  const tracks = courseTrackList(course);
+  if (TRACK) return tracks.includes(TRACK);
+  return tracks.length === 0;
+}
+
 function topicKeyFrom(topic) {
   const slug = String(topic?.slug || topic?.id || COURSE_ID || '').trim();
   return slug ? `${LEVEL}__${slug}` : null;
@@ -265,9 +308,18 @@ async function isPrevLevelCompleted(uid, prevLevel) {
     const courseSnap = await getDocs(
       query(collection(db, 'courses'), where('level', '==', prevLevel)),
     );
-    const total = courseSnap.docs.filter((d) => (d.data() || {}).isArchived !== true)
-      .length;
+    const prevCourses = courseSnap.docs
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((t) => t.isArchived !== true)
+      .filter(courseMatchesTrack);
+
+    const total = prevCourses.length;
     if (!total) return true;
+
+    const topicIdSet = new Set(prevCourses.map((t) => String(t.id)));
+    const topicSlugSet = new Set(
+      prevCourses.map((t) => String(t.slug || t.id || '').trim()).filter(Boolean),
+    );
 
     const progSnap = await getDocs(
       query(
@@ -278,7 +330,11 @@ async function isPrevLevelCompleted(uid, prevLevel) {
     let completed = 0;
     progSnap.forEach((d) => {
       const data = d.data() || {};
-      if (data.completed === true) completed += 1;
+      if (data.completed !== true) return;
+      const tid = String(data.topicId || '').trim();
+      const tslug = String(data.topicSlug || '').trim();
+      if (tid && topicIdSet.has(tid)) completed += 1;
+      else if (!tid && tslug && topicSlugSet.has(tslug)) completed += 1;
     });
     return completed >= total;
   } catch (e) {
@@ -297,7 +353,7 @@ function renderLevelGate(prevLevel) {
       <div style="font-size:16px; line-height:1.6;">
         <b>Acceso bloqueado</b><br/>
         Para leer este nivel primero completa <b>${prevLevel}</b>.<br/>
-        Ve a <a href="course.html?level=${encodeURIComponent(prevLevel)}" style="text-decoration:underline;">Programa ${prevLevel}</a>.
+        Ve a <a href="${courseHref(prevLevel)}" style="text-decoration:underline;">Programa ${prevLevel}</a>.
       </div>
     `;
   }
@@ -467,12 +523,12 @@ async function loadLesson(user) {
   if (readTools) readTools.style.display = '';
 
     if (exerciseLinksWrap) {
-      const params = `level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}`;
+      const params = `level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}${navParams()}`;
       exerciseLinksWrap.innerHTML = `
         <a class="btn-white-outline" href="ejercicio.html?${params}">Ejercicios</a>
         <a class="btn-white-outline" href="review.html?${params}">Repasar</a>
         <a class="btn-white-outline" href="flashcards.html?${params}">Fichas</a>
-        <a class="btn-white-outline" href="course.html?level=${encodeURIComponent(LEVEL)}">Temas</a>
+        <a class="btn-white-outline" href="${courseHref(LEVEL)}">Temas</a>
       `;
     }
 
