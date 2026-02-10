@@ -28,6 +28,118 @@ let currentTopic = null;
 
 let selectedRating = 0;
 const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
+const SPEAKER_ICON = '🔊';
+
+function speakPolish(text) {
+  const t = String(text || '').trim();
+  if (!t) return;
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
+
+  try {
+    const utter = new SpeechSynthesisUtterance(t);
+    utter.lang = 'pl-PL';
+    const voices = window.speechSynthesis?.getVoices?.() || [];
+    const plVoice = voices.find((v) =>
+      String(v.lang || '').toLowerCase().startsWith('pl'),
+    );
+    if (plVoice) utter.voice = plVoice;
+
+    window.speechSynthesis?.cancel?.();
+    window.speechSynthesis?.speak?.(utter);
+  } catch {}
+}
+
+function makeSpeakerBtn(text, { title = 'Odsłuchaj (PL)', tiny = true } = {}) {
+  const t = String(text || '').trim();
+  if (!t) return null;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = tiny ? 'ttsIconBtn ttsIconBtn--tiny' : 'ttsIconBtn';
+  btn.textContent = SPEAKER_ICON;
+  btn.title = title;
+  btn.setAttribute('aria-label', title);
+  btn.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    speakPolish(t);
+  });
+  return btn;
+}
+
+function isSpeakerLabelText(raw) {
+  const t = String(raw || '').trim();
+  if (!t) return false;
+  return /^[A-Z]{1,2}\s*:$/.test(t);
+}
+
+function decorateLessonTts(root) {
+  if (!root) return;
+  if (root.dataset.ttsDecorated === '1') return;
+  root.dataset.ttsDecorated = '1';
+
+  // 1) Explicit: data-tts-pl="..."
+  root.querySelectorAll('[data-tts-pl]').forEach((el) => {
+    const text = String(el.getAttribute('data-tts-pl') || el.textContent || '').trim();
+    if (!text) return;
+    const btn = makeSpeakerBtn(text, { tiny: true });
+    if (!btn) return;
+    btn.style.marginLeft = '8px';
+    el.insertAdjacentElement('afterend', btn);
+  });
+
+  // 2) Common formatting: bold/italic fragments usually contain Polish target language
+  root.querySelectorAll('b, strong, i, em').forEach((el) => {
+    const text = String(el.textContent || '').trim();
+    if (!text) return;
+    if (isSpeakerLabelText(text)) return;
+    if (text.length > 200) return;
+    const next = el.nextElementSibling;
+    if (next && next.classList?.contains('ttsIconBtn')) return;
+    const btn = makeSpeakerBtn(text, { tiny: true });
+    if (!btn) return;
+    btn.style.marginLeft = '8px';
+    el.insertAdjacentElement('afterend', btn);
+  });
+
+  // 3) Mini-dialogues: <b>A:</b> ... <br/>
+  const labels = Array.from(root.querySelectorAll('b, strong')).filter((el) =>
+    isSpeakerLabelText(el.textContent || ''),
+  );
+  labels.forEach((labelEl) => {
+    let node = labelEl.nextSibling;
+    // Skip leading whitespace
+    while (node && node.nodeType === Node.TEXT_NODE && !String(node.textContent || '').trim()) {
+      node = node.nextSibling;
+    }
+    if (!node) return;
+
+    let br = null;
+    let text = '';
+    let cursor = node;
+    while (cursor) {
+      if (cursor.nodeType === Node.ELEMENT_NODE && cursor.tagName === 'BR') {
+        br = cursor;
+        break;
+      }
+      if (cursor.nodeType === Node.ELEMENT_NODE && cursor.classList?.contains('ttsIconBtn')) {
+        cursor = cursor.nextSibling;
+        continue;
+      }
+      text += String(cursor.textContent || '');
+      cursor = cursor.nextSibling;
+    }
+    const line = String(text || '').trim();
+    if (!line) return;
+
+    const btn = makeSpeakerBtn(line, { title: 'Odsłuchaj zdanie (PL)', tiny: true });
+    if (!btn) return;
+    btn.style.marginLeft = '8px';
+    const host = labelEl.parentNode;
+    if (!host) return;
+    if (br) host.insertBefore(btn, br);
+    else host.appendChild(btn);
+  });
+}
 
 function isAdminUser(userDoc, email) {
   const mail = String(email || '').toLowerCase();
@@ -718,6 +830,7 @@ async function loadLesson(user) {
   if (contentEl) {
     contentEl.innerHTML = html;
     contentEl.style.display = 'block';
+    decorateLessonTts(contentEl);
   }
 
   if (topic) setupRatingCard(user, topic);

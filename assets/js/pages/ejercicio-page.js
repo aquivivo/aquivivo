@@ -257,6 +257,41 @@ function playExerciseAudio(ex) {
   speakPolish(ttsTextForExercise(ex));
 }
 
+const SPEAKER_ICON = '🔊';
+
+function makeSpeakerBtn(text, { title = 'Odsłuchaj (PL)', tiny = true } = {}) {
+  const t = String(text || '').trim();
+  if (!t) return null;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = tiny ? 'ttsIconBtn ttsIconBtn--tiny' : 'ttsIconBtn';
+  btn.textContent = SPEAKER_ICON;
+  btn.title = title;
+  btn.setAttribute('aria-label', title);
+  btn.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    speakPolish(t);
+  });
+  return btn;
+}
+
+function wireInlineSpeaker(spanEl, text) {
+  if (!spanEl) return;
+  const t = String(text || '').trim();
+  if (!t) return;
+  const onClick = (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    speakPolish(t);
+  };
+  spanEl.addEventListener('click', onClick);
+  spanEl.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    onClick(ev);
+  });
+}
+
 async function toggleCorrectionRecording() {
   if (!btnCorrectionRecord) return;
 
@@ -474,6 +509,35 @@ function normalizeTags(raw) {
       .filter(Boolean);
   }
   return [];
+}
+
+function exerciseTagList(ex) {
+  return normalizeTags(ex?.tags)
+    .map((t) => normalizeTag(t).toLowerCase())
+    .filter(Boolean);
+}
+
+function shouldSpeakChoiceOptions(ex, options = []) {
+  const tags = exerciseTagList(ex);
+  if (tags.includes('type:listen_choice') || tags.includes('type:listen_fill')) return false;
+  const prompt = normalizeText(ex?.prompt || '');
+  if (prompt.includes('traduccion en espanol') || prompt.includes('en espanol')) return false;
+  if (tags.includes('type:choice')) return true;
+  if (prompt.includes('en polaco') || prompt.includes('po polsku')) return true;
+
+  const hasPolishHint =
+    Array.isArray(options) &&
+    options.some((opt) => {
+      const lead = stripLeadLabel(opt);
+      if (/^pl\s*:/i.test(lead)) return true;
+      if (/^(?:es|en)\s*:/i.test(lead)) return false;
+      const text = String(lead || '')
+        .replace(/^(?:pl|tts_pl|tts)\s*:\s*/i, '')
+        .trim();
+      return /[ąćęłńśżź]/i.test(text) || /(?:rz|cz|sz|dż|dź)/i.test(text);
+    });
+
+  return !!hasPolishHint;
 }
 
 function sanitizeUrl(raw) {
@@ -948,7 +1012,7 @@ function applyFilters() {
   renderExercises();
 }
 
-function makeOptionRow({ name, value, label, checked, onChange }) {
+function makeOptionRow({ name, value, label, checked, onChange, ttsText = '' }) {
   const row = document.createElement('label');
   row.className = 'exerciseOption';
 
@@ -964,6 +1028,8 @@ function makeOptionRow({ name, value, label, checked, onChange }) {
 
   row.appendChild(input);
   row.appendChild(text);
+  const tts = makeSpeakerBtn(ttsText, { tiny: true });
+  if (tts) row.appendChild(tts);
   return row;
 }
 
@@ -1200,10 +1266,11 @@ function makeExerciseCard(ex) {
       let hasAudio = false;
 
       const btnListen = document.createElement('button');
-      btnListen.className = 'btn-white-outline';
+      btnListen.className = 'ttsIconBtn';
       btnListen.type = 'button';
-      btnListen.textContent = 'Escuchar';
-      btnListen.disabled = done;
+      btnListen.textContent = SPEAKER_ICON;
+      btnListen.title = 'Odsłuchaj (PL)';
+      btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
       btnListen.addEventListener('click', () => playExerciseAudio(ex));
 
       const btnRec = document.createElement('button');
@@ -1260,7 +1327,6 @@ function makeExerciseCard(ex) {
         await markDone();
         btnDone.textContent = 'Hecho';
         btnDone.disabled = true;
-        btnListen.disabled = true;
         btnRec.disabled = true;
         btnClear.disabled = true;
         cleanup();
@@ -1353,11 +1419,13 @@ function makeExerciseCard(ex) {
       const optsWrap = document.createElement('div');
       optsWrap.className = 'exerciseOptions';
       const groupName = `pr_${ex.id}`;
+      const speakOptions = shouldSpeakChoiceOptions(ex, options);
 
       options.forEach((opt, idx) => {
         const label = optionLabelFromIndex(idx);
         const cleaned = cleanOptionText(opt);
         const optionText = cleaned ? `${label}) ${cleaned}` : `${label}) ${opt}`;
+        const ttsText = speakOptions ? (cleaned || stripLeadLabel(opt)) : '';
         const row = makeOptionRow({
           name: groupName,
           value: cleaned || opt,
@@ -1367,6 +1435,7 @@ function makeExerciseCard(ex) {
             selectedValue = ev.target.value;
             selectedLabel = label;
           },
+          ttsText,
         });
         if (done) {
           const input = row.querySelector('input[type="radio"]');
@@ -1379,10 +1448,11 @@ function makeExerciseCard(ex) {
       const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
       if (wantsListen) {
         const btnListen = document.createElement('button');
-        btnListen.className = 'btn-white-outline';
+        btnListen.className = 'ttsIconBtn';
         btnListen.type = 'button';
-        btnListen.textContent = 'Escuchar';
-        btnListen.disabled = done;
+        btnListen.textContent = SPEAKER_ICON;
+        btnListen.title = 'Odsłuchaj (PL)';
+        btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
         btnListen.addEventListener('click', () => playExerciseAudio(ex));
         actions.appendChild(btnListen);
       }
@@ -1474,13 +1544,21 @@ function makeExerciseCard(ex) {
         card.appendChild(answerWrap);
       }
 
+      const ttsPrompt = String(promptText || '').replaceAll('___', '...').trim();
+      const promptSpeakBtn = makeSpeakerBtn(ttsPrompt, { title: 'Odsłuchaj zdanie (PL)', tiny: true });
+      if (promptSpeakBtn) {
+        promptSpeakBtn.style.marginLeft = '8px';
+        prompt.appendChild(promptSpeakBtn);
+      }
+
       const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
       if (wantsListen) {
         const btnListen = document.createElement('button');
-        btnListen.className = 'btn-white-outline';
+        btnListen.className = 'ttsIconBtn';
         btnListen.type = 'button';
-        btnListen.textContent = 'Escuchar';
-        btnListen.disabled = done;
+        btnListen.textContent = SPEAKER_ICON;
+        btnListen.title = 'Odsłuchaj (PL)';
+        btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
         btnListen.addEventListener('click', () => playExerciseAudio(ex));
         actions.appendChild(btnListen);
       }
@@ -1559,6 +1637,7 @@ function makeExerciseCard(ex) {
         const correctMap = parsed.correctMap || {};
 
         let selectedLeft = '';
+        let locked = done;
         const userMap = {}; // leftLabel -> rightLabel
         const rightToLeft = {}; // rightLabel -> leftLabel
 
@@ -1617,16 +1696,20 @@ function makeExerciseCard(ex) {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'btn-white-outline exerciseMatchBtn';
-          btn.disabled = done;
+          btn.disabled = false;
           btn.innerHTML = `
             <div class="exerciseMatchBtnTop">
               <span class="exerciseMatchLabel">${safeText(it.label)})</span>
-              <span class="exerciseMatchBadge"></span>
+              <span class="exerciseMatchTools">
+                <span class="exerciseMatchBadge"></span>
+                <span class="ttsInlineIcon" role="button" tabindex="0" title="Odsłuchaj (PL)" aria-label="Odsłuchaj (PL)">${SPEAKER_ICON}</span>
+              </span>
             </div>
             <div class="exerciseMatchText">${safeText(it.text)}</div>
           `;
+          wireInlineSpeaker(btn.querySelector('.ttsInlineIcon'), it.text);
           btn.addEventListener('click', () => {
-            if (done) return;
+            if (locked) return;
             selectedLeft = selectedLeft === it.label ? '' : it.label;
             renderState();
           });
@@ -1638,7 +1721,7 @@ function makeExerciseCard(ex) {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'btn-white-outline exerciseMatchBtn';
-          btn.disabled = done;
+          btn.disabled = false;
           btn.innerHTML = `
             <div class="exerciseMatchBtnTop">
               <span class="exerciseMatchLabel">${safeText(it.label)})</span>
@@ -1646,7 +1729,7 @@ function makeExerciseCard(ex) {
             <div class="exerciseMatchText">${safeText(it.text)}</div>
           `;
           btn.addEventListener('click', () => {
-            if (done) return;
+            if (locked) return;
             if (!selectedLeft) {
               showToast('Elige un elemento de la izquierda.', 'warn', 1600);
               return;
@@ -1666,10 +1749,11 @@ function makeExerciseCard(ex) {
         const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
         if (wantsListen) {
           const btnListen = document.createElement('button');
-          btnListen.className = 'btn-white-outline';
+          btnListen.className = 'ttsIconBtn';
           btnListen.type = 'button';
-          btnListen.textContent = 'Escuchar';
-          btnListen.disabled = done;
+          btnListen.textContent = SPEAKER_ICON;
+          btnListen.title = 'Odsłuchaj (PL)';
+          btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
           btnListen.addEventListener('click', () => playExerciseAudio(ex));
           actions.appendChild(btnListen);
         }
@@ -1689,7 +1773,7 @@ function makeExerciseCard(ex) {
         btnCheck.disabled = done;
 
         btnCheck.addEventListener('click', async () => {
-          if (done) return;
+          if (locked) return;
           const needs = leftItems.length;
           const picked = Object.keys(userMap).length;
           if (picked < needs) {
@@ -1711,12 +1795,11 @@ function makeExerciseCard(ex) {
           card.appendChild(resultEl);
           if (!ok) return;
 
+          locked = true;
           await markDone();
           btnCheck.textContent = 'Hecho';
           btnCheck.disabled = true;
           btnReset.disabled = true;
-          leftBtns.forEach((b) => (b.disabled = true));
-          rightBtns.forEach((b) => (b.disabled = true));
         });
 
         actions.appendChild(btnCheck);
@@ -1725,8 +1808,6 @@ function makeExerciseCard(ex) {
         if (done) {
           setResultText(resultEl, true, 'Hecho.');
           card.appendChild(resultEl);
-          leftBtns.forEach((b) => (b.disabled = true));
-          rightBtns.forEach((b) => (b.disabled = true));
         } else {
           renderState();
         }
@@ -1756,15 +1837,39 @@ function makeExerciseCard(ex) {
 
         const render = () => {
           const sentence = selected.map((t) => t.text).join(' ').replace(/\s+([?.!,;:])/g, '$1');
-          built.textContent = sentence || '—';
+          built.innerHTML = '';
+          const builtText = document.createElement('span');
+          builtText.textContent = sentence || '—';
+          built.appendChild(builtText);
+          if (sentence) {
+            const speakBtn = makeSpeakerBtn(sentence, { title: 'Odsłuchaj zdanie (PL)', tiny: true });
+            if (speakBtn) {
+              speakBtn.style.marginLeft = '8px';
+              built.appendChild(speakBtn);
+            }
+          }
 
           bank.innerHTML = '';
           tokens.forEach((t) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'btn-white-outline exerciseOrderToken';
-            btn.textContent = t.text;
-            btn.disabled = done || !available.has(t.id);
+            btn.innerHTML = '';
+            const tokenText = document.createElement('span');
+            tokenText.textContent = t.text;
+            btn.appendChild(tokenText);
+            const sp = document.createElement('span');
+            sp.className = 'ttsInlineIcon';
+            sp.setAttribute('role', 'button');
+            sp.setAttribute('tabindex', '0');
+            sp.title = 'Odsłuchaj (PL)';
+            sp.setAttribute('aria-label', 'Odsłuchaj (PL)');
+            sp.textContent = SPEAKER_ICON;
+            wireInlineSpeaker(sp, t.text);
+            btn.appendChild(sp);
+
+            const isAvailable = available.has(t.id);
+            btn.classList.toggle('isDisabled', done || !isAvailable);
             btn.addEventListener('click', () => {
               if (done) return;
               if (!available.has(t.id)) return;
@@ -1809,10 +1914,11 @@ function makeExerciseCard(ex) {
         const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
         if (wantsListen) {
           const btnListen = document.createElement('button');
-          btnListen.className = 'btn-white-outline';
+          btnListen.className = 'ttsIconBtn';
           btnListen.type = 'button';
-          btnListen.textContent = 'Escuchar';
-          btnListen.disabled = done;
+          btnListen.textContent = SPEAKER_ICON;
+          btnListen.title = 'Odsłuchaj (PL)';
+          btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
           btnListen.addEventListener('click', () => playExerciseAudio(ex));
           actions.appendChild(btnListen);
         }
@@ -1894,10 +2000,11 @@ function makeExerciseCard(ex) {
       const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
       if (wantsListen) {
         const btnListen = document.createElement('button');
-        btnListen.className = 'btn-white-outline';
+        btnListen.className = 'ttsIconBtn';
         btnListen.type = 'button';
-        btnListen.textContent = 'Escuchar';
-        btnListen.disabled = done;
+        btnListen.textContent = SPEAKER_ICON;
+        btnListen.title = 'Odsłuchaj (PL)';
+        btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
         btnListen.addEventListener('click', () => playExerciseAudio(ex));
         actions.appendChild(btnListen);
       }

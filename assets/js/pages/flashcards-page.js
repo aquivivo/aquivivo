@@ -82,6 +82,33 @@ function topicMatchesTrack(topic) {
   return tracks.length === 0;
 }
 
+function parseExampleValue(raw) {
+  const out = { pron: '', plExample: '', esExample: '' };
+  let value = String(raw || '').trim();
+  if (!value) return out;
+
+  const pronMatch = value.match(/^\s*pron\s*:\s*(.+?)(?:\s*[·•]\s*(.+))?\s*$/i);
+  if (pronMatch) {
+    out.pron = String(pronMatch[1] || '').trim();
+    value = String(pronMatch[2] || '').trim();
+    if (!value) return out;
+  }
+
+  const splitMatch = value.match(/^(.*?)(?:\s*(?:\/|\||—|–|-)\s*)es\s*:\s*(.+)$/i);
+  if (splitMatch) {
+    out.plExample = String(splitMatch[1] || '').trim();
+    out.esExample = String(splitMatch[2] || '').trim();
+  } else {
+    const esOnly = value.match(/^\s*es\s*:\s*(.+)$/i);
+    if (esOnly) out.esExample = String(esOnly[1] || '').trim();
+    else out.plExample = value.trim();
+  }
+
+  out.plExample = out.plExample.replace(/^\s*pl\s*:\s*/i, '').trim();
+  out.esExample = out.esExample.replace(/^\s*es\s*:\s*/i, '').trim();
+  return out;
+}
+
 function parseCardLine(raw) {
   let line = String(raw || '').trim();
   if (!line) return null;
@@ -101,21 +128,30 @@ function parseCardLine(raw) {
     else unlabeled.push(p);
   });
 
-  const front = (labeled.pl || labeled.front || unlabeled[0] || '').trim();
-  const back = (labeled.es || labeled.back || unlabeled[1] || '').trim();
-  if (!front || !back) return null;
+  const plWord = (labeled.pl || labeled.front || unlabeled[0] || '').trim();
+  const esWord = (labeled.es || labeled.back || unlabeled[1] || '').trim();
+  if (!plWord || !esWord) return null;
 
-  const example = (labeled.ex || labeled.ej || labeled.ejemplo || labeled.example || '').trim();
+  const rawPron = (labeled.pron || labeled.phon || labeled.pronunciacion || '').trim();
+  const exPlDirect = (labeled.expl || labeled.ex_pl || labeled.examplepl || labeled.ejpl || '').trim();
+  const exEsDirect = (labeled.exes || labeled.ex_es || labeled.examplees || labeled.ejes || '').trim();
+
+  const exampleRaw = (labeled.ex || labeled.ej || labeled.ejemplo || labeled.example || '').trim();
+  const parsedExample = exampleRaw ? parseExampleValue(exampleRaw) : { pron: '', plExample: '', esExample: '' };
+
+  const pron = rawPron || parsedExample.pron || '';
+  const plExample = exPlDirect || parsedExample.plExample || '';
+  const esExample = exEsDirect || parsedExample.esExample || '';
+
   const audioUrl = (labeled.audio || labeled.a || '').trim();
   const exampleAudio = (labeled.exaudio || labeled.ejaudio || labeled.ejemploaudio || labeled.exampleaudio || '').trim();
 
-  const plText = (labeled.pl || front).trim();
-
   return {
-    front,
-    back,
-    plText,
-    example,
+    plWord,
+    esWord,
+    pron,
+    plExample,
+    esExample,
     audioUrl: /^https?:\/\//i.test(audioUrl) ? audioUrl : '',
     exampleAudio: /^https?:\/\//i.test(exampleAudio) ? exampleAudio : '',
   };
@@ -137,11 +173,12 @@ function buildCardsFromExercise(ex) {
       exerciseId: ex.id,
       topicId: ex.topicId || null,
       level: ex.level || null,
-      front: parsed.front,
-      back: parsed.back,
-      plText: parsed.plText || parsed.front,
+      plWord: parsed.plWord,
+      esWord: parsed.esWord,
+      pron: parsed.pron || '',
+      plExample: parsed.plExample || '',
+      esExample: parsed.esExample || '',
       audioUrl: parsed.audioUrl || '',
-      example: parsed.example || '',
       exampleAudio: parsed.exampleAudio || '',
     });
   });
@@ -189,6 +226,90 @@ function setEmptyState(isEmpty) {
   if (fcEmpty) fcEmpty.style.display = isEmpty ? 'block' : 'none';
 }
 
+function sideData(card, lang) {
+  const usePl = lang === 'pl';
+  return {
+    lang: usePl ? 'pl' : 'es',
+    word: usePl ? card.plWord : card.esWord,
+    sentence: usePl ? card.plExample : card.esExample,
+    pron: usePl ? card.pron : '',
+    hasAudio: usePl,
+  };
+}
+
+function renderFace(container, card, lang) {
+  if (!container || !card) return;
+
+  const data = sideData(card, lang);
+
+  container.textContent = '';
+
+  const face = document.createElement('div');
+  face.className = 'fcFace';
+
+  const pill = document.createElement('div');
+  pill.className = 'fcLangPill';
+  pill.textContent = data.lang.toUpperCase();
+  face.appendChild(pill);
+
+  const wordRow = document.createElement('div');
+  wordRow.className = 'fcRow';
+  const wordEl = document.createElement('div');
+  wordEl.className = 'fcWord';
+  wordEl.textContent = data.word || '—';
+  wordRow.appendChild(wordEl);
+
+  if (data.hasAudio) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ttsInlineIcon';
+    btn.textContent = '🔊';
+    btn.title = 'Odsłuchaj (PL)';
+    btn.setAttribute('aria-label', 'Odsłuchaj (PL)');
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      playPolish(card);
+    });
+    wordRow.appendChild(btn);
+  }
+  face.appendChild(wordRow);
+
+  if (data.pron) {
+    const pronEl = document.createElement('div');
+    pronEl.className = 'fcPron';
+    pronEl.textContent = `Wymowa: ${data.pron}`;
+    face.appendChild(pronEl);
+  }
+
+  const sentRow = document.createElement('div');
+  sentRow.className = 'fcRow';
+  const sentEl = document.createElement('div');
+  sentEl.className = 'fcSentence';
+  if (!data.sentence) sentEl.classList.add('fcSentence--empty');
+  sentEl.textContent = data.sentence || '—';
+  sentRow.appendChild(sentEl);
+
+  if (data.hasAudio) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ttsInlineIcon';
+    btn.textContent = '🔊';
+    btn.title = 'Odsłuchaj zdanie (PL)';
+    btn.setAttribute('aria-label', 'Odsłuchaj zdanie (PL)');
+    btn.disabled = !data.sentence;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      playExample(card);
+    });
+    sentRow.appendChild(btn);
+  }
+  face.appendChild(sentRow);
+
+  container.appendChild(face);
+}
+
 function renderCard() {
   if (!cards.length) {
     setEmptyState(true);
@@ -201,21 +322,16 @@ function renderCard() {
   const card = cards[currentIndex];
   if (!card) return;
 
-  if (fcFront) fcFront.textContent = card.front || '-';
-  if (fcBack) fcBack.textContent = card.back || '-';
+  renderFace(fcFront, card, card.frontLang || 'pl');
+  renderFace(fcBack, card, card.backLang || 'es');
   if (fcExample) {
-    if (card.example) {
-      fcExample.textContent = `Ejemplo: ${card.example}`;
-      fcExample.style.display = '';
-    } else {
-      fcExample.textContent = '';
-      fcExample.style.display = 'none';
-    }
+    fcExample.textContent = '';
+    fcExample.style.display = 'none';
   }
 
   if (fcCard) fcCard.classList.toggle('isFlipped', isFlipped);
   if (fcFav) fcFav.textContent = card.favorite ? '\u2B50 Favorito' : '\u2606 Favorito';
-  if (fcExampleAudio) fcExampleAudio.disabled = !card.example;
+  if (fcExampleAudio) fcExampleAudio.disabled = !card.plExample;
   setStatus(`Tarjeta ${currentIndex + 1} de ${cards.length}`);
 }
 
@@ -263,17 +379,17 @@ function playPolish(card) {
     audio.play().catch(() => {});
     return;
   }
-  speakPolish(polishSpeechText(card.plText));
+  speakPolish(polishSpeechText(card.plWord));
 }
 
 function playExample(card) {
-  if (!card || !card.example) return;
+  if (!card || !card.plExample) return;
   if (card.exampleAudio) {
     const audio = new Audio(card.exampleAudio);
     audio.play().catch(() => {});
     return;
   }
-  speakPolish(polishSpeechText(card.example));
+  speakPolish(polishSpeechText(card.plExample));
 }
 
 async function toggleFavorite(card) {
@@ -313,17 +429,11 @@ function shuffleArray(list) {
 
 function applyDirection(list, direction) {
   return list.map((card) => {
-    let flip = false;
-    if (direction === 'es_pl') flip = true;
-    if (direction === 'mixed') flip = Math.random() < 0.5;
-    if (!flip) return card;
-    return {
-      ...card,
-      front: card.back,
-      back: card.front,
-      plText: card.plText,
-      audioUrl: card.audioUrl,
-    };
+    let frontLang = 'pl';
+    if (direction === 'es_pl') frontLang = 'es';
+    if (direction === 'mixed') frontLang = Math.random() < 0.5 ? 'pl' : 'es';
+    const backLang = frontLang === 'pl' ? 'es' : 'pl';
+    return { ...card, frontLang, backLang };
   });
 }
 
@@ -437,6 +547,21 @@ async function loadCards() {
 }
 
 function bindActions() {
+  if (fcAudio) {
+    fcAudio.classList.remove('btn-white-outline');
+    fcAudio.classList.add('ttsIconBtn');
+    fcAudio.textContent = '🔊';
+    fcAudio.title = 'Odsłuchaj (PL)';
+    fcAudio.setAttribute('aria-label', 'Odsłuchaj (PL)');
+  }
+  if (fcExampleAudio) {
+    fcExampleAudio.classList.remove('btn-white-outline');
+    fcExampleAudio.classList.add('ttsIconBtn');
+    fcExampleAudio.textContent = '🔊';
+    fcExampleAudio.title = 'Odsłuchaj przykład (PL)';
+    fcExampleAudio.setAttribute('aria-label', 'Odsłuchaj przykład (PL)');
+  }
+
   fcReload?.addEventListener('click', () => loadCards());
   fcShuffle?.addEventListener('click', () => {
     if (!cards.length) return;

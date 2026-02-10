@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Ilustracja zabytku">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#081b44" />
+      <stop offset="0.55" stop-color="#1e4aa5" />
+      <stop offset="1" stop-color="#ff9b2f" />
+    </linearGradient>
+    <radialGradient id="glow" cx="78%" cy="18%" r="65%">
+      <stop offset="0" stop-color="#ffd08a" stop-opacity="0.95" />
+      <stop offset="0.45" stop-color="#ffb45b" stop-opacity="0.55" />
+      <stop offset="1" stop-color="#ff9b2f" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1233" stop-opacity="0.0" />
+      <stop offset="1" stop-color="#0b1233" stop-opacity="0.75" />
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Rounded background -->
+  <rect x="0" y="0" width="512" height="512" rx="84" fill="url(#bg)" />
+  <rect x="0" y="0" width="512" height="512" rx="84" fill="url(#glow)" />
+
+  <!-- Stylized skyline / abstract brush blocks -->
+  <g opacity="0.9">
+    <path d="M44 210c38-18 76-26 114-24 34 2 62 12 92 24 28 12 58 22 98 22 32 0 62-6 90-18v70H44z"
+      fill="#0d2b66" opacity="0.85" />
+    <path d="M44 250c44-20 86-28 126-26 32 2 62 10 90 22 30 12 60 20 96 20 30 0 58-6 86-18v86H44z"
+      fill="#0a234f" opacity="0.78" />
+  </g>
+
+  <!-- Landmark silhouette (generic castle / old town) -->
+  <g filter="url(#softShadow)">
+    <path d="M134 342v-52l22-14v-18l20-14v-18l22 14v18l20 14v18l22-14v52h34v-72l26-18v-20l24-16v-20l26 16v20l24 16v20l26 18v72h26v86H134v-86z"
+      fill="#07122c" opacity="0.92" />
+    <path d="M134 342v-52l22-14v-18l20-14v-18l22 14v18l20 14v18l22-14v52h34v-72l26-18v-20l24-16v-20l26 16v20l24 16v20l26 18v72h26v86H134v-86z"
+      fill="none" stroke="#fcd116" stroke-opacity="0.55" stroke-width="4" />
+    <path d="M172 428h44v-48c0-12-10-22-22-22s-22 10-22 22z" fill="#0b1a3a" opacity="0.9" />
+    <path d="M300 428h44v-62c0-12-10-22-22-22s-22 10-22 22z" fill="#0b1a3a" opacity="0.9" />
+  </g>
+
+  <!-- Foreground vignette -->
+  <rect x="0" y="0" width="512" height="512" rx="84" fill="url(#ground)" />
+</svg>
+

@@ -8,8 +8,14 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      crossorigin=""
+    />
     <link rel="stylesheet" href="assets/css/styles.css?v=20260209a" />
     <script src="assets/js/layout.js?v=20260209a" type="module"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   </head>
 
   <body data-page="recompensas">
@@ -23,7 +29,7 @@
             <div>
               <h1 class="glow-text" style="margin: 0">Pasaporte</h1>
               <div class="subtitle" style="margin-top: 6px">
-                Gana sellos por completar unidades. Cada sello tiene una mini-misi&oacute;n.
+                Gana sellos por completar temas. Cada sello tiene una mini-misi&oacute;n cultural.
               </div>
             </div>
           </div>
@@ -41,7 +47,20 @@
             </div>
           </div>
 
-          <div id="passportGrid" class="passportGrid" style="margin-top: 12px"></div>
+          <div class="passportLayout" style="margin-top: 12px">
+            <div>
+              <div class="sectionTitle" style="margin-top: 0">Mapa Polski</div>
+              <div class="muted" id="passportMapHint" style="margin-top: 6px">
+                Trasa zabytk&oacute;w
+              </div>
+              <div id="passportMap" class="passportMap" style="margin-top: 10px"></div>
+            </div>
+
+            <div>
+              <div class="sectionTitle" style="margin-top: 0">Pasaporte (trasa)</div>
+              <div id="passportGrid" class="passportSteps" style="margin-top: 10px"></div>
+            </div>
+          </div>
         </section>
       </div>
     </main>
