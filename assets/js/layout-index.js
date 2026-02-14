@@ -504,7 +504,7 @@ import {
                   <a class="nav-profile-item" href="pagos.html">&#128179; Historial de pagos</a>
                   <a class="nav-profile-item" href="recompensas.html">&#127942; Mis recompensas</a>
                   <a class="nav-profile-item" href="ayuda.html">&#129509; Ayuda / Reportar</a>
-                  <a class="nav-profile-item" id="navProfileAdmin" href="esadmin.html" style="display:none;">&#128737; Admin</a>
+                  <a class="nav-profile-item" id="navProfileAdmin" href="admin-select.html" style="display:none;">&#128737; Admin</a>
                   <div class="nav-profile-sep" aria-hidden="true"></div>
                   <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">Cerrar sesión</button>
                 </div>
@@ -514,7 +514,7 @@ import {
             <a class="btn-yellow" id="btnLogin" href="${hrefLogin}" style="display:none;">&#x1F510; Iniciar sesi&oacute;n</a>
             <div class="nav-admin-stack" id="navAdminStack" style="display:none;">
 
-              <a class="btn-yellow" id="btnAdmin" href="esadmin.html" style="display:none;">&#x1F6E1;&#xFE0F; Admin</a>
+              <a class="btn-yellow" id="btnAdmin" href="admin-select.html" style="display:none;">&#x1F6E1;&#xFE0F; Admin</a>
             </div>
           </div>
         </div>

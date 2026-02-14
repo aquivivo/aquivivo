@@ -3,7 +3,7 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
+import { KNOWN_LEVELS, levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   collection,
   doc,
@@ -11,11 +11,17 @@ import {
   getDocs,
   query,
   where,
+  orderBy,
   updateDoc,
   setDoc,
   serverTimestamp,
   increment,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import {
+  checkpointBlockRange,
+  hasCheckpoint,
+  requiredCheckpointCountForRouteIndex,
+} from '../progress-tools.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -24,6 +30,11 @@ const LEVEL = (qs.get('level') || 'A1').toUpperCase();
 const COURSE_ID = (qs.get('id') || '').trim();
 const TRACK = String(qs.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = String(qs.get('view') || '').trim().toLowerCase();
+const FLOW = String(qs.get('flow') || '').trim().toLowerCase();
+const CONTINUOUS_FLOW = FLOW === 'continuous' || COURSE_VIEW === 'pro';
+const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
+  ? KNOWN_LEVELS
+  : ['A1', 'A2', 'B1', 'B2'];
 let currentTopic = null;
 
 let selectedRating = 0;
@@ -299,6 +310,7 @@ function navParams() {
   const parts = [];
   if (TRACK) parts.push(`track=${encodeURIComponent(TRACK)}`);
   if (COURSE_VIEW) parts.push(`view=${encodeURIComponent(COURSE_VIEW)}`);
+  if (CONTINUOUS_FLOW) parts.push('flow=continuous');
   return parts.length ? `&${parts.join('&')}` : '';
 }
 
@@ -313,7 +325,23 @@ function courseHref(level = LEVEL) {
   const page = coursePageName();
   let href = `${page}?level=${encodeURIComponent(lvl)}`;
   if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
+  if (COURSE_VIEW) href += `&view=${encodeURIComponent(COURSE_VIEW)}`;
+  if (CONTINUOUS_FLOW) href += '&flow=continuous';
   return href;
+}
+
+function topicLevelOf(topic, fallback = LEVEL) {
+  return String(topic?.level || topic?.__routeLevel || fallback || LEVEL).toUpperCase();
+}
+
+function routeLevelsFromFlags(flags) {
+  if (flags?.isAdmin || flags?.hasGlobalAccess) return [...LEVEL_ORDER];
+  if (Array.isArray(flags?.levels) && flags.levels.length) {
+    const allowed = new Set(flags.levels.map((l) => String(l || '').toUpperCase()));
+    const ordered = LEVEL_ORDER.filter((lvl) => allowed.has(lvl));
+    return ordered.length ? ordered : [String(LEVEL || 'A1').toUpperCase()];
+  }
+  return [String(LEVEL || 'A1').toUpperCase()];
 }
 
 function normalizeTrack(raw) {
@@ -330,15 +358,48 @@ function courseTrackList(course) {
   return one ? [one] : [];
 }
 
-function courseMatchesTrack(course) {
-  const tracks = courseTrackList(course);
-  if (TRACK) return tracks.includes(TRACK);
-  return tracks.length === 0;
+function courseBaseKey(course) {
+  return String(course?.slug || course?.id || '').trim().toLowerCase();
+}
+
+function courseOrderValue(course) {
+  const n = Number(course?.order);
+  return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+}
+
+function selectCoursesForTrack(allCourses) {
+  const list = Array.isArray(allCourses) ? allCourses : [];
+  if (!TRACK) return list.filter((c) => courseTrackList(c).length === 0);
+
+  const global = list.filter((c) => courseTrackList(c).length === 0);
+  const local = list.filter((c) => courseTrackList(c).includes(TRACK));
+  if (!global.length) return local;
+  if (!local.length) return global;
+
+  const map = new Map();
+  global.forEach((c) => {
+    const k = courseBaseKey(c);
+    if (k) map.set(k, c);
+  });
+  local.forEach((c) => {
+    const k = courseBaseKey(c);
+    if (k) map.set(k, c);
+  });
+
+  return Array.from(map.values()).sort((a, b) => {
+    const d = courseOrderValue(a) - courseOrderValue(b);
+    if (d) return d;
+    const ka = courseBaseKey(a);
+    const kb = courseBaseKey(b);
+    if (ka && kb && ka !== kb) return ka.localeCompare(kb);
+    return String(a?.id || '').localeCompare(String(b?.id || ''));
+  });
 }
 
 function topicKeyFrom(topic) {
   const slug = String(topic?.slug || topic?.id || COURSE_ID || '').trim();
-  return slug ? `${LEVEL}__${slug}` : null;
+  const lvl = topicLevelOf(topic, LEVEL);
+  return slug ? `${lvl}__${slug}` : null;
 }
 
 async function getUserFlags(uid) {
@@ -415,15 +476,16 @@ function prevLevelOf(level) {
 }
 
 async function isPrevLevelCompleted(uid, prevLevel) {
-  if (!uid || !prevLevel) return true;
+  const lvl = String(prevLevel || '').toUpperCase();
+  if (!uid || !lvl) return true;
   try {
     const courseSnap = await getDocs(
-      query(collection(db, 'courses'), where('level', '==', prevLevel)),
+      query(collection(db, 'courses'), where('level', '==', lvl)),
     );
-    const prevCourses = courseSnap.docs
+    const prevAllCourses = courseSnap.docs
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
-      .filter((t) => t.isArchived !== true)
-      .filter(courseMatchesTrack);
+      .filter((t) => t.isArchived !== true);
+    const prevCourses = selectCoursesForTrack(prevAllCourses);
 
     const total = prevCourses.length;
     if (!total) return true;
@@ -436,13 +498,13 @@ async function isPrevLevelCompleted(uid, prevLevel) {
     const progSnap = await getDocs(
       query(
         collection(db, 'user_progress', uid, 'topics'),
-        where('level', '==', prevLevel),
+        where('level', '==', lvl),
       ),
     );
     let completed = 0;
     progSnap.forEach((d) => {
       const data = d.data() || {};
-      if (data.completed !== true) return;
+      if (!hasTopicMastery(data)) return;
       const tid = String(data.topicId || '').trim();
       const tslug = String(data.topicSlug || '').trim();
       if (tid && topicIdSet.has(tid)) completed += 1;
@@ -471,6 +533,271 @@ function renderLevelGate(prevLevel) {
   }
 }
 
+function progressPct(progress) {
+  if (!progress) return 0;
+  const practice = Number(progress.practicePercent || 0);
+  const testTotal = Number(progress.testTotal || 0);
+  const testScore = Number(progress.testScore || 0);
+  if (!CONTINUOUS_FLOW && progress.completed === true) return 100;
+  const best = testTotal > 0
+    ? CONTINUOUS_FLOW
+      ? Math.min(practice, testScore)
+      : Math.max(practice, testScore)
+    : practice;
+  const pct = Math.round(best);
+  return Number.isFinite(pct) ? Math.min(100, Math.max(0, pct)) : 0;
+}
+
+function hasTopicMastery(progress) {
+  if (!progress) return false;
+  const practice = Number(progress.practicePercent || 0);
+  const testTotal = Number(progress.testTotal || 0);
+  const testScore = Number(progress.testScore || 0);
+  if (CONTINUOUS_FLOW) {
+    const practiceOk = practice >= 100;
+    const testOk = testTotal > 0 ? testScore >= 100 : true;
+    return practiceOk && testOk;
+  }
+  return progress.completed === true || progressPct(progress) >= 100;
+}
+
+function isTopicCompleted(progress) {
+  return hasTopicMastery(progress);
+}
+
+function topicTypeKey(topic) {
+  const raw = String(topic?.type || topic?.category || '').trim().toLowerCase();
+  if (!raw) return 'grammar';
+
+  if (
+    raw === 'vocab' ||
+    raw === 'vocabulary' ||
+    raw === 'vocabulario' ||
+    raw === 'slownictwo' ||
+    raw === 's\u0142ownictwo'
+  )
+    return 'vocabulary';
+
+  if (
+    raw === 'grammar' ||
+    raw === 'gramatyka' ||
+    raw === 'gramatica' ||
+    raw === 'gram\u00e1tica'
+  )
+    return 'grammar';
+
+  if (
+    raw === 'both' ||
+    raw === 'mix' ||
+    raw === 'mixed' ||
+    raw === 'mieszane' ||
+    raw.includes('+')
+  )
+    return 'both';
+
+  return raw;
+}
+
+function buildMixedRoute(topics) {
+  const grammar = [];
+  const vocab = [];
+  const both = [];
+  const other = [];
+
+  (topics || []).forEach((t) => {
+    const k = topicTypeKey(t);
+    if (k === 'vocabulary') vocab.push(t);
+    else if (k === 'grammar') grammar.push(t);
+    else if (k === 'both') both.push(t);
+    else other.push(t);
+  });
+
+  if (!grammar.length || !vocab.length) return topics || [];
+
+  const mixed = [];
+  const max = Math.max(grammar.length, vocab.length, both.length);
+  for (let i = 0; i < max; i += 1) {
+    if (grammar[i]) mixed.push(grammar[i]);
+    if (vocab[i]) mixed.push(vocab[i]);
+    if (both[i]) mixed.push(both[i]);
+  }
+  return [...mixed, ...other];
+}
+
+function topicProgressKey(level, topic) {
+  const lvl = String(level || topicLevelOf(topic)).toUpperCase();
+  const slug = String(topic?.slug || topic?.id || '').trim();
+  return lvl && slug ? `${lvl}__${slug}` : null;
+}
+
+async function loadProgressMapForLevel(uid, level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!uid || !lvl) return {};
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'user_progress', uid, 'topics'), where('level', '==', lvl)),
+    );
+    const map = {};
+    snap.forEach((d) => {
+      map[d.id] = d.data() || {};
+    });
+    return map;
+  } catch (e) {
+    console.warn('[lessonpage] loadProgressMapForLevel failed', e);
+    return {};
+  }
+}
+
+async function loadProgressMapForLevels(uid, levels) {
+  const lvls = Array.isArray(levels) ? levels : [];
+  const map = {};
+  for (const lvl of lvls) {
+    const partial = await loadProgressMapForLevel(uid, lvl);
+    Object.assign(map, partial);
+  }
+  return map;
+}
+
+async function getRouteTopicsForLevel(level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!lvl) return [];
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
+    );
+    const all = snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((t) => t.isArchived !== true);
+    const selected = selectCoursesForTrack(all);
+    return buildMixedRoute(selected);
+  } catch (e) {
+    console.warn('[lessonpage] getRouteTopicsForLevel failed', e);
+    return [];
+  }
+}
+
+async function getRouteTopicsForLevels(levels) {
+  const lvls = Array.isArray(levels) ? levels : [];
+  const route = [];
+  for (const lvl of lvls) {
+    const topics = await getRouteTopicsForLevel(lvl);
+    route.push(...topics.map((t) => ({ ...t, __routeLevel: lvl })));
+  }
+  return route;
+}
+
+function renderTopicGate(nextTopic) {
+  show($('lessonContent'), false);
+  show($('tocWrap'), false);
+  const empty = $('lessonEmpty');
+  if (!empty) return;
+
+  const nextLevel = topicLevelOf(nextTopic, LEVEL);
+  const target = nextTopic?.id
+    ? `lessonpage.html?level=${encodeURIComponent(nextLevel)}&id=${encodeURIComponent(nextTopic.id)}${navParams()}`
+    : courseHref(nextLevel);
+  const label = nextTopic?.title ? `Ir al tema actual: ${String(nextTopic.title)}` : 'Ir al tema actual';
+
+  empty.style.display = 'block';
+  empty.innerHTML = `
+    <div style="font-size:16px; line-height:1.6;">
+      <b>Acceso bloqueado</b><br/>
+      Este tema a\u00fan no est\u00e1 desbloqueado.<br/>
+      Completa el tema actual para continuar.
+      <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
+        <a class="btn-yellow" href="${target}" style="text-decoration:none;">${label}</a>
+        <a class="btn-white-outline" href="${courseHref(nextLevel)}" style="text-decoration:none;">Ver temas</a>
+      </div>
+    </div>
+  `;
+}
+
+function checkpointReviewHref(blockNo, route = []) {
+  const block = Math.max(1, Number(blockNo || 1));
+  const { end } = checkpointBlockRange(block);
+  const anchor = route[Math.min(route.length - 1, end)] || currentTopic || null;
+  const anchorLevel = topicLevelOf(anchor, LEVEL);
+  return `review.html?level=${encodeURIComponent(anchorLevel)}&mode=minitest&block=${encodeURIComponent(block)}${navParams()}&checkpoint=${encodeURIComponent(block)}`;
+}
+
+function renderCheckpointGate(blockNo, route = []) {
+  show($('lessonContent'), false);
+  show($('tocWrap'), false);
+  const empty = $('lessonEmpty');
+  if (!empty) return;
+  const block = Math.max(1, Number(blockNo || 1));
+  const href = checkpointReviewHref(block, route);
+  empty.style.display = 'block';
+  empty.innerHTML = `
+    <div style="font-size:16px; line-height:1.6;">
+      <b>Checkpoint wymagany</b><br/>
+      Aby odblokowac kolejny modul, zalicz mini-test po module ${block}.<br/>
+      <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
+        <a class="btn-yellow" href="${href}" style="text-decoration:none;">Uruchom mini-test</a>
+        <a class="btn-white-outline" href="${courseHref(LEVEL)}" style="text-decoration:none;">Wroc do kursu</a>
+      </div>
+    </div>
+  `;
+}
+
+async function enforceTopicOrderGate(uid, topic, flags) {
+  if (!uid || !topic?.id) return true;
+  try {
+    const routeLevels = CONTINUOUS_FLOW ? routeLevelsFromFlags(flags) : [LEVEL];
+    const route = CONTINUOUS_FLOW
+      ? await getRouteTopicsForLevels(routeLevels)
+      : await getRouteTopicsForLevel(LEVEL);
+    if (!route.length) return true;
+
+    const currentKey = courseBaseKey(topic);
+    const currentLevel = topicLevelOf(topic, LEVEL);
+    let idx = route.findIndex(
+      (t) => String(t.id) === String(topic.id) && topicLevelOf(t, LEVEL) === currentLevel,
+    );
+    if (idx < 0 && currentKey) {
+      idx = route.findIndex(
+        (t) => courseBaseKey(t) === currentKey && topicLevelOf(t, LEVEL) === currentLevel,
+      );
+    }
+    if (idx < 0) return true;
+
+    const progressMap = CONTINUOUS_FLOW
+      ? await loadProgressMapForLevels(uid, routeLevels)
+      : await loadProgressMapForLevel(uid, LEVEL);
+    let firstIncomplete = route.findIndex((t) => {
+      const key = topicProgressKey(topicLevelOf(t, LEVEL), t);
+      const prog = key ? progressMap[key] : null;
+      return !isTopicCompleted(prog);
+    });
+    if (firstIncomplete < 0) firstIncomplete = route.length - 1;
+
+    if (idx > firstIncomplete) {
+      renderTopicGate(route[firstIncomplete]);
+      return false;
+    }
+
+    if (CONTINUOUS_FLOW) {
+      const requiredCheckpoints = requiredCheckpointCountForRouteIndex(idx);
+      for (let block = 1; block <= requiredCheckpoints; block += 1) {
+        const ok = await hasCheckpoint(uid, block, {
+          track: TRACK,
+          view: COURSE_VIEW,
+          flow: 'continuous',
+        });
+        if (!ok) {
+          renderCheckpointGate(block, route);
+          return false;
+        }
+      }
+    }
+
+    return true;
+  } catch (e) {
+    console.warn('[lessonpage] enforceTopicOrderGate failed', e);
+    return true;
+  }
+}
+
 function updateProgressUI(progress) {
   const readFill = $('readProgressFill');
   const readText = $('readProgressText');
@@ -482,7 +809,7 @@ function updateProgressUI(progress) {
   const practiceTotal = Number(progress?.practiceTotal || 0);
   const testScore = Number(progress?.testScore || 0);
   const testTotal = Number(progress?.testTotal || 0);
-  const completed = progress?.completed === true;
+  const completed = hasTopicMastery(progress);
 
   if (readFill) readFill.style.width = `${practicePercent}%`;
   if (readText) {
@@ -639,6 +966,7 @@ async function loadLesson(user) {
       exerciseLinksWrap.innerHTML = `
         <a class="btn-white-outline" href="ejercicio.html?${params}">Ejercicios</a>
         <a class="btn-white-outline" href="review.html?${params}">Repasar</a>
+        <a class="btn-white-outline" href="review.html?${params}&mode=errors">Bledy</a>
         <a class="btn-white-outline" href="flashcards.html?${params}">Fichas</a>
         <a class="btn-white-outline" href="${courseHref(LEVEL)}">Temas</a>
       `;
@@ -646,7 +974,7 @@ async function loadLesson(user) {
 
   if (pillAdminLink && flags.isAdmin) {
     pillAdminLink.style.display = 'inline-flex';
-    pillAdminLink.href = `lessonadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}`;
+    pillAdminLink.href = `admin-select.html?target=lesson&level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}`;
   } else if (pillAdminLink) {
     pillAdminLink.style.display = 'none';
   }
@@ -664,9 +992,22 @@ async function loadLesson(user) {
 
   const topicTitle = topic?.title || topic?.name || 'Leccion';
   const topicDesc = topic?.desc || topic?.description || '';
+  const topicLevel = topicLevelOf(topic, LEVEL);
+  if (pillLevel) pillLevel.textContent = `Nivel: ${topicLevel}`;
   if (pillTopic) pillTopic.textContent = `Tema: ${topicTitle}`;
 
-  if (!flags.isAdmin) {
+  if (exerciseLinksWrap) {
+    const params = `level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(COURSE_ID)}${navParams()}`;
+    exerciseLinksWrap.innerHTML = `
+      <a class="btn-white-outline" href="ejercicio.html?${params}">Ejercicios</a>
+      <a class="btn-white-outline" href="review.html?${params}">Repasar</a>
+      <a class="btn-white-outline" href="review.html?${params}&mode=errors">Bledy</a>
+      <a class="btn-white-outline" href="flashcards.html?${params}">Fichas</a>
+      <a class="btn-white-outline" href="${courseHref(topicLevel)}">Temas</a>
+    `;
+  }
+
+  if (!flags.isAdmin && !CONTINUOUS_FLOW) {
     const prevLevel = prevLevelOf(LEVEL);
     const hasMulti =
       flags.hasGlobalAccess ||
@@ -680,9 +1021,15 @@ async function loadLesson(user) {
     }
   }
 
+  if (!flags.isAdmin && topic) {
+    const ok = await enforceTopicOrderGate(user.uid, topic, flags);
+    if (!ok) return;
+  }
+
   let meta = null;
   try {
-    const metaSnap = await getDoc(doc(db, 'course_meta', metaDocId(LEVEL, COURSE_ID)));
+    const topicLevel = topicLevelOf(topic, LEVEL);
+    const metaSnap = await getDoc(doc(db, 'course_meta', metaDocId(topicLevel, COURSE_ID)));
     if (metaSnap.exists()) meta = metaSnap.data() || {};
   } catch (e) {
     console.error(e);
@@ -835,7 +1182,7 @@ async function loadLesson(user) {
 
   if (topic) setupRatingCard(user, topic);
 
-  await trackTopicOpen(user.uid, COURSE_ID, LEVEL);
+  await trackTopicOpen(user.uid, COURSE_ID, topicLevelOf(topic, LEVEL));
   await loadProgress(user.uid, topic || { id: COURSE_ID, slug: COURSE_ID });
 }
 

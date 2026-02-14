@@ -3,7 +3,7 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
+import { KNOWN_LEVELS, levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   collection,
   query,
@@ -46,8 +46,12 @@ const fcPrev = $('fcPrev');
 const fcNext = $('fcNext');
 
 const CARD_TYPE_HINT = 'tarjeta';
+const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
+  ? KNOWN_LEVELS
+  : ['A1', 'A2', 'B1', 'B2'];
 
 let currentUserDoc = null;
+let CURRENT_UID = null;
 let cards = [];
 let currentIndex = 0;
 let isFlipped = false;
@@ -76,10 +80,232 @@ function topicTrackList(topic) {
   return one ? [one] : [];
 }
 
-function topicMatchesTrack(topic) {
-  const tracks = topicTrackList(topic);
-  if (TRACK) return tracks.includes(TRACK);
-  return tracks.length === 0;
+function topicBaseKey(topic) {
+  return String(topic?.slug || topic?.id || '').trim().toLowerCase();
+}
+
+function topicOrderValue(topic) {
+  const n = Number(topic?.order);
+  return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+}
+
+function selectTopicsForTrack(allTopics) {
+  const list = Array.isArray(allTopics) ? allTopics : [];
+  if (!TRACK) return list.filter((t) => topicTrackList(t).length === 0);
+
+  const global = list.filter((t) => topicTrackList(t).length === 0);
+  const local = list.filter((t) => topicTrackList(t).includes(TRACK));
+  if (!global.length) return local;
+  if (!local.length) return global;
+
+  const map = new Map();
+  global.forEach((t) => {
+    const k = topicBaseKey(t);
+    if (k) map.set(k, t);
+  });
+  local.forEach((t) => {
+    const k = topicBaseKey(t);
+    if (k) map.set(k, t);
+  });
+
+  return Array.from(map.values()).sort((a, b) => {
+    const d = topicOrderValue(a) - topicOrderValue(b);
+    if (d) return d;
+    const ka = topicBaseKey(a);
+    const kb = topicBaseKey(b);
+    if (ka && kb && ka !== kb) return ka.localeCompare(kb);
+    return String(a?.id || '').localeCompare(String(b?.id || ''));
+  });
+}
+
+function progressPct(progress) {
+  if (!progress) return 0;
+  if (progress.completed === true) return 100;
+  const practice = Number(progress.practicePercent || 0);
+  const testTotal = Number(progress.testTotal || 0);
+  const testScore = Number(progress.testScore || 0);
+  const best = testTotal > 0 ? Math.max(practice, testScore) : practice;
+  const pct = Math.round(best);
+  return Number.isFinite(pct) ? Math.min(100, Math.max(0, pct)) : 0;
+}
+
+function isTopicCompleted(progress) {
+  if (!progress) return false;
+  return progress.completed === true || progressPct(progress) >= 100;
+}
+
+function topicTypeKey(topic) {
+  const raw = String(topic?.type || topic?.category || '').trim().toLowerCase();
+  if (!raw) return 'grammar';
+
+  if (
+    raw === 'vocab' ||
+    raw === 'vocabulary' ||
+    raw === 'vocabulario' ||
+    raw === 'slownictwo' ||
+    raw === 's\u0142ownictwo'
+  )
+    return 'vocabulary';
+
+  if (
+    raw === 'grammar' ||
+    raw === 'gramatyka' ||
+    raw === 'gramatica' ||
+    raw === 'gram\u00e1tica'
+  )
+    return 'grammar';
+
+  if (
+    raw === 'both' ||
+    raw === 'mix' ||
+    raw === 'mixed' ||
+    raw === 'mieszane' ||
+    raw.includes('+')
+  )
+    return 'both';
+
+  return raw;
+}
+
+function buildMixedRoute(topics) {
+  const grammar = [];
+  const vocab = [];
+  const both = [];
+  const other = [];
+
+  (topics || []).forEach((t) => {
+    const k = topicTypeKey(t);
+    if (k === 'vocabulary') vocab.push(t);
+    else if (k === 'grammar') grammar.push(t);
+    else if (k === 'both') both.push(t);
+    else other.push(t);
+  });
+
+  if (!grammar.length || !vocab.length) return topics || [];
+
+  const mixed = [];
+  const max = Math.max(grammar.length, vocab.length, both.length);
+  for (let i = 0; i < max; i += 1) {
+    if (grammar[i]) mixed.push(grammar[i]);
+    if (vocab[i]) mixed.push(vocab[i]);
+    if (both[i]) mixed.push(both[i]);
+  }
+  return [...mixed, ...other];
+}
+
+function topicProgressKey(level, topic) {
+  const lvl = String(level || '').toUpperCase();
+  const slug = String(topic?.slug || topic?.id || '').trim();
+  return lvl && slug ? `${lvl}__${slug}` : null;
+}
+
+async function loadProgressMapForLevel(uid, level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!uid || !lvl) return {};
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'user_progress', uid, 'topics'), where('level', '==', lvl)),
+    );
+    const map = {};
+    snap.forEach((d) => {
+      map[d.id] = d.data() || {};
+    });
+    return map;
+  } catch (e) {
+    console.warn('[flashcards] loadProgressMapForLevel failed', e);
+    return {};
+  }
+}
+
+async function loadRouteTopicsForLevel(level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!lvl) return [];
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
+    );
+    const all = snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((t) => t.isArchived !== true);
+    const selected = selectTopicsForTrack(all);
+    return buildMixedRoute(selected);
+  } catch (e) {
+    console.warn('[flashcards] loadRouteTopicsForLevel failed', e);
+    return [];
+  }
+}
+
+async function isLevelCompleted(uid, level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!uid || !lvl) return true;
+
+  const route = await loadRouteTopicsForLevel(lvl);
+  if (!route.length) return true;
+
+  const progressMap = await loadProgressMapForLevel(uid, lvl);
+  return route.every((t) => {
+    const key = topicProgressKey(lvl, t);
+    const prog = key ? progressMap[key] : null;
+    return isTopicCompleted(prog);
+  });
+}
+
+async function computeUnlockedLevels(uid, accessibleLevels) {
+  const ordered = LEVEL_ORDER.filter((l) => (accessibleLevels || []).includes(l));
+  if (ordered.length <= 1) return ordered.length ? ordered : ['A1'];
+
+  const unlocked = [];
+  const completionCache = {};
+  for (const lvl of ordered) {
+    if (!unlocked.length) {
+      unlocked.push(lvl);
+      continue;
+    }
+    const prev = unlocked[unlocked.length - 1];
+    if (completionCache[prev] !== true) {
+      completionCache[prev] = await isLevelCompleted(uid, prev);
+    }
+    if (completionCache[prev] === true) unlocked.push(lvl);
+    else break;
+  }
+  return unlocked;
+}
+
+async function loadVisibleTopicsForLevel(uid, level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!uid || !lvl) return [];
+
+  const cached = allowedTopicCache.get(lvl);
+  if (cached && Array.isArray(cached.topics)) return cached.topics;
+
+  const route = await loadRouteTopicsForLevel(lvl);
+  if (!route.length) {
+    const out = { topics: [], idSet: new Set(), slugSet: new Set() };
+    allowedTopicCache.set(lvl, out);
+    return out.topics;
+  }
+
+  const progressMap = await loadProgressMapForLevel(uid, lvl);
+  let firstIncomplete = route.findIndex((t) => {
+    const key = topicProgressKey(lvl, t);
+    const prog = key ? progressMap[key] : null;
+    return !isTopicCompleted(prog);
+  });
+  if (firstIncomplete < 0) firstIncomplete = route.length - 1;
+
+  const visibleCount = Math.min(route.length, Math.max(1, firstIncomplete + 1));
+  const topics = route.slice(0, visibleCount);
+
+  const idSet = new Set();
+  const slugSet = new Set();
+  topics.forEach((t) => {
+    idSet.add(String(t.id));
+    const slug = String(t.slug || t.id || '').trim();
+    if (slug) slugSet.add(slug);
+  });
+
+  allowedTopicCache.set(lvl, { topics, idSet, slugSet });
+  return topics;
 }
 
 function parseExampleValue(raw) {
@@ -440,17 +666,11 @@ function applyDirection(list, direction) {
 async function loadTopics(level, selectedId) {
   if (!fcTopic) return;
   fcTopic.innerHTML = '<option value="all">Todos los temas</option>';
-  if (!level) return;
+  const lvl = String(level || '').toUpperCase();
+  if (!lvl) return;
 
   try {
-    const snap = await getDocs(
-      query(collection(db, 'courses'), where('level', '==', level), orderBy('order')),
-    );
-    const topics = snap.docs
-      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
-      .filter((t) => t.isArchived !== true)
-      .filter(topicMatchesTrack);
-
+    const topics = CURRENT_UID ? await loadVisibleTopicsForLevel(CURRENT_UID, lvl) : [];
     topics.forEach((t) => {
       const opt = document.createElement('option');
       opt.value = t.id;
@@ -458,8 +678,11 @@ async function loadTopics(level, selectedId) {
       fcTopic.appendChild(opt);
     });
 
-    if (selectedId && topics.some((t) => t.id === selectedId)) {
-      fcTopic.value = selectedId;
+    const wanted = String(selectedId || '').trim();
+    if (wanted && wanted !== 'all' && topics.some((t) => t.id === wanted)) {
+      fcTopic.value = wanted;
+    } else {
+      fcTopic.value = 'all';
     }
   } catch (e) {
     console.warn('[flashcards] loadTopics failed', e);
@@ -470,29 +693,13 @@ async function loadAllowedTopicSetsForLevel(level) {
   const lvl = String(level || '').toUpperCase();
   if (!lvl) return { idSet: new Set(), slugSet: new Set() };
   const cached = allowedTopicCache.get(lvl);
-  if (cached) return cached;
+  if (cached && cached.idSet && cached.slugSet) return cached;
 
-  const idSet = new Set();
-  const slugSet = new Set();
-  try {
-    const snap = await getDocs(
-      query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
-    );
-    snap.forEach((d) => {
-      const topic = { id: d.id, ...(d.data() || {}) };
-      if (topic.isArchived === true) return;
-      if (!topicMatchesTrack(topic)) return;
-      idSet.add(String(topic.id));
-      const slug = String(topic.slug || topic.id || '').trim();
-      if (slug) slugSet.add(slug);
-    });
-  } catch (e) {
-    console.warn('[flashcards] loadAllowedTopicSetsForLevel failed', e);
-  }
-
-  const out = { idSet, slugSet };
-  allowedTopicCache.set(lvl, out);
-  return out;
+  if (CURRENT_UID) await loadVisibleTopicsForLevel(CURRENT_UID, lvl);
+  const fresh = allowedTopicCache.get(lvl);
+  return fresh && fresh.idSet && fresh.slugSet
+    ? fresh
+    : { idSet: new Set(), slugSet: new Set() };
 }
 
 async function loadCards() {
@@ -621,13 +828,21 @@ function bindActions() {
 }
 
 async function init(user) {
+  CURRENT_UID = user?.uid || null;
   currentUserDoc = await getUserDoc(user.uid);
   favMap = await loadFavMap(user.uid);
   const levels = getUserLevels(currentUserDoc, user.email);
+  const accessible = LEVEL_ORDER.filter((l) => levels.includes(l));
+  const isAdmin =
+    String(user.email || '').toLowerCase() === 'aquivivo.pl@gmail.com' ||
+    currentUserDoc?.admin === true ||
+    String(currentUserDoc?.role || '').toLowerCase() === 'admin';
+  const unlocked = isAdmin ? accessible : await computeUnlockedLevels(user.uid, accessible);
+  const visibleLevels = unlocked.length ? unlocked : ['A1'];
 
   if (fcLevel) {
     fcLevel.innerHTML = '';
-    levels.forEach((lvl) => {
+    visibleLevels.forEach((lvl) => {
       const opt = document.createElement('option');
       opt.value = lvl;
       opt.textContent = lvl;
@@ -635,7 +850,7 @@ async function init(user) {
     });
   }
 
-  const preferred = levels.includes(PRE_LEVEL) ? PRE_LEVEL : levels[0];
+  const preferred = visibleLevels.includes(PRE_LEVEL) ? PRE_LEVEL : visibleLevels[0];
   if (fcLevel) fcLevel.value = preferred;
 
   const direction = String(currentUserDoc?.reviewDirection || 'pl_es');

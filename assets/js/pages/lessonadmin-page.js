@@ -83,7 +83,7 @@ async function isAdminUid(uid) {
 
     btnBackCourse.href = `course.html?level=${encodeURIComponent(LEVEL)}`;
     btnOpenLesson.href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
-    btnOpenExercises.href = `ejercicioadmin.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
+    btnOpenExercises.href = `admin-select.html?target=exercise&level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(TOPIC_ID)}`;
 
     function showToast(msg, kind="toast-ok"){
       if(!toast) return;

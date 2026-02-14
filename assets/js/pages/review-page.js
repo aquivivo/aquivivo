@@ -3,7 +3,7 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
+import { KNOWN_LEVELS, levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   collection,
   query,
@@ -16,16 +16,32 @@ import {
   serverTimestamp,
   Timestamp,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import {
+  applyLearningReward,
+  checkpointBlockRange,
+  writeCheckpoint,
+} from '../progress-tools.js';
 
 const $ = (id) => document.getElementById(id);
 
 const NAV_QS = new URLSearchParams(window.location.search);
 const TRACK = String(NAV_QS.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = String(NAV_QS.get('view') || '').trim().toLowerCase();
+const FLOW = String(NAV_QS.get('flow') || '').trim().toLowerCase();
+const MODE_PARAM = String(NAV_QS.get('mode') || '').trim().toLowerCase();
+const BLOCK_PARAM = Math.max(0, Number(NAV_QS.get('block') || NAV_QS.get('checkpoint') || 0));
 
 const DEFAULT_DAILY_LIMIT = 20;
+const DAILY_CHALLENGE_LIMIT = 10;
+const MINITEST_LIMIT = 12;
+const SPRINT_SECONDS = 60;
+const MINITEST_PASS_PCT = 80;
 const BOX_INTERVALS = [0, 1, 3, 7, 14, 30];
 const CARD_TYPE_HINT = 'tarjeta';
+const REVIEW_MODES = ['srs', 'daily', 'sprint', 'errors', 'minitest'];
+const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
+  ? KNOWN_LEVELS
+  : ['A1', 'A2', 'B1', 'B2'];
 
 let queue = [];
 let currentIdx = 0;
@@ -34,6 +50,18 @@ let showBack = false;
 let srsMap = new Map();
 let userDocCache = null;
 let userLevelsCache = [];
+let CURRENT_UID = null;
+let allowedTopicCache = new Map();
+let reviewMode = REVIEW_MODES.includes(MODE_PARAM) ? MODE_PARAM : 'srs';
+let sessionCorrect = 0;
+let sessionWrong = 0;
+let sprintLeft = SPRINT_SECONDS;
+let sprintTimerId = 0;
+let sprintEnded = false;
+let minitestBlock = BLOCK_PARAM > 0 ? BLOCK_PARAM : 0;
+let cardsCache = [];
+let mistakesCache = [];
+let sessionFinalized = false;
 
 function toDateMaybe(ts) {
   if (!ts) return null;
@@ -51,6 +79,245 @@ function normalizeText(value) {
     .trim();
 }
 
+function modeLabel(mode) {
+  const m = String(mode || '').toLowerCase();
+  if (m === 'daily') return 'Daily challenge';
+  if (m === 'sprint') return 'Sprint 60s';
+  if (m === 'errors') return 'Powtorka bledow';
+  if (m === 'minitest') return 'Mini-test checkpoint';
+  return 'SRS normal';
+}
+
+function courseBackHref(level = 'A1') {
+  const lvl = String(level || 'A1').toUpperCase();
+  const page = COURSE_VIEW === 'latam'
+    ? 'curso-latam.html'
+    : COURSE_VIEW === 'pro'
+      ? 'kurs-pl.html'
+      : 'course.html';
+  let href = `${page}?level=${encodeURIComponent(lvl)}`;
+  if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
+  if (COURSE_VIEW) href += `&view=${encodeURIComponent(COURSE_VIEW)}`;
+  if (FLOW === 'continuous' || COURSE_VIEW === 'pro') href += '&flow=continuous';
+  return href;
+}
+
+function scorePct() {
+  const total = sessionCorrect + sessionWrong;
+  if (!total) return 0;
+  return Math.round((sessionCorrect / total) * 100);
+}
+
+function updateModeUI() {
+  const modeLabelEl = $('reviewModeLabel');
+  const timerEl = $('reviewTimer');
+  const subtitleEl = $('reviewSubtitle');
+  const modeEl = $('reviewMode');
+  const levelEl = $('reviewLevel');
+  const topicEl = $('reviewTopic');
+  const onlyFavEl = $('reviewOnlyFav');
+
+  if (modeLabelEl) modeLabelEl.textContent = `Tryb: ${modeLabel(reviewMode)}`;
+  if (modeEl && modeEl.value !== reviewMode) modeEl.value = reviewMode;
+
+  if (timerEl) {
+    if (reviewMode === 'sprint') {
+      timerEl.style.display = '';
+      timerEl.textContent = `Tiempo: ${Math.max(0, sprintLeft)}s`;
+    } else {
+      timerEl.style.display = 'none';
+    }
+  }
+
+  if (subtitleEl) {
+    if (reviewMode === 'errors') {
+      subtitleEl.textContent = 'Powtorka najczestszych bledow z Twoich cwiczen.';
+    } else if (reviewMode === 'daily') {
+      subtitleEl.textContent = 'Codzienne 10 kart na utrwalenie i streak.';
+    } else if (reviewMode === 'sprint') {
+      subtitleEl.textContent = 'Masz 60 sekund. Odpowiadaj jak najszybciej.';
+    } else if (reviewMode === 'minitest') {
+      subtitleEl.textContent = 'Checkpoint po 3 modulach. Potrzebujesz min. 80%.';
+    } else {
+      subtitleEl.textContent = 'Mini-repasos para la memoria a largo plazo.';
+    }
+  }
+
+  const lockTopic = reviewMode === 'errors' || reviewMode === 'minitest';
+  if (topicEl) topicEl.disabled = lockTopic;
+  if (levelEl) levelEl.disabled = reviewMode === 'minitest';
+  if (onlyFavEl) onlyFavEl.disabled = reviewMode !== 'srs' && reviewMode !== 'daily';
+}
+
+function updateScoreUI() {
+  const scoreEl = $('reviewScore');
+  if (!scoreEl) return;
+  const answered = sessionCorrect + sessionWrong;
+  if (reviewMode === 'minitest') {
+    scoreEl.textContent = `Wynik: ${sessionCorrect}/${answered || 0} (${scorePct()}%)`;
+    return;
+  }
+  if (reviewMode === 'sprint') {
+    scoreEl.textContent = `Puntos: ${sessionCorrect} OK / ${sessionWrong} no`;
+    return;
+  }
+  scoreEl.textContent = `Puntos: ${sessionCorrect} OK / ${sessionWrong} no`;
+}
+
+function resetSession() {
+  sessionCorrect = 0;
+  sessionWrong = 0;
+  sprintLeft = SPRINT_SECONDS;
+  sprintEnded = false;
+  updateModeUI();
+  updateScoreUI();
+}
+
+function stopSprintTimer() {
+  if (!sprintTimerId) return;
+  clearInterval(sprintTimerId);
+  sprintTimerId = 0;
+}
+
+function finishSprint() {
+  if (sprintEnded) return;
+  sprintEnded = true;
+  stopSprintTimer();
+  currentIdx = queue.length;
+  renderCard();
+}
+
+function startSprintTimer() {
+  stopSprintTimer();
+  if (reviewMode !== 'sprint') return;
+  sprintLeft = SPRINT_SECONDS;
+  updateModeUI();
+  sprintTimerId = window.setInterval(() => {
+    sprintLeft -= 1;
+    updateModeUI();
+    if (sprintLeft <= 0) {
+      finishSprint();
+    }
+  }, 1000);
+}
+
+function setReviewEmpty(title, message, href = 'espanel.html', btnLabel = 'Volver a la Libreta') {
+  const empty = $('reviewEmpty');
+  if (!empty) return;
+  empty.innerHTML = `
+    <div class="sectionTitle" style="margin-top: 0">${String(title || 'Sin repasos')}</div>
+    <div class="muted">${String(message || '')}</div>
+    <div style="margin-top: 12px">
+      <a class="btn-yellow" href="${String(href || 'espanel.html')}">${String(btnLabel || 'Volver')}</a>
+    </div>
+  `;
+}
+
+async function finalizeSession() {
+  if (sessionFinalized) return;
+  sessionFinalized = true;
+  stopSprintTimer();
+
+  const answered = sessionCorrect + sessionWrong;
+  const pct = scorePct();
+
+  if (!CURRENT_UID) return;
+
+  if (reviewMode === 'daily' && answered > 0) {
+    await applyLearningReward(CURRENT_UID, {
+      exp: 18,
+      badges: ['daily_challenge'],
+      oncePerDayKey: 'daily_challenge',
+      source: 'review_daily',
+    });
+    setReviewEmpty(
+      'Daily challenge listo',
+      `Wynik: ${sessionCorrect}/${answered} (${pct}%). Wyzwanie zapisane do streaka.`,
+    );
+    return;
+  }
+
+  if (reviewMode === 'sprint' && answered > 0) {
+    await applyLearningReward(CURRENT_UID, {
+      exp: Math.max(8, sessionCorrect * 2),
+      badges: sessionCorrect >= 10 ? ['sprint_10'] : [],
+      oncePerDayKey: 'sprint_60',
+      source: 'review_sprint',
+    });
+    setReviewEmpty(
+      'Sprint zakonczony',
+      `Czas minal. Trafione: ${sessionCorrect}, bledy: ${sessionWrong}.`,
+    );
+    return;
+  }
+
+  if (reviewMode === 'errors' && answered > 0) {
+    await applyLearningReward(CURRENT_UID, {
+      exp: Math.max(6, sessionCorrect),
+      badges: sessionCorrect >= 15 ? ['error_hunter'] : [],
+      oncePerDayKey: 'errors_review',
+      source: 'review_errors',
+    });
+    setReviewEmpty(
+      'Powtorka bledow zakonczona',
+      `Przepracowalas ${answered} kart bledow. Wynik: ${pct}%.`,
+    );
+    return;
+  }
+
+  if (reviewMode === 'minitest' && answered > 0) {
+    const passed = pct >= MINITEST_PASS_PCT;
+    const lastTopic = cardsCache.find((c) => c.topicId)?.topicId || null;
+    if (minitestBlock > 0) {
+      await writeCheckpoint(
+        CURRENT_UID,
+        minitestBlock,
+        {
+          passed,
+          scorePct: pct,
+          answered,
+          correct: sessionCorrect,
+          level: cardsCache[0]?.level || null,
+          lastTopicId: lastTopic,
+        },
+        {
+          track: TRACK,
+          view: COURSE_VIEW,
+          flow: 'continuous',
+        },
+      );
+    }
+    if (passed) {
+      await applyLearningReward(CURRENT_UID, {
+        exp: 30,
+        badges: ['checkpoint_pass'],
+        oncePerDayKey: `checkpoint_${minitestBlock || 0}`,
+        source: 'review_checkpoint',
+      });
+      setReviewEmpty(
+        'Mini-test zaliczony',
+        `Wynik ${pct}%. Kolejny modul jest odblokowany.`,
+        courseBackHref(cardsCache[0]?.level || 'A1'),
+        'Wroc do kursu',
+      );
+    } else {
+      setReviewEmpty(
+        'Mini-test niezaliczony',
+        `Wynik ${pct}%. Potrzebujesz minimum ${MINITEST_PASS_PCT}%.`,
+      );
+    }
+    return;
+  }
+
+  if (answered > 0) {
+    await applyLearningReward(CURRENT_UID, {
+      exp: Math.max(5, Math.round(answered / 2)),
+      source: 'review_srs',
+      oncePerDayKey: 'review_srs',
+    });
+  }
+}
+
 function normalizeTrack(raw) {
   return String(raw || '')
     .trim()
@@ -65,10 +332,232 @@ function topicTrackList(topic) {
   return one ? [one] : [];
 }
 
-function topicMatchesTrack(topic) {
-  const tracks = topicTrackList(topic);
-  if (TRACK) return tracks.includes(TRACK);
-  return tracks.length === 0;
+function topicBaseKey(topic) {
+  return String(topic?.slug || topic?.id || '').trim().toLowerCase();
+}
+
+function topicOrderValue(topic) {
+  const n = Number(topic?.order);
+  return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+}
+
+function selectTopicsForTrack(allTopics) {
+  const list = Array.isArray(allTopics) ? allTopics : [];
+  if (!TRACK) return list.filter((t) => topicTrackList(t).length === 0);
+
+  const global = list.filter((t) => topicTrackList(t).length === 0);
+  const local = list.filter((t) => topicTrackList(t).includes(TRACK));
+  if (!global.length) return local;
+  if (!local.length) return global;
+
+  const map = new Map();
+  global.forEach((t) => {
+    const k = topicBaseKey(t);
+    if (k) map.set(k, t);
+  });
+  local.forEach((t) => {
+    const k = topicBaseKey(t);
+    if (k) map.set(k, t);
+  });
+
+  return Array.from(map.values()).sort((a, b) => {
+    const d = topicOrderValue(a) - topicOrderValue(b);
+    if (d) return d;
+    const ka = topicBaseKey(a);
+    const kb = topicBaseKey(b);
+    if (ka && kb && ka !== kb) return ka.localeCompare(kb);
+    return String(a?.id || '').localeCompare(String(b?.id || ''));
+  });
+}
+
+function progressPct(progress) {
+  if (!progress) return 0;
+  if (progress.completed === true) return 100;
+  const practice = Number(progress.practicePercent || 0);
+  const testTotal = Number(progress.testTotal || 0);
+  const testScore = Number(progress.testScore || 0);
+  const best = testTotal > 0 ? Math.max(practice, testScore) : practice;
+  const pct = Math.round(best);
+  return Number.isFinite(pct) ? Math.min(100, Math.max(0, pct)) : 0;
+}
+
+function isTopicCompleted(progress) {
+  if (!progress) return false;
+  return progress.completed === true || progressPct(progress) >= 100;
+}
+
+function topicTypeKey(topic) {
+  const raw = String(topic?.type || topic?.category || '').trim().toLowerCase();
+  if (!raw) return 'grammar';
+
+  if (
+    raw === 'vocab' ||
+    raw === 'vocabulary' ||
+    raw === 'vocabulario' ||
+    raw === 'slownictwo' ||
+    raw === 's\u0142ownictwo'
+  )
+    return 'vocabulary';
+
+  if (
+    raw === 'grammar' ||
+    raw === 'gramatyka' ||
+    raw === 'gramatica' ||
+    raw === 'gram\u00e1tica'
+  )
+    return 'grammar';
+
+  if (
+    raw === 'both' ||
+    raw === 'mix' ||
+    raw === 'mixed' ||
+    raw === 'mieszane' ||
+    raw.includes('+')
+  )
+    return 'both';
+
+  return raw;
+}
+
+function buildMixedRoute(topics) {
+  const grammar = [];
+  const vocab = [];
+  const both = [];
+  const other = [];
+
+  (topics || []).forEach((t) => {
+    const k = topicTypeKey(t);
+    if (k === 'vocabulary') vocab.push(t);
+    else if (k === 'grammar') grammar.push(t);
+    else if (k === 'both') both.push(t);
+    else other.push(t);
+  });
+
+  if (!grammar.length || !vocab.length) return topics || [];
+
+  const mixed = [];
+  const max = Math.max(grammar.length, vocab.length, both.length);
+  for (let i = 0; i < max; i += 1) {
+    if (grammar[i]) mixed.push(grammar[i]);
+    if (vocab[i]) mixed.push(vocab[i]);
+    if (both[i]) mixed.push(both[i]);
+  }
+  return [...mixed, ...other];
+}
+
+function topicProgressKey(level, topic) {
+  const lvl = String(level || '').toUpperCase();
+  const slug = String(topic?.slug || topic?.id || '').trim();
+  return lvl && slug ? `${lvl}__${slug}` : null;
+}
+
+async function loadProgressMapForLevel(uid, level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!uid || !lvl) return {};
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'user_progress', uid, 'topics'), where('level', '==', lvl)),
+    );
+    const map = {};
+    snap.forEach((d) => {
+      map[d.id] = d.data() || {};
+    });
+    return map;
+  } catch (e) {
+    console.warn('[review] loadProgressMapForLevel failed', e);
+    return {};
+  }
+}
+
+async function loadRouteTopicsForLevel(level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!lvl) return [];
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
+    );
+    const all = snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((t) => t.isArchived !== true);
+    const selected = selectTopicsForTrack(all);
+    return buildMixedRoute(selected);
+  } catch (e) {
+    console.warn('[review] loadRouteTopicsForLevel failed', e);
+    return [];
+  }
+}
+
+async function isLevelCompleted(uid, level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!uid || !lvl) return true;
+
+  const route = await loadRouteTopicsForLevel(lvl);
+  if (!route.length) return true;
+
+  const progressMap = await loadProgressMapForLevel(uid, lvl);
+  return route.every((t) => {
+    const key = topicProgressKey(lvl, t);
+    const prog = key ? progressMap[key] : null;
+    return isTopicCompleted(prog);
+  });
+}
+
+async function computeUnlockedLevels(uid, accessibleLevels) {
+  const ordered = LEVEL_ORDER.filter((l) => (accessibleLevels || []).includes(l));
+  if (ordered.length <= 1) return ordered.length ? ordered : ['A1'];
+
+  const unlocked = [];
+  const completionCache = {};
+  for (const lvl of ordered) {
+    if (!unlocked.length) {
+      unlocked.push(lvl);
+      continue;
+    }
+    const prev = unlocked[unlocked.length - 1];
+    if (completionCache[prev] !== true) {
+      completionCache[prev] = await isLevelCompleted(uid, prev);
+    }
+    if (completionCache[prev] === true) unlocked.push(lvl);
+    else break;
+  }
+  return unlocked;
+}
+
+async function loadVisibleTopicsForLevel(uid, level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!uid || !lvl) return [];
+
+  const cached = allowedTopicCache.get(lvl);
+  if (cached && Array.isArray(cached.topics)) return cached.topics;
+
+  const route = await loadRouteTopicsForLevel(lvl);
+  if (!route.length) {
+    const out = { topics: [], idSet: new Set(), slugSet: new Set() };
+    allowedTopicCache.set(lvl, out);
+    return out.topics;
+  }
+
+  const progressMap = await loadProgressMapForLevel(uid, lvl);
+  let firstIncomplete = route.findIndex((t) => {
+    const key = topicProgressKey(lvl, t);
+    const prog = key ? progressMap[key] : null;
+    return !isTopicCompleted(prog);
+  });
+  if (firstIncomplete < 0) firstIncomplete = route.length - 1;
+
+  const visibleCount = Math.min(route.length, Math.max(1, firstIncomplete + 1));
+  const topics = route.slice(0, visibleCount);
+
+  const idSet = new Set();
+  const slugSet = new Set();
+  topics.forEach((t) => {
+    idSet.add(String(t.id));
+    const slug = String(t.slug || t.id || '').trim();
+    if (slug) slugSet.add(slug);
+  });
+
+  allowedTopicCache.set(lvl, { topics, idSet, slugSet });
+  return topics;
 }
 
 function parseExampleValue(raw) {
@@ -191,22 +680,14 @@ function getUserLevels(docData) {
 async function loadAllowedTopicSets(levels) {
   const idSet = new Set();
   const slugSet = new Set();
-  for (const lvl of levels || []) {
-    try {
-      const snap = await getDocs(
-        query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
-      );
-      snap.forEach((d) => {
-        const topic = { id: d.id, ...(d.data() || {}) };
-        if (topic.isArchived === true) return;
-        if (!topicMatchesTrack(topic)) return;
-        idSet.add(String(topic.id));
-        const slug = String(topic.slug || topic.id || '').trim();
-        if (slug) slugSet.add(slug);
-      });
-    } catch (e) {
-      console.warn('[review] load allowed topics failed', e);
-    }
+  for (const lvlRaw of levels || []) {
+    const lvl = String(lvlRaw || '').toUpperCase();
+    if (!lvl) continue;
+    if (CURRENT_UID) await loadVisibleTopicsForLevel(CURRENT_UID, lvl);
+    const cached = allowedTopicCache.get(lvl);
+    if (!cached) continue;
+    cached.idSet?.forEach((v) => idSet.add(v));
+    cached.slugSet?.forEach((v) => slugSet.add(v));
   }
   return { idSet, slugSet };
 }
@@ -245,6 +726,126 @@ async function loadExercisesForLevels(levels, topicId) {
   return all;
 }
 
+async function loadRouteTopicsForLevels(levels) {
+  const route = [];
+  for (const lvlRaw of levels || []) {
+    const lvl = String(lvlRaw || '').toUpperCase();
+    if (!lvl) continue;
+    const topics = await loadRouteTopicsForLevel(lvl);
+    route.push(...topics.map((t) => ({ ...t, __routeLevel: lvl })));
+  }
+  return route;
+}
+
+async function resolveMinitestTopicScope(levels, blockNo) {
+  const route = await loadRouteTopicsForLevels(levels);
+  if (!route.length) {
+    return {
+      block: Math.max(1, Number(blockNo || 1)),
+      route: [],
+      topicIdSet: new Set(),
+      topicSlugSet: new Set(),
+      anchorLevel: String(levels?.[0] || 'A1').toUpperCase(),
+      lastTopicId: '',
+    };
+  }
+
+  const block = Math.max(1, Number(blockNo || 1));
+  const { start, end } = checkpointBlockRange(block);
+  const chunk = route.slice(start, end + 1);
+  const topicIdSet = new Set(chunk.map((t) => String(t.id)));
+  const topicSlugSet = new Set(chunk.map((t) => String(t.slug || t.id || '').trim()).filter(Boolean));
+  const anchor = chunk[chunk.length - 1] || route[Math.min(route.length - 1, end)];
+
+  return {
+    block,
+    route,
+    topicIdSet,
+    topicSlugSet,
+    anchorLevel: String(anchor?.__routeLevel || anchor?.level || levels?.[0] || 'A1').toUpperCase(),
+    lastTopicId: String(anchor?.id || ''),
+  };
+}
+
+async function loadMistakeItems(uid, levels, topicId = '') {
+  const out = [];
+  if (!uid) return out;
+
+  for (const lvlRaw of levels || []) {
+    const lvl = String(lvlRaw || '').toUpperCase();
+    if (!lvl) continue;
+    try {
+      const snap = await getDocs(
+        query(collection(db, 'user_progress', uid, 'topics'), where('level', '==', lvl)),
+      );
+      snap.forEach((d) => {
+        const data = d.data() || {};
+        const list = Array.isArray(data.mistakeLog) ? data.mistakeLog : [];
+        list.forEach((item) => {
+          if (!item || typeof item !== 'object') return;
+          const tId = String(item.topicId || '').trim();
+          if (topicId && topicId !== 'all' && tId !== topicId) return;
+          out.push({
+            ...item,
+            __progressId: d.id,
+            __level: lvl,
+          });
+        });
+      });
+    } catch (e) {
+      console.warn('[review] loadMistakeItems failed', e);
+    }
+  }
+
+  out.sort((a, b) => {
+    const aTs = Date.parse(String(a?.lastAt || '')) || 0;
+    const bTs = Date.parse(String(b?.lastAt || '')) || 0;
+    if (aTs !== bTs) return bTs - aTs;
+    return Number(b?.count || 0) - Number(a?.count || 0);
+  });
+
+  const uniq = [];
+  const seen = new Set();
+  out.forEach((item, idx) => {
+    const key = `${String(item.exerciseId || '')}__${normalizeText(item.expected || '')}__${normalizeText(item.userAnswer || '')}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    uniq.push({
+      ...item,
+      _idx: idx + 1,
+    });
+  });
+
+  return uniq.slice(0, 90);
+}
+
+function cardsFromMistakes(items) {
+  return (items || []).map((m, idx) => {
+    const q = String(m.prompt || '').trim() || `Blad #${idx + 1}`;
+    const expected = String(m.expected || '').trim() || '(brak odpowiedzi wzorcowej)';
+    const your = String(m.userAnswer || '').trim();
+    const hint = your ? `Twoja odpowiedz: ${your}` : '';
+    return {
+      id: `mistake__${String(m.id || `${m.exerciseId || 'x'}_${idx}`)}`,
+      exerciseId: String(m.exerciseId || ''),
+      topicId: String(m.topicId || ''),
+      level: String(m.level || m.__level || ''),
+      plWord: q,
+      esWord: expected,
+      pron: '',
+      plExample: hint,
+      esExample: '',
+      audioUrl: '',
+      exampleAudio: '',
+      favorite: false,
+      frontLang: 'pl',
+      backLang: 'es',
+      cardSource: 'mistake',
+      mistakeCount: Number(m.count || 1),
+    };
+  });
+}
+
 async function loadSrsMap(uid) {
   const map = new Map();
   try {
@@ -256,7 +857,45 @@ async function loadSrsMap(uid) {
   return map;
 }
 
-function buildQueue(cards, srs, limit, direction) {
+function shuffleArray(list) {
+  const arr = Array.isArray(list) ? [...list] : [];
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function withDirection(card, direction) {
+  let frontLang = 'pl';
+  if (direction === 'es_pl') frontLang = 'es';
+  if (direction === 'mixed') frontLang = Math.random() < 0.5 ? 'pl' : 'es';
+  const backLang = frontLang === 'pl' ? 'es' : 'pl';
+  return { ...card, frontLang, backLang };
+}
+
+function buildQueue(cards, srs, limit, direction, mode = 'srs') {
+  const m = String(mode || 'srs').toLowerCase();
+  const cap = Math.max(1, Number(limit || DEFAULT_DAILY_LIMIT));
+
+  if (m === 'errors') {
+    return cards.slice(0, Math.min(cap, 60)).map((card) => ({
+      ...card,
+      frontLang: 'pl',
+      backLang: 'es',
+    }));
+  }
+
+  if (m === 'minitest') {
+    const base = shuffleArray(cards).slice(0, Math.min(cap, MINITEST_LIMIT));
+    return base.map((card) => withDirection(card, direction || 'mixed'));
+  }
+
+  if (m === 'sprint') {
+    const base = shuffleArray(cards).slice(0, Math.min(50, cards.length));
+    return base.map((card) => withDirection(card, direction || 'mixed'));
+  }
+
   const now = Date.now();
   const due = [];
   const fresh = [];
@@ -274,16 +913,8 @@ function buildQueue(cards, srs, limit, direction) {
   });
 
   const list = [...due, ...fresh];
-
-  const withDirection = list.map((card) => {
-    let frontLang = 'pl';
-    if (direction === 'es_pl') frontLang = 'es';
-    if (direction === 'mixed') frontLang = Math.random() < 0.5 ? 'pl' : 'es';
-    const backLang = frontLang === 'pl' ? 'es' : 'pl';
-    return { ...card, frontLang, backLang };
-  });
-
-  return withDirection.slice(0, limit || DEFAULT_DAILY_LIMIT);
+  const effectiveLimit = m === 'daily' ? DAILY_CHALLENGE_LIMIT : cap;
+  return list.map((card) => withDirection(card, direction)).slice(0, effectiveLimit);
 }
 
 function updateStats() {
@@ -296,8 +927,12 @@ function updateStats() {
   const newCount = queue.filter((c) => !srsMap.get(c.id)).length;
 
   if (countEl) countEl.textContent = `Para hoy: ${total}`;
-  if (newEl) newEl.textContent = `Nuevas: ${newCount}`;
+  if (newEl) {
+    if (reviewMode === 'errors') newEl.textContent = `Bledy: ${mistakesCache.length}`;
+    else newEl.textContent = `Nuevas: ${newCount}`;
+  }
   if (progEl) progEl.textContent = `Progreso: ${done}/${total}`;
+  updateScoreUI();
 }
 
 function sideData(card, lang) {
@@ -400,6 +1035,18 @@ function renderCard() {
   if (!queue.length) {
     if (cardEl) cardEl.style.display = 'none';
     if (empty) empty.style.display = 'block';
+    if (reviewMode === 'errors') {
+      setReviewEmpty(
+        'Brak bledow do powtorki',
+        'Nie ma aktywnych bledow. Rozwiaz kilka cwiczen i wroc tutaj.',
+      );
+    } else if (reviewMode === 'minitest') {
+      setReviewEmpty(
+        'Brak kart do mini-testu',
+        'Dla tego checkpointu nie znaleziono kart. Dodaj fiszki do tematow.',
+      );
+    }
+    updateStats();
     return;
   }
 
@@ -410,6 +1057,8 @@ function renderCard() {
   showBack = false;
 
   if (!currentCard) {
+    if (cardEl) cardEl.style.display = 'none';
+    if (empty) empty.style.display = 'block';
     if (frontEl) frontEl.textContent = 'Repaso terminado';
     if (backEl) backEl.textContent = '';
     if (btnShow) btnShow.disabled = true;
@@ -419,6 +1068,8 @@ function renderCard() {
     if (exampleEl) exampleEl.style.display = 'none';
     if (btnCorrect) btnCorrect.disabled = true;
     if (btnWrong) btnWrong.disabled = true;
+    updateStats();
+    finalizeSession().catch((e) => console.warn('[review] finalizeSession failed', e));
     return;
   }
 
@@ -428,12 +1079,23 @@ function renderCard() {
     exampleEl.textContent = '';
     exampleEl.style.display = 'none';
   }
-  if (hintEl) hintEl.textContent = 'Piensa primero y luego muestra la respuesta.';
+  if (hintEl) {
+    if (reviewMode === 'errors') {
+      hintEl.textContent = 'To sa najczestsze pomylki. Zapamietaj poprawna forme.';
+    } else if (reviewMode === 'minitest') {
+      hintEl.textContent = `Mini-test: potrzebujesz ${MINITEST_PASS_PCT}% poprawnych odpowiedzi.`;
+    } else if (reviewMode === 'sprint') {
+      hintEl.textContent = 'Sprint: bez zastanawiania, szybka decyzja.';
+    } else {
+      hintEl.textContent = 'Piensa primero y luego muestra la respuesta.';
+    }
+  }
   if (btnShow) btnShow.disabled = false;
   if (btnAudio) btnAudio.disabled = false;
   if (btnExampleAudio) btnExampleAudio.disabled = !currentCard.plExample;
   if (btnFav) {
-    btnFav.disabled = false;
+    const canFav = reviewMode === 'srs' || reviewMode === 'daily';
+    btnFav.disabled = !canFav;
     btnFav.textContent = currentCard.favorite ? '\u2B50 Favorito' : '\u2606 Favorito';
   }
   if (btnCorrect) btnCorrect.disabled = true;
@@ -484,7 +1146,15 @@ async function saveSrs(uid, card, isCorrect) {
 
 async function markAnswer(isCorrect) {
   if (!auth.currentUser || !currentCard) return;
-  await saveSrs(auth.currentUser.uid, currentCard, isCorrect);
+  if (reviewMode === 'sprint' && sprintEnded) return;
+
+  if (isCorrect) sessionCorrect += 1;
+  else sessionWrong += 1;
+  updateScoreUI();
+
+  if (currentCard.cardSource !== 'mistake') {
+    await saveSrs(auth.currentUser.uid, currentCard, isCorrect);
+  }
   currentIdx += 1;
   renderCard();
 }
@@ -623,23 +1293,19 @@ async function loadTopicsForLevel(level) {
   const topicSelect = $('reviewTopic');
   if (!topicSelect) return;
   topicSelect.innerHTML = '<option value="all">Todos los temas</option>';
-  if (!level || level === 'ALL') {
+  const lvl = String(level || '').toUpperCase();
+  if (!lvl || lvl === 'ALL') {
     topicSelect.disabled = true;
     return;
   }
   topicSelect.disabled = false;
 
   try {
-    const snap = await getDocs(
-      query(collection(db, 'courses'), where('level', '==', level), orderBy('order')),
-    );
-    snap.forEach((d) => {
-      const t = { id: d.id, ...(d.data() || {}) };
-      if (t.isArchived === true) return;
-      if (!topicMatchesTrack(t)) return;
+    const topics = CURRENT_UID ? await loadVisibleTopicsForLevel(CURRENT_UID, lvl) : [];
+    topics.forEach((t) => {
       const opt = document.createElement('option');
-      opt.value = d.id;
-      opt.textContent = t.title || t.slug || d.id;
+      opt.value = t.id;
+      opt.textContent = t.title || t.slug || t.id;
       topicSelect.appendChild(opt);
     });
   } catch (e) {
@@ -651,6 +1317,15 @@ async function refreshReview() {
   if (!auth.currentUser) return;
   const levelEl = $('reviewLevel');
   const topicEl = $('reviewTopic');
+  const modeEl = $('reviewMode');
+  const selectedMode = String(modeEl?.value || reviewMode || 'srs').toLowerCase();
+  reviewMode = REVIEW_MODES.includes(selectedMode) ? selectedMode : 'srs';
+
+  sessionFinalized = false;
+  stopSprintTimer();
+  resetSession();
+  updateModeUI();
+
   const selectedLevel = String(levelEl?.value || '').toUpperCase();
   const topicId = String(topicEl?.value || '').trim();
 
@@ -658,29 +1333,73 @@ async function refreshReview() {
     selectedLevel && selectedLevel !== 'ALL'
       ? [selectedLevel]
       : userLevelsCache;
+  const activeLevels = reviewMode === 'minitest' ? userLevelsCache : levels;
 
   srsMap = await loadSrsMap(auth.currentUser.uid);
-  const exercises = await loadExercisesForLevels(
-    levels,
-    topicId && topicId !== 'all' ? topicId : '',
-  );
-  const cards = exercises
-    .filter(isCardExercise)
-    .flatMap(buildCardsFromExercise)
-    .map((c) => ({ ...c, favorite: srsMap.get(c.id)?.favorite === true }));
-  const limit = Number(userDocCache?.reviewDailyLimit || DEFAULT_DAILY_LIMIT);
-  const direction = String(userDocCache?.reviewDirection || 'pl_es');
-  let list = buildQueue(cards, srsMap, limit, direction);
+  let cards = [];
+  mistakesCache = [];
+
   const onlyFav = $('reviewOnlyFav')?.checked;
-  if (onlyFav) list = list.filter((c) => c.favorite);
-  queue = list;
+  const direction = String(userDocCache?.reviewDirection || 'pl_es');
+  const limit = Number(userDocCache?.reviewDailyLimit || DEFAULT_DAILY_LIMIT);
+
+  if (reviewMode === 'errors') {
+    mistakesCache = await loadMistakeItems(
+      auth.currentUser.uid,
+      activeLevels,
+      topicId && topicId !== 'all' ? topicId : '',
+    );
+    cards = cardsFromMistakes(mistakesCache);
+  } else {
+    const topicFilter = reviewMode === 'minitest' ? '' : topicId && topicId !== 'all' ? topicId : '';
+    let exercises = await loadExercisesForLevels(activeLevels, topicFilter);
+
+    if (reviewMode === 'minitest') {
+      if (!minitestBlock || minitestBlock < 1) minitestBlock = BLOCK_PARAM > 0 ? BLOCK_PARAM : 1;
+      const scope = await resolveMinitestTopicScope(activeLevels, minitestBlock);
+      minitestBlock = scope.block;
+      exercises = exercises.filter((ex) => {
+        const tid = String(ex.topicId || '').trim();
+        const tslug = String(ex.topicSlug || '').trim();
+        return (
+          (tid && (scope.topicIdSet.has(tid) || scope.topicSlugSet.has(tid))) ||
+          (tslug && (scope.topicIdSet.has(tslug) || scope.topicSlugSet.has(tslug)))
+        );
+      });
+    }
+
+    cards = exercises
+      .filter(isCardExercise)
+      .flatMap(buildCardsFromExercise)
+      .map((c) => ({ ...c, favorite: srsMap.get(c.id)?.favorite === true }));
+
+    if (onlyFav && (reviewMode === 'srs' || reviewMode === 'daily')) {
+      cards = cards.filter((c) => c.favorite);
+    }
+  }
+
+  cardsCache = cards.slice();
+  queue = buildQueue(
+    cards,
+    srsMap,
+    reviewMode === 'minitest' ? MINITEST_LIMIT : limit,
+    direction,
+    reviewMode,
+  );
   currentIdx = 0;
   renderCard();
+  if (reviewMode === 'sprint' && queue.length) startSprintTimer();
 }
 
 async function initReview(user) {
+  CURRENT_UID = user?.uid || null;
+  allowedTopicCache = new Map();
   userDocCache = await getUserDoc(user.uid);
-  userLevelsCache = getUserLevels(userDocCache);
+  const accessibleLevels = getUserLevels(userDocCache);
+  const accessible = LEVEL_ORDER.filter((l) => accessibleLevels.includes(l));
+  const isAdmin = userDocCache?.admin === true || String(userDocCache?.role || '') === 'admin';
+  const unlocked = isAdmin ? accessible : await computeUnlockedLevels(user.uid, accessible);
+  userLevelsCache = unlocked.length ? unlocked : ['A1'];
 
   const levelEl = $('reviewLevel');
   if (levelEl) {
@@ -695,6 +1414,13 @@ async function initReview(user) {
       opt.textContent = lvl;
       levelEl.appendChild(opt);
     });
+  }
+
+  const modeEl = $('reviewMode');
+  if (modeEl) {
+    const preferred = REVIEW_MODES.includes(MODE_PARAM) ? MODE_PARAM : reviewMode;
+    reviewMode = preferred;
+    modeEl.value = preferred;
   }
 
   const params = new URLSearchParams(window.location.search);
@@ -717,6 +1443,13 @@ async function initReview(user) {
 
   const applyBtn = $('reviewApply');
   applyBtn?.addEventListener('click', refreshReview);
+  modeEl?.addEventListener('change', async () => {
+    reviewMode = REVIEW_MODES.includes(String(modeEl.value || '').toLowerCase())
+      ? String(modeEl.value || '').toLowerCase()
+      : 'srs';
+    updateModeUI();
+    await refreshReview();
+  });
   levelEl?.addEventListener('change', async () => {
     await loadTopicsForLevel(levelEl.value);
     await refreshReview();
@@ -724,6 +1457,7 @@ async function initReview(user) {
   $('reviewTopic')?.addEventListener('change', refreshReview);
   $('reviewOnlyFav')?.addEventListener('change', refreshReview);
 
+  updateModeUI();
   await refreshReview();
 }
 

@@ -2390,7 +2390,7 @@ async function insertLibrarySetForAllTopics() {
 function getLessonAdminUrl() {
   const level = currentCourseLevel || String(courseLevel?.value || '');
   if (!currentCourseId || !level) return '';
-  return `lessonadmin.html?level=${encodeURIComponent(
+  return `admin-select.html?target=lesson&level=${encodeURIComponent(
     level,
   )}&id=${encodeURIComponent(currentCourseId)}`;
 }
@@ -2398,10 +2398,9 @@ function getLessonAdminUrl() {
 function getExerciseAdminUrl() {
   const level = currentCourseLevel || String(courseLevel?.value || '');
   if (!currentCourseId || !level) return '';
-  const slug = currentCourseSlug || currentCourseId;
-  return `ejercicioadmin.html?level=${encodeURIComponent(
+  return `admin-select.html?target=exercise&level=${encodeURIComponent(
     level,
-  )}&id=${encodeURIComponent(currentCourseId)}&slug=${encodeURIComponent(slug)}`;
+  )}&id=${encodeURIComponent(currentCourseId)}`;
 }
 
 function updateSummary() {
@@ -2506,12 +2505,7 @@ function bindEvents() {
       setStatus(statusEl, 'Najpierw zapisz kurs.', true);
       return;
     }
-    const level = currentCourseLevel;
-    const id = currentCourseId;
-    const slug = currentCourseSlug || currentCourseId;
-    const url = `ejercicioadmin.html?level=${encodeURIComponent(
-      level,
-    )}&id=${encodeURIComponent(id)}&slug=${encodeURIComponent(slug)}`;
+    const url = getExerciseAdminUrl();
     window.location.href = url;
   };
 

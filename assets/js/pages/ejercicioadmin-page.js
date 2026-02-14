@@ -124,6 +124,8 @@ import {
       const btnTplFill = document.getElementById('btnTplFill');
       const btnTplChoice = document.getElementById('btnTplChoice');
       const btnTplTF = document.getElementById('btnTplTF');
+      const btnTplScene = document.getElementById('btnTplScene');
+      const btnTplFindError = document.getElementById('btnTplFindError');
       const importJsonArea = document.getElementById('importJsonArea');
       const btnImportJson = document.getElementById('btnImportJson');
       const btnClearImport = document.getElementById('btnClearImport');
@@ -1215,6 +1217,7 @@ import {
       // ===== Exercise types (Twoja lista) =====
       const TASK_OPTIONS = [
         'Rellenar los espacios',
+        'Arrastrar y soltar palabras',
         'Relacionar palabra con imagen',
         'Relacionar palabra con traducción',
         'Elegir la palabra correcta',
@@ -1248,8 +1251,12 @@ import {
         'Escuchar y relacionar personas',
         'Escuchar y ordenar la secuencia',
         'Dictado con audio',
+        'Dictado con tolerancia',
+        'Verdadero/Falso (botones)',
         'Escuchar y repetir',
         'Diálogo interactivo',
+        'Mikro-scenka (dialog)',
+        'Znajdz blad',
         'Misión del día',
         'Quiz situacional',
         'Video con preguntas',
@@ -1276,6 +1283,7 @@ import {
         trueFalse: new Set([
           'Verdadero o falso',
           'Escuchar y marcar verdadero o falso',
+          'Verdadero/Falso (botones)',
         ]),
         fill: new Set([
           'Rellenar los espacios',
@@ -1283,7 +1291,9 @@ import {
           'Completar con preposición o terminación',
           'Escuchar y completar los espacios',
           'Dictado con audio',
+          'Dictado con tolerancia',
         ]),
+        dragDrop: new Set(['Arrastrar y soltar palabras']),
         matching: new Set([
           'Relacionar palabra con imagen',
           'Relacionar palabra con traducción',
@@ -1313,6 +1323,8 @@ import {
           'Describir una imagen',
           'Decirlo de otra manera',
         ]),
+        scene: new Set(['Mikro-scenka (dialog)']),
+        findError: new Set(['Znajdz blad']),
         memory: new Set(['Juego de memoria (pares)']),
         grouping: new Set(['Agrupar palabras']),
         cards: new Set(['Tarjetas interactivas']),
@@ -1342,6 +1354,34 @@ import {
             notes: type.startsWith('Escuchar') ? noteAudio : ''};
         }
 
+        if (TEMPLATE_GROUPS.scene.has(type)) {
+          return {
+            ...base,
+            prompt: 'Sytuacja: spotykasz nowa osobe na kursie jezyka. Wybierz najlepsza reakcje.',
+            optionsText: opt(
+              'A) Czesc, mam na imie Marta. A ty?',
+              'B) Nie lubie poniedzialkow.',
+              'C) Mam dwa koty i rower.',
+            ),
+            answer: 'A',
+            category: 'both',
+            notes: 'W prompt opisz krotko sytuacje, w opcjach podaj mozliwe reakcje.'};
+        }
+
+        if (TEMPLATE_GROUPS.findError.has(type)) {
+          return {
+            ...base,
+            prompt: "Znajdz blad i wybierz poprawna wersje: 'On maja nowy samochod.'",
+            optionsText: opt(
+              'A) On maja nowy samochod.',
+              'B) On ma nowy samochod.',
+              'C) On miec nowy samochod.',
+            ),
+            answer: 'B',
+            category: 'grammar',
+            notes: 'Daj jedna poprawna odpowiedz i 2-3 odpowiedzi z typowym bledem.'};
+        }
+
         if (TEMPLATE_GROUPS.choice.has(type)) {
           return {
             ...base,
@@ -1356,16 +1396,32 @@ import {
         }
 
         if (TEMPLATE_GROUPS.fill.has(type)) {
+          const isDictationType = type.includes('Dictado');
           return {
             ...base,
-            prompt: 'Completa: ___',
+            prompt: isDictationType
+              ? 'Escucha y escribe la frase completa.'
+              : 'Completa: ___',
             optionsText: '',
-            answer: 'respuesta_Poprawna',
+            answer: isDictationType
+              ? 'Tu frase de referencia aqui.'
+              : 'respuesta_Poprawna',
             category: 'both',
             notes:
-              type.startsWith('Escuchar') || type === 'Dictado con audio'
+              type.startsWith('Escuchar') || isDictationType
                 ? noteAudio
                 : ''};
+        }
+
+        if (TEMPLATE_GROUPS.dragDrop.has(type)) {
+          return {
+            ...base,
+            prompt: 'Yo ___ al trabajo en ___.',
+            optionsText: opt('voy', 'bus', 'tren', 'casa'),
+            answer: 'voy||bus',
+            category: 'both',
+            notes:
+              'Usa ___ jako huecos. En answer separa cada hueco con ||.'};
         }
 
         if (TEMPLATE_GROUPS.matching.has(type)) {
@@ -1488,6 +1544,9 @@ import {
         const needsOptions =
           TEMPLATE_GROUPS.choice.has(type) ||
           TEMPLATE_GROUPS.trueFalse.has(type) ||
+          TEMPLATE_GROUPS.scene.has(type) ||
+          TEMPLATE_GROUPS.findError.has(type) ||
+          TEMPLATE_GROUPS.dragDrop.has(type) ||
           TEMPLATE_GROUPS.matching.has(type) ||
           TEMPLATE_GROUPS.ordering.has(type) ||
           TEMPLATE_GROUPS.memory.has(type) ||
@@ -2051,6 +2110,8 @@ import {
         wireQuick('btnTplFill', 'Rellenar los espacios');
         wireQuick('btnTplChoice', 'Opción múltiple');
         wireQuick('btnTplTF', 'Verdadero o falso');
+        wireQuick('btnTplScene', 'Mikro-scenka (dialog)');
+        wireQuick('btnTplFindError', 'Znajdz blad');
 
         // First paint: ensure options visibility matches current type
         setOptionsVisibility(exType.value);
@@ -2186,6 +2247,32 @@ import {
           if (exTags) exTags.value = 'miec, podstawy';
           if (exImageUrl) exImageUrl.value = '';
           exOrder.value = next;
+        } else if (kind === 'scene') {
+          exType.value = 'Mikro-scenka (dialog)';
+          exPrompt.value =
+            'Sytuacja: jestes w kawiarni i chcesz zamowic kawe. Wybierz najlepsza odpowiedz.';
+          exOptions.value =
+            'A) Poprosze kawe i wode.\nB) Ja jutro bylem w pracy.\nC) Mam niebieski plecak.';
+          exAnswer.value = 'A';
+          exCategory.value = 'both';
+          exNotes.value =
+            'Mikro-scenka: prompt = sytuacja, opcje = reakcje ucznia.';
+          if (exTags) exTags.value = 'dialog, sytuacje, komunikacja';
+          if (exImageUrl) exImageUrl.value = '';
+          exOrder.value = next;
+        } else if (kind === 'findError') {
+          exType.value = 'Znajdz blad';
+          exPrompt.value =
+            "Znajdz blad i wybierz poprawna wersje: 'My jestesmy zmeczony.'";
+          exOptions.value =
+            'A) My jestesmy zmeczony.\nB) My jestesmy zmeczeni.\nC) My byc zmeczeni.';
+          exAnswer.value = 'B';
+          exCategory.value = 'grammar';
+          exNotes.value =
+            'Daj jedna poprawna odpowiedz i 2-3 czeste bledy.';
+          if (exTags) exTags.value = 'gramatyka, znajdz blad';
+          if (exImageUrl) exImageUrl.value = '';
+          exOrder.value = next;
         }
         showToast('Szablon zastosowany', 'ok', 1400);
       }
@@ -2193,6 +2280,10 @@ import {
       btnTplFill?.addEventListener('click', () => applyTemplate('fill'));
       btnTplChoice?.addEventListener('click', () => applyTemplate('choice'));
       btnTplTF?.addEventListener('click', () => applyTemplate('tf'));
+      btnTplScene?.addEventListener('click', () => applyTemplate('scene'));
+      btnTplFindError?.addEventListener('click', () =>
+        applyTemplate('findError'),
+      );
 
       // Import JSON (array)
       function safeParseJsonArray(raw) {
@@ -2553,10 +2644,18 @@ import {
         }
 
         const options = parseOptions(exOptions.value);
-        const needsOptions =
-          options.length > 0 ||
-          type === 'Opción múltiple' ||
-          type === 'Verdadero o falso';
+        const typeNeedsOptions =
+          TEMPLATE_GROUPS.choice.has(type) ||
+          TEMPLATE_GROUPS.trueFalse.has(type) ||
+          TEMPLATE_GROUPS.scene.has(type) ||
+          TEMPLATE_GROUPS.findError.has(type) ||
+          TEMPLATE_GROUPS.dragDrop.has(type) ||
+          TEMPLATE_GROUPS.matching.has(type) ||
+          TEMPLATE_GROUPS.ordering.has(type) ||
+          TEMPLATE_GROUPS.memory.has(type) ||
+          TEMPLATE_GROUPS.grouping.has(type) ||
+          TEMPLATE_GROUPS.cards.has(type);
+        const needsOptions = options.length > 0 || typeNeedsOptions;
 
         if (needsOptions && options.length < 2) {
           markBad(exOptions, true);

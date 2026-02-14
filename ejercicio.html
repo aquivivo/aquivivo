@@ -11,8 +11,8 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260209a" />
-    <script src="assets/js/layout.js?v=20260209a" type="module"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260214h" />
+    <script src="assets/js/layout.js?v=20260214h" type="module"></script>
   </head>
 
   <body data-page="ejercicio">
@@ -20,7 +20,7 @@
 
     <main class="page">
       <div class="container">
-        <section class="heroBanner" style="padding: 22px 18px">
+        <section id="exerciseHero" class="heroBanner" style="padding: 22px 18px">
           <div class="heroTitleRow">
             <div class="heroIcon">&#x1F9E9;</div>
             <div style="flex: 1">
@@ -85,7 +85,7 @@
           </div>
         </section>
 
-        <section class="card" style="margin-top: 14px; padding: 14px 16px">
+        <section id="exerciseFiltersCard" class="card" style="margin-top: 14px; padding: 14px 16px">
           <div
             style="
               display: flex;
@@ -145,7 +145,29 @@
           <!-- Admin UI injected by JS if needed -->
         </section>
 
-        <section style="margin-top: 14px">
+        <section id="immersiveStage" class="immersiveStage" style="display: none">
+          <div class="immersiveTrack" aria-hidden="true">
+            <div id="immersiveTrackFill" class="immersiveTrackFill"></div>
+          </div>
+          <div class="immersiveTopLine">
+            <span id="immersiveStep">1/1</span>
+            <span id="immersiveType">Ejercicio</span>
+          </div>
+          <h2 id="immersivePromptTitle" class="immersivePromptTitle">
+            Resuelve el ejercicio.
+          </h2>
+          <div id="immersiveExerciseHost" class="immersiveExerciseHost"></div>
+          <div class="immersiveNav">
+            <button class="btn-white-outline" id="btnImmPrev" type="button">
+              Anterior
+            </button>
+            <button class="btn-yellow" id="btnImmNext" type="button">
+              Siguiente
+            </button>
+          </div>
+        </section>
+
+        <section id="exerciseListSection" style="margin-top: 14px">
           <div id="emptyExercises" class="empty" style="display: none">
             No hay ejercicios todavia.
           </div>
@@ -176,6 +198,13 @@
         <div
           style="margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap"
         >
+          <a
+            class="btn-yellow"
+            id="btnFinishMiniTest"
+            href="#"
+            style="display: none"
+            >Mini-test checkpoint</a
+          >
           <a class="btn-yellow" id="btnFinishLesson" href="#"
             >Volver a la leccion</a
           >
@@ -249,7 +278,7 @@
     </div>
 
     <script type="module" src="assets/js/content-protect.js"></script>
-    <script type="module" src="assets/js/pages/ejercicio-page.js"></script>
+    <script type="module" src="assets/js/pages/ejercicio-page.js?v=20260214g"></script>
   </body>
 </html>
 

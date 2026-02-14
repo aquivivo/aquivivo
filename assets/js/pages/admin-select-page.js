@@ -25,6 +25,7 @@ const topicPreview = document.getElementById('topicPreview');
 const topicTitle = document.getElementById('topicTitle');
 const topicSubtitle = document.getElementById('topicSubtitle');
 const topicError = document.getElementById('topicError');
+const quickHint = document.getElementById('quickHint');
 
 const goLessonAdmin = document.getElementById('goLessonAdmin');
 const goExerciseAdmin = document.getElementById('goExerciseAdmin');
@@ -41,7 +42,15 @@ const copyOpenTarget = document.getElementById('copyOpenTarget');
 const copyOpenAdmin = document.getElementById('copyOpenAdmin');
 
 const params = new URLSearchParams(location.search);
-const type = (params.get('type') || '').toLowerCase(); // 'lesson' | 'exercise'
+const intentType = (
+  params.get('target') ||
+  params.get('type') ||
+  ''
+).toLowerCase(); // 'lesson' | 'exercise'
+const intentLevel = String(params.get('level') || '').toUpperCase();
+const intentTopicId = String(params.get('id') || '').trim();
+const intentAutoOpen = String(params.get('open') || '').trim() === '1';
+const VALID_LEVELS = new Set(['A1', 'A2', 'B1', 'B2']);
 
 let topicsCache = [];
 let copyTopicsCache = [];
@@ -61,6 +70,14 @@ function setCopyStatus(msg, bad = false) {
   copyStatus.style.color = bad ? 'var(--red, #ff6b6b)' : '';
 }
 
+function setActionButtonState(btn, href, enabled) {
+  if (!btn) return;
+  btn.href = enabled ? href : '#';
+  btn.style.pointerEvents = enabled ? '' : 'none';
+  btn.style.opacity = enabled ? '1' : '.55';
+  btn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+}
+
 function slugify(text) {
   return String(text || '')
     .toLowerCase()
@@ -68,6 +85,56 @@ function slugify(text) {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+function buildLessonAdminHref(level, id) {
+  return `lessonadmin.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(id)}`;
+}
+
+function buildExerciseAdminHref(level, id, slug = '') {
+  const qs = new URLSearchParams();
+  qs.set('level', String(level || ''));
+  qs.set('id', String(id || ''));
+  const cleanSlug = String(slug || '').trim();
+  if (cleanSlug) qs.set('slug', cleanSlug);
+  return `ejercicioadmin.html?${qs.toString()}`;
+}
+
+function buildAdminCenterHref(level, id, target, opts = {}) {
+  const qs = new URLSearchParams();
+  if (target) qs.set('target', String(target));
+  if (level) qs.set('level', String(level));
+  if (id) qs.set('id', String(id));
+  if (opts?.openNow) qs.set('open', '1');
+  return `admin-select.html?${qs.toString()}`;
+}
+
+function updateQuickActions(topic, level) {
+  const hasTopic = !!topic && !!level;
+  if (!hasTopic) {
+    setActionButtonState(goLessonAdmin, '#', false);
+    setActionButtonState(goExerciseAdmin, '#', false);
+    if (quickHint) quickHint.textContent = 'Najpierw wybierz temat ponizej.';
+    return;
+  }
+
+  const lessonHref = buildLessonAdminHref(level, topic.id);
+  const exHref = buildExerciseAdminHref(level, topic.id, topic.slug || '');
+  setActionButtonState(goLessonAdmin, lessonHref, true);
+  setActionButtonState(goExerciseAdmin, exHref, true);
+
+  if (intentType === 'exercise') {
+    goExerciseAdmin.className = 'btn-yellow';
+    goLessonAdmin.className = 'btn-white-outline';
+  } else {
+    goLessonAdmin.className = 'btn-yellow';
+    goExerciseAdmin.className = 'btn-white-outline';
+  }
+
+  if (quickHint) {
+    const name = topic.title || topic.id;
+    quickHint.textContent = `Wybrano temat: ${name} (${level}).`;
+  }
 }
 
 async function ensureAdmin(user) {
@@ -84,14 +151,39 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = 'login.html';
     return;
   }
-  await ensureAdmin(user);
+  const ok = await ensureAdmin(user);
+  if (!ok) return;
+  if (VALID_LEVELS.has(intentLevel) && selLevel) selLevel.value = intentLevel;
   if (copyToLevel && selLevel) copyToLevel.value = selLevel.value;
   if (copyFromLevel && selLevel) copyFromLevel.value = selLevel.value;
-  if (type === 'exercise' && copyOpenTarget) copyOpenTarget.value = 'exercise';
-  if (type === 'lesson' && copyOpenTarget) copyOpenTarget.value = 'lesson';
+  if (intentType === 'exercise' && copyOpenTarget) copyOpenTarget.value = 'exercise';
+  if (intentType === 'lesson' && copyOpenTarget) copyOpenTarget.value = 'lesson';
   // Small UX: if type passed, hint in the UI (optional)
-  if (type === 'lesson') levelHint.textContent = 'Cel: Admin lekcji';
-  if (type === 'exercise') levelHint.textContent = 'Cel: Admin cwiczen';
+  if (intentType === 'lesson') levelHint.textContent = 'Cel: Admin lekcji';
+  if (intentType === 'exercise') levelHint.textContent = 'Cel: Admin cwiczen';
+  updateQuickActions(null, selLevel?.value || '');
+
+  await loadTopics();
+
+  if (intentTopicId) {
+    const matched = topicsCache.find((x) => x.id === intentTopicId);
+    if (matched) {
+      selTopic.value = matched.id;
+      selTopic.dispatchEvent(new Event('change'));
+
+      if (intentAutoOpen && (intentType === 'lesson' || intentType === 'exercise')) {
+        const level = selLevel?.value || intentLevel;
+        const targetHref =
+          intentType === 'exercise'
+            ? buildExerciseAdminHref(level, matched.id, matched.slug || '')
+            : buildLessonAdminHref(level, matched.id);
+        window.location.href = targetHref;
+      }
+    } else {
+      setError(`Nie znaleziono tematu ${intentTopicId} na poziomie ${selLevel.value}.`);
+      updateQuickActions(null, selLevel?.value || '');
+    }
+  }
 });
 
 btnLoadTopics.addEventListener('click', loadTopics);
@@ -101,15 +193,17 @@ btnCopyTopic?.addEventListener('click', copyTopic);
 
 selLevel?.addEventListener('change', () => {
   if (copyToLevel) copyToLevel.value = selLevel.value;
+  updateQuickActions(null, selLevel.value);
 });
 copyFromLevel?.addEventListener('change', loadCopyTopics);
 
 selTopic.addEventListener('change', () => {
   const id = selTopic.value;
   const level = selLevel.value;
-  const t = topicsCache.find(x => x.id === id);
+  const t = topicsCache.find((x) => x.id === id);
   if (!t) {
     setPreviewVisible(false);
+    updateQuickActions(null, level);
     return;
   }
 
@@ -117,22 +211,7 @@ selTopic.addEventListener('change', () => {
   topicSubtitle.textContent = t.subtitle || '';
   setPreviewVisible(true);
   setError('');
-
-  // keep consistent with your existing URLs: lessonadmin.html?level=A1&id=DOCID
-  const lessonHref = `lessonadmin.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(id)}`;
-  const exHref = `ejercicioadmin.html?level=${encodeURIComponent(level)}&id=${encodeURIComponent(id)}`;
-
-  goLessonAdmin.href = lessonHref;
-  goExerciseAdmin.href = exHref;
-
-  // If user came here from a specific intent, make that button the "primary" feel.
-  if (type === 'exercise') {
-    goExerciseAdmin.className = 'btn-yellow';
-    goLessonAdmin.className = 'btn-white-outline';
-  } else {
-    goLessonAdmin.className = 'btn-yellow';
-    goExerciseAdmin.className = 'btn-white-outline';
-  }
+  updateQuickActions(t, level);
 });
 
 async function loadTopics() {
@@ -163,6 +242,7 @@ async function loadTopics() {
         id: d.id,
         title: data.title || data.name || data.topicTitle || '',
         subtitle: data.subtitle || data.desc || data.description || '',
+        slug: String(data.slug || '').trim(),
         order: data.order ?? 9999,
       };
     });
@@ -174,6 +254,7 @@ async function loadTopics() {
       levelHint.textContent = '0 tematow.';
       selTopic.disabled = true;
       btnRefresh.disabled = false;
+      updateQuickActions(null, level);
       return;
     }
 
@@ -188,7 +269,13 @@ async function loadTopics() {
     btnRefresh.disabled = false;
 
     // Auto-select first real topic if intent is provided
-    if ((type === 'lesson' || type === 'exercise') && topicsCache.length > 0) {
+    const hasPinnedTopicForCurrentLevel =
+      !!intentTopicId && !!intentLevel && intentLevel === level;
+    if (
+      (intentType === 'lesson' || intentType === 'exercise') &&
+      !hasPinnedTopicForCurrentLevel &&
+      topicsCache.length > 0
+    ) {
       selTopic.value = topicsCache[0].id;
       selTopic.dispatchEvent(new Event('change'));
     }
@@ -199,6 +286,7 @@ async function loadTopics() {
     selTopic.innerHTML = '<option value="">-- Blad wczytywania --</option>';
     selTopic.disabled = true;
     btnRefresh.disabled = false;
+    updateQuickActions(null, selLevel?.value || '');
   }
 }
 
@@ -363,10 +451,7 @@ async function copyTopic() {
 
     if (copyOpenAdmin?.checked) {
       const target = String(copyOpenTarget?.value || 'lesson');
-      const url =
-        target === 'exercise'
-          ? `ejercicioadmin.html?level=${encodeURIComponent(dstLevel)}&id=${encodeURIComponent(newCourseRef.id)}`
-          : `lessonadmin.html?level=${encodeURIComponent(dstLevel)}&id=${encodeURIComponent(newCourseRef.id)}`;
+      const url = buildAdminCenterHref(dstLevel, newCourseRef.id, target);
       window.open(url, '_blank');
     }
   } catch (e) {

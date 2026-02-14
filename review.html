@@ -8,8 +8,8 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260208m" />
-    <script src="assets/js/layout.js?v=20260208m" type="module"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260214h" />
+    <script src="assets/js/layout.js?v=20260214h" type="module"></script>
   </head>
 
   <body data-page="review">
@@ -31,14 +31,24 @@
 
         <section class="card" id="reviewStats">
           <div class="metaRow" style="gap: 14px; flex-wrap: wrap">
+            <span id="reviewModeLabel">Tryb: SRS</span>
             <span id="reviewCount">Para hoy: -</span>
             <span id="reviewNew">Nuevas: -</span>
             <span id="reviewProgress">Progreso: 0/0</span>
+            <span id="reviewTimer" style="display: none">Tiempo: 60s</span>
+            <span id="reviewScore">Puntos: 0</span>
           </div>
         </section>
         
         <section class="card" id="reviewFilters" style="margin-top: 12px">
           <div class="metaRow" style="gap: 10px; flex-wrap: wrap">
+            <select id="reviewMode" class="select" style="min-width: 170px">
+              <option value="srs">SRS normal</option>
+              <option value="daily">Daily challenge</option>
+              <option value="sprint">Sprint 60s</option>
+              <option value="errors">Powtorka bledow</option>
+              <option value="minitest">Mini-test checkpoint</option>
+            </select>
             <select id="reviewLevel" class="select" style="min-width: 160px"></select>
             <select id="reviewTopic" class="select" style="min-width: 240px"></select>
             <button class="btn-white-outline" id="reviewApply" type="button">
@@ -50,7 +60,7 @@
             </label>
           </div>
           <div class="hintSmall" style="margin-top: 8px">
-            Filtra el repaso por nivel y tema.
+            Filtra por nivel/tema y elige tryb (daily, sprint, bledy, mini-test).
           </div>
         </section>
 
@@ -92,7 +102,7 @@
       </div>
     </main>
 
-    <script type="module" src="assets/js/pages/review-page.js"></script>
+    <script type="module" src="assets/js/pages/review-page.js?v=20260214h"></script>
   </body>
 </html>
 

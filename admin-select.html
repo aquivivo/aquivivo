@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <title>Wybor tresci | Admin | AquiVivo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20260208m" />
-  <script src="assets/js/layout.js?v=20260208m" type="module"></script>
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260214d" />
+  <script src="assets/js/layout.js?v=20260214d" type="module"></script>
 </head>
 <body data-page="admin-select">
   <div id="appHeader"></div>
@@ -13,16 +13,32 @@
   <main class="page">
     <div class="container">
 
-      <section class="heroBanner">
-        <div class="heroTitleRow">
-          <div class="heroIcon">&#x1F9ED;</div>
-          <div>
-            <h1 class="sectionTitle">Wybierz poziom i temat</h1>
-            <p class="subtitle">Zanim wejdziesz do admina, wybierz poziom i temat do edycji.</p>
+        <section class="heroBanner">
+          <div class="heroTitleRow">
+            <div class="heroIcon">&#x1F9ED;</div>
+            <div>
+              <h1 class="sectionTitle">Centrum admina</h1>
+              <p class="subtitle">To jest glowny punkt startowy. Najpierw wybierz poziom i temat, potem wejdz do edycji lekcji lub cwiczen.</p>
+            </div>
           </div>
+          <div class="metaRow" style="margin-top:10px; gap:10px; flex-wrap:wrap;">
+            <span class="btn-yellow" style="cursor:default;">Tryb prosty (zalecany)</span>
+            <a class="btn-white-outline" href="admin-wizard.html">Kreator lekcji i cwiczen</a>
+            <a class="btn-white-outline" href="esadmin.html">Panel zaawansowany</a>
+          </div>
+        </section>
+
+      <section class="card">
+        <h2 class="sectionTitle">Tryb prosty</h2>
+        <p class="subtitle" style="margin-top:6px;">
+          1) Wybierz poziom i temat 2) kliknij edycje lekcji albo cwiczen.
+        </p>
+        <div class="metaRow" style="margin-top:12px; gap:10px; flex-wrap:wrap;">
+          <a id="goLessonAdmin" class="btn-yellow" href="#" style="pointer-events:none; opacity:.55;">Edytuj lekcje</a>
+          <a id="goExerciseAdmin" class="btn-white-outline" href="#" style="pointer-events:none; opacity:.55;">Edytuj cwiczenia</a>
         </div>
-        <div class="metaRow" style="margin-top:10px; gap:10px; flex-wrap:wrap;">
-          <a class="btn-yellow" href="admin-wizard.html">Kreator lekcji i cwiczen</a>
+        <div class="hintSmall" id="quickHint" style="margin-top:10px;">
+          Najpierw wybierz temat ponizej.
         </div>
       </section>
 
@@ -56,20 +72,19 @@
           <div class="subtitle" style="margin-bottom:6px;">Wybrano</div>
           <div id="topicTitle" class="sectionTitle" style="font-size:22px;"></div>
           <div id="topicSubtitle" class="subtitle" style="margin-top:6px;"></div>
-          <div class="metaRow" style="flex-wrap:wrap; gap:10px; margin-top:14px;">
-            <a id="goLessonAdmin" class="btn-yellow" href="#">Admin lekcji</a>
-            <a id="goExerciseAdmin" class="btn-white-outline" href="#">Admin cwiczen</a>
-          </div>
           <p class="hintSmall" style="margin-top:10px;">
-            Wskazowka: mozesz tez otworzyc &quot;Podglad lekcji&quot; w panelu lekcji.
+            Teraz uzyj przyciskow z sekcji &quot;Tryb prosty&quot; powyzej.
           </p>
         </div>
 
         <div id="topicError" class="hintSmall" style="margin-top:12px; display:none;"></div>
       </section>
 
-      <section class="card" id="copySection">
-        <h2 class="sectionTitle">3) Kopiuj temat (lekcja + cwiczenia)</h2>
+      <details class="card" id="copySection">
+        <summary class="sectionTitle" style="cursor:pointer; list-style:none;">
+          3) Narzedzia zaawansowane: kopiuj temat
+        </summary>
+        <div style="margin-top:12px;">
         <div class="metaRow" style="flex-wrap:wrap; gap:10px; align-items:flex-end;">
           <div>
             <label class="muted" style="font-weight:900; display:block; margin-bottom:6px;">Poziom zrodlowy</label>
@@ -125,7 +140,8 @@
         <div class="hintSmall" style="margin-top:10px;">
           Kopiuje: kurs (courses), lekcje (course_meta) oraz wszystkie cwiczenia (exercises).
         </div>
-      </section>
+        </div>
+      </details>
 
     </div>
   </main>

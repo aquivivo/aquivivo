@@ -472,9 +472,23 @@ function ensureAdminSectionSlot() {
 function setActiveAdminLink(id) {
   const sidePanel = document.getElementById('sidePanel');
   if (!sidePanel) return;
+  const targetId = String(id || '');
+  const activeLinks = [];
   sidePanel.querySelectorAll('.side-panel-link').forEach((link) => {
-    if (link.dataset.adminSection === id) link.classList.add('is-active');
-    else link.classList.remove('is-active');
+    const isActive = !!targetId && link.dataset.adminSection === targetId;
+    link.classList.toggle('is-active', isActive);
+    if (isActive) {
+      activeLinks.push(link);
+      const group = link.closest('details.side-panel-group');
+      if (group) group.open = true;
+    }
+  });
+  if (!activeLinks.length) return;
+  const preferred =
+    activeLinks.find((link) => link.dataset.adminShortcut !== '1') ||
+    activeLinks[0];
+  requestAnimationFrame(() => {
+    preferred.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
   });
 }
 
@@ -615,13 +629,59 @@ function setupAdminSidebarSections() {
     { title: '🛠️ Techniczne i multimedia', items: ['accAppLogs', 'accAudioLib'] },
   ];
 
+  const quickGroup = document.createElement('details');
+  quickGroup.className = 'side-panel-group';
+  quickGroup.open = true;
+  const quickSummary = document.createElement('summary');
+  quickSummary.className = 'side-panel-group-title';
+  quickSummary.textContent = 'Start i stare opcje';
+  quickGroup.appendChild(quickSummary);
+
+  const quickList = document.createElement('div');
+  quickList.className = 'side-panel-group-list';
+  const quickItems = [
+    { href: 'admin-select.html', label: 'Centrum admina', icon: '&#x1F9ED;' },
+    { href: 'admin-wizard.html', label: 'Kreator', icon: '&#x1F9F0;' },
+    { href: 'lessonadmin.html', label: 'Admin lekcji', icon: '&#x1F4D8;' },
+    { href: 'ejercicioadmin.html', label: 'Admin cwiczen', icon: '&#x1F3AF;' },
+    { adminSection: 'accDashboard', label: 'Dashboard', icon: iconMap.accDashboard },
+    { adminSection: 'accServices', label: 'Dodawanie tresci', icon: iconMap.accServices },
+    { adminSection: 'accPayments', label: 'Ceny i platnosci', icon: iconMap.accPayments },
+    { adminSection: 'accUsers', label: 'Uzytkownicy', icon: iconMap.accUsers },
+    { adminSection: 'accPromo', label: 'Kody promo', icon: iconMap.accPromo },
+    { adminSection: 'accSegments', label: 'Segmentacja', icon: iconMap.accSegments },
+  ];
+  quickItems.forEach((item) => {
+    if (item.href) {
+      const link = document.createElement('a');
+      link.className = 'side-panel-link';
+      link.href = item.href;
+      link.innerHTML = `<span class="side-panel-ico">${item.icon || ''}</span><span>${esc(
+        item.label || '',
+      )}</span>`;
+      quickList.appendChild(link);
+      return;
+    }
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'side-panel-link';
+    btn.dataset.adminSection = item.adminSection || '';
+    btn.dataset.adminShortcut = '1';
+    btn.innerHTML = `<span class="side-panel-ico">${item.icon || ''}</span><span>${esc(
+      item.label || '',
+    )}</span>`;
+    quickList.appendChild(btn);
+  });
+  quickGroup.appendChild(quickList);
+  sidePanel.appendChild(quickGroup);
+
   const usedIds = new Set();
   groupDefs.forEach((group) => {
     const items = group.items.filter((id) => labelById.has(id));
     if (!items.length) return;
     const groupEl = document.createElement('details');
     groupEl.className = 'side-panel-group';
-    groupEl.open = false;
+    groupEl.open = true;
     const summary = document.createElement('summary');
     summary.className = 'side-panel-group-title';
     summary.textContent = group.title;
@@ -651,7 +711,7 @@ function setupAdminSidebarSections() {
   if (remaining.length) {
     const groupEl = document.createElement('details');
     groupEl.className = 'side-panel-group';
-    groupEl.open = false;
+    groupEl.open = true;
     const summary = document.createElement('summary');
     summary.className = 'side-panel-group-title';
     summary.textContent = 'Pozostale';
@@ -4138,10 +4198,6 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadBroadcasts();
   });
 });
-
-
-
-
 
 
 

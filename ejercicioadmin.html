@@ -47,8 +47,8 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260208m" />
-    <script src="assets/js/layout.js?v=20260208m" type="module"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260214d" />
+    <script src="assets/js/layout.js?v=20260214d" type="module"></script>
   </head>
 
   <body data-page="ejercicioadmin">
@@ -310,7 +310,8 @@
       Aktywna sesja: <strong id="sessionEmail">Ladowanie...</strong>
     </div>
 
-    <main class="container">
+    <main class="page">
+      <div class="container">
       <div id="toast"></div>
 
       <div class="card">
@@ -503,6 +504,12 @@
             </button>
             <button class="btn" id="btnTplTF" type="button">
               + Szablon: prawda/falsz
+            </button>
+            <button class="btn" id="btnTplScene" type="button">
+              + Szablon: mikro-scenka
+            </button>
+            <button class="btn" id="btnTplFindError" type="button">
+              + Szablon: znajdz blad
             </button>
           </div>
 
@@ -770,6 +777,7 @@
           Zapis trafia do kolekcji Firestore: <b>exercises</b> z polami: level,
           topicSlug, order, type, prompt, options[], answer, notes.
         </div>
+      </div>
       </div>
     </main>
 

@@ -507,49 +507,38 @@ function renderCourses(userDoc, flags) {
   const host = $('coursesCards');
   if (!host) return;
 
-  const levels = [
-    { lvl: 'A1', title: 'A1 — Principiante', subtitle: 'Empieza desde cero.' },
-    { lvl: 'A2', title: 'A2 — Básico', subtitle: 'Refuerza lo esencial.' },
-    { lvl: 'B1', title: 'B1 — Intermedio', subtitle: 'Comunicación diaria.' },
-    { lvl: 'B2', title: 'B2 — Avanzado', subtitle: 'Fluidez y matices.' },
-  ];
+  const levels = ['A1', 'A2', 'B1', 'B2'];
+  const unlockedAny = levels.some((lvl) => hasLevelAccess(flags, userDoc, lvl));
+  const href = 'kurs-pl.html?level=A1&view=pro&flow=continuous';
 
-  const canOpen = (lvl) => hasLevelAccess(flags, userDoc, lvl);
-
-  host.innerHTML = levels
-    .map(({ lvl, title, subtitle }) => {
-      const href = `course.html?level=${encodeURIComponent(lvl)}`;
-      const unlocked = canOpen(lvl);
-
-      if (unlocked) {
-        return `
-          <a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">
-            <div class="courseTop">
-              <div class="courseBadge"><span aria-hidden="true">&#x1F4DA;</span> ${lvl}</div>
-                <div class="muted" style="font-weight:900;">Entrar &#x2192;</div>
-            </div>
-            <div class="courseTitle" style="margin-top:10px;">${title}</div>
-            <div class="muted" style="margin-top:6px;">${subtitle}</div>
-          </a>
-        `;
-      }
-
-      return `
-        <div class="courseCard" style="opacity:.55; filter:saturate(.75); cursor:not-allowed;">
-          <div class="courseTop">
-            <div class="courseBadge"><span aria-hidden="true">&#x1F512;</span> ${lvl}</div>
-            <div class="muted" style="font-weight:900;">Bloqueado</div>
-          </div>
-          <div class="courseTitle" style="margin-top:10px;">${title}</div>
-          <div class="muted" style="margin-top:6px;">${subtitle}</div>
-          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-            <a class="btn-yellow" href="services.html?level=${encodeURIComponent(lvl)}" style="text-decoration:none;">Activar acceso</a>
-            <a class="btn-white-outline" href="services.html" style="text-decoration:none;">Ver planes</a>
-          </div>
+  if (unlockedAny) {
+    host.innerHTML = `
+      <a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">
+        <div class="courseTop">
+          <div class="courseBadge"><span aria-hidden="true">&#x1F4DA;</span> A1-B2</div>
+          <div class="muted" style="font-weight:900;">Entrar &#x2192;</div>
         </div>
-      `;
-    })
-    .join('');
+        <div class="courseTitle" style="margin-top:10px;">Curso continuo de polaco</div>
+        <div class="muted" style="margin-top:6px;">Una sola ruta: modulos en orden, con desbloqueo progresivo.</div>
+      </a>
+    `;
+    return;
+  }
+
+  host.innerHTML = `
+    <div class="courseCard" style="opacity:.55; filter:saturate(.75); cursor:not-allowed;">
+      <div class="courseTop">
+        <div class="courseBadge"><span aria-hidden="true">&#x1F512;</span> A1-B2</div>
+        <div class="muted" style="font-weight:900;">Bloqueado</div>
+      </div>
+      <div class="courseTitle" style="margin-top:10px;">Curso continuo de polaco</div>
+      <div class="muted" style="margin-top:6px;">Activa acceso para empezar el curso completo.</div>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn-yellow" href="services.html?level=A1" style="text-decoration:none;">Activar acceso</a>
+        <a class="btn-white-outline" href="services.html" style="text-decoration:none;">Ver planes</a>
+      </div>
+    </div>
+  `;
 }
 
 function parseAccessLevels(userDoc) {

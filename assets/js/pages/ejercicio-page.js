@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 import { auth, db, storage } from '../firebase-init.js';
-import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
+import { KNOWN_LEVELS, levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   onAuthStateChanged,
   signOut,
@@ -27,6 +27,12 @@ import {
   ref as storageRef,
   uploadBytes,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
+import {
+  applyLearningReward,
+  checkpointBlockRange,
+  hasCheckpoint,
+  requiredCheckpointCountForRouteIndex,
+} from '../progress-tools.js';
 
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
@@ -34,15 +40,25 @@ const TOPIC_ID = String(params.get('id') || '').trim();
 const SLUG = String(params.get('slug') || '').trim();
 const TRACK = String(params.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = String(params.get('view') || '').trim().toLowerCase();
+const FLOW = String(params.get('flow') || '').trim().toLowerCase();
+const CONTINUOUS_FLOW = FLOW === 'continuous' || COURSE_VIEW === 'pro';
+const PAGE_MODE = String(params.get('mode') || '').trim().toLowerCase();
+// Default flow: one exercise per screen (Busuu-like).
+// Fallback to classic list only when explicitly requested with mode=classic.
+const IMMERSIVE_MODE = PAGE_MODE !== 'classic';
 
-const PRACTICE_COMPLETE_PCT = 80;
-const TEST_PASS_PCT = 80;
+const PRACTICE_COMPLETE_PCT = CONTINUOUS_FLOW ? 100 : 80;
+const TEST_PASS_PCT = CONTINUOUS_FLOW ? 100 : 80;
 const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
+const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
+  ? KNOWN_LEVELS
+  : ['A1', 'A2', 'B1', 'B2'];
 
 function navParams() {
   const parts = [];
   if (TRACK) parts.push(`track=${encodeURIComponent(TRACK)}`);
   if (COURSE_VIEW) parts.push(`view=${encodeURIComponent(COURSE_VIEW)}`);
+  if (CONTINUOUS_FLOW) parts.push('flow=continuous');
   return parts.length ? `&${parts.join('&')}` : '';
 }
 
@@ -57,7 +73,409 @@ function courseHref(level = LEVEL) {
   const lvl = String(level || LEVEL).toUpperCase();
   let href = `${page}?level=${encodeURIComponent(lvl)}`;
   if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
+  if (COURSE_VIEW) href += `&view=${encodeURIComponent(COURSE_VIEW)}`;
+  if (CONTINUOUS_FLOW) href += '&flow=continuous';
   return href;
+}
+
+function topicLevelOf(topic, fallback = LEVEL) {
+  return String(topic?.level || topic?.__routeLevel || fallback || LEVEL).toUpperCase();
+}
+
+function normalizeTrack(raw) {
+  return String(raw || '')
+    .trim()
+    .toLowerCase();
+}
+
+function courseTrackList(course) {
+  const raw = course?.track;
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map(normalizeTrack).filter(Boolean);
+  const one = normalizeTrack(raw);
+  return one ? [one] : [];
+}
+
+function courseBaseKey(course) {
+  return String(course?.slug || course?.id || '').trim().toLowerCase();
+}
+
+function courseOrderValue(course) {
+  const n = Number(course?.order);
+  return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+}
+
+function selectCoursesForTrack(allCourses) {
+  const list = Array.isArray(allCourses) ? allCourses : [];
+  if (!TRACK) return list.filter((c) => courseTrackList(c).length === 0);
+
+  const global = list.filter((c) => courseTrackList(c).length === 0);
+  const local = list.filter((c) => courseTrackList(c).includes(TRACK));
+  if (!global.length) return local;
+  if (!local.length) return global;
+
+  const map = new Map();
+  global.forEach((c) => {
+    const k = courseBaseKey(c);
+    if (k) map.set(k, c);
+  });
+  local.forEach((c) => {
+    const k = courseBaseKey(c);
+    if (k) map.set(k, c);
+  });
+
+  return Array.from(map.values()).sort((a, b) => {
+    const d = courseOrderValue(a) - courseOrderValue(b);
+    if (d) return d;
+    const ka = courseBaseKey(a);
+    const kb = courseBaseKey(b);
+    if (ka && kb && ka !== kb) return ka.localeCompare(kb);
+    return String(a?.id || '').localeCompare(String(b?.id || ''));
+  });
+}
+
+function prevLevelOf(level) {
+  const lvl = String(level || '').toUpperCase();
+  if (lvl === 'A2') return 'A1';
+  if (lvl === 'B1') return 'A2';
+  if (lvl === 'B2') return 'B1';
+  return '';
+}
+
+function routeLevelsFromFlags(flags) {
+  if (flags?.isAdmin || flags?.hasGlobalAccess) return [...LEVEL_ORDER];
+  if (Array.isArray(flags?.levels) && flags.levels.length) {
+    const allowed = new Set(flags.levels.map((l) => String(l || '').toUpperCase()));
+    const ordered = LEVEL_ORDER.filter((lvl) => allowed.has(lvl));
+    return ordered.length ? ordered : [String(LEVEL || 'A1').toUpperCase()];
+  }
+  return [String(LEVEL || 'A1').toUpperCase()];
+}
+
+function progressPct(progress) {
+  if (!progress) return 0;
+  const practice = Number(progress.practicePercent || 0);
+  const testTotal = Number(progress.testTotal || 0);
+  const testScore = Number(progress.testScore || 0);
+  if (!CONTINUOUS_FLOW && progress.completed === true) return 100;
+  const best = testTotal > 0
+    ? CONTINUOUS_FLOW
+      ? Math.min(practice, testScore)
+      : Math.max(practice, testScore)
+    : practice;
+  const pct = Math.round(best);
+  return Number.isFinite(pct) ? Math.min(100, Math.max(0, pct)) : 0;
+}
+
+function hasTopicMastery(progress) {
+  if (!progress) return false;
+  const practice = Number(progress.practicePercent || 0);
+  const testTotal = Number(progress.testTotal || 0);
+  const testScore = Number(progress.testScore || 0);
+  if (CONTINUOUS_FLOW) {
+    const practiceOk = practice >= 100;
+    const testOk = testTotal > 0 ? testScore >= 100 : true;
+    return practiceOk && testOk;
+  }
+  return progress.completed === true || progressPct(progress) >= 100;
+}
+
+function isTopicCompleted(progress) {
+  return hasTopicMastery(progress);
+}
+
+function topicTypeKey(topic) {
+  const raw = String(topic?.type || topic?.category || '').trim().toLowerCase();
+  if (!raw) return 'grammar';
+
+  if (
+    raw === 'vocab' ||
+    raw === 'vocabulary' ||
+    raw === 'vocabulario' ||
+    raw === 'slownictwo' ||
+    raw === 's\u0142ownictwo'
+  )
+    return 'vocabulary';
+
+  if (
+    raw === 'grammar' ||
+    raw === 'gramatyka' ||
+    raw === 'gramatica' ||
+    raw === 'gram\u00e1tica'
+  )
+    return 'grammar';
+
+  if (
+    raw === 'both' ||
+    raw === 'mix' ||
+    raw === 'mixed' ||
+    raw === 'mieszane' ||
+    raw.includes('+')
+  )
+    return 'both';
+
+  return raw;
+}
+
+function buildMixedRoute(topics) {
+  const grammar = [];
+  const vocab = [];
+  const both = [];
+  const other = [];
+
+  (topics || []).forEach((t) => {
+    const k = topicTypeKey(t);
+    if (k === 'vocabulary') vocab.push(t);
+    else if (k === 'grammar') grammar.push(t);
+    else if (k === 'both') both.push(t);
+    else other.push(t);
+  });
+
+  if (!grammar.length || !vocab.length) return topics || [];
+
+  const mixed = [];
+  const max = Math.max(grammar.length, vocab.length, both.length);
+  for (let i = 0; i < max; i += 1) {
+    if (grammar[i]) mixed.push(grammar[i]);
+    if (vocab[i]) mixed.push(vocab[i]);
+    if (both[i]) mixed.push(both[i]);
+  }
+  return [...mixed, ...other];
+}
+
+function topicProgressKey(level, topic) {
+  const lvl = String(level || topicLevelOf(topic)).toUpperCase();
+  const slug = String(topic?.slug || topic?.id || '').trim();
+  return lvl && slug ? `${lvl}__${slug}` : null;
+}
+
+async function loadProgressMapForLevel(uid, level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!uid || !lvl) return {};
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'user_progress', uid, 'topics'), where('level', '==', lvl)),
+    );
+    const map = {};
+    snap.forEach((d) => {
+      map[d.id] = d.data() || {};
+    });
+    return map;
+  } catch (e) {
+    console.warn('[ejercicio] loadProgressMapForLevel failed', e);
+    return {};
+  }
+}
+
+async function loadProgressMapForLevels(uid, levels) {
+  const lvls = Array.isArray(levels) ? levels : [];
+  const map = {};
+  for (const lvl of lvls) {
+    const partial = await loadProgressMapForLevel(uid, lvl);
+    Object.assign(map, partial);
+  }
+  return map;
+}
+
+async function getRouteTopicsForLevel(level) {
+  const lvl = String(level || '').toUpperCase();
+  if (!lvl) return [];
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
+    );
+    const all = snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((t) => t.isArchived !== true);
+    const selected = selectCoursesForTrack(all);
+    return buildMixedRoute(selected);
+  } catch (e) {
+    console.warn('[ejercicio] getRouteTopicsForLevel failed', e);
+    return [];
+  }
+}
+
+async function getRouteTopicsForLevels(levels) {
+  const lvls = Array.isArray(levels) ? levels : [];
+  const route = [];
+  for (const lvl of lvls) {
+    const topics = await getRouteTopicsForLevel(lvl);
+    route.push(...topics.map((t) => ({ ...t, __routeLevel: lvl })));
+  }
+  return route;
+}
+
+function showSequenceLocked(prevLevel) {
+  showClassicListSection();
+  if (exerciseList) exerciseList.innerHTML = '';
+  if (!emptyExercises) return;
+
+  const prev = String(prevLevel || '').toUpperCase();
+  emptyExercises.style.display = 'block';
+  emptyExercises.innerHTML = `
+    <div style="padding:14px 14px; line-height:1.6;">
+      <b>Acceso bloqueado</b><br/>
+      Para abrir <b>${LEVEL}</b> primero completa <b>${prev}</b>.<br/>
+      <div class="metaRow" style="margin-top:12px; flex-wrap:wrap; gap:10px;">
+        <a class="btn-yellow" href="${courseHref(prev)}" style="text-decoration:none;">Ir a ${prev}</a>
+        <a class="btn-white-outline" href="espanel.html" style="text-decoration:none;">Volver al panel</a>
+      </div>
+    </div>
+  `;
+}
+
+function showTopicOrderLocked(nextTopic) {
+  showClassicListSection();
+  if (exerciseList) exerciseList.innerHTML = '';
+  if (!emptyExercises) return;
+
+  const nextLevel = topicLevelOf(nextTopic, LEVEL);
+  const target = nextTopic?.id
+    ? `lessonpage.html?level=${encodeURIComponent(nextLevel)}&id=${encodeURIComponent(nextTopic.id)}${navParams()}`
+    : courseHref(nextLevel);
+  const label = nextTopic?.title ? `Ir al tema actual: ${String(nextTopic.title)}` : 'Ir al tema actual';
+
+  emptyExercises.style.display = 'block';
+  emptyExercises.innerHTML = `
+    <div style="padding:14px 14px; line-height:1.6;">
+      <b>Acceso bloqueado</b><br/>
+      Este tema a\u00fan no est\u00e1 desbloqueado.<br/>
+      Completa el tema actual para continuar.
+      <div class="metaRow" style="margin-top:12px; flex-wrap:wrap; gap:10px;">
+        <a class="btn-yellow" href="${target}" style="text-decoration:none;">${label}</a>
+        <a class="btn-white-outline" href="${courseHref(nextLevel)}" style="text-decoration:none;">Ver temas</a>
+      </div>
+    </div>
+  `;
+}
+
+function checkpointReviewHref(blockNo, route = []) {
+  const block = Math.max(1, Number(blockNo || 1));
+  const { end } = checkpointBlockRange(block);
+  const anchor = route[Math.min(route.length - 1, end)] || currentTopic || null;
+  const anchorLevel = topicLevelOf(anchor, LEVEL);
+  return `review.html?level=${encodeURIComponent(anchorLevel)}&mode=minitest&block=${encodeURIComponent(block)}${navParams()}&checkpoint=${encodeURIComponent(block)}`;
+}
+
+function showCheckpointLocked(blockNo, route = []) {
+  showClassicListSection();
+  if (exerciseList) exerciseList.innerHTML = '';
+  if (!emptyExercises) return;
+
+  const block = Math.max(1, Number(blockNo || 1));
+  const href = checkpointReviewHref(block, route);
+  emptyExercises.style.display = 'block';
+  emptyExercises.innerHTML = `
+    <div style="padding:14px 14px; line-height:1.6;">
+      <b>Checkpoint wymagany</b><br/>
+      Zanim przejdziesz dalej, zalicz mini-test po module ${block}.<br/>
+      <div class="metaRow" style="margin-top:12px; flex-wrap:wrap; gap:10px;">
+        <a class="btn-yellow" href="${href}" style="text-decoration:none;">Uruchom mini-test</a>
+        <a class="btn-white-outline" href="${courseHref(LEVEL)}" style="text-decoration:none;">Wroc do kursu</a>
+      </div>
+    </div>
+  `;
+}
+
+async function enforceTopicOrderGate(uid, topic, flags) {
+  if (!uid || !topic?.id) return true;
+  try {
+    const routeLevels = CONTINUOUS_FLOW ? routeLevelsFromFlags(flags) : [LEVEL];
+    const route = CONTINUOUS_FLOW
+      ? await getRouteTopicsForLevels(routeLevels)
+      : await getRouteTopicsForLevel(LEVEL);
+    if (!route.length) return true;
+
+    const currentKey = courseBaseKey(topic);
+    const currentLevel = topicLevelOf(topic, LEVEL);
+    let idx = route.findIndex(
+      (t) => String(t.id) === String(topic.id) && topicLevelOf(t, LEVEL) === currentLevel,
+    );
+    if (idx < 0 && currentKey) {
+      idx = route.findIndex(
+        (t) => courseBaseKey(t) === currentKey && topicLevelOf(t, LEVEL) === currentLevel,
+      );
+    }
+    if (idx < 0) return true;
+    CURRENT_ROUTE = route.slice();
+    CURRENT_ROUTE_INDEX = idx;
+
+    const progressMap = CONTINUOUS_FLOW
+      ? await loadProgressMapForLevels(uid, routeLevels)
+      : await loadProgressMapForLevel(uid, LEVEL);
+    let firstIncomplete = route.findIndex((t) => {
+      const key = topicProgressKey(topicLevelOf(t, LEVEL), t);
+      const prog = key ? progressMap[key] : null;
+      return !isTopicCompleted(prog);
+    });
+    if (firstIncomplete < 0) firstIncomplete = route.length - 1;
+
+    if (idx > firstIncomplete) {
+      showTopicOrderLocked(route[firstIncomplete]);
+      return false;
+    }
+
+    if (CONTINUOUS_FLOW) {
+      const requiredCheckpoints = requiredCheckpointCountForRouteIndex(idx);
+      for (let block = 1; block <= requiredCheckpoints; block += 1) {
+        const ok = await hasCheckpoint(uid, block, {
+          track: TRACK,
+          view: COURSE_VIEW,
+          flow: 'continuous',
+        });
+        if (!ok) {
+          CURRENT_MISSING_CHECKPOINT = block;
+          showCheckpointLocked(block, route);
+          return false;
+        }
+      }
+    }
+
+    CURRENT_MISSING_CHECKPOINT = 0;
+    return true;
+  } catch (e) {
+    console.warn('[ejercicio] enforceTopicOrderGate failed', e);
+    return true;
+  }
+}
+
+async function isPrevLevelCompleted(uid, prevLevel) {
+  const lvl = String(prevLevel || '').toUpperCase();
+  if (!uid || !lvl) return true;
+  try {
+    const courseSnap = await getDocs(
+      query(collection(db, 'courses'), where('level', '==', lvl)),
+    );
+    const allCourses = courseSnap.docs
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((t) => t.isArchived !== true);
+    const prevCourses = selectCoursesForTrack(allCourses);
+
+    const total = prevCourses.length;
+    if (!total) return true;
+
+    const topicIdSet = new Set(prevCourses.map((t) => String(t.id)));
+    const topicSlugSet = new Set(
+      prevCourses.map((t) => String(t.slug || t.id || '').trim()).filter(Boolean),
+    );
+
+    const progSnap = await getDocs(
+      query(collection(db, 'user_progress', uid, 'topics'), where('level', '==', lvl)),
+    );
+    let completed = 0;
+    progSnap.forEach((d) => {
+      const data = d.data() || {};
+      if (!hasTopicMastery(data)) return;
+      const tid = String(data.topicId || '').trim();
+      const tslug = String(data.topicSlug || '').trim();
+      if (tid && topicIdSet.has(tid)) completed += 1;
+      else if (!tid && tslug && topicSlugSet.has(tslug)) completed += 1;
+    });
+    return completed >= total;
+  } catch (e) {
+    console.warn('[ejercicio] prev level check failed', e);
+    return true;
+  }
 }
 
 const toast = document.getElementById('toast');
@@ -87,6 +505,19 @@ const filterType = document.getElementById('filterType');
 const filterTag = document.getElementById('filterTag');
 const btnClearFilters = document.getElementById('btnClearFilters');
 
+const exerciseHero = document.getElementById('exerciseHero');
+const exerciseFiltersCard = document.getElementById('exerciseFiltersCard');
+const exerciseListSection = document.getElementById('exerciseListSection');
+
+const immersiveStage = document.getElementById('immersiveStage');
+const immersiveTrackFill = document.getElementById('immersiveTrackFill');
+const immersiveStep = document.getElementById('immersiveStep');
+const immersiveType = document.getElementById('immersiveType');
+const immersivePromptTitle = document.getElementById('immersivePromptTitle');
+const immersiveExerciseHost = document.getElementById('immersiveExerciseHost');
+const btnImmPrev = document.getElementById('btnImmPrev');
+const btnImmNext = document.getElementById('btnImmNext');
+
   const btnLogout = document.getElementById('btnLogout');
   const btnBackLesson = document.getElementById('btnBackLesson');
   const btnBackCourse = document.getElementById('btnBackCourse');
@@ -95,6 +526,7 @@ const btnClearFilters = document.getElementById('btnClearFilters');
 
 const correctionModal = document.getElementById('correctionModal');
 const btnFinishCorrection = document.getElementById('btnFinishCorrection');
+const btnFinishMiniTest = document.getElementById('btnFinishMiniTest');
 const btnCorrectionClose = document.getElementById('btnCorrectionClose');
 const btnCorrectionCancel = document.getElementById('btnCorrectionCancel');
 const btnCorrectionPublish = document.getElementById('btnCorrectionPublish');
@@ -120,6 +552,12 @@ let CURRENT_TOPIC_KEY = null;
 let currentTopic = null;
 let hasShownFinish = false;
 let completedAt = null;
+let immersiveIndex = 0;
+let immersiveHasInitialFocus = false;
+let CURRENT_FLAGS = null;
+let CURRENT_ROUTE = [];
+let CURRENT_ROUTE_INDEX = -1;
+let CURRENT_MISSING_CHECKPOINT = 0;
 
 const progressState = {
   doneIds: new Set(),
@@ -599,6 +1037,7 @@ function isCardsExercise(ex) {
 
 function isSpeakingExercise(ex) {
   const t = normalizeText(ex?.type || '');
+  if (isSceneExercise(ex)) return false;
   return (
     t.includes('repetir') ||
     t.includes('voz') ||
@@ -613,6 +1052,31 @@ function isSpeakingExercise(ex) {
   );
 }
 
+function isSceneExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('scenka') ||
+    t.includes('escena') ||
+    t.includes('scene') ||
+    t.includes('situacion') ||
+    t.includes('situacion comunicativa') ||
+    t.includes('dialogo guiado') ||
+    t.includes('dialog wybierz') ||
+    t.includes('micro dialogo')
+  );
+}
+
+function isFindErrorExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('znajdz blad') ||
+    t.includes('encuentra el error') ||
+    t.includes('find error') ||
+    t.includes('detecta error') ||
+    t.includes('corrige frase')
+  );
+}
+
 function isChoiceExercise(ex) {
   const t = normalizeText(ex?.type || '');
   return (
@@ -624,6 +1088,32 @@ function isChoiceExercise(ex) {
     t.includes('falso') ||
     t.includes('quiz') ||
     t.includes('marcar')
+  );
+}
+
+function isBinaryTrueFalseExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('verdadero o falso') ||
+    t.includes('verdadero/falso') ||
+    t.includes('marcar verdadero o falso') ||
+    t.includes('true false') ||
+    t.includes('prawda/falsz')
+  );
+}
+
+function isDictationExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return t.includes('dictado') || t.includes('dyktando');
+}
+
+function isDragDropExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('arrastrar') ||
+    t.includes('drag') ||
+    t.includes('soltar') ||
+    t.includes('przeciagnij')
   );
 }
 
@@ -690,6 +1180,88 @@ function parseAnswerList(raw) {
     .split(/[\n;|]+/)
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function parseExpectedByBlank(rawAnswer, blanksCount) {
+  const raw = String(rawAnswer || '').trim().replaceAll('/', '|');
+  if (!raw) return [];
+  if (raw.includes('||')) {
+    return raw
+      .split('||')
+      .map((p) => parseAnswerList(p));
+  }
+  const list = parseAnswerList(raw);
+  if (blanksCount <= 1) return [list];
+  if (list.length === blanksCount) return list.map((x) => parseAnswerList(x));
+  return Array.from({ length: blanksCount }, () => list);
+}
+
+function parseBooleanToken(raw) {
+  const t = normalizeText(raw || '');
+  if (!t) return null;
+  if (
+    t === 'true' ||
+    t === 'verdadero' ||
+    t === 'prawda' ||
+    t === 'tak' ||
+    t === 't' ||
+    t === '1'
+  )
+    return true;
+  if (
+    t === 'false' ||
+    t === 'falso' ||
+    t === 'falsz' ||
+    t === 'nie' ||
+    t === 'n' ||
+    t === '0'
+  )
+    return false;
+  return null;
+}
+
+function normalizeDictationText(raw) {
+  return String(raw || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function levenshteinDistance(a, b) {
+  const s = String(a || '');
+  const t = String(b || '');
+  if (!s) return t.length;
+  if (!t) return s.length;
+  const m = s.length;
+  const n = t.length;
+  const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i += 1) dp[i][0] = i;
+  for (let j = 0; j <= n; j += 1) dp[0][j] = j;
+  for (let i = 1; i <= m; i += 1) {
+    for (let j = 1; j <= n; j += 1) {
+      const cost = s[i - 1] === t[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost,
+      );
+    }
+  }
+  return dp[m][n];
+}
+
+function dictationSimilarity(a, b) {
+  const left = normalizeDictationText(a);
+  const right = normalizeDictationText(b);
+  if (!left && !right) return 100;
+  if (!left || !right) return 0;
+  const dist = levenshteinDistance(left, right);
+  const maxLen = Math.max(left.length, right.length) || 1;
+  const score = Math.round((1 - dist / maxLen) * 100);
+  return Math.min(100, Math.max(0, score));
 }
 
 function parseOptions(raw) {
@@ -793,11 +1365,111 @@ function parseMatchPairs(options, answerRaw) {
 
 function topicKeyFrom(topic) {
   const slug = String(topic?.slug || topic?.id || SLUG || TOPIC_ID || '').trim();
-  return slug ? `${LEVEL}__${slug}` : null;
+  const lvl = topicLevelOf(topic, LEVEL);
+  return slug ? `${lvl}__${slug}` : null;
 }
 
 function progressDocRef(uid, topicKey) {
   return doc(db, 'user_progress', uid, 'topics', topicKey);
+}
+
+function expectedAnswerPreview(ex) {
+  const options = parseOptions(ex?.options);
+  const rawAnswer = String(ex?.answer || '').trim();
+  if (!rawAnswer) return '';
+  const labels = parseAnswerList(rawAnswer).map((x) => normalizeText(x));
+  const byLabel = options
+    .map((opt, idx) => ({
+      label: normalizeText(optionLabelFromIndex(idx)),
+      value: cleanOptionText(opt) || String(opt || '').trim(),
+    }))
+    .filter((x) => x.value);
+  const mapped = byLabel
+    .filter((x) => labels.includes(x.label))
+    .map((x) => x.value);
+  const direct = parseAnswerList(rawAnswer);
+  const list = mapped.length ? mapped : direct;
+  return list.slice(0, 3).join(' | ');
+}
+
+async function appendMistakeLog(ex, userAnswer, expectedAnswer = '') {
+  if (!CURRENT_UID || !CURRENT_TOPIC_KEY || !ex?.id) return;
+  const ref = progressDocRef(CURRENT_UID, CURRENT_TOPIC_KEY);
+  const nowIso = new Date().toISOString();
+
+  try {
+    const snap = await getDoc(ref);
+    const data = snap.exists() ? snap.data() || {} : {};
+    const list = Array.isArray(data.mistakeLog) ? [...data.mistakeLog] : [];
+    const expected = String(expectedAnswer || expectedAnswerPreview(ex) || '').trim();
+    const answer = String(userAnswer || '').trim();
+
+    const idx = list.findIndex((item) => {
+      if (String(item?.exerciseId || '') !== String(ex.id)) return false;
+      return (
+        normalizeText(String(item?.expected || '')) === normalizeText(expected) &&
+        normalizeText(String(item?.userAnswer || '')) === normalizeText(answer)
+      );
+    });
+
+    if (idx >= 0) {
+      list[idx] = {
+        ...(list[idx] || {}),
+        count: Number(list[idx]?.count || 1) + 1,
+        lastAt: nowIso,
+      };
+    } else {
+      list.unshift({
+        id: `${ex.id}__${Date.now()}`,
+        exerciseId: String(ex.id),
+        type: String(ex.type || ''),
+        prompt: String(ex.prompt || '').trim().slice(0, 320),
+        userAnswer: answer.slice(0, 220),
+        expected: expected.slice(0, 220),
+        level: topicLevelOf(currentTopic, LEVEL),
+        topicId: String(currentTopic?.id || TOPIC_ID || ''),
+        topicSlug: String(currentTopic?.slug || ''),
+        topicTitle: String(currentTopic?.title || ''),
+        count: 1,
+        lastAt: nowIso,
+      });
+    }
+
+    await setDoc(
+      ref,
+      {
+        mistakeLog: list.slice(0, 90),
+        lastMistakeAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+  } catch (e) {
+    console.warn('[ejercicio] appendMistakeLog failed', e);
+  }
+}
+
+async function clearMistakeLogForExercise(exId) {
+  if (!CURRENT_UID || !CURRENT_TOPIC_KEY || !exId) return;
+  const ref = progressDocRef(CURRENT_UID, CURRENT_TOPIC_KEY);
+  try {
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    const data = snap.data() || {};
+    const list = Array.isArray(data.mistakeLog) ? data.mistakeLog : [];
+    const next = list.filter((item) => String(item?.exerciseId || '') !== String(exId));
+    if (next.length === list.length) return;
+    await setDoc(
+      ref,
+      {
+        mistakeLog: next.slice(0, 90),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+  } catch (e) {
+    console.warn('[ejercicio] clearMistakeLogForExercise failed', e);
+  }
 }
 
 function computeProgressStats() {
@@ -879,6 +1551,7 @@ function setProgressUI() {
   if (doneEl) doneEl.textContent = String(stats.donePractice);
   if (totalEl) totalEl.textContent = String(stats.totalPractice);
 
+  if (IMMERSIVE_MODE) syncImmersiveProgressUI();
   maybeFinish(stats);
 }
 
@@ -915,6 +1588,8 @@ async function saveProgress() {
   if (!CURRENT_UID || !CURRENT_TOPIC_KEY) return;
 
   const stats = computeProgressStats();
+  const topicLevel = topicLevelOf(currentTopic, LEVEL);
+  const justCompleted = stats.completed && !completedAt;
   const testResults = {};
   stats.testIds.forEach((id) => {
     const res = progressState.testResults.get(id);
@@ -922,7 +1597,7 @@ async function saveProgress() {
   });
 
   const payload = {
-    level: LEVEL,
+    level: topicLevel,
     topicId: currentTopic?.id || TOPIC_ID || null,
     topicSlug: currentTopic?.slug || null,
     totalExercises: stats.totalAll,
@@ -943,7 +1618,8 @@ async function saveProgress() {
     lastActivityAt: serverTimestamp(),
   };
 
-  if (stats.completed && !completedAt) {
+  if (justCompleted) {
+    completedAt = new Date();
     payload.completedAt = serverTimestamp();
   } else if (completedAt) {
     payload.completedAt = completedAt;
@@ -953,6 +1629,14 @@ async function saveProgress() {
     await setDoc(progressDocRef(CURRENT_UID, CURRENT_TOPIC_KEY), payload, {
       merge: true,
     });
+    if (justCompleted) {
+      await applyLearningReward(CURRENT_UID, {
+        exp: CONTINUOUS_FLOW ? 36 : 24,
+        badges: ['module_complete', CONTINUOUS_FLOW ? 'continuous_route' : ''],
+        onceEverKey: `topic_complete_${CURRENT_TOPIC_KEY}`,
+        source: 'exercise_topic_complete',
+      });
+    }
   } catch (e) {
     console.warn('Progress write failed:', e?.code || e);
   }
@@ -964,6 +1648,135 @@ function setTaskChips(exCount) {
     <span class="pill pill-blue">Total: ${exCount}</span>
     <span class="pill">Mostrando: ${VIEW_EXERCISES.length}</span>
   `;
+}
+
+function showClassicListSection() {
+  if (!IMMERSIVE_MODE) return;
+  if (immersiveStage) immersiveStage.style.display = 'none';
+  if (exerciseListSection) exerciseListSection.style.display = '';
+}
+
+function immersiveTitleForExercise(ex) {
+  if (isSceneExercise(ex)) return 'Mikro-scenka: wybierz najlepsza reakcje.';
+  if (isFindErrorExercise(ex)) return 'Znajdz blad i wybierz poprawna wersje.';
+  if (isDictationExercise(ex)) return 'Escucha y escribe el dictado.';
+  if (isDragDropExercise(ex)) return 'Arrastra las palabras.';
+  if (isBinaryTrueFalseExercise(ex)) return 'Verdadero o falso.';
+  if (isChoiceExercise(ex)) return 'Marca la opcion correcta.';
+  if (isFillExercise(ex)) return 'Completa la frase.';
+  if (isMatchingExercise(ex)) return 'Relaciona los elementos.';
+  if (isOrderingExercise(ex)) return 'Ordena las palabras.';
+  if (isSpeakingExercise(ex)) return 'Escucha y repite.';
+  if (isWritingExercise(ex)) return 'Escribe tu respuesta.';
+  if (isTestExercise(ex)) return 'Comprueba tu resultado.';
+  return 'Resuelve el ejercicio.';
+}
+
+function getFirstPendingImmersiveIndex() {
+  const idx = VIEW_EXERCISES.findIndex((ex) => !progressState.doneIds.has(String(ex.id)));
+  return idx >= 0 ? idx : 0;
+}
+
+function syncImmersiveProgressUI() {
+  if (!IMMERSIVE_MODE) return;
+  const total = VIEW_EXERCISES.length;
+  if (!total) return;
+
+  const idx = Math.min(Math.max(0, immersiveIndex), Math.max(0, total - 1));
+  const ex = VIEW_EXERCISES[idx] || null;
+  const positionPct = Math.round(((idx + 1) / total) * 100);
+
+  if (immersiveTrackFill) immersiveTrackFill.style.width = `${positionPct}%`;
+  if (immersiveStep) immersiveStep.textContent = `${idx + 1}/${total}`;
+  if (immersiveType) immersiveType.textContent = String(ex?.type || 'Ejercicio');
+  if (immersivePromptTitle) immersivePromptTitle.textContent = immersiveTitleForExercise(ex);
+
+  if (btnImmPrev) btnImmPrev.disabled = idx <= 0;
+  if (btnImmNext) btnImmNext.textContent = idx >= total - 1 ? 'Finalizar' : 'Siguiente';
+}
+
+function renderImmersiveMode() {
+  if (!IMMERSIVE_MODE) return;
+  if (!immersiveStage || !immersiveExerciseHost) return;
+
+  if (!VIEW_EXERCISES.length) {
+    showClassicListSection();
+    if (emptyExercises) emptyExercises.style.display = 'block';
+    return;
+  }
+
+  if (emptyExercises) emptyExercises.style.display = 'none';
+  if (!immersiveHasInitialFocus) {
+    immersiveIndex = getFirstPendingImmersiveIndex();
+    immersiveHasInitialFocus = true;
+  }
+  immersiveIndex = Math.min(Math.max(0, immersiveIndex), Math.max(0, VIEW_EXERCISES.length - 1));
+
+  if (exerciseListSection) exerciseListSection.style.display = 'none';
+  if (immersiveStage) immersiveStage.style.display = 'block';
+  if (exerciseList) exerciseList.innerHTML = '';
+
+  const ex = VIEW_EXERCISES[immersiveIndex];
+  immersiveExerciseHost.innerHTML = '';
+  const card = makeExerciseCard(ex);
+  card.classList.add('exerciseCard--immersive');
+  immersiveExerciseHost.appendChild(card);
+
+  syncImmersiveProgressUI();
+}
+
+function goToImmersiveOffset(offset) {
+  if (!IMMERSIVE_MODE) return;
+  if (!VIEW_EXERCISES.length) return;
+  const next = immersiveIndex + Number(offset || 0);
+  immersiveIndex = Math.min(Math.max(0, next), VIEW_EXERCISES.length - 1);
+  renderImmersiveMode();
+}
+
+function goNextImmersiveExercise() {
+  if (!IMMERSIVE_MODE) return;
+  if (!VIEW_EXERCISES.length) return;
+  if (immersiveIndex >= VIEW_EXERCISES.length - 1) {
+    showFinishModal(computeProgressStats());
+    return;
+  }
+  immersiveIndex += 1;
+  renderImmersiveMode();
+}
+
+function onImmersiveExerciseDone(exId) {
+  if (!IMMERSIVE_MODE) return;
+  syncImmersiveProgressUI();
+  const current = VIEW_EXERCISES[immersiveIndex];
+  if (!current) return;
+  if (String(current.id) !== String(exId)) return;
+  if (immersiveIndex >= VIEW_EXERCISES.length - 1) return;
+
+  const currentId = String(exId);
+  setTimeout(() => {
+    const stillHere = String(VIEW_EXERCISES[immersiveIndex]?.id || '') === currentId;
+    if (!stillHere) return;
+    immersiveIndex = Math.min(immersiveIndex + 1, VIEW_EXERCISES.length - 1);
+    renderImmersiveMode();
+  }, 320);
+}
+
+function setupImmersiveMode() {
+  if (!IMMERSIVE_MODE) return;
+  document.body.dataset.ui = 'immersive';
+  if (exerciseHero) exerciseHero.classList.add('exerciseHero--immersive');
+  if (exerciseFiltersCard) exerciseFiltersCard.style.display = 'none';
+  if (exerciseListSection) exerciseListSection.style.display = 'none';
+  if (taskChips) taskChips.style.display = 'none';
+
+  if (btnImmPrev && !btnImmPrev.dataset.wired) {
+    btnImmPrev.dataset.wired = '1';
+    btnImmPrev.addEventListener('click', () => goToImmersiveOffset(-1));
+  }
+  if (btnImmNext && !btnImmNext.dataset.wired) {
+    btnImmNext.dataset.wired = '1';
+    btnImmNext.addEventListener('click', goNextImmersiveExercise);
+  }
 }
 
 function buildTypeFilterOptions() {
@@ -1201,8 +2014,14 @@ function makeExerciseCard(ex) {
       progressState.doneIds.add(String(ex.id));
 
       setResultText(resultEl, correct);
+      if (correct) {
+        await clearMistakeLogForExercise(ex.id);
+      } else {
+        await appendMistakeLog(ex, userAnswer, expectedAnswerPreview(ex));
+      }
       await saveProgress();
       setProgressUI();
+      if (IMMERSIVE_MODE) onImmersiveExerciseDone(ex.id);
     });
 
     actions.appendChild(btnCheck);
@@ -1219,8 +2038,14 @@ function makeExerciseCard(ex) {
 
     const markDone = async () => {
       progressState.doneIds.add(exId);
+      await clearMistakeLogForExercise(exId);
       await saveProgress();
       setProgressUI();
+      if (IMMERSIVE_MODE) onImmersiveExerciseDone(exId);
+    };
+
+    const markWrong = async (userAnswer = '', expectedAnswer = '') => {
+      await appendMistakeLog(ex, userAnswer, expectedAnswer);
     };
 
     if (isCardsExercise(ex)) {
@@ -1251,11 +2076,210 @@ function makeExerciseCard(ex) {
       return card;
     }
 
+    if (isSceneExercise(ex) && options.length && String(ex.answer || '').trim()) {
+      const hint = document.createElement('div');
+      hint.className = 'exerciseHint';
+      hint.textContent = 'Mikro-scenka: wybierz najlepsza reakcje.';
+      card.appendChild(hint);
+
+      const scenario = document.createElement('div');
+      scenario.className = 'exerciseSceneBox';
+      scenario.textContent = String(ex.prompt || '').trim();
+      card.appendChild(scenario);
+
+      let selectedValue = '';
+      let selectedLabel = '';
+      const optsWrap = document.createElement('div');
+      optsWrap.className = 'exerciseOptions';
+      const groupName = `scene_${ex.id}`;
+
+      options.forEach((opt, idx) => {
+        const label = optionLabelFromIndex(idx);
+        const cleaned = cleanOptionText(opt);
+        const row = makeOptionRow({
+          name: groupName,
+          value: cleaned || opt,
+          label: `${label}) ${cleaned || opt}`,
+          checked: false,
+          onChange: (ev) => {
+            selectedValue = String(ev.target.value || '');
+            selectedLabel = label;
+          },
+          ttsText: cleaned || opt,
+        });
+        if (done) {
+          const input = row.querySelector('input');
+          if (input) input.disabled = true;
+        }
+        optsWrap.appendChild(row);
+      });
+      card.appendChild(optsWrap);
+
+      const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
+      if (wantsListen) {
+        const btnListen = document.createElement('button');
+        btnListen.className = 'ttsIconBtn';
+        btnListen.type = 'button';
+        btnListen.textContent = SPEAKER_ICON;
+        btnListen.title = 'Odsluchaj (PL)';
+        btnListen.setAttribute('aria-label', 'Odsluchaj (PL)');
+        btnListen.addEventListener('click', () => playExerciseAudio(ex));
+        actions.appendChild(btnListen);
+      }
+
+      const btnCheck = document.createElement('button');
+      btnCheck.className = 'btn-yellow';
+      btnCheck.type = 'button';
+      btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+      btnCheck.disabled = done;
+      btnCheck.addEventListener('click', async () => {
+        if (done) return;
+        if (!selectedValue) {
+          showToast('Wybierz odpowiedz.', 'warn', 1800);
+          return;
+        }
+        const answers = parseAnswerList(ex.answer || '');
+        const answerNorms = answers.map((a) => normalizeText(a));
+        const answerNormsClean = answers.map((a) => normalizeText(cleanOptionText(a)));
+        const userNorm = normalizeText(selectedValue);
+        const labelNorm = normalizeText(selectedLabel || '');
+        const ok =
+          answerNorms.includes(userNorm) ||
+          answerNormsClean.includes(userNorm) ||
+          (labelNorm && (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm)));
+
+        setResultText(resultEl, ok, ok ? 'Correcto.' : 'Nie, sproboj ponownie.');
+        card.appendChild(resultEl);
+        if (!ok) {
+          await markWrong(selectedValue, expectedAnswerPreview(ex));
+          return;
+        }
+
+        await markDone();
+        btnCheck.textContent = 'Hecho';
+        btnCheck.disabled = true;
+        optsWrap.querySelectorAll('input[type="radio"]').forEach((i) => (i.disabled = true));
+      });
+      actions.appendChild(btnCheck);
+      card.appendChild(actions);
+
+      if (done) {
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      }
+      return card;
+    }
+
+    if (isFindErrorExercise(ex) && options.length && String(ex.answer || '').trim()) {
+      const hint = document.createElement('div');
+      hint.className = 'exerciseHint';
+      hint.textContent = 'Znajdz blad i wybierz poprawna wersje zdania.';
+      card.appendChild(hint);
+
+      const wrong = document.createElement('div');
+      wrong.className = 'exerciseErrorBox';
+      wrong.textContent = `Zdanie: ${String(ex.prompt || '').trim()}`;
+      card.appendChild(wrong);
+
+      let selectedValue = '';
+      let selectedLabel = '';
+      const optsWrap = document.createElement('div');
+      optsWrap.className = 'exerciseOptions';
+      const groupName = `fix_${ex.id}`;
+
+      options.forEach((opt, idx) => {
+        const label = optionLabelFromIndex(idx);
+        const cleaned = cleanOptionText(opt);
+        const row = makeOptionRow({
+          name: groupName,
+          value: cleaned || opt,
+          label: `${label}) ${cleaned || opt}`,
+          checked: false,
+          onChange: (ev) => {
+            selectedValue = String(ev.target.value || '');
+            selectedLabel = label;
+          },
+          ttsText: cleaned || opt,
+        });
+        if (done) {
+          const input = row.querySelector('input');
+          if (input) input.disabled = true;
+        }
+        optsWrap.appendChild(row);
+      });
+      card.appendChild(optsWrap);
+
+      const btnCheck = document.createElement('button');
+      btnCheck.className = 'btn-yellow';
+      btnCheck.type = 'button';
+      btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+      btnCheck.disabled = done;
+      btnCheck.addEventListener('click', async () => {
+        if (done) return;
+        if (!selectedValue) {
+          showToast('Wybierz poprawna opcje.', 'warn', 1800);
+          return;
+        }
+        const answers = parseAnswerList(ex.answer || '');
+        const answerNorms = answers.map((a) => normalizeText(a));
+        const answerNormsClean = answers.map((a) => normalizeText(cleanOptionText(a)));
+        const userNorm = normalizeText(selectedValue);
+        const labelNorm = normalizeText(selectedLabel || '');
+        const ok =
+          answerNorms.includes(userNorm) ||
+          answerNormsClean.includes(userNorm) ||
+          (labelNorm && (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm)));
+
+        setResultText(resultEl, ok, ok ? 'Correcto.' : 'Nie, to nie ta poprawka.');
+        card.appendChild(resultEl);
+        if (!ok) {
+          await markWrong(selectedValue, expectedAnswerPreview(ex));
+          return;
+        }
+
+        await markDone();
+        btnCheck.textContent = 'Hecho';
+        btnCheck.disabled = true;
+        optsWrap.querySelectorAll('input[type="radio"]').forEach((i) => (i.disabled = true));
+      });
+      actions.appendChild(btnCheck);
+      card.appendChild(actions);
+
+      if (done) {
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      }
+      return card;
+    }
+
     if (isSpeakingExercise(ex)) {
       const hint = document.createElement('div');
       hint.className = 'exerciseHint';
       hint.textContent = 'Lee en voz alta. Escucha y luego graba tu voz.';
       card.appendChild(hint);
+
+      const checklist = [
+        'Tempo i pauzy sa naturalne.',
+        'Koncowki i odmiana brzmia poprawnie.',
+        'Akcent w slowach jest poprawny.',
+      ];
+      const checkWrap = document.createElement('div');
+      checkWrap.className = 'exercisePronChecklist';
+      const checkInputs = [];
+      checklist.forEach((label) => {
+        const row = document.createElement('label');
+        row.className = 'exercisePronRow';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.disabled = done;
+        const span = document.createElement('span');
+        span.textContent = label;
+        row.appendChild(input);
+        row.appendChild(span);
+        checkInputs.push(input);
+        checkWrap.appendChild(row);
+      });
+      card.appendChild(checkWrap);
 
       const canRec = canRecordVoice();
       let recording = false;
@@ -1324,11 +2348,22 @@ function makeExerciseCard(ex) {
       btnDone.disabled = done;
 
       btnDone.addEventListener('click', async () => {
+        if (!done) {
+          const allChecked = checkInputs.every((i) => i.checked);
+          if (!allChecked) {
+            showToast('Zaznacz checklistę wymowy przed zapisaniem.', 'warn', 2100);
+            return;
+          }
+        }
         await markDone();
         btnDone.textContent = 'Hecho';
         btnDone.disabled = true;
         btnRec.disabled = true;
         btnClear.disabled = true;
+        checkInputs.forEach((i) => {
+          i.checked = true;
+          i.disabled = true;
+        });
         cleanup();
       });
 
@@ -1405,11 +2440,393 @@ function makeExerciseCard(ex) {
       card.appendChild(audio);
 
       if (done) {
+        checkInputs.forEach((i) => {
+          i.checked = true;
+          i.disabled = true;
+        });
         setResultText(resultEl, true, 'Hecho.');
         card.appendChild(resultEl);
       }
 
       return card;
+    }
+
+    if (isBinaryTrueFalseExercise(ex) && String(ex.answer || '').trim()) {
+      const tfOptionsRaw = options.length ? options : ['true', 'false'];
+      const tfOptions = tfOptionsRaw
+        .map((opt, idx) => ({
+          idx,
+          label: optionLabelFromIndex(idx),
+          value: cleanOptionText(opt) || String(opt || '').trim(),
+        }))
+        .filter((x) => x.value);
+
+      let selectedIdx = -1;
+      let selectedValue = '';
+
+      const grid = document.createElement('div');
+      grid.className = 'exerciseBinaryGrid';
+
+      const renderSelection = () => {
+        grid.querySelectorAll('.exerciseBinaryBtn').forEach((btn) => {
+          const idx = Number(btn.getAttribute('data-idx') || -1);
+          btn.classList.toggle('isSelected', idx === selectedIdx);
+        });
+      };
+
+      tfOptions.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-white-outline exerciseBinaryBtn';
+        btn.setAttribute('data-idx', String(opt.idx));
+        btn.innerHTML = `<span>${safeText(opt.value)}</span>`;
+        if (done) btn.disabled = true;
+        btn.addEventListener('click', () => {
+          if (done) return;
+          selectedIdx = opt.idx;
+          selectedValue = opt.value;
+          renderSelection();
+        });
+        grid.appendChild(btn);
+      });
+      card.appendChild(grid);
+
+      const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
+      if (wantsListen) {
+        const btnListen = document.createElement('button');
+        btnListen.className = 'ttsIconBtn';
+        btnListen.type = 'button';
+        btnListen.textContent = SPEAKER_ICON;
+        btnListen.title = 'Odsluchaj (PL)';
+        btnListen.setAttribute('aria-label', 'Odsluchaj (PL)');
+        btnListen.addEventListener('click', () => playExerciseAudio(ex));
+        actions.appendChild(btnListen);
+      }
+
+      const btnCheck = document.createElement('button');
+      btnCheck.className = 'btn-yellow';
+      btnCheck.type = 'button';
+      btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+      btnCheck.disabled = done;
+
+      btnCheck.addEventListener('click', async () => {
+        if (done) return;
+        if (selectedIdx < 0 || !selectedValue) {
+          showToast('Elige una opcion.', 'warn', 1800);
+          return;
+        }
+
+        const expectedBool = parseBooleanToken(ex.answer || '');
+        let correct = false;
+
+        if (expectedBool !== null) {
+          const gotBool = parseBooleanToken(selectedValue);
+          correct = gotBool !== null && gotBool === expectedBool;
+        } else {
+          const answers = parseAnswerList(ex.answer || '');
+          const answerNorms = answers.map((a) => normalizeText(a));
+          const userNorm = normalizeText(selectedValue);
+          const labelNorm = normalizeText(optionLabelFromIndex(selectedIdx));
+          correct = answerNorms.includes(userNorm) || answerNorms.includes(labelNorm);
+        }
+
+        setResultText(resultEl, correct, correct ? 'Correcto.' : 'Intenta de nuevo.');
+        card.appendChild(resultEl);
+        if (!correct) {
+          await markWrong(selectedValue, expectedAnswerPreview(ex));
+          return;
+        }
+
+        await markDone();
+        btnCheck.textContent = 'Hecho';
+        btnCheck.disabled = true;
+        grid.querySelectorAll('.exerciseBinaryBtn').forEach((b) => (b.disabled = true));
+      });
+
+      actions.appendChild(btnCheck);
+      card.appendChild(actions);
+
+      if (done) {
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      }
+
+      return card;
+    }
+
+    if (isDictationExercise(ex) && String(ex.answer || '').trim()) {
+      const hint = document.createElement('div');
+      hint.className = 'exerciseHint';
+      hint.textContent = 'Escucha el audio y escribe exactamente lo que oyes.';
+      card.appendChild(hint);
+
+      const box = document.createElement('textarea');
+      box.className = 'input';
+      box.rows = 3;
+      box.placeholder = 'Escribe el dictado aqui...';
+      box.autocomplete = 'off';
+      box.spellcheck = false;
+      box.disabled = done;
+      answerWrap.appendChild(box);
+      card.appendChild(answerWrap);
+
+      const btnListen = document.createElement('button');
+      btnListen.className = 'ttsIconBtn';
+      btnListen.type = 'button';
+      btnListen.textContent = SPEAKER_ICON;
+      btnListen.title = 'Odsluchaj (PL)';
+      btnListen.setAttribute('aria-label', 'Odsluchaj (PL)');
+      btnListen.addEventListener('click', () => playExerciseAudio(ex));
+      actions.appendChild(btnListen);
+
+      const btnCheck = document.createElement('button');
+      btnCheck.className = 'btn-yellow';
+      btnCheck.type = 'button';
+      btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+      btnCheck.disabled = done;
+
+      btnCheck.addEventListener('click', async () => {
+        if (done) return;
+        const val = String(box.value || '').trim();
+        if (!val) {
+          showToast('Escribe lo que escuchaste.', 'warn', 1800);
+          return;
+        }
+
+        const expected = String(ex.answer || '').trim();
+        const exact =
+          normalizeDictationText(val) === normalizeDictationText(expected);
+        const score = dictationSimilarity(val, expected);
+        const ok = exact || score >= 88;
+
+        setResultText(
+          resultEl,
+          ok,
+          ok ? `Correcto (${score}%).` : `No coincide (${score}%). Intenta de nuevo.`,
+        );
+        card.appendChild(resultEl);
+        if (!ok) {
+          await markWrong(val, expected);
+          return;
+        }
+
+        box.disabled = true;
+        await markDone();
+        btnCheck.textContent = 'Hecho';
+        btnCheck.disabled = true;
+      });
+
+      actions.appendChild(btnCheck);
+      card.appendChild(actions);
+
+      if (done) {
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      }
+
+      return card;
+    }
+
+    if (isDragDropExercise(ex) && options.length && String(ex.answer || '').trim()) {
+      const promptText = String(ex.prompt || '');
+      const parts = promptText.split('___');
+      const blankCount = parts.length - 1;
+      if (blankCount > 0) {
+        const tokenList = shuffleArray(
+          options
+            .map((o, idx) => ({
+              id: String(idx),
+              text: stripLeadLabel(o) || String(o || '').trim(),
+            }))
+            .filter((t) => t.text),
+        );
+
+        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blankCount);
+        const selected = Array.from({ length: blankCount }, () => null);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'exerciseDragWrap';
+
+        const promptWrap = document.createElement('div');
+        promptWrap.className = 'exerciseDragPrompt';
+
+        const bank = document.createElement('div');
+        bank.className = 'exerciseDragBank';
+
+        const tokenById = new Map(tokenList.map((t) => [t.id, t]));
+
+        const assignedIdSet = () => {
+          const ids = new Set();
+          selected.forEach((sid) => {
+            if (sid !== null && sid !== undefined) ids.add(String(sid));
+          });
+          return ids;
+        };
+
+        const findBlankByToken = (tokenId) => selected.findIndex((x) => String(x) === String(tokenId));
+
+        const assignToken = (blankIdx, tokenId) => {
+          if (done) return;
+          const prevBlank = findBlankByToken(tokenId);
+          if (prevBlank >= 0) selected[prevBlank] = null;
+          selected[blankIdx] = String(tokenId);
+          render();
+        };
+
+        const render = () => {
+          const usedIds = assignedIdSet();
+          promptWrap.innerHTML = '';
+
+          parts.forEach((part, idx) => {
+            const txt = document.createElement('span');
+            txt.textContent = part;
+            promptWrap.appendChild(txt);
+
+            if (idx >= blankCount) return;
+
+            const blank = document.createElement('button');
+            blank.type = 'button';
+            blank.className = 'exerciseDropBlank';
+            blank.disabled = done;
+
+            const sid = selected[idx];
+            const token = sid !== null ? tokenById.get(String(sid)) : null;
+            blank.textContent = token?.text || '...';
+            blank.classList.toggle('isFilled', !!token);
+
+            blank.addEventListener('click', () => {
+              if (done) return;
+              if (selected[idx] !== null) {
+                selected[idx] = null;
+                render();
+              }
+            });
+            blank.addEventListener('dragover', (ev) => {
+              if (done) return;
+              ev.preventDefault();
+              blank.classList.add('dragOver');
+            });
+            blank.addEventListener('dragleave', () => blank.classList.remove('dragOver'));
+            blank.addEventListener('drop', (ev) => {
+              if (done) return;
+              ev.preventDefault();
+              blank.classList.remove('dragOver');
+              const tokenId = String(ev.dataTransfer?.getData('text/plain') || '').trim();
+              if (!tokenId || !tokenById.has(tokenId)) return;
+              assignToken(idx, tokenId);
+            });
+
+            promptWrap.appendChild(blank);
+          });
+
+          bank.innerHTML = '';
+          tokenList.forEach((t) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-white-outline exerciseDragToken';
+            btn.textContent = t.text;
+            const used = usedIds.has(String(t.id));
+            btn.disabled = done || used;
+            btn.draggable = !done && !used;
+            btn.addEventListener('dragstart', (ev) => {
+              ev.dataTransfer?.setData('text/plain', String(t.id));
+              ev.dataTransfer.effectAllowed = 'move';
+            });
+            btn.addEventListener('click', () => {
+              if (done || used) return;
+              const emptyIdx = selected.findIndex((x) => x === null);
+              if (emptyIdx < 0) {
+                showToast('Quita una palabra para reemplazarla.', 'warn', 1700);
+                return;
+              }
+              assignToken(emptyIdx, t.id);
+            });
+            bank.appendChild(btn);
+          });
+        };
+
+        const hint = document.createElement('div');
+        hint.className = 'exerciseHint';
+        hint.textContent = 'Arrastra palabras a los huecos o toca una palabra para insertarla.';
+        wrap.appendChild(hint);
+        wrap.appendChild(promptWrap);
+
+        const bankLabel = document.createElement('div');
+        bankLabel.className = 'exerciseHint';
+        bankLabel.style.marginTop = '10px';
+        bankLabel.textContent = 'Banco de palabras:';
+        wrap.appendChild(bankLabel);
+        wrap.appendChild(bank);
+        card.appendChild(wrap);
+
+        const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
+        if (wantsListen) {
+          const btnListen = document.createElement('button');
+          btnListen.className = 'ttsIconBtn';
+          btnListen.type = 'button';
+          btnListen.textContent = SPEAKER_ICON;
+          btnListen.title = 'Odsluchaj (PL)';
+          btnListen.setAttribute('aria-label', 'Odsluchaj (PL)');
+          btnListen.addEventListener('click', () => playExerciseAudio(ex));
+          actions.appendChild(btnListen);
+        }
+
+        const btnCheck = document.createElement('button');
+        btnCheck.className = 'btn-yellow';
+        btnCheck.type = 'button';
+        btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+        btnCheck.disabled = done;
+
+        btnCheck.addEventListener('click', async () => {
+          if (done) return;
+          if (selected.some((sid) => sid === null)) {
+            showToast('Completa todos los huecos.', 'warn', 1800);
+            return;
+          }
+
+          let ok = true;
+          for (let i = 0; i < blankCount; i += 1) {
+            const sid = selected[i];
+            const token = sid !== null ? tokenById.get(String(sid)) : null;
+            const got = normalizeText(token?.text || '');
+            const accepted = (expectedByBlank[i] || expectedByBlank[0] || []).map((x) =>
+              normalizeText(x),
+            );
+            if (!accepted.includes(got)) {
+              ok = false;
+              break;
+            }
+          }
+
+          const userSlots = selected.map((sid) => {
+            if (sid === null || sid === undefined) return '';
+            const token = tokenById.get(String(sid));
+            return String(token?.text || '').trim();
+          });
+          setResultText(resultEl, ok, ok ? 'Correcto.' : 'Intenta de nuevo.');
+          card.appendChild(resultEl);
+          if (!ok) {
+            await markWrong(userSlots.join(' | '), ex.answer || '');
+            return;
+          }
+
+          await markDone();
+          btnCheck.textContent = 'Hecho';
+          btnCheck.disabled = true;
+          render();
+        });
+
+        actions.appendChild(btnCheck);
+        card.appendChild(actions);
+
+        if (done) {
+          setResultText(resultEl, true, 'Hecho.');
+          card.appendChild(resultEl);
+        }
+
+        render();
+        return card;
+      }
     }
 
     if (isChoiceExercise(ex) && options.length && String(ex.answer || '').trim()) {
@@ -1490,7 +2907,10 @@ function makeExerciseCard(ex) {
         setResultText(resultEl, correct, correct ? 'Correcto.' : 'Intenta de nuevo.');
         card.appendChild(resultEl);
 
-        if (!correct) return;
+        if (!correct) {
+          await markWrong(userAnswer, expectedAnswerPreview(ex));
+          return;
+        }
 
         await markDone();
         btnCheck.textContent = 'Hecho';
@@ -1569,24 +2989,10 @@ function makeExerciseCard(ex) {
       btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
       btnCheck.disabled = done;
 
-      const parseExpected = (rawAnswer, blanksCount) => {
-        const raw = String(rawAnswer || '').trim().replaceAll('/', '|');
-        if (!raw) return [];
-        if (raw.includes('||')) {
-          return raw
-            .split('||')
-            .map((p) => parseAnswerList(p));
-        }
-        const list = parseAnswerList(raw);
-        if (blanksCount <= 1) return [list];
-        if (list.length === blanksCount) return list.map((x) => parseAnswerList(x));
-        return Array.from({ length: blanksCount }, () => list);
-      };
-
       btnCheck.addEventListener('click', async () => {
         if (done) return;
         const blanksCount = blankInputs.length || 1;
-        const expectedByBlank = parseExpected(ex.answer || '', blanksCount);
+        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blanksCount);
         const values = blankInputs.map((i) => String(i.value || '').trim());
 
         if (values.some((v) => !v)) {
@@ -1608,7 +3014,10 @@ function makeExerciseCard(ex) {
         setResultText(resultEl, ok, ok ? 'Correcto.' : 'Intenta de nuevo.');
         card.appendChild(resultEl);
 
-        if (!ok) return;
+        if (!ok) {
+          await markWrong(values.join(' | '), ex.answer || '');
+          return;
+        }
 
         blankInputs.forEach((i) => (i.disabled = true));
         await markDone();
@@ -1793,7 +3202,14 @@ function makeExerciseCard(ex) {
 
           setResultText(resultEl, ok, ok ? 'Correcto.' : 'Intenta de nuevo.');
           card.appendChild(resultEl);
-          if (!ok) return;
+          if (!ok) {
+            const pickedPairs = Object.keys(userMap)
+              .sort()
+              .map((label) => `${label}-${userMap[label]}`)
+              .join(', ');
+            await markWrong(pickedPairs, ex.answer || '');
+            return;
+          }
 
           locked = true;
           await markDone();
@@ -1958,7 +3374,10 @@ function makeExerciseCard(ex) {
 
           setResultText(resultEl, ok, ok ? 'Correcto.' : 'Intenta de nuevo.');
           card.appendChild(resultEl);
-          if (!ok) return;
+          if (!ok) {
+            await markWrong(sentence, ex.answer || '');
+            return;
+          }
 
           await markDone();
           btnCheck.textContent = 'Hecho';
@@ -2065,6 +3484,12 @@ function renderExercises() {
   exerciseList.innerHTML = '';
   setTaskChips(cachedExercises.length);
 
+  if (IMMERSIVE_MODE) {
+    renderImmersiveMode();
+    setProgressUI();
+    return;
+  }
+
   if (!VIEW_EXERCISES.length) {
     emptyExercises.style.display = 'block';
     return;
@@ -2105,6 +3530,8 @@ async function loadExercises(topic) {
   exerciseList.innerHTML = '';
   emptyExercises.style.display = 'none';
   cachedExercises = [];
+  immersiveIndex = 0;
+  immersiveHasInitialFocus = false;
 
   CURRENT_TOPIC_KEY = topicKeyFrom(topic);
 
@@ -2134,6 +3561,7 @@ async function loadExercises(topic) {
   }
 
   if (!snap) {
+    showClassicListSection();
     emptyExercises.style.display = 'block';
     emptyExercises.textContent = 'No se pudo cargar ejercicios.';
     return;
@@ -2152,32 +3580,86 @@ async function loadExercises(topic) {
   applyFilters();
 }
 
-async function computeHasAccess(uid) {
+async function getUserFlags(uid, email) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
-    if (!snap.exists()) return false;
+    if (!snap.exists()) {
+      return {
+        isAdmin: false,
+        blocked: false,
+        hasAccess: false,
+        hasGlobalAccess: false,
+        isUntilValid: false,
+        levels: [],
+      };
+    }
 
     const d = snap.data() || {};
-    if (isAdminUser(d, auth.currentUser?.email)) return true;
-    if (d.blocked === true) return false;
+    const isAdmin = isAdminUser(d, email || auth.currentUser?.email);
+    const blocked = d.blocked === true;
+    if (isAdmin) {
+      return {
+        isAdmin: true,
+        blocked: false,
+        hasAccess: true,
+        hasGlobalAccess: true,
+        isUntilValid: true,
+        levels: [],
+      };
+    }
+    if (blocked) {
+      return {
+        isAdmin: false,
+        blocked: true,
+        hasAccess: false,
+        hasGlobalAccess: false,
+        isUntilValid: false,
+        levels: [],
+      };
+    }
 
     const until = d.accessUntil || null;
     const untilDate = until?.toDate ? until.toDate() : until ? new Date(until) : null;
     const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
-    const timeOk = hasUntil ? untilDate.getTime() > Date.now() : false;
+    const isUntilValid = hasUntil ? untilDate.getTime() > Date.now() : false;
 
     const rawLevels = normalizeLevelList(d.levels);
     const levels = rawLevels.length ? rawLevels : normalizeLevelList(levelsFromPlan(d.plan));
 
-    return timeOk && levels.includes(String(LEVEL).toUpperCase());
+    const plan = String(d.plan || '').toLowerCase();
+    const hasGlobalAccess = plan === 'premium' || (d.access === true && levels.length === 0);
+    const hasAccess =
+      (hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase())) && isUntilValid;
+
+    return {
+      isAdmin: false,
+      blocked: false,
+      hasAccess,
+      hasGlobalAccess,
+      isUntilValid,
+      levels,
+    };
   } catch (e) {
-    console.warn('computeHasAccess failed', e);
-    return false;
+    console.warn('[ejercicio] getUserFlags failed', e);
+    return {
+      isAdmin: false,
+      blocked: false,
+      hasAccess: false,
+      hasGlobalAccess: false,
+      isUntilValid: false,
+      levels: [],
+    };
   }
+}
+
+async function computeHasAccess(uid) {
+  const flags = await getUserFlags(uid, auth.currentUser?.email);
+  return flags.hasAccess === true;
 }
 
 function showAccessLocked() {
   try {
+    showClassicListSection();
     if (exerciseList) exerciseList.innerHTML = '';
     if (emptyExercises) {
       emptyExercises.style.display = 'block';
@@ -2244,6 +3726,13 @@ async function trackTopicOpen(uid, courseId, level) {
 function showFinishModal(stats) {
   const modal = document.getElementById('finishModal');
   if (!modal) return;
+  const topicLevel = topicLevelOf(currentTopic, LEVEL);
+  const checkpointBoundary =
+    CONTINUOUS_FLOW &&
+    Number.isFinite(CURRENT_ROUTE_INDEX) &&
+    CURRENT_ROUTE_INDEX >= 0 &&
+    (CURRENT_ROUTE_INDEX + 1) % 3 === 0;
+  const checkpointNo = checkpointBoundary ? Math.floor((CURRENT_ROUTE_INDEX + 1) / 3) : 0;
 
   const txt = document.getElementById('finishText');
   if (txt) {
@@ -2253,17 +3742,45 @@ function showFinishModal(stats) {
     const testLine = stats.testTotal
       ? `Test: ${stats.testScore}%.`
       : 'Test completado.';
-    txt.textContent = `${exerciseLine} ${testLine}`;
+    if (stats.completed) {
+      if (checkpointBoundary) {
+        txt.textContent = `${exerciseLine} ${testLine} Swietnie. Teraz zrob mini-test checkpoint ${checkpointNo}, aby odblokowac kolejne 3 moduly.`;
+      } else {
+        txt.textContent = `${exerciseLine} ${testLine}`;
+      }
+    } else if (CONTINUOUS_FLOW) {
+      txt.textContent = `${exerciseLine} ${testLine} Powtorka wymagana: potrzebujesz 100% praktyki i 100% testu, aby odblokowac kolejny modul.`;
+    } else {
+      txt.textContent = `${exerciseLine} ${testLine} Aun faltan ejercicios por completar.`;
+    }
   }
 
   const btnLesson = document.getElementById('btnFinishLesson');
   const btnCourse = document.getElementById('btnFinishCourse');
   const btnPanel = document.getElementById('btnFinishPanel');
+  const btnMini = btnFinishMiniTest;
   if (btnLesson && currentTopic?.id)
-    btnLesson.href = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(currentTopic.id)}${navParams()}`;
-  if (btnCourse)
-    btnCourse.href = courseHref(LEVEL);
+    btnLesson.href = `lessonpage.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(currentTopic.id)}${navParams()}`;
+  if (btnLesson) {
+    btnLesson.textContent = stats.completed ? 'Volver a la leccion' : 'Volver al modulo';
+  }
+  if (btnCourse) {
+    btnCourse.href = courseHref(topicLevel);
+    btnCourse.textContent = stats.completed ? 'Ver temas' : 'Repetir modulo';
+  }
   if (btnPanel) btnPanel.href = 'espanel.html';
+  if (btnMini) {
+    if (stats.completed && checkpointBoundary && checkpointNo > 0) {
+      btnMini.style.display = '';
+      btnMini.href = checkpointReviewHref(checkpointNo, CURRENT_ROUTE);
+    } else if (CURRENT_MISSING_CHECKPOINT > 0) {
+      btnMini.style.display = '';
+      btnMini.href = checkpointReviewHref(CURRENT_MISSING_CHECKPOINT, CURRENT_ROUTE);
+    } else {
+      btnMini.style.display = 'none';
+      btnMini.removeAttribute('href');
+    }
+  }
 
   const close = () => {
     modal.style.display = 'none';
@@ -2306,6 +3823,7 @@ onAuthStateChanged(auth, async (user) => {
   if (sessionEmail) sessionEmail.textContent = user.email || '(sin correo)';
 
   adminWrap && (adminWrap.style.display = 'none');
+  setupImmersiveMode();
 
   if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
@@ -2347,6 +3865,7 @@ onAuthStateChanged(auth, async (user) => {
 
     const topic = await loadTopic();
     if (!topic) {
+      showClassicListSection();
       if (topicTitle) topicTitle.textContent = 'Tema no encontrado';
       if (topicDesc)
         topicDesc.textContent =
@@ -2364,8 +3883,9 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     currentTopic = topic;
+    const topicLevel = topicLevelOf(topic, LEVEL);
 
-    if (pillLevel) pillLevel.textContent = `Nivel: ${LEVEL}`;
+    if (pillLevel) pillLevel.textContent = `Nivel: ${topicLevel}`;
     if (pillType) {
       if (topic.type) {
         pillType.style.display = 'inline-flex';
@@ -2383,33 +3903,56 @@ onAuthStateChanged(auth, async (user) => {
 
       if (pillLessonLink && topic.id) {
         pillLessonLink.style.display = 'inline-flex';
-        const url = `lessonpage.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
+        const url = `lessonpage.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
         pillLessonLink.href = url;
         if (btnBackLesson) btnBackLesson.href = url;
       }
       if (btnReview && topic.id) {
-        btnReview.href = `review.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
+        btnReview.href = `review.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
       }
       if (btnFlashcards && topic.id) {
-        btnFlashcards.href = `flashcards.html?level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
+        btnFlashcards.href = `flashcards.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
       }
     if (btnBackCourse) {
-      btnBackCourse.href = courseHref(LEVEL);
+      btnBackCourse.href = courseHref(topicLevel);
     }
 
-    const hasAccess = await computeHasAccess(CURRENT_UID);
-    if (!hasAccess) {
+    const flags = await getUserFlags(CURRENT_UID, user.email);
+    CURRENT_FLAGS = flags;
+    CURRENT_ROUTE = [];
+    CURRENT_ROUTE_INDEX = -1;
+    CURRENT_MISSING_CHECKPOINT = 0;
+    if (!flags.hasAccess) {
       showAccessLocked();
       return;
     }
 
-    await trackTopicOpen(user.uid, topic.id, LEVEL);
+    if (!flags.isAdmin) {
+      if (!CONTINUOUS_FLOW) {
+        const prevLevel = prevLevelOf(LEVEL);
+        const hasMulti =
+          flags.hasGlobalAccess || (Array.isArray(flags.levels) && flags.levels.length > 1);
+        if (prevLevel && hasMulti) {
+          const ok = await isPrevLevelCompleted(CURRENT_UID, prevLevel);
+          if (!ok) {
+            showSequenceLocked(prevLevel);
+            return;
+          }
+        }
+      }
+
+      const ok = await enforceTopicOrderGate(CURRENT_UID, topic, flags);
+      if (!ok) return;
+    }
+
+    await trackTopicOpen(user.uid, topic.id, topicLevel);
 
     await loadExercises(topic);
   } catch (e) {
     console.error(e);
     showToast('No se pudo cargar.', 'bad', 3200);
     if (emptyExercises) {
+      showClassicListSection();
       emptyExercises.style.display = 'block';
       emptyExercises.textContent = 'No se pudo cargar. Revisa la consola.';
     }

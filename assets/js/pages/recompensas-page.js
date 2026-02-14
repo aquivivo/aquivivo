@@ -17,6 +17,8 @@ const QS = new URLSearchParams(window.location.search);
 const PRE_LEVEL = String(QS.get('level') || '').toUpperCase();
 const TRACK = String(QS.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = String(QS.get('view') || '').trim().toLowerCase();
+let ACTIVE_TRACK = TRACK;
+let ACTIVE_VIEW = COURSE_VIEW;
 
 const passportHint = $('passportHint');
 const passportLevel = $('passportLevel');
@@ -1073,6 +1075,12 @@ function normalizeTrack(raw) {
     .toLowerCase();
 }
 
+function normalizeCourseView(raw) {
+  return String(raw || '')
+    .trim()
+    .toLowerCase();
+}
+
 function topicTrackList(topic) {
   const raw = topic?.track;
   if (!raw) return [];
@@ -1081,11 +1089,66 @@ function topicTrackList(topic) {
   return one ? [one] : [];
 }
 
-function topicMatchesTrack(topic) {
+function topicMatchesTrack(topic, track) {
   const tracks = topicTrackList(topic);
-  if (TRACK) return tracks.includes(TRACK);
+  const want = normalizeTrack(track);
+  if (want) return tracks.includes(want);
   return tracks.length === 0;
 }
+
+function contextFromReferrer() {
+  try {
+    const ref = String(document.referrer || '').trim();
+    if (!ref) return { track: '', view: '' };
+    const url = new URL(ref);
+    const qs = url.searchParams;
+    const track = normalizeTrack(qs.get('track') || '');
+    const view = normalizeCourseView(qs.get('view') || '');
+
+    const path = String(url.pathname || '').toLowerCase();
+    if (!track && path.endsWith('/curso-latam.html')) return { track: 'latam', view: view || 'latam' };
+    if (!track && path.endsWith('/curso-latam')) return { track: 'latam', view: view || 'latam' };
+
+    return { track, view };
+  } catch {
+    return { track: '', view: '' };
+  }
+}
+
+function impliedTrackFromView(view) {
+  const v = normalizeCourseView(view);
+  if (v === 'latam') return 'latam';
+  return '';
+}
+
+function pickMostCommonTrack(topics) {
+  const counts = new Map();
+  topics.forEach((t) => {
+    const tracks = topicTrackList(t);
+    tracks.forEach((tr) => {
+      const key = normalizeTrack(tr);
+      if (!key) return;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+  });
+
+  let best = '';
+  let bestCount = 0;
+  counts.forEach((count, key) => {
+    if (count > bestCount) {
+      best = key;
+      bestCount = count;
+    }
+  });
+
+  return best;
+}
+
+(() => {
+  const ref = contextFromReferrer();
+  if (!ACTIVE_TRACK && ref.track) ACTIVE_TRACK = ref.track;
+  if (!ACTIVE_VIEW && ref.view) ACTIVE_VIEW = ref.view;
+})();
 
 function parseList(raw) {
   return String(raw || '')
@@ -1272,7 +1335,7 @@ async function loadProgressMap(uid, level) {
 }
 
 async function loadTopics(level) {
-  const list = [];
+  const all = [];
   try {
     const snap = await getDocs(
       query(collection(db, 'courses'), where('level', '==', level), orderBy('order')),
@@ -1280,27 +1343,98 @@ async function loadTopics(level) {
     snap.forEach((d) => {
       const t = { id: d.id, ...(d.data() || {}) };
       if (t.isArchived === true) return;
-      if (!topicMatchesTrack(t)) return;
-      list.push(t);
+      all.push(t);
     });
   } catch (e) {
     console.warn('[passport] loadTopics failed', e);
   }
-  return list;
+
+  const explicit = normalizeTrack(ACTIVE_TRACK);
+  const implied = impliedTrackFromView(ACTIVE_VIEW);
+
+  const trackCounts = new Map();
+  all.forEach((t) => {
+    const tracks = topicTrackList(t);
+    tracks.forEach((tr) => {
+      const key = normalizeTrack(tr);
+      if (!key) return;
+      trackCounts.set(key, (trackCounts.get(key) || 0) + 1);
+    });
+  });
+
+  const byFrequency = Array.from(trackCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([key]) => key);
+
+  const candidates = [];
+  const addCandidate = (raw) => {
+    const key = normalizeTrack(raw);
+    const val = raw ? key : '';
+    if (val === '' && candidates.includes('')) return;
+    if (val && candidates.includes(val)) return;
+    candidates.push(val);
+  };
+
+  // Candidate ordering:
+  // - Explicit (URL) first, but don't hard-fail if empty.
+  // - If view suggests a track (LATAM), try it early.
+  // - Then classic/untracked.
+  // - Then any other known tracks by frequency.
+  if (explicit) addCandidate(explicit);
+  if (implied) addCandidate(implied);
+  addCandidate('');
+  byFrequency.forEach((t) => addCandidate(t));
+
+  for (const wantTrack of candidates) {
+    const list = all.filter((t) => topicMatchesTrack(t, wantTrack));
+    if (list.length) {
+      ACTIVE_TRACK = wantTrack;
+      return list;
+    }
+  }
+
+  return [];
 }
 
 function renderGrid({ level, steps }) {
   if (!passportGrid) return;
   passportGrid.innerHTML = '';
 
-  if (!steps.length) {
-    passportGrid.innerHTML = `<div class="muted">No hay temas para este nivel.</div>`;
-    return;
+  let items = Array.isArray(steps) ? steps : [];
+  let isPreview = false;
+
+  if (!items.length) {
+    const cfg = routeForLevel(level);
+    const route = Array.isArray(cfg?.route) ? cfg.route : [];
+    const previewSteps = route
+      .map((id, idx) => {
+        const landmark = LANDMARK_BY_ID[id];
+        if (!landmark) return null;
+        return {
+          level: String(level || 'A1').toUpperCase(),
+          topicIdx: idx,
+          topic: null,
+          landmark,
+          progress: { pct: 0 },
+          isDone: false,
+          isPreview: true,
+        };
+      })
+      .filter(Boolean);
+
+    if (!previewSteps.length) {
+      if (passportHint) passportHint.textContent = 'No hay temas para este nivel.';
+      passportGrid.innerHTML = `<div class="muted">No hay temas para este nivel.</div>`;
+      return;
+    }
+
+    isPreview = true;
+    items = previewSteps;
   }
 
   let unlocked = 0;
 
-  steps.forEach((stepData) => {
+  items.forEach((stepData) => {
     const topicIdx = stepData.topicIdx;
     const topic = stepData.topic;
     const landmark = stepData.landmark;
@@ -1334,7 +1468,8 @@ function renderGrid({ level, steps }) {
 
     const meta = document.createElement('div');
     meta.className = 'passportStampMeta';
-    meta.textContent = `Tema ${topicIdx + 1} · ${topic?.title || topic?.slug || topic?.id || ''} · ${pct}%`;
+    const topicLabel = String(topic?.title || topic?.slug || topic?.id || '').trim();
+    meta.textContent = [`Tema ${topicIdx + 1}`, topicLabel, `${pct}%`].filter(Boolean).join(' · ');
 
     textWrap.appendChild(title);
     textWrap.appendChild(meta);
@@ -1379,7 +1514,13 @@ function renderGrid({ level, steps }) {
   });
 
   if (passportHint) {
-    passportHint.textContent = `Temas: ${steps.length} · Recompensas: ${unlocked}/${steps.length}`;
+    if (isPreview) {
+      const cfg = routeForLevel(level);
+      const region = cfg?.regionPl ? ` (${cfg.regionPl})` : '';
+      passportHint.textContent = `Vista previa de la ruta${region}: ${items.length} sellos · Temas: 0`;
+    } else {
+      passportHint.textContent = `Temas: ${items.length} · Recompensas: ${unlocked}/${items.length}`;
+    }
   }
 }
 
@@ -1417,7 +1558,7 @@ function ensureLeafletMap() {
   return LEAFLET_MAP;
 }
 
-function renderMap({ steps }) {
+function renderMap({ level, steps }) {
   if (!passportMap) return;
 
   const map = ensureLeafletMap();
@@ -1434,16 +1575,32 @@ function renderMap({ steps }) {
     } catch {}
   }, 0);
 
-  const startName = steps[0]?.landmark?.pl || '—';
-  const endName = steps[steps.length - 1]?.landmark?.pl || '—';
-  if (passportMapHint) passportMapHint.textContent = `Trasa: ${startName} → ${endName}`;
+  const lvl = String(level || steps[0]?.level || '').toUpperCase();
+  const fallbackCfg = lvl ? routeForLevel(lvl) : null;
+
+  const startName =
+    steps[0]?.landmark?.pl ||
+    (fallbackCfg?.route?.length ? LANDMARK_BY_ID[fallbackCfg.route[0]]?.pl : '') ||
+    '—';
+  const endName =
+    steps[steps.length - 1]?.landmark?.pl ||
+    (fallbackCfg?.route?.length
+      ? LANDMARK_BY_ID[fallbackCfg.route[fallbackCfg.route.length - 1]]?.pl
+      : '') ||
+    '—';
+
+  const region = fallbackCfg?.regionPl ? ` (${fallbackCfg.regionPl})` : '';
+  if (passportMapHint) passportMapHint.textContent = `Trasa${region}: ${startName} → ${endName}`;
 
   LEAFLET_LAYER.clearLayers();
 
   const L = window.L;
   const points = [];
 
-  steps.forEach((stepData) => {
+  const fallbackLevel = lvl;
+
+  const renderOne = (stepData, idxOverride = null) => {
+    const idx = idxOverride ?? stepData.topicIdx;
     const landmark = stepData.landmark;
     if (!landmark || typeof landmark.lat !== 'number' || typeof landmark.lng !== 'number') return;
 
@@ -1452,7 +1609,7 @@ function renderMap({ steps }) {
 
     const icon = L.divIcon({
       className: 'passportMapMarker',
-      html: `<div class="passportMapMarkerInner ${stepData.isDone ? 'is-done' : ''}">${stepData.topicIdx + 1}</div>`,
+      html: `<div class="passportMapMarkerInner ${stepData.isDone ? 'is-done' : ''}">${idx + 1}</div>`,
       iconSize: [30, 30],
       iconAnchor: [15, 15],
     });
@@ -1462,17 +1619,37 @@ function renderMap({ steps }) {
     marker.on('click', () => {
       openStampModal({
         level: stepData.level,
-        topicIdx: stepData.topicIdx,
+        topicIdx: idx,
         topic: stepData.topic,
         isDone: stepData.isDone,
         progress: stepData.progress,
         landmark: stepData.landmark,
       });
-      highlightStep(stepData.topicIdx);
+      highlightStep(idx);
     });
 
     marker.addTo(LEAFLET_LAYER);
-  });
+  };
+
+  if (steps.length) {
+    steps.forEach((s) => renderOne(s));
+  } else if (fallbackCfg?.route?.length) {
+    fallbackCfg.route.forEach((id, idx) => {
+      const lm = LANDMARK_BY_ID[id];
+      if (!lm) return;
+      renderOne(
+        {
+          level: fallbackLevel || 'A1',
+          topicIdx: idx,
+          topic: null,
+          landmark: lm,
+          progress: { pct: 0 },
+          isDone: false,
+        },
+        idx,
+      );
+    });
+  }
 
   if (points.length >= 2) {
     L.polyline(points, {
@@ -1522,7 +1699,9 @@ function openStampModal({ level, topicIdx, topic, isDone, progress, landmark }) 
   if (!isDone) {
     const lock = document.createElement('div');
     lock.className = 'muted';
-    lock.textContent = 'Completa este tema para ganar la recompensa.';
+    lock.textContent = topic
+      ? 'Completa este tema para ganar la recompensa.'
+      : 'Aún no hay temas importados para este nivel. Esta es una vista previa de la ruta.';
     wrap.appendChild(lock);
   }
 
@@ -1816,7 +1995,7 @@ async function loadForLevel(level) {
     const progress = await loadProgressMap(CURRENT_UID, level);
     const steps = buildSteps({ level, topics, progressMap: progress });
     renderGrid({ level, steps });
-    renderMap({ steps });
+    renderMap({ level, steps });
   } finally {
     loading = false;
   }

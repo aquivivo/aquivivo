@@ -64,7 +64,7 @@ import {
   const NO_LOGIN_MS = 2 * 30 * 24 * 60 * 60 * 1000;
   const TRIAL_INTENT_KEY = 'av_trial_intent';
   const POPUP_SEEN_PREFIX = 'av_popup_seen_';
-  const ASSET_VERSION = '20260208m';
+  const ASSET_VERSION = '20260214d';
 
   let CURRENT_USER = null;
   let CURRENT_DOC = null;
@@ -684,7 +684,7 @@ import {
           <div class="nav-actions" aria-label="${labels.navLabel}">
             ${
               logged && isAdmin
-                ? `<a class="btn-yellow" href="esadmin.html">${labels.admin}</a>`
+                ? `<a class="btn-yellow" href="admin-select.html">${labels.admin}</a>`
                 : ''
             }
             <a class="btn-white-outline" id="btnPolaco" href="${hrefPolaco}">${labels.polaco}</a>
@@ -756,7 +756,7 @@ import {
                     <a class="nav-profile-item" href="pagos.html"><span aria-hidden="true">&#x1F4B3;</span><span>${labels.payments}</span></a>
                     <a class="nav-profile-item" href="recompensas.html"><span aria-hidden="true">&#x1F381;</span><span>${labels.rewards}</span></a>
                     <a class="nav-profile-item" href="ayuda.html"><span aria-hidden="true">&#x1F4A1;</span><span>${labels.help}</span></a>
-                    ${logged && isAdmin ? `<a class="nav-profile-item" href="esadmin.html"><span aria-hidden="true">&#x1F6E1;</span><span>${labels.admin}</span></a>` : ''}
+                    ${logged && isAdmin ? `<a class="nav-profile-item" href="admin-select.html"><span aria-hidden="true">&#x1F6E1;</span><span>${labels.admin}</span></a>` : ''}
                     <div class="nav-profile-sep" aria-hidden="true"></div>
                     <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">${labels.logout}</button>
                   </div>
@@ -796,8 +796,159 @@ import {
     `;
   }
 
+  function getAdminSideGroups() {
+    return [
+      {
+        title: 'Start i kreatory',
+        open: true,
+        items: [
+          {
+            href: 'admin-select.html',
+            label: 'Centrum admina',
+            icon: '&#x1F9ED;',
+            pageKeys: ['admin-select', 'adminselect'],
+          },
+          {
+            href: 'admin-wizard.html',
+            label: 'Kreator',
+            icon: '&#x1F9F0;',
+            pageKeys: ['admin-wizard'],
+          },
+          {
+            href: 'lessonadmin.html',
+            label: 'Admin lekcji',
+            icon: '&#x1F4D8;',
+            pageKeys: ['lessonadmin'],
+          },
+          {
+            href: 'ejercicioadmin.html',
+            label: 'Admin cwiczen',
+            icon: '&#x1F3AF;',
+            pageKeys: ['ejercicioadmin'],
+          },
+          {
+            href: 'esadmin.html#accDashboard',
+            label: 'Dashboard',
+            icon: '&#x1F4CA;',
+            section: 'accDashboard',
+          },
+        ],
+      },
+      {
+        title: 'Sprzedaz i marketing',
+        open: true,
+        items: [
+          {
+            href: 'esadmin.html#accServices',
+            label: 'Dodawanie tresci',
+            icon: '&#x1F6D2;',
+            section: 'accServices',
+          },
+          {
+            href: 'esadmin.html#accPayments',
+            label: 'Ceny i platnosci',
+            icon: '&#x1F4B3;',
+            section: 'accPayments',
+          },
+          {
+            href: 'esadmin.html#accPromo',
+            label: 'Kody promo',
+            icon: '&#x1F3F7;&#xFE0F;',
+            section: 'accPromo',
+          },
+          {
+            href: 'esadmin.html#accSegments',
+            label: 'Segmentacja',
+            icon: '&#x1F9E9;',
+            section: 'accSegments',
+          },
+          {
+            href: 'esadmin.html#accBroadcasts',
+            label: 'Wiadomosci',
+            icon: '&#x1F4E2;',
+            section: 'accBroadcasts',
+          },
+          {
+            href: 'esadmin.html#accPublishing',
+            label: 'Publikacja',
+            icon: '&#x1F4DD;',
+            section: 'accPublishing',
+          },
+          { href: 'esadmin.html#accMissing', label: 'Braki', icon: '&#x1F9F9;', section: 'accMissing' },
+        ],
+      },
+      {
+        title: 'Uzytkownicy i postep',
+        open: true,
+        items: [
+          { href: 'esadmin.html#accUsers', label: 'Uzytkownicy', icon: '&#x1F465;', section: 'accUsers' },
+          { href: 'esadmin.html#accProgress', label: 'Postepy', icon: '&#x1F4C8;', section: 'accProgress' },
+          { href: 'esadmin.html#accActivity', label: 'Aktywnosc', icon: '&#x23F1;&#xFE0F;', section: 'accActivity' },
+          { href: 'esadmin.html#accFlashcards', label: 'Fiszki', icon: '&#x1F0CF;', section: 'accFlashcards' },
+        ],
+      },
+      {
+        title: 'Opinie i jakosc',
+        open: true,
+        items: [
+          { href: 'esadmin.html#accReviews', label: 'Opinie', icon: '&#x2B50;', section: 'accReviews' },
+          { href: 'esadmin.html#accReports', label: 'Zgloszenia', icon: '&#x1F9FE;', section: 'accReports' },
+        ],
+      },
+      {
+        title: 'Techniczne i multimedia',
+        open: true,
+        items: [
+          { href: 'esadmin.html#accAppLogs', label: 'Logi', icon: '&#x1F5A5;&#xFE0F;', section: 'accAppLogs' },
+          {
+            href: 'esadmin.html#accAudioLib',
+            label: 'Biblioteka audio',
+            icon: '&#x1F3A7;',
+            section: 'accAudioLib',
+          },
+        ],
+      },
+    ];
+  }
+
+  function isAdminSideItemActive(item, currentPage, currentHash) {
+    const pageKeys = Array.isArray(item?.pageKeys) ? item.pageKeys : [];
+    const samePage = pageKeys.includes(currentPage);
+    const sameSection =
+      !!item?.section &&
+      currentPage === 'esadmin' &&
+      ((!!currentHash && currentHash === item.section) ||
+        (!currentHash && item.section === 'accDashboard'));
+    return samePage || sameSection;
+  }
+
+  function renderAdminSidePanel(panel, page) {
+    if (!panel) return;
+    const currentPage = String(page || '');
+    const currentHash = String(location.hash || '').replace(/^#/, '');
+    panel.classList.add('side-panel--admin');
+    const html = getAdminSideGroups()
+      .map((group) => {
+        const hasActive = (group.items || []).some((item) =>
+          isAdminSideItemActive(item, currentPage, currentHash),
+        );
+        const isOpen = group.open || hasActive;
+        const itemsHtml = (group.items || [])
+          .map((item) => {
+            const active = isAdminSideItemActive(item, currentPage, currentHash);
+            const cls = active ? 'side-panel-link is-active' : 'side-panel-link';
+            return `<a class="${cls}" href="${item.href}"><span class="side-panel-ico" aria-hidden="true">${item.icon || ''}</span><span>${esc(item.label || '')}</span></a>`;
+          })
+          .join('');
+        return `<details class="side-panel-group"${isOpen ? ' open' : ''}><summary class="side-panel-group-title">${esc(group.title || '')}</summary><div class="side-panel-group-list">${itemsHtml}</div></details>`;
+      })
+      .join('');
+    panel.innerHTML = html;
+  }
+
   function injectSidePanel() {
     const page = document.body?.dataset?.page || '';
+    const isAdminView = adminPages.has(page);
     const blocked = new Set(['index', 'login']);
     if (!page || blocked.has(page)) return;
     const existingPanel = document.getElementById('sidePanel');
@@ -805,26 +956,8 @@ import {
       document.body.classList.add('with-side-panel');
       if (!existingPanel.classList.contains('side-panel'))
         existingPanel.classList.add('side-panel');
-
-      // Admin page renders its own sidebar. If that script fails (syntax/runtime),
-      // don't leave an empty panel – show a simple hash-nav based on the HTML sections.
-      if (page === 'esadmin' && existingPanel.childElementCount === 0) {
-        existingPanel.classList.add('side-panel--admin');
-        const cards = Array.from(document.querySelectorAll('details.card[id^="acc"]'));
-        if (cards.length) {
-          existingPanel.innerHTML = '';
-          cards.forEach((card) => {
-            const id = String(card?.id || '').trim();
-            if (!id) return;
-            const summary = card.querySelector('summary');
-            const label = summary ? summary.textContent.trim() : id;
-            if (!label) return;
-            const a = document.createElement('a');
-            a.href = `#${id}`;
-            a.innerHTML = `<span class="side-panel-ico" aria-hidden="true">&#x1F4CC;</span><span>${esc(label)}</span>`;
-            existingPanel.appendChild(a);
-          });
-        }
+      if (isAdminView && existingPanel.childElementCount === 0) {
+        renderAdminSidePanel(existingPanel, page);
       }
       return;
     }
@@ -834,7 +967,10 @@ import {
     const panel = document.createElement('aside');
     panel.id = 'sidePanel';
     panel.className = 'side-panel';
-    panel.innerHTML = `
+    if (isAdminView) {
+      renderAdminSidePanel(panel, page);
+    } else {
+      panel.innerHTML = `
       <a href="espanel.html" data-page="panel"><span class="side-panel-ico" aria-hidden="true">&#x1F4D3;</span><span>Libreta</span></a>
       <a href="buscar.html" data-page="buscar"><span class="side-panel-ico" aria-hidden="true">&#x1F50D;</span><span>Buscar</span></a>
       <a href="correcciones.html" data-page="correcciones"><span class="side-panel-ico" aria-hidden="true">&#x270D;&#xFE0F;</span><span>Correcciones</span></a>
@@ -847,10 +983,13 @@ import {
       <a href="pagos.html" data-page="pagos"><span class="side-panel-ico" aria-hidden="true">&#x1F4B3;</span><span>Pagos</span></a>
       <a href="ayuda.html" data-page="ayuda"><span class="side-panel-ico" aria-hidden="true">&#x1F4A1;</span><span>Ayuda</span></a>
     `;
+    }
 
     const header = document.getElementById('appHeader');
     if (header) header.insertAdjacentElement('afterend', panel);
     else document.body.insertAdjacentElement('afterbegin', panel);
+
+    if (isAdminView) return;
 
     const activeAliases = {
       review: 'practicar',
