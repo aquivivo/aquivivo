@@ -2,17 +2,80 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Mini test | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260214i" />
+    <script src="assets/js/layout.js?v=20260214h" type="module"></script>
   </head>
-  <body>
+
+  <body data-page="review">
+    <div id="appHeader"></div>
+
+    <main class="page">
+      <div class="container">
+        <section class="card" id="reviewStats">
+          <div class="metaRow" style="gap: 14px; flex-wrap: wrap">
+            <span id="reviewModeLabel">Mini test</span>
+            <span id="reviewCount">Para hoy: -</span>
+            <span id="reviewNew">Nuevas: -</span>
+            <span id="reviewProgress">Progreso: 0/0</span>
+            <span id="reviewTimer" style="display: none">Tiempo: 60s</span>
+            <span id="reviewScore">Puntos: 0</span>
+          </div>
+        </section>
+
+        <section class="card" id="reviewFilters" style="display: none; margin-top: 12px">
+          <div class="metaRow" style="gap: 10px; flex-wrap: wrap">
+            <select id="reviewMode" class="select" style="min-width: 170px">
+              <option value="minitest" selected>Mini-test checkpoint</option>
+            </select>
+            <select id="reviewLevel" class="select" style="min-width: 160px"></select>
+            <select id="reviewTopic" class="select" style="min-width: 240px"></select>
+            <button class="btn-white-outline" id="reviewApply" type="button">Aplicar</button>
+            <label class="hintSmall" style="display: inline-flex; gap: 8px; align-items: center">
+              <input id="reviewOnlyFav" type="checkbox" />
+              Solo favoritos
+            </label>
+          </div>
+        </section>
+
+        <section class="card reviewCard" id="reviewCard" style="margin-top: 14px">
+          <div class="reviewCardInner">
+            <div class="reviewFront" id="reviewFront">Cargando...</div>
+            <div class="reviewBack" id="reviewBack"></div>
+            <div class="reviewExample" id="reviewExample" style="display: none"></div>
+          </div>
+          <div class="reviewActions">
+            <button class="btn-white-outline" id="btnShowBack" type="button">Mostrar respuesta</button>
+            <button class="ttsIconBtn" id="btnAudio" type="button" title="Odsłuchaj (PL)" aria-label="Odsłuchaj (PL)">🔊</button>
+            <button class="ttsIconBtn" id="btnExampleAudio" type="button" title="Odsłuchaj przykład (PL)" aria-label="Odsłuchaj przykład (PL)">🔊</button>
+            <button class="btn-white-outline" id="btnFav" type="button">&#x2B50; Favorito</button>
+            <button class="btn-yellow" id="btnCorrect" type="button" disabled>La sé</button>
+            <button class="btn-red" id="btnWrong" type="button" disabled>No lo sé</button>
+            <a class="btn-white-outline" id="btnMiniBack" href="lessonpage.html">Volver</a>
+          </div>
+          <div class="hintSmall" id="reviewHint" style="margin-top: 10px"></div>
+        </section>
+
+        <section class="card" id="reviewEmpty" style="display: none; margin-top: 14px"></section>
+      </div>
+    </main>
+
     <script>
       (function () {
         const p = new URLSearchParams(window.location.search || '');
-        p.set('mode', 'minitest');
-        const target = 'review.html?' + p.toString();
-        window.location.replace(target);
+        if ((p.get('mode') || '').toLowerCase() !== 'minitest') {
+          p.set('mode', 'minitest');
+          const q = p.toString();
+          history.replaceState(null, '', `minitest.html${q ? `?${q}` : ''}`);
+        }
       })();
     </script>
+    <script type="module" src="assets/js/pages/minitest-page.js?v=20260214a"></script>
+    <script type="module" src="assets/js/pages/review-page.js?v=20260214i"></script>
   </body>
 </html>

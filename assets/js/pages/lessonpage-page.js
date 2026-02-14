@@ -1047,93 +1047,93 @@ const STAMP_CATALOG_BY_LEVEL = {
   A1: {
     region: 'Wielkopolskie',
     cities: [
-      { city: 'Poznań', landmark: 'Stary Rynek' },
-      { city: 'Poznań', landmark: 'Ostrów Tumski' },
-      { city: 'Poznań', landmark: 'Zamek Cesarski' },
-      { city: 'Poznań', landmark: 'Brama Poznania' },
-      { city: 'Poznań', landmark: 'Cytadela' },
-      { city: 'Kórnik', landmark: 'Zamek' },
-      { city: 'Rogalin', landmark: 'Pałac' },
+      { city: 'Pozna\u0144', landmark: 'Stary Rynek' },
+      { city: 'Pozna\u0144', landmark: 'Ostr\u00f3w Tumski' },
+      { city: 'Pozna\u0144', landmark: 'Zamek Cesarski' },
+      { city: 'Pozna\u0144', landmark: 'Brama Poznania' },
+      { city: 'Pozna\u0144', landmark: 'Cytadela' },
+      { city: 'K\u00f3rnik', landmark: 'Zamek' },
+      { city: 'Rogalin', landmark: 'Pa\u0142ac' },
       { city: 'Gniezno', landmark: 'Katedra' },
-      { city: 'Gołuchów', landmark: 'Zamek' },
+      { city: 'Go\u0142uch\u00f3w', landmark: 'Zamek' },
       { city: 'Kalisz', landmark: 'Ratusz' },
       { city: 'Leszno', landmark: 'Rynek' },
-      { city: 'Konin', landmark: 'Słup Koniński' },
-      { city: 'Piła', landmark: 'Rynek' },
-      { city: 'Szamotuły', landmark: 'Zamek Górków' },
-      { city: 'Września', landmark: 'Pomnik Dzieci Wrzesińskich' },
+      { city: 'Konin', landmark: 'S\u0142up Koni\u0144ski' },
+      { city: 'Pi\u0142a', landmark: 'Rynek' },
+      { city: 'Szamotu\u0142y', landmark: 'Zamek G\u00f3rk\u00f3w' },
+      { city: 'Wrze\u015bnia', landmark: 'Pomnik Dzieci Wrzesi\u0144skich' },
       { city: 'Puszczykowo', landmark: 'Muzeum Fiedlera' },
-      { city: 'Ląd', landmark: 'Opactwo Cystersów' },
+      { city: 'L\u0105d', landmark: 'Opactwo Cysters\u00f3w' },
       { city: 'Wolsztyn', landmark: 'Parowozownia' },
     ],
   },
   A2: {
-    region: 'Dolnośląskie',
+    region: 'Dolno\u015bl\u0105skie',
     cities: [
-      { city: 'Wrocław', landmark: 'Rynek' },
-      { city: 'Wrocław', landmark: 'Hala Stulecia' },
-      { city: 'Wrocław', landmark: 'Ostrów Tumski' },
-      { city: 'Wrocław', landmark: 'Panorama Racławicka' },
-      { city: 'Wrocław', landmark: 'Ogród Japoński' },
-      { city: 'Świdnica', landmark: 'Kościół Pokoju' },
-      { city: 'Wałbrzych', landmark: 'Zamek Książ' },
-      { city: 'Kłodzko', landmark: 'Twierdza' },
-      { city: 'Leśna', landmark: 'Zamek Czocha' },
-      { city: 'Jelenia Góra', landmark: 'Rynek' },
+      { city: 'Wroc\u0142aw', landmark: 'Rynek' },
+      { city: 'Wroc\u0142aw', landmark: 'Hala Stulecia' },
+      { city: 'Wroc\u0142aw', landmark: 'Ostr\u00f3w Tumski' },
+      { city: 'Wroc\u0142aw', landmark: 'Panorama Rac\u0142awicka' },
+      { city: 'Wroc\u0142aw', landmark: 'Ogr\u00f3d Japo\u0144ski' },
+      { city: '\u015awidnica', landmark: 'Ko\u015bci\u00f3\u0142 Pokoju' },
+      { city: 'Wa\u0142brzych', landmark: 'Zamek Ksi\u0105\u017c' },
+      { city: 'K\u0142odzko', landmark: 'Twierdza' },
+      { city: 'Le\u015bna', landmark: 'Zamek Czocha' },
+      { city: 'Jelenia G\u00f3ra', landmark: 'Rynek' },
       { city: 'Legnica', landmark: 'Zamek Piastowski' },
-      { city: 'Karpacz', landmark: 'Świątynia Wang' },
-      { city: 'Lubiąż', landmark: 'Opactwo Cystersów' },
-      { city: 'Jawor', landmark: 'Kościół Pokoju' },
-      { city: 'Bolesławiec', landmark: 'Rynek' },
-      { city: 'Lądek-Zdrój', landmark: 'Rynek' },
-      { city: 'Złotoryja', landmark: 'Rynek' },
-      { city: 'Szczawno-Zdrój', landmark: 'Pijalnia Wód' },
+      { city: 'Karpacz', landmark: '\u015awi\u0105tynia Wang' },
+      { city: 'Lubi\u0105\u017c', landmark: 'Opactwo Cysters\u00f3w' },
+      { city: 'Jawor', landmark: 'Ko\u015bci\u00f3\u0142 Pokoju' },
+      { city: 'Boles\u0142awiec', landmark: 'Rynek' },
+      { city: 'L\u0105dek-Zdr\u00f3j', landmark: 'Rynek' },
+      { city: 'Z\u0142otoryja', landmark: 'Rynek' },
+      { city: 'Szczawno-Zdr\u00f3j', landmark: 'Pijalnia W\u00f3d' },
     ],
   },
   B1: {
-    region: 'Małopolskie',
+    region: 'Ma\u0142opolskie',
     cities: [
-      { city: 'Kraków', landmark: 'Wawel' },
-      { city: 'Kraków', landmark: 'Rynek Główny' },
-      { city: 'Kraków', landmark: 'Sukiennice' },
-      { city: 'Kraków', landmark: 'Kościół Mariacki' },
-      { city: 'Kraków', landmark: 'Kazimierz' },
+      { city: 'Krak\u00f3w', landmark: 'Wawel' },
+      { city: 'Krak\u00f3w', landmark: 'Rynek G\u0142\u00f3wny' },
+      { city: 'Krak\u00f3w', landmark: 'Sukiennice' },
+      { city: 'Krak\u00f3w', landmark: 'Ko\u015bci\u00f3\u0142 Mariacki' },
+      { city: 'Krak\u00f3w', landmark: 'Kazimierz' },
       { city: 'Wieliczka', landmark: 'Kopalnia Soli' },
       { city: 'Zakopane', landmark: 'Giewont' },
-      { city: 'Zakopane', landmark: 'Krupówki' },
+      { city: 'Zakopane', landmark: 'Krup\u00f3wki' },
       { city: 'Tatry', landmark: 'Morskie Oko' },
       { city: 'Niedzica', landmark: 'Zamek' },
-      { city: 'Nowy Sącz', landmark: 'Rynek' },
-      { city: 'Tarnów', landmark: 'Rynek' },
+      { city: 'Nowy S\u0105cz', landmark: 'Rynek' },
+      { city: 'Tarn\u00f3w', landmark: 'Rynek' },
       { city: 'Bochnia', landmark: 'Kopalnia Soli' },
-      { city: 'Ojców', landmark: 'Zamek' },
+      { city: 'Ojc\u00f3w', landmark: 'Zamek' },
       { city: 'Kalwaria Zebrzydowska', landmark: 'Sanktuarium' },
       { city: 'Lanckorona', landmark: 'Rynek' },
-      { city: 'Krynica-Zdrój', landmark: 'Deptak' },
-      { city: 'Oświęcim', landmark: 'Miejsce Pamięci' },
+      { city: 'Krynica-Zdr\u00f3j', landmark: 'Deptak' },
+      { city: 'O\u015bwi\u0119cim', landmark: 'Miejsce Pami\u0119ci' },
     ],
   },
   B2: {
     region: 'Mazowieckie',
     cities: [
       { city: 'Warszawa', landmark: 'Stare Miasto' },
-      { city: 'Warszawa', landmark: 'Zamek Królewski' },
-      { city: 'Warszawa', landmark: 'Pałac Kultury' },
+      { city: 'Warszawa', landmark: 'Zamek Kr\u00f3lewski' },
+      { city: 'Warszawa', landmark: 'Pa\u0142ac Kultury' },
       { city: 'Warszawa', landmark: 'Muzeum POLIN' },
-      { city: 'Wilanów', landmark: 'Pałac' },
-      { city: 'Żelazowa Wola', landmark: 'Dom Chopina' },
-      { city: 'Warszawa', landmark: 'Łazienki Królewskie' },
+      { city: 'Wilan\u00f3w', landmark: 'Pa\u0142ac' },
+      { city: '\u017belazowa Wola', landmark: 'Dom Chopina' },
+      { city: 'Warszawa', landmark: '\u0141azienki Kr\u00f3lewskie' },
       { city: 'Warszawa', landmark: 'Centrum Nauki Kopernik' },
       { city: 'Warszawa', landmark: 'Muzeum Powstania Warszawskiego' },
-      { city: 'Płock', landmark: 'Wzgórze Tumskie' },
+      { city: 'P\u0142ock', landmark: 'Wzg\u00f3rze Tumskie' },
       { city: 'Czersk', landmark: 'Zamek' },
       { city: 'Radom', landmark: 'Rynek' },
       { city: 'Sierpc', landmark: 'Skansen' },
       { city: 'Modlin', landmark: 'Twierdza' },
-      { city: 'Pułtusk', landmark: 'Rynek' },
-      { city: 'Opinogóra', landmark: 'Muzeum Romantyzmu' },
-      { city: 'Sochaczew', landmark: 'Muzeum Kolei Wąskotorowej' },
-      { city: 'Żyrardów', landmark: 'Osada Fabryczna' },
+      { city: 'Pu\u0142tusk', landmark: 'Rynek' },
+      { city: 'Opinog\u00f3ra', landmark: 'Muzeum Romantyzmu' },
+      { city: 'Sochaczew', landmark: 'Muzeum Kolei W\u0105skotorowej' },
+      { city: '\u017byrard\u00f3w', landmark: 'Osada Fabryczna' },
     ],
   },
 };
@@ -1787,7 +1787,7 @@ function renderCheckpointGate(blockNo, route = []) {
       Aby odblokowac kolejny modul, zalicz mini-test po module ${block}.<br/>
       <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
         <a class="btn-yellow" href="${href}" style="text-decoration:none;">Uruchom mini-test</a>
-        <a class="btn-white-outline" href="${courseHref(LEVEL)}" style="text-decoration:none;">Wroc do kursu</a>
+        <a class="btn-white-outline" href="${courseHref(LEVEL)}" style="text-decoration:none;">Volver al curso</a>
       </div>
     </div>
   `;
@@ -2021,7 +2021,7 @@ async function loadLesson(user) {
       exerciseLinksWrap.innerHTML = `
         <a class="btn-white-outline" href="versions.html?${params}">Ejercicios</a>
         <a class="btn-white-outline" href="review.html?${params}">Repasar</a>
-        <a class="btn-white-outline" href="review.html?${params}&mode=errors">Bledy</a>
+        <a class="btn-white-outline" href="review.html?${params}&mode=errors">Errores</a>
         <a class="btn-white-outline" href="flashcards.html?${params}">Fichas</a>
         <a class="btn-white-outline" href="${courseHref(LEVEL)}">Temas</a>
       `;
@@ -2048,7 +2048,7 @@ async function loadLesson(user) {
   const topicTitle = topic?.title || topic?.name || 'Leccion';
   const topicDesc = topic?.desc || topic?.description || '';
   const topicLevel = topicLevelOf(topic, LEVEL);
-  const currentTopicStampSeed = topicStampSeed(
+  let currentTopicStampSeed = topicStampSeed(
     topic?.order,
     String(topic?.id || COURSE_ID).trim(),
     String(topic?.slug || '').trim(),
@@ -2061,7 +2061,7 @@ async function loadLesson(user) {
     exerciseLinksWrap.innerHTML = `
       <a class="btn-white-outline" href="versions.html?${params}">Ejercicios</a>
       <a class="btn-white-outline" href="review.html?${params}">Repasar</a>
-      <a class="btn-white-outline" href="review.html?${params}&mode=errors">Bledy</a>
+      <a class="btn-white-outline" href="review.html?${params}&mode=errors">Errores</a>
       <a class="btn-white-outline" href="flashcards.html?${params}">Fichas</a>
       <a class="btn-white-outline" href="${courseHref(topicLevel)}">Temas</a>
     `;
@@ -2084,6 +2084,22 @@ async function loadLesson(user) {
   if (!flags.isAdmin && topic) {
     const ok = await enforceTopicOrderGate(user.uid, topic, flags);
     if (!ok) return;
+  }
+
+  const hasExplicitTopicOrder = Number.isFinite(Number(topic?.order)) && Number(topic?.order) > 0;
+  if (!hasExplicitTopicOrder) {
+    try {
+      const routeTopics = await getRouteTopicsForLevel(topicLevel);
+      const currentId = String(topic?.id || COURSE_ID).trim();
+      const currentSlug = String(topic?.slug || '').trim().toLowerCase();
+      const routeIdx = routeTopics.findIndex((row) => {
+        const rowId = String(row?.id || '').trim();
+        if (rowId && rowId === currentId) return true;
+        if (!currentSlug) return false;
+        return String(row?.slug || '').trim().toLowerCase() === currentSlug;
+      });
+      if (routeIdx >= 0) currentTopicStampSeed = routeIdx;
+    } catch {}
   }
 
   let routeRendered = false;

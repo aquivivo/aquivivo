@@ -87,6 +87,31 @@ const POLISH_PRONOUNS = new Set(['ja', 'ty', 'on', 'ona', 'ono', 'my', 'wy', 'on
 const POLISH_CONJUNCTIONS = new Set(['i', 'oraz', 'albo', 'lub', 'ale', 'a', 'poniewaz', 'ze']);
 const POLISH_PARTICLES = new Set(['nie', 'czy', 'no', 'by', 'niech']);
 const POLISH_INTERJECTIONS = new Set(['ojej', 'hej', 'czesc', 'aha', 'oj']);
+const POS_LABEL_ES = {
+  rzeczownik: 'sustantivo',
+  czasownik: 'verbo',
+  przymiotnik: 'adjetivo',
+  przyslowek: 'adverbio',
+  zaimek: 'pronombre',
+  liczebnik: 'numeral',
+  przyimek: 'preposicion',
+  spojnik: 'conjuncion',
+  partykula: 'particula',
+  wykrzyknik: 'interjeccion',
+};
+const LESSON_EXERCISE_TARGET_MIN = 8;
+const LESSON_EXERCISE_TARGET_MAX = 12;
+const FLASHCARDS_TOPIC_MIN = 20;
+const FLASHCARDS_TOPIC_MAX = 40;
+const FLASHCARDS_LESSON_TARGET = 24;
+const FLASHCARDS_LESSON_MAX = 40;
+const LESSON_GRAMMAR_TEMPLATES = [
+  { pl: 'To jest {N}.', es: 'Esto es {N}.' },
+  { pl: 'Mam {N}.', es: 'Tengo {N}.' },
+  { pl: 'Lubię {N}.', es: 'Me gusta {N}.' },
+  { pl: 'Widzę {N}.', es: 'Veo {N}.' },
+  { pl: 'Jestem w {N}.', es: 'Estoy en {N}.' },
+];
 
 export function normalizeText(value) {
   return String(value || '')
@@ -449,6 +474,164 @@ function inferPartOfSpeech(word) {
   return 'rzeczownik';
 }
 
+function partOfSpeechLabelEs(pos) {
+  return POS_LABEL_ES[pos] || 'sustantivo';
+}
+
+function rowsWithVocabulary(rows = []) {
+  return (rows || []).filter((row) => safeCell(row?.pl) && safeCell(row?.es));
+}
+
+function pickRowsForLesson(rows = [], lessonIndex = 0, wanted = FLASHCARDS_LESSON_TARGET) {
+  const base = rowsWithVocabulary(rows);
+  if (!base.length) return [];
+  const count = Math.max(
+    FLASHCARDS_TOPIC_MIN,
+    Math.min(FLASHCARDS_LESSON_MAX, Number(wanted || FLASHCARDS_LESSON_TARGET)),
+  );
+  const shuffled = shuffleDeterministic(base, hashKey('lesson_rows', lessonIndex, base.length));
+  const out = [];
+  let cursor = 0;
+  while (out.length < count && cursor < count * 3) {
+    const row = shuffled[cursor % shuffled.length];
+    if (row) out.push(row);
+    cursor += 1;
+    if (cursor > shuffled.length && shuffled.length >= count) break;
+  }
+  return out;
+}
+
+function lessonGrammarFocus(rows = [], lessonIndex = 0) {
+  const vocabRows = rowsWithVocabulary(rows);
+  if (!vocabRows.length) {
+    return { pos: 'rzeczownik', posEs: partOfSpeechLabelEs('rzeczownik'), sample: '', sampleEs: '' };
+  }
+  const data = vocabRows.map((row) => {
+    const word = safeCell(row.pl);
+    return {
+      word,
+      es: safeCell(row.es),
+      pos: inferPartOfSpeech(word),
+    };
+  });
+  const byPos = {};
+  data.forEach((item) => {
+    byPos[item.pos] = Number(byPos[item.pos] || 0) + 1;
+  });
+  const rankedPos = Object.entries(byPos)
+    .sort((a, b) => b[1] - a[1])
+    .map(([pos]) => pos);
+  const pos = rankedPos[lessonIndex % Math.max(1, rankedPos.length)] || rankedPos[0] || 'rzeczownik';
+  const sample = data.find((x) => x.pos === pos) || data[0] || { word: '', es: '' };
+  return { pos, posEs: partOfSpeechLabelEs(pos), sample: sample.word, sampleEs: sample.es };
+}
+
+function lessonGrammarTemplateSentence(rows = [], lessonIndex = 0) {
+  const vocabRows = rowsWithVocabulary(rows);
+  const row = vocabRows[lessonIndex % Math.max(1, vocabRows.length)] || {};
+  const wordPl = safeCell(row.pl) || 'to';
+  const wordEs = safeCell(row.es) || 'esto';
+  const tpl = LESSON_GRAMMAR_TEMPLATES[lessonIndex % LESSON_GRAMMAR_TEMPLATES.length] || LESSON_GRAMMAR_TEMPLATES[0];
+  return {
+    pl: ensureSentence(String(tpl.pl || '').replace(/\{N\}/g, wordPl)),
+    es: ensureSentence(String(tpl.es || '').replace(/\{N\}/g, wordEs)),
+  };
+}
+
+function buildLessonBlocks({ topic, lessonIndex = 0, rows = [], grammarSourceUrl = GRAMMAR_SOURCE_URL }) {
+  const focus = lessonGrammarFocus(rows, lessonIndex);
+  const template = lessonGrammarTemplateSentence(rows, lessonIndex);
+  const title = String(topic?.topicTitle || topic?.topicSlug || 'Tema').trim();
+  const shortGrammar = `Gramatica breve: partes de la oracion (${focus.posEs} / ${focus.pos}).`;
+  const usage = focus.sample
+    ? `Palabra clave: ${focus.sample}${focus.sampleEs ? ` - ${focus.sampleEs}` : ''}.`
+    : 'Palabra clave del tema en contexto simple.';
+
+  return [
+    { kind: 'heading', level: 'h3', text: `Leccion ${lessonIndex + 1}: ${title}` },
+    { kind: 'paragraph', text: shortGrammar },
+    { kind: 'paragraph', text: usage },
+    { kind: 'tip', title: 'Ejemplo PL', text: template.pl },
+    { kind: 'tip', title: 'Traduccion ES', text: template.es },
+    { kind: 'paragraph', text: `Fuente: ${grammarSourceUrl}` },
+  ];
+}
+
+function cardLineFromRow(level, topicSlug, row, seed = 0) {
+  const pl = safeCell(row?.pl);
+  const es = safeCell(row?.es);
+  if (!pl || !es) return '';
+  const sentence = sentenceBundleForRow({
+    level,
+    topicSlug,
+    targetPl: pl,
+    targetEs: es,
+    examplePl: row?.exPl,
+    exampleEs: row?.exEs,
+    seed,
+  });
+  const exPl = safeCell(sentence.audioSentencePl || row?.exPl);
+  const exEs = safeCell(sentence.translationEs || row?.exEs);
+  const parts = [pl, es];
+  if (exPl) parts.push(`exPL:${exPl}`);
+  if (exEs) parts.push(`exES:${exEs}`);
+  return parts.join(' | ');
+}
+
+function buildFlashcardExercise({
+  id,
+  level,
+  topic,
+  lessonId = '',
+  lessonIndex = 0,
+  rows = [],
+  cardCount = FLASHCARDS_LESSON_TARGET,
+  seedSource = 'a1_a2_excel_grammar',
+  seedVersion = 'v1',
+}) {
+  const lessonRows = pickRowsForLesson(rows, lessonIndex, cardCount);
+  const options = lessonRows
+    .map((row, idx) => cardLineFromRow(level, topic.topicSlug, row, lessonIndex * 100 + idx))
+    .filter(Boolean);
+  const uniqueOptions = uniqList(options).slice(
+    0,
+    Math.max(FLASHCARDS_TOPIC_MIN, Math.min(FLASHCARDS_LESSON_MAX, cardCount)),
+  );
+  const sourceRow = lessonRows[0] || rowsWithVocabulary(rows)[0] || {};
+  return {
+    id,
+    level,
+    topicId: topic.topicId,
+    topicSlug: topic.topicSlug,
+    type: 'tarjeta_vocabulario',
+    baseType: 'tarjeta',
+    prompt: lessonId ? 'Fichas de la leccion' : 'Fichas del tema',
+    options: uniqueOptions,
+    answer: '',
+    audio: '',
+    ui: { variant: 'standard' },
+    difficulty: 1,
+    stage: 'recognition',
+    sourceWord: safeCell(sourceRow.pl),
+    sourceExample: safeCell(sourceRow.exPl),
+    notes: lessonId
+      ? `deck:lesson|lessonId:${lessonId}|cards:${uniqueOptions.length}`
+      : `deck:topic|cards:${uniqueOptions.length}`,
+    tags: uniqList([
+      'variant:tarjeta_vocabulario',
+      'deck:flashcards',
+      lessonId ? `lesson:${lessonId}` : 'scope:topic',
+    ]),
+    lessonId: lessonId || '',
+    lessonIds: lessonId ? [lessonId] : [],
+    cardCount: uniqueOptions.length,
+    category: 'flashcards',
+    grammarSource: GRAMMAR_SOURCE_URL,
+    seedSource,
+    seedVersion,
+  };
+}
+
 function makeExerciseBase({
   level,
   topicId,
@@ -489,7 +672,8 @@ function makeExerciseBase({
     topicSlug,
     type: variant,
     baseType: meta.baseType,
-    instruction: { es: instructionEs },
+    instruction: instructionEs,
+    instructionEs,
     prompt: promptText,
     audioSentencePl: safeCell(audioSentencePl || bundle.audioSentencePl || sourceExample),
     translationEs: safeCell(translationEs || bundle.translationEs || sourceExampleEs),
@@ -1361,10 +1545,12 @@ function pullN(arr, n) {
   return out;
 }
 
-function buildLessonsForTopic(level, topic, exercises, reviewPool, baseLessons = 5) {
+function buildLessonsForTopic(level, topic, exercises, reviewPool, baseLessons = 5, rows = []) {
   const buckets = splitByStage(sortCandidates(exercises));
   const lessons = [];
   const lessonIds = [];
+  const miniTestIds = [];
+  const regularLessonIds = [];
 
   for (let i = 0; i < baseLessons; i += 1) {
     let chosen = [];
@@ -1373,48 +1559,115 @@ function buildLessonsForTopic(level, topic, exercises, reviewPool, baseLessons =
     chosen.push(...pullN(buckets.get('production'), 2));
     chosen.push(...pullN(buckets.get('listening'), 1));
     chosen.push(...pullN(buckets.get('mixed'), 1));
-    if (chosen.length < 8) {
-      const rest = [...buckets.get('recognition'), ...buckets.get('controlled'), ...buckets.get('production'), ...buckets.get('listening'), ...buckets.get('mixed')];
-      chosen = chosen.concat(rest.slice(0, 8 - chosen.length));
+    if (chosen.length < LESSON_EXERCISE_TARGET_MIN) {
+      const rest = [
+        ...buckets.get('recognition'),
+        ...buckets.get('controlled'),
+        ...buckets.get('production'),
+        ...buckets.get('listening'),
+        ...buckets.get('mixed'),
+      ];
+      chosen = chosen.concat(rest.slice(0, LESSON_EXERCISE_TARGET_MIN - chosen.length));
     }
-    if (chosen.length > 12) chosen = chosen.slice(0, 12);
+    if (chosen.length > LESSON_EXERCISE_TARGET_MAX) chosen = chosen.slice(0, LESSON_EXERCISE_TARGET_MAX);
+
     const review = shuffleDeterministic(reviewPool, i + 301).slice(0, reviewPool.length ? 1 : 0);
-    const exerciseIds = uniqList([...chosen.map((x) => x.id), ...review.map((x) => x.id)]);
+    const lessonExerciseIds = uniqList([...chosen.map((x) => x.id), ...review.map((x) => x.id)]);
     const lessonId = `${level}__${topic.topicSlug}__L${String(i + 1).padStart(2, '0')}`;
+    regularLessonIds.push(lessonId);
+
+    const vocabRows = pickRowsForLesson(rows, i, FLASHCARDS_LESSON_TARGET);
+    const vocab = uniqList(
+      vocabRows
+        .map((row) => {
+          const pl = safeCell(row?.pl);
+          const es = safeCell(row?.es);
+          if (!pl || !es) return '';
+          return `${pl} — ${es}`;
+        })
+        .filter(Boolean),
+    ).slice(0, FLASHCARDS_LESSON_MAX);
+
+    const lessonBlocks = buildLessonBlocks({
+      topic,
+      lessonIndex: i,
+      rows: vocabRows.length ? vocabRows : rows,
+      grammarSourceUrl: GRAMMAR_SOURCE_URL,
+    });
+
     lessons.push({
       id: lessonId,
       level,
       topicSlug: topic.topicSlug,
       topicId: topic.topicId,
-      title: `${topic.topicTitle} - lekcja ${i + 1}`,
+      title: `${topic.topicTitle} - leccion ${i + 1}`,
       stageFocus: STAGE_ORDER[i % STAGE_ORDER.length],
       difficultyTarget: i < 2 ? 2 : i < 4 ? 3 : 4,
-      exerciseIds,
-      estimatedMinutes: Math.max(10, Math.min(20, exerciseIds.length * 2)),
+      exerciseIds: lessonExerciseIds,
+      estimatedMinutes: Math.max(10, Math.min(20, lessonExerciseIds.length * 2)),
+      vocab,
+      grammarSummaryEs: lessonBlocks[1]?.text || '',
+      grammarSource: GRAMMAR_SOURCE_URL,
+      blocks: lessonBlocks,
+      flashcardTargetMin: FLASHCARDS_TOPIC_MIN,
+      flashcardTargetMax: FLASHCARDS_LESSON_MAX,
     });
     lessonIds.push(lessonId);
+
+    const miniId = `${lessonId}__MINITEST`;
+    miniTestIds.push(miniId);
+    const mixedPool = shuffleDeterministic(
+      exercises.filter((x) => x.stage === 'mixed' || Number(x.difficulty || 0) >= 3),
+      i + 901,
+    );
+    const miniExerciseIds = uniqList([
+      ...mixedPool.slice(0, 8).map((x) => x.id),
+      ...shuffleDeterministic(chosen, i + 905).slice(0, 4).map((x) => x.id),
+    ]).slice(0, LESSON_EXERCISE_TARGET_MAX);
+    lessons.push({
+      id: miniId,
+      level,
+      topicSlug: topic.topicSlug,
+      topicId: topic.topicId,
+      title: `${topic.topicTitle} - mini test ${i + 1}`,
+      stageFocus: 'mixed',
+      difficultyTarget: 4,
+      exerciseIds: miniExerciseIds.length ? miniExerciseIds : lessonExerciseIds.slice(0, 8),
+      estimatedMinutes: 10,
+      miniTest: true,
+      miniTestAfterLesson: lessonId,
+      blocks: [
+        { kind: 'heading', level: 'h3', text: `Mini test ${i + 1}` },
+        { kind: 'paragraph', text: 'Repaso rapido: vocabulario + gramatica del paso actual.' },
+      ],
+    });
+    lessonIds.push(miniId);
   }
 
-  const checkpointId = `${level}__${topic.topicSlug}__CHECKPOINT`;
-  const checkpointExercises = uniqList(
-    exercises
-      .filter((x) => x.type === 'boss_mixed_test' || x.type === 'quick_quiz')
-      .slice(0, 10)
-      .map((x) => x.id),
+  const moduleTestId = `${level}__${topic.topicSlug}__MODULE_TEST`;
+  const moduleCandidates = shuffleDeterministic(
+    exercises.filter((x) => x.type === 'boss_mixed_test' || x.type === 'quick_quiz' || Number(x.difficulty || 0) >= 3),
+    hashKey(level, topic.topicSlug, 'module_test'),
   );
+  const moduleTestExerciseIds = uniqList(moduleCandidates.slice(0, 12).map((x) => x.id));
   lessons.push({
-    id: checkpointId,
+    id: moduleTestId,
     level,
     topicSlug: topic.topicSlug,
     topicId: topic.topicId,
-    title: `${topic.topicTitle} - checkpoint`,
+    title: `${topic.topicTitle} - test del modulo`,
     stageFocus: 'mixed',
     difficultyTarget: 5,
-    exerciseIds: checkpointExercises.length ? checkpointExercises : exercises.slice(0, 10).map((x) => x.id),
+    exerciseIds: moduleTestExerciseIds.length ? moduleTestExerciseIds : exercises.slice(0, 12).map((x) => x.id),
     estimatedMinutes: 20,
     checkpoint: true,
+    moduleTest: true,
+    blocks: [
+      { kind: 'heading', level: 'h3', text: 'Test del modulo' },
+      { kind: 'paragraph', text: 'Evaluacion corta del tema completo.' },
+    ],
   });
-  lessonIds.push(checkpointId);
+  lessonIds.push(moduleTestId);
 
   const remedialId = `${level}__${topic.topicSlug}__REMEDIAL`;
   lessons.push({
@@ -1429,20 +1682,86 @@ function buildLessonsForTopic(level, topic, exercises, reviewPool, baseLessons =
     estimatedMinutes: 15,
     remedial: true,
     adaptiveWhen: 'low_score',
+    blocks: [
+      { kind: 'heading', level: 'h3', text: 'Refuerzo' },
+      { kind: 'paragraph', text: 'Practica adicional para recuperar bases de vocabulario y gramatica.' },
+    ],
   });
 
   return {
     lessons,
+    regularLessonIds,
+    miniTestIds,
     module: {
       id: `${level}__${topic.topicSlug}__MODULE`,
       level,
       topicSlug: topic.topicSlug,
       topicId: topic.topicId,
-      title: `${topic.topicTitle} - modul`,
+      title: `${topic.topicTitle} - modulo`,
       lessonIds,
-      checkpointLessonId: checkpointId,
+      checkpointLessonId: moduleTestId,
+      miniTestLessonIds: miniTestIds,
+      primaryLessonIds: regularLessonIds,
     },
   };
+}
+
+function buildFlashcardExercisesForTopic({
+  level,
+  topic,
+  rows = [],
+  lessons = [],
+  seedSource = 'a1_a2_excel_grammar',
+  seedVersion = 'v1',
+}) {
+  const out = [];
+  const regularLessons = (lessons || []).filter(
+    (lesson) => !lesson?.miniTest && !lesson?.moduleTest && !lesson?.remedial,
+  );
+  const vocabRows = rowsWithVocabulary(rows);
+  if (!vocabRows.length) return out;
+  const cardCountPerLesson = Math.max(
+    FLASHCARDS_TOPIC_MIN,
+    Math.min(
+      FLASHCARDS_LESSON_MAX,
+      vocabRows.length >= FLASHCARDS_TOPIC_MAX ? 32 : vocabRows.length >= 24 ? 24 : FLASHCARDS_TOPIC_MIN,
+    ),
+  );
+
+  regularLessons.forEach((lesson, idx) => {
+    const deckId = `${lesson.id}__FLASHCARDS`;
+    const deck = buildFlashcardExercise({
+      id: deckId,
+      level,
+      topic,
+      lessonId: lesson.id,
+      lessonIndex: idx,
+      rows,
+      cardCount: cardCountPerLesson,
+      seedSource,
+      seedVersion,
+    });
+    lesson.flashcardExerciseId = deckId;
+    lesson.flashcardExerciseIds = [deckId];
+    lesson.flashcardCount = deck.cardCount;
+    out.push(deck);
+  });
+
+  const topicDeck = buildFlashcardExercise({
+    id: `${level}__${topic.topicSlug}__FLASHCARDS_TOPIC`,
+    level,
+    topic,
+    lessonId: '',
+    lessonIndex: 99,
+    rows,
+    cardCount: FLASHCARDS_TOPIC_MAX,
+    seedSource,
+    seedVersion,
+  });
+  topicDeck.lessonIds = regularLessons.map((lesson) => lesson.id);
+  topicDeck.notes = `deck:topic|cards:${topicDeck.cardCount}|lessons:${topicDeck.lessonIds.length}`;
+  out.unshift(topicDeck);
+  return out;
 }
 
 function countBy(arr, keyFn) {
@@ -1477,14 +1796,18 @@ function coverageReport(rows, exercises) {
   };
 }
 
-function buildLevelReport(level, topicPackages, lessons, modules, course) {
-  const allExercises = topicPackages.flatMap((p) => p.exercises);
+function buildLevelReport(level, topicPackages, lessons, modules, course, extraExercises = []) {
+  const allExercises = [...topicPackages.flatMap((p) => p.exercises), ...(extraExercises || [])];
+  const extraByTopic = countBy(extraExercises, (x) => x.topicSlug || x.topicId || '');
   const perTopic = {};
   topicPackages.forEach((p) => {
+    const flashDecks = Number(extraByTopic[p.topic.topicSlug] || 0);
     perTopic[p.topic.topicSlug] = {
       topicId: p.topic.topicId,
       topicTitle: p.topic.topicTitle,
       exercises: p.exercises.length,
+      flashcardDecks: flashDecks,
+      exercisesWithFlashcards: p.exercises.length + flashDecks,
       unresolvedTopicMapping: p.topic.unresolved === true,
       mappingScore: p.topic.score,
       coverage: coverageReport(p.rows, p.exercises),
@@ -1500,6 +1823,8 @@ function buildLevelReport(level, topicPackages, lessons, modules, course) {
     level,
     counts: {
       exercisesTotal: allExercises.length,
+      flashcardDecks: allExercises.filter((x) => normalizeText(x?.type || '').includes('tarjeta')).length,
+      exerciseTypesTotal: Object.keys(countBy(allExercises, (x) => x.type)).length,
       perTopic,
       perType: countBy(allExercises, (x) => x.type),
       perDifficulty: countBy(allExercises, (x) => x.difficulty),
@@ -1561,7 +1886,7 @@ function buildTopicPackage(level, sheet, topic, seedSource, seedVersion) {
       }),
     );
   });
-  const target = Math.max(90, Math.min(220, sheet.rows.length * 5));
+  const target = Math.max(120, Math.min(320, sheet.rows.length * 7));
   const picked = applySelectionConstraints(candidates, target);
   return {
     topic,
@@ -1592,8 +1917,25 @@ export function generateLevelFromWorkbook({
   const lessons = [];
   const modules = [];
   const reviewPool = [];
+  const flashcardExercises = [];
   topicPackages.forEach((pkg) => {
-    const built = buildLessonsForTopic(level, pkg.topic, pkg.exercises, reviewPool, pkg.rows.length < 24 ? 3 : 5);
+    const built = buildLessonsForTopic(
+      level,
+      pkg.topic,
+      pkg.exercises,
+      reviewPool,
+      pkg.rows.length < 24 ? 3 : 5,
+      pkg.rows,
+    );
+    const cards = buildFlashcardExercisesForTopic({
+      level,
+      topic: pkg.topic,
+      rows: pkg.rows,
+      lessons: built.lessons,
+      seedSource,
+      seedVersion,
+    });
+    flashcardExercises.push(...cards);
     lessons.push(...built.lessons);
     modules.push(built.module);
     reviewPool.push(...pkg.exercises.filter((x) => Number(x.difficulty || 0) <= 3));
@@ -1618,6 +1960,10 @@ export function generateLevelFromWorkbook({
     exerciseIds: uniqList(shuffleDeterministic(finalPool, hashKey(level, finalPool.length)).slice(0, 20).map((x) => x.id)),
     estimatedMinutes: 30,
     finalExam: true,
+    blocks: [
+      { kind: 'heading', level: 'h3', text: `${level} - examen final` },
+      { kind: 'paragraph', text: 'Evaluacion global de vocabulario, gramatica, escucha y produccion.' },
+    ],
   });
 
   const course = {
@@ -1633,12 +1979,14 @@ export function generateLevelFromWorkbook({
     },
   };
 
-  const report = buildLevelReport(level, topicPackages, lessons, modules, course);
+  const allExercises = [...topicPackages.flatMap((p) => p.exercises), ...flashcardExercises];
+  const report = buildLevelReport(level, topicPackages, lessons, modules, course, flashcardExercises);
   return {
     level,
     grammarSource: { name: GRAMMAR_SOURCE_NAME, url: GRAMMAR_SOURCE_URL, partsOfSpeech: PARTS_OF_SPEECH },
     topicPackages,
-    exercises: topicPackages.flatMap((p) => p.exercises),
+    exercises: allExercises,
+    flashcardExercises,
     lessons,
     modules,
     course,

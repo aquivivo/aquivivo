@@ -1740,7 +1740,12 @@ document.addEventListener('DOMContentLoaded', () => {
   bindActions();
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      window.location.href = 'login.html?next=review.html';
+      const page = String(window.location.pathname || '')
+        .split('/')
+        .filter(Boolean)
+        .pop() || 'review.html';
+      const next = encodeURIComponent(`${page}${window.location.search || ''}`);
+      window.location.href = `login.html?next=${next}`;
       return;
     }
     await initReview(user);
