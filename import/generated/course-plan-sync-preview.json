@@ -17,7 +17,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-alfabeto-pronunciacion__L01",
+          "A1__a1-alfabeto-pronunciacion__L01__MINITEST",
+          "A1__a1-alfabeto-pronunciacion__L02",
+          "A1__a1-alfabeto-pronunciacion__L02__MINITEST",
+          "A1__a1-alfabeto-pronunciacion__L03",
+          "A1__a1-alfabeto-pronunciacion__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-alfabeto-pronunciacion__L01__MINITEST",
+          "A1__a1-alfabeto-pronunciacion__L02__MINITEST",
+          "A1__a1-alfabeto-pronunciacion__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-alfabeto-pronunciacion__L01",
+            "lessonTitle": "Sonidos basicos del polaco",
+            "miniTestId": "A1__a1-alfabeto-pronunciacion__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-alfabeto-pronunciacion__L02",
+            "lessonTitle": "Acento y ortografia practica",
+            "miniTestId": "A1__a1-alfabeto-pronunciacion__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-alfabeto-pronunciacion__L03",
+            "lessonTitle": "Deletreo en formularios",
+            "miniTestId": "A1__a1-alfabeto-pronunciacion__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -37,7 +73,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-saludos-presentacion__L01",
+          "A1__a1-saludos-presentacion__L01__MINITEST",
+          "A1__a1-saludos-presentacion__L02",
+          "A1__a1-saludos-presentacion__L02__MINITEST",
+          "A1__a1-saludos-presentacion__L03",
+          "A1__a1-saludos-presentacion__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-saludos-presentacion__L01__MINITEST",
+          "A1__a1-saludos-presentacion__L02__MINITEST",
+          "A1__a1-saludos-presentacion__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-saludos-presentacion__L01",
+            "lessonTitle": "Saludos y despedidas",
+            "miniTestId": "A1__a1-saludos-presentacion__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-saludos-presentacion__L02",
+            "lessonTitle": "Preguntas basicas de presentacion",
+            "miniTestId": "A1__a1-saludos-presentacion__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-saludos-presentacion__L03",
+            "lessonTitle": "Mini dialogo para conocer a alguien",
+            "miniTestId": "A1__a1-saludos-presentacion__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -57,7 +129,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-datos-personales-documentos__L01",
+          "A1__a1-datos-personales-documentos__L01__MINITEST",
+          "A1__a1-datos-personales-documentos__L02",
+          "A1__a1-datos-personales-documentos__L02__MINITEST",
+          "A1__a1-datos-personales-documentos__L03",
+          "A1__a1-datos-personales-documentos__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-datos-personales-documentos__L01__MINITEST",
+          "A1__a1-datos-personales-documentos__L02__MINITEST",
+          "A1__a1-datos-personales-documentos__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-datos-personales-documentos__L01",
+            "lessonTitle": "Nombre direccion telefono",
+            "miniTestId": "A1__a1-datos-personales-documentos__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-datos-personales-documentos__L02",
+            "lessonTitle": "Numeros fechas y codigos",
+            "miniTestId": "A1__a1-datos-personales-documentos__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-datos-personales-documentos__L03",
+            "lessonTitle": "Completar formulario corto",
+            "miniTestId": "A1__a1-datos-personales-documentos__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -77,7 +185,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-paises-nacionalidades-idiomas__L01",
+          "A1__a1-paises-nacionalidades-idiomas__L01__MINITEST",
+          "A1__a1-paises-nacionalidades-idiomas__L02",
+          "A1__a1-paises-nacionalidades-idiomas__L02__MINITEST",
+          "A1__a1-paises-nacionalidades-idiomas__L03",
+          "A1__a1-paises-nacionalidades-idiomas__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-paises-nacionalidades-idiomas__L01__MINITEST",
+          "A1__a1-paises-nacionalidades-idiomas__L02__MINITEST",
+          "A1__a1-paises-nacionalidades-idiomas__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-paises-nacionalidades-idiomas__L01",
+            "lessonTitle": "Paises y ciudades principales",
+            "miniTestId": "A1__a1-paises-nacionalidades-idiomas__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-paises-nacionalidades-idiomas__L02",
+            "lessonTitle": "Nacionalidades en uso diario",
+            "miniTestId": "A1__a1-paises-nacionalidades-idiomas__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-paises-nacionalidades-idiomas__L03",
+            "lessonTitle": "Hablo polaco y hablo espanol",
+            "miniTestId": "A1__a1-paises-nacionalidades-idiomas__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -97,7 +241,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-familia-relaciones__L01",
+          "A1__a1-familia-relaciones__L01__MINITEST",
+          "A1__a1-familia-relaciones__L02",
+          "A1__a1-familia-relaciones__L02__MINITEST",
+          "A1__a1-familia-relaciones__L03",
+          "A1__a1-familia-relaciones__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-familia-relaciones__L01__MINITEST",
+          "A1__a1-familia-relaciones__L02__MINITEST",
+          "A1__a1-familia-relaciones__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-familia-relaciones__L01",
+            "lessonTitle": "Miembros de la familia",
+            "miniTestId": "A1__a1-familia-relaciones__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-familia-relaciones__L02",
+            "lessonTitle": "Descripcion simple de personas",
+            "miniTestId": "A1__a1-familia-relaciones__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-familia-relaciones__L03",
+            "lessonTitle": "Presentar a mi familia",
+            "miniTestId": "A1__a1-familia-relaciones__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -117,7 +297,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-casa-habitaciones__L01",
+          "A1__a1-casa-habitaciones__L01__MINITEST",
+          "A1__a1-casa-habitaciones__L02",
+          "A1__a1-casa-habitaciones__L02__MINITEST",
+          "A1__a1-casa-habitaciones__L03",
+          "A1__a1-casa-habitaciones__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-casa-habitaciones__L01__MINITEST",
+          "A1__a1-casa-habitaciones__L02__MINITEST",
+          "A1__a1-casa-habitaciones__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-casa-habitaciones__L01",
+            "lessonTitle": "Habitaciones de la casa",
+            "miniTestId": "A1__a1-casa-habitaciones__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-casa-habitaciones__L02",
+            "lessonTitle": "Muebles y objetos diarios",
+            "miniTestId": "A1__a1-casa-habitaciones__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-casa-habitaciones__L03",
+            "lessonTitle": "Donde esta cada cosa",
+            "miniTestId": "A1__a1-casa-habitaciones__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -137,7 +353,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-alquiler-basico__L01",
+          "A1__a1-alquiler-basico__L01__MINITEST",
+          "A1__a1-alquiler-basico__L02",
+          "A1__a1-alquiler-basico__L02__MINITEST",
+          "A1__a1-alquiler-basico__L03",
+          "A1__a1-alquiler-basico__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-alquiler-basico__L01__MINITEST",
+          "A1__a1-alquiler-basico__L02__MINITEST",
+          "A1__a1-alquiler-basico__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-alquiler-basico__L01",
+            "lessonTitle": "Leer un anuncio simple",
+            "miniTestId": "A1__a1-alquiler-basico__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-alquiler-basico__L02",
+            "lessonTitle": "Preguntas al propietario",
+            "miniTestId": "A1__a1-alquiler-basico__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-alquiler-basico__L03",
+            "lessonTitle": "Llamada corta sobre alquiler",
+            "miniTestId": "A1__a1-alquiler-basico__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -157,7 +409,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-compras-comida__L01",
+          "A1__a1-compras-comida__L01__MINITEST",
+          "A1__a1-compras-comida__L02",
+          "A1__a1-compras-comida__L02__MINITEST",
+          "A1__a1-compras-comida__L03",
+          "A1__a1-compras-comida__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-compras-comida__L01__MINITEST",
+          "A1__a1-compras-comida__L02__MINITEST",
+          "A1__a1-compras-comida__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-compras-comida__L01",
+            "lessonTitle": "Productos y precios",
+            "miniTestId": "A1__a1-compras-comida__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-compras-comida__L02",
+            "lessonTitle": "Pedir en tienda",
+            "miniTestId": "A1__a1-compras-comida__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-compras-comida__L03",
+            "lessonTitle": "Dialogo corto de compra",
+            "miniTestId": "A1__a1-compras-comida__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -177,7 +465,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-restaurante-cafeteria__L01",
+          "A1__a1-restaurante-cafeteria__L01__MINITEST",
+          "A1__a1-restaurante-cafeteria__L02",
+          "A1__a1-restaurante-cafeteria__L02__MINITEST",
+          "A1__a1-restaurante-cafeteria__L03",
+          "A1__a1-restaurante-cafeteria__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-restaurante-cafeteria__L01__MINITEST",
+          "A1__a1-restaurante-cafeteria__L02__MINITEST",
+          "A1__a1-restaurante-cafeteria__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-restaurante-cafeteria__L01",
+            "lessonTitle": "Menu y bebidas",
+            "miniTestId": "A1__a1-restaurante-cafeteria__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-restaurante-cafeteria__L02",
+            "lessonTitle": "Pedir y confirmar pedido",
+            "miniTestId": "A1__a1-restaurante-cafeteria__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-restaurante-cafeteria__L03",
+            "lessonTitle": "Situaciones comunes en mesa",
+            "miniTestId": "A1__a1-restaurante-cafeteria__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -197,7 +521,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-rutina-horarios-calendario__L01",
+          "A1__a1-rutina-horarios-calendario__L01__MINITEST",
+          "A1__a1-rutina-horarios-calendario__L02",
+          "A1__a1-rutina-horarios-calendario__L02__MINITEST",
+          "A1__a1-rutina-horarios-calendario__L03",
+          "A1__a1-rutina-horarios-calendario__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-rutina-horarios-calendario__L01__MINITEST",
+          "A1__a1-rutina-horarios-calendario__L02__MINITEST",
+          "A1__a1-rutina-horarios-calendario__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-rutina-horarios-calendario__L01",
+            "lessonTitle": "Dias horas y fechas",
+            "miniTestId": "A1__a1-rutina-horarios-calendario__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-rutina-horarios-calendario__L02",
+            "lessonTitle": "Rutina diaria paso a paso",
+            "miniTestId": "A1__a1-rutina-horarios-calendario__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-rutina-horarios-calendario__L03",
+            "lessonTitle": "Escucha de plan del dia",
+            "miniTestId": "A1__a1-rutina-horarios-calendario__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -217,7 +577,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-trabajo-basico__L01",
+          "A1__a1-trabajo-basico__L01__MINITEST",
+          "A1__a1-trabajo-basico__L02",
+          "A1__a1-trabajo-basico__L02__MINITEST",
+          "A1__a1-trabajo-basico__L03",
+          "A1__a1-trabajo-basico__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-trabajo-basico__L01__MINITEST",
+          "A1__a1-trabajo-basico__L02__MINITEST",
+          "A1__a1-trabajo-basico__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-trabajo-basico__L01",
+            "lessonTitle": "Profesiones y lugar de trabajo",
+            "miniTestId": "A1__a1-trabajo-basico__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-trabajo-basico__L02",
+            "lessonTitle": "Tareas y horario laboral",
+            "miniTestId": "A1__a1-trabajo-basico__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-trabajo-basico__L03",
+            "lessonTitle": "Conversacion basica en trabajo",
+            "miniTestId": "A1__a1-trabajo-basico__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -237,7 +633,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-salud-farmacia__L01",
+          "A1__a1-salud-farmacia__L01__MINITEST",
+          "A1__a1-salud-farmacia__L02",
+          "A1__a1-salud-farmacia__L02__MINITEST",
+          "A1__a1-salud-farmacia__L03",
+          "A1__a1-salud-farmacia__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-salud-farmacia__L01__MINITEST",
+          "A1__a1-salud-farmacia__L02__MINITEST",
+          "A1__a1-salud-farmacia__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-salud-farmacia__L01",
+            "lessonTitle": "Partes del cuerpo y sintomas",
+            "miniTestId": "A1__a1-salud-farmacia__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-salud-farmacia__L02",
+            "lessonTitle": "Comprar en farmacia",
+            "miniTestId": "A1__a1-salud-farmacia__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-salud-farmacia__L03",
+            "lessonTitle": "Pedir cita corta",
+            "miniTestId": "A1__a1-salud-farmacia__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -257,7 +689,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-ciudad-transporte__L01",
+          "A1__a1-ciudad-transporte__L01__MINITEST",
+          "A1__a1-ciudad-transporte__L02",
+          "A1__a1-ciudad-transporte__L02__MINITEST",
+          "A1__a1-ciudad-transporte__L03",
+          "A1__a1-ciudad-transporte__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-ciudad-transporte__L01__MINITEST",
+          "A1__a1-ciudad-transporte__L02__MINITEST",
+          "A1__a1-ciudad-transporte__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-ciudad-transporte__L01",
+            "lessonTitle": "Lugares en la ciudad",
+            "miniTestId": "A1__a1-ciudad-transporte__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-ciudad-transporte__L02",
+            "lessonTitle": "Billetes y trayectos",
+            "miniTestId": "A1__a1-ciudad-transporte__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-ciudad-transporte__L03",
+            "lessonTitle": "Pedir y entender direcciones",
+            "miniTestId": "A1__a1-ciudad-transporte__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -277,7 +745,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-conducir-intro__L01",
+          "A1__a1-conducir-intro__L01__MINITEST",
+          "A1__a1-conducir-intro__L02",
+          "A1__a1-conducir-intro__L02__MINITEST",
+          "A1__a1-conducir-intro__L03",
+          "A1__a1-conducir-intro__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-conducir-intro__L01__MINITEST",
+          "A1__a1-conducir-intro__L02__MINITEST",
+          "A1__a1-conducir-intro__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-conducir-intro__L01",
+            "lessonTitle": "Documentos del coche",
+            "miniTestId": "A1__a1-conducir-intro__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-conducir-intro__L02",
+            "lessonTitle": "Gasolinera parking peaje",
+            "miniTestId": "A1__a1-conducir-intro__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-conducir-intro__L03",
+            "lessonTitle": "Control vial basico",
+            "miniTestId": "A1__a1-conducir-intro__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -297,7 +801,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A1__a1-banco-pagos__L01",
+          "A1__a1-banco-pagos__L01__MINITEST",
+          "A1__a1-banco-pagos__L02",
+          "A1__a1-banco-pagos__L02__MINITEST",
+          "A1__a1-banco-pagos__L03",
+          "A1__a1-banco-pagos__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A1__a1-banco-pagos__L01__MINITEST",
+          "A1__a1-banco-pagos__L02__MINITEST",
+          "A1__a1-banco-pagos__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__a1-banco-pagos__L01",
+            "lessonTitle": "Cuenta tarjeta blik",
+            "miniTestId": "A1__a1-banco-pagos__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A1__a1-banco-pagos__L02",
+            "lessonTitle": "Pagar y confirmar transaccion",
+            "miniTestId": "A1__a1-banco-pagos__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A1__a1-banco-pagos__L03",
+            "lessonTitle": "Problema con pago y solucion",
+            "miniTestId": "A1__a1-banco-pagos__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -314,11 +854,24 @@
         "lifeArea": "exam",
         "grammarFocus": "repaso integral A1",
         "isLevelExam": true,
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A1__EXAMEN_GENERAL",
+            "lessonTitle": "Examen general A1",
+            "miniTestId": "",
+            "miniTestTitle": ""
+          }
+        ],
+        "lessonIds": [
+          "A1__EXAMEN_GENERAL"
+        ],
+        "miniTestIds": [],
         "isArchived": false,
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -338,7 +891,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-cv-entrevista__L01",
+          "A2__a2-cv-entrevista__L01__MINITEST",
+          "A2__a2-cv-entrevista__L02",
+          "A2__a2-cv-entrevista__L02__MINITEST",
+          "A2__a2-cv-entrevista__L03",
+          "A2__a2-cv-entrevista__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-cv-entrevista__L01__MINITEST",
+          "A2__a2-cv-entrevista__L02__MINITEST",
+          "A2__a2-cv-entrevista__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-cv-entrevista__L01",
+            "lessonTitle": "Datos de CV y perfil",
+            "miniTestId": "A2__a2-cv-entrevista__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-cv-entrevista__L02",
+            "lessonTitle": "Experiencia laboral pasada",
+            "miniTestId": "A2__a2-cv-entrevista__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-cv-entrevista__L03",
+            "lessonTitle": "Entrevista breve guiada",
+            "miniTestId": "A2__a2-cv-entrevista__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -358,7 +947,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-trabajo-contrato-horario__L01",
+          "A2__a2-trabajo-contrato-horario__L01__MINITEST",
+          "A2__a2-trabajo-contrato-horario__L02",
+          "A2__a2-trabajo-contrato-horario__L02__MINITEST",
+          "A2__a2-trabajo-contrato-horario__L03",
+          "A2__a2-trabajo-contrato-horario__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-trabajo-contrato-horario__L01__MINITEST",
+          "A2__a2-trabajo-contrato-horario__L02__MINITEST",
+          "A2__a2-trabajo-contrato-horario__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-trabajo-contrato-horario__L01",
+            "lessonTitle": "Tipos de contrato",
+            "miniTestId": "A2__a2-trabajo-contrato-horario__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-trabajo-contrato-horario__L02",
+            "lessonTitle": "Horario y horas extra",
+            "miniTestId": "A2__a2-trabajo-contrato-horario__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-trabajo-contrato-horario__L03",
+            "lessonTitle": "Hablar con supervisor",
+            "miniTestId": "A2__a2-trabajo-contrato-horario__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -378,7 +1003,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-tramites-residencia-pesel__L01",
+          "A2__a2-tramites-residencia-pesel__L01__MINITEST",
+          "A2__a2-tramites-residencia-pesel__L02",
+          "A2__a2-tramites-residencia-pesel__L02__MINITEST",
+          "A2__a2-tramites-residencia-pesel__L03",
+          "A2__a2-tramites-residencia-pesel__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-tramites-residencia-pesel__L01__MINITEST",
+          "A2__a2-tramites-residencia-pesel__L02__MINITEST",
+          "A2__a2-tramites-residencia-pesel__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-tramites-residencia-pesel__L01",
+            "lessonTitle": "Documentos de residencia",
+            "miniTestId": "A2__a2-tramites-residencia-pesel__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-tramites-residencia-pesel__L02",
+            "lessonTitle": "Turnos y ventanilla",
+            "miniTestId": "A2__a2-tramites-residencia-pesel__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-tramites-residencia-pesel__L03",
+            "lessonTitle": "Dialogo en urzad",
+            "miniTestId": "A2__a2-tramites-residencia-pesel__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -398,7 +1059,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-formularios-citas__L01",
+          "A2__a2-formularios-citas__L01__MINITEST",
+          "A2__a2-formularios-citas__L02",
+          "A2__a2-formularios-citas__L02__MINITEST",
+          "A2__a2-formularios-citas__L03",
+          "A2__a2-formularios-citas__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-formularios-citas__L01__MINITEST",
+          "A2__a2-formularios-citas__L02__MINITEST",
+          "A2__a2-formularios-citas__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-formularios-citas__L01",
+            "lessonTitle": "Pedir y cambiar cita",
+            "miniTestId": "A2__a2-formularios-citas__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-formularios-citas__L02",
+            "lessonTitle": "Confirmacion por telefono",
+            "miniTestId": "A2__a2-formularios-citas__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-formularios-citas__L03",
+            "lessonTitle": "Formulario mas completo",
+            "miniTestId": "A2__a2-formularios-citas__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -418,7 +1115,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-alquiler-contrato-gastos__L01",
+          "A2__a2-alquiler-contrato-gastos__L01__MINITEST",
+          "A2__a2-alquiler-contrato-gastos__L02",
+          "A2__a2-alquiler-contrato-gastos__L02__MINITEST",
+          "A2__a2-alquiler-contrato-gastos__L03",
+          "A2__a2-alquiler-contrato-gastos__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-alquiler-contrato-gastos__L01__MINITEST",
+          "A2__a2-alquiler-contrato-gastos__L02__MINITEST",
+          "A2__a2-alquiler-contrato-gastos__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-alquiler-contrato-gastos__L01",
+            "lessonTitle": "Contrato y clausulas clave",
+            "miniTestId": "A2__a2-alquiler-contrato-gastos__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-alquiler-contrato-gastos__L02",
+            "lessonTitle": "Costes fijos y variables",
+            "miniTestId": "A2__a2-alquiler-contrato-gastos__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-alquiler-contrato-gastos__L03",
+            "lessonTitle": "Negociacion simple de alquiler",
+            "miniTestId": "A2__a2-alquiler-contrato-gastos__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -438,7 +1171,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-averias-vivienda__L01",
+          "A2__a2-averias-vivienda__L01__MINITEST",
+          "A2__a2-averias-vivienda__L02",
+          "A2__a2-averias-vivienda__L02__MINITEST",
+          "A2__a2-averias-vivienda__L03",
+          "A2__a2-averias-vivienda__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-averias-vivienda__L01__MINITEST",
+          "A2__a2-averias-vivienda__L02__MINITEST",
+          "A2__a2-averias-vivienda__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-averias-vivienda__L01",
+            "lessonTitle": "Problemas comunes de casa",
+            "miniTestId": "A2__a2-averias-vivienda__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-averias-vivienda__L02",
+            "lessonTitle": "Llamar para reparacion",
+            "miniTestId": "A2__a2-averias-vivienda__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-averias-vivienda__L03",
+            "lessonTitle": "Mensaje formal al propietario",
+            "miniTestId": "A2__a2-averias-vivienda__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -458,7 +1227,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-salud-medico-especialistas__L01",
+          "A2__a2-salud-medico-especialistas__L01__MINITEST",
+          "A2__a2-salud-medico-especialistas__L02",
+          "A2__a2-salud-medico-especialistas__L02__MINITEST",
+          "A2__a2-salud-medico-especialistas__L03",
+          "A2__a2-salud-medico-especialistas__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-salud-medico-especialistas__L01__MINITEST",
+          "A2__a2-salud-medico-especialistas__L02__MINITEST",
+          "A2__a2-salud-medico-especialistas__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-salud-medico-especialistas__L01",
+            "lessonTitle": "Especialistas y pruebas",
+            "miniTestId": "A2__a2-salud-medico-especialistas__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-salud-medico-especialistas__L02",
+            "lessonTitle": "Receta y tratamiento",
+            "miniTestId": "A2__a2-salud-medico-especialistas__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-salud-medico-especialistas__L03",
+            "lessonTitle": "Consulta medica guiada",
+            "miniTestId": "A2__a2-salud-medico-especialistas__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -478,7 +1283,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-banco-seguros-credito__L01",
+          "A2__a2-banco-seguros-credito__L01__MINITEST",
+          "A2__a2-banco-seguros-credito__L02",
+          "A2__a2-banco-seguros-credito__L02__MINITEST",
+          "A2__a2-banco-seguros-credito__L03",
+          "A2__a2-banco-seguros-credito__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-banco-seguros-credito__L01__MINITEST",
+          "A2__a2-banco-seguros-credito__L02__MINITEST",
+          "A2__a2-banco-seguros-credito__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-banco-seguros-credito__L01",
+            "lessonTitle": "Credito cuota interes",
+            "miniTestId": "A2__a2-banco-seguros-credito__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-banco-seguros-credito__L02",
+            "lessonTitle": "Seguro basico y cobertura",
+            "miniTestId": "A2__a2-banco-seguros-credito__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-banco-seguros-credito__L03",
+            "lessonTitle": "Reclamacion de servicio",
+            "miniTestId": "A2__a2-banco-seguros-credito__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -498,7 +1339,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-conducir-control-multa-taller__L01",
+          "A2__a2-conducir-control-multa-taller__L01__MINITEST",
+          "A2__a2-conducir-control-multa-taller__L02",
+          "A2__a2-conducir-control-multa-taller__L02__MINITEST",
+          "A2__a2-conducir-control-multa-taller__L03",
+          "A2__a2-conducir-control-multa-taller__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-conducir-control-multa-taller__L01__MINITEST",
+          "A2__a2-conducir-control-multa-taller__L02__MINITEST",
+          "A2__a2-conducir-control-multa-taller__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-conducir-control-multa-taller__L01",
+            "lessonTitle": "Control de carretera",
+            "miniTestId": "A2__a2-conducir-control-multa-taller__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-conducir-control-multa-taller__L02",
+            "lessonTitle": "Explicar una multa",
+            "miniTestId": "A2__a2-conducir-control-multa-taller__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-conducir-control-multa-taller__L03",
+            "lessonTitle": "Dialogo en taller mecanico",
+            "miniTestId": "A2__a2-conducir-control-multa-taller__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -518,7 +1395,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-viajes-reservas__L01",
+          "A2__a2-viajes-reservas__L01__MINITEST",
+          "A2__a2-viajes-reservas__L02",
+          "A2__a2-viajes-reservas__L02__MINITEST",
+          "A2__a2-viajes-reservas__L03",
+          "A2__a2-viajes-reservas__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-viajes-reservas__L01__MINITEST",
+          "A2__a2-viajes-reservas__L02__MINITEST",
+          "A2__a2-viajes-reservas__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-viajes-reservas__L01",
+            "lessonTitle": "Reserva de hotel o vuelo",
+            "miniTestId": "A2__a2-viajes-reservas__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-viajes-reservas__L02",
+            "lessonTitle": "Cambio de plan de viaje",
+            "miniTestId": "A2__a2-viajes-reservas__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-viajes-reservas__L03",
+            "lessonTitle": "Dialogo de incidencia",
+            "miniTestId": "A2__a2-viajes-reservas__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -538,7 +1451,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-educacion-desarrollo__L01",
+          "A2__a2-educacion-desarrollo__L01__MINITEST",
+          "A2__a2-educacion-desarrollo__L02",
+          "A2__a2-educacion-desarrollo__L02__MINITEST",
+          "A2__a2-educacion-desarrollo__L03",
+          "A2__a2-educacion-desarrollo__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-educacion-desarrollo__L01__MINITEST",
+          "A2__a2-educacion-desarrollo__L02__MINITEST",
+          "A2__a2-educacion-desarrollo__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-educacion-desarrollo__L01",
+            "lessonTitle": "Cursos y certificaciones",
+            "miniTestId": "A2__a2-educacion-desarrollo__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-educacion-desarrollo__L02",
+            "lessonTitle": "Plan de estudio personal",
+            "miniTestId": "A2__a2-educacion-desarrollo__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-educacion-desarrollo__L03",
+            "lessonTitle": "Correo formal corto",
+            "miniTestId": "A2__a2-educacion-desarrollo__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -558,7 +1507,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-vida-social-formalidad__L01",
+          "A2__a2-vida-social-formalidad__L01__MINITEST",
+          "A2__a2-vida-social-formalidad__L02",
+          "A2__a2-vida-social-formalidad__L02__MINITEST",
+          "A2__a2-vida-social-formalidad__L03",
+          "A2__a2-vida-social-formalidad__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-vida-social-formalidad__L01__MINITEST",
+          "A2__a2-vida-social-formalidad__L02__MINITEST",
+          "A2__a2-vida-social-formalidad__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-vida-social-formalidad__L01",
+            "lessonTitle": "Small talk natural",
+            "miniTestId": "A2__a2-vida-social-formalidad__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-vida-social-formalidad__L02",
+            "lessonTitle": "Pedir de forma formal",
+            "miniTestId": "A2__a2-vida-social-formalidad__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-vida-social-formalidad__L03",
+            "lessonTitle": "Reaccion en situacion social",
+            "miniTestId": "A2__a2-vida-social-formalidad__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -578,7 +1563,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-comunicacion-oficina-telefono__L01",
+          "A2__a2-comunicacion-oficina-telefono__L01__MINITEST",
+          "A2__a2-comunicacion-oficina-telefono__L02",
+          "A2__a2-comunicacion-oficina-telefono__L02__MINITEST",
+          "A2__a2-comunicacion-oficina-telefono__L03",
+          "A2__a2-comunicacion-oficina-telefono__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-comunicacion-oficina-telefono__L01__MINITEST",
+          "A2__a2-comunicacion-oficina-telefono__L02__MINITEST",
+          "A2__a2-comunicacion-oficina-telefono__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-comunicacion-oficina-telefono__L01",
+            "lessonTitle": "Atender llamada laboral",
+            "miniTestId": "A2__a2-comunicacion-oficina-telefono__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-comunicacion-oficina-telefono__L02",
+            "lessonTitle": "Pasar informacion y recados",
+            "miniTestId": "A2__a2-comunicacion-oficina-telefono__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-comunicacion-oficina-telefono__L03",
+            "lessonTitle": "Nota corta de oficina",
+            "miniTestId": "A2__a2-comunicacion-oficina-telefono__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -598,7 +1619,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "A2__a2-integracion-practica-polonia__L01",
+          "A2__a2-integracion-practica-polonia__L01__MINITEST",
+          "A2__a2-integracion-practica-polonia__L02",
+          "A2__a2-integracion-practica-polonia__L02__MINITEST",
+          "A2__a2-integracion-practica-polonia__L03",
+          "A2__a2-integracion-practica-polonia__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "A2__a2-integracion-practica-polonia__L01__MINITEST",
+          "A2__a2-integracion-practica-polonia__L02__MINITEST",
+          "A2__a2-integracion-practica-polonia__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__a2-integracion-practica-polonia__L01",
+            "lessonTitle": "Caso mixto urzad y trabajo",
+            "miniTestId": "A2__a2-integracion-practica-polonia__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "A2__a2-integracion-practica-polonia__L02",
+            "lessonTitle": "Caso mixto alquiler y banco",
+            "miniTestId": "A2__a2-integracion-practica-polonia__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "A2__a2-integracion-practica-polonia__L03",
+            "lessonTitle": "Simulacion dia completo en Polonia",
+            "miniTestId": "A2__a2-integracion-practica-polonia__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -615,11 +1672,24 @@
         "lifeArea": "exam",
         "grammarFocus": "repaso integral A2",
         "isLevelExam": true,
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "A2__EXAMEN_GENERAL",
+            "lessonTitle": "Examen general A2",
+            "miniTestId": "",
+            "miniTestTitle": ""
+          }
+        ],
+        "lessonIds": [
+          "A2__EXAMEN_GENERAL"
+        ],
+        "miniTestIds": [],
         "isArchived": false,
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -639,7 +1709,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-experiencias-narracion__L01",
+          "B1__b1-experiencias-narracion__L01__MINITEST",
+          "B1__b1-experiencias-narracion__L02",
+          "B1__b1-experiencias-narracion__L02__MINITEST",
+          "B1__b1-experiencias-narracion__L03",
+          "B1__b1-experiencias-narracion__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-experiencias-narracion__L01__MINITEST",
+          "B1__b1-experiencias-narracion__L02__MINITEST",
+          "B1__b1-experiencias-narracion__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-experiencias-narracion__L01",
+            "lessonTitle": "Relato de experiencia personal",
+            "miniTestId": "B1__b1-experiencias-narracion__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-experiencias-narracion__L02",
+            "lessonTitle": "Secuencia de hechos",
+            "miniTestId": "B1__b1-experiencias-narracion__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-experiencias-narracion__L03",
+            "lessonTitle": "Narracion con opinion",
+            "miniTestId": "B1__b1-experiencias-narracion__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -659,7 +1765,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-empleo-carrera__L01",
+          "B1__b1-empleo-carrera__L01__MINITEST",
+          "B1__b1-empleo-carrera__L02",
+          "B1__b1-empleo-carrera__L02__MINITEST",
+          "B1__b1-empleo-carrera__L03",
+          "B1__b1-empleo-carrera__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-empleo-carrera__L01__MINITEST",
+          "B1__b1-empleo-carrera__L02__MINITEST",
+          "B1__b1-empleo-carrera__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-empleo-carrera__L01",
+            "lessonTitle": "Objetivos profesionales",
+            "miniTestId": "B1__b1-empleo-carrera__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-empleo-carrera__L02",
+            "lessonTitle": "Cambios de carrera",
+            "miniTestId": "B1__b1-empleo-carrera__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-empleo-carrera__L03",
+            "lessonTitle": "Negociacion en trabajo",
+            "miniTestId": "B1__b1-empleo-carrera__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -679,7 +1821,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-derechos-obligaciones-laborales__L01",
+          "B1__b1-derechos-obligaciones-laborales__L01__MINITEST",
+          "B1__b1-derechos-obligaciones-laborales__L02",
+          "B1__b1-derechos-obligaciones-laborales__L02__MINITEST",
+          "B1__b1-derechos-obligaciones-laborales__L03",
+          "B1__b1-derechos-obligaciones-laborales__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-derechos-obligaciones-laborales__L01__MINITEST",
+          "B1__b1-derechos-obligaciones-laborales__L02__MINITEST",
+          "B1__b1-derechos-obligaciones-laborales__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-derechos-obligaciones-laborales__L01",
+            "lessonTitle": "Normas en empleo",
+            "miniTestId": "B1__b1-derechos-obligaciones-laborales__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-derechos-obligaciones-laborales__L02",
+            "lessonTitle": "Problemas y quejas laborales",
+            "miniTestId": "B1__b1-derechos-obligaciones-laborales__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-derechos-obligaciones-laborales__L03",
+            "lessonTitle": "Buscar solucion negociada",
+            "miniTestId": "B1__b1-derechos-obligaciones-laborales__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -699,7 +1877,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-vivienda-comunidad__L01",
+          "B1__b1-vivienda-comunidad__L01__MINITEST",
+          "B1__b1-vivienda-comunidad__L02",
+          "B1__b1-vivienda-comunidad__L02__MINITEST",
+          "B1__b1-vivienda-comunidad__L03",
+          "B1__b1-vivienda-comunidad__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-vivienda-comunidad__L01__MINITEST",
+          "B1__b1-vivienda-comunidad__L02__MINITEST",
+          "B1__b1-vivienda-comunidad__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-vivienda-comunidad__L01",
+            "lessonTitle": "Comunidad y reglas",
+            "miniTestId": "B1__b1-vivienda-comunidad__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-vivienda-comunidad__L02",
+            "lessonTitle": "Queja formal en edificio",
+            "miniTestId": "B1__b1-vivienda-comunidad__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-vivienda-comunidad__L03",
+            "lessonTitle": "Mediacion entre vecinos",
+            "miniTestId": "B1__b1-vivienda-comunidad__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -719,7 +1933,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-salud-sistema__L01",
+          "B1__b1-salud-sistema__L01__MINITEST",
+          "B1__b1-salud-sistema__L02",
+          "B1__b1-salud-sistema__L02__MINITEST",
+          "B1__b1-salud-sistema__L03",
+          "B1__b1-salud-sistema__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-salud-sistema__L01__MINITEST",
+          "B1__b1-salud-sistema__L02__MINITEST",
+          "B1__b1-salud-sistema__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-salud-sistema__L01",
+            "lessonTitle": "Servicios y derivaciones",
+            "miniTestId": "B1__b1-salud-sistema__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-salud-sistema__L02",
+            "lessonTitle": "Descripcion precisa de sintomas",
+            "miniTestId": "B1__b1-salud-sistema__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-salud-sistema__L03",
+            "lessonTitle": "Gestion de cita y seguimiento",
+            "miniTestId": "B1__b1-salud-sistema__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -739,7 +1989,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-administracion-digital__L01",
+          "B1__b1-administracion-digital__L01__MINITEST",
+          "B1__b1-administracion-digital__L02",
+          "B1__b1-administracion-digital__L02__MINITEST",
+          "B1__b1-administracion-digital__L03",
+          "B1__b1-administracion-digital__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-administracion-digital__L01__MINITEST",
+          "B1__b1-administracion-digital__L02__MINITEST",
+          "B1__b1-administracion-digital__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-administracion-digital__L01",
+            "lessonTitle": "Perfil y firma digital",
+            "miniTestId": "B1__b1-administracion-digital__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-administracion-digital__L02",
+            "lessonTitle": "Tramites en portales oficiales",
+            "miniTestId": "B1__b1-administracion-digital__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-administracion-digital__L03",
+            "lessonTitle": "Instrucciones paso a paso",
+            "miniTestId": "B1__b1-administracion-digital__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -759,7 +2045,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-medios-opinion__L01",
+          "B1__b1-medios-opinion__L01__MINITEST",
+          "B1__b1-medios-opinion__L02",
+          "B1__b1-medios-opinion__L02__MINITEST",
+          "B1__b1-medios-opinion__L03",
+          "B1__b1-medios-opinion__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-medios-opinion__L01__MINITEST",
+          "B1__b1-medios-opinion__L02__MINITEST",
+          "B1__b1-medios-opinion__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-medios-opinion__L01",
+            "lessonTitle": "Noticias y fuentes",
+            "miniTestId": "B1__b1-medios-opinion__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-medios-opinion__L02",
+            "lessonTitle": "Detectar informacion dudosa",
+            "miniTestId": "B1__b1-medios-opinion__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-medios-opinion__L03",
+            "lessonTitle": "Comentario argumentado",
+            "miniTestId": "B1__b1-medios-opinion__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -779,7 +2101,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-relaciones-conflicto__L01",
+          "B1__b1-relaciones-conflicto__L01__MINITEST",
+          "B1__b1-relaciones-conflicto__L02",
+          "B1__b1-relaciones-conflicto__L02__MINITEST",
+          "B1__b1-relaciones-conflicto__L03",
+          "B1__b1-relaciones-conflicto__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-relaciones-conflicto__L01__MINITEST",
+          "B1__b1-relaciones-conflicto__L02__MINITEST",
+          "B1__b1-relaciones-conflicto__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-relaciones-conflicto__L01",
+            "lessonTitle": "Expresar desacuerdo con respeto",
+            "miniTestId": "B1__b1-relaciones-conflicto__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-relaciones-conflicto__L02",
+            "lessonTitle": "Negociacion de soluciones",
+            "miniTestId": "B1__b1-relaciones-conflicto__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-relaciones-conflicto__L03",
+            "lessonTitle": "Resumen de conversacion",
+            "miniTestId": "B1__b1-relaciones-conflicto__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -799,7 +2157,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-movilidad-viajes-complejos__L01",
+          "B1__b1-movilidad-viajes-complejos__L01__MINITEST",
+          "B1__b1-movilidad-viajes-complejos__L02",
+          "B1__b1-movilidad-viajes-complejos__L02__MINITEST",
+          "B1__b1-movilidad-viajes-complejos__L03",
+          "B1__b1-movilidad-viajes-complejos__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-movilidad-viajes-complejos__L01__MINITEST",
+          "B1__b1-movilidad-viajes-complejos__L02__MINITEST",
+          "B1__b1-movilidad-viajes-complejos__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-movilidad-viajes-complejos__L01",
+            "lessonTitle": "Incidencias en transporte",
+            "miniTestId": "B1__b1-movilidad-viajes-complejos__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-movilidad-viajes-complejos__L02",
+            "lessonTitle": "Reclamacion por servicio",
+            "miniTestId": "B1__b1-movilidad-viajes-complejos__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-movilidad-viajes-complejos__L03",
+            "lessonTitle": "Contacto con institucion",
+            "miniTestId": "B1__b1-movilidad-viajes-complejos__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -819,7 +2213,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B1__b1-proyecto-vida-polonia__L01",
+          "B1__b1-proyecto-vida-polonia__L01__MINITEST",
+          "B1__b1-proyecto-vida-polonia__L02",
+          "B1__b1-proyecto-vida-polonia__L02__MINITEST",
+          "B1__b1-proyecto-vida-polonia__L03",
+          "B1__b1-proyecto-vida-polonia__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B1__b1-proyecto-vida-polonia__L01__MINITEST",
+          "B1__b1-proyecto-vida-polonia__L02__MINITEST",
+          "B1__b1-proyecto-vida-polonia__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__b1-proyecto-vida-polonia__L01",
+            "lessonTitle": "Metas a un ano",
+            "miniTestId": "B1__b1-proyecto-vida-polonia__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B1__b1-proyecto-vida-polonia__L02",
+            "lessonTitle": "Riesgos y alternativas",
+            "miniTestId": "B1__b1-proyecto-vida-polonia__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B1__b1-proyecto-vida-polonia__L03",
+            "lessonTitle": "Presentacion de plan personal",
+            "miniTestId": "B1__b1-proyecto-vida-polonia__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -836,11 +2266,24 @@
         "lifeArea": "exam",
         "grammarFocus": "repaso integral B1",
         "isLevelExam": true,
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B1__EXAMEN_GENERAL",
+            "lessonTitle": "Examen general B1",
+            "miniTestId": "",
+            "miniTestTitle": ""
+          }
+        ],
+        "lessonIds": [
+          "B1__EXAMEN_GENERAL"
+        ],
+        "miniTestIds": [],
         "isArchived": false,
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -860,7 +2303,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B2__b2-sociedad-migracion__L01",
+          "B2__b2-sociedad-migracion__L01__MINITEST",
+          "B2__b2-sociedad-migracion__L02",
+          "B2__b2-sociedad-migracion__L02__MINITEST",
+          "B2__b2-sociedad-migracion__L03",
+          "B2__b2-sociedad-migracion__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B2__b2-sociedad-migracion__L01__MINITEST",
+          "B2__b2-sociedad-migracion__L02__MINITEST",
+          "B2__b2-sociedad-migracion__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B2__b2-sociedad-migracion__L01",
+            "lessonTitle": "Integracion y comunidad",
+            "miniTestId": "B2__b2-sociedad-migracion__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B2__b2-sociedad-migracion__L02",
+            "lessonTitle": "Politicas de apoyo social",
+            "miniTestId": "B2__b2-sociedad-migracion__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B2__b2-sociedad-migracion__L03",
+            "lessonTitle": "Debate estructurado",
+            "miniTestId": "B2__b2-sociedad-migracion__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -880,7 +2359,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B2__b2-mercado-laboral-economia__L01",
+          "B2__b2-mercado-laboral-economia__L01__MINITEST",
+          "B2__b2-mercado-laboral-economia__L02",
+          "B2__b2-mercado-laboral-economia__L02__MINITEST",
+          "B2__b2-mercado-laboral-economia__L03",
+          "B2__b2-mercado-laboral-economia__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B2__b2-mercado-laboral-economia__L01__MINITEST",
+          "B2__b2-mercado-laboral-economia__L02__MINITEST",
+          "B2__b2-mercado-laboral-economia__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B2__b2-mercado-laboral-economia__L01",
+            "lessonTitle": "Tendencias en empleo",
+            "miniTestId": "B2__b2-mercado-laboral-economia__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B2__b2-mercado-laboral-economia__L02",
+            "lessonTitle": "Analisis de salarios y costes",
+            "miniTestId": "B2__b2-mercado-laboral-economia__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B2__b2-mercado-laboral-economia__L03",
+            "lessonTitle": "Comparacion argumentada",
+            "miniTestId": "B2__b2-mercado-laboral-economia__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -900,7 +2415,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B2__b2-derecho-administracion__L01",
+          "B2__b2-derecho-administracion__L01__MINITEST",
+          "B2__b2-derecho-administracion__L02",
+          "B2__b2-derecho-administracion__L02__MINITEST",
+          "B2__b2-derecho-administracion__L03",
+          "B2__b2-derecho-administracion__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B2__b2-derecho-administracion__L01__MINITEST",
+          "B2__b2-derecho-administracion__L02__MINITEST",
+          "B2__b2-derecho-administracion__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B2__b2-derecho-administracion__L01",
+            "lessonTitle": "Procedimientos administrativos",
+            "miniTestId": "B2__b2-derecho-administracion__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B2__b2-derecho-administracion__L02",
+            "lessonTitle": "Redaccion formal de solicitud",
+            "miniTestId": "B2__b2-derecho-administracion__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B2__b2-derecho-administracion__L03",
+            "lessonTitle": "Caso practico con decision",
+            "miniTestId": "B2__b2-derecho-administracion__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -920,7 +2471,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B2__b2-ciencia-ia-etica__L01",
+          "B2__b2-ciencia-ia-etica__L01__MINITEST",
+          "B2__b2-ciencia-ia-etica__L02",
+          "B2__b2-ciencia-ia-etica__L02__MINITEST",
+          "B2__b2-ciencia-ia-etica__L03",
+          "B2__b2-ciencia-ia-etica__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B2__b2-ciencia-ia-etica__L01__MINITEST",
+          "B2__b2-ciencia-ia-etica__L02__MINITEST",
+          "B2__b2-ciencia-ia-etica__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B2__b2-ciencia-ia-etica__L01",
+            "lessonTitle": "Argumentos sobre tecnologia",
+            "miniTestId": "B2__b2-ciencia-ia-etica__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B2__b2-ciencia-ia-etica__L02",
+            "lessonTitle": "Riesgos y oportunidades",
+            "miniTestId": "B2__b2-ciencia-ia-etica__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B2__b2-ciencia-ia-etica__L03",
+            "lessonTitle": "Texto de posicion personal",
+            "miniTestId": "B2__b2-ciencia-ia-etica__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -940,7 +2527,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B2__b2-medioambiente-ciudad__L01",
+          "B2__b2-medioambiente-ciudad__L01__MINITEST",
+          "B2__b2-medioambiente-ciudad__L02",
+          "B2__b2-medioambiente-ciudad__L02__MINITEST",
+          "B2__b2-medioambiente-ciudad__L03",
+          "B2__b2-medioambiente-ciudad__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B2__b2-medioambiente-ciudad__L01__MINITEST",
+          "B2__b2-medioambiente-ciudad__L02__MINITEST",
+          "B2__b2-medioambiente-ciudad__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B2__b2-medioambiente-ciudad__L01",
+            "lessonTitle": "Problemas ambientales locales",
+            "miniTestId": "B2__b2-medioambiente-ciudad__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B2__b2-medioambiente-ciudad__L02",
+            "lessonTitle": "Uso de datos y evidencia",
+            "miniTestId": "B2__b2-medioambiente-ciudad__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B2__b2-medioambiente-ciudad__L03",
+            "lessonTitle": "Propuesta de mejora urbana",
+            "miniTestId": "B2__b2-medioambiente-ciudad__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -960,7 +2583,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B2__b2-medios-manipulacion__L01",
+          "B2__b2-medios-manipulacion__L01__MINITEST",
+          "B2__b2-medios-manipulacion__L02",
+          "B2__b2-medios-manipulacion__L02__MINITEST",
+          "B2__b2-medios-manipulacion__L03",
+          "B2__b2-medios-manipulacion__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B2__b2-medios-manipulacion__L01__MINITEST",
+          "B2__b2-medios-manipulacion__L02__MINITEST",
+          "B2__b2-medios-manipulacion__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B2__b2-medios-manipulacion__L01",
+            "lessonTitle": "Narrativa y enfoque mediatico",
+            "miniTestId": "B2__b2-medios-manipulacion__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B2__b2-medios-manipulacion__L02",
+            "lessonTitle": "Identificar sesgos",
+            "miniTestId": "B2__b2-medios-manipulacion__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B2__b2-medios-manipulacion__L03",
+            "lessonTitle": "Analisis critico comparado",
+            "miniTestId": "B2__b2-medios-manipulacion__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -980,7 +2639,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B2__b2-cultura-identidad__L01",
+          "B2__b2-cultura-identidad__L01__MINITEST",
+          "B2__b2-cultura-identidad__L02",
+          "B2__b2-cultura-identidad__L02__MINITEST",
+          "B2__b2-cultura-identidad__L03",
+          "B2__b2-cultura-identidad__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B2__b2-cultura-identidad__L01__MINITEST",
+          "B2__b2-cultura-identidad__L02__MINITEST",
+          "B2__b2-cultura-identidad__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B2__b2-cultura-identidad__L01",
+            "lessonTitle": "Valores y costumbres",
+            "miniTestId": "B2__b2-cultura-identidad__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B2__b2-cultura-identidad__L02",
+            "lessonTitle": "Diferencias interculturales",
+            "miniTestId": "B2__b2-cultura-identidad__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B2__b2-cultura-identidad__L03",
+            "lessonTitle": "Debate moderado",
+            "miniTestId": "B2__b2-cultura-identidad__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -1000,7 +2695,43 @@
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z",
+        "lessonIds": [
+          "B2__b2-produccion-formal-examen__L01",
+          "B2__b2-produccion-formal-examen__L01__MINITEST",
+          "B2__b2-produccion-formal-examen__L02",
+          "B2__b2-produccion-formal-examen__L02__MINITEST",
+          "B2__b2-produccion-formal-examen__L03",
+          "B2__b2-produccion-formal-examen__L03__MINITEST"
+        ],
+        "miniTestIds": [
+          "B2__b2-produccion-formal-examen__L01__MINITEST",
+          "B2__b2-produccion-formal-examen__L02__MINITEST",
+          "B2__b2-produccion-formal-examen__L03__MINITEST"
+        ],
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B2__b2-produccion-formal-examen__L01",
+            "lessonTitle": "Ensayo argumentativo",
+            "miniTestId": "B2__b2-produccion-formal-examen__L01__MINITEST",
+            "miniTestTitle": "Mini test 1"
+          },
+          {
+            "order": 2,
+            "lessonId": "B2__b2-produccion-formal-examen__L02",
+            "lessonTitle": "Presentacion oral formal",
+            "miniTestId": "B2__b2-produccion-formal-examen__L02__MINITEST",
+            "miniTestTitle": "Mini test 2"
+          },
+          {
+            "order": 3,
+            "lessonId": "B2__b2-produccion-formal-examen__L03",
+            "lessonTitle": "Simulacion de examen final",
+            "miniTestId": "B2__b2-produccion-formal-examen__L03__MINITEST",
+            "miniTestTitle": "Mini test 3"
+          }
+        ]
       }
     },
     {
@@ -1017,11 +2748,24 @@
         "lifeArea": "exam",
         "grammarFocus": "repaso integral B2",
         "isLevelExam": true,
+        "lessonRoadmap": [
+          {
+            "order": 1,
+            "lessonId": "B2__EXAMEN_GENERAL",
+            "lessonTitle": "Examen general B2",
+            "miniTestId": "",
+            "miniTestTitle": ""
+          }
+        ],
+        "lessonIds": [
+          "B2__EXAMEN_GENERAL"
+        ],
+        "miniTestIds": [],
         "isArchived": false,
         "status": "active",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     }
   ],
@@ -1040,7 +2784,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1059,7 +2803,7 @@
         "miniTestAfterLesson": "A1__a1-alfabeto-pronunciacion__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1076,7 +2820,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1095,7 +2839,7 @@
         "miniTestAfterLesson": "A1__a1-alfabeto-pronunciacion__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1112,7 +2856,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1131,7 +2875,7 @@
         "miniTestAfterLesson": "A1__a1-alfabeto-pronunciacion__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1148,7 +2892,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1167,7 +2911,7 @@
         "miniTestAfterLesson": "A1__a1-saludos-presentacion__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1184,7 +2928,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1203,7 +2947,7 @@
         "miniTestAfterLesson": "A1__a1-saludos-presentacion__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1220,7 +2964,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1239,7 +2983,7 @@
         "miniTestAfterLesson": "A1__a1-saludos-presentacion__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1256,7 +3000,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1275,7 +3019,7 @@
         "miniTestAfterLesson": "A1__a1-datos-personales-documentos__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1292,7 +3036,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1311,7 +3055,7 @@
         "miniTestAfterLesson": "A1__a1-datos-personales-documentos__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1328,7 +3072,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1347,7 +3091,7 @@
         "miniTestAfterLesson": "A1__a1-datos-personales-documentos__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1364,7 +3108,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1383,7 +3127,7 @@
         "miniTestAfterLesson": "A1__a1-paises-nacionalidades-idiomas__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1400,7 +3144,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1419,7 +3163,7 @@
         "miniTestAfterLesson": "A1__a1-paises-nacionalidades-idiomas__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1436,7 +3180,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1455,7 +3199,7 @@
         "miniTestAfterLesson": "A1__a1-paises-nacionalidades-idiomas__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1472,7 +3216,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1491,7 +3235,7 @@
         "miniTestAfterLesson": "A1__a1-familia-relaciones__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1508,7 +3252,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1527,7 +3271,7 @@
         "miniTestAfterLesson": "A1__a1-familia-relaciones__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1544,7 +3288,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1563,7 +3307,7 @@
         "miniTestAfterLesson": "A1__a1-familia-relaciones__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1580,7 +3324,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1599,7 +3343,7 @@
         "miniTestAfterLesson": "A1__a1-casa-habitaciones__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1616,7 +3360,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1635,7 +3379,7 @@
         "miniTestAfterLesson": "A1__a1-casa-habitaciones__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1652,7 +3396,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1671,7 +3415,7 @@
         "miniTestAfterLesson": "A1__a1-casa-habitaciones__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1688,7 +3432,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1707,7 +3451,7 @@
         "miniTestAfterLesson": "A1__a1-alquiler-basico__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1724,7 +3468,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1743,7 +3487,7 @@
         "miniTestAfterLesson": "A1__a1-alquiler-basico__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1760,7 +3504,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1779,7 +3523,7 @@
         "miniTestAfterLesson": "A1__a1-alquiler-basico__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1796,7 +3540,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1815,7 +3559,7 @@
         "miniTestAfterLesson": "A1__a1-compras-comida__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1832,7 +3576,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1851,7 +3595,7 @@
         "miniTestAfterLesson": "A1__a1-compras-comida__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1868,7 +3612,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1887,7 +3631,7 @@
         "miniTestAfterLesson": "A1__a1-compras-comida__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1904,7 +3648,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1923,7 +3667,7 @@
         "miniTestAfterLesson": "A1__a1-restaurante-cafeteria__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1940,7 +3684,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1959,7 +3703,7 @@
         "miniTestAfterLesson": "A1__a1-restaurante-cafeteria__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1976,7 +3720,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -1995,7 +3739,7 @@
         "miniTestAfterLesson": "A1__a1-restaurante-cafeteria__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2012,7 +3756,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2031,7 +3775,7 @@
         "miniTestAfterLesson": "A1__a1-rutina-horarios-calendario__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2048,7 +3792,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2067,7 +3811,7 @@
         "miniTestAfterLesson": "A1__a1-rutina-horarios-calendario__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2084,7 +3828,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2103,7 +3847,7 @@
         "miniTestAfterLesson": "A1__a1-rutina-horarios-calendario__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2120,7 +3864,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2139,7 +3883,7 @@
         "miniTestAfterLesson": "A1__a1-trabajo-basico__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2156,7 +3900,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2175,7 +3919,7 @@
         "miniTestAfterLesson": "A1__a1-trabajo-basico__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2192,7 +3936,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2211,7 +3955,7 @@
         "miniTestAfterLesson": "A1__a1-trabajo-basico__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2228,7 +3972,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2247,7 +3991,7 @@
         "miniTestAfterLesson": "A1__a1-salud-farmacia__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2264,7 +4008,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2283,7 +4027,7 @@
         "miniTestAfterLesson": "A1__a1-salud-farmacia__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2300,7 +4044,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2319,7 +4063,7 @@
         "miniTestAfterLesson": "A1__a1-salud-farmacia__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2336,7 +4080,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2355,7 +4099,7 @@
         "miniTestAfterLesson": "A1__a1-ciudad-transporte__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2372,7 +4116,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2391,7 +4135,7 @@
         "miniTestAfterLesson": "A1__a1-ciudad-transporte__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2408,7 +4152,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2427,7 +4171,7 @@
         "miniTestAfterLesson": "A1__a1-ciudad-transporte__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2444,7 +4188,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2463,7 +4207,7 @@
         "miniTestAfterLesson": "A1__a1-conducir-intro__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2480,7 +4224,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2499,7 +4243,7 @@
         "miniTestAfterLesson": "A1__a1-conducir-intro__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2516,7 +4260,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2535,7 +4279,7 @@
         "miniTestAfterLesson": "A1__a1-conducir-intro__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2552,7 +4296,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2571,7 +4315,7 @@
         "miniTestAfterLesson": "A1__a1-banco-pagos__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2588,7 +4332,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2607,7 +4351,7 @@
         "miniTestAfterLesson": "A1__a1-banco-pagos__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2624,7 +4368,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2643,7 +4387,7 @@
         "miniTestAfterLesson": "A1__a1-banco-pagos__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2661,7 +4405,7 @@
         "levelExam": true,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2678,7 +4422,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2697,7 +4441,7 @@
         "miniTestAfterLesson": "A2__a2-cv-entrevista__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2714,7 +4458,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2733,7 +4477,7 @@
         "miniTestAfterLesson": "A2__a2-cv-entrevista__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2750,7 +4494,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2769,7 +4513,7 @@
         "miniTestAfterLesson": "A2__a2-cv-entrevista__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2786,7 +4530,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2805,7 +4549,7 @@
         "miniTestAfterLesson": "A2__a2-trabajo-contrato-horario__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2822,7 +4566,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2841,7 +4585,7 @@
         "miniTestAfterLesson": "A2__a2-trabajo-contrato-horario__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2858,7 +4602,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2877,7 +4621,7 @@
         "miniTestAfterLesson": "A2__a2-trabajo-contrato-horario__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2894,7 +4638,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2913,7 +4657,7 @@
         "miniTestAfterLesson": "A2__a2-tramites-residencia-pesel__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2930,7 +4674,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2949,7 +4693,7 @@
         "miniTestAfterLesson": "A2__a2-tramites-residencia-pesel__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2966,7 +4710,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -2985,7 +4729,7 @@
         "miniTestAfterLesson": "A2__a2-tramites-residencia-pesel__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3002,7 +4746,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3021,7 +4765,7 @@
         "miniTestAfterLesson": "A2__a2-formularios-citas__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3038,7 +4782,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3057,7 +4801,7 @@
         "miniTestAfterLesson": "A2__a2-formularios-citas__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3074,7 +4818,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3093,7 +4837,7 @@
         "miniTestAfterLesson": "A2__a2-formularios-citas__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3110,7 +4854,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3129,7 +4873,7 @@
         "miniTestAfterLesson": "A2__a2-alquiler-contrato-gastos__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3146,7 +4890,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3165,7 +4909,7 @@
         "miniTestAfterLesson": "A2__a2-alquiler-contrato-gastos__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3182,7 +4926,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3201,7 +4945,7 @@
         "miniTestAfterLesson": "A2__a2-alquiler-contrato-gastos__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3218,7 +4962,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3237,7 +4981,7 @@
         "miniTestAfterLesson": "A2__a2-averias-vivienda__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3254,7 +4998,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3273,7 +5017,7 @@
         "miniTestAfterLesson": "A2__a2-averias-vivienda__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3290,7 +5034,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3309,7 +5053,7 @@
         "miniTestAfterLesson": "A2__a2-averias-vivienda__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3326,7 +5070,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3345,7 +5089,7 @@
         "miniTestAfterLesson": "A2__a2-salud-medico-especialistas__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3362,7 +5106,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3381,7 +5125,7 @@
         "miniTestAfterLesson": "A2__a2-salud-medico-especialistas__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3398,7 +5142,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3417,7 +5161,7 @@
         "miniTestAfterLesson": "A2__a2-salud-medico-especialistas__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3434,7 +5178,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3453,7 +5197,7 @@
         "miniTestAfterLesson": "A2__a2-banco-seguros-credito__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3470,7 +5214,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3489,7 +5233,7 @@
         "miniTestAfterLesson": "A2__a2-banco-seguros-credito__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3506,7 +5250,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3525,7 +5269,7 @@
         "miniTestAfterLesson": "A2__a2-banco-seguros-credito__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3542,7 +5286,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3561,7 +5305,7 @@
         "miniTestAfterLesson": "A2__a2-conducir-control-multa-taller__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3578,7 +5322,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3597,7 +5341,7 @@
         "miniTestAfterLesson": "A2__a2-conducir-control-multa-taller__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3614,7 +5358,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3633,7 +5377,7 @@
         "miniTestAfterLesson": "A2__a2-conducir-control-multa-taller__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3650,7 +5394,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3669,7 +5413,7 @@
         "miniTestAfterLesson": "A2__a2-viajes-reservas__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3686,7 +5430,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3705,7 +5449,7 @@
         "miniTestAfterLesson": "A2__a2-viajes-reservas__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3722,7 +5466,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3741,7 +5485,7 @@
         "miniTestAfterLesson": "A2__a2-viajes-reservas__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3758,7 +5502,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3777,7 +5521,7 @@
         "miniTestAfterLesson": "A2__a2-educacion-desarrollo__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3794,7 +5538,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3813,7 +5557,7 @@
         "miniTestAfterLesson": "A2__a2-educacion-desarrollo__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3830,7 +5574,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3849,7 +5593,7 @@
         "miniTestAfterLesson": "A2__a2-educacion-desarrollo__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3866,7 +5610,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3885,7 +5629,7 @@
         "miniTestAfterLesson": "A2__a2-vida-social-formalidad__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3902,7 +5646,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3921,7 +5665,7 @@
         "miniTestAfterLesson": "A2__a2-vida-social-formalidad__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3938,7 +5682,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3957,7 +5701,7 @@
         "miniTestAfterLesson": "A2__a2-vida-social-formalidad__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3974,7 +5718,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -3993,7 +5737,7 @@
         "miniTestAfterLesson": "A2__a2-comunicacion-oficina-telefono__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4010,7 +5754,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4029,7 +5773,7 @@
         "miniTestAfterLesson": "A2__a2-comunicacion-oficina-telefono__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4046,7 +5790,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4065,7 +5809,7 @@
         "miniTestAfterLesson": "A2__a2-comunicacion-oficina-telefono__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4082,7 +5826,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4101,7 +5845,7 @@
         "miniTestAfterLesson": "A2__a2-integracion-practica-polonia__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4118,7 +5862,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4137,7 +5881,7 @@
         "miniTestAfterLesson": "A2__a2-integracion-practica-polonia__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4154,7 +5898,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4173,7 +5917,7 @@
         "miniTestAfterLesson": "A2__a2-integracion-practica-polonia__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4191,7 +5935,7 @@
         "levelExam": true,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4208,7 +5952,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4227,7 +5971,7 @@
         "miniTestAfterLesson": "B1__b1-experiencias-narracion__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4244,7 +5988,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4263,7 +6007,7 @@
         "miniTestAfterLesson": "B1__b1-experiencias-narracion__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4280,7 +6024,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4299,7 +6043,7 @@
         "miniTestAfterLesson": "B1__b1-experiencias-narracion__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4316,7 +6060,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4335,7 +6079,7 @@
         "miniTestAfterLesson": "B1__b1-empleo-carrera__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4352,7 +6096,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4371,7 +6115,7 @@
         "miniTestAfterLesson": "B1__b1-empleo-carrera__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4388,7 +6132,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4407,7 +6151,7 @@
         "miniTestAfterLesson": "B1__b1-empleo-carrera__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4424,7 +6168,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4443,7 +6187,7 @@
         "miniTestAfterLesson": "B1__b1-derechos-obligaciones-laborales__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4460,7 +6204,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4479,7 +6223,7 @@
         "miniTestAfterLesson": "B1__b1-derechos-obligaciones-laborales__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4496,7 +6240,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4515,7 +6259,7 @@
         "miniTestAfterLesson": "B1__b1-derechos-obligaciones-laborales__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4532,7 +6276,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4551,7 +6295,7 @@
         "miniTestAfterLesson": "B1__b1-vivienda-comunidad__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4568,7 +6312,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4587,7 +6331,7 @@
         "miniTestAfterLesson": "B1__b1-vivienda-comunidad__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4604,7 +6348,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4623,7 +6367,7 @@
         "miniTestAfterLesson": "B1__b1-vivienda-comunidad__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4640,7 +6384,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4659,7 +6403,7 @@
         "miniTestAfterLesson": "B1__b1-salud-sistema__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4676,7 +6420,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4695,7 +6439,7 @@
         "miniTestAfterLesson": "B1__b1-salud-sistema__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4712,7 +6456,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4731,7 +6475,7 @@
         "miniTestAfterLesson": "B1__b1-salud-sistema__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4748,7 +6492,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4767,7 +6511,7 @@
         "miniTestAfterLesson": "B1__b1-administracion-digital__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4784,7 +6528,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4803,7 +6547,7 @@
         "miniTestAfterLesson": "B1__b1-administracion-digital__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4820,7 +6564,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4839,7 +6583,7 @@
         "miniTestAfterLesson": "B1__b1-administracion-digital__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4856,7 +6600,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4875,7 +6619,7 @@
         "miniTestAfterLesson": "B1__b1-medios-opinion__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4892,7 +6636,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4911,7 +6655,7 @@
         "miniTestAfterLesson": "B1__b1-medios-opinion__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4928,7 +6672,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4947,7 +6691,7 @@
         "miniTestAfterLesson": "B1__b1-medios-opinion__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4964,7 +6708,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -4983,7 +6727,7 @@
         "miniTestAfterLesson": "B1__b1-relaciones-conflicto__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5000,7 +6744,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5019,7 +6763,7 @@
         "miniTestAfterLesson": "B1__b1-relaciones-conflicto__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5036,7 +6780,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5055,7 +6799,7 @@
         "miniTestAfterLesson": "B1__b1-relaciones-conflicto__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5072,7 +6816,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5091,7 +6835,7 @@
         "miniTestAfterLesson": "B1__b1-movilidad-viajes-complejos__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5108,7 +6852,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5127,7 +6871,7 @@
         "miniTestAfterLesson": "B1__b1-movilidad-viajes-complejos__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5144,7 +6888,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5163,7 +6907,7 @@
         "miniTestAfterLesson": "B1__b1-movilidad-viajes-complejos__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5180,7 +6924,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5199,7 +6943,7 @@
         "miniTestAfterLesson": "B1__b1-proyecto-vida-polonia__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5216,7 +6960,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5235,7 +6979,7 @@
         "miniTestAfterLesson": "B1__b1-proyecto-vida-polonia__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5252,7 +6996,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5271,7 +7015,7 @@
         "miniTestAfterLesson": "B1__b1-proyecto-vida-polonia__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5289,7 +7033,7 @@
         "levelExam": true,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5306,7 +7050,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5325,7 +7069,7 @@
         "miniTestAfterLesson": "B2__b2-sociedad-migracion__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5342,7 +7086,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5361,7 +7105,7 @@
         "miniTestAfterLesson": "B2__b2-sociedad-migracion__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5378,7 +7122,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5397,7 +7141,7 @@
         "miniTestAfterLesson": "B2__b2-sociedad-migracion__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5414,7 +7158,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5433,7 +7177,7 @@
         "miniTestAfterLesson": "B2__b2-mercado-laboral-economia__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5450,7 +7194,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5469,7 +7213,7 @@
         "miniTestAfterLesson": "B2__b2-mercado-laboral-economia__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5486,7 +7230,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5505,7 +7249,7 @@
         "miniTestAfterLesson": "B2__b2-mercado-laboral-economia__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5522,7 +7266,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5541,7 +7285,7 @@
         "miniTestAfterLesson": "B2__b2-derecho-administracion__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5558,7 +7302,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5577,7 +7321,7 @@
         "miniTestAfterLesson": "B2__b2-derecho-administracion__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5594,7 +7338,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5613,7 +7357,7 @@
         "miniTestAfterLesson": "B2__b2-derecho-administracion__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5630,7 +7374,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5649,7 +7393,7 @@
         "miniTestAfterLesson": "B2__b2-ciencia-ia-etica__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5666,7 +7410,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5685,7 +7429,7 @@
         "miniTestAfterLesson": "B2__b2-ciencia-ia-etica__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5702,7 +7446,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5721,7 +7465,7 @@
         "miniTestAfterLesson": "B2__b2-ciencia-ia-etica__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5738,7 +7482,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5757,7 +7501,7 @@
         "miniTestAfterLesson": "B2__b2-medioambiente-ciudad__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5774,7 +7518,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5793,7 +7537,7 @@
         "miniTestAfterLesson": "B2__b2-medioambiente-ciudad__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5810,7 +7554,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5829,7 +7573,7 @@
         "miniTestAfterLesson": "B2__b2-medioambiente-ciudad__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5846,7 +7590,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5865,7 +7609,7 @@
         "miniTestAfterLesson": "B2__b2-medios-manipulacion__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5882,7 +7626,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5901,7 +7645,7 @@
         "miniTestAfterLesson": "B2__b2-medios-manipulacion__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5918,7 +7662,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5937,7 +7681,7 @@
         "miniTestAfterLesson": "B2__b2-medios-manipulacion__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5954,7 +7698,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5973,7 +7717,7 @@
         "miniTestAfterLesson": "B2__b2-cultura-identidad__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -5990,7 +7734,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6009,7 +7753,7 @@
         "miniTestAfterLesson": "B2__b2-cultura-identidad__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6026,7 +7770,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6045,7 +7789,7 @@
         "miniTestAfterLesson": "B2__b2-cultura-identidad__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6062,7 +7806,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6081,7 +7825,7 @@
         "miniTestAfterLesson": "B2__b2-produccion-formal-examen__L01",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6098,7 +7842,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6117,7 +7861,7 @@
         "miniTestAfterLesson": "B2__b2-produccion-formal-examen__L02",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6134,7 +7878,7 @@
         "estimatedMinutes": 12,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6153,7 +7897,7 @@
         "miniTestAfterLesson": "B2__b2-produccion-formal-examen__L03",
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6171,7 +7915,7 @@
         "levelExam": true,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     }
   ],
@@ -6200,7 +7944,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6227,7 +7971,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6254,7 +7998,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6281,7 +8025,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6308,7 +8052,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6335,7 +8079,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6362,7 +8106,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6389,7 +8133,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6416,7 +8160,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6443,7 +8187,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6470,7 +8214,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6497,7 +8241,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6524,7 +8268,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6551,7 +8295,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6578,7 +8322,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6596,7 +8340,7 @@
         "levelExam": true,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6623,7 +8367,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6650,7 +8394,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6677,7 +8421,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6704,7 +8448,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6731,7 +8475,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6758,7 +8502,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6785,7 +8529,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6812,7 +8556,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6839,7 +8583,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6866,7 +8610,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6893,7 +8637,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6920,7 +8664,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6947,7 +8691,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6974,7 +8718,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -6992,7 +8736,7 @@
         "levelExam": true,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7019,7 +8763,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7046,7 +8790,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7073,7 +8817,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7100,7 +8844,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7127,7 +8871,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7154,7 +8898,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7181,7 +8925,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7208,7 +8952,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7235,7 +8979,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7262,7 +9006,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7280,7 +9024,7 @@
         "levelExam": true,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7307,7 +9051,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7334,7 +9078,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7361,7 +9105,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7388,7 +9132,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7415,7 +9159,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7442,7 +9186,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7469,7 +9213,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7496,7 +9240,7 @@
         ],
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     },
     {
@@ -7514,7 +9258,7 @@
         "levelExam": true,
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     }
   ],
@@ -7615,7 +9359,7 @@
         },
         "seedSource": "course_plan_micro_a1_b2",
         "seedVersion": "course_plan_v1_2026-02-14",
-        "updatedAt": "2026-02-14T21:34:30.854Z"
+        "updatedAt": "2026-02-14T21:52:05.423Z"
       }
     }
   ]

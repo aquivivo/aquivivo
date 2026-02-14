@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
@@ -12,24 +12,22 @@
 
     <main class="page">
       <div class="container">
-        <section class="card">
-          <h1 class="sectionTitle" style="margin-top: 0">Lección</h1>
-          <div class="subtitle">
-            Esta ruta es antigua. Usa <b>lessonpage.html</b> para ver la lección
-            y <b>admin-select.html</b> para edicion.
+        <section class="card" id="lessonCard">
+          <h1 class="sectionTitle" id="lessonTitle" style="margin-top: 0">Lección</h1>
+          <div class="subtitle" id="lessonMeta">Cargando...</div>
+          <div class="metaRow" style="margin-top: 12px; gap: 8px; flex-wrap: wrap">
+            <a class="btn-white-outline" id="btnLessonBack" href="lessonpage.html">Tema</a>
+            <a class="btn-white-outline" id="btnLessonFlashcards" href="flashcards.html">Fichas</a>
+            <a class="btn-white-outline" id="btnLessonExercises" href="versions.html">Ejercicios</a>
+            <a class="btn-white-outline" id="btnLessonMiniTest" href="minitest.html">Mini test</a>
           </div>
-          <div class="metaRow" style="margin-top: 14px">
-            <a class="btn-yellow" href="espanel.html">Libreta</a>
-            <a class="btn" href="course.html?level=A1">Ir al curso</a>
-          </div>
+          <div id="lessonEmpty" class="subtitle" style="margin-top: 14px; display: none"></div>
+          <article id="lessonContent" style="margin-top: 14px"></article>
         </section>
       </div>
     </main>
 
     <script type="module" src="assets/js/content-protect.js"></script>
-    <!-- no page script on purpose -->
+    <script type="module" src="assets/js/pages/lesson-page.js?v=20260214a"></script>
   </body>
 </html>
-
-
-

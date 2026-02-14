@@ -1,4 +1,4 @@
-// assets/js/pages/course-page.js
+﻿// assets/js/pages/course-page.js
 // Course topics learning path (Duolingo-like):
 // - Topics from courses where level == LEVEL
 // - Progress from user_progress/{uid}/topics
@@ -38,6 +38,100 @@ const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
   ? KNOWN_LEVELS
   : ['A1', 'A2', 'B1', 'B2'];
 
+const STAMP_CATALOG_BY_LEVEL = {
+  A1: {
+    region: 'Wielkopolskie',
+    cities: [
+      { city: 'Poznań', landmark: 'Stary Rynek' },
+      { city: 'Poznań', landmark: 'Ostrów Tumski' },
+      { city: 'Poznań', landmark: 'Zamek Cesarski' },
+      { city: 'Poznań', landmark: 'Brama Poznania' },
+      { city: 'Poznań', landmark: 'Cytadela' },
+      { city: 'Kórnik', landmark: 'Zamek' },
+      { city: 'Rogalin', landmark: 'Pałac' },
+      { city: 'Gniezno', landmark: 'Katedra' },
+      { city: 'Gołuchów', landmark: 'Zamek' },
+      { city: 'Kalisz', landmark: 'Ratusz' },
+      { city: 'Leszno', landmark: 'Rynek' },
+      { city: 'Konin', landmark: 'Słup Koniński' },
+      { city: 'Piła', landmark: 'Rynek' },
+      { city: 'Szamotuły', landmark: 'Zamek Górków' },
+      { city: 'Września', landmark: 'Pomnik Dzieci Wrzesińskich' },
+      { city: 'Puszczykowo', landmark: 'Muzeum Fiedlera' },
+      { city: 'Ląd', landmark: 'Opactwo Cystersów' },
+      { city: 'Wolsztyn', landmark: 'Parowozownia' },
+    ],
+  },
+  A2: {
+    region: 'Dolnośląskie',
+    cities: [
+      { city: 'Wrocław', landmark: 'Rynek' },
+      { city: 'Wrocław', landmark: 'Hala Stulecia' },
+      { city: 'Wrocław', landmark: 'Ostrów Tumski' },
+      { city: 'Wrocław', landmark: 'Panorama Racławicka' },
+      { city: 'Wrocław', landmark: 'Ogród Japoński' },
+      { city: 'Świdnica', landmark: 'Kościół Pokoju' },
+      { city: 'Wałbrzych', landmark: 'Zamek Książ' },
+      { city: 'Kłodzko', landmark: 'Twierdza' },
+      { city: 'Leśna', landmark: 'Zamek Czocha' },
+      { city: 'Jelenia Góra', landmark: 'Rynek' },
+      { city: 'Legnica', landmark: 'Zamek Piastowski' },
+      { city: 'Karpacz', landmark: 'Świątynia Wang' },
+      { city: 'Lubiąż', landmark: 'Opactwo Cystersów' },
+      { city: 'Jawor', landmark: 'Kościół Pokoju' },
+      { city: 'Bolesławiec', landmark: 'Rynek' },
+      { city: 'Lądek-Zdrój', landmark: 'Rynek' },
+      { city: 'Złotoryja', landmark: 'Rynek' },
+      { city: 'Szczawno-Zdrój', landmark: 'Pijalnia Wód' },
+    ],
+  },
+  B1: {
+    region: 'Małopolskie',
+    cities: [
+      { city: 'Kraków', landmark: 'Wawel' },
+      { city: 'Kraków', landmark: 'Rynek Główny' },
+      { city: 'Kraków', landmark: 'Sukiennice' },
+      { city: 'Kraków', landmark: 'Kościół Mariacki' },
+      { city: 'Kraków', landmark: 'Kazimierz' },
+      { city: 'Wieliczka', landmark: 'Kopalnia Soli' },
+      { city: 'Zakopane', landmark: 'Giewont' },
+      { city: 'Zakopane', landmark: 'Krupówki' },
+      { city: 'Tatry', landmark: 'Morskie Oko' },
+      { city: 'Niedzica', landmark: 'Zamek' },
+      { city: 'Nowy Sącz', landmark: 'Rynek' },
+      { city: 'Tarnów', landmark: 'Rynek' },
+      { city: 'Bochnia', landmark: 'Kopalnia Soli' },
+      { city: 'Ojców', landmark: 'Zamek' },
+      { city: 'Kalwaria Zebrzydowska', landmark: 'Sanktuarium' },
+      { city: 'Lanckorona', landmark: 'Rynek' },
+      { city: 'Krynica-Zdrój', landmark: 'Deptak' },
+      { city: 'Oświęcim', landmark: 'Miejsce Pamięci' },
+    ],
+  },
+  B2: {
+    region: 'Mazowieckie',
+    cities: [
+      { city: 'Warszawa', landmark: 'Stare Miasto' },
+      { city: 'Warszawa', landmark: 'Zamek Królewski' },
+      { city: 'Warszawa', landmark: 'Pałac Kultury' },
+      { city: 'Warszawa', landmark: 'Muzeum POLIN' },
+      { city: 'Wilanów', landmark: 'Pałac' },
+      { city: 'Żelazowa Wola', landmark: 'Dom Chopina' },
+      { city: 'Warszawa', landmark: 'Łazienki Królewskie' },
+      { city: 'Warszawa', landmark: 'Centrum Nauki Kopernik' },
+      { city: 'Warszawa', landmark: 'Muzeum Powstania Warszawskiego' },
+      { city: 'Płock', landmark: 'Wzgórze Tumskie' },
+      { city: 'Czersk', landmark: 'Zamek' },
+      { city: 'Radom', landmark: 'Rynek' },
+      { city: 'Sierpc', landmark: 'Skansen' },
+      { city: 'Modlin', landmark: 'Twierdza' },
+      { city: 'Pułtusk', landmark: 'Rynek' },
+      { city: 'Opinogóra', landmark: 'Muzeum Romantyzmu' },
+      { city: 'Sochaczew', landmark: 'Muzeum Kolei Wąskotorowej' },
+      { city: 'Żyrardów', landmark: 'Osada Fabryczna' },
+    ],
+  },
+};
 function isAdminUser(userDoc, email) {
   const mail = String(email || '').toLowerCase();
   return (
@@ -651,22 +745,22 @@ function guessTopicEmoji(topic) {
   const hay = `${title} ${slug} ${tags}`;
 
   const table = [
-    [/miast|ciudad|city|miejsc|lugar/, '\uD83C\uDFD9\uFE0F'], // 🏙️
-    [/dom|casa|hogar|mieszka|viviend/, '\uD83C\uDFE0'], // 🏠
-    [/rodzin|familia|amig|friend/, '\uD83D\uDC6A'], // 👪
-    [/jedzen|comida|restaur|cocin|food/, '\uD83C\uDF72'], // 🍲
-    [/kaw|caf\u00e9|cafe|cafetera/, '\u2615'], // ☕
-    [/zakup|compras|tiend|shop|super/, '\uD83D\uDED2'], // 🛒
-    [/podr\u00f3\u017c|podroz|viaj|travel|aeropuert|av[i\u00ed]on|samolot/, '\u2708\uFE0F'], // ✈️
-    [/transport|metro|autob|bus|tren|train/, '\uD83D\uDE8C'], // 🚌
-    [/prac|trabaj|oficin|job/, '\uD83D\uDCBC'], // 💼
-    [/studi|estudi|univers|escuel|school/, '\uD83C\uDF93'], // 🎓
-    [/zdrow|salud|doctor|medic|clinic/, '\uD83E\uDE7A'], // 🩺
-    [/czas|tiempo|hora|reloj|time/, '\u23F0'], // ⏰
-    [/pogon|pogod|clima|weather/, '\uD83C\uDF24\uFE0F'], // 🌤️
-    [/muzyk|m\u00fasica|musica|music/, '\uD83C\uDFB6'], // 🎶
-    [/fiest|imprez|party/, '\uD83C\uDF89'], // 🎉
-    [/telefon|tel[e\u00e9]fon|llamar|call/, '\uD83D\uDCDE'], // 📞
+    [/miast|ciudad|city|miejsc|lugar/, '\uD83C\uDFD9\uFE0F'], // Ã°Å¸Ââ„¢Ã¯Â¸Â
+    [/dom|casa|hogar|mieszka|viviend/, '\uD83C\uDFE0'], // Ã°Å¸ÂÂ 
+    [/rodzin|familia|amig|friend/, '\uD83D\uDC6A'], // Ã°Å¸â€˜Âª
+    [/jedzen|comida|restaur|cocin|food/, '\uD83C\uDF72'], // Ã°Å¸ÂÂ²
+    [/kaw|caf\u00e9|cafe|cafetera/, '\u2615'], // Ã¢Ëœâ€¢
+    [/zakup|compras|tiend|shop|super/, '\uD83D\uDED2'], // Ã°Å¸â€ºâ€™
+    [/podr\u00f3\u017c|podroz|viaj|travel|aeropuert|av[i\u00ed]on|samolot/, '\u2708\uFE0F'], // Ã¢Å“Ë†Ã¯Â¸Â
+    [/transport|metro|autob|bus|tren|train/, '\uD83D\uDE8C'], // Ã°Å¸Å¡Å’
+    [/prac|trabaj|oficin|job/, '\uD83D\uDCBC'], // Ã°Å¸â€™Â¼
+    [/studi|estudi|univers|escuel|school/, '\uD83C\uDF93'], // Ã°Å¸Å½â€œ
+    [/zdrow|salud|doctor|medic|clinic/, '\uD83E\uDE7A'], // Ã°Å¸Â©Âº
+    [/czas|tiempo|hora|reloj|time/, '\u23F0'], // Ã¢ÂÂ°
+    [/pogon|pogod|clima|weather/, '\uD83C\uDF24\uFE0F'], // Ã°Å¸Å’Â¤Ã¯Â¸Â
+    [/muzyk|m\u00fasica|musica|music/, '\uD83C\uDFB6'], // Ã°Å¸Å½Â¶
+    [/fiest|imprez|party/, '\uD83C\uDF89'], // Ã°Å¸Å½â€°
+    [/telefon|tel[e\u00e9]fon|llamar|call/, '\uD83D\uDCDE'], // Ã°Å¸â€œÅ¾
   ];
 
   for (const [re, icon] of table) {
@@ -674,9 +768,9 @@ function guessTopicEmoji(topic) {
   }
 
   const k = topicTypeKey(topic);
-  if (k === 'vocabulary') return '\uD83D\uDD24'; // 🔤
-  if (k === 'both') return '\uD83E\uDDE9'; // 🧩
-  return '\uD83D\uDCD8'; // 📘
+  if (k === 'vocabulary') return '\uD83D\uDD24'; // Ã°Å¸â€Â¤
+  if (k === 'both') return '\uD83E\uDDE9'; // Ã°Å¸Â§Â©
+  return '\uD83D\uDCD8'; // Ã°Å¸â€œËœ
 }
 
 function renderTopicVisual(topic, accent) {
@@ -964,6 +1058,103 @@ function renderPathStep({
   `;
 }
 
+function stampCatalogForLevel(level = '') {
+  const lvl = String(level || '').toUpperCase();
+  return STAMP_CATALOG_BY_LEVEL[lvl] || STAMP_CATALOG_BY_LEVEL.A1;
+}
+
+function parseDocTimeMs(raw) {
+  try {
+    if (raw?.toDate && typeof raw.toDate === 'function') {
+      const d = raw.toDate();
+      return Number.isFinite(d?.getTime?.()) ? d.getTime() : 0;
+    }
+    const d = raw ? new Date(raw) : null;
+    const t = d?.getTime?.();
+    return Number.isFinite(t) ? t : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function topicDoneTimeMs(progress) {
+  if (!progress || typeof progress !== 'object') return 0;
+  const fields = ['completedAt', 'updatedAt', 'lastCompletedAt', 'doneAt'];
+  let best = 0;
+  fields.forEach((key) => {
+    const ms = parseDocTimeMs(progress[key]);
+    if (ms > best) best = ms;
+  });
+  return best;
+}
+
+function formatStampDate(ms) {
+  const ts = Number(ms || 0);
+  if (!Number.isFinite(ts) || ts <= 0) return '';
+  try {
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) return '';
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = String(d.getFullYear());
+    return `${dd}.${mm}.${yyyy}`;
+  } catch {
+    return '';
+  }
+}
+
+function renderPassportStamp(lines = []) {
+  const textRows = (Array.isArray(lines) ? lines : [])
+    .map((x) => String(x || '').trim())
+    .filter(Boolean)
+    .map((line) => `<div style="line-height:1.2; white-space:nowrap;">${safeText(line)}</div>`)
+    .join('');
+  if (!textRows) return '';
+  return `
+    <div style="display:flex; justify-content:center; width:100%;">
+      <div style="width:min(100%, 440px); transform:rotate(-3deg); border:3px double rgba(255,112,150,0.92); border-radius:4px; padding:12px 14px; text-align:center; text-transform:uppercase; font-weight:900; letter-spacing:1.15px; color:rgba(255,112,150,0.95); background:rgba(255,112,150,0.05); box-shadow:0 0 0 1px rgba(255,112,150,0.45) inset;">
+        ${textRows}
+      </div>
+    </div>
+  `;
+}
+
+function renderLevelStampStep({
+  level,
+  done,
+  doneAtMs = 0,
+  readOnly,
+  isLast,
+  idx,
+}) {
+  if (!done) return '';
+  const lvl = String(level || '').toUpperCase() || 'A1';
+  const stamp = stampCatalogForLevel(lvl);
+  const region = String(stamp?.region || 'Polska');
+  const dateLabel = formatStampDate(doneAtMs);
+  const stampHtml = renderPassportStamp(['AquiVivo', region, dateLabel]);
+  const stepClass = [
+    'pathStep',
+    Number(idx || 0) % 2 ? 'is-alt' : '',
+    'is-done',
+    isLast ? 'is-last' : '',
+    readOnly ? 'is-readonly' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return `
+    <div class="${stepClass}">
+      <div class="pathRail">
+        <div class="pathNode" data-accent="yellow" aria-hidden="true">
+          <div class="pathNodeInner">&#x2713;</div>
+        </div>
+        <div class="pathConnector" aria-hidden="true"></div>
+      </div>
+      ${stampHtml}
+    </div>
+  `;
+}
 async function loadProgressMap(uid) {
   try {
     const snap = await getDocs(collection(db, 'user_progress', uid, 'topics'));
@@ -1205,8 +1396,22 @@ async function loadTopics(user) {
     ? Math.max(0, entries.length - 1)
     : Math.max(0, currentIdx);
 
+  const levelStats = new Map();
+  entries.forEach((entry) => {
+    const lvl = topicLevelOf(entry.topic, LEVEL);
+    const prev = levelStats.get(lvl) || { total: 0, done: 0, doneAtMs: 0 };
+    prev.total += 1;
+    if (entry.st.done) {
+      prev.done += 1;
+      const doneMs = topicDoneTimeMs(entry.progress);
+      if (doneMs > prev.doneAtMs) prev.doneAtMs = doneMs;
+    }
+    levelStats.set(lvl, prev);
+  });
+
   let currentLevelHeader = '';
   let levelSectionNo = 0;
+  let renderIdx = 0;
   let html = '';
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
@@ -1216,15 +1421,39 @@ async function loadTopics(user) {
       levelSectionNo += 1;
       html += renderUnitHeader(levelSectionNo, entryLevel);
     }
+
     html += renderPathStep({
       topic: e.topic,
       idx: i,
       exCount: previewOnly ? 0 : e.exCount,
       progress: previewOnly ? null : e.progress,
       isCurrent: !previewOnly && !flags?.isAdmin && i === currentIdx,
-      isLast: i === entries.length - 1,
+      isLast: false,
       readOnly: previewOnly || i > unlockedBoundary,
     });
+    renderIdx += 1;
+
+    const nextLevel = i < entries.length - 1 ? topicLevelOf(entries[i + 1]?.topic, LEVEL) : '';
+    const levelEnds = i === entries.length - 1 || nextLevel !== entryLevel;
+    if (levelEnds) {
+      const lvlStats = levelStats.get(entryLevel) || { total: 0, done: 0, doneAtMs: 0 };
+      const levelDone = !!(
+        flags?.isAdmin ||
+        (lvlStats.total > 0 && lvlStats.done >= lvlStats.total)
+      );
+      const levelStampHtml = renderLevelStampStep({
+        level: entryLevel,
+        done: levelDone,
+        doneAtMs: lvlStats.doneAtMs,
+        readOnly: previewOnly || i > unlockedBoundary,
+        isLast: i === entries.length - 1,
+        idx: renderIdx,
+      });
+      if (levelStampHtml) {
+        html += levelStampHtml;
+        renderIdx += 1;
+      }
+    }
   }
 
   host.innerHTML = html;

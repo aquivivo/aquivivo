@@ -1,4 +1,4 @@
-// assets/js/pages/lessonpage-page.js
+﻿// assets/js/pages/lessonpage-page.js
 // Contract: lessonpage.html?level=A1&id=COURSE_DOC_ID
 
 import { auth, db } from '../firebase-init.js';
@@ -180,22 +180,22 @@ function guessTopicEmoji(topic) {
   const hay = `${title} ${slug} ${tags}`;
 
   const table = [
-    [/miast|ciudad|city|miejsc|lugar/, '\uD83C\uDFD9\uFE0F'], // 🏙️
-    [/dom|casa|hogar|mieszka|viviend/, '\uD83C\uDFE0'], // 🏠
-    [/rodzin|familia|amig|friend/, '\uD83D\uDC6A'], // 👪
-    [/jedzen|comida|restaur|cocin|food/, '\uD83C\uDF72'], // 🍲
-    [/kaw|caf\u00e9|cafe|cafetera/, '\u2615'], // ☕
-    [/zakup|compras|tiend|shop|super/, '\uD83D\uDED2'], // 🛒
-    [/podr\u00f3\u017c|podroz|viaj|travel|aeropuert|av[i\u00ed]on|samolot/, '\u2708\uFE0F'], // ✈️
-    [/transport|metro|autob|bus|tren|train/, '\uD83D\uDE8C'], // 🚌
-    [/prac|trabaj|oficin|job/, '\uD83D\uDCBC'], // 💼
-    [/studi|estudi|univers|escuel|school/, '\uD83C\uDF93'], // 🎓
-    [/zdrow|salud|doctor|medic|clinic/, '\uD83E\uDE7A'], // 🩺
-    [/czas|tiempo|hora|reloj|time/, '\u23F0'], // ⏰
-    [/pogon|pogod|clima|weather/, '\uD83C\uDF24\uFE0F'], // 🌤️
-    [/muzyk|m\u00fasica|musica|music/, '\uD83C\uDFB6'], // 🎶
-    [/fiest|imprez|party/, '\uD83C\uDF89'], // 🎉
-    [/telefon|tel[e\u00e9]fon|llamar|call/, '\uD83D\uDCDE'], // 📞
+    [/miast|ciudad|city|miejsc|lugar/, '\uD83C\uDFD9\uFE0F'], // Ã°Å¸Ââ„¢Ã¯Â¸Â
+    [/dom|casa|hogar|mieszka|viviend/, '\uD83C\uDFE0'], // Ã°Å¸ÂÂ 
+    [/rodzin|familia|amig|friend/, '\uD83D\uDC6A'], // Ã°Å¸â€˜Âª
+    [/jedzen|comida|restaur|cocin|food/, '\uD83C\uDF72'], // Ã°Å¸ÂÂ²
+    [/kaw|caf\u00e9|cafe|cafetera/, '\u2615'], // Ã¢Ëœâ€¢
+    [/zakup|compras|tiend|shop|super/, '\uD83D\uDED2'], // Ã°Å¸â€ºâ€™
+    [/podr\u00f3\u017c|podroz|viaj|travel|aeropuert|av[i\u00ed]on|samolot/, '\u2708\uFE0F'], // Ã¢Å“Ë†Ã¯Â¸Â
+    [/transport|metro|autob|bus|tren|train/, '\uD83D\uDE8C'], // Ã°Å¸Å¡Å’
+    [/prac|trabaj|oficin|job/, '\uD83D\uDCBC'], // Ã°Å¸â€™Â¼
+    [/studi|estudi|univers|escuel|school/, '\uD83C\uDF93'], // Ã°Å¸Å½â€œ
+    [/zdrow|salud|doctor|medic|clinic/, '\uD83E\uDE7A'], // Ã°Å¸Â©Âº
+    [/czas|tiempo|hora|reloj|time/, '\u23F0'], // Ã¢ÂÂ°
+    [/pogon|pogod|clima|weather/, '\uD83C\uDF24\uFE0F'], // Ã°Å¸Å’Â¤Ã¯Â¸Â
+    [/muzyk|m\u00fasica|musica|music/, '\uD83C\uDFB6'], // Ã°Å¸Å½Â¶
+    [/fiest|imprez|party/, '\uD83C\uDF89'], // Ã°Å¸Å½â€°
+    [/telefon|tel[e\u00e9]fon|llamar|call/, '\uD83D\uDCDE'], // Ã°Å¸â€œÅ¾
   ];
 
   for (const [re, icon] of table) {
@@ -203,9 +203,9 @@ function guessTopicEmoji(topic) {
   }
 
   const rawType = String(topic?.type || topic?.category || '').toLowerCase();
-  if (rawType.includes('vocab')) return '\uD83D\uDD24'; // 🔤
-  if (rawType.includes('both') || rawType.includes('+')) return '\uD83E\uDDE9'; // 🧩
-  return '\uD83D\uDCD8'; // 📘
+  if (rawType.includes('vocab')) return '\uD83D\uDD24'; // Ã°Å¸â€Â¤
+  if (rawType.includes('both') || rawType.includes('+')) return '\uD83E\uDDE9'; // Ã°Å¸Â§Â©
+  return '\uD83D\uDCD8'; // Ã°Å¸â€œËœ
 }
 
 function setLessonHeroVisual(topic) {
@@ -493,6 +493,62 @@ function parseDocTimeMs(raw) {
   }
 }
 
+function completionTimeMsFromProgress(progressDoc) {
+  if (!progressDoc || typeof progressDoc !== 'object') return 0;
+  const keys = ['completedAt', 'updatedAt', 'lastCompletedAt', 'doneAt'];
+  let best = 0;
+  keys.forEach((key) => {
+    const ms = parseDocTimeMs(progressDoc[key]);
+    if (ms > best) best = ms;
+  });
+  return best;
+}
+
+function completionTimeMsForStep(step, lessonProgressById = {}) {
+  const id = String(step?.id || '').trim();
+  if (id) return completionTimeMsFromProgress(lessonProgressById?.[id]);
+  const deps = Array.isArray(step?.unlockFromIds) ? step.unlockFromIds : [];
+  let best = 0;
+  deps.forEach((depIdRaw) => {
+    const depId = String(depIdRaw || '').trim();
+    if (!depId) return;
+    const ms = completionTimeMsFromProgress(lessonProgressById?.[depId]);
+    if (ms > best) best = ms;
+  });
+  return best;
+}
+
+function formatStampDate(ms) {
+  const ts = Number(ms || 0);
+  if (!Number.isFinite(ts) || ts <= 0) return '';
+  try {
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) return '';
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = String(d.getFullYear());
+    return `${dd}.${mm}.${yyyy}`;
+  } catch {
+    return '';
+  }
+}
+
+function renderPassportStamp(lines = []) {
+  const rows = (Array.isArray(lines) ? lines : [])
+    .map((x) => String(x || '').trim())
+    .filter(Boolean)
+    .map((line) => `<div style="line-height:1.2; white-space:nowrap;">${escHtml(line)}</div>`)
+    .join('');
+  if (!rows) return '';
+  return `
+    <div style="display:flex; justify-content:center; width:100%;">
+      <div style="width:min(100%, 400px); transform:rotate(-3deg); border:3px double rgba(255,112,150,0.92); border-radius:4px; padding:10px 12px; text-align:center; text-transform:uppercase; font-weight:900; letter-spacing:1.1px; color:rgba(255,112,150,0.95); background:rgba(255,112,150,0.05); box-shadow:0 0 0 1px rgba(255,112,150,0.45) inset;">
+        ${rows}
+      </div>
+    </div>
+  `;
+}
+
 function isMiniTestLesson(lesson) {
   if (!lesson || typeof lesson !== 'object') return false;
   if (lesson.miniTest === true) return true;
@@ -534,17 +590,30 @@ function stripTopicPrefix(title, topicTitle = '') {
 function lessonHrefForRoute(level, topicId, lessonId) {
   const lvl = String(level || LEVEL).toUpperCase();
   const topic = String(topicId || COURSE_ID).trim();
-  let href = `ejercicio.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}`;
+  let href = `lesson.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}`;
   if (lessonId) href += `&lessonId=${encodeURIComponent(String(lessonId))}`;
   href += navParams();
   return href;
 }
 
-function miniTestHrefForRoute(level, topicId, miniLessonId) {
+function versionsHrefForRoute(level, topicId, lessonId) {
   const lvl = String(level || LEVEL).toUpperCase();
   const topic = String(topicId || COURSE_ID).trim();
-  let href = `review.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}&mode=minitest`;
+  let href = `versions.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}`;
+  if (lessonId) href += `&lessonId=${encodeURIComponent(String(lessonId))}`;
+  href += navParams();
+  return href;
+}
+
+function miniTestHrefForRoute(level, topicId, miniLessonId, blockNo = 0) {
+  const lvl = String(level || LEVEL).toUpperCase();
+  const topic = String(topicId || COURSE_ID).trim();
+  let href = `minitest.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}`;
   if (miniLessonId) href += `&lessonId=${encodeURIComponent(String(miniLessonId))}`;
+  const block = Number(blockNo || 0);
+  if (!miniLessonId && Number.isFinite(block) && block > 0) {
+    href += `&block=${encodeURIComponent(String(block))}&checkpoint=${encodeURIComponent(String(block))}`;
+  }
   href += navParams();
   return href;
 }
@@ -730,63 +799,688 @@ function normalizeTopicRoadmap(rawRoadmap = []) {
     .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
 }
 
+function flashcardsHrefForRoute(level, topicId, lessonId = '') {
+  const lvl = String(level || LEVEL).toUpperCase();
+  const topic = String(topicId || COURSE_ID).trim();
+  let href = `flashcards.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}`;
+  const id = String(lessonId || '').trim();
+  if (id) href += `&lessonId=${encodeURIComponent(id)}`;
+  href += navParams();
+  return href;
+}
+
+function ensureLessonRouteStyles() {
+  if (document.getElementById('lessonRouteStyles')) return;
+  const style = document.createElement('style');
+  style.id = 'lessonRouteStyles';
+  style.textContent = `
+    body[data-page='lessonpage'] #tocWrap { margin-top: 0 !important; }
+    body[data-page='lessonpage'] #tocWrap .sectionTitle { display: none !important; }
+    body[data-page='lessonpage'] #tocList {
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath {
+      display: grid;
+      gap: 14px;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathStep {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathRail {
+      width: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathConnector {
+      flex: 1;
+      width: 3px;
+      border-radius: 999px;
+      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.12);
+      min-height: 16px;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathStep.is-last .pathConnector {
+      display: none;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathNode {
+      width: 54px;
+      height: 54px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(188, 211, 255, 0.24);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      color: inherit;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathNode[data-accent='yellow'] {
+      border-color: rgba(252, 209, 22, 0.38);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathNode[data-accent='blue'] {
+      border-color: rgba(188, 211, 255, 0.32);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathNode[data-accent='red'] {
+      border-color: rgba(206, 17, 38, 0.3);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathNodeInner {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 16px;
+      background: rgba(7, 18, 44, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathStep.is-current .pathNode {
+      box-shadow: 0 0 0 6px rgba(252, 209, 22, 0.14), 0 18px 52px rgba(0, 0, 0, 0.32);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathStep.is-current .pathNodeInner {
+      background: rgba(252, 209, 22, 0.22);
+      border-color: rgba(252, 209, 22, 0.35);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathCard {
+      display: block;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.06);
+      color: inherit;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathCard[data-accent='yellow'] {
+      border-left: 6px solid rgba(252, 209, 22, 0.35);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathCard[data-accent='blue'] {
+      border-left: 6px solid rgba(188, 211, 255, 0.28);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathCard[data-accent='red'] {
+      border-left: 6px solid rgba(206, 17, 38, 0.22);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathStep.is-current .pathCard {
+      border-color: rgba(252, 209, 22, 0.34);
+      background: rgba(252, 209, 22, 0.06);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathCardTop {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathCardText {
+      flex: 1;
+      min-width: 0;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .topicThumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(7, 18, 44, 0.45);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+      flex: 0 0 auto;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .topicThumb[data-accent='yellow'] {
+      border-color: rgba(252, 209, 22, 0.35);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .topicThumb[data-accent='blue'] {
+      border-color: rgba(188, 211, 255, 0.28);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .topicThumb[data-accent='red'] {
+      border-color: rgba(206, 17, 38, 0.22);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .topicThumbEmoji {
+      font-size: 22px;
+      line-height: 1;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .lessonPathHead {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathCardTitle {
+      font-weight: 900;
+      font-size: 15px;
+      letter-spacing: 0.1px;
+      min-width: 0;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .pathCardDesc {
+      margin-top: 5px;
+      font-size: 12px;
+      line-height: 1.45;
+      opacity: 0.82;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .lessonStepActions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .lessonStepActionBtn {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .lessonStepActionBtn:hover,
+    body[data-page='lessonpage'] .lessonRoutePath .lessonStepActionBtn:focus {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(252, 209, 22, 0.4);
+    }
+    body[data-page='lessonpage'] .lessonRoutePath .lessonStepActionBtn[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    @media (max-width: 760px) {
+      body[data-page='lessonpage'] .lessonRoutePath .pathStep {
+        grid-template-columns: 58px 1fr;
+        gap: 10px;
+      }
+      body[data-page='lessonpage'] .lessonRoutePath .pathRail {
+        width: 58px;
+      }
+      body[data-page='lessonpage'] .lessonRoutePath .pathNode {
+        width: 48px;
+        height: 48px;
+      }
+      body[data-page='lessonpage'] .lessonRoutePath .pathNodeInner {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
+      }
+      body[data-page='lessonpage'] .lessonRoutePath .lessonStepActionBtn {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function hideLessonHeroAndLegacyPanels() {
+  document.querySelector('.heroBanner')?.setAttribute('style', 'display:none !important;');
+  const readTools = $('readTools');
+  if (readTools) readTools.style.display = 'none';
+  const content = $('lessonContent');
+  if (content) {
+    content.style.display = 'none';
+    content.innerHTML = '';
+  }
+  const extras = $('lessonExtras');
+  if (extras) {
+    extras.style.display = 'none';
+    extras.innerHTML = '';
+  }
+  const rating = $('ratingCard');
+  if (rating) rating.style.display = 'none';
+  const sticky = $('lessonSticky');
+  if (sticky) sticky.style.display = 'none';
+  const hint = $('studentHint');
+  if (hint) hint.style.display = 'none';
+}
+
+const STAMP_CATALOG_BY_LEVEL = {
+  A1: {
+    region: 'Wielkopolskie',
+    cities: [
+      { city: 'Poznań', landmark: 'Stary Rynek' },
+      { city: 'Poznań', landmark: 'Ostrów Tumski' },
+      { city: 'Poznań', landmark: 'Zamek Cesarski' },
+      { city: 'Poznań', landmark: 'Brama Poznania' },
+      { city: 'Poznań', landmark: 'Cytadela' },
+      { city: 'Kórnik', landmark: 'Zamek' },
+      { city: 'Rogalin', landmark: 'Pałac' },
+      { city: 'Gniezno', landmark: 'Katedra' },
+      { city: 'Gołuchów', landmark: 'Zamek' },
+      { city: 'Kalisz', landmark: 'Ratusz' },
+      { city: 'Leszno', landmark: 'Rynek' },
+      { city: 'Konin', landmark: 'Słup Koniński' },
+      { city: 'Piła', landmark: 'Rynek' },
+      { city: 'Szamotuły', landmark: 'Zamek Górków' },
+      { city: 'Września', landmark: 'Pomnik Dzieci Wrzesińskich' },
+      { city: 'Puszczykowo', landmark: 'Muzeum Fiedlera' },
+      { city: 'Ląd', landmark: 'Opactwo Cystersów' },
+      { city: 'Wolsztyn', landmark: 'Parowozownia' },
+    ],
+  },
+  A2: {
+    region: 'Dolnośląskie',
+    cities: [
+      { city: 'Wrocław', landmark: 'Rynek' },
+      { city: 'Wrocław', landmark: 'Hala Stulecia' },
+      { city: 'Wrocław', landmark: 'Ostrów Tumski' },
+      { city: 'Wrocław', landmark: 'Panorama Racławicka' },
+      { city: 'Wrocław', landmark: 'Ogród Japoński' },
+      { city: 'Świdnica', landmark: 'Kościół Pokoju' },
+      { city: 'Wałbrzych', landmark: 'Zamek Książ' },
+      { city: 'Kłodzko', landmark: 'Twierdza' },
+      { city: 'Leśna', landmark: 'Zamek Czocha' },
+      { city: 'Jelenia Góra', landmark: 'Rynek' },
+      { city: 'Legnica', landmark: 'Zamek Piastowski' },
+      { city: 'Karpacz', landmark: 'Świątynia Wang' },
+      { city: 'Lubiąż', landmark: 'Opactwo Cystersów' },
+      { city: 'Jawor', landmark: 'Kościół Pokoju' },
+      { city: 'Bolesławiec', landmark: 'Rynek' },
+      { city: 'Lądek-Zdrój', landmark: 'Rynek' },
+      { city: 'Złotoryja', landmark: 'Rynek' },
+      { city: 'Szczawno-Zdrój', landmark: 'Pijalnia Wód' },
+    ],
+  },
+  B1: {
+    region: 'Małopolskie',
+    cities: [
+      { city: 'Kraków', landmark: 'Wawel' },
+      { city: 'Kraków', landmark: 'Rynek Główny' },
+      { city: 'Kraków', landmark: 'Sukiennice' },
+      { city: 'Kraków', landmark: 'Kościół Mariacki' },
+      { city: 'Kraków', landmark: 'Kazimierz' },
+      { city: 'Wieliczka', landmark: 'Kopalnia Soli' },
+      { city: 'Zakopane', landmark: 'Giewont' },
+      { city: 'Zakopane', landmark: 'Krupówki' },
+      { city: 'Tatry', landmark: 'Morskie Oko' },
+      { city: 'Niedzica', landmark: 'Zamek' },
+      { city: 'Nowy Sącz', landmark: 'Rynek' },
+      { city: 'Tarnów', landmark: 'Rynek' },
+      { city: 'Bochnia', landmark: 'Kopalnia Soli' },
+      { city: 'Ojców', landmark: 'Zamek' },
+      { city: 'Kalwaria Zebrzydowska', landmark: 'Sanktuarium' },
+      { city: 'Lanckorona', landmark: 'Rynek' },
+      { city: 'Krynica-Zdrój', landmark: 'Deptak' },
+      { city: 'Oświęcim', landmark: 'Miejsce Pamięci' },
+    ],
+  },
+  B2: {
+    region: 'Mazowieckie',
+    cities: [
+      { city: 'Warszawa', landmark: 'Stare Miasto' },
+      { city: 'Warszawa', landmark: 'Zamek Królewski' },
+      { city: 'Warszawa', landmark: 'Pałac Kultury' },
+      { city: 'Warszawa', landmark: 'Muzeum POLIN' },
+      { city: 'Wilanów', landmark: 'Pałac' },
+      { city: 'Żelazowa Wola', landmark: 'Dom Chopina' },
+      { city: 'Warszawa', landmark: 'Łazienki Królewskie' },
+      { city: 'Warszawa', landmark: 'Centrum Nauki Kopernik' },
+      { city: 'Warszawa', landmark: 'Muzeum Powstania Warszawskiego' },
+      { city: 'Płock', landmark: 'Wzgórze Tumskie' },
+      { city: 'Czersk', landmark: 'Zamek' },
+      { city: 'Radom', landmark: 'Rynek' },
+      { city: 'Sierpc', landmark: 'Skansen' },
+      { city: 'Modlin', landmark: 'Twierdza' },
+      { city: 'Pułtusk', landmark: 'Rynek' },
+      { city: 'Opinogóra', landmark: 'Muzeum Romantyzmu' },
+      { city: 'Sochaczew', landmark: 'Muzeum Kolei Wąskotorowej' },
+      { city: 'Żyrardów', landmark: 'Osada Fabryczna' },
+    ],
+  },
+};
+function stampCatalogForLevel(level = LEVEL) {
+  const lvl = String(level || LEVEL).toUpperCase();
+  return STAMP_CATALOG_BY_LEVEL[lvl] || STAMP_CATALOG_BY_LEVEL.A1;
+}
+
+function stampForIndex(level = LEVEL, index = 0) {
+  const catalog = stampCatalogForLevel(level);
+  const cities = Array.isArray(catalog?.cities) ? catalog.cities : [];
+  if (!cities.length) {
+    return {
+      region: String(catalog?.region || 'Polska'),
+      city: `Ciudad ${Number(index || 0) + 1}`,
+      landmark: 'Sello',
+    };
+  }
+  const safeIndex = Math.max(0, Number(index || 0));
+  const row = cities[safeIndex % cities.length] || cities[0];
+  return {
+    region: String(catalog?.region || 'Polska'),
+    city: String(row?.city || `Ciudad ${safeIndex + 1}`),
+    landmark: String(row?.landmark || 'Sello'),
+  };
+}
+
+function topicStampSeed(topicOrderRaw, topicId = '', topicSlug = '') {
+  const topicOrder = Number(topicOrderRaw);
+  if (Number.isFinite(topicOrder) && topicOrder > 0) {
+    return Math.max(0, Math.floor(topicOrder) - 1);
+  }
+  const key = String(topicSlug || topicId || '')
+    .trim()
+    .toLowerCase();
+  if (!key) return 0;
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  }
+  return Number(hash % 1000);
+}
+
+function gcd(a, b) {
+  let x = Math.abs(Number(a || 0));
+  let y = Math.abs(Number(b || 0));
+  while (y) {
+    const t = x % y;
+    x = y;
+    y = t;
+  }
+  return x || 1;
+}
+
+function stampStrideForCount(count) {
+  const n = Math.max(0, Number(count || 0));
+  if (n <= 2) return 1;
+  const preferred = [7, 5, 11, 13, 17, 19, 23, 29, 31];
+  for (const step of preferred) {
+    if (step < n && gcd(step, n) === 1) return step;
+  }
+  for (let step = n - 1; step >= 2; step -= 1) {
+    if (gcd(step, n) === 1) return step;
+  }
+  return 1;
+}
+
+function buildRouteStepsFromRoadmap(
+  roadmap = [],
+  {
+    level = LEVEL,
+    topicTitle = '',
+    includeTopicReward = false,
+    includeLevelReward = false,
+    stampSeed = 0,
+  } = {},
+) {
+  const rows = normalizeTopicRoadmap(roadmap);
+  const out = [];
+  const unlockAllIds = [];
+  const catalog = stampCatalogForLevel(level);
+  const cities = Array.isArray(catalog?.cities) ? catalog.cities : [];
+  const count = cities.length;
+  const stride = stampStrideForCount(count);
+  const seed = Math.max(0, Math.floor(Number(stampSeed || 0)));
+  const baseStampOffset = count > 0 ? (seed * stride) % count : 0;
+
+  rows.forEach((row, idx) => {
+    const seq = idx + 1;
+    const lessonId = String(row.lessonId || '').trim();
+    const testId = String(row.miniTestId || '').trim();
+
+    if (lessonId) {
+      out.push({
+        kind: 'lesson',
+        seq,
+        id: lessonId,
+        title: String(row.lessonTitle || '').trim() || `Leccion ${seq}`,
+      });
+      unlockAllIds.push(lessonId);
+    }
+
+    out.push({
+      kind: 'test',
+      seq,
+      id: testId,
+      title: String(row.miniTestTitle || '').trim() || `Mini test ${seq}`,
+    });
+    if (testId) unlockAllIds.push(testId);
+
+    const stamp = stampForIndex(level, baseStampOffset + idx);
+    out.push({
+      kind: 'reward_mini',
+      seq,
+      id: '',
+      unlockFromIds: testId ? [testId] : [],
+      title: `Sello desbloqueado: ${stamp.city}`,
+      subtitle: `Mini test ${seq} - ${stamp.landmark}`,
+      region: stamp.region,
+      city: stamp.city,
+      landmark: stamp.landmark,
+    });
+  });
+
+  if (includeTopicReward) {
+    const topicStamp = stampForIndex(level, baseStampOffset + rows.length);
+    out.push({
+      kind: 'reward_topic',
+      seq: rows.length + 1,
+      id: '',
+      unlockFromIds: unlockAllIds.slice(),
+      title: `Sello del tema: ${String(topicTitle || 'Tema').trim() || 'Tema'}`,
+      subtitle: `${topicStamp.city} - ${topicStamp.landmark}`,
+      region: topicStamp.region,
+      city: topicStamp.city,
+      landmark: topicStamp.landmark,
+    });
+  }
+
+  if (includeLevelReward) {
+    const region = stampCatalogForLevel(level)?.region || 'Polska';
+    out.push({
+      kind: 'reward_level',
+      seq: rows.length + 1,
+      id: '',
+      unlockFromIds: unlockAllIds.slice(),
+      title: `Sello del voivodato: ${region}`,
+      subtitle: 'Nivel completado',
+      region,
+    });
+  }
+
+  return out;
+}
+
+function isRewardStep(step) {
+  return String(step?.kind || '').startsWith('reward_');
+}
+
+function isActionStep(step) {
+  const kind = String(step?.kind || '');
+  return kind === 'lesson' || kind === 'test';
+}
+
+function isStepCompleted(step, lessonProgressById = {}, isAdmin = false) {
+  if (isAdmin) return true;
+  const id = String(step?.id || '').trim();
+  if (id) return isLessonCompleted(lessonProgressById?.[id]);
+
+  if (isRewardStep(step)) {
+    const deps = Array.isArray(step?.unlockFromIds) ? step.unlockFromIds : [];
+    if (!deps.length) return false;
+    return deps.every((depId) => isLessonCompleted(lessonProgressById?.[String(depId || '').trim()]));
+  }
+
+  return false;
+}
+
+function renderLessonPathAction(href, icon, label, disabled = false) {
+  const text = escHtml(String(icon || '').trim() || '*');
+  const title = escHtml(String(label || '').trim() || 'Accion');
+  if (disabled || !href) {
+    return `<button class="lessonStepActionBtn" type="button" disabled title="${title}" aria-label="${title}">${text}</button>`;
+  }
+  return `<a class="lessonStepActionBtn" href="${href}" title="${title}" aria-label="${title}">${text}</a>`;
+}
+
+function buildTopicRoadmapFromTopicDoc(topic = {}) {
+  const direct = normalizeTopicRoadmap(topic?.lessonRoadmap || []);
+  if (direct.length) return direct;
+
+  const lessonIdsRaw = Array.isArray(topic?.lessonIds) ? topic.lessonIds : [];
+  const miniIdsRaw = Array.isArray(topic?.miniTestIds) ? topic.miniTestIds : [];
+
+  const lessonIds = lessonIdsRaw
+    .map((x) => String(x || '').trim())
+    .filter(Boolean)
+    .filter((id) => !id.toUpperCase().includes('MINITEST'));
+  const miniIds = miniIdsRaw.map((x) => String(x || '').trim()).filter(Boolean);
+
+  if (!lessonIds.length) return [];
+
+  return lessonIds.map((lessonId, idx) => {
+    const miniByIdx = miniIds[idx] || '';
+    const miniByPattern =
+      miniIds.find((x) => x.includes(`${lessonId}__MINITEST`) || x.includes(`${lessonId.split('__').slice(-1)[0]}__MINITEST`)) ||
+      '';
+    const miniTestId = miniByIdx || miniByPattern || '';
+    return {
+      order: idx + 1,
+      lessonId,
+      lessonTitle: `Leccion ${idx + 1}`,
+      miniTestId,
+      miniTestTitle: miniTestId ? `Mini test ${idx + 1}` : '',
+    };
+  });
+}
+
 function renderTopicRoadmapCards({
   level,
   topicId,
   topicTitle,
   roadmap = [],
   isAdmin = false,
+  lessonProgressById = {},
+  stampSeed = 0,
 }) {
+  ensureLessonRouteStyles();
+  hideLessonHeroAndLegacyPanels();
   const tocWrap = $('tocWrap');
   const tocList = $('tocList');
   if (!tocWrap || !tocList) return false;
   const lvl = String(level || LEVEL).toUpperCase();
   const topic = String(topicId || COURSE_ID).trim();
-  const steps = normalizeTopicRoadmap(roadmap);
+  const steps = buildRouteStepsFromRoadmap(roadmap, {
+    level: lvl,
+    topicTitle,
+    includeTopicReward: false,
+    includeLevelReward: false,
+    stampSeed,
+  });
   if (!steps.length) {
     show(tocWrap, false);
     return false;
   }
 
-  const cards = steps.map((step, idx) => {
-    const lessonHref = lessonHrefForRoute(lvl, topic, step.lessonId);
-    const hasMini = !!String(step.miniTestId || '').trim();
-    const miniHref = hasMini ? miniTestHrefForRoute(lvl, topic, step.miniTestId) : '';
-    const statusChip = isAdmin
-      ? '<span class="pill pill-blue">Listo</span>'
-      : '<span class="pill">Ruta</span>';
-    const miniButton = hasMini
-      ? `<a class="btn-white-outline" href="${miniHref}">Mini test</a>`
-      : '<button class="btn-white-outline" type="button" disabled>Mini test</button>';
+  const completed = steps.map((step) => isStepCompleted(step, lessonProgressById, isAdmin));
+  const visibleEntries = steps
+    .map((step, idx) => ({ step, done: completed[idx] }))
+    .filter((entry) => !isRewardStep(entry.step) || entry.done);
+
+  let currentIdx = visibleEntries.findIndex(
+    (entry) => isActionStep(entry.step) && !entry.done,
+  );
+  if (currentIdx < 0) currentIdx = visibleEntries.findIndex((entry) => !entry.done);
+  if (currentIdx < 0) currentIdx = visibleEntries.length - 1;
+
+  const cards = visibleEntries.map((entry, idx) => {
+    const step = entry.step;
+    const kind = String(step?.kind || '');
+    const isTest = kind === 'test';
+    const isLesson = kind === 'lesson';
+    const isReward = isRewardStep(step);
+
+    const accent = isLesson ? 'blue' : isTest ? 'yellow' : 'red';
+    const icon = isLesson
+      ? '\uD83D\uDCD8'
+      : isTest
+        ? '\uD83E\uDDEA'
+        : kind === 'reward_level'
+          ? '\uD83C\uDFDB\uFE0F'
+          : '\uD83D\uDEC2';
+
+    const hrefPrimary = isLesson
+      ? lessonHrefForRoute(lvl, topic, step.id)
+      : isTest
+        ? miniTestHrefForRoute(lvl, topic, step.id, step.seq)
+        : '';
+    const hrefCards = isLesson ? flashcardsHrefForRoute(lvl, topic, step.id || '') : '';
+    const hrefExercise = isLesson ? versionsHrefForRoute(lvl, topic, step.id) : '';
+
+    const done = entry.done;
+    const stepClass = [
+      'pathStep',
+      idx === currentIdx ? 'is-current' : '',
+      done ? 'is-done' : '',
+      idx === visibleEntries.length - 1 ? 'is-last' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    const nodeInner = done ? '&#x2713;' : isTest ? '\uD83E\uDDEA' : isReward ? '\uD83D\uDEC2' : String(step.seq);
+
+    const actions = isLesson
+      ? [
+          renderLessonPathAction(hrefPrimary, '\uD83D\uDCD6', 'Leccion', !hrefPrimary),
+          renderLessonPathAction(hrefCards, '\uD83D\uDD16', 'Fichas', !hrefCards),
+          renderLessonPathAction(hrefExercise, '\u270D\uFE0F', 'Ejercicios', !hrefExercise),
+        ].join('')
+      : '';
+
+    let cardHtml = '';
+    if (isReward) {
+      const stampDate = formatStampDate(completionTimeMsForStep(step, lessonProgressById));
+      const city = String(step?.city || '').trim();
+      const landmark = String(step?.landmark || '').trim();
+      const region = String(step?.region || '').trim();
+      const placeLine = [city, landmark].filter(Boolean).join(' - ');
+      const mainLine = placeLine || region || String(step?.title || 'Sello').trim();
+      const extraLine = placeLine && region ? region : '';
+      cardHtml = renderPassportStamp(['AquiVivo', mainLine, extraLine, stampDate]);
+    } else {
+      const subtitle = String(step?.subtitle || '').trim();
+      const head = `
+        <div class="lessonPathHead">
+          <div class="pathCardTitle">${escHtml(step.title)}</div>
+          ${actions ? `<div class="lessonStepActions">${actions}</div>` : ''}
+        </div>
+        ${subtitle ? `<div class="pathCardDesc">${escHtml(subtitle)}</div>` : ''}
+      `;
+
+      const cardInner = `
+        <div class="pathCardTop">
+          <div class="topicThumb topicThumb--emoji" data-accent="${accent}" aria-hidden="true">
+            <span class="topicThumbEmoji">${icon}</span>
+          </div>
+          <div class="pathCardText">${head}</div>
+        </div>
+      `;
+      cardHtml = isTest && hrefPrimary
+        ? `<a class="pathCard" data-accent="${accent}" href="${hrefPrimary}" aria-label="${escHtml(step.title)}">${cardInner}</a>`
+        : `<div class="pathCard" data-accent="${accent}">${cardInner}</div>`;
+    }
 
     return `
-      <div class="card" style="margin:0; padding:12px;">
-        <div class="metaRow" style="gap:8px; flex-wrap:wrap;">
-          <span class="pill">Leccion ${idx + 1}</span>
-          ${statusChip}
+      <div class="${stepClass}">
+        <div class="pathRail">
+          <div class="pathNode" data-accent="${accent}" aria-hidden="true">
+            <div class="pathNodeInner">${nodeInner}</div>
+          </div>
+          <div class="pathConnector" aria-hidden="true"></div>
         </div>
-        <div style="font-weight:800; margin-top:8px;">${escHtml(step.lessonTitle)}</div>
-        ${
-          hasMini
-            ? `<div class="muted" style="margin-top:6px;">Mini test: ${escHtml(step.miniTestTitle || 'Mini test')}</div>`
-            : ''
-        }
-        <div class="metaRow" style="margin-top:10px; gap:8px; flex-wrap:wrap;">
-          <a class="btn-white-outline" href="${lessonHref}">Abrir leccion</a>
-          ${miniButton}
-        </div>
+        ${cardHtml}
       </div>
     `;
   });
 
-  tocList.innerHTML = `
-    <div class="muted" style="margin-bottom:10px;">
-      ${escHtml(`Ruta del tema ${topicTitle || ''}`)}
-    </div>
-    <div style="display:grid; grid-template-columns:1fr; gap:10px;">
-      ${cards.join('')}
-    </div>
-  `;
+  tocList.innerHTML = `<div class="lessonRoutePath">${cards.join('')}</div>`;
   show(tocWrap, true);
   return true;
 }
@@ -798,70 +1492,32 @@ function renderLessonPathCards({
   moduleData,
   lessons,
   lessonProgressById,
+  stampSeed = 0,
   isAdmin = false,
 }) {
-  const tocWrap = $('tocWrap');
-  const tocList = $('tocList');
-  if (!tocWrap || !tocList) return false;
-  const lvl = String(level || LEVEL).toUpperCase();
-  const topic = String(topicId || COURSE_ID).trim();
   const pairs = buildTopicLessonPairs(lessons);
-  if (!pairs.length) {
-    show(tocWrap, false);
-    return false;
-  }
-
-  const cards = pairs.map((pair, idx) => {
+  const roadmap = pairs.map((pair, idx) => {
     const lesson = pair.lesson || {};
     const mini = pair.miniTest || null;
     const lessonId = String(lesson.id || '').trim();
     const miniId = String(mini?.id || '').trim();
-    const lessonProgress = lessonId ? lessonProgressById?.[lessonId] : null;
-    const miniProgress = miniId ? lessonProgressById?.[miniId] : null;
-    const lessonDone = isLessonCompleted(lessonProgress);
-    const miniDone = mini ? isLessonCompleted(miniProgress) : false;
-    const tileDone = lessonDone && (!mini || miniDone);
-    const statusChip = tileDone ? '<span class="pill pill-blue">Listo</span>' : '<span class="pill">Pendiente</span>';
-    const lessonLabel = stripTopicPrefix(lesson.title || lessonId || `Leccion ${idx + 1}`, topicTitle);
-    const miniLabel = mini
-      ? stripTopicPrefix(mini.title || miniId || `Mini test ${idx + 1}`, topicTitle)
-      : 'Mini test';
-
-    const lessonHref = lessonHrefForRoute(lvl, topic, lessonId);
-    const miniHref = mini ? miniTestHrefForRoute(lvl, topic, miniId) : '';
-
-    const miniBtn = mini
-      ? `<a class="btn-white-outline" href="${miniHref}">Mini test</a>`
-      : `<button class="btn-white-outline" type="button" disabled>Mini test</button>`;
-    const lessonBtn = `<a class="btn-white-outline" href="${lessonHref}">Abrir leccion</a>`;
-
-    return `
-      <div class="card" style="margin:0; padding:12px;">
-        <div class="metaRow" style="gap:8px; flex-wrap:wrap;">
-          <span class="pill">Leccion ${idx + 1}</span>
-          ${statusChip}
-        </div>
-        <div style="font-weight:800; margin-top:8px;">${escHtml(lessonLabel)}</div>
-        <div class="muted" style="margin-top:6px;">Mini test: ${escHtml(miniLabel)}</div>
-        <div class="metaRow" style="margin-top:10px; gap:8px; flex-wrap:wrap;">
-          ${lessonBtn}
-          ${miniBtn}
-        </div>
-      </div>
-    `;
+    return {
+      order: idx + 1,
+      lessonId,
+      lessonTitle: stripTopicPrefix(lesson.title || lessonId || `Leccion ${idx + 1}`, topicTitle),
+      miniTestId: miniId,
+      miniTestTitle: stripTopicPrefix(mini?.title || miniId || `Mini test ${idx + 1}`, topicTitle),
+    };
   });
-
-  const moduleTitle = String(moduleData?.title || '').trim();
-  tocList.innerHTML = `
-    <div class="muted" style="margin-bottom:10px;">
-      ${escHtml(moduleTitle || `Ruta del tema ${topicTitle || ''}`)}
-    </div>
-    <div style="display:grid; grid-template-columns:1fr; gap:10px;">
-      ${cards.join('')}
-    </div>
-  `;
-  show(tocWrap, true);
-  return true;
+  return renderTopicRoadmapCards({
+    level,
+    topicId,
+    topicTitle,
+    roadmap,
+    isAdmin,
+    lessonProgressById: lessonProgressById || {},
+    stampSeed,
+  });
 }
 
 function prevLevelOf(level) {
@@ -1114,7 +1770,7 @@ function checkpointReviewHref(blockNo, route = []) {
   const { end } = checkpointBlockRange(block);
   const anchor = route[Math.min(route.length - 1, end)] || currentTopic || null;
   const anchorLevel = topicLevelOf(anchor, LEVEL);
-  return `review.html?level=${encodeURIComponent(anchorLevel)}&mode=minitest&block=${encodeURIComponent(block)}${navParams()}&checkpoint=${encodeURIComponent(block)}`;
+  return `minitest.html?level=${encodeURIComponent(anchorLevel)}&block=${encodeURIComponent(block)}${navParams()}&checkpoint=${encodeURIComponent(block)}`;
 }
 
 function renderCheckpointGate(blockNo, route = []) {
@@ -1355,13 +2011,15 @@ async function loadLesson(user) {
     showAccessLocked();
     return;
   }
+  ensureLessonRouteStyles();
+  hideLessonHeroAndLegacyPanels();
 
   if (readTools) readTools.style.display = '';
 
     if (exerciseLinksWrap) {
       const params = `level=${encodeURIComponent(LEVEL)}&id=${encodeURIComponent(COURSE_ID)}${navParams()}`;
       exerciseLinksWrap.innerHTML = `
-        <a class="btn-white-outline" href="ejercicio.html?${params}">Ejercicios</a>
+        <a class="btn-white-outline" href="versions.html?${params}">Ejercicios</a>
         <a class="btn-white-outline" href="review.html?${params}">Repasar</a>
         <a class="btn-white-outline" href="review.html?${params}&mode=errors">Bledy</a>
         <a class="btn-white-outline" href="flashcards.html?${params}">Fichas</a>
@@ -1390,13 +2048,18 @@ async function loadLesson(user) {
   const topicTitle = topic?.title || topic?.name || 'Leccion';
   const topicDesc = topic?.desc || topic?.description || '';
   const topicLevel = topicLevelOf(topic, LEVEL);
+  const currentTopicStampSeed = topicStampSeed(
+    topic?.order,
+    String(topic?.id || COURSE_ID).trim(),
+    String(topic?.slug || '').trim(),
+  );
   if (pillLevel) pillLevel.textContent = `Nivel: ${topicLevel}`;
   if (pillTopic) pillTopic.textContent = `Tema: ${topicTitle}`;
 
   if (exerciseLinksWrap) {
     const params = `level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(COURSE_ID)}${navParams()}`;
     exerciseLinksWrap.innerHTML = `
-      <a class="btn-white-outline" href="ejercicio.html?${params}">Ejercicios</a>
+      <a class="btn-white-outline" href="versions.html?${params}">Ejercicios</a>
       <a class="btn-white-outline" href="review.html?${params}">Repasar</a>
       <a class="btn-white-outline" href="review.html?${params}&mode=errors">Bledy</a>
       <a class="btn-white-outline" href="flashcards.html?${params}">Fichas</a>
@@ -1425,14 +2088,23 @@ async function loadLesson(user) {
 
   let routeRendered = false;
   try {
-    const topicRoadmap = normalizeTopicRoadmap(topic?.lessonRoadmap || []);
+    const topicRoadmap = buildTopicRoadmapFromTopicDoc(topic || {});
     if (topicRoadmap.length) {
+      const roadmapLessonIds = topicRoadmap
+        .flatMap((row) => [row.lessonId, row.miniTestId])
+        .map((id) => String(id || '').trim())
+        .filter(Boolean);
+      const lessonProgressById = flags.isAdmin
+        ? {}
+        : await loadLessonProgressMap(user.uid, roadmapLessonIds);
       routeRendered = renderTopicRoadmapCards({
         level: topicLevel,
         topicId: String(topic?.id || COURSE_ID).trim(),
         topicTitle,
         roadmap: topicRoadmap,
         isAdmin: flags.isAdmin === true,
+        lessonProgressById,
+        stampSeed: currentTopicStampSeed,
       });
     } else {
       const routeData = await loadTopicModuleWithLessons(
@@ -1442,13 +2114,20 @@ async function loadLesson(user) {
       );
       const routeLessons = Array.isArray(routeData?.lessons) ? routeData.lessons : [];
       if (routeLessons.length) {
+        const lessonIds = routeLessons
+          .map((row) => String(row?.id || '').trim())
+          .filter(Boolean);
+        const lessonProgressById = flags.isAdmin
+          ? {}
+          : await loadLessonProgressMap(user.uid, lessonIds);
         routeRendered = renderLessonPathCards({
           level: topicLevel,
           topicId: String(topic?.id || COURSE_ID).trim(),
           topicTitle,
           moduleData: routeData?.module || null,
           lessons: routeLessons,
-          lessonProgressById: {},
+          lessonProgressById,
+          stampSeed: currentTopicStampSeed,
           isAdmin: flags.isAdmin === true,
         });
       } else {
@@ -1459,6 +2138,20 @@ async function loadLesson(user) {
     console.warn('[lessonpage] route render failed', e);
     show($('tocWrap'), false);
   }
+
+  await trackTopicOpen(user.uid, COURSE_ID, topicLevelOf(topic, LEVEL));
+  await loadProgress(user.uid, topic || { id: COURSE_ID, slug: COURSE_ID });
+
+  if (routeRendered) {
+    const empty = $('lessonEmpty');
+    if (empty) {
+      empty.style.display = 'none';
+      empty.innerHTML = '';
+    }
+    return;
+  }
+  renderEmpty('Todavia no hay lecciones en este tema.');
+  return;
 
   let meta = null;
   try {

@@ -1,0 +1,18 @@
+﻿<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mini test | AquiVivo</title>
+  </head>
+  <body>
+    <script>
+      (function () {
+        const p = new URLSearchParams(window.location.search || '');
+        p.set('mode', 'minitest');
+        const target = 'review.html?' + p.toString();
+        window.location.replace(target);
+      })();
+    </script>
+  </body>
+</html>
