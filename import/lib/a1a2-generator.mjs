@@ -1670,13 +1670,44 @@ export function generateA1A2Package({
   }
 
   const collections = { exercises: [], lessons: [], modules: [], courses: [] };
-  for (const levelKey of Object.keys(levels)) {
+  const levelOrder = ['A1', 'A2', 'B1', 'B2'];
+  const orderedLevels = Object.keys(levels).sort((a, b) => {
+    const ai = levelOrder.indexOf(String(a || '').toUpperCase());
+    const bi = levelOrder.indexOf(String(b || '').toUpperCase());
+    const av = ai >= 0 ? ai : 999;
+    const bv = bi >= 0 ? bi : 999;
+    if (av !== bv) return av - bv;
+    return String(a || '').localeCompare(String(b || ''));
+  });
+
+  for (const levelKey of orderedLevels) {
     const lvl = levels[levelKey];
     collections.exercises.push(...lvl.exercises.map((x) => ({ id: x.id, data: x })));
     collections.lessons.push(...lvl.lessons.map((x) => ({ id: x.id, data: x })));
     collections.modules.push(...lvl.modules.map((x) => ({ id: x.id, data: x })));
-    collections.courses.push({ id: lvl.course.id, data: lvl.course });
   }
+
+  const mergedModuleIds = uniqList(
+    orderedLevels.flatMap((levelKey) => (levels[levelKey]?.modules || []).map((m) => m.id)),
+  );
+  const firstLevel = orderedLevels[0] || 'A1';
+  const lastLevel = orderedLevels[orderedLevels.length - 1] || firstLevel;
+  const fallbackRules = {
+    lowScore: { addRemedialLesson: true, focusDifficulties: [1, 2], repeatMistakes: true },
+    highScore: { accelerateTo: [3, 4, 5], increaseListeningDialogue: true },
+    reviewInsertionEvery: 6,
+    bossMixRatio: { currentTopic: 0.5, previousTopic: 0.3, olderTopics: 0.2 },
+  };
+  const mergedCourse = {
+    id: 'COURSE_PATH',
+    level: firstLevel,
+    scope: 'all_levels',
+    levels: orderedLevels,
+    moduleIds: mergedModuleIds,
+    finalExamLessonId: `${lastLevel}__FINAL_EXAM`,
+    adaptiveRules: levels[firstLevel]?.course?.adaptiveRules || fallbackRules,
+  };
+  collections.courses.push({ id: mergedCourse.id, data: mergedCourse });
 
   return {
     generatedAt: new Date().toISOString(),

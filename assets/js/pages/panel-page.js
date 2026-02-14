@@ -2519,10 +2519,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (panelSubtitle)
     panelSubtitle.innerHTML = 'Aquí tienes tu libreta!<br />¡Qué chimba verte!';
 
-  document
-    .querySelectorAll('a[href*="curso-latam.html"], a[href*="kurs-pl.html"]')
-    .forEach((a) => a.remove());
-
   void renderCourses(null, { isAdmin: false, hasAccess: false });
 
   const btn = $('addPromoBtn');

@@ -28,6 +28,8 @@ const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(window.location.search);
 const LEVEL = (qs.get('level') || 'A1').toUpperCase();
 const COURSE_ID = (qs.get('id') || '').trim();
+const SINGLE_COURSE_KEY = 'COURSE_PATH';
+const COURSE_KEY = String(qs.get('course') || '').trim() || SINGLE_COURSE_KEY;
 const TRACK = String(qs.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = '';
 const FLOW = String(qs.get('flow') || '').trim().toLowerCase();
@@ -308,6 +310,7 @@ function metaDocId(level, courseId) {
 
 function navParams() {
   const parts = [];
+  if (COURSE_KEY) parts.push(`course=${encodeURIComponent(COURSE_KEY)}`);
   if (TRACK) parts.push(`track=${encodeURIComponent(TRACK)}`);
   if (COURSE_VIEW) parts.push(`view=${encodeURIComponent(COURSE_VIEW)}`);
   if (CONTINUOUS_FLOW) parts.push('flow=continuous');

@@ -1105,10 +1105,6 @@ function contextFromReferrer() {
     const track = normalizeTrack(qs.get('track') || '');
     const view = normalizeCourseView(qs.get('view') || '');
 
-    const path = String(url.pathname || '').toLowerCase();
-    if (!track && path.endsWith('/curso-latam.html')) return { track: 'latam', view: view || 'latam' };
-    if (!track && path.endsWith('/curso-latam')) return { track: 'latam', view: view || 'latam' };
-
     return { track, view };
   } catch {
     return { track: '', view: '' };

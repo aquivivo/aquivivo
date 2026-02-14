@@ -156,10 +156,17 @@ async function fetchLevelCoursePaths(level) {
   if (!lvl) return [];
   try {
     const snap = await getDocs(query(collection(db, 'course_paths'), where('level', '==', lvl)));
-    return snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    if (!snap.empty) return snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+  } catch {}
+
+  // Fallback for shared, all-level course path.
+  try {
+    const shared = await getDoc(doc(db, 'course_paths', 'COURSE_PATH'));
+    if (shared.exists()) return [{ id: shared.id, ...(shared.data() || {}) }];
   } catch {
     return [];
   }
+  return [];
 }
 
 function groupExercisesByTopic(exercises, topics) {

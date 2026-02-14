@@ -25,6 +25,8 @@ import {
 const $ = (id) => document.getElementById(id);
 
 const NAV_QS = new URLSearchParams(window.location.search);
+const SINGLE_COURSE_KEY = 'COURSE_PATH';
+const COURSE_KEY = String(NAV_QS.get('course') || '').trim() || SINGLE_COURSE_KEY;
 const TRACK = String(NAV_QS.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = String(NAV_QS.get('view') || '').trim().toLowerCase();
 const FLOW = String(NAV_QS.get('flow') || '').trim().toLowerCase();
@@ -92,6 +94,7 @@ function courseBackHref(level = 'A1') {
   const lvl = String(level || 'A1').toUpperCase();
   const page = 'course.html';
   let href = `${page}?level=${encodeURIComponent(lvl)}`;
+  if (COURSE_KEY) href += `&course=${encodeURIComponent(COURSE_KEY)}`;
   if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
   if (FLOW === 'continuous') href += '&flow=continuous';
   return href;

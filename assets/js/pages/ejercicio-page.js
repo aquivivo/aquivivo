@@ -38,7 +38,8 @@ import {
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
 const TOPIC_ID = String(params.get('id') || '').trim();
-const COURSE_KEY = String(params.get('course') || '').trim();
+const SINGLE_COURSE_KEY = 'COURSE_PATH';
+const COURSE_KEY = String(params.get('course') || '').trim() || SINGLE_COURSE_KEY;
 const SLUG = String(params.get('slug') || '').trim();
 const TRACK = String(params.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = '';
