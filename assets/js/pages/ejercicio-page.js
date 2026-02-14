@@ -979,13 +979,35 @@ function orthographyHint(userRaw, expectedRaw) {
   return 'Pista: revisa ortografia y terminacion.';
 }
 
-function strictAnswerMatch(userRaw, expectedRaw) {
+function strictAnswerMatch(userRaw, expectedRaw, opts = {}) {
   const user = normalizeOrthographyText(userRaw);
   if (!user) return false;
-  const expectedList = parseAnswerList(expectedRaw)
+  const expectedList = parseAcceptedAnswerValues(expectedRaw)
     .map((item) => normalizeOrthographyText(item))
     .filter(Boolean);
-  return expectedList.includes(user);
+  if (!expectedList.length) return false;
+  if (expectedList.includes(user)) return true;
+
+  const answerObj = answerObjectOf(expectedRaw);
+  const plainAllowed =
+    opts.allowPlainMatch === true ||
+    answerObj?.ignorePolishMarks === true ||
+    answerObj?.ignoreDiacritics === true;
+  const toleranceRaw =
+    opts.tolerance ??
+    answerObj?.typoTolerance ??
+    answerObj?.tolerance ??
+    answerObj?.levenshtein ??
+    0;
+  const tolerance = Math.max(0, Number(toleranceRaw || 0));
+  const userPlain = stripPolishMarks(user);
+
+  if (plainAllowed && expectedList.some((item) => stripPolishMarks(item) === userPlain)) {
+    return true;
+  }
+
+  if (tolerance <= 0) return false;
+  return expectedList.some((item) => levenshteinDistance(userPlain, stripPolishMarks(item)) <= tolerance);
 }
 
 function normalizeType(value) {
@@ -1137,7 +1159,71 @@ function noteLineValue(rawNotes, prefixRegexList = []) {
   return found ? stripNoteLabel(found) : '';
 }
 
+function toOneLine(value, maxLen = 120) {
+  const line = String(value || '')
+    .split(/\r?\n/)
+    .map((part) => String(part || '').trim())
+    .filter(Boolean)[0] || '';
+  if (!line) return '';
+  if (line.length <= maxLen) return line;
+  return `${line.slice(0, Math.max(0, maxLen - 1)).trim()}...`;
+}
+
+function exerciseMicroHint(ex) {
+  const answerObj = answerObjectOf(ex?.answer);
+  const direct =
+    String(
+      ex?.microHint ||
+        ex?.micro_hint ||
+        ex?.hint ||
+        ex?.instructionShort ||
+        ex?.instruction_short ||
+        answerObj?.microHint ||
+        '',
+    ).trim();
+  if (direct) return toOneLine(direct, 100);
+
+  const fromNotes = noteLineValue(ex?.notes || '', [
+    /^micro_hint\s*:/i,
+    /^hint_short\s*:/i,
+    /^hint\s*:/i,
+  ]);
+  if (fromNotes) return toOneLine(fromNotes, 100);
+
+  return toOneLine(immersiveTitleForExercise(ex), 100);
+}
+
+function hasExplicitExerciseHint(ex) {
+  const answerObj = answerObjectOf(ex?.answer);
+  const direct = String(
+    ex?.microHint ||
+      ex?.micro_hint ||
+      ex?.hint ||
+      ex?.instructionShort ||
+      ex?.instruction_short ||
+      ex?.instructionEs ||
+      ex?.instructionsEs ||
+      ex?.taskEs ||
+      ex?.instruction ||
+      answerObj?.microHint ||
+      '',
+  ).trim();
+  if (direct) return true;
+  const fromNotes = noteLineValue(ex?.notes || '', [
+    /^micro_hint\s*:/i,
+    /^hint_short\s*:/i,
+    /^hint\s*:/i,
+    /^instruccion(?:_es)?\s*:/i,
+    /^instrucci.n(?:_es)?\s*:/i,
+    /^task(?:_es)?\s*:/i,
+  ]);
+  return !!String(fromNotes || '').trim();
+}
+
 function exerciseInstructionEs(ex) {
+  const micro = exerciseMicroHint(ex);
+  if (micro) return micro;
+
   const direct =
     String(
       ex?.instructionEs ||
@@ -1146,16 +1232,16 @@ function exerciseInstructionEs(ex) {
         ex?.instruction ||
         '',
     ).trim();
-  if (direct) return direct;
+  if (direct) return toOneLine(direct, 120);
 
   const fromNotes = noteLineValue(ex?.notes || '', [
     /^instruccion(?:_es)?\s*:/i,
-    /^instrucción(?:_es)?\s*:/i,
+    /^instrucci.n(?:_es)?\s*:/i,
     /^task(?:_es)?\s*:/i,
   ]);
-  if (fromNotes) return fromNotes;
+  if (fromNotes) return toOneLine(fromNotes, 120);
 
-  return immersiveTitleForExercise(ex);
+  return toOneLine(immersiveTitleForExercise(ex), 100);
 }
 
 function exerciseTranslationEs(ex) {
@@ -1224,7 +1310,11 @@ function isSpeakingExercise(ex) {
     t.includes('historia') ||
     t.includes('debate') ||
     t.includes('mision') ||
-    t.includes('rol')
+    t.includes('rol') ||
+    t.includes('repeat after audio') ||
+    t.includes('repeat_after_audio') ||
+    t.includes('speak the answer') ||
+    t.includes('speak_answer')
   );
 }
 
@@ -1263,7 +1353,17 @@ function isChoiceExercise(ex) {
     t.includes('verdadero') ||
     t.includes('falso') ||
     t.includes('quiz') ||
-    t.includes('marcar')
+    t.includes('marcar') ||
+    t.includes('multiple choice') ||
+    t.includes('multiple_choice') ||
+    t.includes('listen choose') ||
+    t.includes('listen_choose') ||
+    t.includes('choose reaction') ||
+    t.includes('choose_reaction') ||
+    t.includes('picture selection') ||
+    t.includes('picture_selection') ||
+    t.includes('choose correct form') ||
+    t.includes('choose_correct_form')
   );
 }
 
@@ -1280,7 +1380,11 @@ function isBinaryTrueFalseExercise(ex) {
 
 function isDictationExercise(ex) {
   const t = normalizeText(ex?.type || '');
-  return t.includes('dictado') || t.includes('dyktando');
+  return (
+    t.includes('dictado') ||
+    t.includes('dyktando') ||
+    t.includes('dictation')
+  );
 }
 
 function isDragDropExercise(ex) {
@@ -1289,7 +1393,9 @@ function isDragDropExercise(ex) {
     t.includes('arrastrar') ||
     t.includes('drag') ||
     t.includes('soltar') ||
-    t.includes('przeciagnij')
+    t.includes('przeciagnij') ||
+    t.includes('listen arrange') ||
+    t.includes('listen_arrange')
   );
 }
 
@@ -1303,6 +1409,12 @@ function isFillExercise(ex) {
     t.includes('espacios') ||
     t.includes('preposicion') ||
     t.includes('terminacion') ||
+    t.includes('fill blank') ||
+    t.includes('fill_blank') ||
+    t.includes('complete ending') ||
+    t.includes('complete_ending') ||
+    t.includes('type the translation') ||
+    t.includes('type_translation') ||
     prompt.includes('___')
   );
 }
@@ -1325,7 +1437,9 @@ function isMatchingExercise(ex) {
     t.includes('emparejar') ||
     t.includes('pares') ||
     t.includes('matching') ||
-    t.includes('match')
+    t.includes('match') ||
+    t.includes('matching pairs') ||
+    t.includes('matching_pairs')
   );
 }
 
@@ -1335,7 +1449,11 @@ function isOrderingExercise(ex) {
     t.includes('ordenar') ||
     t.includes('orden') ||
     t.includes('secuencia') ||
-    t.includes('ordenar la secuencia')
+    t.includes('ordenar la secuencia') ||
+    t.includes('word bank sentence') ||
+    t.includes('word_bank_sentence') ||
+    t.includes('word tiles') ||
+    t.includes('word_tiles')
   );
 }
 
@@ -1368,14 +1486,56 @@ function isWritingExercise(ex) {
     t.includes('responder') ||
     t.includes('describir') ||
     t.includes('decirlo de otra') ||
-    t.includes('otra manera')
+    t.includes('otra manera') ||
+    t.includes('mini writing') ||
+    t.includes('mini_writing') ||
+    t.includes('write from picture') ||
+    t.includes('write_from_picture') ||
+    t.includes('answer the question') ||
+    t.includes('answer_the_question') ||
+    t.includes('mini task writing') ||
+    t.includes('mini_task_writing') ||
+    t.includes('transform sentence') ||
+    t.includes('transform_sentence')
   );
 }
 
 function parseAnswerList(raw) {
+  if (Array.isArray(raw)) {
+    return raw
+      .flatMap((item) => parseAnswerList(item))
+      .map((s) => String(s || '').trim())
+      .filter(Boolean);
+  }
+
+  if (raw && typeof raw === 'object') {
+    const parts = [];
+    if (Array.isArray(raw.accepted)) parts.push(...raw.accepted);
+    if (typeof raw.text === 'string') parts.push(raw.text);
+    if (typeof raw.value === 'string') parts.push(raw.value);
+    if (typeof raw.answer === 'string') parts.push(raw.answer);
+    if (typeof raw.correct === 'string') parts.push(raw.correct);
+    if (typeof raw.correctOptionId === 'string') parts.push(raw.correctOptionId);
+    return parts
+      .flatMap((item) => parseAnswerList(item))
+      .map((s) => String(s || '').trim())
+      .filter(Boolean);
+  }
+
   return String(raw || '')
     .split(/[\n;|]+/)
     .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function answerObjectOf(rawAnswer) {
+  if (!rawAnswer || typeof rawAnswer !== 'object' || Array.isArray(rawAnswer)) return null;
+  return rawAnswer;
+}
+
+function parseAcceptedAnswerValues(rawAnswer) {
+  return parseAnswerList(rawAnswer)
+    .map((s) => String(s || '').trim())
     .filter(Boolean);
 }
 
@@ -1467,7 +1627,8 @@ function parseExpectedByBlank(rawAnswer, blanksCount, promptText = '') {
 }
 
 function parseBooleanToken(raw) {
-  const t = normalizeText(raw || '');
+  const first = parseAcceptedAnswerValues(raw)[0] || raw;
+  const t = normalizeText(first || '');
   if (!t) return null;
   if (
     t === 'true' ||
@@ -1536,7 +1697,14 @@ function dictationSimilarity(a, b) {
 
 function parseOptions(raw) {
   if (Array.isArray(raw)) {
-    return raw.map((o) => String(o || '').trim()).filter(Boolean);
+    return raw
+      .map((o) => {
+        if (o && typeof o === 'object') {
+          return String(o.text ?? o.label ?? o.value ?? '').trim();
+        }
+        return String(o || '').trim();
+      })
+      .filter(Boolean);
   }
   if (typeof raw === 'string') {
     return raw
@@ -1549,6 +1717,389 @@ function parseOptions(raw) {
 
 function optionLabelFromIndex(idx) {
   return String.fromCharCode(65 + idx);
+}
+
+function optionIdFromIndex(idx) {
+  return optionLabelFromIndex(idx).toLowerCase();
+}
+
+function normalizeOptionId(raw, fallback = '') {
+  const base = String(raw || fallback || '')
+    .trim()
+    .toLowerCase();
+  return base.replace(/\s+/g, '_');
+}
+
+function parseOptionItems(rawOptions) {
+  if (Array.isArray(rawOptions)) {
+    return rawOptions
+      .map((item, idx) => {
+        if (item && typeof item === 'object') {
+          const text = String(item.text ?? item.label ?? item.value ?? '').trim();
+          const id = normalizeOptionId(item.id ?? item.optionId, optionIdFromIndex(idx));
+          return {
+            id: id || optionIdFromIndex(idx),
+            text,
+          };
+        }
+        const textRaw = String(item || '').trim();
+        const text = cleanOptionText(textRaw) || textRaw;
+        return {
+          id: optionIdFromIndex(idx),
+          text,
+        };
+      })
+      .filter((opt) => !!opt.text);
+  }
+
+  const lines = parseOptions(rawOptions);
+  return lines
+    .map((line, idx) => ({
+      id: optionIdFromIndex(idx),
+      text: cleanOptionText(line) || String(line || '').trim(),
+    }))
+    .filter((opt) => !!opt.text);
+}
+
+function resolveCorrectOptionId(ex, optionItems = []) {
+  const answerObj = answerObjectOf(ex?.answer);
+  const explicitId = normalizeOptionId(answerObj?.correctOptionId || answerObj?.correctOption || '');
+  if (explicitId) {
+    const found = optionItems.find((opt) => normalizeOptionId(opt.id) === explicitId);
+    if (found) return found.id;
+  }
+
+  const acceptedNorm = parseAcceptedAnswerValues(ex?.answer)
+    .map((item) => normalizeText(item))
+    .filter(Boolean);
+  if (!acceptedNorm.length) return '';
+
+  const foundByValue = optionItems.find((opt, idx) => {
+    const idNorm = normalizeText(opt.id || '');
+    const labelNorm = normalizeText(optionLabelFromIndex(idx));
+    const textNorm = normalizeText(opt.text || '');
+    return (
+      acceptedNorm.includes(idNorm) ||
+      acceptedNorm.includes(labelNorm) ||
+      acceptedNorm.includes(textNorm)
+    );
+  });
+  return foundByValue?.id || '';
+}
+
+function findOptionItem(optionItems = [], optionId = '') {
+  const idNorm = normalizeOptionId(optionId);
+  if (!idNorm) return null;
+  return optionItems.find((item) => normalizeOptionId(item.id) === idNorm) || null;
+}
+
+function isChoiceAnswerCorrect(
+  ex,
+  optionItems = [],
+  { selectedOptionId = '', selectedValue = '', selectedLabel = '' } = {},
+) {
+  const selectedItem = findOptionItem(optionItems, selectedOptionId);
+  const selectedText = String(selectedItem?.text || selectedValue || '').trim();
+  const selectedIdNorm = normalizeText(selectedItem?.id || selectedOptionId || '');
+
+  const correctId = resolveCorrectOptionId(ex, optionItems);
+  if (correctId) {
+    return normalizeOptionId(correctId) === normalizeOptionId(selectedOptionId);
+  }
+
+  const answers = parseAcceptedAnswerValues(ex?.answer);
+  const answerNorms = answers.map((a) => normalizeText(a));
+  const answerNormsClean = answers.map((a) => normalizeText(cleanOptionText(a)));
+  const selectedTextNorm = normalizeText(selectedText);
+  const selectedLabelNorm = normalizeText(selectedLabel || '');
+
+  return (
+    answerNorms.includes(selectedTextNorm) ||
+    answerNormsClean.includes(selectedTextNorm) ||
+    answerNorms.includes(selectedLabelNorm) ||
+    answerNormsClean.includes(selectedLabelNorm) ||
+    answerNorms.includes(selectedIdNorm)
+  );
+}
+
+function canonicalExerciseType(ex) {
+  if (isDictationExercise(ex)) return 'dictation';
+  if (isDragDropExercise(ex)) return 'listen_arrange';
+  if (isMatchingExercise(ex)) return 'matching';
+  if (isOrderingExercise(ex)) return 'word_tiles';
+  if (isFillExercise(ex)) return 'fill_blank';
+  if (isBinaryTrueFalseExercise(ex)) return 'binary_choice';
+  if (isChoiceExercise(ex)) return 'multiple_choice';
+  if (isSpeakingExercise(ex)) return 'repeat_after_audio';
+  if (isWritingExercise(ex)) return 'mini_writing';
+  return String(ex?.type || 'exercise').trim().toLowerCase().replace(/\s+/g, '_');
+}
+
+function buildExerciseModel(ex) {
+  const optionItems = parseOptionItems(ex?.options);
+  const accepted = parseAcceptedAnswerValues(ex?.answer);
+  const correctOptionId = resolveCorrectOptionId(ex, optionItems);
+  return {
+    id: String(ex?.id || '').trim(),
+    type: canonicalExerciseType(ex),
+    level: String(ex?.level || LEVEL || '').toUpperCase(),
+    prompt: String(ex?.prompt || ex?.question || ex?.title || '').trim(),
+    microHint: exerciseMicroHint(ex),
+    audio: String(ex?.audio || ex?.audioUrl || extractAudioUrl(ex) || '').trim(),
+    options: optionItems.map((opt) => ({
+      id: String(opt.id || '').trim(),
+      text: String(opt.text || '').trim(),
+    })),
+    answer: {
+      correctOptionId: String(correctOptionId || '').trim(),
+      accepted,
+    },
+    ui: {
+      variant: String(ex?.ui?.variant || ex?.uiVariant || 'standard').trim() || 'standard',
+    },
+  };
+}
+
+function normalizeAnswerGroup(raw) {
+  const list = Array.isArray(raw) ? raw : [raw];
+  return Array.from(
+    new Set(
+      list
+        .flatMap((item) => parseAnswerList(item))
+        .map((item) => String(item || '').trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function legacyAnswerForBlankGroups(groups) {
+  const clean = (Array.isArray(groups) ? groups : [])
+    .map((group) => normalizeAnswerGroup(group))
+    .filter((group) => group.length);
+  if (!clean.length) return '';
+  if (clean.length === 1) return clean[0].join('|');
+  return clean.map((group) => group.join('|')).join('||');
+}
+
+function normalizedBlankGroups(ex) {
+  const answerObj = answerObjectOf(ex?.answer);
+  const candidates = [
+    ex?.blanks,
+    ex?.acceptedByBlank,
+    ex?.expectedByBlank,
+    ex?.fill?.blanks,
+    answerObj?.blanks,
+    answerObj?.acceptedByBlank,
+    answerObj?.expectedByBlank,
+    answerObj?.byBlank,
+  ].filter(Boolean);
+
+  for (const item of candidates) {
+    if (!Array.isArray(item)) continue;
+    if (item.some(Array.isArray)) {
+      const groups = item.map((group) => normalizeAnswerGroup(group)).filter((group) => group.length);
+      if (groups.length) return groups;
+      continue;
+    }
+    const flat = normalizeAnswerGroup(item);
+    if (flat.length) return [flat];
+  }
+
+  const accepted = answerObj?.accepted;
+  if (Array.isArray(accepted) && accepted.some(Array.isArray)) {
+    const groups = accepted
+      .map((group) => normalizeAnswerGroup(group))
+      .filter((group) => group.length);
+    if (groups.length) return groups;
+  }
+  if (Array.isArray(accepted)) {
+    const flat = normalizeAnswerGroup(accepted);
+    if (flat.length) return [flat];
+  }
+
+  const parsed = parseAcceptedAnswerValues(ex?.answer);
+  return parsed.length ? [parsed] : [];
+}
+
+function ensurePromptHasBlanks(promptRaw, blankCount) {
+  const prompt = String(promptRaw || '').trim();
+  const count = Math.max(1, Number(blankCount || 1));
+  if (prompt.includes('___')) return prompt;
+  if (!prompt) return Array.from({ length: count }, () => '___').join(' ');
+  return `${prompt} ${Array.from({ length: count }, () => '___').join(' ')}`.trim();
+}
+
+function normalizedTokenBank(ex) {
+  const first = [
+    ex?.bank,
+    ex?.tiles,
+    ex?.wordBank,
+    ex?.drag?.bank,
+    ex?.drag?.tokens,
+    ex?.options,
+  ];
+  for (const candidate of first) {
+    const parsed = parseOptions(candidate);
+    if (parsed.length) return parsed.map((item) => stripLeadLabel(item) || String(item || '').trim());
+  }
+  return [];
+}
+
+function normalizedMatchingPairs(ex) {
+  const answerObj = answerObjectOf(ex?.answer);
+  const pools = [ex?.pairs, ex?.matching?.pairs, answerObj?.pairs];
+  for (const pool of pools) {
+    if (!Array.isArray(pool)) continue;
+    const pairs = pool
+      .map((item) => {
+        if (!item || typeof item !== 'object') return null;
+        const left = String(item.left ?? item.l ?? item.source ?? item.a ?? '').trim();
+        const right = String(item.right ?? item.r ?? item.target ?? item.b ?? '').trim();
+        if (!left || !right) return null;
+        return { left, right };
+      })
+      .filter(Boolean);
+    if (pairs.length) return pairs;
+  }
+  return [];
+}
+
+function optionLineLooksLikeMatch(line) {
+  const txt = String(line || '').trim();
+  if (!txt) return false;
+  return /\s(?:=|->|\u2192|\u2014)\s/.test(txt);
+}
+
+function mapPairsToLegacyMatching(pairs) {
+  const safe = Array.isArray(pairs) ? pairs : [];
+  if (!safe.length) return { options: [], answer: '' };
+
+  const options = [];
+  const links = [];
+  safe.forEach((pair, idx) => {
+    const leftLabel = String.fromCharCode(65 + (idx % 26));
+    const rightLabel = String(idx + 1);
+    const left = String(pair.left || '').trim();
+    const right = String(pair.right || '').trim();
+    if (!left || !right) return;
+    options.push(`${leftLabel}) ${left} = ${rightLabel}) ${right}`);
+    links.push(`${leftLabel}-${rightLabel}`);
+  });
+  return {
+    options,
+    answer: links.join(', '),
+  };
+}
+
+function normalizedBaseType(raw) {
+  const t = normalizeText(raw || '');
+  if (!t) return '';
+  if (t.includes('multiple choice') || t.includes('multiple_choice')) return 'multiple_choice';
+  if (t.includes('binary') || t.includes('true false') || t.includes('true_false')) return 'binary_choice';
+  if (t.includes('dictation')) return 'dictation';
+  if (t.includes('listen arrange') || t.includes('listen_arrange') || t.includes('drag')) {
+    return 'listen_arrange';
+  }
+  if (t.includes('matching')) return 'matching';
+  if (t.includes('word tiles') || t.includes('word_tiles') || t.includes('ordering')) {
+    return 'word_tiles';
+  }
+  if (t.includes('fill blank') || t.includes('fill_blank') || t.includes('fill')) return 'fill_blank';
+  if (t.includes('repeat') || t.includes('speaking') || t.includes('speak')) return 'repeat_after_audio';
+  if (t.includes('writing') || t.includes('mini_writing')) return 'mini_writing';
+  if (t.includes('scene') || t.includes('dialogue') || t.includes('dialogo')) return 'scene';
+  if (t.includes('find error') || t.includes('error')) return 'find_error';
+  if (t.includes('translation') || t.includes('translate')) return 'translate';
+  if (t.includes('anagram')) return 'anagram';
+  return '';
+}
+
+function typeTokenForBaseType(baseType) {
+  const key = normalizedBaseType(baseType);
+  if (key === 'multiple_choice') return 'multiple_choice';
+  if (key === 'binary_choice') return 'true false';
+  if (key === 'dictation') return 'dictation';
+  if (key === 'listen_arrange') return 'listen_arrange';
+  if (key === 'matching') return 'matching_pairs';
+  if (key === 'word_tiles') return 'word_tiles';
+  if (key === 'fill_blank') return 'fill_blank';
+  if (key === 'repeat_after_audio') return 'repeat_after_audio';
+  if (key === 'mini_writing') return 'mini_writing';
+  if (key === 'scene') return 'scene';
+  if (key === 'find_error') return 'find error';
+  if (key === 'translate') return 'type_translation';
+  if (key === 'anagram') return 'anagram';
+  return String(baseType || '').trim();
+}
+
+function normalizeExercise(ex) {
+  const src = ex && typeof ex === 'object' ? ex : {};
+  const out = { ...src };
+  const explicitBase = normalizedBaseType(out.baseType || out.ui?.baseType || out.renderer);
+  const baseType = explicitBase || canonicalExerciseType(out);
+  const answerObj = answerObjectOf(out.answer);
+
+  if (explicitBase) {
+    const currentType = String(out.type || '').trim();
+    if (currentType) out.variant = String(out.variant || currentType).trim();
+    out.type = typeTokenForBaseType(explicitBase);
+  }
+
+  if (baseType === 'matching') {
+    const pairOptions = normalizedMatchingPairs(out);
+    const optionLines = parseOptions(out.options);
+    const looksLegacy = optionLines.some(optionLineLooksLikeMatch);
+    if (pairOptions.length && !looksLegacy) {
+      const mapped = mapPairsToLegacyMatching(pairOptions);
+      out.options = mapped.options;
+      if (!String(out.answer || '').trim()) out.answer = mapped.answer;
+    } else if (Array.isArray(out.options) && out.options.some((o) => o && typeof o === 'object')) {
+      out.options = parseOptions(out.options);
+    }
+  }
+
+  if (baseType === 'fill_blank' || baseType === 'listen_arrange') {
+    const groups = normalizedBlankGroups(out);
+    const answerString = legacyAnswerForBlankGroups(groups);
+    if (answerString) out.answer = answerString;
+
+    if (baseType === 'listen_arrange') {
+      const blankCount = Math.max(
+        groups.length,
+        String(out.prompt || '').includes('___')
+          ? String(out.prompt || '').split('___').length - 1
+          : 0,
+        1,
+      );
+      out.prompt = ensurePromptHasBlanks(out.prompt, blankCount);
+      const bank = normalizedTokenBank(out);
+      if (bank.length) out.options = bank;
+    } else if (baseType === 'fill_blank') {
+      const blankCount = Math.max(
+        groups.length,
+        String(out.prompt || '').includes('___')
+          ? String(out.prompt || '').split('___').length - 1
+          : 0,
+        1,
+      );
+      out.prompt = ensurePromptHasBlanks(out.prompt, blankCount);
+    }
+  } else if (answerObj && typeof answerObj === 'object' && Array.isArray(answerObj.accepted)) {
+    out.answer = {
+      ...answerObj,
+      accepted: normalizeAnswerGroup(answerObj.accepted),
+    };
+  }
+
+  if (Array.isArray(out.options) && out.options.some((item) => item && typeof item === 'object')) {
+    out.options = out.options.map((item, idx) => {
+      const text = String(item?.text ?? item?.label ?? item?.value ?? '').trim();
+      const id = normalizeOptionId(item?.id ?? item?.optionId, optionIdFromIndex(idx));
+      return text ? { id: id || optionIdFromIndex(idx), text } : null;
+    }).filter(Boolean);
+  }
+
+  return out;
 }
 
 function cleanOptionText(opt) {
@@ -1653,21 +2204,20 @@ function progressDocRef(uid, topicKey) {
 }
 
 function expectedAnswerPreview(ex) {
-  const options = parseOptions(ex?.options);
-  const rawAnswer = String(ex?.answer || '').trim();
-  if (!rawAnswer) return '';
-  const labels = parseAnswerList(rawAnswer).map((x) => normalizeText(x));
-  const byLabel = options
+  const optionItems = parseOptionItems(ex?.options);
+  const answers = parseAcceptedAnswerValues(ex?.answer);
+  if (!answers.length) return '';
+  const labels = answers.map((x) => normalizeText(x));
+  const mapped = optionItems
     .map((opt, idx) => ({
+      id: normalizeText(opt.id || ''),
       label: normalizeText(optionLabelFromIndex(idx)),
-      value: cleanOptionText(opt) || String(opt || '').trim(),
+      value: String(opt.text || '').trim(),
     }))
-    .filter((x) => x.value);
-  const mapped = byLabel
-    .filter((x) => labels.includes(x.label))
-    .map((x) => x.value);
-  const direct = parseAnswerList(rawAnswer);
-  const list = mapped.length ? mapped : direct;
+    .filter((item) => item.value)
+    .filter((item) => labels.includes(item.id) || labels.includes(item.label))
+    .map((item) => item.value);
+  const list = mapped.length ? mapped : answers;
   return list.slice(0, 3).join(' | ');
 }
 
@@ -2274,8 +2824,10 @@ function applyFilters() {
       if (!tags.includes(tag)) return false;
     }
     if (q) {
+      const answerBlob = parseAcceptedAnswerValues(e.answer || '').join(' ');
+      const optionsBlob = parseOptions(e.options || '').join(' ');
       const blob =
-        `${e.prompt || ''} ${e.answer || ''} ${(e.options || []).join(' ')} ${e.notes || ''}`.toLowerCase();
+        `${e.prompt || ''} ${answerBlob} ${optionsBlob} ${e.notes || ''}`.toLowerCase();
       if (!blob.includes(q)) return false;
     }
     return true;
@@ -2284,16 +2836,81 @@ function applyFilters() {
   renderExercises();
 }
 
-function makeOptionRow({ name, value, label, checked, onChange, ttsText = '' }) {
+function setExerciseCardState(card, state) {
+  if (!card) return;
+  const allowed = new Set([
+    'idle',
+    'selected',
+    'checked_correct',
+    'checked_wrong',
+    'disabled',
+  ]);
+  const next = allowed.has(String(state || '')) ? String(state) : 'idle';
+  card.dataset.exerciseState = next;
+}
+
+function lockExerciseCard(card, locked = true) {
+  if (!card) return;
+  card.dataset.exerciseLocked = locked ? '1' : '0';
+}
+
+function markCardAsSelectedFromNode(node) {
+  const card = node?.closest?.('.exerciseCard');
+  if (!card) return;
+  if (card.dataset.exerciseLocked === '1') return;
+  setExerciseCardState(card, 'selected');
+}
+
+function wireSelectionInput(field) {
+  if (!field) return;
+  const mark = () => markCardAsSelectedFromNode(field);
+  field.addEventListener('input', mark);
+  field.addEventListener('change', mark);
+  field.addEventListener('focus', mark);
+}
+
+function syncChoiceOptionState(optsWrap, { selectedId = '', correctId = '', checked = false } = {}) {
+  if (!optsWrap) return;
+  const selectedNorm = normalizeOptionId(selectedId);
+  const correctNorm = normalizeOptionId(correctId);
+  const rows = Array.from(optsWrap.querySelectorAll('.exerciseOption'));
+  rows.forEach((row) => {
+    const rowId = normalizeOptionId(row.dataset.optionId || '');
+    const isSelected = !!selectedNorm && rowId === selectedNorm;
+    const isCorrect = !!checked && !!correctNorm && rowId === correctNorm;
+    const isWrong = !!checked && isSelected && !!correctNorm && rowId !== correctNorm;
+    row.classList.toggle('isSelected', isSelected);
+    row.classList.toggle('isCorrect', isCorrect);
+    row.classList.toggle('isWrong', isWrong);
+    row.classList.toggle('isDisabled', !!checked);
+    const input = row.querySelector('input[type="radio"]');
+    if (input && checked) input.disabled = true;
+  });
+}
+
+function makeOptionRow({
+  name,
+  value,
+  label,
+  checked,
+  onChange,
+  ttsText = '',
+  optionId = '',
+}) {
   const row = document.createElement('label');
   row.className = 'exerciseOption';
+  row.dataset.optionId = normalizeOptionId(optionId || value || '');
 
   const input = document.createElement('input');
   input.type = 'radio';
   input.name = name;
   input.value = value;
   input.checked = !!checked;
-  input.addEventListener('change', onChange);
+  if (row.dataset.optionId) input.dataset.optionId = row.dataset.optionId;
+  input.addEventListener('change', (ev) => {
+    markCardAsSelectedFromNode(ev.target);
+    if (typeof onChange === 'function') onChange(ev);
+  });
 
   const text = document.createElement('span');
   text.textContent = label;
@@ -2309,6 +2926,10 @@ function setResultText(resultEl, correct, message) {
     message || (correct ? 'Correcto.' : 'Incorrecto. Pista: revisa ortografia y gramatica.');
   resultEl.classList.remove('ok', 'bad');
   resultEl.classList.add(correct ? 'ok' : 'bad');
+  const card = resultEl.closest?.('.exerciseCard');
+  if (card) {
+    setExerciseCardState(card, correct ? 'checked_correct' : 'checked_wrong');
+  }
 }
 
 const POLISH_ASSIST_TOKENS = [
@@ -2453,6 +3074,7 @@ function createLetterSlotsInput(template, { disabled = false } = {}) {
 
   cells.forEach((cell, idx) => {
     cell.addEventListener('input', () => {
+      markCardAsSelectedFromNode(cell);
       const chars = sanitizeChars(cell.value);
       cell.value = chars[0] || '';
       if (chars.length > 1) {
@@ -2618,8 +3240,11 @@ function attachPolishAssistPad(card, fields = []) {
 }
 
 function makeExerciseCard(ex) {
+  const exerciseModel = buildExerciseModel(ex);
   const card = document.createElement('div');
   card.className = 'exerciseCard';
+  setExerciseCardState(card, 'idle');
+  lockExerciseCard(card, false);
 
   const top = document.createElement('div');
   top.className = 'exerciseTop';
@@ -2629,7 +3254,7 @@ function makeExerciseCard(ex) {
 
   const typePill = document.createElement('span');
   typePill.className = 'pill';
-  typePill.textContent = ex.type || 'Ejercicio';
+  typePill.textContent = ex.type || exerciseModel.type || 'Ejercicio';
 
   const orderPill = document.createElement('span');
   orderPill.className = 'pill';
@@ -2661,9 +3286,10 @@ function makeExerciseCard(ex) {
     card.appendChild(top);
   }
 
-  const promptParts = splitPromptDirectiveEs(ex.prompt || '');
-  const promptText = promptParts.promptBody || String(ex.prompt || '').trim();
-  const instructionBase = exerciseInstructionEs(ex);
+  const promptSource = String(exerciseModel.prompt || '').trim();
+  const promptParts = splitPromptDirectiveEs(promptSource);
+  const promptText = promptParts.promptBody || promptSource;
+  const instructionBase = exerciseModel.microHint || exerciseInstructionEs(ex);
   const directive = String(promptParts.instructionPrefix || '').trim();
   const directiveSentence = directive
     ? `${directive.charAt(0).toUpperCase()}${directive.slice(1)}.`
@@ -2674,14 +3300,15 @@ function makeExerciseCard(ex) {
       : `${directiveSentence} ${instructionBase}`.trim()
     : instructionBase;
   const promptIsInstruction = looksLikeInstructionEs(promptText);
-  const showInstructionBlock = !promptIsInstruction;
+  const hasExplicitHint = hasExplicitExerciseHint(ex) || !!directiveSentence;
+  const showInstructionBlock = hasExplicitHint && !!instructionText && !promptIsInstruction;
 
   if (showInstructionBlock) {
     const instructionBlock = document.createElement('div');
     instructionBlock.className = 'exerciseInstruction';
     const instructionBody = document.createElement('div');
     instructionBody.className = 'exerciseInstructionText';
-    instructionBody.textContent = instructionText;
+    instructionBody.textContent = toOneLine(instructionText, 100);
     instructionBlock.appendChild(instructionBody);
     card.appendChild(instructionBlock);
   }
@@ -2712,12 +3339,12 @@ function makeExerciseCard(ex) {
   card.appendChild(promptBlock);
 
   const translationValue = String(exerciseTranslationEs(ex) || '').trim();
-  if (translationValue) {
+  if (translationValue && !IMMERSIVE_MODE) {
     const translationBlock = document.createElement('div');
     translationBlock.className = 'exerciseTranslation';
     const translationText = document.createElement('div');
     translationText.className = 'exerciseTranslationText';
-    translationText.textContent = translationValue;
+    translationText.textContent = toOneLine(translationValue, 120);
     translationBlock.appendChild(translationText);
     card.appendChild(translationBlock);
   }
@@ -2848,7 +3475,7 @@ function makeExerciseCard(ex) {
 
     const noteText = document.createElement('div');
     noteText.className = 'exerciseNote';
-    noteText.textContent = notes;
+    noteText.textContent = toOneLine(notes, 150);
     noteText.style.display = IMMERSIVE_MODE ? 'none' : 'none';
     if (IMMERSIVE_MODE) {
       noteBtn.style.display = 'none';
@@ -2866,6 +3493,9 @@ function makeExerciseCard(ex) {
   }
 
   const options = parseOptions(ex.options);
+  const optionItems = exerciseModel.options.length
+    ? exerciseModel.options.map((opt) => ({ id: opt.id, text: opt.text }))
+    : parseOptionItems(ex.options);
 
   const answerWrap = document.createElement('div');
   answerWrap.className = 'exerciseAnswer';
@@ -2879,24 +3509,38 @@ function makeExerciseCard(ex) {
   if (isTest) {
     let selectedValue = '';
     let selectedLabel = '';
+    let selectedOptionId = '';
+    let optsWrap = null;
+    const correctOptionId = resolveCorrectOptionId(ex, optionItems);
+    const testDone = progressState.doneIds.has(String(ex.id));
+    if (testDone) {
+      setExerciseCardState(card, 'disabled');
+      lockExerciseCard(card, true);
+    }
 
-    if (options.length) {
-      const optsWrap = document.createElement('div');
+    if (optionItems.length) {
+      optsWrap = document.createElement('div');
       optsWrap.className = 'exerciseOptions';
       const groupName = `test_${ex.id}`;
 
-      options.forEach((opt, idx) => {
+      optionItems.forEach((opt, idx) => {
         const label = optionLabelFromIndex(idx);
-        const cleaned = cleanOptionText(opt);
-        const optionText = cleaned || String(opt || '');
+        const optionText = String(opt.text || '').trim();
         const row = makeOptionRow({
           name: groupName,
-          value: cleaned || opt,
+          value: optionText,
           label: optionText,
           checked: false,
+          optionId: opt.id,
           onChange: (ev) => {
-            selectedValue = ev.target.value;
+            selectedOptionId = String(ev.target.dataset.optionId || opt.id || '');
+            selectedValue = optionText;
             selectedLabel = label;
+            syncChoiceOptionState(optsWrap, {
+              selectedId: selectedOptionId,
+              correctId: correctOptionId,
+              checked: false,
+            });
           },
         });
         optsWrap.appendChild(row);
@@ -2910,6 +3554,7 @@ function makeExerciseCard(ex) {
         selectedValue = ev.target.value;
         selectedLabel = '';
       });
+      wireSelectionInput(input);
       answerWrap.appendChild(input);
       card.appendChild(answerWrap);
       attachPolishAssistPad(card, [input]);
@@ -2918,32 +3563,30 @@ function makeExerciseCard(ex) {
     const btnCheck = document.createElement('button');
     btnCheck.className = 'btn-yellow';
     btnCheck.textContent = 'Comprobar';
+    btnCheck.disabled = testDone;
 
     btnCheck.addEventListener('click', async () => {
+      if (testDone) return;
       const userAnswer = String(selectedValue || '').trim();
       if (!userAnswer) {
         showToast('Escribe o elige una respuesta.', 'warn', 1800);
         return;
       }
 
-      const answers = parseAnswerList(ex.answer || '');
-      const answerNorms = answers.map((a) => normalizeText(a));
-      const answerNormsClean = answers.map((a) => normalizeText(cleanOptionText(a)));
-      const userNorm = normalizeText(userAnswer);
-      const labelNorm = normalizeText(selectedLabel || '');
-
       let correct = false;
-      if (options.length) {
-        if (answerNorms.includes(userNorm) || answerNormsClean.includes(userNorm)) correct = true;
-        if (
-          !correct &&
-          labelNorm &&
-          (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm))
-        ) {
-          correct = true;
-        }
+      if (optionItems.length) {
+        correct = isChoiceAnswerCorrect(ex, optionItems, {
+          selectedOptionId,
+          selectedValue: userAnswer,
+          selectedLabel,
+        });
+        syncChoiceOptionState(optsWrap, {
+          selectedId: selectedOptionId,
+          correctId: correctOptionId,
+          checked: true,
+        });
       } else {
-        correct = strictAnswerMatch(userAnswer, ex.answer || '');
+        correct = strictAnswerMatch(userAnswer, ex.answer || '', { allowPlainMatch: true });
       }
 
       progressState.testResults.set(String(ex.id), {
@@ -2951,10 +3594,11 @@ function makeExerciseCard(ex) {
         answer: userAnswer,
       });
       progressState.doneIds.add(String(ex.id));
+      lockExerciseCard(card, true);
 
       if (correct) {
         setResultText(resultEl, true);
-      } else if (!options.length) {
+      } else if (!optionItems.length) {
         setResultText(
           resultEl,
           false,
@@ -2968,6 +3612,7 @@ function makeExerciseCard(ex) {
       }
       await saveProgress();
       setProgressUI();
+      btnCheck.disabled = true;
       if (IMMERSIVE_MODE) onImmersiveExerciseDone(ex.id);
     });
 
@@ -2978,12 +3623,36 @@ function makeExerciseCard(ex) {
     const prev = progressState.testResults.get(String(ex.id));
     if (prev) {
       setResultText(resultEl, prev.correct === true);
+      btnCheck.disabled = true;
+      lockExerciseCard(card, true);
+      if (optionItems.length) {
+        const prevAnswer = String(prev.answer || '').trim();
+        const prevItem =
+          optionItems.find((opt) => normalizeOptionId(opt.id) === normalizeOptionId(prevAnswer)) ||
+          optionItems.find((opt) => normalizeText(opt.text) === normalizeText(prevAnswer));
+        syncChoiceOptionState(optsWrap, {
+          selectedId: prevItem?.id || '',
+          correctId: correctOptionId,
+          checked: true,
+        });
+      }
     }
   } else {
     const exId = String(ex.id);
     const done = progressState.doneIds.has(exId);
+    if (done) {
+      setExerciseCardState(card, 'disabled');
+      lockExerciseCard(card, true);
+    }
 
     const markDone = async () => {
+      lockExerciseCard(card, true);
+      if (
+        card.dataset.exerciseState === 'idle' ||
+        card.dataset.exerciseState === 'selected'
+      ) {
+        setExerciseCardState(card, 'disabled');
+      }
       progressState.doneIds.add(exId);
       await saveProgress();
       setProgressUI();
@@ -2991,6 +3660,7 @@ function makeExerciseCard(ex) {
     };
 
     const markWrong = async (userAnswer = '', expectedAnswer = '') => {
+      setExerciseCardState(card, 'checked_wrong');
       await appendMistakeLog(ex, userAnswer, expectedAnswer);
     };
 
@@ -3022,7 +3692,7 @@ function makeExerciseCard(ex) {
       return card;
     }
 
-    if (isSceneExercise(ex) && options.length && String(ex.answer || '').trim()) {
+    if (isSceneExercise(ex) && optionItems.length && String(ex.answer || '').trim()) {
       const hint = document.createElement('div');
       hint.className = 'exerciseHint';
       hint.textContent = 'Microescena: elige la mejor respuesta.';
@@ -3030,23 +3700,32 @@ function makeExerciseCard(ex) {
 
       let selectedValue = '';
       let selectedLabel = '';
+      let selectedOptionId = '';
+      const correctOptionId = resolveCorrectOptionId(ex, optionItems);
       const optsWrap = document.createElement('div');
       optsWrap.className = 'exerciseOptions';
       const groupName = `scene_${ex.id}`;
 
-      options.forEach((opt, idx) => {
+      optionItems.forEach((opt, idx) => {
         const label = optionLabelFromIndex(idx);
-        const cleaned = cleanOptionText(opt);
+        const optionText = String(opt.text || '').trim();
         const row = makeOptionRow({
           name: groupName,
-          value: cleaned || opt,
-          label: cleaned || String(opt || ''),
+          value: optionText,
+          label: optionText,
           checked: false,
+          optionId: opt.id,
           onChange: (ev) => {
-            selectedValue = String(ev.target.value || '');
+            selectedOptionId = String(ev.target.dataset.optionId || opt.id || '');
+            selectedValue = optionText;
             selectedLabel = label;
+            syncChoiceOptionState(optsWrap, {
+              selectedId: selectedOptionId,
+              correctId: correctOptionId,
+              checked: false,
+            });
           },
-          ttsText: cleaned || opt,
+          ttsText: optionText,
         });
         if (done) {
           const input = row.querySelector('input');
@@ -3075,19 +3754,20 @@ function makeExerciseCard(ex) {
       btnCheck.disabled = done;
       btnCheck.addEventListener('click', async () => {
         if (done) return;
-        if (!selectedValue) {
+        if (!selectedValue || !selectedOptionId) {
           showToast('Elige una respuesta.', 'warn', 1800);
           return;
         }
-        const answers = parseAnswerList(ex.answer || '');
-        const answerNorms = answers.map((a) => normalizeText(a));
-        const answerNormsClean = answers.map((a) => normalizeText(cleanOptionText(a)));
-        const userNorm = normalizeText(selectedValue);
-        const labelNorm = normalizeText(selectedLabel || '');
-        const ok =
-          answerNorms.includes(userNorm) ||
-          answerNormsClean.includes(userNorm) ||
-          (labelNorm && (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm)));
+        const ok = isChoiceAnswerCorrect(ex, optionItems, {
+          selectedOptionId,
+          selectedValue,
+          selectedLabel,
+        });
+        syncChoiceOptionState(optsWrap, {
+          selectedId: selectedOptionId,
+          correctId: correctOptionId,
+          checked: true,
+        });
 
         setResultText(resultEl, ok, ok ? 'Correcto.' : 'No, intenta otra vez.');
         card.appendChild(resultEl);
@@ -3099,7 +3779,6 @@ function makeExerciseCard(ex) {
         await markDone();
         btnCheck.textContent = 'Hecho';
         btnCheck.disabled = true;
-        optsWrap.querySelectorAll('input[type="radio"]').forEach((i) => (i.disabled = true));
       });
       actions.appendChild(btnCheck);
       card.appendChild(actions);
@@ -3107,11 +3786,16 @@ function makeExerciseCard(ex) {
       if (done) {
         setResultText(resultEl, true, 'Hecho.');
         card.appendChild(resultEl);
+        syncChoiceOptionState(optsWrap, {
+          selectedId: resolveCorrectOptionId(ex, optionItems),
+          correctId: resolveCorrectOptionId(ex, optionItems),
+          checked: true,
+        });
       }
       return card;
     }
 
-    if (isFindErrorExercise(ex) && options.length && String(ex.answer || '').trim()) {
+    if (isFindErrorExercise(ex) && optionItems.length && String(ex.answer || '').trim()) {
       const hint = document.createElement('div');
       hint.className = 'exerciseHint';
       hint.textContent = 'Encuentra el error y elige la version correcta.';
@@ -3124,23 +3808,32 @@ function makeExerciseCard(ex) {
 
       let selectedValue = '';
       let selectedLabel = '';
+      let selectedOptionId = '';
+      const correctOptionId = resolveCorrectOptionId(ex, optionItems);
       const optsWrap = document.createElement('div');
       optsWrap.className = 'exerciseOptions';
       const groupName = `fix_${ex.id}`;
 
-      options.forEach((opt, idx) => {
+      optionItems.forEach((opt, idx) => {
         const label = optionLabelFromIndex(idx);
-        const cleaned = cleanOptionText(opt);
+        const optionText = String(opt.text || '').trim();
         const row = makeOptionRow({
           name: groupName,
-          value: cleaned || opt,
-          label: cleaned || String(opt || ''),
+          value: optionText,
+          label: optionText,
           checked: false,
+          optionId: opt.id,
           onChange: (ev) => {
-            selectedValue = String(ev.target.value || '');
+            selectedOptionId = String(ev.target.dataset.optionId || opt.id || '');
+            selectedValue = optionText;
             selectedLabel = label;
+            syncChoiceOptionState(optsWrap, {
+              selectedId: selectedOptionId,
+              correctId: correctOptionId,
+              checked: false,
+            });
           },
-          ttsText: cleaned || opt,
+          ttsText: optionText,
         });
         if (done) {
           const input = row.querySelector('input');
@@ -3157,19 +3850,20 @@ function makeExerciseCard(ex) {
       btnCheck.disabled = done;
       btnCheck.addEventListener('click', async () => {
         if (done) return;
-        if (!selectedValue) {
+        if (!selectedValue || !selectedOptionId) {
           showToast('Elige la opcion correcta.', 'warn', 1800);
           return;
         }
-        const answers = parseAnswerList(ex.answer || '');
-        const answerNorms = answers.map((a) => normalizeText(a));
-        const answerNormsClean = answers.map((a) => normalizeText(cleanOptionText(a)));
-        const userNorm = normalizeText(selectedValue);
-        const labelNorm = normalizeText(selectedLabel || '');
-        const ok =
-          answerNorms.includes(userNorm) ||
-          answerNormsClean.includes(userNorm) ||
-          (labelNorm && (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm)));
+        const ok = isChoiceAnswerCorrect(ex, optionItems, {
+          selectedOptionId,
+          selectedValue,
+          selectedLabel,
+        });
+        syncChoiceOptionState(optsWrap, {
+          selectedId: selectedOptionId,
+          correctId: correctOptionId,
+          checked: true,
+        });
 
         setResultText(resultEl, ok, ok ? 'Correcto.' : 'No, esa no es la correccion.');
         card.appendChild(resultEl);
@@ -3181,7 +3875,6 @@ function makeExerciseCard(ex) {
         await markDone();
         btnCheck.textContent = 'Hecho';
         btnCheck.disabled = true;
-        optsWrap.querySelectorAll('input[type="radio"]').forEach((i) => (i.disabled = true));
       });
       actions.appendChild(btnCheck);
       card.appendChild(actions);
@@ -3189,6 +3882,11 @@ function makeExerciseCard(ex) {
       if (done) {
         setResultText(resultEl, true, 'Hecho.');
         card.appendChild(resultEl);
+        syncChoiceOptionState(optsWrap, {
+          selectedId: resolveCorrectOptionId(ex, optionItems),
+          correctId: resolveCorrectOptionId(ex, optionItems),
+          checked: true,
+        });
       }
       return card;
     }
@@ -3426,6 +4124,7 @@ function makeExerciseCard(ex) {
           if (done) return;
           selectedIdx = opt.idx;
           selectedValue = opt.value;
+          setExerciseCardState(card, 'selected');
           renderSelection();
         });
         grid.appendChild(btn);
@@ -3508,9 +4207,9 @@ function makeExerciseCard(ex) {
       box.autocomplete = 'off';
       box.spellcheck = false;
       box.disabled = done;
+      wireSelectionInput(box);
       answerWrap.appendChild(box);
       card.appendChild(answerWrap);
-      attachPolishAssistPad(card, [box]);
       attachPolishAssistPad(card, [box]);
 
       const btnListen = document.createElement('button');
@@ -3536,13 +4235,14 @@ function makeExerciseCard(ex) {
           return;
         }
 
-        const expectedList = parseAnswerList(ex.answer || '').filter(Boolean);
+        const answerObj = answerObjectOf(ex.answer);
+        const expectedList = parseAcceptedAnswerValues(ex.answer || '').filter(Boolean);
         const expectedFirst = String(expectedList[0] || ex.answer || '').trim();
-        const exact = expectedList.length
-          ? expectedList.some(
-              (item) => normalizeOrthographyText(val) === normalizeOrthographyText(item),
-            )
-          : normalizeOrthographyText(val) === normalizeOrthographyText(expectedFirst);
+        const typoTolerance = Number(answerObj?.typoTolerance ?? answerObj?.tolerance ?? 1);
+        const exact = strictAnswerMatch(val, ex.answer || '', {
+          allowPlainMatch: true,
+          tolerance: Number.isFinite(typoTolerance) ? Math.max(0, Math.min(2, typoTolerance)) : 1,
+        });
         const score = expectedList.length
           ? Math.max(...expectedList.map((item) => dictationSimilarity(val, item)))
           : dictationSimilarity(val, expectedFirst);
@@ -3780,28 +4480,36 @@ function makeExerciseCard(ex) {
       }
     }
 
-    if (isChoiceExercise(ex) && options.length && String(ex.answer || '').trim()) {
+    if (isChoiceExercise(ex) && optionItems.length && String(ex.answer || '').trim()) {
       let selectedValue = '';
       let selectedLabel = '';
+      let selectedOptionId = '';
+      const correctOptionId = resolveCorrectOptionId(ex, optionItems);
 
       const optsWrap = document.createElement('div');
       optsWrap.className = 'exerciseOptions';
       const groupName = `pr_${ex.id}`;
       const speakOptions = shouldSpeakChoiceOptions(ex, options);
 
-      options.forEach((opt, idx) => {
+      optionItems.forEach((opt, idx) => {
         const label = optionLabelFromIndex(idx);
-        const cleaned = cleanOptionText(opt);
-        const optionText = cleaned || String(opt || '');
-        const ttsText = speakOptions ? (cleaned || stripLeadLabel(opt)) : '';
+        const optionText = String(opt.text || '').trim();
+        const ttsText = speakOptions ? optionText : '';
         const row = makeOptionRow({
           name: groupName,
-          value: cleaned || opt,
+          value: optionText,
           label: optionText,
           checked: false,
+          optionId: opt.id,
           onChange: (ev) => {
-            selectedValue = ev.target.value;
+            selectedOptionId = String(ev.target.dataset.optionId || opt.id || '');
+            selectedValue = optionText;
             selectedLabel = label;
+            syncChoiceOptionState(optsWrap, {
+              selectedId: selectedOptionId,
+              correctId: correctOptionId,
+              checked: false,
+            });
           },
           ttsText,
         });
@@ -3834,26 +4542,21 @@ function makeExerciseCard(ex) {
       btnCheck.addEventListener('click', async () => {
         if (done) return;
         const userAnswer = String(selectedValue || '').trim();
-        if (!userAnswer) {
+        if (!userAnswer || !selectedOptionId) {
           showToast('Elige una respuesta.', 'warn', 1800);
           return;
         }
 
-        const answers = parseAnswerList(ex.answer || '');
-        const answerNorms = answers.map((a) => normalizeText(a));
-        const answerNormsClean = answers.map((a) => normalizeText(cleanOptionText(a)));
-        const userNorm = normalizeText(userAnswer);
-        const labelNorm = normalizeText(selectedLabel || '');
-
-        let correct = false;
-        if (answerNorms.includes(userNorm) || answerNormsClean.includes(userNorm)) correct = true;
-        if (
-          !correct &&
-          labelNorm &&
-          (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm))
-        ) {
-          correct = true;
-        }
+        const correct = isChoiceAnswerCorrect(ex, optionItems, {
+          selectedOptionId,
+          selectedValue: userAnswer,
+          selectedLabel,
+        });
+        syncChoiceOptionState(optsWrap, {
+          selectedId: selectedOptionId,
+          correctId: correctOptionId,
+          checked: true,
+        });
 
         setResultText(resultEl, correct, correct ? 'Correcto.' : 'Intenta de nuevo.');
         card.appendChild(resultEl);
@@ -3866,7 +4569,6 @@ function makeExerciseCard(ex) {
         await markDone();
         btnCheck.textContent = 'Hecho';
         btnCheck.disabled = true;
-        optsWrap.querySelectorAll('input[type="radio"]').forEach((i) => (i.disabled = true));
       });
 
       actions.appendChild(btnCheck);
@@ -3875,6 +4577,11 @@ function makeExerciseCard(ex) {
       if (done) {
         setResultText(resultEl, true, 'Hecho.');
         card.appendChild(resultEl);
+        syncChoiceOptionState(optsWrap, {
+          selectedId: resolveCorrectOptionId(ex, optionItems),
+          correctId: resolveCorrectOptionId(ex, optionItems),
+          checked: true,
+        });
       }
 
       return card;
@@ -3893,6 +4600,7 @@ function makeExerciseCard(ex) {
       box.autocomplete = 'off';
       box.spellcheck = false;
       box.disabled = done;
+      wireSelectionInput(box);
       answerWrap.appendChild(box);
       card.appendChild(answerWrap);
 
@@ -3909,7 +4617,7 @@ function makeExerciseCard(ex) {
           showToast('Escribe tu traduccion.', 'warn', 1700);
           return;
         }
-        const ok = strictAnswerMatch(val, ex.answer || '');
+        const ok = strictAnswerMatch(val, ex.answer || '', { allowPlainMatch: true });
         setResultText(
           resultEl,
           ok,
@@ -4056,7 +4764,7 @@ function makeExerciseCard(ex) {
             showToast('Completa la palabra.', 'warn', 1500);
             return;
           }
-          const ok = strictAnswerMatch(val, ex.answer || '');
+          const ok = strictAnswerMatch(val, ex.answer || '', { allowPlainMatch: true });
           setResultText(
             resultEl,
             ok,
@@ -4560,6 +5268,7 @@ function makeExerciseCard(ex) {
       box.autocomplete = 'off';
       box.spellcheck = true;
       box.disabled = done;
+      wireSelectionInput(box);
       answerWrap.appendChild(box);
       card.appendChild(answerWrap);
       attachPolishAssistPad(card, [box]);
@@ -4716,10 +5425,12 @@ async function loadExercises(topic) {
     return;
   }
 
+  const loaded = [];
   snap.forEach((d) => {
     const data = d.data() || {};
-    cachedExercises.push({ id: d.id, ...data });
+    loaded.push(normalizeExercise({ id: d.id, ...data }));
   });
+  cachedExercises = loaded;
 
   await loadProgressForTopic(CURRENT_UID);
 

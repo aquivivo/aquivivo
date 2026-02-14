@@ -115,7 +115,7 @@
 
       const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
       const LEVEL = 'A1';
-      const SEED_VERSION = 'a1_starter4_v1_2026-02-14';
+      const SEED_VERSION = 'a1_starter4_v2_2026-02-14';
       const TOPICS_COUNT = 4;
 
       const app = initializeApp(firebaseConfig);
@@ -361,6 +361,14 @@
                 category: 'vocab',
               },
               { order: 8, type: 'Test final del tema', prompt: 'Wybierz poprawne zdanie:', options: ['A) Ja jestem z Meksyku.', 'B) Ja jest z Meksyku.', 'C) Ja byc z Meksyku.'], answer: 'A', category: 'both' },
+              { order: 9, type: 'multiple_choice', prompt: 'Jak po polsku: "Me llamo Eva"?', options: ['A) Mam na imie Eva.', 'B) Jestem Eva.', 'C) Skad jestes Eva?'], answer: 'A', category: 'both' },
+              { order: 10, type: 'matching_pairs', prompt: 'Polacz frazy.', options: ['A) Mam na imie = 1) me llamo', 'B) Jestem z = 2) soy de', 'C) Dzien dobry = 3) buenos dias'], answer: 'A-1,B-2,C-3', category: 'both' },
+              { order: 11, type: 'fill_blank', prompt: 'Ja ___ z Peru.', answer: 'jestem', options: [], category: 'grammar' },
+              { order: 12, type: 'listen_choose', prompt: 'Wybierz odpowiedz.', options: ['A) Mam na imie Ola.', 'B) Rachunek prosze.', 'C) Poprosze kawe.'], answer: 'A', notes: 'TTS_PL: Mam na imie Ola.', category: 'listening' },
+              { order: 13, type: 'word_tiles', prompt: 'Uloz zdanie.', options: ['mam', 'na', 'imie', 'Ania'], answer: 'mam na imie Ania', category: 'both' },
+              { order: 14, type: 'repeat_after_audio', prompt: 'Powtorz: Mam na imie Ania.', answer: '', notes: 'TTS_PL: Mam na imie Ania.', category: 'speaking' },
+              { order: 15, type: 'mini_writing', prompt: 'Napisz 1 zdanie o sobie.', answer: '', notes: 'Przyklad: Mam na imie ...', category: 'writing' },
+              { order: 16, type: 'dictation', prompt: 'Posluchaj i zapisz.', answer: 'Dzien dobry, mam na imie Ania.', notes: 'TTS_PL: Dzien dobry, mam na imie Ania.', category: 'listening' },
             ],
           };
         }
@@ -398,6 +406,14 @@
                 category: 'vocab',
               },
               { order: 8, type: 'Test final del tema', prompt: 'Jak zapytasz o cene?', options: ['A) Ile kosztuje?', 'B) Jak masz na imie?', 'C) Gdzie mieszkasz?'], answer: 'A', category: 'both' },
+              { order: 9, type: 'multiple_choice', prompt: 'Wybierz obrazek: kawa', options: ['A) kawa', 'B) herbata', 'C) woda'], answer: 'A', imageUrl: 'assets/img/coffee.png', category: 'vocab' },
+              { order: 10, type: 'matching_pairs', prompt: 'Polacz slowa.', options: ['A) kawa = 1) cafe', 'B) herbata = 2) te', 'C) rachunek = 3) cuenta'], answer: 'A-1,B-2,C-3', category: 'vocab' },
+              { order: 11, type: 'fill_blank', prompt: 'Poprosze ___ i wode.', answer: 'kawe', options: [], category: 'grammar' },
+              { order: 12, type: 'listen_choose', prompt: 'Wybierz to, co slyszysz.', options: ['A) Poprosze kawe i wode.', 'B) Mam na imie Anna.', 'C) Gdzie jest dworzec?'], answer: 'A', notes: 'TTS_PL: Poprosze kawe i wode.', category: 'listening' },
+              { order: 13, type: 'word_tiles', prompt: 'Uloz zdanie.', options: ['Rachunek', 'prosze'], answer: 'Rachunek prosze', category: 'both' },
+              { order: 14, type: 'repeat_after_audio', prompt: 'Powtorz: Rachunek, prosze.', answer: '', notes: 'TTS_PL: Rachunek, prosze.', category: 'speaking' },
+              { order: 15, type: 'mini_writing', prompt: 'Napisz zamowienie: 1-2 produkty.', answer: '', notes: 'Przyklad: Poprosze kawe i wode.', category: 'writing' },
+              { order: 16, type: 'dictation', prompt: 'Posluchaj i zapisz.', answer: 'Ile kosztuje kawa?', notes: 'TTS_PL: Ile kosztuje kawa?', category: 'listening' },
             ],
           };
         }
@@ -435,6 +451,14 @@
                 category: 'vocab',
               },
               { order: 8, type: 'Test final del tema', prompt: 'Wybierz poprawne zdanie:', options: ['A) To jest moja siostra.', 'B) To jest moj siostra.', 'C) To jest moje siostra.'], answer: 'A', category: 'both' },
+              { order: 9, type: 'multiple_choice', prompt: 'Jak po polsku: "mi hermano"?', options: ['A) moj brat', 'B) moja brat', 'C) moje brat'], answer: 'A', category: 'grammar' },
+              { order: 10, type: 'matching_pairs', prompt: 'Polacz wyrazy.', options: ['A) mama = 1) madre', 'B) tata = 2) padre', 'C) siostra = 3) hermana'], answer: 'A-1,B-2,C-3', category: 'vocab' },
+              { order: 11, type: 'fill_blank', prompt: 'To jest moja ___.', answer: 'siostra', options: [], category: 'vocab' },
+              { order: 12, type: 'listen_choose', prompt: 'Wybierz to, co slyszysz.', options: ['A) To jest moj brat.', 'B) Poprosze kawe.', 'C) Gdzie jest muzeum?'], answer: 'A', notes: 'TTS_PL: To jest moj brat.', category: 'listening' },
+              { order: 13, type: 'word_tiles', prompt: 'Uloz zdanie.', options: ['To', 'jest', 'moja', 'mama'], answer: 'To jest moja mama', category: 'both' },
+              { order: 14, type: 'repeat_after_audio', prompt: 'Powtorz: To jest moja rodzina.', answer: '', notes: 'TTS_PL: To jest moja rodzina.', category: 'speaking' },
+              { order: 15, type: 'mini_writing', prompt: 'Napisz 1-2 zdania o rodzinie.', answer: '', notes: 'Przyklad: To jest moj brat.', category: 'writing' },
+              { order: 16, type: 'dictation', prompt: 'Posluchaj i zapisz.', answer: 'To jest moja siostra.', notes: 'TTS_PL: To jest moja siostra.', category: 'listening' },
             ],
           };
         }
@@ -471,6 +495,14 @@
               category: 'vocab',
             },
             { order: 8, type: 'Test final del tema', prompt: 'Jak powiesz "al lado de" po polsku?', options: ['A) obok', 'B) prosto', 'C) naprzeciwko'], answer: 'A', category: 'both' },
+            { order: 9, type: 'multiple_choice', prompt: 'Wybierz poprawna reakcje turysty.', options: ['A) Przepraszam, gdzie jest muzeum?', 'B) Mam na imie Jan.', 'C) Poprosze herbate.'], answer: 'A', category: 'both' },
+            { order: 10, type: 'matching_pairs', prompt: 'Polacz kierunki.', options: ['A) prosto = 1) recto', 'B) w lewo = 2) izquierda', 'C) w prawo = 3) derecha'], answer: 'A-1,B-2,C-3', category: 'vocab' },
+            { order: 11, type: 'fill_blank', prompt: 'Prosze isc ___ i potem w lewo.', answer: 'prosto', options: [], category: 'vocab' },
+            { order: 12, type: 'listen_choose', prompt: 'Wybierz to, co slyszysz.', options: ['A) Prosze isc prosto.', 'B) To jest moja siostra.', 'C) Rachunek, prosze.'], answer: 'A', notes: 'TTS_PL: Prosze isc prosto.', category: 'listening' },
+            { order: 13, type: 'word_tiles', prompt: 'Uloz zdanie.', options: ['Muzeum', 'jest', 'obok', 'banku'], answer: 'Muzeum jest obok banku', category: 'both' },
+            { order: 14, type: 'repeat_after_audio', prompt: 'Powtorz: Przepraszam, gdzie jest dworzec?', answer: '', notes: 'TTS_PL: Przepraszam, gdzie jest dworzec?', category: 'speaking' },
+            { order: 15, type: 'mini_writing', prompt: 'Napisz krotka wskazowke drogi.', answer: '', notes: 'Przyklad: Prosze isc prosto i w lewo.', category: 'writing' },
+            { order: 16, type: 'dictation', prompt: 'Posluchaj i zapisz.', answer: 'Muzeum jest obok banku.', notes: 'TTS_PL: Muzeum jest obok banku.', category: 'listening' },
           ],
         };
       }
@@ -550,11 +582,15 @@
               order: ex.order,
               type: ex.type,
               prompt: ex.prompt,
+              microHint: ex.microHint || ex.micro_hint || '',
               options: ex.options || [],
               answer: ex.answer || '',
+              imageUrl: ex.imageUrl || '',
+              audioUrl: ex.audioUrl || ex.audio || '',
               notes: ex.notes || '',
               tags: ex.tags || ['a1', 'starter'],
               category: ex.category || 'both',
+              ui: ex.ui && typeof ex.ui === 'object' ? ex.ui : { variant: 'standard' },
               seedVersion: SEED_VERSION,
               updatedAt: serverTimestamp(),
               createdAt: serverTimestamp(),
@@ -608,4 +644,3 @@
     </script>
   </body>
 </html>
-

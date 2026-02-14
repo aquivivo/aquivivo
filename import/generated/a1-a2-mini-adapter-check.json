@@ -1,0 +1,119 @@
+{
+  "matching_pairs_es_pl": {
+    "before": {
+      "type": "matching_pairs_es_pl",
+      "baseType": "matching",
+      "prompt": "Dopasuj polski do hiszpanskiego.",
+      "options": [],
+      "answer": "",
+      "pairs": [
+        {
+          "left": "Cześć",
+          "right": "Hola"
+        },
+        {
+          "left": "Dzień dobry",
+          "right": "Buenos días"
+        },
+        {
+          "left": "Dzień dobry (po południu)",
+          "right": "Buenas tardes"
+        },
+        {
+          "left": "Dobry wieczór / Dobranoc",
+          "right": "Buenas noches"
+        },
+        {
+          "left": "Do widzenia",
+          "right": "Adiós"
+        },
+        {
+          "left": "Do zobaczenia",
+          "right": "Hasta luego"
+        },
+        {
+          "left": "Na razie",
+          "right": "Nos vemos"
+        },
+        {
+          "left": "Proszę",
+          "right": "Por favor"
+        }
+      ]
+    },
+    "after": {
+      "type": "matching_pairs",
+      "variant": "matching_pairs_es_pl",
+      "prompt": "Dopasuj polski do hiszpanskiego.",
+      "options": [
+        "A) Cześć = 1) Hola",
+        "B) Dzień dobry = 2) Buenos días",
+        "C) Dzień dobry (po południu) = 3) Buenas tardes",
+        "D) Dobry wieczór / Dobranoc = 4) Buenas noches",
+        "E) Do widzenia = 5) Adiós",
+        "F) Do zobaczenia = 6) Hasta luego",
+        "G) Na razie = 7) Nos vemos",
+        "H) Proszę = 8) Por favor"
+      ],
+      "answer": "A-1, B-2, C-3, D-4, E-5, F-6, G-7, H-8"
+    }
+  },
+  "fill_blank_typed": {
+    "before": {
+      "type": "fill_blank_typed",
+      "baseType": "fill_blank",
+      "prompt": "Dobry wieczór, ___ minął dzień?",
+      "options": [],
+      "answer": {
+        "acceptedByBlank": [
+          [
+            "Dobry wieczór / Dobranoc"
+          ]
+        ]
+      }
+    },
+    "after": {
+      "type": "fill_blank",
+      "variant": "fill_blank_typed",
+      "prompt": "Dobry wieczór, ___ minął dzień?",
+      "options": [],
+      "answer": "Dobry wieczór / Dobranoc"
+    }
+  },
+  "listen_arrange_tiles": {
+    "before": {
+      "type": "listen_arrange_tiles",
+      "baseType": "listen_arrange",
+      "prompt": "___ ___ ___",
+      "options": [
+        "zobaczenia",
+        "jutro",
+        "Do"
+      ],
+      "answer": {
+        "acceptedByBlank": [
+          [
+            "Do"
+          ],
+          [
+            "zobaczenia"
+          ],
+          [
+            "jutro"
+          ]
+        ]
+      }
+    },
+    "after": {
+      "type": "listen_arrange",
+      "variant": "listen_arrange_tiles",
+      "prompt": "___ ___ ___",
+      "options": [
+        "zobaczenia",
+        "jutro",
+        "Do"
+      ],
+      "answer": "Do||zobaczenia||jutro"
+    }
+  }
+}

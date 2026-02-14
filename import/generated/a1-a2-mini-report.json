@@ -1,0 +1,3458 @@
+{
+  "generatedAt": "2026-02-14T18:46:52.128Z",
+  "grammarSource": {
+    "name": "Ani Kubica - Czesci mowy",
+    "url": "https://aniakubica.com/czesci-mowy/",
+    "partsOfSpeech": [
+      "rzeczownik",
+      "czasownik",
+      "przymiotnik",
+      "przyslowek",
+      "zaimek",
+      "liczebnik",
+      "przyimek",
+      "spojnik",
+      "partykula",
+      "wykrzyknik"
+    ]
+  },
+  "summary": {
+    "exercises": 435,
+    "lessons": 16,
+    "modules": 2,
+    "courses": 2
+  },
+  "levels": {
+    "A1": {
+      "level": "A1",
+      "counts": {
+        "exercisesTotal": 220,
+        "perTopic": {
+          "a1-saludos-y-presentacion": {
+            "topicId": "a1-saludos-y-presentacion",
+            "topicTitle": "A1 SALUDOS Y PRESENTACIÓN",
+            "exercises": 220,
+            "unresolvedTopicMapping": true,
+            "mappingScore": 0,
+            "coverage": {
+              "words": {
+                "total": 55,
+                "covered": 49,
+                "pct": 89,
+                "missing": [
+                  "Przepraszam, nie zrozumiałem",
+                  "Możesz mówić wolniej?",
+                  "Dziękuję za rozmowę",
+                  "Miło było cię poznać",
+                  "Do zobaczenia wkrótce",
+                  "Miłego dnia"
+                ]
+              },
+              "examples": {
+                "total": 57,
+                "covered": 51,
+                "pct": 89,
+                "missing": [
+                  "Przepraszam, nie zrozumiałem.",
+                  "Możesz mówić wolniej?",
+                  "Dziękuję za rozmowę.",
+                  "Miło było cię poznać.",
+                  "Do zobaczenia wkrótce.",
+                  "Miłego dnia!"
+                ]
+              }
+            }
+          }
+        },
+        "perType": {
+          "matching_pairs_es_pl": 1,
+          "multiple_choice_es_pl": 8,
+          "multiple_choice_pl_es": 8,
+          "true_false_translation": 8,
+          "identify_part_of_speech": 7,
+          "pos_true_false": 7,
+          "sentence_meaning_choice": 8,
+          "fill_blank_typed": 7,
+          "fill_blank_word_bank": 7,
+          "highlight_part_of_speech": 7,
+          "matching_example_to_word": 1,
+          "matching_word_to_example": 1,
+          "part_of_speech_matching": 1,
+          "pick_correct_sentence": 8,
+          "word_tiles_sentence": 8,
+          "choose_correct_word_class": 7,
+          "simple_grammar_fill_blank": 7,
+          "correct_the_error": 7,
+          "mini_writing": 6,
+          "reorder_words_sentence": 8,
+          "rewrite_sentence_simple": 7,
+          "type_missing_word": 7,
+          "type_translation_es_pl": 7,
+          "type_translation_pl_es": 7,
+          "audio_true_false": 7,
+          "choose_reply_dialogue": 7,
+          "complete_dialogue": 7,
+          "dialogue_tiles_reply": 7,
+          "dictation_sentence": 7,
+          "dictation_word": 7,
+          "listen_arrange_tiles": 7,
+          "listen_choose": 2,
+          "reorder_dialogue_lines": 7,
+          "boss_mixed_test": 6,
+          "quick_quiz": 6
+        },
+        "perDifficulty": {
+          "1": 25,
+          "2": 62,
+          "3": 63,
+          "4": 58,
+          "5": 12
+        },
+        "perStage": {
+          "recognition": 47,
+          "controlled": 54,
+          "production": 49,
+          "listening": 58,
+          "mixed": 12
+        },
+        "lessonsTotal": 8,
+        "lessonsPerTopic": {
+          "a1-saludos-y-presentacion": 7
+        },
+        "modulesTotal": 1
+      },
+      "samples": {
+        "variants": {
+          "multiple_choice_es_pl": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "multiple_choice_es_pl",
+            "baseType": "multiple_choice",
+            "prompt": "Jak po polsku: \"Hola\"?",
+            "options": [
+              {
+                "id": "b",
+                "text": "Możesz powtórzyć?"
+              },
+              {
+                "id": "c",
+                "text": "Przepraszam"
+              },
+              {
+                "id": "a",
+                "text": "Cześć"
+              },
+              {
+                "id": "d",
+                "text": "Jak masz na imię?"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 1,
+            "stage": "recognition",
+            "sourceWord": "Cześć",
+            "sourceExample": "Cześć, mam na imię Anna.",
+            "notes": "",
+            "tags": [
+              "variant:multiple_choice_es_pl",
+              "stage:recognition",
+              "difficulty:1"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0002",
+            "order": 2,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "multiple_choice_pl_es": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "multiple_choice_pl_es",
+            "baseType": "multiple_choice",
+            "prompt": "Jak po hiszpansku: \"Cześć\"?",
+            "options": [
+              {
+                "id": "b",
+                "text": "Nos vemos"
+              },
+              {
+                "id": "c",
+                "text": "Estoy aprendiendo polaco"
+              },
+              {
+                "id": "a",
+                "text": "Hola"
+              },
+              {
+                "id": "d",
+                "text": "Muchas gracias"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 1,
+            "stage": "recognition",
+            "sourceWord": "Cześć",
+            "sourceExample": "Cześć, mam na imię Anna.",
+            "notes": "",
+            "tags": [
+              "variant:multiple_choice_pl_es",
+              "stage:recognition",
+              "difficulty:1"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0010",
+            "order": 10,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "true_false_translation": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "true_false_translation",
+            "baseType": "binary_choice",
+            "prompt": "\"Cześć\" = \"Hola\" ?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Prawda"
+              },
+              {
+                "id": "b",
+                "text": "Falsz"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 1,
+            "stage": "recognition",
+            "sourceWord": "Cześć",
+            "sourceExample": "Cześć, mam na imię Anna.",
+            "notes": "",
+            "tags": [
+              "variant:true_false_translation",
+              "stage:recognition",
+              "difficulty:1"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0018",
+            "order": 18,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "sentence_meaning_choice": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "sentence_meaning_choice",
+            "baseType": "multiple_choice",
+            "prompt": "Znaczenie zdania: \"Dzień dobry, jak się masz?\"",
+            "options": [
+              {
+                "id": "b",
+                "text": "Bien, gracias."
+              },
+              {
+                "id": "c",
+                "text": "Estoy aprendiendo polaco."
+              },
+              {
+                "id": "a",
+                "text": "Buenos días, ¿cómo estás?"
+              },
+              {
+                "id": "d",
+                "text": "Mucho gusto, Piotr."
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "recognition",
+            "sourceWord": "Dzień dobry",
+            "sourceExample": "Dzień dobry, jak się masz?",
+            "notes": "",
+            "tags": [
+              "variant:sentence_meaning_choice",
+              "stage:recognition",
+              "difficulty:2"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0040",
+            "order": 40,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "pick_correct_sentence": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "pick_correct_sentence",
+            "baseType": "multiple_choice",
+            "prompt": "Wybierz poprawne zdanie dla: \"Buenos días, ¿cómo estás?\"",
+            "options": [
+              {
+                "id": "b",
+                "text": "Dobrze, dziękuję."
+              },
+              {
+                "id": "c",
+                "text": "Jak masz pełne imię i nazwisko?"
+              },
+              {
+                "id": "a",
+                "text": "Dzień dobry, jak się masz?"
+              },
+              {
+                "id": "d",
+                "text": "Jak masz na nazwisko?"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Dzień dobry",
+            "sourceExample": "Dzień dobry, jak się masz?",
+            "notes": "",
+            "tags": [
+              "variant:pick_correct_sentence",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0072",
+            "order": 72,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "matching_pairs_es_pl": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "matching_pairs_es_pl",
+            "baseType": "matching",
+            "prompt": "Dopasuj polski do hiszpanskiego.",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 1,
+            "stage": "recognition",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:matching_pairs_es_pl",
+              "stage:recognition",
+              "difficulty:1"
+            ],
+            "pairs": [
+              {
+                "left": "Cześć",
+                "right": "Hola"
+              },
+              {
+                "left": "Dzień dobry",
+                "right": "Buenos días"
+              },
+              {
+                "left": "Dzień dobry (po południu)",
+                "right": "Buenas tardes"
+              },
+              {
+                "left": "Dobry wieczór / Dobranoc",
+                "right": "Buenas noches"
+              },
+              {
+                "left": "Do widzenia",
+                "right": "Adiós"
+              },
+              {
+                "left": "Do zobaczenia",
+                "right": "Hasta luego"
+              },
+              {
+                "left": "Na razie",
+                "right": "Nos vemos"
+              },
+              {
+                "left": "Proszę",
+                "right": "Por favor"
+              }
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0001",
+            "order": 1,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "matching_example_to_word": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "matching_example_to_word",
+            "baseType": "matching",
+            "prompt": "Dopasuj zdanie do slowa.",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:matching_example_to_word",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "pairs": [
+              {
+                "left": "Cześć, mam na imię Anna.",
+                "right": "Cześć"
+              },
+              {
+                "left": "Dzień dobry, jak się masz?",
+                "right": "Dzień dobry"
+              },
+              {
+                "left": "Dzień dobry, miło mi.",
+                "right": "Dzień dobry (po południu)"
+              },
+              {
+                "left": "Dobry wieczór, jak minął dzień?",
+                "right": "Dobry wieczór / Dobranoc"
+              },
+              {
+                "left": "Do widzenia, do jutra!",
+                "right": "Do widzenia"
+              },
+              {
+                "left": "Do zobaczenia jutro.",
+                "right": "Do zobaczenia"
+              }
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0069",
+            "order": 69,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "matching_word_to_example": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "matching_word_to_example",
+            "baseType": "matching",
+            "prompt": "Dopasuj slowo do zdania.",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:matching_word_to_example",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "pairs": [
+              {
+                "left": "Cześć",
+                "right": "Cześć, mam na imię Anna."
+              },
+              {
+                "left": "Dzień dobry",
+                "right": "Dzień dobry, jak się masz?"
+              },
+              {
+                "left": "Dzień dobry (po południu)",
+                "right": "Dzień dobry, miło mi."
+              },
+              {
+                "left": "Dobry wieczór / Dobranoc",
+                "right": "Dobry wieczór, jak minął dzień?"
+              },
+              {
+                "left": "Do widzenia",
+                "right": "Do widzenia, do jutra!"
+              },
+              {
+                "left": "Do zobaczenia",
+                "right": "Do zobaczenia jutro."
+              }
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0070",
+            "order": 70,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "word_tiles_sentence": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "word_tiles_sentence",
+            "baseType": "word_tiles",
+            "prompt": "Uloz zdanie z kafelkow.",
+            "options": [
+              "Dzień",
+              "dobry",
+              "jak",
+              "się",
+              "masz"
+            ],
+            "answer": {
+              "accepted": [
+                "Dzień dobry, jak się masz?"
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Dzień dobry",
+            "sourceExample": "Dzień dobry, jak się masz?",
+            "notes": "",
+            "tags": [
+              "variant:word_tiles_sentence",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0080",
+            "order": 80,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "reorder_words_sentence": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "reorder_words_sentence",
+            "baseType": "word_tiles",
+            "prompt": "Uloz zdanie we wlasciwej kolejnosci.",
+            "options": [
+              "miło",
+              "Dzień",
+              "dobry",
+              "mi"
+            ],
+            "answer": {
+              "accepted": [
+                "Dzień dobry, miło mi."
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Dzień dobry (po południu)",
+            "sourceExample": "Dzień dobry, miło mi.",
+            "notes": "",
+            "tags": [
+              "variant:reorder_words_sentence",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0115",
+            "order": 115,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "reorder_dialogue_lines": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "reorder_dialogue_lines",
+            "baseType": "word_tiles",
+            "prompt": "Uloz linie dialogu.",
+            "options": [
+              "B: Dzień dobry, miło mi.",
+              "A: Buenas tardes, mucho gusto.",
+              "A: Buenas tardes, mucho gusto."
+            ],
+            "answer": {
+              "accepted": [
+                "A: Buenas tardes, mucho gusto. B: Dzień dobry, miło mi. A: Buenas tardes, mucho gusto."
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Dzień dobry (po południu)",
+            "sourceExample": "Dzień dobry, miło mi.",
+            "notes": "",
+            "tags": [
+              "variant:reorder_dialogue_lines",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0202",
+            "order": 202,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "type_translation_es_pl": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "type_translation_es_pl",
+            "baseType": "translate",
+            "prompt": "Wpisz po polsku: \"Buenas tardes\".",
+            "options": [],
+            "answer": {
+              "accepted": [
+                "Dzień dobry (po południu)"
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Dzień dobry (po południu)",
+            "sourceExample": "Dzień dobry, miło mi.",
+            "notes": "",
+            "tags": [
+              "variant:type_translation_es_pl",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0137",
+            "order": 137,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "type_translation_pl_es": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "type_translation_pl_es",
+            "baseType": "translate",
+            "prompt": "Wpisz po hiszpansku: \"Dobry wieczór / Dobranoc\".",
+            "options": [],
+            "answer": {
+              "accepted": [
+                "Buenas noches"
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Dobry wieczór / Dobranoc",
+            "sourceExample": "Dobry wieczór, jak minął dzień?",
+            "notes": "",
+            "tags": [
+              "variant:type_translation_pl_es",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0144",
+            "order": 144,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "fill_blank_word_bank": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "fill_blank_word_bank",
+            "baseType": "listen_arrange",
+            "prompt": "Uzupelnij z banku: Dobry wieczór, ___ minął dzień?",
+            "options": [
+              "Dobry wieczór / Dobranoc",
+              "Nazywam się…",
+              "Miło mi",
+              "Możesz powtórzyć?",
+              "Cześć",
+              "Przykro mi"
+            ],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Dobry wieczór / Dobranoc"
+                ]
+              ]
+            },
+            "audio": "Dobry wieczór, jak minął dzień?",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Dobry wieczór / Dobranoc",
+            "sourceExample": "Dobry wieczór, jak minął dzień?",
+            "notes": "",
+            "tags": [
+              "variant:fill_blank_word_bank",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0055",
+            "order": 55,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "fill_blank_typed": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "fill_blank_typed",
+            "baseType": "fill_blank",
+            "prompt": "Dobry wieczór, ___ minął dzień?",
+            "options": [],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Dobry wieczór / Dobranoc"
+                ]
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Dobry wieczór / Dobranoc",
+            "sourceExample": "Dobry wieczór, jak minął dzień?",
+            "notes": "",
+            "tags": [
+              "variant:fill_blank_typed",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0048",
+            "order": 48,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "type_missing_word": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "type_missing_word",
+            "baseType": "fill_blank",
+            "prompt": "___, do jutra! (jedno slowo)",
+            "options": [],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Do widzenia"
+                ]
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Do widzenia",
+            "sourceExample": "Do widzenia, do jutra!",
+            "notes": "",
+            "tags": [
+              "variant:type_missing_word",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0130",
+            "order": 130,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "rewrite_sentence_simple": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "rewrite_sentence_simple",
+            "baseType": "mini_writing",
+            "prompt": "Napisz podobne zdanie: \"Do widzenia, do jutra!\"",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Do widzenia",
+            "sourceExample": "Do widzenia, do jutra!",
+            "notes": "",
+            "tags": [
+              "variant:rewrite_sentence_simple",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0123",
+            "order": 123,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "dictation_word": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "dictation_word",
+            "baseType": "dictation",
+            "prompt": "Zapisz slowo, ktore slyszysz.",
+            "options": [],
+            "answer": {
+              "accepted": [
+                "Cześć"
+              ],
+              "typoTolerance": 1
+            },
+            "audio": "Cześć",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Cześć",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:dictation_word",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0186",
+            "order": 186,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "dictation_sentence": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "dictation_sentence",
+            "baseType": "dictation",
+            "prompt": "Posluchaj i zapisz zdanie.",
+            "options": [],
+            "answer": {
+              "accepted": [
+                "Do widzenia, do jutra!"
+              ],
+              "typoTolerance": 1
+            },
+            "audio": "Do widzenia, do jutra!",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Do widzenia",
+            "sourceExample": "Do widzenia, do jutra!",
+            "notes": "",
+            "tags": [
+              "variant:dictation_sentence",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0179",
+            "order": 179,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "listen_choose": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "listen_choose",
+            "baseType": "multiple_choice",
+            "prompt": "Posluchaj i wybierz poprawne slowo.",
+            "options": [
+              {
+                "id": "b",
+                "text": "Możesz powtórzyć?"
+              },
+              {
+                "id": "c",
+                "text": "Słabo mówię po polsku"
+              },
+              {
+                "id": "a",
+                "text": "Bardzo mi miło"
+              },
+              {
+                "id": "d",
+                "text": "Nazywam się…"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "c"
+            },
+            "audio": "Słabo mówię po polsku",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Słabo mówię po polsku",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:listen_choose",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0200",
+            "order": 200,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "listen_arrange_tiles": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "listen_arrange_tiles",
+            "baseType": "listen_arrange",
+            "prompt": "___ ___ ___",
+            "options": [
+              "zobaczenia",
+              "jutro",
+              "Do"
+            ],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Do"
+                ],
+                [
+                  "zobaczenia"
+                ],
+                [
+                  "jutro"
+                ]
+              ]
+            },
+            "audio": "Do zobaczenia jutro.",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Do zobaczenia",
+            "sourceExample": "Do zobaczenia jutro.",
+            "notes": "",
+            "tags": [
+              "variant:listen_arrange_tiles",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0193",
+            "order": 193,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "audio_true_false": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "audio_true_false",
+            "baseType": "binary_choice",
+            "prompt": "Czy slyszysz: \"Dzień dobry\"?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Prawda"
+              },
+              {
+                "id": "b",
+                "text": "Falsz"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "Dzień dobry",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Dzień dobry",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:audio_true_false",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0151",
+            "order": 151,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "choose_reply_dialogue": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "choose_reply_dialogue",
+            "baseType": "scene",
+            "prompt": "A: Do zobaczenia jutro. B: ...",
+            "options": [
+              {
+                "id": "a",
+                "text": "Hasta luego, nos vemos mañana."
+              },
+              {
+                "id": "b",
+                "text": "Mucho gusto, Piotr."
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Do zobaczenia",
+            "sourceExample": "Do zobaczenia jutro.",
+            "notes": "",
+            "tags": [
+              "variant:choose_reply_dialogue",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0158",
+            "order": 158,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "complete_dialogue": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "complete_dialogue",
+            "baseType": "fill_blank",
+            "prompt": "A: Do zobaczenia jutro. B: ___",
+            "options": [],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Hasta luego, nos vemos mañana."
+                ]
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Do zobaczenia",
+            "sourceExample": "Do zobaczenia jutro.",
+            "notes": "",
+            "tags": [
+              "variant:complete_dialogue",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0165",
+            "order": 165,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "dialogue_tiles_reply": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "dialogue_tiles_reply",
+            "baseType": "word_tiles",
+            "prompt": "Uloz odpowiedz w dialogu.",
+            "options": [
+              "hasta",
+              "luego",
+              "Nos",
+              "vemos"
+            ],
+            "answer": {
+              "accepted": [
+                "Nos vemos hasta luego"
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Na razie",
+            "sourceExample": "Na razie, do zobaczenia.",
+            "notes": "",
+            "tags": [
+              "variant:dialogue_tiles_reply",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0172",
+            "order": 172,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "correct_the_error": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "correct_the_error",
+            "baseType": "find_error",
+            "prompt": "Na razie Na razie, do zobaczenia.",
+            "options": [
+              {
+                "id": "a",
+                "text": "Na razie, do zobaczenia."
+              },
+              {
+                "id": "b",
+                "text": "Na razie Na razie, do zobaczenia."
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Na razie",
+            "sourceExample": "Na razie, do zobaczenia.",
+            "notes": "",
+            "tags": [
+              "variant:correct_the_error",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0102",
+            "order": 102,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "quick_quiz": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "quick_quiz",
+            "baseType": "multiple_choice",
+            "prompt": "Quick quiz: \"Buenas tardes\"",
+            "options": [
+              {
+                "id": "b",
+                "text": "Mówisz po hiszpańsku?"
+              },
+              {
+                "id": "c",
+                "text": "Proszę"
+              },
+              {
+                "id": "a",
+                "text": "Dzień dobry (po południu)"
+              },
+              {
+                "id": "d",
+                "text": "Jak się Pan/Pani nazywa?"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 5,
+            "stage": "mixed",
+            "sourceWord": "Dzień dobry (po południu)",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:quick_quiz",
+              "stage:mixed",
+              "difficulty:5"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0215",
+            "order": 215,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "boss_mixed_test": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "boss_mixed_test",
+            "baseType": "multiple_choice",
+            "prompt": "Boss: jak po polsku \"Buenas noches\"?",
+            "options": [
+              {
+                "id": "b",
+                "text": "Jestem nowy w mieście"
+              },
+              {
+                "id": "c",
+                "text": "Miło mi cię poznać"
+              },
+              {
+                "id": "a",
+                "text": "Dobry wieczór / Dobranoc"
+              },
+              {
+                "id": "d",
+                "text": "Jak masz pełne imię i nazwisko?"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 5,
+            "stage": "mixed",
+            "sourceWord": "Dobry wieczór / Dobranoc",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:boss_mixed_test",
+              "stage:mixed",
+              "difficulty:5"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0209",
+            "order": 209,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "identify_part_of_speech": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "identify_part_of_speech",
+            "baseType": "multiple_choice",
+            "prompt": "Jaka to czesc mowy: \"Dzień\"?",
+            "options": [
+              {
+                "id": "b",
+                "text": "wykrzyknik"
+              },
+              {
+                "id": "c",
+                "text": "przyimek"
+              },
+              {
+                "id": "a",
+                "text": "rzeczownik"
+              },
+              {
+                "id": "d",
+                "text": "przyslowek"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "recognition",
+            "sourceWord": "Dzień",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:identify_part_of_speech",
+              "stage:recognition",
+              "difficulty:2"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0026",
+            "order": 26,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "highlight_part_of_speech": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "highlight_part_of_speech",
+            "baseType": "multiple_choice",
+            "prompt": "Wybierz rzeczownik w zdaniu: \"Mam Dzień.\"",
+            "options": [
+              {
+                "id": "c",
+                "text": "Proszę"
+              },
+              {
+                "id": "a",
+                "text": "Mam"
+              },
+              {
+                "id": "b",
+                "text": "zobaczenia"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Dzień",
+            "sourceExample": "Mam Dzień.",
+            "notes": "",
+            "tags": [
+              "variant:highlight_part_of_speech",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0062",
+            "order": 62,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "part_of_speech_matching": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "part_of_speech_matching",
+            "baseType": "matching",
+            "prompt": "Dopasuj slowo do czesci mowy.",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:part_of_speech_matching",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "pairs": [
+              {
+                "left": "Cześć",
+                "right": "wykrzyknik"
+              },
+              {
+                "left": "Dzień",
+                "right": "rzeczownik"
+              },
+              {
+                "left": "dobry",
+                "right": "przymiotnik"
+              },
+              {
+                "left": "(po",
+                "right": "przyimek"
+              },
+              {
+                "left": "południu)",
+                "right": "przyimek"
+              },
+              {
+                "left": "Dobry",
+                "right": "przymiotnik"
+              }
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0071",
+            "order": 71,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "choose_correct_word_class": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "choose_correct_word_class",
+            "baseType": "multiple_choice",
+            "prompt": "Wybierz slowo tej samej klasy (rzeczownik): \"Mam Dzień.\"",
+            "options": [
+              {
+                "id": "c",
+                "text": "Proszę"
+              },
+              {
+                "id": "a",
+                "text": "Mam"
+              },
+              {
+                "id": "b",
+                "text": "zobaczenia"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "controlled",
+            "sourceWord": "Dzień",
+            "sourceExample": "Mam Dzień.",
+            "notes": "",
+            "tags": [
+              "variant:choose_correct_word_class",
+              "stage:controlled",
+              "difficulty:3"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0088",
+            "order": 88,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "simple_grammar_fill_blank": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "simple_grammar_fill_blank",
+            "baseType": "fill_blank",
+            "prompt": "Mam ___. (rzeczownik)",
+            "options": [
+              "Dzień",
+              "Mam",
+              "zobaczenia",
+              "Proszę"
+            ],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Dzień"
+                ]
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "controlled",
+            "sourceWord": "Dzień",
+            "sourceExample": "Mam Dzień.",
+            "notes": "",
+            "tags": [
+              "variant:simple_grammar_fill_blank",
+              "stage:controlled",
+              "difficulty:3"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0095",
+            "order": 95,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "pos_true_false": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "pos_true_false",
+            "baseType": "binary_choice",
+            "prompt": "Czy \"dobry\" to czasownik?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Prawda"
+              },
+              {
+                "id": "b",
+                "text": "Falsz"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "b"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "recognition",
+            "sourceWord": "dobry",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:pos_true_false",
+              "stage:recognition",
+              "difficulty:2"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0033",
+            "order": 33,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "mini_writing": {
+            "level": "A1",
+            "topicId": "a1-saludos-y-presentacion",
+            "topicSlug": "a1-saludos-y-presentacion",
+            "type": "mini_writing",
+            "baseType": "mini_writing",
+            "prompt": "Napisz 4-6 zdan na temat: A1 SALUDOS Y PRESENTACIÓN. [1]",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:mini_writing",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A1__a1-saludos-y-presentacion__GEN__0109",
+            "order": 109,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          }
+        },
+        "lesson": {
+          "id": "A1__a1-saludos-y-presentacion__L01",
+          "level": "A1",
+          "topicSlug": "a1-saludos-y-presentacion",
+          "topicId": "a1-saludos-y-presentacion",
+          "title": "A1 SALUDOS Y PRESENTACIÓN - lekcja 1",
+          "stageFocus": "recognition",
+          "difficultyTarget": 2,
+          "exerciseIds": [
+            "A1__a1-saludos-y-presentacion__GEN__0001",
+            "A1__a1-saludos-y-presentacion__GEN__0002",
+            "A1__a1-saludos-y-presentacion__GEN__0048",
+            "A1__a1-saludos-y-presentacion__GEN__0049",
+            "A1__a1-saludos-y-presentacion__GEN__0102",
+            "A1__a1-saludos-y-presentacion__GEN__0103",
+            "A1__a1-saludos-y-presentacion__GEN__0151",
+            "A1__a1-saludos-y-presentacion__GEN__0209"
+          ],
+          "estimatedMinutes": 16,
+          "exerciseTypes": [
+            "matching_pairs_es_pl",
+            "multiple_choice_es_pl",
+            "fill_blank_typed",
+            "fill_blank_typed",
+            "correct_the_error",
+            "correct_the_error",
+            "audio_true_false",
+            "boss_mixed_test"
+          ]
+        },
+        "module": {
+          "id": "A1__a1-saludos-y-presentacion__MODULE",
+          "level": "A1",
+          "topicSlug": "a1-saludos-y-presentacion",
+          "topicId": "a1-saludos-y-presentacion",
+          "title": "A1 SALUDOS Y PRESENTACIÓN - modul",
+          "lessonIds": [
+            "A1__a1-saludos-y-presentacion__L01",
+            "A1__a1-saludos-y-presentacion__L02",
+            "A1__a1-saludos-y-presentacion__L03",
+            "A1__a1-saludos-y-presentacion__L04",
+            "A1__a1-saludos-y-presentacion__L05",
+            "A1__a1-saludos-y-presentacion__CHECKPOINT"
+          ],
+          "checkpointLessonId": "A1__a1-saludos-y-presentacion__CHECKPOINT"
+        },
+        "course": {
+          "id": "A1__COURSE_PATH",
+          "level": "A1",
+          "moduleIds": [
+            "A1__a1-saludos-y-presentacion__MODULE"
+          ],
+          "finalExamLessonId": "A1__FINAL_EXAM",
+          "adaptiveRules": {
+            "lowScore": {
+              "addRemedialLesson": true,
+              "focusDifficulties": [
+                1,
+                2
+              ],
+              "repeatMistakes": true
+            },
+            "highScore": {
+              "accelerateTo": [
+                3,
+                4,
+                5
+              ],
+              "increaseListeningDialogue": true
+            },
+            "reviewInsertionEvery": 6,
+            "bossMixRatio": {
+              "currentTopic": 0.5,
+              "previousTopic": 0.3,
+              "olderTopics": 0.2
+            }
+          }
+        }
+      },
+      "topicMapping": [
+        {
+          "topicId": "a1-saludos-y-presentacion",
+          "topicSlug": "a1-saludos-y-presentacion",
+          "topicTitle": "A1 SALUDOS Y PRESENTACIÓN",
+          "unresolved": true,
+          "mappingScore": 0,
+          "rows": 59,
+          "exercises": 220
+        }
+      ]
+    },
+    "A2": {
+      "level": "A2",
+      "counts": {
+        "exercisesTotal": 215,
+        "perTopic": {
+          "presentacion-y-small-ta": {
+            "topicId": "presentacion-y-small-ta",
+            "topicTitle": "PRESENTACIÓN Y SMALL TA",
+            "exercises": 215,
+            "unresolvedTopicMapping": true,
+            "mappingScore": 0,
+            "coverage": {
+              "words": {
+                "total": 42,
+                "covered": 42,
+                "pct": 100,
+                "missing": []
+              },
+              "examples": {
+                "total": 42,
+                "covered": 42,
+                "pct": 100,
+                "missing": []
+              }
+            }
+          }
+        },
+        "perType": {
+          "matching_pairs_es_pl": 1,
+          "multiple_choice_es_pl": 7,
+          "multiple_choice_pl_es": 7,
+          "true_false_translation": 7,
+          "identify_part_of_speech": 10,
+          "pos_true_false": 9,
+          "sentence_meaning_choice": 7,
+          "fill_blank_typed": 6,
+          "fill_blank_word_bank": 6,
+          "highlight_part_of_speech": 9,
+          "matching_example_to_word": 1,
+          "matching_word_to_example": 1,
+          "part_of_speech_matching": 1,
+          "pick_correct_sentence": 7,
+          "word_tiles_sentence": 7,
+          "choose_correct_word_class": 9,
+          "simple_grammar_fill_blank": 9,
+          "correct_the_error": 6,
+          "mini_writing": 6,
+          "reorder_words_sentence": 6,
+          "rewrite_sentence_simple": 6,
+          "type_missing_word": 6,
+          "type_translation_es_pl": 6,
+          "type_translation_pl_es": 6,
+          "audio_true_false": 10,
+          "choose_reply_dialogue": 6,
+          "complete_dialogue": 6,
+          "dialogue_tiles_reply": 6,
+          "dictation_sentence": 6,
+          "dictation_word": 10,
+          "listen_arrange_tiles": 6,
+          "listen_choose": 1,
+          "reorder_dialogue_lines": 6,
+          "boss_mixed_test": 6,
+          "quick_quiz": 6
+        },
+        "perDifficulty": {
+          "1": 22,
+          "2": 64,
+          "3": 60,
+          "4": 57,
+          "5": 12
+        },
+        "perStage": {
+          "recognition": 48,
+          "controlled": 56,
+          "production": 42,
+          "listening": 57,
+          "mixed": 12
+        },
+        "lessonsTotal": 8,
+        "lessonsPerTopic": {
+          "presentacion-y-small-ta": 7
+        },
+        "modulesTotal": 1
+      },
+      "samples": {
+        "variants": {
+          "multiple_choice_es_pl": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "multiple_choice_es_pl",
+            "baseType": "multiple_choice",
+            "prompt": "Jak po polsku: \"Mucho gusto\"?",
+            "options": [
+              {
+                "id": "d",
+                "text": "Jak masz na imię?"
+              },
+              {
+                "id": "b",
+                "text": "Trochę"
+              },
+              {
+                "id": "a",
+                "text": "Miło mi"
+              },
+              {
+                "id": "c",
+                "text": "Pracuję w firmie"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 1,
+            "stage": "recognition",
+            "sourceWord": "Miło mi",
+            "sourceExample": "Miło mi pana poznać.",
+            "notes": "",
+            "tags": [
+              "variant:multiple_choice_es_pl",
+              "stage:recognition",
+              "difficulty:1"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0002",
+            "order": 2,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "multiple_choice_pl_es": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "multiple_choice_pl_es",
+            "baseType": "multiple_choice",
+            "prompt": "Jak po hiszpansku: \"Miło mi\"?",
+            "options": [
+              {
+                "id": "b",
+                "text": "Trabajo en una empresa"
+              },
+              {
+                "id": "c",
+                "text": "¿Te gusta tu trabajo?"
+              },
+              {
+                "id": "a",
+                "text": "Mucho gusto"
+              },
+              {
+                "id": "d",
+                "text": "Tengo hijos"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 1,
+            "stage": "recognition",
+            "sourceWord": "Miło mi",
+            "sourceExample": "Miło mi pana poznać.",
+            "notes": "",
+            "tags": [
+              "variant:multiple_choice_pl_es",
+              "stage:recognition",
+              "difficulty:1"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0009",
+            "order": 9,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "true_false_translation": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "true_false_translation",
+            "baseType": "binary_choice",
+            "prompt": "\"Miło mi\" = \"Mucho gusto\" ?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Prawda"
+              },
+              {
+                "id": "b",
+                "text": "Falsz"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 1,
+            "stage": "recognition",
+            "sourceWord": "Miło mi",
+            "sourceExample": "Miło mi pana poznać.",
+            "notes": "",
+            "tags": [
+              "variant:true_false_translation",
+              "stage:recognition",
+              "difficulty:1"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0016",
+            "order": 16,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "sentence_meaning_choice": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "sentence_meaning_choice",
+            "baseType": "multiple_choice",
+            "prompt": "Znaczenie zdania: \"Bardzo mi miło panią poznać.\"",
+            "options": [
+              {
+                "id": "b",
+                "text": "Vivo en Varsovia."
+              },
+              {
+                "id": "c",
+                "text": "¿Qué haces en Polonia?"
+              },
+              {
+                "id": "a",
+                "text": "Encantado de conocerla."
+              },
+              {
+                "id": "d",
+                "text": "¿De dónde eres?"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "recognition",
+            "sourceWord": "Bardzo mi miło",
+            "sourceExample": "Bardzo mi miło panią poznać.",
+            "notes": "",
+            "tags": [
+              "variant:sentence_meaning_choice",
+              "stage:recognition",
+              "difficulty:2"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0042",
+            "order": 42,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "pick_correct_sentence": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "pick_correct_sentence",
+            "baseType": "multiple_choice",
+            "prompt": "Wybierz poprawne zdanie dla: \"Encantado de conocerla.\"",
+            "options": [
+              {
+                "id": "b",
+                "text": "Mam na imię Marta."
+              },
+              {
+                "id": "c",
+                "text": "Mieszkam w Warszawie."
+              },
+              {
+                "id": "a",
+                "text": "Bardzo mi miło panią poznać."
+              },
+              {
+                "id": "d",
+                "text": "Jak się dziś masz?"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Bardzo mi miło",
+            "sourceExample": "Bardzo mi miło panią poznać.",
+            "notes": "",
+            "tags": [
+              "variant:pick_correct_sentence",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0073",
+            "order": 73,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "matching_pairs_es_pl": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "matching_pairs_es_pl",
+            "baseType": "matching",
+            "prompt": "Dopasuj polski do hiszpanskiego.",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 1,
+            "stage": "recognition",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:matching_pairs_es_pl",
+              "stage:recognition",
+              "difficulty:1"
+            ],
+            "pairs": [
+              {
+                "left": "Miło mi",
+                "right": "Mucho gusto"
+              },
+              {
+                "left": "Bardzo mi miło",
+                "right": "Encantado/a"
+              },
+              {
+                "left": "Jak się Pan/Pani nazywa?",
+                "right": "¿Cómo se llama?"
+              },
+              {
+                "left": "Nazywam się…",
+                "right": "Me llamo…"
+              },
+              {
+                "left": "Czym się Pan/Pani zajmuje?",
+                "right": "¿En qué trabaja?"
+              },
+              {
+                "left": "Pracuję w firmie",
+                "right": "Trabajo en una empresa"
+              },
+              {
+                "left": "Od kiedy mieszka Pan/Pani w Polsce?",
+                "right": "¿Desde cuándo vive en Polonia?"
+              },
+              {
+                "left": "Miło pana poznać",
+                "right": "Es un placer conocerle"
+              }
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0001",
+            "order": 1,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "matching_example_to_word": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "matching_example_to_word",
+            "baseType": "matching",
+            "prompt": "Dopasuj zdanie do slowa.",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:matching_example_to_word",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "pairs": [
+              {
+                "left": "Miło mi pana poznać.",
+                "right": "Miło mi"
+              },
+              {
+                "left": "Bardzo mi miło panią poznać.",
+                "right": "Bardzo mi miło"
+              },
+              {
+                "left": "Jak się pan nazywa?",
+                "right": "Jak się Pan/Pani nazywa?"
+              },
+              {
+                "left": "Nazywam się Kowalski.",
+                "right": "Nazywam się…"
+              },
+              {
+                "left": "Czym się pani zajmuje?",
+                "right": "Czym się Pan/Pani zajmuje?"
+              },
+              {
+                "left": "Pracuję w dużej firmie.",
+                "right": "Pracuję w firmie"
+              }
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0070",
+            "order": 70,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "matching_word_to_example": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "matching_word_to_example",
+            "baseType": "matching",
+            "prompt": "Dopasuj slowo do zdania.",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:matching_word_to_example",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "pairs": [
+              {
+                "left": "Miło mi",
+                "right": "Miło mi pana poznać."
+              },
+              {
+                "left": "Bardzo mi miło",
+                "right": "Bardzo mi miło panią poznać."
+              },
+              {
+                "left": "Jak się Pan/Pani nazywa?",
+                "right": "Jak się pan nazywa?"
+              },
+              {
+                "left": "Nazywam się…",
+                "right": "Nazywam się Kowalski."
+              },
+              {
+                "left": "Czym się Pan/Pani zajmuje?",
+                "right": "Czym się pani zajmuje?"
+              },
+              {
+                "left": "Pracuję w firmie",
+                "right": "Pracuję w dużej firmie."
+              }
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0071",
+            "order": 71,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "word_tiles_sentence": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "word_tiles_sentence",
+            "baseType": "word_tiles",
+            "prompt": "Uloz zdanie z kafelkow.",
+            "options": [
+              "Bardzo",
+              "mi",
+              "miło",
+              "panią",
+              "poznać"
+            ],
+            "answer": {
+              "accepted": [
+                "Bardzo mi miło panią poznać."
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Bardzo mi miło",
+            "sourceExample": "Bardzo mi miło panią poznać.",
+            "notes": "",
+            "tags": [
+              "variant:word_tiles_sentence",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0080",
+            "order": 80,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "reorder_words_sentence": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "reorder_words_sentence",
+            "baseType": "word_tiles",
+            "prompt": "Uloz zdanie we wlasciwej kolejnosci.",
+            "options": [
+              "pan",
+              "Jak",
+              "się",
+              "nazywa"
+            ],
+            "answer": {
+              "accepted": [
+                "Jak się pan nazywa?"
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Jak się Pan/Pani nazywa?",
+            "sourceExample": "Jak się pan nazywa?",
+            "notes": "",
+            "tags": [
+              "variant:reorder_words_sentence",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0117",
+            "order": 117,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "reorder_dialogue_lines": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "reorder_dialogue_lines",
+            "baseType": "word_tiles",
+            "prompt": "Uloz linie dialogu.",
+            "options": [
+              "B: Jak się pan nazywa?",
+              "A: ¿Cómo se llama usted?",
+              "A: ¿Cómo se llama usted?"
+            ],
+            "answer": {
+              "accepted": [
+                "A: ¿Cómo se llama usted? B: Jak się pan nazywa? A: ¿Cómo se llama usted?"
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Jak się Pan/Pani nazywa?",
+            "sourceExample": "Jak się pan nazywa?",
+            "notes": "",
+            "tags": [
+              "variant:reorder_dialogue_lines",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0198",
+            "order": 198,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "type_translation_es_pl": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "type_translation_es_pl",
+            "baseType": "translate",
+            "prompt": "Wpisz po polsku: \"¿Cómo se llama?\".",
+            "options": [],
+            "answer": {
+              "accepted": [
+                "Jak się Pan/Pani nazywa?"
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Jak się Pan/Pani nazywa?",
+            "sourceExample": "Jak się pan nazywa?",
+            "notes": "",
+            "tags": [
+              "variant:type_translation_es_pl",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0135",
+            "order": 135,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "type_translation_pl_es": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "type_translation_pl_es",
+            "baseType": "translate",
+            "prompt": "Wpisz po hiszpansku: \"Nazywam się…\".",
+            "options": [],
+            "answer": {
+              "accepted": [
+                "Me llamo…"
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Nazywam się…",
+            "sourceExample": "Nazywam się Kowalski.",
+            "notes": "",
+            "tags": [
+              "variant:type_translation_pl_es",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0141",
+            "order": 141,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "fill_blank_word_bank": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "fill_blank_word_bank",
+            "baseType": "listen_arrange",
+            "prompt": "Uzupelnij z banku: Nazywam się ___.",
+            "options": [
+              "Nazywam się…",
+              "Uczę się polskiego",
+              "Nie mam planów",
+              "Możemy mówić na ty?",
+              "Dobrze, dziękuję",
+              "Czym się Pan/Pani zajmuje?"
+            ],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Nazywam się…"
+                ]
+              ]
+            },
+            "audio": "Nazywam się Kowalski.",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Nazywam się…",
+            "sourceExample": "Nazywam się Kowalski.",
+            "notes": "",
+            "tags": [
+              "variant:fill_blank_word_bank",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0055",
+            "order": 55,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "fill_blank_typed": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "fill_blank_typed",
+            "baseType": "fill_blank",
+            "prompt": "Nazywam się ___.",
+            "options": [],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Nazywam się…"
+                ]
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Nazywam się…",
+            "sourceExample": "Nazywam się Kowalski.",
+            "notes": "",
+            "tags": [
+              "variant:fill_blank_typed",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0049",
+            "order": 49,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "type_missing_word": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "type_missing_word",
+            "baseType": "fill_blank",
+            "prompt": "Czym się ___ zajmuje? (jedno slowo)",
+            "options": [],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Czym się Pan/Pani zajmuje?"
+                ]
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Czym się Pan/Pani zajmuje?",
+            "sourceExample": "Czym się pani zajmuje?",
+            "notes": "",
+            "tags": [
+              "variant:type_missing_word",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0129",
+            "order": 129,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "rewrite_sentence_simple": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "rewrite_sentence_simple",
+            "baseType": "mini_writing",
+            "prompt": "Napisz podobne zdanie: \"Czym się pani zajmuje?\"",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Czym się Pan/Pani zajmuje?",
+            "sourceExample": "Czym się pani zajmuje?",
+            "notes": "",
+            "tags": [
+              "variant:rewrite_sentence_simple",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0123",
+            "order": 123,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "dictation_word": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "dictation_word",
+            "baseType": "dictation",
+            "prompt": "Zapisz slowo, ktore slyszysz.",
+            "options": [],
+            "answer": {
+              "accepted": [
+                "Miło mi"
+              ],
+              "typoTolerance": 1
+            },
+            "audio": "Miło mi",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Miło mi",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:dictation_word",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0181",
+            "order": 181,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "dictation_sentence": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "dictation_sentence",
+            "baseType": "dictation",
+            "prompt": "Posluchaj i zapisz zdanie.",
+            "options": [],
+            "answer": {
+              "accepted": [
+                "Czym się pani zajmuje?"
+              ],
+              "typoTolerance": 1
+            },
+            "audio": "Czym się pani zajmuje?",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Czym się Pan/Pani zajmuje?",
+            "sourceExample": "Czym się pani zajmuje?",
+            "notes": "",
+            "tags": [
+              "variant:dictation_sentence",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0175",
+            "order": 175,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "listen_choose": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "listen_choose",
+            "baseType": "multiple_choice",
+            "prompt": "Posluchaj i wybierz poprawne slowo.",
+            "options": [
+              {
+                "id": "b",
+                "text": "Gdzie pracujesz?"
+              },
+              {
+                "id": "c",
+                "text": "Mieszkam w…"
+              },
+              {
+                "id": "a",
+                "text": "Bardzo mi miło"
+              },
+              {
+                "id": "d",
+                "text": "Pracuję tutaj"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "Bardzo mi miło",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Bardzo mi miło",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:listen_choose",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0197",
+            "order": 197,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "listen_arrange_tiles": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "listen_arrange_tiles",
+            "baseType": "listen_arrange",
+            "prompt": "___ ___ ___ ___",
+            "options": [
+              "dużej",
+              "w",
+              "firmie",
+              "Pracuję"
+            ],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Pracuję"
+                ],
+                [
+                  "w"
+                ],
+                [
+                  "dużej"
+                ],
+                [
+                  "firmie"
+                ]
+              ]
+            },
+            "audio": "Pracuję w dużej firmie.",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Pracuję w firmie",
+            "sourceExample": "Pracuję w dużej firmie.",
+            "notes": "",
+            "tags": [
+              "variant:listen_arrange_tiles",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0191",
+            "order": 191,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "audio_true_false": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "audio_true_false",
+            "baseType": "binary_choice",
+            "prompt": "Czy slyszysz: \"Jak się Pan/Pani nazywa?\"?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Prawda"
+              },
+              {
+                "id": "b",
+                "text": "Falsz"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "Jak się Pan/Pani nazywa?",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Jak się Pan/Pani nazywa?",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:audio_true_false",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0147",
+            "order": 147,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "choose_reply_dialogue": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "choose_reply_dialogue",
+            "baseType": "scene",
+            "prompt": "A: Pracuję w dużej firmie. B: ...",
+            "options": [
+              {
+                "id": "a",
+                "text": "Trabajo en una empresa grande."
+              },
+              {
+                "id": "b",
+                "text": "Me gusta viajar."
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Pracuję w firmie",
+            "sourceExample": "Pracuję w dużej firmie.",
+            "notes": "",
+            "tags": [
+              "variant:choose_reply_dialogue",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0157",
+            "order": 157,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "complete_dialogue": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "complete_dialogue",
+            "baseType": "fill_blank",
+            "prompt": "A: Pracuję w dużej firmie. B: ___",
+            "options": [],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Trabajo en una empresa grande."
+                ]
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Pracuję w firmie",
+            "sourceExample": "Pracuję w dużej firmie.",
+            "notes": "",
+            "tags": [
+              "variant:complete_dialogue",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0163",
+            "order": 163,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "dialogue_tiles_reply": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "dialogue_tiles_reply",
+            "baseType": "word_tiles",
+            "prompt": "Uloz odpowiedz w dialogu.",
+            "options": [
+              "en",
+              "vive",
+              "cuándo",
+              "¿Desde",
+              "Polonia"
+            ],
+            "answer": {
+              "accepted": [
+                "¿Desde cuándo vive en Polonia"
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 4,
+            "stage": "listening",
+            "sourceWord": "Od kiedy mieszka Pan/Pani w Polsce?",
+            "sourceExample": "Od kiedy mieszka pan w Polsce?",
+            "notes": "",
+            "tags": [
+              "variant:dialogue_tiles_reply",
+              "stage:listening",
+              "difficulty:4"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0169",
+            "order": 169,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "correct_the_error": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "correct_the_error",
+            "baseType": "find_error",
+            "prompt": "Od kiedy mieszka pan w Polsce?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Od kiedy mieszka pan w Polsce?"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "Od kiedy mieszka Pan/Pani w Polsce?",
+            "sourceExample": "Od kiedy mieszka pan w Polsce?",
+            "notes": "",
+            "tags": [
+              "variant:correct_the_error",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0105",
+            "order": 105,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "quick_quiz": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "quick_quiz",
+            "baseType": "multiple_choice",
+            "prompt": "Quick quiz: \"Me llamo…\"",
+            "options": [
+              {
+                "id": "b",
+                "text": "Możemy mówić na ty?"
+              },
+              {
+                "id": "c",
+                "text": "Jak masz na imię?"
+              },
+              {
+                "id": "a",
+                "text": "Nazywam się…"
+              },
+              {
+                "id": "d",
+                "text": "Lubię tu mieszkać"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 5,
+            "stage": "mixed",
+            "sourceWord": "Nazywam się…",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:quick_quiz",
+              "stage:mixed",
+              "difficulty:5"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0210",
+            "order": 210,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "boss_mixed_test": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "boss_mixed_test",
+            "baseType": "multiple_choice",
+            "prompt": "Boss: jak po polsku \"¿En qué trabaja?\"?",
+            "options": [
+              {
+                "id": "b",
+                "text": "Miło pana poznać"
+              },
+              {
+                "id": "c",
+                "text": "Od roku"
+              },
+              {
+                "id": "a",
+                "text": "Czym się Pan/Pani zajmuje?"
+              },
+              {
+                "id": "d",
+                "text": "Co słychać?"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 5,
+            "stage": "mixed",
+            "sourceWord": "Czym się Pan/Pani zajmuje?",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:boss_mixed_test",
+              "stage:mixed",
+              "difficulty:5"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0204",
+            "order": 204,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "identify_part_of_speech": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "identify_part_of_speech",
+            "baseType": "multiple_choice",
+            "prompt": "Jaka to czesc mowy: \"Miło\"?",
+            "options": [
+              {
+                "id": "b",
+                "text": "zaimek"
+              },
+              {
+                "id": "c",
+                "text": "przymiotnik"
+              },
+              {
+                "id": "a",
+                "text": "rzeczownik"
+              },
+              {
+                "id": "d",
+                "text": "czasownik"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "recognition",
+            "sourceWord": "Miło",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:identify_part_of_speech",
+              "stage:recognition",
+              "difficulty:2"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0023",
+            "order": 23,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "highlight_part_of_speech": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "highlight_part_of_speech",
+            "baseType": "multiple_choice",
+            "prompt": "Wybierz rzeczownik w zdaniu: \"To jest Miło.\"",
+            "options": [
+              {
+                "id": "c",
+                "text": "ty?"
+              },
+              {
+                "id": "a",
+                "text": "tu"
+              },
+              {
+                "id": "b",
+                "text": "imię…"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "Miło",
+            "sourceExample": "To jest Miło.",
+            "notes": "",
+            "tags": [
+              "variant:highlight_part_of_speech",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0061",
+            "order": 61,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "part_of_speech_matching": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "part_of_speech_matching",
+            "baseType": "matching",
+            "prompt": "Dopasuj slowo do czesci mowy.",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "controlled",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:part_of_speech_matching",
+              "stage:controlled",
+              "difficulty:2"
+            ],
+            "pairs": [
+              {
+                "left": "Miło",
+                "right": "rzeczownik"
+              },
+              {
+                "left": "mi",
+                "right": "rzeczownik"
+              },
+              {
+                "left": "Bardzo",
+                "right": "przyslowek"
+              },
+              {
+                "left": "miło",
+                "right": "rzeczownik"
+              },
+              {
+                "left": "Jak",
+                "right": "rzeczownik"
+              },
+              {
+                "left": "się",
+                "right": "rzeczownik"
+              }
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0072",
+            "order": 72,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "choose_correct_word_class": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "choose_correct_word_class",
+            "baseType": "multiple_choice",
+            "prompt": "Wybierz slowo tej samej klasy (rzeczownik): \"To jest Miło.\"",
+            "options": [
+              {
+                "id": "c",
+                "text": "ty?"
+              },
+              {
+                "id": "a",
+                "text": "tu"
+              },
+              {
+                "id": "b",
+                "text": "imię…"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "controlled",
+            "sourceWord": "Miło",
+            "sourceExample": "To jest Miło.",
+            "notes": "",
+            "tags": [
+              "variant:choose_correct_word_class",
+              "stage:controlled",
+              "difficulty:3"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0087",
+            "order": 87,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "simple_grammar_fill_blank": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "simple_grammar_fill_blank",
+            "baseType": "fill_blank",
+            "prompt": "To jest ___. (rzeczownik)",
+            "options": [
+              "Miło",
+              "tu",
+              "imię…",
+              "ty?"
+            ],
+            "answer": {
+              "acceptedByBlank": [
+                [
+                  "Miło"
+                ]
+              ]
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "controlled",
+            "sourceWord": "Miło",
+            "sourceExample": "To jest Miło.",
+            "notes": "",
+            "tags": [
+              "variant:simple_grammar_fill_blank",
+              "stage:controlled",
+              "difficulty:3"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0096",
+            "order": 96,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "pos_true_false": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "pos_true_false",
+            "baseType": "binary_choice",
+            "prompt": "Czy \"mi\" to rzeczownik?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Prawda"
+              },
+              {
+                "id": "b",
+                "text": "Falsz"
+              }
+            ],
+            "answer": {
+              "correctOptionId": "a"
+            },
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 2,
+            "stage": "recognition",
+            "sourceWord": "mi",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:pos_true_false",
+              "stage:recognition",
+              "difficulty:2"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0033",
+            "order": 33,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          },
+          "mini_writing": {
+            "level": "A2",
+            "topicId": "presentacion-y-small-ta",
+            "topicSlug": "presentacion-y-small-ta",
+            "type": "mini_writing",
+            "baseType": "mini_writing",
+            "prompt": "Napisz 4-6 zdan na temat: PRESENTACIÓN Y SMALL TA. [1]",
+            "options": [],
+            "answer": "",
+            "audio": "",
+            "ui": {
+              "variant": "standard"
+            },
+            "difficulty": 3,
+            "stage": "production",
+            "sourceWord": "",
+            "sourceExample": "",
+            "notes": "",
+            "tags": [
+              "variant:mini_writing",
+              "stage:production",
+              "difficulty:3"
+            ],
+            "id": "A2__presentacion-y-small-ta__GEN__0111",
+            "order": 111,
+            "category": "vocabulary",
+            "grammarSource": "https://aniakubica.com/czesci-mowy/",
+            "seedSource": "a1_a2_excel_grammar",
+            "seedVersion": "v1_2026-02-14"
+          }
+        },
+        "lesson": {
+          "id": "A2__presentacion-y-small-ta__L01",
+          "level": "A2",
+          "topicSlug": "presentacion-y-small-ta",
+          "topicId": "presentacion-y-small-ta",
+          "title": "PRESENTACIÓN Y SMALL TA - lekcja 1",
+          "stageFocus": "recognition",
+          "difficultyTarget": 2,
+          "exerciseIds": [
+            "A2__presentacion-y-small-ta__GEN__0001",
+            "A2__presentacion-y-small-ta__GEN__0002",
+            "A2__presentacion-y-small-ta__GEN__0049",
+            "A2__presentacion-y-small-ta__GEN__0050",
+            "A2__presentacion-y-small-ta__GEN__0105",
+            "A2__presentacion-y-small-ta__GEN__0106",
+            "A2__presentacion-y-small-ta__GEN__0147",
+            "A2__presentacion-y-small-ta__GEN__0204"
+          ],
+          "estimatedMinutes": 16,
+          "exerciseTypes": [
+            "matching_pairs_es_pl",
+            "multiple_choice_es_pl",
+            "fill_blank_typed",
+            "fill_blank_typed",
+            "correct_the_error",
+            "correct_the_error",
+            "audio_true_false",
+            "boss_mixed_test"
+          ]
+        },
+        "module": {
+          "id": "A2__presentacion-y-small-ta__MODULE",
+          "level": "A2",
+          "topicSlug": "presentacion-y-small-ta",
+          "topicId": "presentacion-y-small-ta",
+          "title": "PRESENTACIÓN Y SMALL TA - modul",
+          "lessonIds": [
+            "A2__presentacion-y-small-ta__L01",
+            "A2__presentacion-y-small-ta__L02",
+            "A2__presentacion-y-small-ta__L03",
+            "A2__presentacion-y-small-ta__L04",
+            "A2__presentacion-y-small-ta__L05",
+            "A2__presentacion-y-small-ta__CHECKPOINT"
+          ],
+          "checkpointLessonId": "A2__presentacion-y-small-ta__CHECKPOINT"
+        },
+        "course": {
+          "id": "A2__COURSE_PATH",
+          "level": "A2",
+          "moduleIds": [
+            "A2__presentacion-y-small-ta__MODULE"
+          ],
+          "finalExamLessonId": "A2__FINAL_EXAM",
+          "adaptiveRules": {
+            "lowScore": {
+              "addRemedialLesson": true,
+              "focusDifficulties": [
+                1,
+                2
+              ],
+              "repeatMistakes": true
+            },
+            "highScore": {
+              "accelerateTo": [
+                3,
+                4,
+                5
+              ],
+              "increaseListeningDialogue": true
+            },
+            "reviewInsertionEvery": 6,
+            "bossMixRatio": {
+              "currentTopic": 0.5,
+              "previousTopic": 0.3,
+              "olderTopics": 0.2
+            }
+          }
+        }
+      },
+      "topicMapping": [
+        {
+          "topicId": "presentacion-y-small-ta",
+          "topicSlug": "presentacion-y-small-ta",
+          "topicTitle": "PRESENTACIÓN Y SMALL TA",
+          "unresolved": true,
+          "mappingScore": 0,
+          "rows": 43,
+          "exercises": 215
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "A1": [
+      {
+        "topicSlug": "a1-saludos-y-presentacion",
+        "wordCoveragePct": 89,
+        "wordMissing": [
+          "Przepraszam, nie zrozumiałem",
+          "Możesz mówić wolniej?",
+          "Dziękuję za rozmowę",
+          "Miło było cię poznać",
+          "Do zobaczenia wkrótce",
+          "Miłego dnia"
+        ],
+        "exampleCoveragePct": 89,
+        "exampleMissing": [
+          "Przepraszam, nie zrozumiałem.",
+          "Możesz mówić wolniej?",
+          "Dziękuję za rozmowę.",
+          "Miło było cię poznać.",
+          "Do zobaczenia wkrótce.",
+          "Miłego dnia!"
+        ]
+      }
+    ],
+    "A2": [
+      {
+        "topicSlug": "presentacion-y-small-ta",
+        "wordCoveragePct": 100,
+        "wordMissing": [],
+        "exampleCoveragePct": 100,
+        "exampleMissing": []
+      }
+    ]
+  },
+  "missingVariants": {
+    "A1": [],
+    "A2": []
+  }
+}

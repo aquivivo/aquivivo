@@ -8,6 +8,13 @@ import { auth, db, storage } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
+  isQaAdminUser,
+  markAllCompleted,
+  markAllCompletedAllLevels,
+  mountQaToolsPanel,
+  resetAllProgress,
+} from '../qa-admin-tools.js';
+import {
   doc,
   getDoc,
   setDoc,
@@ -38,6 +45,7 @@ const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(location.search);
 const AS_UID = (qs.get('as') || '').trim(); // admin preview
 const CHAT_UID = (qs.get('chat') || '').trim();
+const QA_MODE = String(qs.get('qa') || '').trim() === '1';
 
 function toCode(raw) {
   return String(raw || '')
@@ -2412,12 +2420,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     try {
       const baseDoc = await ensureUserDoc(user);
+      const qaAdmin = await isQaAdminUser(user, baseDoc);
 
       // Admin preview: load target user doc
       let viewUid = user.uid;
       let viewDoc = baseDoc;
 
-      const isAdmin = baseDoc.admin === true;
+      const isAdmin = qaAdmin.allowed;
       if (AS_UID) {
         if (!isAdmin) {
           setMsg('Acceso denegado (solo admin).', 'bad');
@@ -2516,6 +2525,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       renderAdminUI(isAdmin);
+      mountQaToolsPanel({
+        enabled: QA_MODE && isAdmin,
+        authUid: user.uid,
+        targetUid: viewUid,
+        targetEmail: String(viewDoc?.email || ''),
+        adminReasons: qaAdmin.reasons || [],
+        onStatus: (text, kind) => setMsg(text, kind === 'bad' ? 'bad' : kind === 'warn' ? 'warn' : 'ok'),
+      });
 
       renderPromoList(viewDoc);
 
