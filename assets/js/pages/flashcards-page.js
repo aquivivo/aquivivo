@@ -21,6 +21,7 @@ const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
 const PRE_LEVEL = String(params.get('level') || '').toUpperCase();
 const PRE_TOPIC = String(params.get('id') || params.get('topic') || '').trim();
+const PRE_LESSON = String(params.get('lessonId') || '').trim();
 const TRACK = String(params.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = String(params.get('view') || '').trim().toLowerCase();
 
@@ -388,6 +389,20 @@ function isCardExercise(ex) {
   return t.includes(CARD_TYPE_HINT);
 }
 
+function exerciseMatchesLesson(ex, lessonId) {
+  const wanted = String(lessonId || '').trim();
+  if (!wanted) return true;
+  const one = String(ex?.lessonId || '').trim();
+  if (one && one === wanted) return true;
+  const many = Array.isArray(ex?.lessonIds)
+    ? ex.lessonIds.map((x) => String(x || '').trim()).filter(Boolean)
+    : [];
+  if (many.includes(wanted)) return true;
+  const notes = String(ex?.notes || '');
+  if (notes.includes(`lessonId:${wanted}`)) return true;
+  return false;
+}
+
 function buildCardsFromExercise(ex) {
   const opts = Array.isArray(ex.options) ? ex.options : [];
   const list = [];
@@ -735,7 +750,10 @@ async function loadCards() {
         })
       : exercises;
 
-    const base = visibleExercises
+    const lessonFiltered = PRE_LESSON
+      ? visibleExercises.filter((ex) => exerciseMatchesLesson(ex, PRE_LESSON))
+      : visibleExercises;
+    const base = lessonFiltered
       .filter(isCardExercise)
       .flatMap(buildCardsFromExercise)
       .map((c) => ({ ...c, favorite: favMap.get(c.id)?.favorite === true }));

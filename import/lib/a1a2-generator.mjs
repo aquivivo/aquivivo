@@ -156,9 +156,9 @@ function pickField(row, keys) {
 export function stripSheetName(name) {
   let s = safeCell(name);
   s = s.replace(/^[^\p{L}\p{N}]+/u, '');
-  s = s.replace(/^(a1|a2)\s*[-—:]+/i, '');
-  s = s.replace(/^vocabulario\s*(a1|a2)?\s*[-—:]+/i, '');
-  s = s.replace(/^temat\s*\d+\s*/i, '');
+  s = s.replace(/^(a1|a2)\s*[\u2010-\u2015\-:]+\s*/i, '');
+  s = s.replace(/^vocabulario\s*(a1|a2)?\s*[\u2010-\u2015\-:]+\s*/i, '');
+  s = s.replace(/^temat\s*\d+\s*[\u2010-\u2015\-:]?\s*/i, '');
   return safeCell(s);
 }
 
@@ -215,13 +215,61 @@ function topicMatchScore(sheet, topic) {
   return score;
 }
 
+const SHEET_ALIAS_RULES = {
+  A1: [
+    { includes: ['informacion'], slugHints: ['datos-personales-documentos'] },
+    { includes: ['descripcion'], slugHints: ['saludos-presentacion', 'familia-relaciones'] },
+    { includes: ['rutina'], slugHints: ['rutina-horarios-calendario'] },
+    { includes: ['comida'], slugHints: ['restaurante-cafeteria', 'compras-comida'] },
+  ],
+  A2: [
+    { includes: ['presentacion', 'small'], slugHints: ['vida-social-formalidad', 'comunicacion-oficina-telefono'] },
+    { includes: ['comida', 'restau'], slugHints: ['integracion-practica-polonia', 'vida-social-formalidad'] },
+    { includes: ['tienda', 'devolu'], slugHints: ['integracion-practica-polonia', 'formularios-citas'] },
+    { includes: ['oficina', 'publica'], slugHints: ['tramites-residencia-pesel', 'formularios-citas'] },
+    { includes: ['transporte'], slugHints: ['viajes-reservas', 'conducir-control-multa-taller'] },
+    { includes: ['tiempo', 'libre'], slugHints: ['vida-social-formalidad', 'integracion-practica-polonia'] },
+    { includes: ['emociones', 'estado'], slugHints: ['vida-social-formalidad', 'integracion-practica-polonia'] },
+  ],
+};
+
+function topicByAliasRule(sheetKey, scoped, level = '') {
+  const lvl = String(level || '').toUpperCase();
+  const rules = SHEET_ALIAS_RULES[lvl] || [];
+  if (!sheetKey || !rules.length) return null;
+  const normalized = normalizeText(sheetKey);
+  const hit = rules.find((rule) => (rule.includes || []).every((token) => normalized.includes(normalizeText(token))));
+  if (!hit) return null;
+  const candidates = (hit.slugHints || []).map((hint) => normalizeText(hint)).filter(Boolean);
+  for (const hint of candidates) {
+    const topic = scoped.find((t) => {
+      const slug = normalizeText(t?.slug || t?.id || '');
+      const title = normalizeText(t?.title || t?.name || '');
+      return slug.includes(hint) || title.includes(hint);
+    });
+    if (topic) return topic;
+  }
+  return null;
+}
+
 export function mapSheetToTopic(sheet, topics = [], level = '') {
   const scoped = (topics || []).filter((t) => {
     if (!level) return true;
     return String(t?.level || '').toUpperCase() === String(level).toUpperCase();
   });
+  const sheetKey = normalizeText(sheet?.strippedName || sheet?.name || '');
+  const aliasTopic = topicByAliasRule(sheetKey, scoped, level);
+  if (aliasTopic) {
+    return {
+      topicId: String(aliasTopic.id || aliasTopic.slug || '').trim(),
+      topicSlug: String(aliasTopic.slug || aliasTopic.id || '').trim(),
+      topicTitle: String(aliasTopic.title || aliasTopic.name || aliasTopic.slug || aliasTopic.id || '').trim(),
+      unresolved: false,
+      score: 100,
+    };
+  }
   let best = null;
-  let bestScore = 0;
+  let bestScore = -1;
   for (const topic of scoped) {
     const score = topicMatchScore(sheet, topic);
     if (score > bestScore) {
@@ -229,7 +277,16 @@ export function mapSheetToTopic(sheet, topics = [], level = '') {
       bestScore = score;
     }
   }
-  if (!best || bestScore < 4) {
+  if (best && bestScore >= 2) {
+    return {
+      topicId: String(best.id || best.slug || '').trim(),
+      topicSlug: String(best.slug || best.id || '').trim(),
+      topicTitle: String(best.title || best.name || best.slug || best.id || '').trim(),
+      unresolved: false,
+      score: bestScore,
+    };
+  }
+  if (!best || bestScore < 0) {
     const fallback = sheet.slugHint || slugify(sheet.name || '');
     return {
       topicId: fallback,
@@ -1082,19 +1139,25 @@ function buildExampleCandidates(ctx, row, index) {
 
 function buildMatchingCandidates(ctx) {
   const out = [];
+  const pairAnswer = (pairs = []) =>
+    pairs
+      .map((_, idx) => `${String.fromCharCode(65 + (idx % 26))}-${idx + 1}`)
+      .join(',');
   const rows = ctx.rows.filter((r) => r.pl && r.es);
   for (let i = 0; i < rows.length; i += 8) {
     const slice = rows.slice(i, i + 8);
     if (slice.length < 3) continue;
     const first = slice[0] || {};
+    const pairs = slice.map((r) => ({ left: r.pl, right: r.es }));
     out.push(
       makeExerciseBase({
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'matching_pairs_es_pl',
-        prompt: 'Dopasuj polski do hiszpanskiego.',
-        pairs: slice.map((r) => ({ left: r.pl, right: r.es })),
+        prompt: `Dopasuj polski do hiszpanskiego. (${Math.floor(i / 8) + 1})`,
+        pairs,
+        answer: pairAnswer(pairs),
         sourceWord: first.pl || '',
         sourceTranslation: first.es || '',
         sourceExample: first.exPl || '',
@@ -1108,14 +1171,16 @@ function buildMatchingCandidates(ctx) {
     const slice = exRows.slice(i, i + 6);
     if (slice.length < 3) continue;
     const first = slice[0] || {};
+    const pairsA = slice.map((r) => ({ left: ensureSentence(r.exPl), right: r.pl }));
     out.push(
       makeExerciseBase({
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'matching_example_to_word',
-        prompt: 'Dopasuj zdanie do slowa.',
-        pairs: slice.map((r) => ({ left: ensureSentence(r.exPl), right: r.pl })),
+        prompt: `Dopasuj zdanie do slowa. (${Math.floor(i / 6) + 1})`,
+        pairs: pairsA,
+        answer: pairAnswer(pairsA),
         sourceWord: first.pl || '',
         sourceTranslation: first.es || '',
         sourceExample: first.exPl || '',
@@ -1129,8 +1194,9 @@ function buildMatchingCandidates(ctx) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'matching_word_to_example',
-        prompt: 'Dopasuj slowo do zdania.',
+        prompt: `Dopasuj slowo do zdania. (${Math.floor(i / 6) + 1})`,
         pairs: slice.map((r) => ({ left: r.pl, right: ensureSentence(r.exPl) })),
+        answer: pairAnswer(slice),
         sourceWord: first.pl || '',
         sourceTranslation: first.es || '',
         sourceExample: first.exPl || '',
