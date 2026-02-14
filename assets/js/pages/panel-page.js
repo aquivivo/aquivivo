@@ -9,10 +9,7 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/fi
 import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
   isQaAdminUser,
-  markAllCompleted,
-  markAllCompletedAllLevels,
   mountQaToolsPanel,
-  resetAllProgress,
 } from '../qa-admin-tools.js';
 import {
   doc,

@@ -420,7 +420,11 @@ function instructionEsForVariant(variant) {
   if (
     key.includes('fill') ||
     key.includes('missing_word') ||
-    key.includes('complete_dialogue')
+    key.includes('complete_dialogue') ||
+    key.includes('type_translation') ||
+    key.includes('rewrite') ||
+    key.includes('mini_writing') ||
+    key.includes('correct_the_error')
   ) {
     return 'Completa la frase.';
   }
@@ -514,10 +518,27 @@ function buildWordBasedCandidates(ctx, row, index) {
   const plPool = ctx.rows.map((x) => x.pl).filter(Boolean);
   const esPool = ctx.rows.map((x) => x.es).filter(Boolean);
   if (!row.pl || !row.es) return out;
+  const rowMeta = {
+    sourceWord: row.pl,
+    sourceTranslation: row.es,
+    sourceExample: row.exPl,
+    sourceExampleEs: row.exEs,
+    seedIndex: index,
+  };
+  const sentence = sentenceBundleForRow({
+    level: ctx.level,
+    topicSlug: ctx.topic.topicSlug,
+    targetPl: row.pl,
+    targetEs: row.es,
+    examplePl: row.exPl,
+    exampleEs: row.exEs,
+    seed: index,
+  });
 
   const mcqEsPl = optionItemsFromTexts(shuffleDeterministic(plPool, index + 11), row.pl);
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -525,14 +546,13 @@ function buildWordBasedCandidates(ctx, row, index) {
       prompt: `Jak po polsku: "${row.es}"?`,
       options: mcqEsPl.options,
       answer: { correctOptionId: mcqEsPl.correctOptionId },
-      sourceWord: row.pl,
-      sourceExample: row.exPl,
     }),
   );
 
   const mcqPlEs = optionItemsFromTexts(shuffleDeterministic(esPool, index + 19), row.es);
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -540,8 +560,6 @@ function buildWordBasedCandidates(ctx, row, index) {
       prompt: `Jak po hiszpansku: "${row.pl}"?`,
       options: mcqPlEs.options,
       answer: { correctOptionId: mcqPlEs.correctOptionId },
-      sourceWord: row.pl,
-      sourceExample: row.exPl,
     }),
   );
 
@@ -549,6 +567,7 @@ function buildWordBasedCandidates(ctx, row, index) {
   const falseCase = index % 2 === 1;
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -559,34 +578,30 @@ function buildWordBasedCandidates(ctx, row, index) {
         { id: 'b', text: 'Falsz' },
       ],
       answer: { correctOptionId: falseCase ? 'b' : 'a' },
-      sourceWord: row.pl,
-      sourceExample: row.exPl,
     }),
   );
 
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'type_translation_es_pl',
       prompt: `Wpisz po polsku: "${row.es}".`,
       answer: { accepted: uniqList([row.pl]) },
-      sourceWord: row.pl,
-      sourceExample: row.exPl,
     }),
   );
 
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'type_translation_pl_es',
       prompt: `Wpisz po hiszpansku: "${row.pl}".`,
       answer: { accepted: uniqList([row.es]) },
-      sourceWord: row.pl,
-      sourceExample: row.exPl,
     }),
   );
 
@@ -597,6 +612,7 @@ function buildWordBasedCandidates(ctx, row, index) {
     );
     out.push(
       makeExerciseBase({
+        ...rowMeta,
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
@@ -604,28 +620,29 @@ function buildWordBasedCandidates(ctx, row, index) {
         prompt: `Znaczenie zdania: "${ensureSentence(row.exPl)}"`,
         options: sentenceOpt.options,
         answer: { correctOptionId: sentenceOpt.correctOptionId },
-        sourceWord: row.pl,
         sourceExample: ensureSentence(row.exPl),
+        sourceExampleEs: ensureSentence(row.exEs),
       }),
     );
   }
 
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'dictation_word',
-      prompt: 'Zapisz slowo, ktore slyszysz.',
+      prompt: sentence.audioSentencePl || 'Zapisz slowo, ktore slyszysz.',
       answer: { accepted: uniqList([row.pl]), typoTolerance: 1 },
-      audio: row.pl,
-      sourceWord: row.pl,
+      audio: sentence.audioSentencePl || row.pl,
     }),
   );
 
   const listenOpt = optionItemsFromTexts(shuffleDeterministic(plPool, index + 41), row.pl);
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -633,8 +650,7 @@ function buildWordBasedCandidates(ctx, row, index) {
       prompt: 'Posluchaj i wybierz poprawne slowo.',
       options: listenOpt.options,
       answer: { correctOptionId: listenOpt.correctOptionId },
-      audio: row.pl,
-      sourceWord: row.pl,
+      audio: sentence.audioSentencePl || row.pl,
     }),
   );
 
@@ -642,6 +658,7 @@ function buildWordBasedCandidates(ctx, row, index) {
   const tfFalse = index % 3 === 0;
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -652,8 +669,7 @@ function buildWordBasedCandidates(ctx, row, index) {
         { id: 'b', text: 'Falsz' },
       ],
       answer: { correctOptionId: tfFalse ? 'b' : 'a' },
-      audio: row.pl,
-      sourceWord: row.pl,
+      audio: sentence.audioSentencePl || row.pl,
     }),
   );
 
@@ -667,6 +683,13 @@ function buildExampleCandidates(ctx, row, index) {
   const exEs = ensureSentence(row.exEs, row.es);
   const tokens = tokenizeSentence(exPl).filter((t) => /[\p{L}\p{N}]/u.test(t));
   if (tokens.length < 2) return out;
+  const rowMeta = {
+    sourceWord: row.pl,
+    sourceTranslation: row.es,
+    sourceExample: exPl,
+    sourceExampleEs: exEs,
+    seedIndex: index,
+  };
 
   const pickSentence = optionItemsFromTexts(
     shuffleDeterministic(ctx.rows.map((x) => ensureSentence(x.exPl)).filter(Boolean), index + 53),
@@ -674,6 +697,7 @@ function buildExampleCandidates(ctx, row, index) {
   );
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -681,13 +705,12 @@ function buildExampleCandidates(ctx, row, index) {
       prompt: `Wybierz poprawne zdanie dla: "${exEs || row.es}"`,
       options: pickSentence.options,
       answer: { correctOptionId: pickSentence.correctOptionId },
-      sourceWord: row.pl,
-      sourceExample: exPl,
     }),
   );
 
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -695,13 +718,12 @@ function buildExampleCandidates(ctx, row, index) {
       prompt: 'Uloz zdanie z kafelkow.',
       options: tokens,
       answer: { accepted: [exPl] },
-      sourceWord: row.pl,
-      sourceExample: exPl,
     }),
   );
 
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -709,8 +731,6 @@ function buildExampleCandidates(ctx, row, index) {
       prompt: 'Uloz zdanie we wlasciwej kolejnosci.',
       options: shuffleDeterministic(tokens, index + 59),
       answer: { accepted: [exPl] },
-      sourceWord: row.pl,
-      sourceExample: exPl,
     }),
   );
 
@@ -719,6 +739,7 @@ function buildExampleCandidates(ctx, row, index) {
     const bank = uniqList([row.pl, ...shuffleDeterministic(ctx.rows.map((x) => x.pl).filter(Boolean), index + 61)]).slice(0, 6);
     out.push(
       makeExerciseBase({
+        ...rowMeta,
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
@@ -726,39 +747,36 @@ function buildExampleCandidates(ctx, row, index) {
         prompt: `Uzupelnij z banku: ${blank}`,
         options: bank,
         answer: { acceptedByBlank: [[row.pl]] },
-        sourceWord: row.pl,
-        sourceExample: exPl,
         audio: exPl,
       }),
     );
     out.push(
       makeExerciseBase({
+        ...rowMeta,
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'fill_blank_typed',
         prompt: blank,
         answer: { acceptedByBlank: [[row.pl]] },
-        sourceWord: row.pl,
-        sourceExample: exPl,
       }),
     );
     out.push(
       makeExerciseBase({
+        ...rowMeta,
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'type_missing_word',
         prompt: `${blank} (jedno slowo)`,
         answer: { acceptedByBlank: [[row.pl]] },
-        sourceWord: row.pl,
-        sourceExample: exPl,
       }),
     );
   }
 
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -766,14 +784,13 @@ function buildExampleCandidates(ctx, row, index) {
       prompt: 'Posluchaj i zapisz zdanie.',
       answer: { accepted: [exPl], typoTolerance: 1 },
       audio: exPl,
-      sourceWord: row.pl,
-      sourceExample: exPl,
     }),
   );
 
   if (tokens.length >= 3) {
     out.push(
       makeExerciseBase({
+        ...rowMeta,
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
@@ -782,22 +799,19 @@ function buildExampleCandidates(ctx, row, index) {
         options: shuffleDeterministic(tokens, index + 67),
         answer: { acceptedByBlank: tokens.map((token) => [token]) },
         audio: exPl,
-        sourceWord: row.pl,
-        sourceExample: exPl,
       }),
     );
   }
 
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'rewrite_sentence_simple',
       prompt: `Napisz podobne zdanie: "${exPl}"`,
       answer: '',
-      sourceWord: row.pl,
-      sourceExample: exPl,
     }),
   );
 
@@ -805,6 +819,7 @@ function buildExampleCandidates(ctx, row, index) {
   const fixOpt = optionItemsFromTexts([exPl, bad], exPl);
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -812,8 +827,6 @@ function buildExampleCandidates(ctx, row, index) {
       prompt: bad,
       options: fixOpt.options,
       answer: { correctOptionId: fixOpt.correctOptionId },
-      sourceWord: row.pl,
-      sourceExample: exPl,
     }),
   );
 
@@ -824,6 +837,7 @@ function buildExampleCandidates(ctx, row, index) {
   );
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -831,21 +845,19 @@ function buildExampleCandidates(ctx, row, index) {
       prompt: `A: ${exPl}\nB: ...`,
       options: dlgOpt.options,
       answer: { correctOptionId: dlgOpt.correctOptionId },
-      sourceWord: row.pl,
-      sourceExample: exPl,
     }),
   );
 
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'complete_dialogue',
       prompt: `A: ${exPl}\nB: ___`,
       answer: { acceptedByBlank: [[reply]] },
-      sourceWord: row.pl,
-      sourceExample: exPl,
+      target: { pl: reply, es: row.es },
     }),
   );
 
@@ -853,6 +865,7 @@ function buildExampleCandidates(ctx, row, index) {
   if (replyTokens.length >= 2) {
     out.push(
       makeExerciseBase({
+        ...rowMeta,
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
@@ -860,8 +873,7 @@ function buildExampleCandidates(ctx, row, index) {
         prompt: 'Uloz odpowiedz w dialogu.',
         options: shuffleDeterministic(replyTokens, index + 73),
         answer: { accepted: [replyTokens.join(' ')] },
-        sourceWord: row.pl,
-        sourceExample: exPl,
+        target: { pl: replyTokens.join(' '), es: row.es },
       }),
     );
   }
@@ -869,6 +881,7 @@ function buildExampleCandidates(ctx, row, index) {
   const lines = [`A: ${reply}`, `B: ${exPl}`, `A: ${reply}`];
   out.push(
     makeExerciseBase({
+      ...rowMeta,
       level: ctx.level,
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
@@ -876,8 +889,7 @@ function buildExampleCandidates(ctx, row, index) {
       prompt: 'Uloz linie dialogu.',
       options: shuffleDeterministic(lines, index + 79),
       answer: { accepted: [lines.join(' ')] },
-      sourceWord: row.pl,
-      sourceExample: exPl,
+      target: { pl: lines.join(' '), es: row.es },
     }),
   );
 
@@ -890,6 +902,7 @@ function buildMatchingCandidates(ctx) {
   for (let i = 0; i < rows.length; i += 8) {
     const slice = rows.slice(i, i + 8);
     if (slice.length < 3) continue;
+    const first = slice[0] || {};
     out.push(
       makeExerciseBase({
         level: ctx.level,
@@ -898,6 +911,11 @@ function buildMatchingCandidates(ctx) {
         variant: 'matching_pairs_es_pl',
         prompt: 'Dopasuj polski do hiszpanskiego.',
         pairs: slice.map((r) => ({ left: r.pl, right: r.es })),
+        sourceWord: first.pl || '',
+        sourceTranslation: first.es || '',
+        sourceExample: first.exPl || '',
+        sourceExampleEs: first.exEs || '',
+        seedIndex: i,
       }),
     );
   }
@@ -905,6 +923,7 @@ function buildMatchingCandidates(ctx) {
   for (let i = 0; i < exRows.length; i += 6) {
     const slice = exRows.slice(i, i + 6);
     if (slice.length < 3) continue;
+    const first = slice[0] || {};
     out.push(
       makeExerciseBase({
         level: ctx.level,
@@ -913,6 +932,11 @@ function buildMatchingCandidates(ctx) {
         variant: 'matching_example_to_word',
         prompt: 'Dopasuj zdanie do slowa.',
         pairs: slice.map((r) => ({ left: ensureSentence(r.exPl), right: r.pl })),
+        sourceWord: first.pl || '',
+        sourceTranslation: first.es || '',
+        sourceExample: first.exPl || '',
+        sourceExampleEs: first.exEs || '',
+        seedIndex: i + 1,
       }),
     );
     out.push(
@@ -923,6 +947,11 @@ function buildMatchingCandidates(ctx) {
         variant: 'matching_word_to_example',
         prompt: 'Dopasuj slowo do zdania.',
         pairs: slice.map((r) => ({ left: r.pl, right: ensureSentence(r.exPl) })),
+        sourceWord: first.pl || '',
+        sourceTranslation: first.es || '',
+        sourceExample: first.exPl || '',
+        sourceExampleEs: first.exEs || '',
+        seedIndex: i + 2,
       }),
     );
   }
@@ -931,6 +960,15 @@ function buildMatchingCandidates(ctx) {
 
 function buildGrammarCandidates(ctx) {
   const out = [];
+  const translationByWord = new Map();
+  (ctx.rows || []).forEach((r) => {
+    const pl = safeCell(r?.pl);
+    const es = safeCell(r?.es);
+    if (!pl || !es) return;
+    pl.split(/\s+/).forEach((token) => {
+      if (!translationByWord.has(token)) translationByWord.set(token, es);
+    });
+  });
   const words = uniqList(
     ctx.rows
       .map((r) => r.pl)
@@ -953,6 +991,8 @@ function buildGrammarCandidates(ctx) {
         options: opt.options,
         answer: { correctOptionId: opt.correctOptionId },
         sourceWord: item.word,
+        sourceTranslation: translationByWord.get(item.word) || '',
+        seedIndex: idx,
       }),
     );
 
@@ -971,6 +1011,8 @@ function buildGrammarCandidates(ctx) {
         ],
         answer: { correctOptionId: falseCase ? 'b' : 'a' },
         sourceWord: item.word,
+        sourceTranslation: translationByWord.get(item.word) || '',
+        seedIndex: idx + 1,
       }),
     );
   });
@@ -986,6 +1028,9 @@ function buildGrammarCandidates(ctx) {
         variant: 'part_of_speech_matching',
         prompt: 'Dopasuj slowo do czesci mowy.',
         pairs: slice.map((x) => ({ left: x.word, right: x.pos })),
+        sourceWord: slice[0]?.word || '',
+        sourceTranslation: translationByWord.get(slice[0]?.word || '') || '',
+        seedIndex: i + 2,
       }),
     );
   }
@@ -1012,6 +1057,8 @@ function buildGrammarCandidates(ctx) {
         answer: { correctOptionId: opt.correctOptionId },
         sourceWord: item.word,
         sourceExample: sentence,
+        sourceTranslation: translationByWord.get(item.word) || '',
+        seedIndex: idx + 3,
       }),
     );
     out.push(
@@ -1025,6 +1072,8 @@ function buildGrammarCandidates(ctx) {
         answer: { correctOptionId: opt.correctOptionId },
         sourceWord: item.word,
         sourceExample: sentence,
+        sourceTranslation: translationByWord.get(item.word) || '',
+        seedIndex: idx + 4,
       }),
     );
     out.push(
@@ -1038,6 +1087,8 @@ function buildGrammarCandidates(ctx) {
         answer: { acceptedByBlank: [[item.word]] },
         sourceWord: item.word,
         sourceExample: sentence,
+        sourceTranslation: translationByWord.get(item.word) || '',
+        seedIndex: idx + 5,
       }),
     );
   });
@@ -1061,6 +1112,10 @@ function buildMixedTestCandidates(ctx) {
         options: quick.options,
         answer: { correctOptionId: quick.correctOptionId },
         sourceWord: row.pl,
+        sourceTranslation: row.es,
+        sourceExample: row.exPl,
+        sourceExampleEs: row.exEs,
+        seedIndex: idx,
       }),
     );
     const boss = optionItemsFromTexts(shuffleDeterministic(pool, idx + 163), row.pl);
@@ -1074,6 +1129,10 @@ function buildMixedTestCandidates(ctx) {
         options: boss.options,
         answer: { correctOptionId: boss.correctOptionId },
         sourceWord: row.pl,
+        sourceTranslation: row.es,
+        sourceExample: row.exPl,
+        sourceExampleEs: row.exEs,
+        seedIndex: idx + 1,
       }),
     );
   });
@@ -1420,6 +1479,8 @@ function buildTopicPackage(level, sheet, topic, seedSource, seedVersion) {
     `Napisz 2 pytania i 2 odpowiedzi o temacie: ${topic.topicTitle}.`,
     `Napisz krotka wiadomosc o temacie: ${topic.topicTitle}.`,
   ];
+  const fallbackWord = safeCell(sheet.rows?.[0]?.pl || topic.topicTitle || '');
+  const fallbackEs = safeCell(sheet.rows?.[0]?.es || '');
   writingPrompts.forEach((prompt, idx) => {
     candidates.push(
       makeExerciseBase({
@@ -1429,6 +1490,11 @@ function buildTopicPackage(level, sheet, topic, seedSource, seedVersion) {
         variant: 'mini_writing',
         prompt: `${prompt} [${idx + 1}]`,
         answer: '',
+        sourceWord: fallbackWord,
+        sourceTranslation: fallbackEs,
+        sourceExample: ensureSentence(prompt),
+        sourceExampleEs: fallbackEs ? ensureSentence(fallbackEs) : '',
+        seedIndex: idx,
       }),
     );
   });
