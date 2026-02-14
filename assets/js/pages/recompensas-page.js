@@ -1255,6 +1255,66 @@ function buildSteps({ level, topics, progressMap }) {
   });
 }
 
+function levelRank(level) {
+  const lvl = String(level || '').toUpperCase();
+  const idx = ALL_LEVELS.indexOf(lvl);
+  return idx >= 0 ? idx : ALL_LEVELS.length;
+}
+
+function buildContinuousLandmarkRoute(topicsCount) {
+  const want = Math.max(0, Number(topicsCount || 0));
+  const out = [];
+  const used = new Set();
+
+  ALL_LEVELS.forEach((lvl) => {
+    const route = routeForLevel(lvl)?.route || [];
+    route.forEach((id) => {
+      if (out.length >= want) return;
+      const landmark = LANDMARK_BY_ID[id];
+      if (!landmark || used.has(landmark.id)) return;
+      used.add(landmark.id);
+      out.push(landmark);
+    });
+  });
+
+  let idx = 0;
+  while (out.length < want) {
+    const landmark = landmarkForTopic(idx);
+    idx += 1;
+    if (!landmark || used.has(landmark.id)) continue;
+    used.add(landmark.id);
+    out.push(landmark);
+  }
+
+  return out.slice(0, want);
+}
+
+function buildContinuousSteps({ topics, progressMap }) {
+  const ordered = (topics || []).slice().sort((a, b) => {
+    const byLevel = levelRank(a.level || a.__level) - levelRank(b.level || b.__level);
+    if (byLevel !== 0) return byLevel;
+    const ao = Number(a.order || 0);
+    const bo = Number(b.order || 0);
+    return ao - bo;
+  });
+
+  const route = buildContinuousLandmarkRoute(ordered.length);
+  return ordered.map((topic, topicIdx) => {
+    const lvl = String(topic.level || topic.__level || 'A1').toUpperCase();
+    const key = topicKey(lvl, topic);
+    const prog = key ? progressMap[key] : null;
+    const state = progressState(prog);
+    return {
+      level: lvl,
+      topicIdx,
+      topic,
+      landmark: route[topicIdx] || landmarkForTopic(topicIdx),
+      progress: { pct: state.pct },
+      isDone: state.done,
+    };
+  });
+}
+
 async function getUserDoc(uid) {
   const snap = await getDoc(doc(db, 'users', uid));
   return snap.exists() ? snap.data() || {} : {};
@@ -1334,6 +1394,18 @@ async function loadProgressMap(uid, level) {
   return map;
 }
 
+async function loadProgressMapAll(uid, levels) {
+  const all = {};
+  const list = Array.isArray(levels) && levels.length ? levels : ALL_LEVELS;
+  for (const lvl of list) {
+    const part = await loadProgressMap(uid, lvl);
+    Object.entries(part).forEach(([k, v]) => {
+      all[k] = v;
+    });
+  }
+  return all;
+}
+
 async function loadTopics(level) {
   const all = [];
   try {
@@ -1394,6 +1466,16 @@ async function loadTopics(level) {
   }
 
   return [];
+}
+
+async function loadTopicsAll(levels) {
+  const list = Array.isArray(levels) && levels.length ? levels : ALL_LEVELS;
+  const out = [];
+  for (const lvl of list) {
+    const topics = await loadTopics(lvl);
+    topics.forEach((topic) => out.push({ ...topic, level: String(lvl || topic.level || 'A1').toUpperCase() }));
+  }
+  return out;
 }
 
 function renderGrid({ level, steps }) {
@@ -1500,7 +1582,7 @@ function renderGrid({ level, steps }) {
 
     stamp.addEventListener('click', () =>
       openStampModal({
-        level,
+        level: stepData.level || level,
         isDone,
         topicIdx,
         topic,
@@ -1685,7 +1767,7 @@ function openStampModal({ level, topicIdx, topic, isDone, progress, landmark }) 
   status.className = 'hintSmall';
   status.style.marginBottom = '8px';
   status.textContent = isDone
-    ? `✅ Recompensa ganada · Tema ${topicIdx + 1} · Nivel ${level}`
+    ? `✅ Recompensa ganada · Tema ${topicIdx + 1}`
     : `🔒 Bloqueada · Tema ${topicIdx + 1} · Progreso ${progress.pct}%`;
   wrap.appendChild(status);
 
@@ -2001,6 +2083,24 @@ async function loadForLevel(level) {
   }
 }
 
+async function loadContinuous() {
+  if (loading) return;
+  loading = true;
+  try {
+    if (passportHint) passportHint.textContent = 'Cargando...';
+    if (passportGrid) passportGrid.innerHTML = '';
+
+    const levels = LEVEL_FLAGS?.visibleLevels?.length ? LEVEL_FLAGS.visibleLevels : ALL_LEVELS;
+    const topics = await loadTopicsAll(levels);
+    const progress = await loadProgressMapAll(CURRENT_UID, levels);
+    const steps = buildContinuousSteps({ topics, progressMap: progress });
+    renderGrid({ level: 'CURSO', steps });
+    renderMap({ level: 'CURSO', steps });
+  } finally {
+    loading = false;
+  }
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = 'login.html?next=recompensas.html';
@@ -2017,9 +2117,9 @@ onAuthStateChanged(auth, async (user) => {
     PRE_LEVEL && levels.includes(PRE_LEVEL)
       ? PRE_LEVEL
       : (LEVEL_FLAGS?.unlocked?.has?.('A2') ? 'A2' : levels[0] || 'A1');
-
-  fillLevelSelect(levels, preferred, LEVEL_FLAGS?.unlocked || new Set(['A1']));
-
-  passportLevel?.addEventListener('change', () => loadForLevel(passportLevel.value));
-  await loadForLevel(passportLevel?.value || preferred);
+  if (passportLevel) {
+    fillLevelSelect(levels, preferred, LEVEL_FLAGS?.unlocked || new Set(['A1']));
+    passportLevel.style.display = 'none';
+  }
+  await loadContinuous();
 });

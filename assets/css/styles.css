@@ -543,9 +543,16 @@ body[data-page='index'] main.page {
   border-bottom: none;
 }
 body[data-page='ejercicio'] .nav-glass {
-  background: linear-gradient(180deg, rgba(8, 34, 88, 0.95), rgba(10, 43, 108, 0.92));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(12px);
+  background: transparent !important;
+  border-bottom: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+body[data-page='ejercicio'] .nav-glass .nav-line.nav-line-below {
+  display: none !important;
+}
+body[data-page='ejercicio'] .nav-glass {
+  border-bottom: none !important;
 }
 
 .nav-line {
@@ -5442,6 +5449,15 @@ select:focus {
   margin-top: 10px;
   line-height: 1.45;
 }
+.exercisePromptRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.exercisePromptSpeaker {
+  flex: 0 0 auto;
+}
 
 /* Small speaker buttons (TTS PL) */
 .ttsIconBtn {
@@ -5534,6 +5550,36 @@ select:focus {
 .exerciseInlineInput:focus {
   border-color: rgba(252, 209, 22, 0.65);
   box-shadow: 0 0 0 4px rgba(252, 209, 22, 0.12);
+}
+.exerciseLetterSlots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 6px;
+  flex-wrap: nowrap;
+  vertical-align: middle;
+}
+.exerciseLetterCell {
+  width: 28px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f8ff;
+  text-align: center;
+  font-weight: 900;
+  font-size: 20px;
+  outline: none;
+}
+.exerciseLetterCell:focus {
+  border-color: rgba(252, 209, 22, 0.82);
+  box-shadow: 0 0 0 3px rgba(252, 209, 22, 0.16);
+}
+.exerciseLetterSpace {
+  min-width: 18px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 900;
 }
 .exerciseAudioPreview {
   width: 100%;
@@ -6030,12 +6076,12 @@ body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav .btn-white-outlin
 body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav .btn-yellow {
   min-width: 160px;
 }
-body[data-page='ejercicio'][data-ui='immersive'] .btn-white-outline {
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav .btn-white-outline {
   background: rgba(255, 255, 255, 0.84);
   color: var(--immersive-ink);
   border-color: var(--immersive-line);
 }
-body[data-page='ejercicio'][data-ui='immersive'] .btn-yellow {
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav .btn-yellow {
   background: linear-gradient(180deg, #2a7af0, #1962d8);
   color: #ffffff;
   border-color: #1a63d8;
@@ -6121,7 +6167,7 @@ body[data-page='ejercicio'][data-ui='immersive'] .immersiveStage {
   gap: 18px;
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive {
-  border-radius: 26px;
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background:
     radial-gradient(
@@ -6136,14 +6182,63 @@ body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive {
     );
   box-shadow: 0 22px 46px rgba(2, 12, 32, 0.34);
   color: #f1f7ff;
-  padding: 30px 28px 24px;
+  padding: 18px 16px 14px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseTop {
+  display: none !important;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseBlockTitle {
+  display: none !important;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseInstruction,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exercisePromptBlock,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseTranslation,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseAudioTools {
+  margin-top: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseInstructionText,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseTranslationText {
+  color: #edf5ff;
+  font-size: 16px;
+  line-height: 1.45;
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exercisePrompt {
   margin-top: 0;
   text-align: center;
-  font-size: clamp(27px, 3.8vw, 46px);
-  line-height: 1.25;
+  font-size: clamp(18px, 2.4vw, 30px);
+  line-height: 1.22;
   color: #f4f8ff;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exercisePromptRow {
+  justify-content: center;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exercisePromptSpeaker {
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseAudioRow,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseRecordRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseAudioRow .ttsIconBtn {
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseRecordRow {
+  margin-top: 10px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseRecordRow .exerciseAudioPreview {
+  width: min(440px, 100%);
+  margin-top: 0;
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseHint {
   display: none !important;
@@ -6171,7 +6266,7 @@ body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerc
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exercisePolishPad {
   margin-top: 12px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.06);
@@ -6191,30 +6286,69 @@ body[data-page='ejercicio'][data-ui='immersive'] .exercisePolishPadKeys {
   gap: 8px;
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exercisePolishPadKey {
-  min-width: 42px;
-  min-height: 36px;
-  padding: 6px 10px;
-  font-size: 16px;
+  min-width: 36px;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 14px;
   font-weight: 800;
   border-radius: 10px;
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseOptions {
-  margin-top: 14px;
-  gap: 10px;
+  margin-top: 10px;
+  gap: 8px;
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseOption {
-  border-radius: 14px;
+  border-radius: 12px;
   border-color: rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.07);
   color: #f2f7ff;
-  padding: 14px 16px;
+  padding: 9px 12px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .input,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive input,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive textarea,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive select,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseInlineInput,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseDropBlank,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseOrderBuilt,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseOrderToken,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseDragToken,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseMatchBtn,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseBinaryBtn {
+  background: rgba(9, 30, 68, 0.82);
+  color: #edf5ff;
+  border-color: rgba(255, 255, 255, 0.22);
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseOption > span {
   color: #f2f7ff;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+body[data-page='ejercicio'][data-ui='immersive']
+  .exerciseCard--immersive
+  .exerciseOption:has(input:checked) {
+  border-color: rgba(54, 140, 255, 0.95) !important;
+  background: rgba(18, 64, 128, 0.96) !important;
+  box-shadow: 0 0 0 3px rgba(42, 126, 240, 0.22) !important;
+  color: #f5f9ff !important;
+}
+body[data-page='ejercicio'][data-ui='immersive']
+  .exerciseCard--immersive
+  .exerciseOption:has(input:checked)
+  > span {
+  color: #f5f9ff !important;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .ttsInlineIcon,
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseActions .ttsIconBtn {
+  display: none !important;
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseResult {
   margin-top: 14px;
   text-align: center;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseActions {
+  margin-top: 14px;
 }
 body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseActions .btn-yellow {
   display: none !important;
@@ -6228,11 +6362,24 @@ body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav {
 }
 body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav .btn-white-outline,
 body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmNext {
-  min-width: 190px;
-  min-height: 52px;
+  min-width: 172px;
+  min-height: 46px;
   border-radius: 14px;
   font-weight: 900;
-  padding: 0 20px;
+  padding: 0 14px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmHint {
+  min-width: 46px;
+  width: 46px;
+  min-height: 46px;
+  padding: 0;
+  font-size: 24px;
+  line-height: 1;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmHint.is-active {
+  border-color: rgba(252, 209, 22, 0.95);
+  background: rgba(252, 209, 22, 0.22);
+  color: #ffffff;
 }
 body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmNext {
   display: inline-flex !important;
@@ -6257,10 +6404,10 @@ body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmNext:disab
   }
   body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive {
     border-radius: 18px;
-    padding: 18px 14px 16px;
+    padding: 14px 12px 12px;
   }
   body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exercisePrompt {
-    font-size: clamp(24px, 9vw, 32px);
+    font-size: clamp(17px, 6.2vw, 26px);
   }
   body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseNote {
     font-size: 15px;
@@ -6268,7 +6415,7 @@ body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmNext:disab
   }
   body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav .btn-white-outline,
   body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmNext {
-    min-width: 160px;
+    min-width: 140px;
   }
 }
 
@@ -7099,13 +7246,13 @@ body.with-side-panel[data-page='panel'] main.page .container {
   margin-right: auto;
 }
 body.with-side-panel .site-footer {
-  padding-left: calc(var(--side-panel-reserved) + var(--side-panel-gap));
+  padding-left: 0;
 }
 body.with-side-panel .site-footer .footer-inner {
   margin: 0 auto;
-  max-width: 1280px;
-  padding-left: 44px;
-  padding-right: 44px;
+  max-width: min(1280px, calc(100% - 24px));
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 .side-panel {
@@ -7128,6 +7275,10 @@ body.with-side-panel .site-footer .footer-inner {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   z-index: 25;
+}
+body.with-side-panel[data-page='ejercicio'] .side-panel {
+  top: 126px;
+  z-index: 35;
 }
 
 /* Narrower content blocks (prevents “full width stretched” look) */

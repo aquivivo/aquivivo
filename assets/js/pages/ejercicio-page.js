@@ -523,6 +523,7 @@ const immersiveStep = document.getElementById('immersiveStep');
 const immersiveType = document.getElementById('immersiveType');
 const immersivePromptTitle = document.getElementById('immersivePromptTitle');
 const immersiveExerciseHost = document.getElementById('immersiveExerciseHost');
+const btnImmHint = document.getElementById('btnImmHint');
 const btnImmPrev = document.getElementById('btnImmPrev');
 const btnImmNext = document.getElementById('btnImmNext');
 const btnImmDontKnow = document.getElementById('btnImmDontKnow');
@@ -1116,6 +1117,7 @@ function presentableTheoryNotes(raw, ex = null) {
     const text = String(line || '').trim();
     if (!text) return false;
     if (hiddenPronunciation.test(text)) return false;
+    if (/^(?:es|trad|traduccion|traducción|instruccion|instrucción)\s*:/i.test(text)) return false;
     const norm = normalizeText(text);
     if (!norm) return false;
 
@@ -1126,6 +1128,82 @@ function presentableTheoryNotes(raw, ex = null) {
   });
 
   return filtered.join('\n').replace(/\n{2,}/g, '\n').trim();
+}
+
+function noteLineValue(rawNotes, prefixRegexList = []) {
+  const parts = splitNotesParts(rawNotes);
+  if (!parts.length || !Array.isArray(prefixRegexList) || !prefixRegexList.length) return '';
+  const found = parts.find((part) => prefixRegexList.some((rx) => rx.test(String(part || '').trim())));
+  return found ? stripNoteLabel(found) : '';
+}
+
+function exerciseInstructionEs(ex) {
+  const direct =
+    String(
+      ex?.instructionEs ||
+        ex?.instructionsEs ||
+        ex?.taskEs ||
+        ex?.instruction ||
+        '',
+    ).trim();
+  if (direct) return direct;
+
+  const fromNotes = noteLineValue(ex?.notes || '', [
+    /^instruccion(?:_es)?\s*:/i,
+    /^instrucción(?:_es)?\s*:/i,
+    /^task(?:_es)?\s*:/i,
+  ]);
+  if (fromNotes) return fromNotes;
+
+  return immersiveTitleForExercise(ex);
+}
+
+function exerciseTranslationEs(ex) {
+  const direct = String(ex?.translationEs || ex?.translation || ex?.translateEs || '').trim();
+  if (direct) return direct;
+
+  const fromNotes = noteLineValue(ex?.notes || '', [
+    /^es\s*:/i,
+    /^traduccion(?:_es)?\s*:/i,
+    /^traducción(?:_es)?\s*:/i,
+  ]);
+  return fromNotes || '';
+}
+
+function splitPromptDirectiveEs(rawPrompt) {
+  const prompt = String(rawPrompt || '').trim();
+  if (!prompt) return { instructionPrefix: '', promptBody: '' };
+  const m = prompt.match(
+    /^\s*(elige|escoge|selecciona|marca|completa|rellena|traduce|encuentra|ordena|une|relaciona)\s*:\s*/i,
+  );
+  if (!m) return { instructionPrefix: '', promptBody: prompt };
+  const prefix = String(m[1] || '').trim();
+  const body = String(prompt.slice(m[0].length) || '').trim();
+  return {
+    instructionPrefix: prefix,
+    promptBody: body || prompt,
+  };
+}
+
+function looksLikeInstructionEs(raw) {
+  const t = normalizeText(raw || '');
+  if (!t) return false;
+  return (
+    t.includes('elige') ||
+    t.includes('escoge') ||
+    t.includes('selecciona') ||
+    t.includes('marca') ||
+    t.includes('completa') ||
+    t.includes('rellena') ||
+    t.includes('traduce') ||
+    t.includes('escucha') ||
+    t.includes('encuentra') ||
+    t.includes('ordena') ||
+    t.includes('relaciona') ||
+    t.includes('une') ||
+    t.includes('opcion correcta') ||
+    t.includes('traduccion')
+  );
 }
 
 function isCardsExercise(ex) {
@@ -1258,6 +1336,27 @@ function isOrderingExercise(ex) {
     t.includes('orden') ||
     t.includes('secuencia') ||
     t.includes('ordenar la secuencia')
+  );
+}
+
+function isAnagramExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('anagrama') ||
+    t.includes('ordena letras') ||
+    t.includes('ordena las letras') ||
+    t.includes('ułoz litery') ||
+    t.includes('uloz litery')
+  );
+}
+
+function isTranslateExercise(ex) {
+  const t = normalizeText(ex?.type || '');
+  return (
+    t.includes('traduce') ||
+    t.includes('traduccion guiada') ||
+    t.includes('translation') ||
+    t.includes('tlumaczenie')
   );
 }
 
@@ -1895,23 +1994,36 @@ async function markCurrentAsDontKnow() {
   }
 
   const expected = String(expectedAnswerPreview(ex) || ex.answer || '').trim();
-  await appendMistakeLog(ex, '[nie wiem]', expected);
+  await appendMistakeLog(ex, '[no sé]', expected);
   progressState.doneIds.add(exId);
   if (isTestExercise(ex)) {
     progressState.testResults.set(exId, {
       correct: false,
-      answer: '[nie wiem]',
+      answer: '[no sé]',
     });
   }
 
   await saveProgress();
   setProgressUI();
   showToast(
-    expected ? `No pasa nada. Respuesta correcta: ${expected}` : 'Marcado como "Nie wiem".',
+    expected ? `No pasa nada. Respuesta correcta: ${expected}` : 'Marcado como "No sé".',
     'warn',
     2400,
   );
   onImmersiveExerciseDone(exId);
+}
+
+function toggleImmersiveHint() {
+  if (!IMMERSIVE_MODE || !immersiveExerciseHost) return;
+  const note = immersiveExerciseHost.querySelector('.exerciseNote');
+  if (!note) {
+    showToast('Sin pista para este ejercicio.', 'warn', 1400);
+    if (btnImmHint) btnImmHint.classList.remove('is-active');
+    return;
+  }
+  const isOpen = note.style.display === 'block';
+  note.style.display = isOpen ? 'none' : 'block';
+  if (btnImmHint) btnImmHint.classList.toggle('is-active', !isOpen);
 }
 
 function syncImmersiveProgressUI() {
@@ -1942,6 +2054,13 @@ function syncImmersiveProgressUI() {
     btnImmDontKnow.style.display = SHOW_IMMERSIVE_NEXT_BUTTON ? '' : 'none';
     btnImmDontKnow.disabled =
       !SHOW_IMMERSIVE_NEXT_BUTTON || !ex || progressState.doneIds.has(String(ex.id || ''));
+  }
+  if (btnImmHint) {
+    btnImmHint.style.display = SHOW_IMMERSIVE_NEXT_BUTTON ? '' : 'none';
+    const note = immersiveExerciseHost?.querySelector('.exerciseNote');
+    const hasNote = !!note;
+    btnImmHint.disabled = !hasNote;
+    btnImmHint.classList.toggle('is-active', !!note && note.style.display === 'block');
   }
 }
 
@@ -2091,6 +2210,11 @@ function setupImmersiveMode() {
     btnImmDontKnow.style.display = SHOW_IMMERSIVE_NEXT_BUTTON ? '' : 'none';
     btnImmDontKnow.disabled = !SHOW_IMMERSIVE_NEXT_BUTTON;
   }
+  if (btnImmHint) {
+    btnImmHint.style.display = SHOW_IMMERSIVE_NEXT_BUTTON ? '' : 'none';
+    btnImmHint.disabled = false;
+    btnImmHint.classList.remove('is-active');
+  }
 
   if (btnImmPrev && !btnImmPrev.dataset.wired) {
     btnImmPrev.dataset.wired = '1';
@@ -2107,6 +2231,10 @@ function setupImmersiveMode() {
         console.warn('[ejercicio] dont-know failed', e);
       });
     });
+  }
+  if (btnImmHint && !btnImmHint.dataset.wired) {
+    btnImmHint.dataset.wired = '1';
+    btnImmHint.addEventListener('click', () => toggleImmersiveHint());
   }
 }
 
@@ -2172,8 +2300,6 @@ function makeOptionRow({ name, value, label, checked, onChange, ttsText = '' }) 
 
   row.appendChild(input);
   row.appendChild(text);
-  const tts = makeSpeakerBtn(ttsText, { tiny: true });
-  if (tts) row.appendChild(tts);
   return row;
 }
 
@@ -2212,8 +2338,199 @@ const POLISH_ASSIST_TOKENS = [
   'd\u017a',
 ];
 
+const LETTER_SLOT_GROUPS = new Map();
+let LETTER_SLOT_SEQ = 0;
+
+function splitChars(text) {
+  return Array.from(String(text || ''));
+}
+
+function createLetterSlotsInput(template, { disabled = false } = {}) {
+  const groupId = `slot_${Date.now()}_${LETTER_SLOT_SEQ++}`;
+  const wrapper = document.createElement('span');
+  wrapper.className = 'exerciseLetterSlots';
+  wrapper.dataset.slotGroup = groupId;
+
+  const mask = splitChars(String(template || '').replace(/\r?\n/g, ' ').trim());
+  const pattern = mask.length ? mask : ['_'];
+  const cells = [];
+  const map = [];
+
+  pattern.forEach((ch) => {
+    if (ch === ' ') {
+      const sep = document.createElement('span');
+      sep.className = 'exerciseLetterSpace';
+      sep.textContent = '·';
+      sep.setAttribute('aria-hidden', 'true');
+      wrapper.appendChild(sep);
+      map.push({ space: true, cell: null });
+      return;
+    }
+
+    const cell = document.createElement('input');
+    cell.type = 'text';
+    cell.inputMode = 'text';
+    cell.autocomplete = 'off';
+    cell.spellcheck = false;
+    cell.maxLength = 1;
+    cell.className = 'exerciseLetterCell';
+    cell.dataset.slotGroup = groupId;
+    cell.dataset.slotIndex = String(cells.length);
+    cell.disabled = !!disabled;
+    wrapper.appendChild(cell);
+    map.push({ space: false, cell });
+    cells.push(cell);
+  });
+
+  const nextIndex = (idx) => {
+    let i = Number(idx) + 1;
+    while (i < cells.length && cells[i]?.disabled) i += 1;
+    return i < cells.length ? i : -1;
+  };
+  const prevIndex = (idx) => {
+    let i = Number(idx) - 1;
+    while (i >= 0 && cells[i]?.disabled) i -= 1;
+    return i >= 0 ? i : -1;
+  };
+  const focusIndex = (idx) => {
+    const i = Number(idx);
+    if (!Number.isFinite(i) || i < 0 || i >= cells.length) return;
+    const target = cells[i];
+    if (!target || target.disabled) return;
+    target.focus();
+    try {
+      target.setSelectionRange(target.value.length, target.value.length);
+    } catch {}
+  };
+  const sanitizeChars = (value) =>
+    splitChars(String(value || '').replace(/\s+/g, '')).filter((ch) => ch && ch.trim() !== '');
+
+  const insertAt = (startIdx, token) => {
+    const chars = sanitizeChars(token);
+    if (!chars.length) return;
+    let idx = Number(startIdx);
+    if (!Number.isFinite(idx) || idx < 0) idx = 0;
+    for (const ch of chars) {
+      if (idx < 0 || idx >= cells.length) break;
+      const cell = cells[idx];
+      if (cell && !cell.disabled) cell.value = ch;
+      idx = nextIndex(idx);
+      if (idx < 0) break;
+    }
+    const focus = idx >= 0 ? idx : cells.length - 1;
+    focusIndex(focus);
+  };
+
+  const getValue = () => {
+    let out = '';
+    let cellIdx = 0;
+    map.forEach((item) => {
+      if (item.space) {
+        out += ' ';
+        return;
+      }
+      const value = String(cells[cellIdx]?.value || '').trim();
+      out += value;
+      cellIdx += 1;
+    });
+    return out.replace(/\s+/g, ' ').trim();
+  };
+
+  const isComplete = () => cells.every((c) => String(c.value || '').trim().length === 1);
+
+  const clear = () => {
+    cells.forEach((c) => {
+      c.value = '';
+    });
+    focusIndex(0);
+  };
+
+  const setDisabled = (flag) => {
+    cells.forEach((c) => {
+      c.disabled = !!flag;
+    });
+  };
+
+  cells.forEach((cell, idx) => {
+    cell.addEventListener('input', () => {
+      const chars = sanitizeChars(cell.value);
+      cell.value = chars[0] || '';
+      if (chars.length > 1) {
+        insertAt(idx, chars.join(''));
+        return;
+      }
+      if (cell.value) {
+        const n = nextIndex(idx);
+        if (n >= 0) focusIndex(n);
+      }
+    });
+
+    cell.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Backspace' && !cell.value) {
+        const p = prevIndex(idx);
+        if (p >= 0) {
+          ev.preventDefault();
+          const prev = cells[p];
+          if (prev && !prev.disabled) prev.value = '';
+          focusIndex(p);
+        }
+      } else if (ev.key === 'ArrowLeft') {
+        const p = prevIndex(idx);
+        if (p >= 0) {
+          ev.preventDefault();
+          focusIndex(p);
+        }
+      } else if (ev.key === 'ArrowRight') {
+        const n = nextIndex(idx);
+        if (n >= 0) {
+          ev.preventDefault();
+          focusIndex(n);
+        }
+      }
+    });
+
+    cell.addEventListener('paste', (ev) => {
+      const txt = String(ev.clipboardData?.getData('text') || '').trim();
+      if (!txt) return;
+      ev.preventDefault();
+      insertAt(idx, txt);
+    });
+  });
+
+  LETTER_SLOT_GROUPS.set(groupId, {
+    insertAt,
+    getValue,
+    isComplete,
+    clear,
+    setDisabled,
+    focusFirst: () => focusIndex(0),
+    fields: cells.slice(),
+  });
+
+  return {
+    el: wrapper,
+    groupId,
+    fields: cells.slice(),
+    getValue,
+    isComplete,
+    clear,
+    disable: setDisabled,
+    focusFirst: () => focusIndex(0),
+    insertAt,
+  };
+}
+
 function insertTokenAtCaret(field, token) {
   if (!field || field.disabled || field.readOnly) return;
+  if (field.classList?.contains('exerciseLetterCell')) {
+    const groupId = String(field.dataset.slotGroup || '').trim();
+    const idx = Number(field.dataset.slotIndex || 0);
+    const ctrl = groupId ? LETTER_SLOT_GROUPS.get(groupId) : null;
+    if (ctrl && typeof ctrl.insertAt === 'function') {
+      ctrl.insertAt(Number.isFinite(idx) ? idx : 0, token);
+      return;
+    }
+  }
   const value = String(field.value || '');
   const start =
     Number.isInteger(field.selectionStart) && field.selectionStart >= 0
@@ -2247,10 +2564,22 @@ function attachPolishAssistPad(card, fields = []) {
   if (!textFields.length) return;
 
   let activeField = textFields[0];
+
+  const markActiveIfText = (target) => {
+    if (!target || typeof target.tagName !== 'string') return;
+    const tag = String(target.tagName || '').toUpperCase();
+    if (tag === 'TEXTAREA') {
+      activeField = target;
+      return;
+    }
+    if (tag !== 'INPUT') return;
+    const type = String(target.type || 'text').toLowerCase();
+    if (type !== 'text' && type !== 'search') return;
+    activeField = target;
+  };
+
   textFields.forEach((field) => {
-    field.addEventListener('focus', () => {
-      activeField = field;
-    });
+    field.addEventListener('focus', () => markActiveIfText(field));
   });
 
   const wrap = document.createElement('div');
@@ -2285,20 +2614,7 @@ function attachPolishAssistPad(card, fields = []) {
   });
 
   wrap.appendChild(keys);
-
-  const noteWrap = card.querySelector('.exerciseNoteWrap');
-  if (noteWrap && noteWrap.parentElement === card) {
-    card.insertBefore(wrap, noteWrap.nextSibling);
-    return;
-  }
-
-  const promptEl = card.querySelector('.exercisePrompt');
-  if (promptEl && promptEl.parentElement === card) {
-    card.insertBefore(wrap, promptEl.nextSibling);
-    return;
-  }
-
-  card.insertBefore(wrap, card.firstChild || null);
+  card.appendChild(wrap);
 }
 
 function makeExerciseCard(ex) {
@@ -2340,13 +2656,176 @@ function makeExerciseCard(ex) {
     });
   }
 
-  top.appendChild(meta);
-  card.appendChild(top);
+  if (!IMMERSIVE_MODE) {
+    top.appendChild(meta);
+    card.appendChild(top);
+  }
+
+  const promptParts = splitPromptDirectiveEs(ex.prompt || '');
+  const promptText = promptParts.promptBody || String(ex.prompt || '').trim();
+  const instructionBase = exerciseInstructionEs(ex);
+  const directive = String(promptParts.instructionPrefix || '').trim();
+  const directiveSentence = directive
+    ? `${directive.charAt(0).toUpperCase()}${directive.slice(1)}.`
+    : '';
+  const instructionText = directiveSentence
+    ? normalizeText(instructionBase).includes(normalizeText(directive))
+      ? instructionBase
+      : `${directiveSentence} ${instructionBase}`.trim()
+    : instructionBase;
+  const promptIsInstruction = looksLikeInstructionEs(promptText);
+  const showInstructionBlock = !promptIsInstruction;
+
+  if (showInstructionBlock) {
+    const instructionBlock = document.createElement('div');
+    instructionBlock.className = 'exerciseInstruction';
+    const instructionBody = document.createElement('div');
+    instructionBody.className = 'exerciseInstructionText';
+    instructionBody.textContent = instructionText;
+    instructionBlock.appendChild(instructionBody);
+    card.appendChild(instructionBlock);
+  }
+
+  const promptBlock = document.createElement('div');
+  promptBlock.className = 'exercisePromptBlock';
+
+  const promptRow = document.createElement('div');
+  promptRow.className = 'exercisePromptRow';
 
   const prompt = document.createElement('div');
   prompt.className = 'exercisePrompt';
-  prompt.textContent = ex.prompt || '';
-  card.appendChild(prompt);
+  prompt.textContent = promptText;
+  promptRow.appendChild(prompt);
+
+  const promptSpeaker = document.createElement('button');
+  promptSpeaker.type = 'button';
+  promptSpeaker.className = 'ttsIconBtn exercisePromptSpeaker';
+  promptSpeaker.textContent = SPEAKER_ICON;
+  promptSpeaker.title = 'Escuchar (PL)';
+  promptSpeaker.setAttribute('aria-label', 'Escuchar (PL)');
+  promptSpeaker.addEventListener('click', () => {
+    speakPolish(ttsTextForExercise(ex));
+  });
+  promptRow.appendChild(promptSpeaker);
+
+  promptBlock.appendChild(promptRow);
+  card.appendChild(promptBlock);
+
+  const translationValue = String(exerciseTranslationEs(ex) || '').trim();
+  if (translationValue) {
+    const translationBlock = document.createElement('div');
+    translationBlock.className = 'exerciseTranslation';
+    const translationText = document.createElement('div');
+    translationText.className = 'exerciseTranslationText';
+    translationText.textContent = translationValue;
+    translationBlock.appendChild(translationText);
+    card.appendChild(translationBlock);
+  }
+
+  const audioTools = document.createElement('div');
+  audioTools.className = 'exerciseAudioTools';
+  const recRow = document.createElement('div');
+  recRow.className = 'exerciseRecordRow';
+  let hasRecordingUI = false;
+  if (canRecordVoice()) {
+    let recording = false;
+    let recorder = null;
+    let recStream = null;
+    let chunks = [];
+    let recUrl = '';
+
+    const btnRec = document.createElement('button');
+    btnRec.type = 'button';
+    btnRec.className = 'btn-white-outline';
+    btnRec.textContent = 'Grabar mi voz';
+
+    const btnRecClear = document.createElement('button');
+    btnRecClear.type = 'button';
+    btnRecClear.className = 'btn-white-outline';
+    btnRecClear.textContent = 'Borrar grabacion';
+    btnRecClear.style.display = 'none';
+
+    const recPreview = document.createElement('audio');
+    recPreview.className = 'exerciseAudioPreview';
+    recPreview.controls = true;
+    recPreview.style.display = 'none';
+
+    const stopStream = () => {
+      try {
+        recStream?.getTracks?.()?.forEach((t) => t.stop());
+      } catch {}
+      recStream = null;
+    };
+
+    const clearPreview = () => {
+      if (recUrl) {
+        try {
+          URL.revokeObjectURL(recUrl);
+        } catch {}
+      }
+      recUrl = '';
+      try {
+        recPreview.pause?.();
+      } catch {}
+      recPreview.removeAttribute('src');
+      recPreview.style.display = 'none';
+      btnRecClear.style.display = 'none';
+    };
+
+    btnRec.addEventListener('click', async () => {
+      if (recording) {
+        try {
+          recorder?.stop();
+        } catch {}
+        return;
+      }
+      try {
+        clearPreview();
+        stopStream();
+
+        recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(recStream);
+        chunks = [];
+
+        recorder.ondataavailable = (ev) => {
+          if (ev.data && ev.data.size) chunks.push(ev.data);
+        };
+        recorder.onstop = () => {
+          recording = false;
+          btnRec.textContent = 'Grabar mi voz';
+          const blob = new Blob(chunks, { type: recorder?.mimeType || 'audio/webm' });
+          recUrl = URL.createObjectURL(blob);
+          recPreview.src = recUrl;
+          recPreview.style.display = '';
+          btnRecClear.style.display = '';
+          stopStream();
+        };
+
+        recorder.start();
+        recording = true;
+        btnRec.textContent = 'Detener grabacion';
+      } catch (err) {
+        console.warn('[ejercicio] universal record failed', err);
+        stopStream();
+        showToast('No se pudo grabar audio.', 'bad', 2000);
+      }
+    });
+
+    btnRecClear.addEventListener('click', () => {
+      clearPreview();
+    });
+
+    recRow.appendChild(btnRec);
+    recRow.appendChild(btnRecClear);
+    recRow.appendChild(recPreview);
+    hasRecordingUI = true;
+  } else {
+    hasRecordingUI = false;
+  }
+  if (hasRecordingUI) {
+    audioTools.appendChild(recRow);
+    card.appendChild(audioTools);
+  }
 
   if (ex.imageUrl) {
     const img = document.createElement('img');
@@ -2370,7 +2849,7 @@ function makeExerciseCard(ex) {
     const noteText = document.createElement('div');
     noteText.className = 'exerciseNote';
     noteText.textContent = notes;
-    noteText.style.display = IMMERSIVE_MODE ? 'block' : 'none';
+    noteText.style.display = IMMERSIVE_MODE ? 'none' : 'none';
     if (IMMERSIVE_MODE) {
       noteBtn.style.display = 'none';
     }
@@ -2409,7 +2888,7 @@ function makeExerciseCard(ex) {
       options.forEach((opt, idx) => {
         const label = optionLabelFromIndex(idx);
         const cleaned = cleanOptionText(opt);
-        const optionText = cleaned ? `${label}) ${cleaned}` : `${label}) ${opt}`;
+        const optionText = cleaned || String(opt || '');
         const row = makeOptionRow({
           name: groupName,
           value: cleaned || opt,
@@ -2422,7 +2901,7 @@ function makeExerciseCard(ex) {
         });
         optsWrap.appendChild(row);
       });
-      card.appendChild(optsWrap);
+      promptBlock.appendChild(optsWrap);
     } else {
       const input = document.createElement('input');
       input.className = 'input';
@@ -2549,11 +3028,6 @@ function makeExerciseCard(ex) {
       hint.textContent = 'Microescena: elige la mejor respuesta.';
       card.appendChild(hint);
 
-      const scenario = document.createElement('div');
-      scenario.className = 'exerciseSceneBox';
-      scenario.textContent = String(ex.prompt || '').trim();
-      card.appendChild(scenario);
-
       let selectedValue = '';
       let selectedLabel = '';
       const optsWrap = document.createElement('div');
@@ -2566,7 +3040,7 @@ function makeExerciseCard(ex) {
         const row = makeOptionRow({
           name: groupName,
           value: cleaned || opt,
-          label: `${label}) ${cleaned || opt}`,
+          label: cleaned || String(opt || ''),
           checked: false,
           onChange: (ev) => {
             selectedValue = String(ev.target.value || '');
@@ -2580,7 +3054,7 @@ function makeExerciseCard(ex) {
         }
         optsWrap.appendChild(row);
       });
-      card.appendChild(optsWrap);
+      promptBlock.appendChild(optsWrap);
 
       const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
       if (wantsListen) {
@@ -2645,8 +3119,8 @@ function makeExerciseCard(ex) {
 
       const wrong = document.createElement('div');
       wrong.className = 'exerciseErrorBox';
-      wrong.textContent = `Frase: ${String(ex.prompt || '').trim()}`;
-      card.appendChild(wrong);
+      wrong.textContent = `Frase: ${promptText}`;
+      promptBlock.appendChild(wrong);
 
       let selectedValue = '';
       let selectedLabel = '';
@@ -2660,7 +3134,7 @@ function makeExerciseCard(ex) {
         const row = makeOptionRow({
           name: groupName,
           value: cleaned || opt,
-          label: `${label}) ${cleaned || opt}`,
+          label: cleaned || String(opt || ''),
           checked: false,
           onChange: (ev) => {
             selectedValue = String(ev.target.value || '');
@@ -2674,7 +3148,7 @@ function makeExerciseCard(ex) {
         }
         optsWrap.appendChild(row);
       });
-      card.appendChild(optsWrap);
+      promptBlock.appendChild(optsWrap);
 
       const btnCheck = document.createElement('button');
       btnCheck.className = 'btn-yellow';
@@ -3037,6 +3511,7 @@ function makeExerciseCard(ex) {
       answerWrap.appendChild(box);
       card.appendChild(answerWrap);
       attachPolishAssistPad(card, [box]);
+      attachPolishAssistPad(card, [box]);
 
       const btnListen = document.createElement('button');
       btnListen.className = 'ttsIconBtn';
@@ -3317,7 +3792,7 @@ function makeExerciseCard(ex) {
       options.forEach((opt, idx) => {
         const label = optionLabelFromIndex(idx);
         const cleaned = cleanOptionText(opt);
-        const optionText = cleaned ? `${label}) ${cleaned}` : `${label}) ${opt}`;
+        const optionText = cleaned || String(opt || '');
         const ttsText = speakOptions ? (cleaned || stripLeadLabel(opt)) : '';
         const row = makeOptionRow({
           name: groupName,
@@ -3336,7 +3811,7 @@ function makeExerciseCard(ex) {
         }
         optsWrap.appendChild(row);
       });
-      card.appendChild(optsWrap);
+      promptBlock.appendChild(optsWrap);
 
       const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
       if (wantsListen) {
@@ -3405,57 +3880,248 @@ function makeExerciseCard(ex) {
       return card;
     }
 
-    if (isFillExercise(ex) && String(ex.answer || '').trim()) {
-      const promptText = String(ex.prompt || '');
-      const blankInputs = [];
+    if (isTranslateExercise(ex) && String(ex.answer || '').trim()) {
+      const hint = document.createElement('div');
+      hint.className = 'exerciseHint';
+      hint.textContent = 'Traduce al polaco y escribe la respuesta correcta.';
+      card.appendChild(hint);
 
-      if (promptText.includes('___')) {
+      const box = document.createElement('textarea');
+      box.className = 'input';
+      box.rows = 3;
+      box.placeholder = 'Escribe tu traduccion en polaco...';
+      box.autocomplete = 'off';
+      box.spellcheck = false;
+      box.disabled = done;
+      answerWrap.appendChild(box);
+      card.appendChild(answerWrap);
+
+      const btnCheck = document.createElement('button');
+      btnCheck.className = 'btn-yellow';
+      btnCheck.type = 'button';
+      btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+      btnCheck.disabled = done;
+
+      btnCheck.addEventListener('click', async () => {
+        if (done) return;
+        const val = String(box.value || '').trim();
+        if (!val) {
+          showToast('Escribe tu traduccion.', 'warn', 1700);
+          return;
+        }
+        const ok = strictAnswerMatch(val, ex.answer || '');
+        setResultText(
+          resultEl,
+          ok,
+          ok ? 'Correcto.' : `Intenta otra vez. ${orthographyHint(val, ex.answer || '')}`,
+        );
+        card.appendChild(resultEl);
+        if (!ok) {
+          await markWrong(val, ex.answer || '');
+          return;
+        }
+        box.disabled = true;
+        await markDone();
+        btnCheck.textContent = 'Hecho';
+        btnCheck.disabled = true;
+      });
+
+      actions.appendChild(btnCheck);
+      card.appendChild(actions);
+
+      if (done) {
+        setResultText(resultEl, true, 'Hecho.');
+        card.appendChild(resultEl);
+      }
+
+      return card;
+    }
+
+    if (isAnagramExercise(ex) && String(ex.answer || '').trim()) {
+      let rawTokens = options.map((o) => stripLeadLabel(o)).filter(Boolean);
+      if (rawTokens.length === 1) {
+        const maybeSplit = rawTokens[0]
+          .split(/[\s,;|]+/)
+          .map((x) => x.trim())
+          .filter(Boolean);
+        if (maybeSplit.length > 1) rawTokens = maybeSplit;
+      }
+      if (!rawTokens.length) {
+        rawTokens = String(parseAnswerList(ex.answer || '')[0] || ex.answer || '')
+          .split('')
+          .map((x) => x.trim())
+          .filter(Boolean);
+      }
+      if (rawTokens.length > 1) {
+        const tokens = shuffleArray(rawTokens.map((t, idx) => ({ id: String(idx), text: t })));
+        const selected = [];
+        const available = new Map(tokens.map((t) => [t.id, t]));
+
+        const wrap = document.createElement('div');
+        wrap.className = 'exerciseOrderWrap';
+
+        const built = document.createElement('div');
+        built.className = 'exerciseOrderBuilt';
+
+        const bank = document.createElement('div');
+        bank.className = 'exerciseOrderBank';
+
+        const buildWord = () =>
+          selected
+            .map((t) => String(t?.text || '').trim())
+            .join('')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const render = () => {
+          built.innerHTML = '';
+          const builtText = document.createElement('span');
+          builtText.textContent = buildWord() || '-';
+          built.appendChild(builtText);
+
+          bank.innerHTML = '';
+          tokens.forEach((t) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-white-outline exerciseOrderToken';
+            btn.textContent = t.text;
+            const isAvailable = available.has(t.id);
+            btn.classList.toggle('isDisabled', done || !isAvailable);
+            btn.disabled = done || !isAvailable;
+            btn.addEventListener('click', () => {
+              if (done || !available.has(t.id)) return;
+              available.delete(t.id);
+              selected.push(t);
+              render();
+            });
+            bank.appendChild(btn);
+          });
+        };
+
+        const reset = () => {
+          if (done) return;
+          selected.length = 0;
+          available.clear();
+          tokens.forEach((t) => available.set(t.id, t));
+          render();
+        };
+
+        const undo = () => {
+          if (done) return;
+          const last = selected.pop();
+          if (last) available.set(last.id, last);
+          render();
+        };
+
+        const labelBuilt = document.createElement('div');
+        labelBuilt.className = 'exerciseHint';
+        labelBuilt.textContent = 'Forma la palabra correcta:';
+        wrap.appendChild(labelBuilt);
+        wrap.appendChild(built);
+
+        const labelBank = document.createElement('div');
+        labelBank.className = 'exerciseHint';
+        labelBank.style.marginTop = '10px';
+        labelBank.textContent = 'Letras / silabas:';
+        wrap.appendChild(labelBank);
+        wrap.appendChild(bank);
+        card.appendChild(wrap);
+
+        const btnUndo = document.createElement('button');
+        btnUndo.className = 'btn-white-outline';
+        btnUndo.type = 'button';
+        btnUndo.textContent = 'Borrar ultima';
+        btnUndo.disabled = done;
+        btnUndo.addEventListener('click', undo);
+        actions.appendChild(btnUndo);
+
+        const btnReset = document.createElement('button');
+        btnReset.className = 'btn-white-outline';
+        btnReset.type = 'button';
+        btnReset.textContent = 'Reiniciar';
+        btnReset.disabled = done;
+        btnReset.addEventListener('click', reset);
+        actions.appendChild(btnReset);
+
+        const btnCheck = document.createElement('button');
+        btnCheck.className = 'btn-yellow';
+        btnCheck.type = 'button';
+        btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
+        btnCheck.disabled = done;
+
+        btnCheck.addEventListener('click', async () => {
+          if (done) return;
+          const val = buildWord();
+          if (!val) {
+            showToast('Completa la palabra.', 'warn', 1500);
+            return;
+          }
+          const ok = strictAnswerMatch(val, ex.answer || '');
+          setResultText(
+            resultEl,
+            ok,
+            ok ? 'Correcto.' : `Intenta otra vez. ${orthographyHint(val, ex.answer || '')}`,
+          );
+          card.appendChild(resultEl);
+          if (!ok) {
+            await markWrong(val, ex.answer || '');
+            return;
+          }
+          await markDone();
+          btnCheck.textContent = 'Hecho';
+          btnCheck.disabled = true;
+          btnUndo.disabled = true;
+          btnReset.disabled = true;
+          render();
+        });
+
+        actions.appendChild(btnCheck);
+        card.appendChild(actions);
+
+        if (done) {
+          setResultText(resultEl, true, 'Hecho.');
+          card.appendChild(resultEl);
+        }
+
+        render();
+        return card;
+      }
+    }
+
+    if (isFillExercise(ex) && String(ex.answer || '').trim()) {
+      const fillPromptText = promptText;
+      const slotFields = [];
+      const slotControllers = [];
+
+      if (fillPromptText.includes('___')) {
         prompt.textContent = '';
-        const parts = promptText.split('___');
+        const parts = fillPromptText.split('___');
+        const blanksCount = Math.max(1, parts.length - 1);
+        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blanksCount, fillPromptText);
+
         parts.forEach((part, idx) => {
           prompt.appendChild(document.createTextNode(part));
           if (idx === parts.length - 1) return;
 
-          const inp = document.createElement('input');
-          inp.className = 'exerciseInlineInput';
-          inp.type = 'text';
-          inp.placeholder = '...';
-          inp.autocomplete = 'off';
-          inp.spellcheck = false;
-          inp.disabled = done;
-          blankInputs.push(inp);
-          prompt.appendChild(inp);
+          const accepted = expectedByBlank[idx] || expectedByBlank[0] || [];
+          const template = String(accepted[0] || '').trim();
+          const slot = createLetterSlotsInput(template, { disabled: done });
+          slotControllers.push(slot);
+          slotFields.push(...slot.fields);
+          prompt.appendChild(slot.el);
         });
       } else {
-        const inp = document.createElement('input');
-        inp.className = 'input';
-        inp.placeholder = 'Escribe tu respuesta...';
-        inp.autocomplete = 'off';
-        inp.spellcheck = false;
-        inp.disabled = done;
-        blankInputs.push(inp);
-        answerWrap.appendChild(inp);
+        const accepted = parseExpectedByBlank(ex.answer || '', 1, fillPromptText)[0] || [];
+        const template = String(accepted[0] || ex.answer || '').trim();
+        const slot = createLetterSlotsInput(template, { disabled: done });
+        slotControllers.push(slot);
+        slotFields.push(...slot.fields);
+        answerWrap.appendChild(slot.el);
         card.appendChild(answerWrap);
       }
-      attachPolishAssistPad(card, blankInputs);
 
-      const ttsPrompt = String(promptText || '').replaceAll('___', '...').trim();
-      const promptSpeakBtn = makeSpeakerBtn(ttsPrompt, { title: 'Escuchar la frase (PL)', tiny: true });
-      if (promptSpeakBtn) {
-        promptSpeakBtn.style.marginLeft = '8px';
-        prompt.appendChild(promptSpeakBtn);
-      }
-
-      const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
-      if (wantsListen) {
-        const btnListen = document.createElement('button');
-        btnListen.className = 'ttsIconBtn';
-        btnListen.type = 'button';
-        btnListen.textContent = SPEAKER_ICON;
-        btnListen.title = 'Escuchar (PL)';
-        btnListen.setAttribute('aria-label', 'Escuchar (PL)');
-        btnListen.addEventListener('click', () => playExerciseAudio(ex));
-        actions.appendChild(btnListen);
+      if (slotFields.length) {
+        attachPolishAssistPad(card, slotFields);
       }
 
       const btnCheck = document.createElement('button');
@@ -3466,11 +4132,11 @@ function makeExerciseCard(ex) {
 
       btnCheck.addEventListener('click', async () => {
         if (done) return;
-        const blanksCount = blankInputs.length || 1;
-        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blanksCount, promptText);
-        const values = blankInputs.map((i) => String(i.value || '').trim());
+        const blanksCount = slotControllers.length || 1;
+        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blanksCount, fillPromptText);
+        const values = slotControllers.map((slot) => String(slot.getValue() || '').trim());
 
-        if (values.some((v) => !v)) {
+        if (slotControllers.some((slot) => !slot.isComplete()) || values.some((v) => !v)) {
           showToast('Completa los espacios.', 'warn', 1800);
           return;
         }
@@ -3500,7 +4166,7 @@ function makeExerciseCard(ex) {
           return;
         }
 
-        blankInputs.forEach((i) => (i.disabled = true));
+        slotControllers.forEach((slot) => slot.disable(true));
         await markDone();
         btnCheck.textContent = 'Hecho';
         btnCheck.disabled = true;
@@ -3963,6 +4629,7 @@ function makeExerciseCard(ex) {
 function renderExercises() {
   if (!exerciseList) return;
 
+  LETTER_SLOT_GROUPS.clear();
   exerciseList.innerHTML = '';
   setTaskChips(cachedExercises.length);
 

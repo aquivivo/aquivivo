@@ -426,7 +426,8 @@ function renderTrends() {
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = 'login.html?next=buscar.html';
+    const next = `${location.pathname.split('/').pop() || 'buscar.html'}${location.search || ''}${location.hash || ''}`;
+    window.location.href = `login.html?next=${encodeURIComponent(next)}`;
     return;
   }
 

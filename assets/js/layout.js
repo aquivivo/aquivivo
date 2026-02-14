@@ -64,7 +64,7 @@ import {
   const NO_LOGIN_MS = 2 * 30 * 24 * 60 * 60 * 1000;
   const TRIAL_INTENT_KEY = 'av_trial_intent';
   const POPUP_SEEN_PREFIX = 'av_popup_seen_';
-  const ASSET_VERSION = '20260214d';
+  const ASSET_VERSION = '20260214z';
 
   let CURRENT_USER = null;
   let CURRENT_DOC = null;
