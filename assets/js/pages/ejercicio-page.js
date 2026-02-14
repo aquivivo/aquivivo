@@ -44,7 +44,9 @@ const SLUG = String(params.get('slug') || '').trim();
 const TRACK = String(params.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = '';
 const FLOW = String(params.get('flow') || '').trim().toLowerCase();
-const CONTINUOUS_FLOW = FLOW === 'continuous' || COURSE_VIEW === 'pro';
+const FORCE_CONTINUOUS_FOR_SINGLE_COURSE = COURSE_KEY === SINGLE_COURSE_KEY;
+const CONTINUOUS_FLOW =
+  FORCE_CONTINUOUS_FOR_SINGLE_COURSE || FLOW === 'continuous' || COURSE_VIEW === 'pro';
 const PAGE_MODE = String(params.get('mode') || '').trim().toLowerCase();
 // Default flow: one exercise per screen (Busuu-like).
 // Fallback to classic list only when explicitly requested with mode=classic.

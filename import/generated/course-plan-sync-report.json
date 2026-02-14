@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-02-14T21:34:30.855Z",
+  "projectId": "aquivivo-platform",
+  "serviceAccountPath": "C:\\Users\\melle\\Downloads\\aquivivo-platform-firebase-adminsdk-fbsvc-3c66d5cea3.json",
+  "dryRun": false,
+  "importSummary": {
+    "topics": 51,
+    "lessons": 286,
+    "modules": 51,
+    "coursePaths": 1
+  },
+  "levels": [
+    {
+      "level": "A1",
+      "topics": 15
+    },
+    {
+      "level": "A2",
+      "topics": 14
+    },
+    {
+      "level": "B1",
+      "topics": 10
+    },
+    {
+      "level": "B2",
+      "topics": 8
+    }
+  ]
+}

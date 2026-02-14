@@ -33,7 +33,9 @@ const COURSE_KEY = String(qs.get('course') || '').trim() || SINGLE_COURSE_KEY;
 const TRACK = String(qs.get('track') || '').trim().toLowerCase();
 const COURSE_VIEW = '';
 const FLOW = String(qs.get('flow') || '').trim().toLowerCase();
-const CONTINUOUS_FLOW = FLOW === 'continuous' || COURSE_VIEW === 'pro';
+const FORCE_CONTINUOUS_FOR_SINGLE_COURSE = COURSE_KEY === SINGLE_COURSE_KEY;
+const CONTINUOUS_FLOW =
+  FORCE_CONTINUOUS_FOR_SINGLE_COURSE || FLOW === 'continuous' || COURSE_VIEW === 'pro';
 const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
   ? KNOWN_LEVELS
   : ['A1', 'A2', 'B1', 'B2'];
@@ -466,6 +468,400 @@ function renderLocked() {
       </div>
     `;
   }
+}
+
+function escHtml(value) {
+  return String(value ?? '').replace(/[<>&"]/g, (ch) => {
+    if (ch === '<') return '&lt;';
+    if (ch === '>') return '&gt;';
+    if (ch === '&') return '&amp;';
+    return '&quot;';
+  });
+}
+
+function parseDocTimeMs(raw) {
+  try {
+    if (raw?.toDate && typeof raw.toDate === 'function') {
+      const d = raw.toDate();
+      return Number.isFinite(d?.getTime?.()) ? d.getTime() : 0;
+    }
+    const d = raw ? new Date(raw) : null;
+    const t = d?.getTime?.();
+    return Number.isFinite(t) ? t : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function isMiniTestLesson(lesson) {
+  if (!lesson || typeof lesson !== 'object') return false;
+  if (lesson.miniTest === true) return true;
+  const id = String(lesson.id || '').toUpperCase();
+  if (id.includes('MINITEST')) return true;
+  const title = String(lesson.title || '').toLowerCase();
+  return title.includes('mini test');
+}
+
+function isLevelExamLesson(lesson) {
+  if (!lesson || typeof lesson !== 'object') return false;
+  if (lesson.levelExam === true || lesson.finalExam === true) return true;
+  const id = String(lesson.id || '').toUpperCase();
+  if (id.includes('EXAMEN_GENERAL') || id.includes('FINAL_EXAM')) return true;
+  const title = String(lesson.title || '').toLowerCase();
+  return title.includes('examen general');
+}
+
+function isLessonCompleted(progressDoc) {
+  const d = progressDoc || {};
+  if (!d || typeof d !== 'object') return false;
+  if (d.completed === true) return true;
+  if (String(d.status || '').toLowerCase() === 'completed') return true;
+  const pct = Number(d.overallPercent ?? d.progressPercent ?? d.practicePercent ?? 0);
+  return Number.isFinite(pct) && pct >= 100;
+}
+
+function stripTopicPrefix(title, topicTitle = '') {
+  const t = String(title || '').trim();
+  if (!t) return '';
+  const prefix = String(topicTitle || '').trim();
+  if (!prefix) return t;
+  const lower = t.toLowerCase();
+  const lowerPrefix = `${prefix.toLowerCase()} - `;
+  if (lower.startsWith(lowerPrefix)) return t.slice(prefix.length + 3).trim();
+  return t;
+}
+
+function lessonHrefForRoute(level, topicId, lessonId) {
+  const lvl = String(level || LEVEL).toUpperCase();
+  const topic = String(topicId || COURSE_ID).trim();
+  let href = `ejercicio.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}`;
+  if (lessonId) href += `&lessonId=${encodeURIComponent(String(lessonId))}`;
+  href += navParams();
+  return href;
+}
+
+function miniTestHrefForRoute(level, topicId, miniLessonId) {
+  const lvl = String(level || LEVEL).toUpperCase();
+  const topic = String(topicId || COURSE_ID).trim();
+  let href = `review.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}&mode=minitest`;
+  if (miniLessonId) href += `&lessonId=${encodeURIComponent(String(miniLessonId))}`;
+  href += navParams();
+  return href;
+}
+
+function pickBestModuleForTopic(modules = [], { level = '', topicSlug = '' } = {}) {
+  const lvl = String(level || '').toUpperCase();
+  const slug = String(topicSlug || '').trim();
+  const ranked = (modules || [])
+    .filter(Boolean)
+    .filter((m) => {
+      const mLevel = String(m.level || '').toUpperCase();
+      return !lvl || !mLevel || mLevel === lvl;
+    })
+    .sort((a, b) => {
+      const aLen = Array.isArray(a.lessonIds) ? a.lessonIds.length : 0;
+      const bLen = Array.isArray(b.lessonIds) ? b.lessonIds.length : 0;
+      if (aLen !== bLen) return bLen - aLen;
+      const aSlugMatch = slug && String(a.topicSlug || '').trim() === slug ? 1 : 0;
+      const bSlugMatch = slug && String(b.topicSlug || '').trim() === slug ? 1 : 0;
+      if (aSlugMatch !== bSlugMatch) return bSlugMatch - aSlugMatch;
+      const aTime = parseDocTimeMs(a.updatedAt);
+      const bTime = parseDocTimeMs(b.updatedAt);
+      if (aTime !== bTime) return bTime - aTime;
+      return String(a.id || '').localeCompare(String(b.id || ''));
+    });
+  return ranked[0] || null;
+}
+
+async function loadTopicModuleWithLessons(level, topicId, topicSlug = '') {
+  const topic = String(topicId || '').trim();
+  const slug = String(topicSlug || '').trim();
+  const lvl = String(level || '').toUpperCase();
+  if (!topic && !slug) return { module: null, lessons: [] };
+
+  const moduleIdCandidates = [];
+  const pushModuleId = (raw) => {
+    const id = String(raw || '').trim();
+    if (!id) return;
+    if (moduleIdCandidates.includes(id)) return;
+    moduleIdCandidates.push(id);
+  };
+
+  const normalizedSlug = slug || topic;
+  if (lvl && normalizedSlug) pushModuleId(`${lvl}__${normalizedSlug}__MODULE`);
+  if (lvl && topic && topic !== normalizedSlug) pushModuleId(`${lvl}__${topic}__MODULE`);
+
+  const coursePathIds = Array.from(
+    new Set(
+      [COURSE_KEY, SINGLE_COURSE_KEY, 'COURSE_PATH']
+        .map((x) => String(x || '').trim())
+        .filter(Boolean),
+    ),
+  );
+
+  for (const cpId of coursePathIds) {
+    try {
+      const cpSnap = await getDoc(doc(db, 'course_paths', cpId));
+      if (!cpSnap.exists()) continue;
+      const cpData = cpSnap.data() || {};
+      const moduleIds = Array.isArray(cpData.moduleIds)
+        ? cpData.moduleIds.map((x) => String(x || '').trim()).filter(Boolean)
+        : [];
+      moduleIds.forEach((mid) => {
+        const token = mid.toLowerCase();
+        const topicToken = topic.toLowerCase();
+        const slugToken = normalizedSlug.toLowerCase();
+        if (
+          (topicToken && token.includes(`__${topicToken}__module`)) ||
+          (slugToken && token.includes(`__${slugToken}__module`))
+        ) {
+          pushModuleId(mid);
+        }
+      });
+    } catch {}
+  }
+
+  const moduleSnaps = await Promise.all(
+    moduleIdCandidates.map((id) => getDoc(doc(db, 'modules', id)).catch(() => null)),
+  );
+  const candidates = moduleIdCandidates
+    .map((id, idx) => {
+      const snap = moduleSnaps[idx];
+      if (!snap?.exists?.()) return null;
+      return { id, ...(snap.data() || {}) };
+    })
+    .filter(Boolean);
+
+  const module = pickBestModuleForTopic(candidates, { level: lvl, topicSlug: normalizedSlug });
+  if (!module) return { module: null, lessons: [] };
+
+  const lessonIds = Array.isArray(module.lessonIds)
+    ? module.lessonIds.map((x) => String(x || '').trim()).filter(Boolean)
+    : [];
+  if (!lessonIds.length) return { module, lessons: [] };
+
+  const lessonSnaps = await Promise.all(
+    lessonIds.map((id) => getDoc(doc(db, 'lessons', id)).catch(() => null)),
+  );
+  const lessons = lessonIds
+    .map((id, idx) => {
+      const snap = lessonSnaps[idx];
+      if (!snap?.exists?.()) {
+        return {
+          id,
+          title: id,
+          level: lvl,
+          topicId: topic || null,
+          topicSlug: slug || null,
+        };
+      }
+      return { id: snap.id, ...(snap.data() || {}) };
+    })
+    .filter(Boolean);
+
+  return { module, lessons };
+}
+
+async function loadLessonProgressMap(uid, lessonIds = []) {
+  const userId = String(uid || '').trim();
+  const ids = Array.from(new Set((lessonIds || []).map((x) => String(x || '').trim()).filter(Boolean)));
+  const out = {};
+  if (!userId || !ids.length) return out;
+
+  const docs = await Promise.all(
+    ids.map((id) =>
+      getDoc(doc(db, 'user_progress', userId, 'lessons', id))
+        .then((snap) => ({ id, snap }))
+        .catch(() => ({ id, snap: null })),
+    ),
+  );
+  docs.forEach(({ id, snap }) => {
+    if (snap?.exists?.()) out[id] = snap.data() || {};
+  });
+  return out;
+}
+
+function buildTopicLessonPairs(lessons = []) {
+  const ordered = Array.isArray(lessons) ? lessons : [];
+  const mini = ordered.filter((x) => isMiniTestLesson(x));
+  const base = ordered.filter((x) => !isMiniTestLesson(x) && !isLevelExamLesson(x));
+  if (!base.length) {
+    return ordered.map((x) => ({ lesson: x, miniTest: null }));
+  }
+
+  const usedMini = new Set();
+  const pairs = [];
+  base.forEach((lesson) => {
+    let miniCandidate =
+      mini.find(
+        (m) =>
+          !usedMini.has(m.id) &&
+          String(m.miniTestAfterLesson || '').trim() === String(lesson.id || '').trim(),
+      ) || null;
+
+    if (!miniCandidate) {
+      miniCandidate = mini.find((m) => !usedMini.has(m.id)) || null;
+    }
+    if (miniCandidate) usedMini.add(miniCandidate.id);
+    pairs.push({ lesson, miniTest: miniCandidate });
+  });
+  return pairs;
+}
+
+function normalizeTopicRoadmap(rawRoadmap = []) {
+  const rows = Array.isArray(rawRoadmap) ? rawRoadmap : [];
+  return rows
+    .map((item, idx) => {
+      const order = Number(item?.order || idx + 1);
+      const lessonId = String(item?.lessonId || '').trim();
+      const lessonTitle = String(item?.lessonTitle || '').trim() || `Leccion ${idx + 1}`;
+      const miniTestId = String(item?.miniTestId || '').trim();
+      const miniTestTitle = String(item?.miniTestTitle || '').trim() || (miniTestId ? 'Mini test' : '');
+      if (!lessonId) return null;
+      return {
+        order: Number.isFinite(order) ? order : idx + 1,
+        lessonId,
+        lessonTitle,
+        miniTestId,
+        miniTestTitle,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+}
+
+function renderTopicRoadmapCards({
+  level,
+  topicId,
+  topicTitle,
+  roadmap = [],
+  isAdmin = false,
+}) {
+  const tocWrap = $('tocWrap');
+  const tocList = $('tocList');
+  if (!tocWrap || !tocList) return false;
+  const lvl = String(level || LEVEL).toUpperCase();
+  const topic = String(topicId || COURSE_ID).trim();
+  const steps = normalizeTopicRoadmap(roadmap);
+  if (!steps.length) {
+    show(tocWrap, false);
+    return false;
+  }
+
+  const cards = steps.map((step, idx) => {
+    const lessonHref = lessonHrefForRoute(lvl, topic, step.lessonId);
+    const hasMini = !!String(step.miniTestId || '').trim();
+    const miniHref = hasMini ? miniTestHrefForRoute(lvl, topic, step.miniTestId) : '';
+    const statusChip = isAdmin
+      ? '<span class="pill pill-blue">Listo</span>'
+      : '<span class="pill">Ruta</span>';
+    const miniButton = hasMini
+      ? `<a class="btn-white-outline" href="${miniHref}">Mini test</a>`
+      : '<button class="btn-white-outline" type="button" disabled>Mini test</button>';
+
+    return `
+      <div class="card" style="margin:0; padding:12px;">
+        <div class="metaRow" style="gap:8px; flex-wrap:wrap;">
+          <span class="pill">Leccion ${idx + 1}</span>
+          ${statusChip}
+        </div>
+        <div style="font-weight:800; margin-top:8px;">${escHtml(step.lessonTitle)}</div>
+        ${
+          hasMini
+            ? `<div class="muted" style="margin-top:6px;">Mini test: ${escHtml(step.miniTestTitle || 'Mini test')}</div>`
+            : ''
+        }
+        <div class="metaRow" style="margin-top:10px; gap:8px; flex-wrap:wrap;">
+          <a class="btn-white-outline" href="${lessonHref}">Abrir leccion</a>
+          ${miniButton}
+        </div>
+      </div>
+    `;
+  });
+
+  tocList.innerHTML = `
+    <div class="muted" style="margin-bottom:10px;">
+      ${escHtml(`Ruta del tema ${topicTitle || ''}`)}
+    </div>
+    <div style="display:grid; grid-template-columns:1fr; gap:10px;">
+      ${cards.join('')}
+    </div>
+  `;
+  show(tocWrap, true);
+  return true;
+}
+
+function renderLessonPathCards({
+  level,
+  topicId,
+  topicTitle,
+  moduleData,
+  lessons,
+  lessonProgressById,
+  isAdmin = false,
+}) {
+  const tocWrap = $('tocWrap');
+  const tocList = $('tocList');
+  if (!tocWrap || !tocList) return false;
+  const lvl = String(level || LEVEL).toUpperCase();
+  const topic = String(topicId || COURSE_ID).trim();
+  const pairs = buildTopicLessonPairs(lessons);
+  if (!pairs.length) {
+    show(tocWrap, false);
+    return false;
+  }
+
+  const cards = pairs.map((pair, idx) => {
+    const lesson = pair.lesson || {};
+    const mini = pair.miniTest || null;
+    const lessonId = String(lesson.id || '').trim();
+    const miniId = String(mini?.id || '').trim();
+    const lessonProgress = lessonId ? lessonProgressById?.[lessonId] : null;
+    const miniProgress = miniId ? lessonProgressById?.[miniId] : null;
+    const lessonDone = isLessonCompleted(lessonProgress);
+    const miniDone = mini ? isLessonCompleted(miniProgress) : false;
+    const tileDone = lessonDone && (!mini || miniDone);
+    const statusChip = tileDone ? '<span class="pill pill-blue">Listo</span>' : '<span class="pill">Pendiente</span>';
+    const lessonLabel = stripTopicPrefix(lesson.title || lessonId || `Leccion ${idx + 1}`, topicTitle);
+    const miniLabel = mini
+      ? stripTopicPrefix(mini.title || miniId || `Mini test ${idx + 1}`, topicTitle)
+      : 'Mini test';
+
+    const lessonHref = lessonHrefForRoute(lvl, topic, lessonId);
+    const miniHref = mini ? miniTestHrefForRoute(lvl, topic, miniId) : '';
+
+    const miniBtn = mini
+      ? `<a class="btn-white-outline" href="${miniHref}">Mini test</a>`
+      : `<button class="btn-white-outline" type="button" disabled>Mini test</button>`;
+    const lessonBtn = `<a class="btn-white-outline" href="${lessonHref}">Abrir leccion</a>`;
+
+    return `
+      <div class="card" style="margin:0; padding:12px;">
+        <div class="metaRow" style="gap:8px; flex-wrap:wrap;">
+          <span class="pill">Leccion ${idx + 1}</span>
+          ${statusChip}
+        </div>
+        <div style="font-weight:800; margin-top:8px;">${escHtml(lessonLabel)}</div>
+        <div class="muted" style="margin-top:6px;">Mini test: ${escHtml(miniLabel)}</div>
+        <div class="metaRow" style="margin-top:10px; gap:8px; flex-wrap:wrap;">
+          ${lessonBtn}
+          ${miniBtn}
+        </div>
+      </div>
+    `;
+  });
+
+  const moduleTitle = String(moduleData?.title || '').trim();
+  tocList.innerHTML = `
+    <div class="muted" style="margin-bottom:10px;">
+      ${escHtml(moduleTitle || `Ruta del tema ${topicTitle || ''}`)}
+    </div>
+    <div style="display:grid; grid-template-columns:1fr; gap:10px;">
+      ${cards.join('')}
+    </div>
+  `;
+  show(tocWrap, true);
+  return true;
 }
 
 function prevLevelOf(level) {
@@ -1027,6 +1423,43 @@ async function loadLesson(user) {
     if (!ok) return;
   }
 
+  let routeRendered = false;
+  try {
+    const topicRoadmap = normalizeTopicRoadmap(topic?.lessonRoadmap || []);
+    if (topicRoadmap.length) {
+      routeRendered = renderTopicRoadmapCards({
+        level: topicLevel,
+        topicId: String(topic?.id || COURSE_ID).trim(),
+        topicTitle,
+        roadmap: topicRoadmap,
+        isAdmin: flags.isAdmin === true,
+      });
+    } else {
+      const routeData = await loadTopicModuleWithLessons(
+        topicLevel,
+        String(topic?.id || COURSE_ID).trim(),
+        String(topic?.slug || '').trim(),
+      );
+      const routeLessons = Array.isArray(routeData?.lessons) ? routeData.lessons : [];
+      if (routeLessons.length) {
+        routeRendered = renderLessonPathCards({
+          level: topicLevel,
+          topicId: String(topic?.id || COURSE_ID).trim(),
+          topicTitle,
+          moduleData: routeData?.module || null,
+          lessons: routeLessons,
+          lessonProgressById: {},
+          isAdmin: flags.isAdmin === true,
+        });
+      } else {
+        show($('tocWrap'), false);
+      }
+    }
+  } catch (e) {
+    console.warn('[lessonpage] route render failed', e);
+    show($('tocWrap'), false);
+  }
+
   let meta = null;
   try {
     const topicLevel = topicLevelOf(topic, LEVEL);
@@ -1170,15 +1603,27 @@ async function loadLesson(user) {
 
   const html = String(meta?.html || '').trim();
   if (!html) {
-    renderEmpty('Todavia no hay contenido de leccion para este tema.');
-    return;
-  }
-
-  const contentEl = $('lessonContent');
-  if (contentEl) {
-    contentEl.innerHTML = html;
-    contentEl.style.display = 'block';
-    decorateLessonTts(contentEl);
+    if (!routeRendered) {
+      renderEmpty('Todavia no hay contenido de leccion para este tema.');
+      return;
+    }
+    const empty = $('lessonEmpty');
+    if (empty) {
+      empty.style.display = 'none';
+      empty.innerHTML = '';
+    }
+    const contentEl = $('lessonContent');
+    if (contentEl) {
+      contentEl.style.display = 'none';
+      contentEl.innerHTML = '';
+    }
+  } else {
+    const contentEl = $('lessonContent');
+    if (contentEl) {
+      contentEl.innerHTML = html;
+      contentEl.style.display = 'block';
+      decorateLessonTts(contentEl);
+    }
   }
 
   if (topic) setupRatingCard(user, topic);

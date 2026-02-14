@@ -30,7 +30,9 @@ const COURSE_VIEW = '';
 const FLOW = String(params.get('flow') || '')
   .trim()
   .toLowerCase();
-const CONTINUOUS_FLOW = FLOW === 'continuous' || COURSE_VIEW === 'pro';
+const FORCE_CONTINUOUS_FOR_SINGLE_COURSE = COURSE_KEY === SINGLE_COURSE_KEY;
+const CONTINUOUS_FLOW =
+  FORCE_CONTINUOUS_FOR_SINGLE_COURSE || FLOW === 'continuous' || COURSE_VIEW === 'pro';
 const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
 const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
   ? KNOWN_LEVELS
@@ -869,10 +871,12 @@ function buildMixedRoute(topics) {
   return [...mixed, ...other];
 }
 
-function renderUnitHeader(n) {
+function renderUnitHeader(n, level = '') {
+  const lvl = String(level || '').toUpperCase().trim();
+  const title = lvl ? `Nivel ${lvl}` : `Unidad ${Number(n) || 1}`;
   return `
     <div class="pathUnitHead">
-      <div class="pathUnitTitle">Unidad ${Number(n) || 1}</div>
+      <div class="pathUnitTitle">${title}</div>
     </div>
   `;
 }
@@ -905,7 +909,7 @@ function renderPathStep({
   const title = safeText(topic?.title || 'Tema');
   const desc = safeText(truncateText(topic?.desc || '', 120));
   const topicLevel = topicLevelOf(topic);
-  let href = `ejercicio.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}`;
+  let href = `lessonpage.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}`;
   href += navParams();
   const st = progressState(progress);
   const accent = topicAccent(topic);
@@ -1192,22 +1196,26 @@ async function loadTopics(user) {
         const currentLevel = topicLevelOf(current);
         btnCourseContinue.style.display = '';
         btnCourseContinue.textContent = 'Continuar';
-        btnCourseContinue.href = `ejercicio.html?level=${encodeURIComponent(currentLevel)}&id=${encodeURIComponent(current.id)}${navParams()}`;
+        btnCourseContinue.href = `lessonpage.html?level=${encodeURIComponent(currentLevel)}&id=${encodeURIComponent(current.id)}${navParams()}`;
       }
     }
   }
 
-  const UNIT_SIZE = 6;
   const unlockedBoundary = flags?.isAdmin
     ? Math.max(0, entries.length - 1)
     : Math.max(0, currentIdx);
 
+  let currentLevelHeader = '';
+  let levelSectionNo = 0;
   let html = '';
   for (let i = 0; i < entries.length; i += 1) {
-    if (i % UNIT_SIZE === 0) {
-      html += renderUnitHeader(Math.floor(i / UNIT_SIZE) + 1);
-    }
     const e = entries[i];
+    const entryLevel = topicLevelOf(e.topic, LEVEL);
+    if (entryLevel !== currentLevelHeader) {
+      currentLevelHeader = entryLevel;
+      levelSectionNo += 1;
+      html += renderUnitHeader(levelSectionNo, entryLevel);
+    }
     html += renderPathStep({
       topic: e.topic,
       idx: i,
