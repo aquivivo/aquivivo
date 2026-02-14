@@ -38,9 +38,10 @@ import {
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
 const TOPIC_ID = String(params.get('id') || '').trim();
+const COURSE_KEY = String(params.get('course') || '').trim();
 const SLUG = String(params.get('slug') || '').trim();
 const TRACK = String(params.get('track') || '').trim().toLowerCase();
-const COURSE_VIEW = String(params.get('view') || '').trim().toLowerCase();
+const COURSE_VIEW = '';
 const FLOW = String(params.get('flow') || '').trim().toLowerCase();
 const CONTINUOUS_FLOW = FLOW === 'continuous' || COURSE_VIEW === 'pro';
 const PAGE_MODE = String(params.get('mode') || '').trim().toLowerCase();
@@ -63,6 +64,7 @@ const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
 
 function navParams() {
   const parts = [];
+  if (COURSE_KEY) parts.push(`course=${encodeURIComponent(COURSE_KEY)}`);
   if (TRACK) parts.push(`track=${encodeURIComponent(TRACK)}`);
   if (COURSE_VIEW) parts.push(`view=${encodeURIComponent(COURSE_VIEW)}`);
   if (CONTINUOUS_FLOW) parts.push('flow=continuous');
@@ -70,8 +72,6 @@ function navParams() {
 }
 
 function coursePageName() {
-  if (COURSE_VIEW === 'latam') return 'curso-latam.html';
-  if (COURSE_VIEW === 'pro') return 'kurs-pl.html';
   return 'course.html';
 }
 

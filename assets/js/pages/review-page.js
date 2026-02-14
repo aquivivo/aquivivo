@@ -90,15 +90,10 @@ function modeLabel(mode) {
 
 function courseBackHref(level = 'A1') {
   const lvl = String(level || 'A1').toUpperCase();
-  const page = COURSE_VIEW === 'latam'
-    ? 'curso-latam.html'
-    : COURSE_VIEW === 'pro'
-      ? 'kurs-pl.html'
-      : 'course.html';
+  const page = 'course.html';
   let href = `${page}?level=${encodeURIComponent(lvl)}`;
   if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
-  if (COURSE_VIEW) href += `&view=${encodeURIComponent(COURSE_VIEW)}`;
-  if (FLOW === 'continuous' || COURSE_VIEW === 'pro') href += '&flow=continuous';
+  if (FLOW === 'continuous') href += '&flow=continuous';
   return href;
 }
 

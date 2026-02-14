@@ -29,7 +29,7 @@ const qs = new URLSearchParams(window.location.search);
 const LEVEL = (qs.get('level') || 'A1').toUpperCase();
 const COURSE_ID = (qs.get('id') || '').trim();
 const TRACK = String(qs.get('track') || '').trim().toLowerCase();
-const COURSE_VIEW = String(qs.get('view') || '').trim().toLowerCase();
+const COURSE_VIEW = '';
 const FLOW = String(qs.get('flow') || '').trim().toLowerCase();
 const CONTINUOUS_FLOW = FLOW === 'continuous' || COURSE_VIEW === 'pro';
 const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
@@ -315,8 +315,6 @@ function navParams() {
 }
 
 function coursePageName() {
-  if (COURSE_VIEW === 'latam') return 'curso-latam.html';
-  if (COURSE_VIEW === 'pro') return 'kurs-pl.html';
   return 'course.html';
 }
 

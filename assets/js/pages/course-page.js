@@ -7,6 +7,7 @@
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import { KNOWN_LEVELS, levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
+import { isQaAdminUser } from '../qa-admin-tools.js';
 import {
   collection,
   query,
@@ -16,21 +17,16 @@ import {
   getDoc,
   doc,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
-import {
-  checkpointBlockRange,
-  hasCheckpoint,
-  requiredCheckpointCountForRouteIndex,
-} from '../progress-tools.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
+const SINGLE_COURSE_KEY = 'COURSE_PATH';
+const COURSE_KEY = SINGLE_COURSE_KEY;
 const TRACK = String(params.get('track') || document.body?.dataset?.track || '')
   .trim()
   .toLowerCase();
-const COURSE_VIEW = String(params.get('view') || document.body?.dataset?.courseview || '')
-  .trim()
-  .toLowerCase();
+const COURSE_VIEW = '';
 const FLOW = String(params.get('flow') || '')
   .trim()
   .toLowerCase();
@@ -95,18 +91,23 @@ function showAccessLocked() {
   page.prepend(card);
 }
 
-async function getUserFlags(uid, email) {
+async function getUserFlags(authUser) {
+  const uid = String(authUser?.uid || '').trim();
+  const email = String(authUser?.email || '').trim();
   try {
     const snap = await getDoc(doc(db, 'users', uid));
+    const data = snap.exists() ? snap.data() || {} : {};
+    const qaAdmin = await isQaAdminUser(authUser, data);
+    const isAdmin = qaAdmin.allowed || isAdminUser(data, email);
+
     if (!snap.exists()) {
-      if (isAdminUser(null, email)) {
+      if (isAdmin || isAdminUser(null, email)) {
         return { isAdmin: true, hasLevelAccess: true, blocked: false };
       }
       return { isAdmin: false, hasLevelAccess: false, blocked: false };
     }
 
-    const d = snap.data() || {};
-    const isAdmin = isAdminUser(d, email);
+    const d = data;
     const blocked = d.blocked === true;
 
     if (isAdmin) {
@@ -123,8 +124,9 @@ async function getUserFlags(uid, email) {
 
     const plan = String(d.plan || '').toLowerCase();
     const hasGlobalAccess = plan === 'premium' || (d.access === true && levels.length === 0);
+    const hasExplicitLevel = levels.includes(String(LEVEL).toUpperCase());
     const hasLevelAccess =
-      (hasGlobalAccess || levels.includes(String(LEVEL).toUpperCase())) && isUntilValid;
+      hasExplicitLevel || (hasGlobalAccess && (isUntilValid || !hasUntil));
 
     return {
       isAdmin: false,
@@ -348,8 +350,8 @@ function prevLevelOf(level) {
 
 function navParams() {
   const parts = [];
+  parts.push(`course=${encodeURIComponent(SINGLE_COURSE_KEY)}`);
   if (TRACK) parts.push(`track=${encodeURIComponent(TRACK)}`);
-  if (COURSE_VIEW) parts.push(`view=${encodeURIComponent(COURSE_VIEW)}`);
   if (CONTINUOUS_FLOW) parts.push('flow=continuous');
   return parts.length ? `&${parts.join('&')}` : '';
 }
@@ -375,8 +377,8 @@ function courseHref(level = LEVEL) {
   const page = String(location.pathname || '').split('/').pop() || 'course.html';
   const lvl = String(level || LEVEL).toUpperCase();
   let href = `${page}?level=${encodeURIComponent(lvl)}`;
+  if (COURSE_KEY) href += `&course=${encodeURIComponent(COURSE_KEY)}`;
   if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
-  if (COURSE_VIEW) href += `&view=${encodeURIComponent(COURSE_VIEW)}`;
   if (CONTINUOUS_FLOW) href += '&flow=continuous';
   return href;
 }
@@ -411,6 +413,180 @@ async function loadTopicsForLevel(level) {
     console.warn('[course] loadTopicsForLevel failed', e);
     return [];
   }
+}
+
+function normalizeLevel(raw) {
+  const lvl = String(raw || '').trim().toUpperCase();
+  return LEVEL_ORDER.includes(lvl) ? lvl : '';
+}
+
+function levelOrderIndex(level) {
+  const idx = LEVEL_ORDER.indexOf(normalizeLevel(level));
+  return idx >= 0 ? idx : 999;
+}
+
+function coursePathBaseKey(pathOrId) {
+  const raw =
+    typeof pathOrId === 'string'
+      ? pathOrId
+      : String(pathOrId?.id || pathOrId?.courseId || pathOrId?.slug || '');
+  const id = String(raw || '').trim();
+  if (!id) return '';
+  const m = id.match(/^([A-Z0-9]+)__(.+)$/i);
+  if (m && normalizeLevel(m[1])) return String(m[2] || '').trim() || id;
+  return id;
+}
+
+function coursePathLevel(pathOrId) {
+  const fromField = normalizeLevel(pathOrId?.level);
+  if (fromField) return fromField;
+  const id = String(typeof pathOrId === 'string' ? pathOrId : pathOrId?.id || '').trim();
+  const m = id.match(/^([A-Z0-9]+)__/i);
+  return m ? normalizeLevel(m[1]) : '';
+}
+
+function sortCoursePathDocs(list) {
+  return [...(Array.isArray(list) ? list : [])].sort((a, b) => {
+    const d = levelOrderIndex(coursePathLevel(a)) - levelOrderIndex(coursePathLevel(b));
+    if (d) return d;
+    return String(a?.id || '').localeCompare(String(b?.id || ''));
+  });
+}
+
+async function loadCoursePathDocsForKey(key) {
+  const requested = String(SINGLE_COURSE_KEY || key || '').trim();
+  if (!requested) return [];
+  const base = coursePathBaseKey(requested) || requested;
+  const ids = new Set([requested, base]);
+  LEVEL_ORDER.forEach((lvl) => {
+    ids.add(`${lvl}__${base}`);
+    ids.add(`${lvl}__${requested}`);
+  });
+
+  const refs = [...ids]
+    .map((id) => String(id || '').trim())
+    .filter(Boolean)
+    .map((id) => doc(db, 'course_paths', id));
+
+  const snaps = await Promise.all(refs.map((refItem) => getDoc(refItem).catch(() => null)));
+  const found = snaps
+    .filter((snap) => snap?.exists?.())
+    .map((snap) => ({ id: snap.id, ...(snap.data() || {}) }));
+  return sortCoursePathDocs(found);
+}
+
+async function loadDefaultCoursePathDocs() {
+  try {
+    const snap = await getDocs(collection(db, 'course_paths'));
+    const rows = snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((row) => String(coursePathBaseKey(row) || '').toUpperCase() === SINGLE_COURSE_KEY);
+    if (!rows.length) return [];
+
+    const groups = new Map();
+    rows.forEach((row) => {
+      const key = coursePathBaseKey(row);
+      if (!key) return;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(row);
+    });
+
+    const ranked = [...groups.values()]
+      .map((group) => sortCoursePathDocs(group))
+      .sort((a, b) => {
+        const aLevels = new Set(a.map((x) => coursePathLevel(x))).size;
+        const bLevels = new Set(b.map((x) => coursePathLevel(x))).size;
+        if (bLevels !== aLevels) return bLevels - aLevels;
+        return levelOrderIndex(coursePathLevel(a[0])) - levelOrderIndex(coursePathLevel(b[0]));
+      });
+    return ranked[0] || [];
+  } catch {
+    return [];
+  }
+}
+
+async function loadRouteTopicsFromCoursePaths(pathDocs) {
+  const rows = sortCoursePathDocs(pathDocs);
+  if (!rows.length) return [];
+
+  const moduleIds = [];
+  const moduleLevelMap = new Map();
+  rows.forEach((row) => {
+    const lvl = coursePathLevel(row) || LEVEL;
+    const ids = Array.isArray(row?.moduleIds) ? row.moduleIds : [];
+    ids.forEach((rawId) => {
+      const moduleId = String(rawId || '').trim();
+      if (!moduleId || moduleLevelMap.has(moduleId)) return;
+      moduleLevelMap.set(moduleId, lvl);
+      moduleIds.push(moduleId);
+    });
+  });
+  if (!moduleIds.length) return [];
+
+  const moduleSnaps = await Promise.all(
+    moduleIds.map((moduleId) => getDoc(doc(db, 'modules', moduleId)).catch(() => null)),
+  );
+  const modules = moduleIds
+    .map((moduleId, idx) => {
+      const snap = moduleSnaps[idx];
+      if (!snap?.exists?.()) return null;
+      return { id: moduleId, ...(snap.data() || {}) };
+    })
+    .filter(Boolean);
+  if (!modules.length) return [];
+
+  const topicIds = [
+    ...new Set(
+      modules
+        .map((m) => String(m?.topicId || '').trim())
+        .filter(Boolean),
+    ),
+  ];
+  const topicSnaps = await Promise.all(
+    topicIds.map((topicId) => getDoc(doc(db, 'courses', topicId)).catch(() => null)),
+  );
+  const topicMap = new Map();
+  topicIds.forEach((topicId, idx) => {
+    const snap = topicSnaps[idx];
+    if (!snap?.exists?.()) return;
+    topicMap.set(topicId, { id: topicId, ...(snap.data() || {}) });
+  });
+
+  const used = new Set();
+  let seq = 0;
+  const out = [];
+
+  modules.forEach((moduleItem) => {
+    const lvl = coursePathLevel(moduleItem) || moduleLevelMap.get(moduleItem.id) || LEVEL;
+    const topicId =
+      String(moduleItem?.topicId || '').trim() ||
+      String(moduleItem?.topicSlug || '').trim() ||
+      String(moduleItem?.id || '').trim();
+    if (!topicId) return;
+
+    const baseTopic = topicMap.get(String(moduleItem?.topicId || '').trim()) || {};
+    const topicSlug = String(moduleItem?.topicSlug || baseTopic?.slug || topicId).trim();
+    const unique = `${lvl}__${topicSlug || topicId}`;
+    if (used.has(unique)) return;
+    used.add(unique);
+
+    seq += 1;
+    out.push({
+      ...baseTopic,
+      id: topicId,
+      slug: topicSlug,
+      title:
+        String(moduleItem?.title || '').trim() ||
+        String(baseTopic?.title || baseTopic?.name || '').trim() ||
+        `Tema ${seq}`,
+      desc: String(baseTopic?.desc || baseTopic?.subtitle || '').trim(),
+      type: moduleItem?.type || baseTopic?.type || baseTopic?.category || 'both',
+      order: seq,
+      __routeLevel: lvl,
+    });
+  });
+
+  return out;
 }
 
 function topicProgressKey(level, topic) {
@@ -729,7 +905,7 @@ function renderPathStep({
   const title = safeText(topic?.title || 'Tema');
   const desc = safeText(truncateText(topic?.desc || '', 120));
   const topicLevel = topicLevelOf(topic);
-  let href = `lessonpage.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}`;
+  let href = `ejercicio.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}`;
   href += navParams();
   const st = progressState(progress);
   const accent = topicAccent(topic);
@@ -844,7 +1020,7 @@ async function loadExercisesCountMapForTopics(topics) {
 
 async function loadTopics(user) {
   const subtitle = $('levelSubtitle');
-  const flags = await getUserFlags(user.uid, user.email);
+  const flags = await getUserFlags(user);
   wireLevelButtons(flags);
 
   const adminQuick = document.getElementById('adminQuickLesson');
@@ -877,11 +1053,26 @@ async function loadTopics(user) {
   let routeTopics = [];
 
   if (CONTINUOUS_FLOW) {
-    const routeLevels = routeLevelsFromFlags(flags, { previewOnly });
-    for (const lvl of routeLevels) {
-      const selected = await loadTopicsForLevel(lvl);
-      const mixed = buildMixedRoute(selected).map((t) => ({ ...t, __routeLevel: lvl }));
-      routeTopics.push(...mixed);
+    const pathDocs = COURSE_KEY
+      ? await loadCoursePathDocsForKey(COURSE_KEY)
+      : await loadDefaultCoursePathDocs();
+
+    if (pathDocs.length) {
+      const fromPaths = await loadRouteTopicsFromCoursePaths(pathDocs);
+      if (fromPaths.length) routeTopics = fromPaths;
+
+      const firstTitle = pathDocs
+        .map((x) => String(x?.title || x?.name || '').trim())
+        .find(Boolean);
+      if (subtitle && firstTitle) subtitle.textContent = firstTitle;
+    }
+
+    if (!routeTopics.length) {
+      for (const lvl of LEVEL_ORDER) {
+        const selected = await loadTopicsForLevel(lvl);
+        const mixed = buildMixedRoute(selected).map((t) => ({ ...t, __routeLevel: lvl }));
+        routeTopics.push(...mixed);
+      }
     }
   } else {
     const unlockedLevels = await computeUnlockedLevels(user.uid, flags, progressMap, { previewOnly });
@@ -928,8 +1119,18 @@ async function loadTopics(user) {
 
   const entries = routeTopics.map((topic) => {
     const key = topicKeyFor(topic);
-    const progress = key ? progressMap[key] : null;
-    const st = progressState(progress);
+    const rawProgress = key ? progressMap[key] : null;
+    const progress = flags?.isAdmin
+      ? {
+          completed: true,
+          practicePercent: 100,
+          testTotal: 1,
+          testScore: 100,
+        }
+      : rawProgress;
+    const st = flags?.isAdmin
+      ? { pct: 100, done: true, inProgress: false, isNew: false }
+      : progressState(rawProgress);
     const exKey = exerciseCountKey(topicLevelOf(topic), topic.id);
     const exCount = Number(exCountMap[exKey] || 0);
     return { topic, progress, st, exCount };
@@ -950,21 +1151,6 @@ async function loadTopics(user) {
 
   let currentIdx = entries.findIndex((e) => !e.st.done);
   if (currentIdx < 0) currentIdx = entries.length - 1;
-  let missingCheckpoint = 0;
-  if (!previewOnly && CONTINUOUS_FLOW && !flags?.isAdmin) {
-    const required = requiredCheckpointCountForRouteIndex(currentIdx);
-    for (let block = 1; block <= required; block += 1) {
-      const ok = await hasCheckpoint(user.uid, block, {
-        track: TRACK,
-        view: COURSE_VIEW,
-        flow: 'continuous',
-      });
-      if (!ok) {
-        missingCheckpoint = block;
-        break;
-      }
-    }
-  }
 
   const doneCount = entries.filter((e) => e.st.done).length;
   const totalCount = entries.length;
@@ -982,11 +1168,7 @@ async function loadTopics(user) {
           ? 'Ruta mixta (Gramatica + Vocabulario) - '
           : '';
       const base = `${prefix}${doneCount}/${totalCount} completados - Progreso ${avgPct}%`;
-      if (missingCheckpoint > 0 && CONTINUOUS_FLOW) {
-        courseRouteHint.textContent = `${base} - Mini-test checkpoint ${missingCheckpoint} requerido.`;
-      } else {
-        courseRouteHint.textContent = base;
-      }
+      courseRouteHint.textContent = base;
     }
   }
   if (courseRouteProgressFill) {
@@ -996,13 +1178,6 @@ async function loadTopics(user) {
   if (btnCourseContinue) {
     if (previewOnly) {
       btnCourseContinue.style.display = 'none';
-    } else if (missingCheckpoint > 0 && CONTINUOUS_FLOW) {
-      const { end } = checkpointBlockRange(missingCheckpoint);
-      const anchor = entries[Math.min(entries.length - 1, end)]?.topic || null;
-      const anchorLevel = topicLevelOf(anchor, LEVEL);
-      btnCourseContinue.style.display = '';
-      btnCourseContinue.textContent = 'Mini-test checkpoint';
-      btnCourseContinue.href = `review.html?level=${encodeURIComponent(anchorLevel)}&mode=minitest&block=${encodeURIComponent(missingCheckpoint)}${navParams()}`;
     } else if (doneCount === totalCount) {
       btnCourseContinue.style.display = '';
       btnCourseContinue.textContent = 'Repasar';
@@ -1017,32 +1192,30 @@ async function loadTopics(user) {
         const currentLevel = topicLevelOf(current);
         btnCourseContinue.style.display = '';
         btnCourseContinue.textContent = 'Continuar';
-        btnCourseContinue.href = `lessonpage.html?level=${encodeURIComponent(currentLevel)}&id=${encodeURIComponent(current.id)}${navParams()}`;
+        btnCourseContinue.href = `ejercicio.html?level=${encodeURIComponent(currentLevel)}&id=${encodeURIComponent(current.id)}${navParams()}`;
       }
     }
   }
 
   const UNIT_SIZE = 6;
-  const visibleIdx =
-    missingCheckpoint > 0 && CONTINUOUS_FLOW
-      ? Math.min(currentIdx, checkpointBlockRange(missingCheckpoint).end)
-      : currentIdx;
-  const visibleCount = Math.min(entries.length, Math.max(1, visibleIdx + 1));
-  const visibleEntries = entries.slice(0, visibleCount);
+  const unlockedBoundary = flags?.isAdmin
+    ? Math.max(0, entries.length - 1)
+    : Math.max(0, currentIdx);
+
   let html = '';
-  for (let i = 0; i < visibleEntries.length; i += 1) {
+  for (let i = 0; i < entries.length; i += 1) {
     if (i % UNIT_SIZE === 0) {
       html += renderUnitHeader(Math.floor(i / UNIT_SIZE) + 1);
     }
-    const e = visibleEntries[i];
+    const e = entries[i];
     html += renderPathStep({
       topic: e.topic,
       idx: i,
       exCount: previewOnly ? 0 : e.exCount,
       progress: previewOnly ? null : e.progress,
-      isCurrent: !previewOnly && i === visibleIdx,
-      isLast: i === visibleEntries.length - 1,
-      readOnly: previewOnly,
+      isCurrent: !previewOnly && !flags?.isAdmin && i === currentIdx,
+      isLast: i === entries.length - 1,
+      readOnly: previewOnly || i > unlockedBoundary,
     });
   }
 
@@ -1062,6 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (CONTINUOUS_FLOW) {
           link.style.display = 'none';
         }
+        if (COURSE_KEY) url.searchParams.set('course', COURSE_KEY);
         if (TRACK) url.searchParams.set('track', TRACK);
         if (COURSE_VIEW) url.searchParams.set('view', COURSE_VIEW);
         if (CONTINUOUS_FLOW) url.searchParams.set('flow', 'continuous');

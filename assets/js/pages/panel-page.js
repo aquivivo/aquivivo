@@ -43,12 +43,24 @@ const qs = new URLSearchParams(location.search);
 const AS_UID = (qs.get('as') || '').trim(); // admin preview
 const CHAT_UID = (qs.get('chat') || '').trim();
 const QA_MODE = String(qs.get('qa') || '').trim() === '1';
+const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
+const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2'];
+const SINGLE_COURSE_KEY = 'COURSE_PATH';
 
 function toCode(raw) {
   return String(raw || '')
     .trim()
     .toUpperCase()
     .replace(/\s+/g, '');
+}
+
+function escHtml(value) {
+  return String(value ?? '').replace(/[<>&"]/g, (ch) => ({
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    '"': '&quot;',
+  })[ch]);
 }
 
 function show(el, yes) {
@@ -463,8 +475,13 @@ async function ensureUserDoc(user) {
   }
 }
 
-function computeFlags(userDoc) {
-  const isAdmin = userDoc?.admin === true;
+function computeFlags(userDoc, options = {}) {
+  const email = String(options?.email || userDoc?.email || '').toLowerCase();
+  const isAdmin =
+    options?.isAdmin === true ||
+    userDoc?.admin === true ||
+    String(userDoc?.role || '').toLowerCase() === 'admin' ||
+    ADMIN_EMAILS.includes(email);
   const plan = String(userDoc?.plan || 'free').toLowerCase();
   const access = userDoc?.access === true;
 
@@ -481,10 +498,10 @@ function computeFlags(userDoc) {
 
   const blocked = userDoc?.blocked === true;
 
-  const hasAccess =
-    isAdmin ||
-    ((plan === 'premium' || (access === true && levels.length === 0)) &&
-      isUntilValid);
+  const hasPaidAccess =
+    (plan === 'premium' || (access === true && levels.length === 0)) &&
+    (isUntilValid || !hasUntil);
+  const hasAccess = isAdmin || levels.length > 0 || hasPaidAccess;
 
   return {
     isAdmin,
@@ -508,42 +525,139 @@ function renderAdminUI(isAdmin) {
   }
 }
 
-function renderCourses(userDoc, flags) {
+function normalizeLevel(raw) {
+  const lvl = String(raw || '').trim().toUpperCase();
+  return LEVEL_ORDER.includes(lvl) ? lvl : '';
+}
+
+function levelRank(level) {
+  const idx = LEVEL_ORDER.indexOf(normalizeLevel(level));
+  return idx >= 0 ? idx : 999;
+}
+
+function baseCourseKeyFromId(rawId, fallback = '') {
+  const id = String(rawId || '').trim();
+  if (!id) return String(fallback || '').trim();
+  const m = id.match(/^([A-Z0-9]+)__(.+)$/i);
+  if (m && normalizeLevel(m[1])) return String(m[2] || '').trim() || id;
+  return id;
+}
+
+function prettifyCourseKey(rawKey) {
+  const key = String(rawKey || '').trim();
+  if (!key) return 'Curso';
+  if (key.toUpperCase() === 'COURSE_PATH') return 'Curso completo de polaco';
+  return `Curso ${key.replace(/[_-]+/g, ' ').trim()}`;
+}
+
+async function loadCourseCatalog() {
+  try {
+    const snap = await getDocs(collection(db, 'course_paths'));
+    const docs = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    if (!docs.length) return [];
+
+    const groups = new Map();
+    docs.forEach((row) => {
+      const baseKey = baseCourseKeyFromId(row.id, row.courseId || row.slug || '');
+      if (!baseKey) return;
+      if (!groups.has(baseKey)) groups.set(baseKey, []);
+      groups.get(baseKey).push(row);
+    });
+
+    const out = [];
+    for (const [baseKey, rows] of groups.entries()) {
+      if (String(baseKey || '').toUpperCase() !== SINGLE_COURSE_KEY) continue;
+      const sortedRows = [...rows].sort(
+        (a, b) =>
+          levelRank(a?.level || String(a?.id || '').split('__')[0]) -
+          levelRank(b?.level || String(b?.id || '').split('__')[0]),
+      );
+      const levels = [];
+      sortedRows.forEach((r) => {
+        const lvl = normalizeLevel(r?.level || String(r?.id || '').split('__')[0]);
+        if (lvl && !levels.includes(lvl)) levels.push(lvl);
+      });
+
+      const first = sortedRows[0] || {};
+      const title =
+        String(first?.title || '').trim() ||
+        String(first?.name || '').trim() ||
+        prettifyCourseKey(baseKey);
+      const subtitle =
+        String(first?.subtitle || first?.description || '').trim() ||
+        (levels.length
+          ? `Niveles: ${levels.join(' · ')}`
+          : 'Ruta continua con desbloqueo progresivo.');
+
+      out.push({
+        id: baseKey,
+        title,
+        subtitle,
+        levels,
+        startLevel: levels[0] || 'A1',
+        href: `course.html?level=${encodeURIComponent(levels[0] || 'A1')}&course=${encodeURIComponent(SINGLE_COURSE_KEY)}&flow=continuous`,
+      });
+    }
+
+    return out.sort((a, b) => levelRank(a.startLevel) - levelRank(b.startLevel));
+  } catch (e) {
+    console.warn('[panel] loadCourseCatalog failed', e);
+    return [];
+  }
+}
+
+async function renderCourses(userDoc, flags) {
   const host = $('coursesCards');
   if (!host) return;
 
-  const levels = ['A1', 'A2', 'B1', 'B2'];
-  const unlockedAny = levels.some((lvl) => hasLevelAccess(flags, userDoc, lvl));
-  const href = 'kurs-pl.html?level=A1&view=pro&flow=continuous&autostart=1';
+  const catalog = await loadCourseCatalog();
+  const fallbackCatalog = [
+    {
+      id: SINGLE_COURSE_KEY,
+      title: 'Curso continuo de polaco',
+      subtitle: 'Una sola ruta: modulos en orden, con desbloqueo progresivo.',
+      levels: [...LEVEL_ORDER],
+      startLevel: 'A1',
+      href: `course.html?level=A1&course=${encodeURIComponent(SINGLE_COURSE_KEY)}&flow=continuous`,
+    },
+  ];
+  const list = catalog.length ? catalog : fallbackCatalog;
 
-  if (unlockedAny) {
-    host.innerHTML = `
-      <a class="courseCard" href="${href}" style="text-decoration:none; color:inherit;">
-        <div class="courseTop">
-          <div class="courseBadge"><span aria-hidden="true">&#x1F4DA;</span> A1-B2</div>
-          <div class="muted" style="font-weight:900;">Entrar &#x2192;</div>
+  host.innerHTML = list
+    .map((course) => {
+      const start = normalizeLevel(course.startLevel) || 'A1';
+      const canEnter = flags?.isAdmin || hasLevelAccess(flags, userDoc, start);
+      const levelsTxt = (course.levels || []).join('-') || 'A1-B2';
+
+      if (canEnter) {
+        return `
+          <a class="courseCard" href="${course.href}" style="text-decoration:none; color:inherit;">
+            <div class="courseTop">
+              <div class="courseBadge"><span aria-hidden="true">&#x1F4DA;</span> ${levelsTxt}</div>
+              <div class="muted" style="font-weight:900;">Entrar &#x2192;</div>
+            </div>
+            <div class="courseTitle" style="margin-top:10px;">${escHtml(course.title)}</div>
+            <div class="muted" style="margin-top:6px;">${escHtml(course.subtitle)}</div>
+          </a>
+        `;
+      }
+
+      return `
+        <div class="courseCard" style="opacity:.55; filter:saturate(.75); cursor:not-allowed;">
+          <div class="courseTop">
+            <div class="courseBadge"><span aria-hidden="true">&#x1F512;</span> ${levelsTxt}</div>
+            <div class="muted" style="font-weight:900;">Bloqueado</div>
+          </div>
+          <div class="courseTitle" style="margin-top:10px;">${escHtml(course.title)}</div>
+          <div class="muted" style="margin-top:6px;">${escHtml(course.subtitle)}</div>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn-yellow" href="services.html?level=${encodeURIComponent(start)}" style="text-decoration:none;">Activar acceso</a>
+            <a class="btn-white-outline" href="services.html" style="text-decoration:none;">Ver planes</a>
+          </div>
         </div>
-        <div class="courseTitle" style="margin-top:10px;">Curso continuo de polaco</div>
-        <div class="muted" style="margin-top:6px;">Una sola ruta: modulos en orden, con desbloqueo progresivo.</div>
-      </a>
-    `;
-    return;
-  }
-
-  host.innerHTML = `
-    <div class="courseCard" style="opacity:.55; filter:saturate(.75); cursor:not-allowed;">
-      <div class="courseTop">
-        <div class="courseBadge"><span aria-hidden="true">&#x1F512;</span> A1-B2</div>
-        <div class="muted" style="font-weight:900;">Bloqueado</div>
-      </div>
-      <div class="courseTitle" style="margin-top:10px;">Curso continuo de polaco</div>
-      <div class="muted" style="margin-top:6px;">Activa acceso para empezar el curso completo.</div>
-      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-        <a class="btn-yellow" href="services.html?level=A1" style="text-decoration:none;">Activar acceso</a>
-        <a class="btn-white-outline" href="services.html" style="text-decoration:none;">Ver planes</a>
-      </div>
-    </div>
-  `;
+      `;
+    })
+    .join('');
 }
 
 function parseAccessLevels(userDoc) {
@@ -566,9 +680,9 @@ function hasLevelAccess(flags, userDoc, level) {
   const lvl = String(level || '').toUpperCase();
   if (flags?.isAdmin) return true;
   const levels = parseAccessLevels(userDoc);
-  const allowed = flags?.hasAccess || levels.includes(lvl);
-  if (!allowed) return false;
-  if (!flags?.isUntilValid) return false;
+  if (levels.includes(lvl)) return true;
+  if (!flags?.hasAccess) return false;
+  if (flags?.hasUntil && !flags?.isUntilValid) return false;
   return true;
 }
 
@@ -2405,7 +2519,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (panelSubtitle)
     panelSubtitle.innerHTML = 'Aquí tienes tu libreta!<br />¡Qué chimba verte!';
 
-  renderCourses(null, { isAdmin: false, hasAccess: false });
+  document
+    .querySelectorAll('a[href*="curso-latam.html"], a[href*="kurs-pl.html"]')
+    .forEach((a) => a.remove());
+
+  void renderCourses(null, { isAdmin: false, hasAccess: false });
 
   const btn = $('addPromoBtn');
   const input = $('adm_promo_code');
@@ -2546,8 +2664,11 @@ document.addEventListener('DOMContentLoaded', () => {
           applyRefStatus.textContent = 'Vista previa (admin) — desactivado.';
       }
 
-      const flags = computeFlags(viewDoc);
-      renderCourses(viewDoc, flags);
+      const flags = computeFlags(viewDoc, {
+        isAdmin,
+        email: AS_UID ? viewDoc?.email || '' : user?.email || '',
+      });
+      await renderCourses(viewDoc, flags);
       renderPlans(viewDoc, flags);
       if (
         $('progTopics') ||

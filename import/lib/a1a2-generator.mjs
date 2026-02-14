@@ -1154,6 +1154,69 @@ function sortCandidates(list) {
   });
 }
 
+function interleaveByType(list) {
+  const items = Array.isArray(list) ? list : [];
+  if (items.length <= 2) return [...items];
+
+  const byType = new Map();
+  const typeOrder = [];
+  items.forEach((item) => {
+    const type = String(item?.type || '').trim() || '__unknown__';
+    if (!byType.has(type)) {
+      byType.set(type, []);
+      typeOrder.push(type);
+    }
+    byType.get(type).push(item);
+  });
+
+  const out = [];
+  let lastType = '';
+  let cursor = 0;
+  let safety = items.length * Math.max(2, typeOrder.length);
+
+  while (out.length < items.length && safety > 0) {
+    safety -= 1;
+    let pickedType = '';
+
+    for (let step = 0; step < typeOrder.length; step += 1) {
+      const idx = (cursor + step) % typeOrder.length;
+      const t = typeOrder[idx];
+      const arr = byType.get(t) || [];
+      if (!arr.length) continue;
+      if (t === lastType) continue;
+      pickedType = t;
+      cursor = (idx + 1) % typeOrder.length;
+      break;
+    }
+
+    if (!pickedType) {
+      for (let step = 0; step < typeOrder.length; step += 1) {
+        const idx = (cursor + step) % typeOrder.length;
+        const t = typeOrder[idx];
+        const arr = byType.get(t) || [];
+        if (!arr.length) continue;
+        pickedType = t;
+        cursor = (idx + 1) % typeOrder.length;
+        break;
+      }
+    }
+
+    if (!pickedType) break;
+    const next = (byType.get(pickedType) || []).shift();
+    if (!next) continue;
+    out.push(next);
+    lastType = pickedType;
+  }
+
+  if (out.length < items.length) {
+    typeOrder.forEach((t) => {
+      const arr = byType.get(t) || [];
+      while (arr.length) out.push(arr.shift());
+    });
+  }
+  return out;
+}
+
 function applySelectionConstraints(candidates, targetCount = 120) {
   const unique = [];
   const seen = new Set();
@@ -1240,7 +1303,7 @@ function applySelectionConstraints(candidates, targetCount = 120) {
   ensureCategory((v) => INPUT_VARIANTS.has(v), Math.ceil(targetCount * 0.2));
 
   return {
-    selected: sortCandidates(selected),
+    selected: interleaveByType(selected),
     counters: {
       byType: typeCount,
       byWord: wordCount,
