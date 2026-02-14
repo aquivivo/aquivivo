@@ -18,6 +18,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   doc,
   serverTimestamp,
   increment,
@@ -46,6 +47,12 @@ const PAGE_MODE = String(params.get('mode') || '').trim().toLowerCase();
 // Default flow: one exercise per screen (Busuu-like).
 // Fallback to classic list only when explicitly requested with mode=classic.
 const IMMERSIVE_MODE = PAGE_MODE !== 'classic';
+// Strict linear flow: one step at a time; next step requires solving current.
+const STRICT_LINEAR_FLOW = IMMERSIVE_MODE;
+// Keep back access so user can revisit previous exercise in the same flow.
+const ALLOW_BACK_NAV = true;
+// Keep one shared CTA in bottom nav ("Comprobar").
+const SHOW_IMMERSIVE_NEXT_BUTTON = true;
 
 const PRACTICE_COMPLETE_PCT = CONTINUOUS_FLOW ? 100 : 80;
 const TEST_PASS_PCT = CONTINUOUS_FLOW ? 100 : 80;
@@ -75,6 +82,7 @@ function courseHref(level = LEVEL) {
   if (TRACK) href += `&track=${encodeURIComponent(TRACK)}`;
   if (COURSE_VIEW) href += `&view=${encodeURIComponent(COURSE_VIEW)}`;
   if (CONTINUOUS_FLOW) href += '&flow=continuous';
+  if (COURSE_VIEW === 'pro' || CONTINUOUS_FLOW) href += '&map=1';
   return href;
 }
 
@@ -367,11 +375,11 @@ function showCheckpointLocked(blockNo, route = []) {
   emptyExercises.style.display = 'block';
   emptyExercises.innerHTML = `
     <div style="padding:14px 14px; line-height:1.6;">
-      <b>Checkpoint wymagany</b><br/>
-      Zanim przejdziesz dalej, zalicz mini-test po module ${block}.<br/>
+      <b>Checkpoint obligatorio</b><br/>
+      Antes de continuar, completa el mini-test del modulo ${block}.<br/>
       <div class="metaRow" style="margin-top:12px; flex-wrap:wrap; gap:10px;">
-        <a class="btn-yellow" href="${href}" style="text-decoration:none;">Uruchom mini-test</a>
-        <a class="btn-white-outline" href="${courseHref(LEVEL)}" style="text-decoration:none;">Wroc do kursu</a>
+        <a class="btn-yellow" href="${href}" style="text-decoration:none;">Abrir mini-test</a>
+        <a class="btn-white-outline" href="${courseHref(LEVEL)}" style="text-decoration:none;">Volver al curso</a>
       </div>
     </div>
   `;
@@ -517,12 +525,14 @@ const immersivePromptTitle = document.getElementById('immersivePromptTitle');
 const immersiveExerciseHost = document.getElementById('immersiveExerciseHost');
 const btnImmPrev = document.getElementById('btnImmPrev');
 const btnImmNext = document.getElementById('btnImmNext');
+const btnImmDontKnow = document.getElementById('btnImmDontKnow');
 
   const btnLogout = document.getElementById('btnLogout');
   const btnBackLesson = document.getElementById('btnBackLesson');
   const btnBackCourse = document.getElementById('btnBackCourse');
   const btnReview = document.getElementById('btnReview');
   const btnFlashcards = document.getElementById('btnFlashcards');
+  const btnResetCourse = document.getElementById('btnResetCourse');
 
 const correctionModal = document.getElementById('correctionModal');
 const btnFinishCorrection = document.getElementById('btnFinishCorrection');
@@ -558,6 +568,7 @@ let CURRENT_FLAGS = null;
 let CURRENT_ROUTE = [];
 let CURRENT_ROUTE_INDEX = -1;
 let CURRENT_MISSING_CHECKPOINT = 0;
+let resetCourseBusy = false;
 
 const progressState = {
   doneIds: new Set(),
@@ -695,9 +706,9 @@ function playExerciseAudio(ex) {
   speakPolish(ttsTextForExercise(ex));
 }
 
-const SPEAKER_ICON = '🔊';
+const SPEAKER_ICON = '\u{1F50A}';
 
-function makeSpeakerBtn(text, { title = 'Odsłuchaj (PL)', tiny = true } = {}) {
+function makeSpeakerBtn(text, { title = 'Escuchar (PL)', tiny = true } = {}) {
   const t = String(text || '').trim();
   if (!t) return null;
   const btn = document.createElement('button');
@@ -734,7 +745,7 @@ async function toggleCorrectionRecording() {
   if (!btnCorrectionRecord) return;
 
   if (!canRecordVoice()) {
-    setCorrectionRecordHint('Tu navegador no soporta grabación.', true);
+    setCorrectionRecordHint('Tu navegador no soporta grabacion.', true);
     return;
   }
 
@@ -802,7 +813,7 @@ async function toggleCorrectionRecording() {
 function openCorrectionModal() {
   if (!correctionModal) return;
   const title = String(currentTopic?.title || currentTopic?.name || currentTopic?.slug || '').trim();
-  const meta = `Nivel ${LEVEL}${title ? ` · Tema: ${title}` : ''}`;
+  const meta = `Nivel ${LEVEL}${title ? ` - Tema: ${title}` : ''}`;
   if (correctionMeta) correctionMeta.textContent = meta;
   setCorrectionMsg('');
   setCorrectionRecordHint('');
@@ -928,6 +939,54 @@ function normalizeText(value) {
     .trim();
 }
 
+function normalizeOrthographyText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[`´’]/g, "'")
+    .replace(/[.,!?;:]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function stripPolishMarks(value) {
+  return normalizeOrthographyText(value)
+    .replace(/\u0142/g, 'l')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function orthographyHint(userRaw, expectedRaw) {
+  const user = normalizeOrthographyText(userRaw);
+  const expectedList = parseAnswerList(expectedRaw)
+    .map((item) => normalizeOrthographyText(item))
+    .filter(Boolean);
+  if (!user || !expectedList.length) {
+    return 'Pista: revisa ortografia y terminacion.';
+  }
+
+  const userPlain = stripPolishMarks(user);
+  const expectedPlain = expectedList.map((item) => stripPolishMarks(item));
+  if (expectedPlain.includes(userPlain) && !expectedList.includes(user)) {
+    return 'Pista: falta algun signo polaco (ą, ć, ę, ł, ń, ó, ś, ż, ź).';
+  }
+
+  const expectedJoined = expectedList.join(' ');
+  if (/(ch|cz|sz|rz|dż|dź)/i.test(expectedJoined)) {
+    return 'Pista: revisa digrafos polacos (h/ch/cz/sz/rz/dż/dź).';
+  }
+
+  return 'Pista: revisa ortografia y terminacion.';
+}
+
+function strictAnswerMatch(userRaw, expectedRaw) {
+  const user = normalizeOrthographyText(userRaw);
+  if (!user) return false;
+  const expectedList = parseAnswerList(expectedRaw)
+    .map((item) => normalizeOrthographyText(item))
+    .filter(Boolean);
+  return expectedList.includes(user);
+}
+
 function normalizeType(value) {
   return String(value || '').trim();
 }
@@ -972,7 +1031,7 @@ function shouldSpeakChoiceOptions(ex, options = []) {
       const text = String(lead || '')
         .replace(/^(?:pl|tts_pl|tts)\s*:\s*/i, '')
         .trim();
-      return /[ąćęłńśżź]/i.test(text) || /(?:rz|cz|sz|dż|dź)/i.test(text);
+      return /[\u0105\u0107\u0119\u0142\u0144\u015b\u017c\u017a]/i.test(text) || /(?:rz|cz|sz|d\u017c|d\u017a)/i.test(text);
     });
 
   return !!hasPolishHint;
@@ -1028,6 +1087,45 @@ function extractTtsText(ex) {
   const any = parts.find((p) => /^tts\s*:/i.test(p));
   if (any) return stripNoteLabel(any);
   return '';
+}
+
+function presentableTheoryNotes(raw, ex = null) {
+  const parts = splitNotesParts(raw);
+  if (!parts.length) return '';
+  const hiddenKeyPattern =
+    '(?:tts(?:_pl)?|audio(?:_url)?|exaudio|url|video_url|image_url|record|grabacion)';
+  const hiddenHead = new RegExp(`^${hiddenKeyPattern}\\s*:`, 'i');
+  const hiddenPronunciation =
+    /^(?:[-*]\s*)?(?:pron\.?|wymowa|pronunciacion|pronunciación)\s*:/i;
+  const hiddenInline = new RegExp(
+    `(?:^|\\s)${hiddenKeyPattern}\\s*:\\s*(?:https?:\\/\\/\\S+|[^|\\n]+)`,
+    'gi',
+  );
+  const out = parts
+    .map((part) => String(part || '').trim())
+    .filter(Boolean)
+    .map((part) => part.replace(hiddenInline, ' ').replace(/\s{2,}/g, ' ').trim())
+    .filter(Boolean)
+    .filter((part) => !hiddenHead.test(part))
+    .filter((part) => !/^https?:\/\//i.test(part));
+  const answerTokens = parseAnswerList(ex?.answer || '')
+    .map((a) => normalizeText(a))
+    .filter((a) => a.length >= 2);
+
+  const filtered = out.filter((line) => {
+    const text = String(line || '').trim();
+    if (!text) return false;
+    if (hiddenPronunciation.test(text)) return false;
+    const norm = normalizeText(text);
+    if (!norm) return false;
+
+    // Hide lines that reveal the exact answer (e.g. "4 = cztery").
+    if (/[=:]/.test(text) && answerTokens.some((ans) => norm.includes(ans))) return false;
+    if (/^(?:respuesta|answer|odpowiedz)\s*:/i.test(text)) return false;
+    return true;
+  });
+
+  return filtered.join('\n').replace(/\n{2,}/g, '\n').trim();
 }
 
 function isCardsExercise(ex) {
@@ -1182,7 +1280,46 @@ function parseAnswerList(raw) {
     .filter(Boolean);
 }
 
-function parseExpectedByBlank(rawAnswer, blanksCount) {
+function escapeRegexLiteral(text) {
+  return String(text || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function promptPartToRegex(part) {
+  return escapeRegexLiteral(String(part || '').replace(/\u00a0/g, ' '))
+    .replace(/\s+/g, '\\s+');
+}
+
+function extractBlankValuesFromSentence(promptText, sentence, blanksCount) {
+  const prompt = String(promptText || '').trim();
+  const fullSentence = String(sentence || '').trim();
+  if (!prompt || !fullSentence || !prompt.includes('___')) return null;
+  const parts = prompt.split('___');
+  if (parts.length - 1 !== blanksCount) return null;
+
+  const pattern = ['^\\s*'];
+  for (let i = 0; i < parts.length; i += 1) {
+    pattern.push(promptPartToRegex(parts[i]));
+    if (i < parts.length - 1) pattern.push('\\s*(.*?)\\s*');
+  }
+  pattern.push('\\s*$');
+
+  let match = null;
+  try {
+    match = fullSentence.match(new RegExp(pattern.join(''), 'i'));
+  } catch {
+    return null;
+  }
+  if (!match) return null;
+
+  const blanks = match
+    .slice(1)
+    .map((x) => String(x || '').trim())
+    .slice(0, blanksCount);
+  if (blanks.length !== blanksCount || blanks.some((x) => !x)) return null;
+  return blanks;
+}
+
+function parseExpectedByBlank(rawAnswer, blanksCount, promptText = '') {
   const raw = String(rawAnswer || '').trim().replaceAll('/', '|');
   if (!raw) return [];
   if (raw.includes('||')) {
@@ -1190,8 +1327,42 @@ function parseExpectedByBlank(rawAnswer, blanksCount) {
       .split('||')
       .map((p) => parseAnswerList(p));
   }
+
   const list = parseAnswerList(raw);
-  if (blanksCount <= 1) return [list];
+  const extractedByBlank = Array.from({ length: Math.max(1, blanksCount) }, () => []);
+  let extractedAny = false;
+
+  list.forEach((candidate) => {
+    const extracted = extractBlankValuesFromSentence(promptText, candidate, Math.max(1, blanksCount));
+    if (!extracted) return;
+    extractedAny = true;
+    extracted.forEach((value, idx) => {
+      if (!extractedByBlank[idx]) extractedByBlank[idx] = [];
+      extractedByBlank[idx].push(value);
+    });
+  });
+
+  const uniq = (arr) => Array.from(new Set((arr || []).map((x) => String(x || '').trim()).filter(Boolean)));
+
+  if (blanksCount <= 1) {
+    if (!extractedAny) return [list];
+    const contextTokens = String(promptText || '')
+      .split('___')
+      .map((p) => normalizeOrthographyText(p))
+      .filter(Boolean);
+    const directShort = list.filter((item) => {
+      const norm = normalizeOrthographyText(item);
+      if (!norm) return false;
+      return !contextTokens.some((ctx) => ctx && norm.includes(ctx));
+    });
+    return [uniq([...(extractedByBlank[0] || []), ...directShort])];
+  }
+
+  if (extractedAny) {
+    const byBlank = extractedByBlank.map((row) => uniq(row));
+    if (byBlank.every((row) => row.length)) return byBlank;
+  }
+
   if (list.length === blanksCount) return list.map((x) => parseAnswerList(x));
   return Array.from({ length: blanksCount }, () => list);
 }
@@ -1285,6 +1456,15 @@ function cleanOptionText(opt) {
   return String(opt || '').replace(/^[A-D]\s*[)\.:-]\s*/i, '').trim();
 }
 
+function safeText(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function shuffleArray(list) {
   const arr = Array.isArray(list) ? [...list] : [];
   for (let i = arr.length - 1; i > 0; i -= 1) {
@@ -1329,7 +1509,7 @@ function parseMatchPairs(options, answerRaw) {
   let autoNum = 1;
 
   lines.forEach((line) => {
-    const parts = line.split(/\s*(?:=|->|→|â€”|—)\s*/);
+    const parts = line.split(/\s*(?:=|->|\u2192|\u2014)\s*/);
     if (parts.length < 2) return;
 
     const leftRaw = parts[0];
@@ -1657,8 +1837,8 @@ function showClassicListSection() {
 }
 
 function immersiveTitleForExercise(ex) {
-  if (isSceneExercise(ex)) return 'Mikro-scenka: wybierz najlepsza reakcje.';
-  if (isFindErrorExercise(ex)) return 'Znajdz blad i wybierz poprawna wersje.';
+  if (isSceneExercise(ex)) return 'Microescena: elige la mejor respuesta.';
+  if (isFindErrorExercise(ex)) return 'Encuentra el error y elige la version correcta.';
   if (isDictationExercise(ex)) return 'Escucha y escribe el dictado.';
   if (isDragDropExercise(ex)) return 'Arrastra las palabras.';
   if (isBinaryTrueFalseExercise(ex)) return 'Verdadero o falso.';
@@ -1677,6 +1857,63 @@ function getFirstPendingImmersiveIndex() {
   return idx >= 0 ? idx : 0;
 }
 
+function getImmersivePrimaryButton() {
+  if (!immersiveExerciseHost) return null;
+  const explicit = immersiveExerciseHost.querySelector('[data-immersive-primary="1"]');
+  if (explicit && String(explicit.tagName || '').toUpperCase() === 'BUTTON') return explicit;
+
+  const yellow = immersiveExerciseHost.querySelector('.exerciseActions .btn-yellow');
+  if (yellow && String(yellow.tagName || '').toUpperCase() === 'BUTTON') return yellow;
+
+  const fallback = Array.from(immersiveExerciseHost.querySelectorAll('.exerciseActions button')).find(
+    (btn) => !btn.classList.contains('ttsIconBtn'),
+  );
+  return fallback || null;
+}
+
+function triggerImmersivePrimaryAction() {
+  if (!IMMERSIVE_MODE) return;
+  const btn = getImmersivePrimaryButton();
+  if (!btn || btn.disabled) {
+    showToast('Completa este ejercicio primero.', 'warn', 1400);
+    return;
+  }
+  btn.click();
+}
+
+async function markCurrentAsDontKnow() {
+  if (!IMMERSIVE_MODE) return;
+  if (!VIEW_EXERCISES.length) return;
+
+  const ex = VIEW_EXERCISES[immersiveIndex];
+  if (!ex) return;
+  const exId = String(ex.id || '').trim();
+  if (!exId) return;
+  if (progressState.doneIds.has(exId)) {
+    showToast('Este ejercicio ya esta completado.', 'warn', 1300);
+    return;
+  }
+
+  const expected = String(expectedAnswerPreview(ex) || ex.answer || '').trim();
+  await appendMistakeLog(ex, '[nie wiem]', expected);
+  progressState.doneIds.add(exId);
+  if (isTestExercise(ex)) {
+    progressState.testResults.set(exId, {
+      correct: false,
+      answer: '[nie wiem]',
+    });
+  }
+
+  await saveProgress();
+  setProgressUI();
+  showToast(
+    expected ? `No pasa nada. Respuesta correcta: ${expected}` : 'Marcado como "Nie wiem".',
+    'warn',
+    2400,
+  );
+  onImmersiveExerciseDone(exId);
+}
+
 function syncImmersiveProgressUI() {
   if (!IMMERSIVE_MODE) return;
   const total = VIEW_EXERCISES.length;
@@ -1691,8 +1928,21 @@ function syncImmersiveProgressUI() {
   if (immersiveType) immersiveType.textContent = String(ex?.type || 'Ejercicio');
   if (immersivePromptTitle) immersivePromptTitle.textContent = immersiveTitleForExercise(ex);
 
-  if (btnImmPrev) btnImmPrev.disabled = idx <= 0;
-  if (btnImmNext) btnImmNext.textContent = idx >= total - 1 ? 'Finalizar' : 'Siguiente';
+  if (btnImmPrev) {
+    btnImmPrev.style.display = ALLOW_BACK_NAV ? '' : 'none';
+    btnImmPrev.disabled = !ALLOW_BACK_NAV || idx <= 0;
+  }
+  if (btnImmNext) {
+    btnImmNext.style.display = SHOW_IMMERSIVE_NEXT_BUTTON ? '' : 'none';
+    btnImmNext.textContent = 'Comprobar';
+    const primary = getImmersivePrimaryButton();
+    btnImmNext.disabled = !SHOW_IMMERSIVE_NEXT_BUTTON || !primary || primary.disabled;
+  }
+  if (btnImmDontKnow) {
+    btnImmDontKnow.style.display = SHOW_IMMERSIVE_NEXT_BUTTON ? '' : 'none';
+    btnImmDontKnow.disabled =
+      !SHOW_IMMERSIVE_NEXT_BUTTON || !ex || progressState.doneIds.has(String(ex.id || ''));
+  }
 }
 
 function renderImmersiveMode() {
@@ -1706,6 +1956,13 @@ function renderImmersiveMode() {
   }
 
   if (emptyExercises) emptyExercises.style.display = 'none';
+  const allDone = VIEW_EXERCISES.every((item) =>
+    progressState.doneIds.has(String(item.id)),
+  );
+  if (allDone) {
+    showFinishModal(computeProgressStats());
+    return;
+  }
   if (!immersiveHasInitialFocus) {
     immersiveIndex = getFirstPendingImmersiveIndex();
     immersiveHasInitialFocus = true;
@@ -1718,16 +1975,56 @@ function renderImmersiveMode() {
 
   const ex = VIEW_EXERCISES[immersiveIndex];
   immersiveExerciseHost.innerHTML = '';
-  const card = makeExerciseCard(ex);
+
+  let card = null;
+  let renderFailed = false;
+
+  try {
+    card = makeExerciseCard(ex);
+  } catch (e) {
+    renderFailed = true;
+    console.error('[ejercicio] immersive render failed', e);
+  }
+
+  if (!card || typeof card.classList?.add !== 'function') {
+    renderFailed = true;
+    const fallback = document.createElement('div');
+    fallback.className = 'exerciseCard';
+    fallback.innerHTML = `<div class="exercisePrompt">No se pudo mostrar este ejercicio.</div>
+      <div class="exerciseNote" style="display:block;margin-top:10px;">
+        Puedes continuar y revisarlo despues.
+      </div>`;
+    const skipWrap = document.createElement('div');
+    skipWrap.className = 'exerciseActions';
+    skipWrap.style.justifyContent = 'center';
+    const skipBtn = document.createElement('button');
+    skipBtn.type = 'button';
+    skipBtn.className = 'btn-yellow';
+    skipBtn.textContent = immersiveIndex >= VIEW_EXERCISES.length - 1 ? 'Finalizar' : 'Continuar';
+    skipBtn.addEventListener('click', () => {
+      if (immersiveIndex >= VIEW_EXERCISES.length - 1) {
+        showFinishModal(computeProgressStats());
+        return;
+      }
+      immersiveIndex += 1;
+      renderImmersiveMode();
+    });
+    skipWrap.appendChild(skipBtn);
+    fallback.appendChild(skipWrap);
+    card = fallback;
+  }
+
   card.classList.add('exerciseCard--immersive');
   immersiveExerciseHost.appendChild(card);
 
   syncImmersiveProgressUI();
+  if (renderFailed && btnImmNext) btnImmNext.disabled = false;
 }
 
 function goToImmersiveOffset(offset) {
   if (!IMMERSIVE_MODE) return;
   if (!VIEW_EXERCISES.length) return;
+  if (!ALLOW_BACK_NAV && Number(offset || 0) < 0) return;
   const next = immersiveIndex + Number(offset || 0);
   immersiveIndex = Math.min(Math.max(0, next), VIEW_EXERCISES.length - 1);
   renderImmersiveMode();
@@ -1736,6 +2033,16 @@ function goToImmersiveOffset(offset) {
 function goNextImmersiveExercise() {
   if (!IMMERSIVE_MODE) return;
   if (!VIEW_EXERCISES.length) return;
+  if (STRICT_LINEAR_FLOW) {
+    const current = VIEW_EXERCISES[immersiveIndex];
+    const currentDone = current
+      ? progressState.doneIds.has(String(current.id))
+      : false;
+    if (!currentDone) {
+      showToast('Primero completa este ejercicio.', 'warn', 1800);
+      return;
+    }
+  }
   if (immersiveIndex >= VIEW_EXERCISES.length - 1) {
     showFinishModal(computeProgressStats());
     return;
@@ -1750,7 +2057,10 @@ function onImmersiveExerciseDone(exId) {
   const current = VIEW_EXERCISES[immersiveIndex];
   if (!current) return;
   if (String(current.id) !== String(exId)) return;
-  if (immersiveIndex >= VIEW_EXERCISES.length - 1) return;
+  if (immersiveIndex >= VIEW_EXERCISES.length - 1) {
+    showFinishModal(computeProgressStats());
+    return;
+  }
 
   const currentId = String(exId);
   setTimeout(() => {
@@ -1768,6 +2078,19 @@ function setupImmersiveMode() {
   if (exerciseFiltersCard) exerciseFiltersCard.style.display = 'none';
   if (exerciseListSection) exerciseListSection.style.display = 'none';
   if (taskChips) taskChips.style.display = 'none';
+  if (btnImmPrev) {
+    btnImmPrev.style.display = ALLOW_BACK_NAV ? '' : 'none';
+    btnImmPrev.disabled = !ALLOW_BACK_NAV;
+  }
+  if (btnImmNext) {
+    btnImmNext.style.display = SHOW_IMMERSIVE_NEXT_BUTTON ? '' : 'none';
+    btnImmNext.textContent = 'Comprobar';
+    btnImmNext.disabled = !SHOW_IMMERSIVE_NEXT_BUTTON;
+  }
+  if (btnImmDontKnow) {
+    btnImmDontKnow.style.display = SHOW_IMMERSIVE_NEXT_BUTTON ? '' : 'none';
+    btnImmDontKnow.disabled = !SHOW_IMMERSIVE_NEXT_BUTTON;
+  }
 
   if (btnImmPrev && !btnImmPrev.dataset.wired) {
     btnImmPrev.dataset.wired = '1';
@@ -1775,7 +2098,15 @@ function setupImmersiveMode() {
   }
   if (btnImmNext && !btnImmNext.dataset.wired) {
     btnImmNext.dataset.wired = '1';
-    btnImmNext.addEventListener('click', goNextImmersiveExercise);
+    btnImmNext.addEventListener('click', triggerImmersivePrimaryAction);
+  }
+  if (btnImmDontKnow && !btnImmDontKnow.dataset.wired) {
+    btnImmDontKnow.dataset.wired = '1';
+    btnImmDontKnow.addEventListener('click', () => {
+      markCurrentAsDontKnow().catch((e) => {
+        console.warn('[ejercicio] dont-know failed', e);
+      });
+    });
   }
 }
 
@@ -1848,9 +2179,126 @@ function makeOptionRow({ name, value, label, checked, onChange, ttsText = '' }) 
 
 function setResultText(resultEl, correct, message) {
   if (!resultEl) return;
-  resultEl.textContent = message || (correct ? 'Correcto.' : 'Incorrecto.');
+  resultEl.textContent =
+    message || (correct ? 'Correcto.' : 'Incorrecto. Pista: revisa ortografia y gramatica.');
   resultEl.classList.remove('ok', 'bad');
   resultEl.classList.add(correct ? 'ok' : 'bad');
+}
+
+const POLISH_ASSIST_TOKENS = [
+  '\u0105',
+  '\u0107',
+  '\u0119',
+  '\u0142',
+  '\u0144',
+  '\u00f3',
+  '\u015b',
+  '\u017c',
+  '\u017a',
+  'h',
+  'w',
+  'z',
+  'ch',
+  'cz',
+  'sz',
+  'rz',
+  'si',
+  'ci',
+  'ni',
+  'zi',
+  'dzi',
+  'dz',
+  'd\u017c',
+  'd\u017a',
+];
+
+function insertTokenAtCaret(field, token) {
+  if (!field || field.disabled || field.readOnly) return;
+  const value = String(field.value || '');
+  const start =
+    Number.isInteger(field.selectionStart) && field.selectionStart >= 0
+      ? field.selectionStart
+      : value.length;
+  const end =
+    Number.isInteger(field.selectionEnd) && field.selectionEnd >= start
+      ? field.selectionEnd
+      : start;
+  const next = `${value.slice(0, start)}${token}${value.slice(end)}`;
+  field.value = next;
+  const caret = start + token.length;
+  try {
+    field.setSelectionRange(caret, caret);
+  } catch {}
+  field.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function attachPolishAssistPad(card, fields = []) {
+  if (!card || !Array.isArray(fields) || !fields.length) return;
+  if (card.querySelector('.exercisePolishPad')) return;
+
+  const textFields = fields.filter((field) => {
+    if (!field || typeof field.tagName !== 'string') return false;
+    const tag = String(field.tagName || '').toUpperCase();
+    if (tag === 'TEXTAREA') return true;
+    if (tag !== 'INPUT') return false;
+    const type = String(field.type || 'text').toLowerCase();
+    return type === 'text' || type === 'search';
+  });
+  if (!textFields.length) return;
+
+  let activeField = textFields[0];
+  textFields.forEach((field) => {
+    field.addEventListener('focus', () => {
+      activeField = field;
+    });
+  });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'exercisePolishPad';
+
+  const title = document.createElement('div');
+  title.className = 'exercisePolishPadLabel';
+  title.textContent = 'Teclado PL';
+  wrap.appendChild(title);
+
+  const keys = document.createElement('div');
+  keys.className = 'exercisePolishPadKeys';
+
+  POLISH_ASSIST_TOKENS.forEach((token) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-white-outline exercisePolishPadKey';
+    btn.textContent = token;
+    btn.addEventListener('click', () => {
+      const target =
+        (activeField && !activeField.disabled && !activeField.readOnly
+          ? activeField
+          : null) || textFields.find((f) => !f.disabled && !f.readOnly);
+      if (!target) {
+        showToast('Selecciona un campo de texto.', 'warn', 1200);
+        return;
+      }
+      insertTokenAtCaret(target, token);
+      target.focus();
+    });
+    keys.appendChild(btn);
+  });
+
+  wrap.appendChild(keys);
+
+  const noteWrap = card.querySelector('.exerciseNoteWrap');
+  if (noteWrap && noteWrap.parentElement === card) {
+    card.insertBefore(wrap, noteWrap.nextSibling);
+    return;
+  }
+
+  const promptEl = card.querySelector('.exercisePrompt');
+  if (promptEl && promptEl.parentElement === card) {
+    card.insertBefore(wrap, promptEl.nextSibling);
+    return;
+  }
+
+  card.insertBefore(wrap, card.firstChild || null);
 }
 
 function makeExerciseCard(ex) {
@@ -1909,7 +2357,7 @@ function makeExerciseCard(ex) {
     card.appendChild(img);
   }
 
-  const notes = String(ex.notes || '').trim();
+  const notes = presentableTheoryNotes(ex.notes || '', ex);
   if (notes) {
     const noteWrap = document.createElement('div');
     noteWrap.className = 'exerciseNoteWrap';
@@ -1922,7 +2370,10 @@ function makeExerciseCard(ex) {
     const noteText = document.createElement('div');
     noteText.className = 'exerciseNote';
     noteText.textContent = notes;
-    noteText.style.display = 'none';
+    noteText.style.display = IMMERSIVE_MODE ? 'block' : 'none';
+    if (IMMERSIVE_MODE) {
+      noteBtn.style.display = 'none';
+    }
 
     noteBtn.addEventListener('click', () => {
       const isOpen = noteText.style.display === 'block';
@@ -1982,6 +2433,7 @@ function makeExerciseCard(ex) {
       });
       answerWrap.appendChild(input);
       card.appendChild(answerWrap);
+      attachPolishAssistPad(card, [input]);
     }
 
     const btnCheck = document.createElement('button');
@@ -2002,9 +2454,17 @@ function makeExerciseCard(ex) {
       const labelNorm = normalizeText(selectedLabel || '');
 
       let correct = false;
-      if (answerNorms.includes(userNorm) || answerNormsClean.includes(userNorm)) correct = true;
-      if (!correct && labelNorm && (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm))) {
-        correct = true;
+      if (options.length) {
+        if (answerNorms.includes(userNorm) || answerNormsClean.includes(userNorm)) correct = true;
+        if (
+          !correct &&
+          labelNorm &&
+          (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm))
+        ) {
+          correct = true;
+        }
+      } else {
+        correct = strictAnswerMatch(userAnswer, ex.answer || '');
       }
 
       progressState.testResults.set(String(ex.id), {
@@ -2013,10 +2473,18 @@ function makeExerciseCard(ex) {
       });
       progressState.doneIds.add(String(ex.id));
 
-      setResultText(resultEl, correct);
       if (correct) {
-        await clearMistakeLogForExercise(ex.id);
+        setResultText(resultEl, true);
+      } else if (!options.length) {
+        setResultText(
+          resultEl,
+          false,
+          `Incorrecto. ${orthographyHint(userAnswer, ex.answer || '')}`,
+        );
       } else {
+        setResultText(resultEl, false);
+      }
+      if (!correct) {
         await appendMistakeLog(ex, userAnswer, expectedAnswerPreview(ex));
       }
       await saveProgress();
@@ -2038,7 +2506,6 @@ function makeExerciseCard(ex) {
 
     const markDone = async () => {
       progressState.doneIds.add(exId);
-      await clearMistakeLogForExercise(exId);
       await saveProgress();
       setProgressUI();
       if (IMMERSIVE_MODE) onImmersiveExerciseDone(exId);
@@ -2079,7 +2546,7 @@ function makeExerciseCard(ex) {
     if (isSceneExercise(ex) && options.length && String(ex.answer || '').trim()) {
       const hint = document.createElement('div');
       hint.className = 'exerciseHint';
-      hint.textContent = 'Mikro-scenka: wybierz najlepsza reakcje.';
+      hint.textContent = 'Microescena: elige la mejor respuesta.';
       card.appendChild(hint);
 
       const scenario = document.createElement('div');
@@ -2121,8 +2588,8 @@ function makeExerciseCard(ex) {
         btnListen.className = 'ttsIconBtn';
         btnListen.type = 'button';
         btnListen.textContent = SPEAKER_ICON;
-        btnListen.title = 'Odsluchaj (PL)';
-        btnListen.setAttribute('aria-label', 'Odsluchaj (PL)');
+        btnListen.title = 'Escuchar (PL)';
+        btnListen.setAttribute('aria-label', 'Escuchar (PL)');
         btnListen.addEventListener('click', () => playExerciseAudio(ex));
         actions.appendChild(btnListen);
       }
@@ -2135,7 +2602,7 @@ function makeExerciseCard(ex) {
       btnCheck.addEventListener('click', async () => {
         if (done) return;
         if (!selectedValue) {
-          showToast('Wybierz odpowiedz.', 'warn', 1800);
+          showToast('Elige una respuesta.', 'warn', 1800);
           return;
         }
         const answers = parseAnswerList(ex.answer || '');
@@ -2148,7 +2615,7 @@ function makeExerciseCard(ex) {
           answerNormsClean.includes(userNorm) ||
           (labelNorm && (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm)));
 
-        setResultText(resultEl, ok, ok ? 'Correcto.' : 'Nie, sproboj ponownie.');
+        setResultText(resultEl, ok, ok ? 'Correcto.' : 'No, intenta otra vez.');
         card.appendChild(resultEl);
         if (!ok) {
           await markWrong(selectedValue, expectedAnswerPreview(ex));
@@ -2173,12 +2640,12 @@ function makeExerciseCard(ex) {
     if (isFindErrorExercise(ex) && options.length && String(ex.answer || '').trim()) {
       const hint = document.createElement('div');
       hint.className = 'exerciseHint';
-      hint.textContent = 'Znajdz blad i wybierz poprawna wersje zdania.';
+      hint.textContent = 'Encuentra el error y elige la version correcta.';
       card.appendChild(hint);
 
       const wrong = document.createElement('div');
       wrong.className = 'exerciseErrorBox';
-      wrong.textContent = `Zdanie: ${String(ex.prompt || '').trim()}`;
+      wrong.textContent = `Frase: ${String(ex.prompt || '').trim()}`;
       card.appendChild(wrong);
 
       let selectedValue = '';
@@ -2217,7 +2684,7 @@ function makeExerciseCard(ex) {
       btnCheck.addEventListener('click', async () => {
         if (done) return;
         if (!selectedValue) {
-          showToast('Wybierz poprawna opcje.', 'warn', 1800);
+          showToast('Elige la opcion correcta.', 'warn', 1800);
           return;
         }
         const answers = parseAnswerList(ex.answer || '');
@@ -2230,7 +2697,7 @@ function makeExerciseCard(ex) {
           answerNormsClean.includes(userNorm) ||
           (labelNorm && (answerNorms.includes(labelNorm) || answerNormsClean.includes(labelNorm)));
 
-        setResultText(resultEl, ok, ok ? 'Correcto.' : 'Nie, to nie ta poprawka.');
+        setResultText(resultEl, ok, ok ? 'Correcto.' : 'No, esa no es la correccion.');
         card.appendChild(resultEl);
         if (!ok) {
           await markWrong(selectedValue, expectedAnswerPreview(ex));
@@ -2259,9 +2726,9 @@ function makeExerciseCard(ex) {
       card.appendChild(hint);
 
       const checklist = [
-        'Tempo i pauzy sa naturalne.',
-        'Koncowki i odmiana brzmia poprawnie.',
-        'Akcent w slowach jest poprawny.',
+        'El ritmo y las pausas son naturales.',
+        'Las terminaciones y la flexion son correctas.',
+        'El acento en las palabras es correcto.',
       ];
       const checkWrap = document.createElement('div');
       checkWrap.className = 'exercisePronChecklist';
@@ -2293,8 +2760,8 @@ function makeExerciseCard(ex) {
       btnListen.className = 'ttsIconBtn';
       btnListen.type = 'button';
       btnListen.textContent = SPEAKER_ICON;
-      btnListen.title = 'Odsłuchaj (PL)';
-      btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
+      btnListen.title = 'Escuchar (PL)';
+      btnListen.setAttribute('aria-label', 'Escuchar (PL)');
       btnListen.addEventListener('click', () => playExerciseAudio(ex));
 
       const btnRec = document.createElement('button');
@@ -2351,7 +2818,7 @@ function makeExerciseCard(ex) {
         if (!done) {
           const allChecked = checkInputs.every((i) => i.checked);
           if (!allChecked) {
-            showToast('Zaznacz checklistę wymowy przed zapisaniem.', 'warn', 2100);
+            showToast('Marca la checklist de pronunciacion antes de guardar.', 'warn', 2100);
             return;
           }
         }
@@ -2375,7 +2842,7 @@ function makeExerciseCard(ex) {
       btnRec.addEventListener('click', async () => {
         if (done) return;
         if (!canRec) {
-          showToast('Tu navegador no soporta grabación.', 'warn', 2200);
+          showToast('Tu navegador no soporta grabacion.', 'warn', 2200);
           return;
         }
 
@@ -2427,7 +2894,7 @@ function makeExerciseCard(ex) {
         const warn = document.createElement('div');
         warn.className = 'hintSmall';
         warn.style.marginTop = '8px';
-        warn.textContent = 'Grabación no disponible en este navegador.';
+        warn.textContent = 'Grabacion no disponible en este navegador.';
         card.appendChild(warn);
         btnDone.disabled = done;
       }
@@ -2497,8 +2964,8 @@ function makeExerciseCard(ex) {
         btnListen.className = 'ttsIconBtn';
         btnListen.type = 'button';
         btnListen.textContent = SPEAKER_ICON;
-        btnListen.title = 'Odsluchaj (PL)';
-        btnListen.setAttribute('aria-label', 'Odsluchaj (PL)');
+        btnListen.title = 'Escuchar (PL)';
+        btnListen.setAttribute('aria-label', 'Escuchar (PL)');
         btnListen.addEventListener('click', () => playExerciseAudio(ex));
         actions.appendChild(btnListen);
       }
@@ -2569,13 +3036,14 @@ function makeExerciseCard(ex) {
       box.disabled = done;
       answerWrap.appendChild(box);
       card.appendChild(answerWrap);
+      attachPolishAssistPad(card, [box]);
 
       const btnListen = document.createElement('button');
       btnListen.className = 'ttsIconBtn';
       btnListen.type = 'button';
       btnListen.textContent = SPEAKER_ICON;
-      btnListen.title = 'Odsluchaj (PL)';
-      btnListen.setAttribute('aria-label', 'Odsluchaj (PL)');
+      btnListen.title = 'Escuchar (PL)';
+      btnListen.setAttribute('aria-label', 'Escuchar (PL)');
       btnListen.addEventListener('click', () => playExerciseAudio(ex));
       actions.appendChild(btnListen);
 
@@ -2593,20 +3061,28 @@ function makeExerciseCard(ex) {
           return;
         }
 
-        const expected = String(ex.answer || '').trim();
-        const exact =
-          normalizeDictationText(val) === normalizeDictationText(expected);
-        const score = dictationSimilarity(val, expected);
-        const ok = exact || score >= 88;
+        const expectedList = parseAnswerList(ex.answer || '').filter(Boolean);
+        const expectedFirst = String(expectedList[0] || ex.answer || '').trim();
+        const exact = expectedList.length
+          ? expectedList.some(
+              (item) => normalizeOrthographyText(val) === normalizeOrthographyText(item),
+            )
+          : normalizeOrthographyText(val) === normalizeOrthographyText(expectedFirst);
+        const score = expectedList.length
+          ? Math.max(...expectedList.map((item) => dictationSimilarity(val, item)))
+          : dictationSimilarity(val, expectedFirst);
+        const ok = exact;
 
         setResultText(
           resultEl,
           ok,
-          ok ? `Correcto (${score}%).` : `No coincide (${score}%). Intenta de nuevo.`,
+          ok
+            ? `Correcto (${score}%).`
+            : `No coincide (${score}%). ${orthographyHint(val, ex.answer || '')}`,
         );
         card.appendChild(resultEl);
         if (!ok) {
-          await markWrong(val, expected);
+          await markWrong(val, ex.answer || '');
           return;
         }
 
@@ -2641,7 +3117,7 @@ function makeExerciseCard(ex) {
             .filter((t) => t.text),
         );
 
-        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blankCount);
+        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blankCount, promptText);
         const selected = Array.from({ length: blankCount }, () => null);
 
         const wrap = document.createElement('div');
@@ -2765,8 +3241,8 @@ function makeExerciseCard(ex) {
           btnListen.className = 'ttsIconBtn';
           btnListen.type = 'button';
           btnListen.textContent = SPEAKER_ICON;
-          btnListen.title = 'Odsluchaj (PL)';
-          btnListen.setAttribute('aria-label', 'Odsluchaj (PL)');
+          btnListen.title = 'Escuchar (PL)';
+          btnListen.setAttribute('aria-label', 'Escuchar (PL)');
           btnListen.addEventListener('click', () => playExerciseAudio(ex));
           actions.appendChild(btnListen);
         }
@@ -2868,8 +3344,8 @@ function makeExerciseCard(ex) {
         btnListen.className = 'ttsIconBtn';
         btnListen.type = 'button';
         btnListen.textContent = SPEAKER_ICON;
-        btnListen.title = 'Odsłuchaj (PL)';
-        btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
+        btnListen.title = 'Escuchar (PL)';
+        btnListen.setAttribute('aria-label', 'Escuchar (PL)');
         btnListen.addEventListener('click', () => playExerciseAudio(ex));
         actions.appendChild(btnListen);
       }
@@ -2932,7 +3408,6 @@ function makeExerciseCard(ex) {
     if (isFillExercise(ex) && String(ex.answer || '').trim()) {
       const promptText = String(ex.prompt || '');
       const blankInputs = [];
-      let inputBox = null;
 
       if (promptText.includes('___')) {
         prompt.textContent = '';
@@ -2958,14 +3433,14 @@ function makeExerciseCard(ex) {
         inp.autocomplete = 'off';
         inp.spellcheck = false;
         inp.disabled = done;
-        inputBox = inp;
         blankInputs.push(inp);
         answerWrap.appendChild(inp);
         card.appendChild(answerWrap);
       }
+      attachPolishAssistPad(card, blankInputs);
 
       const ttsPrompt = String(promptText || '').replaceAll('___', '...').trim();
-      const promptSpeakBtn = makeSpeakerBtn(ttsPrompt, { title: 'Odsłuchaj zdanie (PL)', tiny: true });
+      const promptSpeakBtn = makeSpeakerBtn(ttsPrompt, { title: 'Escuchar la frase (PL)', tiny: true });
       if (promptSpeakBtn) {
         promptSpeakBtn.style.marginLeft = '8px';
         prompt.appendChild(promptSpeakBtn);
@@ -2977,8 +3452,8 @@ function makeExerciseCard(ex) {
         btnListen.className = 'ttsIconBtn';
         btnListen.type = 'button';
         btnListen.textContent = SPEAKER_ICON;
-        btnListen.title = 'Odsłuchaj (PL)';
-        btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
+        btnListen.title = 'Escuchar (PL)';
+        btnListen.setAttribute('aria-label', 'Escuchar (PL)');
         btnListen.addEventListener('click', () => playExerciseAudio(ex));
         actions.appendChild(btnListen);
       }
@@ -2992,7 +3467,7 @@ function makeExerciseCard(ex) {
       btnCheck.addEventListener('click', async () => {
         if (done) return;
         const blanksCount = blankInputs.length || 1;
-        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blanksCount);
+        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blanksCount, promptText);
         const values = blankInputs.map((i) => String(i.value || '').trim());
 
         if (values.some((v) => !v)) {
@@ -3001,17 +3476,23 @@ function makeExerciseCard(ex) {
         }
 
         let ok = true;
+        let hintMsg = '';
         for (let i = 0; i < values.length; i += 1) {
           const accepted = expectedByBlank[i] || expectedByBlank[0] || [];
-          const u = normalizeText(values[i]);
-          const acc = accepted.map((x) => normalizeText(x));
+          const u = normalizeOrthographyText(values[i]);
+          const acc = accepted.map((x) => normalizeOrthographyText(x));
           if (!acc.includes(u)) {
             ok = false;
+            hintMsg = orthographyHint(values[i], accepted.join('|'));
             break;
           }
         }
 
-        setResultText(resultEl, ok, ok ? 'Correcto.' : 'Intenta de nuevo.');
+        setResultText(
+          resultEl,
+          ok,
+          ok ? 'Correcto.' : `Intenta de nuevo. ${hintMsg || 'Revisa la ortografia.'}`,
+        );
         card.appendChild(resultEl);
 
         if (!ok) {
@@ -3068,7 +3549,7 @@ function makeExerciseCard(ex) {
             btn.classList.toggle('isSelected', isSelected);
             btn.classList.toggle('isPaired', !!paired);
             const badge = btn.querySelector('.exerciseMatchBadge');
-            if (badge) badge.textContent = paired ? `→ ${paired}` : '';
+            if (badge) badge.textContent = paired ? `-> ${paired}` : '';
           });
           rightBtns.forEach((btn, label) => {
             const usedBy = rightToLeft[label] || '';
@@ -3111,7 +3592,7 @@ function makeExerciseCard(ex) {
               <span class="exerciseMatchLabel">${safeText(it.label)})</span>
               <span class="exerciseMatchTools">
                 <span class="exerciseMatchBadge"></span>
-                <span class="ttsInlineIcon" role="button" tabindex="0" title="Odsłuchaj (PL)" aria-label="Odsłuchaj (PL)">${SPEAKER_ICON}</span>
+                <span class="ttsInlineIcon" role="button" tabindex="0" title="Escuchar (PL)" aria-label="Escuchar (PL)">${SPEAKER_ICON}</span>
               </span>
             </div>
             <div class="exerciseMatchText">${safeText(it.text)}</div>
@@ -3161,8 +3642,8 @@ function makeExerciseCard(ex) {
           btnListen.className = 'ttsIconBtn';
           btnListen.type = 'button';
           btnListen.textContent = SPEAKER_ICON;
-          btnListen.title = 'Odsłuchaj (PL)';
-          btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
+          btnListen.title = 'Escuchar (PL)';
+          btnListen.setAttribute('aria-label', 'Escuchar (PL)');
           btnListen.addEventListener('click', () => playExerciseAudio(ex));
           actions.appendChild(btnListen);
         }
@@ -3255,10 +3736,10 @@ function makeExerciseCard(ex) {
           const sentence = selected.map((t) => t.text).join(' ').replace(/\s+([?.!,;:])/g, '$1');
           built.innerHTML = '';
           const builtText = document.createElement('span');
-          builtText.textContent = sentence || '—';
+          builtText.textContent = sentence || '-';
           built.appendChild(builtText);
           if (sentence) {
-            const speakBtn = makeSpeakerBtn(sentence, { title: 'Odsłuchaj zdanie (PL)', tiny: true });
+            const speakBtn = makeSpeakerBtn(sentence, { title: 'Escuchar la frase (PL)', tiny: true });
             if (speakBtn) {
               speakBtn.style.marginLeft = '8px';
               built.appendChild(speakBtn);
@@ -3278,8 +3759,8 @@ function makeExerciseCard(ex) {
             sp.className = 'ttsInlineIcon';
             sp.setAttribute('role', 'button');
             sp.setAttribute('tabindex', '0');
-            sp.title = 'Odsłuchaj (PL)';
-            sp.setAttribute('aria-label', 'Odsłuchaj (PL)');
+            sp.title = 'Escuchar (PL)';
+            sp.setAttribute('aria-label', 'Escuchar (PL)');
             sp.textContent = SPEAKER_ICON;
             wireInlineSpeaker(sp, t.text);
             btn.appendChild(sp);
@@ -3333,8 +3814,8 @@ function makeExerciseCard(ex) {
           btnListen.className = 'ttsIconBtn';
           btnListen.type = 'button';
           btnListen.textContent = SPEAKER_ICON;
-          btnListen.title = 'Odsłuchaj (PL)';
-          btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
+          btnListen.title = 'Escuchar (PL)';
+          btnListen.setAttribute('aria-label', 'Escuchar (PL)');
           btnListen.addEventListener('click', () => playExerciseAudio(ex));
           actions.appendChild(btnListen);
         }
@@ -3409,12 +3890,13 @@ function makeExerciseCard(ex) {
       const box = document.createElement('textarea');
       box.className = 'input';
       box.rows = 3;
-      box.placeholder = 'Escribe aquí...';
+      box.placeholder = 'Escribe aqui...';
       box.autocomplete = 'off';
       box.spellcheck = true;
       box.disabled = done;
       answerWrap.appendChild(box);
       card.appendChild(answerWrap);
+      attachPolishAssistPad(card, [box]);
 
       const wantsListen = isListenExercise(ex) || !!extractAudioUrl(ex);
       if (wantsListen) {
@@ -3422,8 +3904,8 @@ function makeExerciseCard(ex) {
         btnListen.className = 'ttsIconBtn';
         btnListen.type = 'button';
         btnListen.textContent = SPEAKER_ICON;
-        btnListen.title = 'Odsłuchaj (PL)';
-        btnListen.setAttribute('aria-label', 'Odsłuchaj (PL)');
+        btnListen.title = 'Escuchar (PL)';
+        btnListen.setAttribute('aria-label', 'Escuchar (PL)');
         btnListen.addEventListener('click', () => playExerciseAudio(ex));
         actions.appendChild(btnListen);
       }
@@ -3723,6 +4205,91 @@ async function trackTopicOpen(uid, courseId, level) {
   }
 }
 
+async function resetCourseFromStart() {
+  if (!CURRENT_UID) {
+    showToast('Sesion no activa.', 'warn', 1800);
+    return;
+  }
+  if (resetCourseBusy) return;
+
+  const ok = window.confirm(
+    'Zresetowac kurs i zaczac od poczatku? To usunie postep cwiczen dla tej trasy.',
+  );
+  if (!ok) return;
+
+  resetCourseBusy = true;
+  const originalLabel = btnResetCourse?.textContent || 'Resetear curso';
+  if (btnResetCourse) {
+    btnResetCourse.disabled = true;
+    btnResetCourse.textContent = 'Reseteando...';
+  }
+
+  try {
+    const flags =
+      CURRENT_FLAGS || (await getUserFlags(CURRENT_UID, auth.currentUser?.email || ''));
+    const levelsToReset = CONTINUOUS_FLOW
+      ? [...LEVEL_ORDER]
+      : routeLevelsFromFlags(flags || {}).slice(0, 1);
+    const route = CONTINUOUS_FLOW
+      ? await getRouteTopicsForLevels(levelsToReset)
+      : await getRouteTopicsForLevel(String(LEVEL || 'A1').toUpperCase());
+    const progressKeys = new Set(
+      route
+        .map((topic) => topicProgressKey(topicLevelOf(topic, LEVEL), topic))
+        .filter(Boolean),
+    );
+
+    const refsToDelete = [];
+    try {
+      const topicSnap = await getDocs(collection(db, 'user_progress', CURRENT_UID, 'topics'));
+      topicSnap.forEach((d) => {
+        if (!progressKeys.size || progressKeys.has(String(d.id || ''))) refsToDelete.push(d.ref);
+      });
+    } catch (e) {
+      console.warn('[ejercicio] reset topics read failed', e);
+    }
+
+    if (CONTINUOUS_FLOW) {
+      try {
+        const cpSnap = await getDocs(collection(db, 'user_progress', CURRENT_UID, 'checkpoints'));
+        cpSnap.forEach((d) => refsToDelete.push(d.ref));
+      } catch (e) {
+        console.warn('[ejercicio] reset checkpoints read failed', e);
+      }
+    }
+
+    for (let i = 0; i < refsToDelete.length; i += 20) {
+      const chunk = refsToDelete.slice(i, i + 20);
+      await Promise.all(chunk.map((ref) => deleteDoc(ref)));
+    }
+
+    progressState.doneIds = new Set();
+    progressState.testResults = new Map();
+    completedAt = null;
+    hasShownFinish = false;
+
+    const firstTopic = route.find((t) => String(t?.id || '').trim()) || currentTopic;
+    if (firstTopic?.id) {
+      const firstLevel = topicLevelOf(firstTopic, LEVEL);
+      const href = `ejercicio.html?level=${encodeURIComponent(firstLevel)}&id=${encodeURIComponent(firstTopic.id)}${navParams()}`;
+      window.location.href = href;
+      return;
+    }
+
+    await loadExercises(currentTopic);
+    showToast('Curso reseteado.', 'ok', 1800);
+  } catch (e) {
+    console.error('[ejercicio] resetCourseFromStart failed', e);
+    showToast('No se pudo resetear el curso.', 'bad', 2600);
+  } finally {
+    resetCourseBusy = false;
+    if (btnResetCourse) {
+      btnResetCourse.disabled = false;
+      btnResetCourse.textContent = originalLabel;
+    }
+  }
+}
+
 function showFinishModal(stats) {
   const modal = document.getElementById('finishModal');
   if (!modal) return;
@@ -3744,12 +4311,12 @@ function showFinishModal(stats) {
       : 'Test completado.';
     if (stats.completed) {
       if (checkpointBoundary) {
-        txt.textContent = `${exerciseLine} ${testLine} Swietnie. Teraz zrob mini-test checkpoint ${checkpointNo}, aby odblokowac kolejne 3 moduly.`;
+        txt.textContent = `${exerciseLine} ${testLine} Excelente. Ahora haz el mini-test checkpoint ${checkpointNo} para desbloquear los siguientes 3 modulos.`;
       } else {
         txt.textContent = `${exerciseLine} ${testLine}`;
       }
     } else if (CONTINUOUS_FLOW) {
-      txt.textContent = `${exerciseLine} ${testLine} Powtorka wymagana: potrzebujesz 100% praktyki i 100% testu, aby odblokowac kolejny modul.`;
+      txt.textContent = `${exerciseLine} ${testLine} Se requiere repaso: necesitas 100% de practica y 100% de test para desbloquear el siguiente modulo.`;
     } else {
       txt.textContent = `${exerciseLine} ${testLine} Aun faltan ejercicios por completar.`;
     }
@@ -3824,6 +4391,14 @@ onAuthStateChanged(auth, async (user) => {
 
   adminWrap && (adminWrap.style.display = 'none');
   setupImmersiveMode();
+  if (btnResetCourse && !btnResetCourse.dataset.wired) {
+    btnResetCourse.dataset.wired = '1';
+    btnResetCourse.addEventListener('click', () => {
+      resetCourseFromStart().catch((e) => {
+        console.error('[ejercicio] reset click failed', e);
+      });
+    });
+  }
 
   if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
@@ -3908,7 +4483,7 @@ onAuthStateChanged(auth, async (user) => {
         if (btnBackLesson) btnBackLesson.href = url;
       }
       if (btnReview && topic.id) {
-        btnReview.href = `review.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
+        btnReview.href = `review.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}${navParams()}&mode=errors`;
       }
       if (btnFlashcards && topic.id) {
         btnFlashcards.href = `flashcards.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}${navParams()}`;
@@ -3922,6 +4497,7 @@ onAuthStateChanged(auth, async (user) => {
     CURRENT_ROUTE = [];
     CURRENT_ROUTE_INDEX = -1;
     CURRENT_MISSING_CHECKPOINT = 0;
+    if (btnResetCourse) btnResetCourse.style.display = flags.hasAccess ? '' : 'none';
     if (!flags.hasAccess) {
       showAccessLocked();
       return;

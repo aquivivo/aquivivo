@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>A1 starter (4 pierwsze tematy) -> Firestore | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../assets/css/styles.css?v=20260214d" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      button {
+        padding: 12px 16px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .box {
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+      }
+      .ok {
+        color: var(--success-ink);
+        font-weight: 900;
+      }
+      .err {
+        color: var(--danger-ink);
+        font-weight: 900;
+      }
+      code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .muted {
+        color: var(--ink-muted);
+      }
+      .topicLine {
+        margin-top: 6px;
+        line-height: 1.55;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        background: var(--yellow);
+        color: var(--blue);
+        padding: 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      "
+    >
+      Sesja aktywna:
+      <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
+        >Ladowanie...</strong
+      >
+    </div>
+
+    <h2>
+      Starter A1: 4 pierwsze tematy (teoria + cwiczenia + fiszki + nowe typy)
+    </h2>
+    <p>
+      Ta strona uzupelnia Firestore: <code>course_meta</code> (lekcja) i
+      <code>exercises</code> (cwiczenia) dla <b>pierwszych 4 tematow</b> na
+      trasie A1.
+    </p>
+    <p class="muted">
+      Wymagane konto admin: <code>aquivivo.pl@gmail.com</code>.
+    </p>
+
+    <label style="display: inline-flex; align-items: center; gap: 8px">
+      <input id="replaceExercises" type="checkbox" checked />
+      Wyczysc poprzednie cwiczenia tych tematow przed importem
+    </label>
+
+    <div style="margin-top: 12px">
+      <button id="importBtn">WGRYWAJ: Starter A1 (4 tematy)</button>
+    </div>
+
+    <div id="preview" class="box">Tematy: (jeszcze nie wczytano)</div>
+    <div id="log" class="box">Status: gotowe.</div>
+
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+      import {
+        getFirestore,
+        collection,
+        doc,
+        getDocs,
+        query,
+        where,
+        orderBy,
+        setDoc,
+        serverTimestamp,
+        writeBatch,
+      } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
+        authDomain: 'aquivivo-platform.firebaseapp.com',
+        projectId: 'aquivivo-platform',
+        storageBucket: 'aquivivo-platform.firebasestorage.app',
+        messagingSenderId: '116115622011',
+        appId: '1:116115622011:web:33a4a583eba4368071bade',
+      };
+
+      const ADMIN_EMAIL = 'aquivivo.pl@gmail.com';
+      const LEVEL = 'A1';
+      const SEED_VERSION = 'a1_starter4_v1_2026-02-14';
+      const TOPICS_COUNT = 4;
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const logEl = document.getElementById('log');
+      const previewEl = document.getElementById('preview');
+      const replaceEl = document.getElementById('replaceExercises');
+      const sessionEl = document.getElementById('sessionEmail');
+
+      function log(msg, type = '') {
+        logEl.innerHTML = `<div class="${type}">${msg}</div>`;
+      }
+
+      function esc(s) {
+        return String(s || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      let IS_ADMIN = false;
+
+      onAuthStateChanged(auth, (user) => {
+        if (sessionEl) sessionEl.textContent = user?.email || '(brak sesji)';
+        IS_ADMIN =
+          !!user &&
+          String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        if (!IS_ADMIN) {
+          log(
+            `Zaloguj sie jako admin (${esc(
+              ADMIN_EMAIL,
+            )}) i odswiez strone.`,
+            'err',
+          );
+        }
+      });
+
+      function topicTypeKey(topic) {
+        const raw = String(topic?.type || topic?.category || '')
+          .trim()
+          .toLowerCase();
+        if (!raw) return 'grammar';
+        if (
+          raw === 'vocab' ||
+          raw === 'vocabulary' ||
+          raw === 'vocabulario' ||
+          raw === 'slownictwo' ||
+          raw === 'slownictwo'
+        )
+          return 'vocabulary';
+        if (
+          raw === 'grammar' ||
+          raw === 'gramatyka' ||
+          raw === 'gramatica'
+        )
+          return 'grammar';
+        if (
+          raw === 'both' ||
+          raw === 'mix' ||
+          raw === 'mixed' ||
+          raw === 'mieszane' ||
+          raw.includes('+')
+        )
+          return 'both';
+        return raw;
+      }
+
+      function buildMixedRoute(topics) {
+        const grammar = [];
+        const vocab = [];
+        const both = [];
+        const other = [];
+
+        (topics || []).forEach((t) => {
+          const k = topicTypeKey(t);
+          if (k === 'vocabulary') vocab.push(t);
+          else if (k === 'grammar') grammar.push(t);
+          else if (k === 'both') both.push(t);
+          else other.push(t);
+        });
+
+        if (!grammar.length || !vocab.length) return topics || [];
+
+        const mixed = [];
+        const max = Math.max(grammar.length, vocab.length, both.length);
+        for (let i = 0; i < max; i += 1) {
+          if (grammar[i]) mixed.push(grammar[i]);
+          if (vocab[i]) mixed.push(vocab[i]);
+          if (both[i]) mixed.push(both[i]);
+        }
+        return [...mixed, ...other];
+      }
+
+      function metaDocId(level, courseId) {
+        return `${level}__${courseId}`;
+      }
+
+      function exerciseDocId(level, topicId, seq) {
+        const n = String(seq).padStart(3, '0');
+        return `${level}__${topicId}__START4__${n}`;
+      }
+
+      async function loadA1Topics() {
+        const q = query(
+          collection(db, 'courses'),
+          where('level', '==', LEVEL),
+          orderBy('order'),
+        );
+        const snap = await getDocs(q);
+        return snap.docs
+          .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+          .filter((t) => t.isArchived !== true);
+      }
+
+      function renderPreview(selected) {
+        if (!selected?.length) {
+          previewEl.innerHTML = 'Tematy: (brak)';
+          return;
+        }
+        previewEl.innerHTML = `
+          <div style="font-weight:900;">Wykryte tematy (A1 -> pierwsze ${TOPICS_COUNT}):</div>
+          ${selected
+            .map((t, i) => {
+              const tt = esc(t?.title || t?.name || '(bez tytulu)');
+              const ty = esc(String(t?.type || ''));
+              const sl = esc(String(t?.slug || ''));
+              return `<div class="topicLine">
+                <b>#${i + 1}</b> ${tt}
+                <div class="muted">id: <code>${esc(t.id)}</code> · type: <code>${ty || '-'}</code> · slug: <code>${sl || '-'}</code></div>
+              </div>`;
+            })
+            .join('')}
+        `;
+      }
+
+      const HTML_1 = `
+        <h2>Objetivo</h2>
+        <p>Przedstawiasz sie i mowisz skad jestes.</p>
+        <h2>Gramatyka: byc (terazniejszy)</h2>
+        <ul>
+          <li>ja jestem</li>
+          <li>ty jestes</li>
+          <li>on/ona jest</li>
+        </ul>
+        <h2>Frazy kluczowe</h2>
+        <ul>
+          <li>Dzien dobry!</li>
+          <li>Mam na imie...</li>
+          <li>Jestem z...</li>
+        </ul>
+        <h2>Mini dialog</h2>
+        <p><b>A:</b> Dzien dobry! Jak masz na imie?<br/><b>B:</b> Mam na imie Juan. A ty?<br/><b>A:</b> Skad jestes?<br/><b>B:</b> Jestem z Hiszpanii.</p>
+      `;
+
+      const HTML_2 = `
+        <h2>Objetivo</h2>
+        <p>Zamawiasz w kawiarni i rozumiesz proste ceny.</p>
+        <h2>Fraza gotowa</h2>
+        <p><b>Poprosze...</b> + nazwa produktu.</p>
+        <h2>Liczby 1-10</h2>
+        <p>jeden, dwa, trzy, cztery, piec, szesc, siedem, osiem, dziewiec, dziesiec</p>
+        <h2>Slownictwo</h2>
+        <ul>
+          <li>kawa, herbata, woda</li>
+          <li>ile kosztuje?</li>
+          <li>rachunek, prosze</li>
+        </ul>
+      `;
+
+      const HTML_3 = `
+        <h2>Objetivo</h2>
+        <p>Mowisz o rodzinie i opisujesz osoby.</p>
+        <h2>Gramatyka mini</h2>
+        <p>To jest moja mama / To jest moj brat.</p>
+        <h2>Slownictwo</h2>
+        <ul>
+          <li>mama, tata, brat, siostra</li>
+          <li>rodzina</li>
+          <li>On jest mily. Ona jest mila.</li>
+        </ul>
+        <h2>Mini dialog</h2>
+        <p><b>A:</b> Kto to?<br/><b>B:</b> To jest moja siostra. Jest bardzo mila.</p>
+      `;
+
+      const HTML_4 = `
+        <h2>Objetivo</h2>
+        <p>Pytasz o droge i rozumiesz wskazowki w miescie.</p>
+        <h2>Frazy kluczowe</h2>
+        <ul>
+          <li>Przepraszam, gdzie jest...?</li>
+          <li>prosto, w lewo, w prawo</li>
+          <li>obok, naprzeciwko</li>
+        </ul>
+        <h2>Mini dialog</h2>
+        <p><b>A:</b> Przepraszam, gdzie jest dworzec?<br/><b>B:</b> Prosze isc prosto i potem w lewo.</p>
+      `;
+
+      function starterForTopic(index) {
+        const commonMeta = {
+          level: LEVEL,
+          published: true,
+          durationMin: 12,
+          resources: [],
+          seedVersion: SEED_VERSION,
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+        };
+
+        if (index === 0) {
+          return {
+            meta: {
+              ...commonMeta,
+              titleEs: 'A1 - Presentacion y saludos',
+              descriptionEs: 'Frazy startowe + byc + mini dialog.',
+              html: HTML_1,
+              summary: 'Przedstawiasz sie, podajesz kraj i reagujesz w prostym dialogu.',
+              vocab: ['dzien dobry', 'mam na imie', 'jestem', 'prosze', 'dziekuje'],
+              homework: 'Nagraj 3 zdania o sobie.',
+            },
+            exercises: [
+              { order: 1, type: 'Rellenar los espacios', prompt: 'Ja ___ z Polski.', answer: 'jestem', options: [], category: 'grammar', notes: 'byc: ja jestem' },
+              { order: 2, type: 'Opcion multiple', prompt: 'Ty ___ z Peru.', options: ['A) jestem', 'B) jestes', 'C) jest'], answer: 'B', category: 'grammar' },
+              { order: 3, type: 'Mikro-scenka (dialog)', prompt: 'Sytuacja: poznajesz nowa osobe na kursie. Co powiesz na start?', options: ['A) Czesc, mam na imie Marta. A ty?', 'B) Rachunek, prosze.', 'C) Mam dwa psy i rower.'], answer: 'A', category: 'both' },
+              { order: 4, type: 'Znajdz blad', prompt: "Znajdz blad i wybierz poprawna wersje: 'Ja jest z Hiszpanii.'", options: ['A) Ja jest z Hiszpanii.', 'B) Ja jestem z Hiszpanii.', 'C) Ja byc z Hiszpanii.'], answer: 'B', category: 'grammar' },
+              { order: 5, type: 'Escuchar y completar los espacios', prompt: 'Dzien ___!', answer: 'dobry', options: [], category: 'both', notes: 'TTS_PL: Dzien dobry!' },
+              { order: 6, type: 'Verdadero o falso', prompt: '"Mam na imie" znaczy "me llamo".', options: ['true', 'false'], answer: 'true', category: 'both' },
+              {
+                order: 7,
+                type: 'Tarjetas interactivas',
+                prompt: 'Fiszki - temat 1',
+                options: [
+                  'PL: dzien dobry | ES: buenos dias | EX: Dzien dobry! Jak sie masz?',
+                  'PL: mam na imie | ES: me llamo | EX: Mam na imie Ania.',
+                  'PL: jestem z | ES: soy de | EX: Jestem z Polski.',
+                  'PL: prosze | ES: por favor | EX: Prosze, usiadz.',
+                  'PL: dziekuje | ES: gracias | EX: Dziekuje bardzo!',
+                ],
+                answer: '',
+                category: 'vocab',
+              },
+              { order: 8, type: 'Test final del tema', prompt: 'Wybierz poprawne zdanie:', options: ['A) Ja jestem z Meksyku.', 'B) Ja jest z Meksyku.', 'C) Ja byc z Meksyku.'], answer: 'A', category: 'both' },
+            ],
+          };
+        }
+
+        if (index === 1) {
+          return {
+            meta: {
+              ...commonMeta,
+              titleEs: 'A1 - Kawiarnia i liczby',
+              descriptionEs: 'Poprosze... + ceny + liczby.',
+              html: HTML_2,
+              summary: 'Prosisz o zamowienie i pytasz o cene.',
+              vocab: ['kawa', 'herbata', 'woda', 'ile kosztuje', 'rachunek'],
+              homework: 'Nagraj mini-zamowienie w kawiarni.',
+            },
+            exercises: [
+              { order: 1, type: 'Opcion multiple', prompt: 'Poprosze ___.', options: ['A) kawa', 'B) kawe', 'C) kawy'], answer: 'B', category: 'both' },
+              { order: 2, type: 'Rellenar los espacios', prompt: 'To kosztuje ___ zlote.', answer: 'cztery|4', options: [], category: 'both' },
+              { order: 3, type: 'Mikro-scenka (dialog)', prompt: 'Sytuacja: jestes w kawiarni. Co powiesz kelnerowi?', options: ['A) Poprosze kawe i wode, prosze.', 'B) Mam na imie Ola.', 'C) Skad jestes?'], answer: 'A', category: 'both' },
+              { order: 4, type: 'Znajdz blad', prompt: "Znajdz blad: 'Poprosze kawa i woda.'", options: ['A) Poprosze kawa i woda.', 'B) Poprosze kawe i wode.', 'C) Poprosze kawy i wodzie.'], answer: 'B', category: 'grammar' },
+              { order: 5, type: 'Escuchar y completar los espacios', prompt: 'Ile ___ kawa?', answer: 'kosztuje', options: [], category: 'both', notes: 'TTS_PL: Ile kosztuje kawa?' },
+              { order: 6, type: 'Verdadero o falso', prompt: '"Rachunek, prosze" znaczy "la cuenta, por favor".', options: ['true', 'false'], answer: 'true', category: 'both' },
+              {
+                order: 7,
+                type: 'Tarjetas interactivas',
+                prompt: 'Fiszki - temat 2',
+                options: [
+                  'PL: kawa | ES: cafe | EX: Poprosze kawe.',
+                  'PL: herbata | ES: te | EX: Poprosze herbate.',
+                  'PL: woda | ES: agua | EX: Poprosze wode.',
+                  'PL: ile kosztuje | ES: cuanto cuesta | EX: Ile kosztuje to?',
+                  'PL: rachunek, prosze | ES: la cuenta, por favor | EX: Rachunek, prosze.',
+                ],
+                answer: '',
+                category: 'vocab',
+              },
+              { order: 8, type: 'Test final del tema', prompt: 'Jak zapytasz o cene?', options: ['A) Ile kosztuje?', 'B) Jak masz na imie?', 'C) Gdzie mieszkasz?'], answer: 'A', category: 'both' },
+            ],
+          };
+        }
+
+        if (index === 2) {
+          return {
+            meta: {
+              ...commonMeta,
+              titleEs: 'A1 - Rodzina i osoby',
+              descriptionEs: 'Slownictwo rodzinne + prosty opis osoby.',
+              html: HTML_3,
+              summary: 'Przedstawiasz czlonkow rodziny i opisujesz ich.',
+              vocab: ['rodzina', 'mama', 'tata', 'brat', 'siostra'],
+              homework: 'Powiedz 4 zdania o swojej rodzinie.',
+            },
+            exercises: [
+              { order: 1, type: 'Rellenar los espacios', prompt: 'To jest moja ___.', answer: 'mama', options: [], category: 'vocab' },
+              { order: 2, type: 'Opcion multiple', prompt: 'Wybierz poprawna forme: To jest ___ brat.', options: ['A) moj', 'B) moja', 'C) moje'], answer: 'A', category: 'grammar' },
+              { order: 3, type: 'Mikro-scenka (dialog)', prompt: 'Sytuacja: pokazujesz zdjecie rodziny. Co powiesz?', options: ['A) To jest moja siostra. Jest mila.', 'B) Rachunek, prosze.', 'C) Ile kosztuje?'], answer: 'A', category: 'both' },
+              { order: 4, type: 'Znajdz blad', prompt: "Znajdz blad: 'To jest moj mama.'", options: ['A) To jest moj mama.', 'B) To jest moja mama.', 'C) To jest moje mama.'], answer: 'B', category: 'grammar' },
+              { order: 5, type: 'Escuchar y completar los espacios', prompt: 'To jest moj ___.', answer: 'brat', options: [], category: 'vocab', notes: 'TTS_PL: To jest moj brat.' },
+              { order: 6, type: 'Verdadero o falso', prompt: '"Siostra" to po polsku "hermana".', options: ['true', 'false'], answer: 'true', category: 'vocab' },
+              {
+                order: 7,
+                type: 'Tarjetas interactivas',
+                prompt: 'Fiszki - temat 3',
+                options: [
+                  'PL: rodzina | ES: familia | EX: To jest moja rodzina.',
+                  'PL: mama | ES: madre | EX: Moja mama jest mila.',
+                  'PL: tata | ES: padre | EX: Moj tata pracuje.',
+                  'PL: brat | ES: hermano | EX: To jest moj brat.',
+                  'PL: siostra | ES: hermana | EX: To jest moja siostra.',
+                ],
+                answer: '',
+                category: 'vocab',
+              },
+              { order: 8, type: 'Test final del tema', prompt: 'Wybierz poprawne zdanie:', options: ['A) To jest moja siostra.', 'B) To jest moj siostra.', 'C) To jest moje siostra.'], answer: 'A', category: 'both' },
+            ],
+          };
+        }
+
+        return {
+          meta: {
+            ...commonMeta,
+            titleEs: 'A1 - Miasto i droga',
+            descriptionEs: 'Pytanie o droge i kierunki.',
+            html: HTML_4,
+            summary: 'Pytasz o droge i rozumiesz wskazowki.',
+            vocab: ['gdzie jest', 'prosto', 'w lewo', 'w prawo', 'obok'],
+            homework: 'Nagraj 3 pytania o droge.',
+          },
+          exercises: [
+            { order: 1, type: 'Opcion multiple', prompt: 'Przepraszam, gdzie ___ dworzec?', options: ['A) jest', 'B) sa', 'C) byc'], answer: 'A', category: 'grammar' },
+            { order: 2, type: 'Rellenar los espacios', prompt: 'Idz prosto i potem w ___.', answer: 'lewo', options: [], category: 'vocab' },
+            { order: 3, type: 'Mikro-scenka (dialog)', prompt: 'Sytuacja: turysta pyta o muzeum. Co odpowiesz?', options: ['A) Prosze isc prosto i potem w prawo.', 'B) Mam na imie Piotr.', 'C) Poprosze kawe.'], answer: 'A', category: 'both' },
+            { order: 4, type: 'Znajdz blad', prompt: "Znajdz blad: 'Dworzec sa obok banku.'", options: ['A) Dworzec sa obok banku.', 'B) Dworzec jest obok banku.', 'C) Dworzec byc obok banku.'], answer: 'B', category: 'grammar' },
+            { order: 5, type: 'Escuchar y completar los espacios', prompt: 'Muzeum jest ___ banku.', answer: 'obok', options: [], category: 'vocab', notes: 'TTS_PL: Muzeum jest obok banku.' },
+            { order: 6, type: 'Verdadero o falso', prompt: '"W lewo" znaczy "a la izquierda".', options: ['true', 'false'], answer: 'true', category: 'vocab' },
+            {
+              order: 7,
+              type: 'Tarjetas interactivas',
+              prompt: 'Fiszki - temat 4',
+              options: [
+                'PL: gdzie jest | ES: donde esta | EX: Gdzie jest dworzec?',
+                'PL: prosto | ES: recto | EX: Prosze isc prosto.',
+                'PL: w lewo | ES: a la izquierda | EX: Potem w lewo.',
+                'PL: w prawo | ES: a la derecha | EX: Nastepnie w prawo.',
+                'PL: obok | ES: al lado de | EX: Sklep jest obok banku.',
+              ],
+              answer: '',
+              category: 'vocab',
+            },
+            { order: 8, type: 'Test final del tema', prompt: 'Jak powiesz "al lado de" po polsku?', options: ['A) obok', 'B) prosto', 'C) naprzeciwko'], answer: 'A', category: 'both' },
+          ],
+        };
+      }
+
+      async function collectExerciseIds(topicId, topicSlug) {
+        const ids = new Set();
+        const byTopicId = await getDocs(
+          query(collection(db, 'exercises'), where('topicId', '==', topicId)),
+        );
+        byTopicId.forEach((d) => ids.add(d.id));
+
+        if (topicSlug) {
+          const bySlug = await getDocs(
+            query(collection(db, 'exercises'), where('topicSlug', '==', topicSlug)),
+          );
+          bySlug.forEach((d) => ids.add(d.id));
+        }
+        return [...ids];
+      }
+
+      async function deleteExercisesByIds(ids) {
+        if (!ids.length) return;
+        const batchLimit = 400;
+        let batch = writeBatch(db);
+        let pending = 0;
+        for (const id of ids) {
+          batch.delete(doc(db, 'exercises', id));
+          pending += 1;
+          if (pending >= batchLimit) {
+            await batch.commit();
+            batch = writeBatch(db);
+            pending = 0;
+          }
+        }
+        if (pending > 0) await batch.commit();
+      }
+
+      async function upsertTopicMetaAndExercises(topic, index, replaceExercises) {
+        const seed = starterForTopic(index);
+        const topicSlug = String(topic?.slug || '').trim();
+
+        const metaRef = doc(db, 'course_meta', metaDocId(LEVEL, topic.id));
+        await setDoc(
+          metaRef,
+          {
+            level: LEVEL,
+            courseId: topic.id,
+            published: seed.meta.published === true,
+            titleEs: seed.meta.titleEs,
+            descriptionEs: seed.meta.descriptionEs,
+            durationMin: seed.meta.durationMin || null,
+            html: seed.meta.html,
+            summary: seed.meta.summary || '',
+            vocab: seed.meta.vocab || [],
+            resources: seed.meta.resources || [],
+            homework: seed.meta.homework || '',
+            seedVersion: SEED_VERSION,
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+
+        if (replaceExercises) {
+          const ids = await collectExerciseIds(topic.id, topicSlug);
+          await deleteExercisesByIds(ids);
+        }
+
+        for (const ex of seed.exercises) {
+          const exRef = doc(db, 'exercises', exerciseDocId(LEVEL, topic.id, ex.order));
+          await setDoc(
+            exRef,
+            {
+              level: LEVEL,
+              topicId: topic.id,
+              topicSlug: topicSlug || topic.id,
+              order: ex.order,
+              type: ex.type,
+              prompt: ex.prompt,
+              options: ex.options || [],
+              answer: ex.answer || '',
+              notes: ex.notes || '',
+              tags: ex.tags || ['a1', 'starter'],
+              category: ex.category || 'both',
+              seedVersion: SEED_VERSION,
+              updatedAt: serverTimestamp(),
+              createdAt: serverTimestamp(),
+            },
+            { merge: true },
+          );
+        }
+      }
+
+      document.getElementById('importBtn').onclick = async () => {
+        if (!IS_ADMIN) {
+          alert('Brak uprawnien admina.');
+          return;
+        }
+        try {
+          log('Wczytuje tematy A1...', '');
+          const all = await loadA1Topics();
+          if (!all.length) {
+            renderPreview([]);
+            log('Brak tematow A1 w kolekcji courses.', 'err');
+            return;
+          }
+
+          const route = buildMixedRoute(all);
+          const selected = route.slice(0, TOPICS_COUNT);
+          renderPreview(selected);
+
+          if (selected.length < TOPICS_COUNT) {
+            log(
+              `Potrzebuje minimum ${TOPICS_COUNT} tematow A1. Wykryto: ${selected.length}.`,
+              'err',
+            );
+            return;
+          }
+
+          const replace = !!replaceEl?.checked;
+          log('Wgrywam starter A1 (4 tematy)...', '');
+          for (let i = 0; i < selected.length; i += 1) {
+            await upsertTopicMetaAndExercises(selected[i], i, replace);
+          }
+
+          log(
+            'Gotowe. Otworz course.html?level=A1 i przejdz do pierwszych tematow.',
+            'ok',
+          );
+        } catch (e) {
+          console.error(e);
+          log('Blad importu. Sprawdz konsole.', 'err');
+        }
+      };
+    </script>
+  </body>
+</html>
+

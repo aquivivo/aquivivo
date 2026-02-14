@@ -34,6 +34,7 @@ const FLOW = String(params.get('flow') || '')
   .trim()
   .toLowerCase();
 const CONTINUOUS_FLOW = FLOW === 'continuous' || COURSE_VIEW === 'pro';
+const AUTO_START = String(params.get('autostart') || '').trim() === '1';
 const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
 const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
   ? KNOWN_LEVELS
@@ -271,6 +272,13 @@ function courseHref(level = LEVEL) {
 
 function topicLevelOf(topic, fallback = LEVEL) {
   return String(topic?.level || topic?.__routeLevel || fallback || LEVEL).toUpperCase();
+}
+
+function exerciseHref(topic, fallbackLevel = LEVEL) {
+  const lvl = topicLevelOf(topic, fallbackLevel);
+  const id = String(topic?.id || '').trim();
+  if (!id) return '';
+  return `ejercicio.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(id)}${navParams()}`;
 }
 
 function routeLevelsFromFlags(flags, { previewOnly = false } = {}) {
@@ -708,8 +716,7 @@ function renderLessonRow({ topic, idx, exCount, progress, isCurrent, readOnly })
   const title = safeText(topic?.title || 'Tema');
   const desc = safeText(truncateText(topic?.desc || '', 84));
   const topicLevel = topicLevelOf(topic);
-  let href = `lessonpage.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(topic.id)}`;
-  href += navParams();
+  const href = exerciseHref(topic, topicLevel);
 
   const st = progressState(progress);
   const accent = topicAccent(topic);
@@ -952,8 +959,27 @@ async function loadTopics(user) {
         const currentLevel = topicLevelOf(current);
         btnCourseContinue.style.display = '';
         btnCourseContinue.textContent = 'Continuar';
-        btnCourseContinue.href = `lessonpage.html?level=${encodeURIComponent(currentLevel)}&id=${encodeURIComponent(current.id)}${navParams()}`;
+        btnCourseContinue.href = exerciseHref(current, currentLevel);
       }
+    }
+  }
+
+  if (!previewOnly && AUTO_START) {
+    if (missingCheckpoint > 0 && CONTINUOUS_FLOW) {
+      const { end } = checkpointBlockRange(missingCheckpoint);
+      const anchor = entries[Math.min(entries.length - 1, end)]?.topic || null;
+      const anchorLevel = topicLevelOf(anchor, LEVEL);
+      const href = `review.html?level=${encodeURIComponent(anchorLevel)}&mode=minitest&block=${encodeURIComponent(missingCheckpoint)}${navParams()}`;
+      window.location.replace(href);
+      return;
+    }
+    const firstNotDoneIdx = entries.findIndex((e) => !e.st.done);
+    const startIdx = firstNotDoneIdx >= 0 ? firstNotDoneIdx : 0;
+    const startTopic = entries[startIdx]?.topic || entries[0]?.topic || null;
+    const startHref = startTopic ? exerciseHref(startTopic, topicLevelOf(startTopic, LEVEL)) : '';
+    if (startHref) {
+      window.location.replace(startHref);
+      return;
     }
   }
 

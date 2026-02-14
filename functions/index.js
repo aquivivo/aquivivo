@@ -493,6 +493,74 @@ async function getAdminUids() {
   return ADMIN_UIDS_CACHE.uids;
 }
 
+// Notifications: broadcast from admin -> fanout to user_notifications/{uid}/items
+exports.onBroadcastCreated = functions.firestore
+  .document('broadcasts/{broadcastId}')
+  .onCreate(async (snap, context) => {
+    const data = snap.data() || {};
+    const broadcastId = String(context.params.broadcastId || '').trim();
+    const title = String(data.title || '').trim() || 'Mensaje del equipo';
+    const body = String(data.body || data.message || '').trim();
+    const link = String(data.link || 'mensajes.html').trim();
+    const createdByUid = String(data.createdByUid || '').trim();
+
+    if (!broadcastId || !body) return null;
+
+    let usersSnap = null;
+    try {
+      usersSnap = await db.collection('users').get();
+    } catch (e) {
+      console.warn('[broadcast] users read failed', e);
+      return null;
+    }
+
+    const payload = {
+      title,
+      body,
+      type: 'broadcast',
+      link,
+      data: {
+        broadcastId,
+      },
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    const notifId = `broadcast_${broadcastId}`;
+    let batch = db.batch();
+    let ops = 0;
+    let sent = 0;
+
+    const commitBatch = async () => {
+      if (!ops) return;
+      await batch.commit();
+      batch = db.batch();
+      ops = 0;
+    };
+
+    for (const d of usersSnap.docs) {
+      const uid = String(d.id || '').trim();
+      if (!uid) continue;
+      if (createdByUid && uid === createdByUid) continue;
+      const user = d.data() || {};
+      if (user.blocked === true) continue;
+
+      const ref = db.doc(`user_notifications/${uid}/items/${notifId}`);
+      batch.set(ref, payload, { merge: true });
+      ops += 1;
+      sent += 1;
+
+      if (ops >= 400) {
+        await commitBatch();
+      }
+    }
+
+    await commitBatch();
+    console.log(`[broadcast] fanout done: ${sent} users, id=${broadcastId}`);
+    return null;
+  });
+
 exports.createCheckoutSession = functions.https.onCall(
   async (data, context) => {
     if (!context.auth) {

@@ -536,10 +536,14 @@ import {
       <footer class="site-footer">
         <div class="nav-line nav-line-above"></div>
         <div class="footer-inner container">
-          <div class="footer-text">
-            &copy; 2026 AquiVivo. Todos los derechos reservados.<br />
-            Te ayudo a perder el miedo a hablar. &#x1F338;&#x1F90D;
-          </div>
+          <div class="footer-left">&copy; 2026 AquiVivo. Todos los derechos reservados.</div>
+          <div class="footer-center">Te ayudo a perder el miedo a hablar. &#x1F338;&#x1F90D;</div>
+          <nav class="footer-nav" aria-label="Enlaces">
+            <a href="polityka-prywatnosci.html">Pol&iacute;tica de privacidad</a>
+            <a href="regulamin.html">T&eacute;rminos</a>
+            <a href="zwroty.html">Devoluciones</a>
+            <a href="kontakt.html">Contacto</a>
+          </nav>
         </div>
       </footer>
     `;

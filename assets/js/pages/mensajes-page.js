@@ -101,6 +101,7 @@ const reportsList = qs('#reportsList');
 
 const toggleArchived = qs('#toggleArchived');
 const togglePush = qs('#togglePush');
+const messagesInboxList = qs('#messagesInboxList');
 
 const modalReport = qs('#modalReport');
 const closeReport = qs('#closeReport');
@@ -145,6 +146,7 @@ let convSettings = new Map();
 let statusUnsub = null;
 let presenceTimer = null;
 let reportsUnsub = null;
+let broadcastUnsub = null;
 let reportTarget = null;
 let sendTimestamps = [];
 let USER_SETTINGS = {};
@@ -198,6 +200,49 @@ function formatDateTime(ts) {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(d);
+}
+
+function renderBroadcastList(items) {
+  if (!messagesInboxList) return;
+  if (!Array.isArray(items) || !items.length) {
+    messagesInboxList.innerHTML = '<div class="muted">Sin novedades.</div>';
+    return;
+  }
+
+  messagesInboxList.innerHTML = items
+    .map((b) => {
+      const title = String(b.title || 'Mensaje del equipo').trim();
+      const body = String(b.body || b.message || '').trim();
+      const date = formatDateTime(b.createdAt);
+      const href = String(b.link || 'notificaciones.html').trim();
+      return `
+        <a class="inboxItem" href="${href}">
+          <div class="inboxTitle">${title}</div>
+          <div class="inboxBody">${body}</div>
+          <div class="inboxDate">${date || ''}</div>
+        </a>
+      `;
+    })
+    .join('');
+}
+
+function listenBroadcastInbox() {
+  if (!messagesInboxList) return;
+  if (broadcastUnsub) broadcastUnsub();
+  messagesInboxList.innerHTML = '<div class="muted">Cargando...</div>';
+
+  const q = query(collection(db, 'broadcasts'), orderBy('createdAt', 'desc'), limit(12));
+  broadcastUnsub = onSnapshot(
+    q,
+    (snap) => {
+      const items = (snap.docs || []).map((d) => ({ id: d.id, ...(d.data() || {}) }));
+      renderBroadcastList(items);
+    },
+    (e) => {
+      console.warn('[messages] broadcasts load failed', e);
+      messagesInboxList.innerHTML = '<div class="muted">No se pudo cargar.</div>';
+    },
+  );
 }
 
 function extractTokens(text) {
@@ -2358,6 +2403,7 @@ async function initFromAuth(user) {
   listenConversations();
   listenPublicGroups();
   listenSupportInbox();
+  listenBroadcastInbox();
   if (IS_ADMIN) loadSupportAgents();
   listenReports();
 

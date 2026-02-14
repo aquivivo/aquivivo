@@ -602,15 +602,15 @@ import {
           ebooks: 'Ebooki',
           verTodo: 'Zobacz wszystko',
            libreta: 'Libreta',
-           search: 'Szukaj',
+            search: 'Amigos',
            profile: 'Profil',
            myCourses: 'Moje kursy',
            messages: 'Wiadomosci',
            notifications: 'Powiadomienia',
-          refer: 'Polec znajomych',
+          refer: 'Amigos',
           settings: 'Ustawienia konta',
           payments: 'Historia platnosci',
-          rewards: 'Moje nagrody',
+          rewards: 'Pasaporte',
           help: 'Pomoc / Zglos problem',
           back: 'Wstecz',
           logout: 'Wyloguj',
@@ -628,15 +628,15 @@ import {
           ebooks: 'Ebooks',
           verTodo: 'Ver todo',
            libreta: 'Libreta',
-           search: 'Buscar',
+            search: 'Amigos',
            profile: 'Perfil',
            myCourses: 'Mis cursos',
            messages: 'Mensajes',
            notifications: 'Notificaciones',
-          refer: 'Recomendar amigos',
+          refer: 'Amigos',
           settings: 'Ajustes de cuenta',
           payments: 'Historial de pagos',
-          rewards: 'Mis recompensas',
+          rewards: 'Pasaporte',
           help: 'Ayuda / Reportar',
           back: 'Atras',
           logout: 'Cerrar sesion',
@@ -749,7 +749,6 @@ import {
                   <div class="nav-profile-list">
                     <a class="nav-profile-item" href="${profileHref}"><span aria-hidden="true">&#x1F464;</span><span>${labels.profile}</span></a>
                     <a class="nav-profile-item" href="espanel.html"><span aria-hidden="true">&#x1F4D3;</span><span>${labels.libreta}</span></a>
-                    <a class="nav-profile-item" href="buscar.html"><span aria-hidden="true">&#x1F50D;</span><span>${labels.search}</span></a>
                     <a class="nav-profile-item" href="espanel.html#cursos"><span aria-hidden="true">&#x1F4DA;</span><span>${labels.myCourses}</span></a>
                     <a class="nav-profile-item" href="referidos.html"><span aria-hidden="true">&#x1F91D;</span><span>${labels.refer}</span></a>
                     <a class="nav-profile-item" href="ajustes.html"><span aria-hidden="true">&#x2699;</span><span>${labels.settings}</span></a>
@@ -776,15 +775,12 @@ import {
   }
 
   function buildFooter() {
-    const year = new Date().getFullYear();
     return `
       <footer class="site-footer">
         <div class="nav-line nav-line-above"></div>
         <div class="footer-inner container">
-          <div class="footer-text">
-            &copy; ${year} AquiVivo. Todos los derechos reservados.<br />
-            Te ayudo a perder el miedo a hablar. &#x1F338;&#x1F90D;
-          </div>
+          <div class="footer-left">&copy; 2026 AquiVivo. Todos los derechos reservados.</div>
+          <div class="footer-center">Te ayudo a perder el miedo a hablar. &#x1F338;&#x1F90D;</div>
           <nav class="footer-nav" aria-label="Enlaces">
             <a href="polityka-prywatnosci.html">Pol&iacute;tica de privacidad</a>
             <a href="regulamin.html">T&eacute;rminos</a>
@@ -972,13 +968,12 @@ import {
     } else {
       panel.innerHTML = `
       <a href="espanel.html" data-page="panel"><span class="side-panel-ico" aria-hidden="true">&#x1F4D3;</span><span>Libreta</span></a>
-      <a href="buscar.html" data-page="buscar"><span class="side-panel-ico" aria-hidden="true">&#x1F50D;</span><span>Buscar</span></a>
+      <a href="referidos.html" data-page="amigos"><span class="side-panel-ico" aria-hidden="true">&#x1F91D;</span><span>Amigos</span></a>
       <a href="correcciones.html" data-page="correcciones"><span class="side-panel-ico" aria-hidden="true">&#x270D;&#xFE0F;</span><span>Correcciones</span></a>
       <a href="perfil.html" data-page="profile"><span class="side-panel-ico" aria-hidden="true">&#x1F464;</span><span>Perfil</span></a>
       <a href="espanel.html#cursos" data-page="cursos"><span class="side-panel-ico" aria-hidden="true">&#x1F4DA;</span><span>Mis cursos</span></a>
       <a href="review.html" data-page="practicar"><span class="side-panel-ico" aria-hidden="true">&#x1F3AF;</span><span>Practicar</span></a>
-      <a href="recompensas.html" data-page="recompensas"><span class="side-panel-ico" aria-hidden="true">&#x1F381;</span><span>Recompensas</span></a>
-      <a href="referidos.html" data-page="referidos"><span class="side-panel-ico" aria-hidden="true">&#x1F91D;</span><span>Recomendar</span></a>
+      <a href="recompensas.html" data-page="recompensas"><span class="side-panel-ico" aria-hidden="true">&#x1F381;</span><span>Pasaporte</span></a>
       <a href="ajustes.html" data-page="ajustes"><span class="side-panel-ico" aria-hidden="true">&#x2699;</span><span>Ajustes</span></a>
       <a href="pagos.html" data-page="pagos"><span class="side-panel-ico" aria-hidden="true">&#x1F4B3;</span><span>Pagos</span></a>
       <a href="ayuda.html" data-page="ayuda"><span class="side-panel-ico" aria-hidden="true">&#x1F4A1;</span><span>Ayuda</span></a>
@@ -995,6 +990,8 @@ import {
       review: 'practicar',
       flashcards: 'practicar',
       ejercicio: 'practicar',
+      buscar: 'amigos',
+      referidos: 'amigos',
       course: 'cursos',
       lessonpage: 'cursos',
       lesson: 'cursos',

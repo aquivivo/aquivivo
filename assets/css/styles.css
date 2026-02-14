@@ -542,6 +542,11 @@ body[data-page='index'] main.page {
   backdrop-filter: none;
   border-bottom: none;
 }
+body[data-page='ejercicio'] .nav-glass {
+  background: linear-gradient(180deg, rgba(8, 34, 88, 0.95), rgba(10, 43, 108, 0.92));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+}
 
 .nav-line {
   height: 5px;
@@ -3585,28 +3590,34 @@ a:hover {
     linear-gradient(180deg, #020b1f, #03102b 50%, #020b1f);
 }
 .footer-inner {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px 20px;
 }
-.footer-text {
+.footer-left,
+.footer-center,
+.footer-nav {
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.25px;
-  line-height: 1.55;
+  line-height: 1.35;
   opacity: 0.88;
+  white-space: nowrap;
+}
+.footer-left {
+  justify-self: start;
+}
+.footer-center {
+  justify-self: center;
+  text-align: center;
 }
 .footer-nav {
-  margin-left: auto;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  flex-wrap: wrap;
   gap: 10px 14px;
-  font-size: 13px;
-  font-weight: 700;
+  justify-self: end;
 }
 .footer-nav a {
   text-decoration: none;
@@ -3617,10 +3628,20 @@ a:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-@media (max-width: 720px) {
+@media (max-width: 1080px) {
+  .footer-inner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .footer-left,
+  .footer-center,
   .footer-nav {
-    width: 100%;
-    justify-content: flex-start;
+    justify-self: center;
+    text-align: center;
+    white-space: normal;
+  }
+  .footer-nav {
+    justify-content: center;
   }
 }
 
@@ -6053,6 +6074,204 @@ body[data-page='ejercicio'][data-ui='immersive'] .btn-yellow {
   }
 }
 
+/* =====================================================
+   Ejercicios PRO: focus mode (exercise only)
+   ===================================================== */
+body[data-page='ejercicio'][data-ui='immersive'] {
+  color: var(--text);
+  background:
+    radial-gradient(
+      1200px 600px at 20% 0%,
+      rgba(0, 56, 147, 0.45),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 520px at 90% 10%,
+      rgba(252, 209, 22, 0.25),
+      transparent 55%
+    ),
+    linear-gradient(180deg, #03102b, #041a48 45%, #03102b);
+}
+body[data-page='ejercicio'][data-ui='immersive'] #exerciseHero,
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveTrack,
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveTopLine,
+body[data-page='ejercicio'][data-ui='immersive'] .immersivePromptTitle {
+  display: none !important;
+}
+body[data-page='ejercicio'][data-ui='immersive'] #appHeader {
+  display: block !important;
+}
+body[data-page='ejercicio'][data-ui='immersive'] main.page {
+  padding-top: 18px;
+  padding-bottom: 46px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] main.page > .container {
+  max-width: 1120px;
+  padding: 0 24px;
+}
+body.with-side-panel[data-page='ejercicio'][data-ui='immersive'] main.page > .container {
+  max-width: min(1120px, calc(100% - 24px));
+  margin-left: 0;
+  margin-right: auto;
+  padding-left: 44px;
+  padding-right: 36px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveStage {
+  margin-top: 0;
+  gap: 18px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive {
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background:
+    radial-gradient(
+      520px 260px at 8% -8%,
+      rgba(41, 109, 216, 0.2),
+      transparent 70%
+    ),
+    linear-gradient(
+      160deg,
+      rgba(12, 37, 84, 0.92),
+      rgba(8, 25, 56, 0.94)
+    );
+  box-shadow: 0 22px 46px rgba(2, 12, 32, 0.34);
+  color: #f1f7ff;
+  padding: 30px 28px 24px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exercisePrompt {
+  margin-top: 0;
+  text-align: center;
+  font-size: clamp(27px, 3.8vw, 46px);
+  line-height: 1.25;
+  color: #f4f8ff;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseHint {
+  display: none !important;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseNoteWrap {
+  margin-top: 16px;
+  gap: 10px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseNoteWrap::before {
+  content: '';
+  display: none !important;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseNoteBtn {
+  display: none !important;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseNote {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(238, 246, 255, 0.92);
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: pre-line;
+  padding: 14px 16px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exercisePolishPad {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  display: grid;
+  gap: 8px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exercisePolishPadLabel {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(232, 242, 255, 0.86);
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exercisePolishPadKeys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exercisePolishPadKey {
+  min-width: 42px;
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 10px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseOptions {
+  margin-top: 14px;
+  gap: 10px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseOption {
+  border-radius: 14px;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.07);
+  color: #f2f7ff;
+  padding: 14px 16px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseOption > span {
+  color: #f2f7ff;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseResult {
+  margin-top: 14px;
+  text-align: center;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseActions .btn-yellow {
+  display: none !important;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav .btn-white-outline,
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmNext {
+  min-width: 190px;
+  min-height: 52px;
+  border-radius: 14px;
+  font-weight: 900;
+  padding: 0 20px;
+}
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmNext {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #d6434e, #b91f32);
+  color: #ffffff;
+  border-color: #a41a2c;
+  box-shadow: 0 10px 22px rgba(162, 24, 47, 0.32);
+}
+body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmNext:disabled {
+  opacity: 0.55;
+  box-shadow: none;
+}
+@media (max-width: 920px) {
+  body[data-page='ejercicio'][data-ui='immersive'] main.page {
+    padding-top: 14px;
+    padding-bottom: 34px;
+  }
+  body[data-page='ejercicio'][data-ui='immersive'] main.page > .container {
+    padding: 0 12px;
+  }
+  body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive {
+    border-radius: 18px;
+    padding: 18px 14px 16px;
+  }
+  body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exercisePrompt {
+    font-size: clamp(24px, 9vw, 32px);
+  }
+  body[data-page='ejercicio'][data-ui='immersive'] .exerciseCard--immersive .exerciseNote {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav .btn-white-outline,
+  body[data-page='ejercicio'][data-ui='immersive'] .immersiveNav #btnImmNext {
+    min-width: 160px;
+  }
+}
+
 /* === Perfil / Dashboard === */
 .profile-page .container.profile-shell {
   display: grid;
@@ -7718,6 +7937,18 @@ body.modal-open {
   display: grid;
   gap: 8px;
   margin-top: 6px;
+}
+
+.messages-broadcast {
+  margin-top: 6px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.messages-broadcast .sectionTitle {
+  font-size: 16px;
 }
 
 .toggle-line {

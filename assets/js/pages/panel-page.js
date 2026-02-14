@@ -509,7 +509,7 @@ function renderCourses(userDoc, flags) {
 
   const levels = ['A1', 'A2', 'B1', 'B2'];
   const unlockedAny = levels.some((lvl) => hasLevelAccess(flags, userDoc, lvl));
-  const href = 'kurs-pl.html?level=A1&view=pro&flow=continuous';
+  const href = 'kurs-pl.html?level=A1&view=pro&flow=continuous&autostart=1';
 
   if (unlockedAny) {
     host.innerHTML = `
@@ -2535,9 +2535,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const flags = computeFlags(viewDoc);
       renderCourses(viewDoc, flags);
       renderPlans(viewDoc, flags);
-      await loadProgressSummary(viewUid);
-      await loadReviewSummary(viewUid);
-      await loadInbox();
+      if (
+        $('progTopics') ||
+        $('progCompleted') ||
+        $('progPractice') ||
+        $('progTest') ||
+        $('progLastActivity')
+      ) {
+        await loadProgressSummary(viewUid);
+      }
+      if ($('reviewDue') || $('reviewOverdue') || $('reviewNew') || $('reviewPlan')) {
+        await loadReviewSummary(viewUid);
+      }
+      if ($('inboxList')) await loadInbox();
 
       if (btn) {
         btn.onclick = async () => {

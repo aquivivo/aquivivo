@@ -173,6 +173,208 @@ function resetSession() {
   updateScoreUI();
 }
 
+function formatShortDate(ts) {
+  const d = toDateMaybe(ts);
+  if (!d) return '';
+  return new Intl.DateTimeFormat('es-ES', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(d);
+}
+
+function parseProgressDocId(docId = '') {
+  const raw = String(docId || '').trim();
+  if (!raw) return { level: '', topicPart: '' };
+  const pos = raw.indexOf('__');
+  if (pos < 0) return { level: '', topicPart: raw };
+  return {
+    level: String(raw.slice(0, pos) || '').toUpperCase(),
+    topicPart: String(raw.slice(pos + 2) || '').trim(),
+  };
+}
+
+function summarizeProgressDocs(docs = []) {
+  const total = docs.length;
+  let completed = 0;
+  let practiceSum = 0;
+  let practiceCount = 0;
+  let testSum = 0;
+  let testCount = 0;
+  let lastDoc = null;
+  let lastTs = null;
+
+  docs.forEach((d) => {
+    const data = d.data() || {};
+    if (data.completed === true) completed += 1;
+
+    const practice = Number(data.practicePercent);
+    if (!Number.isNaN(practice)) {
+      practiceSum += practice;
+      practiceCount += 1;
+    }
+
+    const testTotal = Number(data.testTotal || 0);
+    const testScore = Number(data.testScore);
+    if (testTotal > 0 && !Number.isNaN(testScore)) {
+      testSum += testScore;
+      testCount += 1;
+    }
+
+    const ts = data.lastActivityAt || data.updatedAt || data.completedAt || null;
+    const dt = toDateMaybe(ts);
+    if (dt && (!lastTs || dt.getTime() > lastTs.getTime())) {
+      lastTs = dt;
+      lastDoc = { id: d.id, data };
+    }
+  });
+
+  return {
+    topicsTotal: total,
+    topicsCompleted: completed,
+    practiceAvg: practiceCount ? Math.round(practiceSum / practiceCount) : null,
+    testAvg: testCount ? Math.round(testSum / testCount) : null,
+    lastDoc,
+    lastActivity: lastTs,
+  };
+}
+
+function setPracticarOverviewDefaults() {
+  const setText = (id, txt) => {
+    const el = $(id);
+    if (el) el.textContent = txt;
+  };
+
+  setText('prLastWhen', '—');
+  setText('prLastTitle', '—');
+  const link = $('prLastLink');
+  if (link) link.href = courseBackHref('A1');
+
+  setText('prProgTopics', 'Temas: -');
+  setText('prProgCompleted', 'Completados: -');
+  setText('prProgPractice', 'Práctica: -');
+  setText('prProgTest', 'Test: -');
+  setText('prProgLastActivity', 'Última actividad: -');
+
+  setText('prDue', 'Para hoy: -');
+  setText('prOverdue', 'Atrasadas: -');
+  setText('prNew', 'Nuevas: -');
+  setText('prPlan', 'Plan: -');
+  setText('prReviewHint', '');
+  const week = $('prWeek');
+  if (week) week.innerHTML = '';
+}
+
+async function loadPracticarOverview(uid) {
+  if (!uid) return;
+  setPracticarOverviewDefaults();
+
+  try {
+    const snap = await getDocs(collection(db, 'user_progress', uid, 'topics'));
+    const summary = summarizeProgressDocs(snap.docs || []);
+
+    const topicsEl = $('prProgTopics');
+    const completedEl = $('prProgCompleted');
+    const practiceEl = $('prProgPractice');
+    const testEl = $('prProgTest');
+    const lastActivityEl = $('prProgLastActivity');
+    const lastWhenEl = $('prLastWhen');
+    const lastTitleEl = $('prLastTitle');
+    const lastLinkEl = $('prLastLink');
+
+    if (topicsEl) topicsEl.textContent = `Temas: ${summary.topicsTotal}`;
+    if (completedEl) {
+      completedEl.textContent = `Completados: ${summary.topicsCompleted}/${summary.topicsTotal}`;
+    }
+    if (practiceEl) {
+      practiceEl.textContent =
+        summary.practiceAvg == null ? 'Práctica: -' : `Práctica: ${summary.practiceAvg}%`;
+    }
+    if (testEl) {
+      testEl.textContent = summary.testAvg == null ? 'Test: -' : `Test: ${summary.testAvg}%`;
+    }
+
+    const dt = summary.lastActivity ? formatShortDate(summary.lastActivity) : '';
+    if (lastActivityEl) {
+      lastActivityEl.textContent = dt ? `Última actividad: ${dt}` : 'Última actividad: -';
+    }
+    if (lastWhenEl) lastWhenEl.textContent = dt || '—';
+
+    if (summary.lastDoc) {
+      const part = parseProgressDocId(summary.lastDoc.id);
+      const topicId = String(summary.lastDoc.data?.topicId || part.topicPart || '').trim();
+      const level = String(summary.lastDoc.data?.level || part.level || 'A1').toUpperCase();
+      if (lastTitleEl) lastTitleEl.textContent = topicId ? `Tema: ${topicId}` : `Nivel ${level}`;
+      if (lastLinkEl) {
+        let href = courseBackHref(level);
+        if (topicId) href += `&id=${encodeURIComponent(topicId)}&autostart=1`;
+        lastLinkEl.href = href;
+      }
+    }
+  } catch (e) {
+    console.warn('[review] loadPracticarOverview failed', e);
+  }
+
+  try {
+    const dueEl = $('prDue');
+    const overEl = $('prOverdue');
+    const newEl = $('prNew');
+    const planEl = $('prPlan');
+    const weekEl = $('prWeek');
+    const hintEl = $('prReviewHint');
+
+    const minutes = Number(userDocCache?.reviewDailyMinutes || 10);
+    const limitCards = Number(userDocCache?.reviewDailyLimit || 20);
+    const direction = String(userDocCache?.reviewDirection || 'pl_es');
+    const dirLabel =
+      direction === 'es_pl' ? 'ES → PL' : direction === 'mixed' ? 'Mixto' : 'PL → ES';
+    if (planEl) {
+      planEl.textContent = `Plan: ${minutes} min al día · ${limitCards} tarjetas/día · ${dirLabel}`;
+    }
+
+    const snap = await getDocs(collection(db, 'user_spaced', uid, 'cards'));
+    if (snap.empty) {
+      if (hintEl) hintEl.textContent = 'Sin datos. Empieza un repaso.';
+      return;
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dayMs = 24 * 60 * 60 * 1000;
+    const weekCounts = Array(7).fill(0);
+    let due = 0;
+    let overdue = 0;
+    let fresh = 0;
+
+    snap.forEach((d) => {
+      const data = d.data() || {};
+      const dueAt = toDateMaybe(data.dueAt);
+      const reviews = Number(data.reviews || 0);
+      if (reviews <= 0) fresh += 1;
+      if (!dueAt) return;
+      const diff = Math.floor((dueAt.getTime() - today.getTime()) / dayMs);
+      if (diff <= 0) {
+        due += 1;
+        if (dueAt.getTime() < now.getTime()) overdue += 1;
+      }
+      if (diff >= 0 && diff < 7) weekCounts[diff] += 1;
+    });
+
+    if (dueEl) dueEl.textContent = `Para hoy: ${due}`;
+    if (overEl) overEl.textContent = `Atrasadas: ${overdue}`;
+    if (newEl) newEl.textContent = `Nuevas: ${fresh}`;
+
+    if (weekEl) {
+      const labels = ['Hoy', 'Mañana', 'D+2', 'D+3', 'D+4', 'D+5', 'D+6'];
+      weekEl.innerHTML = weekCounts
+        .map((c, i) => `<div class="reviewDay"><span>${labels[i]}</span><b>${c}</b></div>`)
+        .join('');
+    }
+  } catch (e) {
+    console.warn('[review] loadPracticarReviewSummary failed', e);
+  }
+}
+
 function stopSprintTimer() {
   if (!sprintTimerId) return;
   clearInterval(sprintTimerId);
@@ -1144,6 +1346,76 @@ async function saveSrs(uid, card, isCorrect) {
   srsMap.set(card.id, payload);
 }
 
+async function appendReviewMistakeLog(uid, card, userAnswer = '[review:no lo se]') {
+  const userId = String(uid || '').trim();
+  if (!userId || !card) return;
+
+  const level = String(card.level || '').toUpperCase();
+  const topicId = String(card.topicId || '').trim();
+  if (!level || !topicId) return;
+
+  const topicKey = `${level}__${topicId}`;
+  const ref = doc(db, 'user_progress', userId, 'topics', topicKey);
+  const nowIso = new Date().toISOString();
+
+  const front = sideData(card, card.frontLang || 'pl');
+  const back = sideData(card, card.backLang || (card.frontLang === 'pl' ? 'es' : 'pl'));
+  const prompt = String(front.word || '').trim();
+  const expected = String(back.word || '').trim();
+  const answer = String(userAnswer || '').trim();
+
+  try {
+    const snap = await getDoc(ref);
+    const data = snap.exists() ? snap.data() || {} : {};
+    const list = Array.isArray(data.mistakeLog) ? [...data.mistakeLog] : [];
+
+    const idx = list.findIndex((item) => {
+      if (String(item?.exerciseId || '') !== String(card.exerciseId || card.id || '')) return false;
+      return (
+        normalizeText(String(item?.expected || '')) === normalizeText(expected) &&
+        normalizeText(String(item?.userAnswer || '')) === normalizeText(answer)
+      );
+    });
+
+    if (idx >= 0) {
+      list[idx] = {
+        ...(list[idx] || {}),
+        count: Number(list[idx]?.count || 1) + 1,
+        lastAt: nowIso,
+      };
+    } else {
+      list.unshift({
+        id: `review_${String(card.id || card.exerciseId || Date.now())}_${Date.now()}`,
+        exerciseId: String(card.exerciseId || card.id || ''),
+        type: 'review_card',
+        prompt: prompt.slice(0, 320),
+        userAnswer: answer.slice(0, 220),
+        expected: expected.slice(0, 220),
+        level,
+        topicId,
+        topicSlug: String(card.topicSlug || topicId || ''),
+        topicTitle: '',
+        count: 1,
+        lastAt: nowIso,
+      });
+    }
+
+    await setDoc(
+      ref,
+      {
+        level,
+        topicId,
+        mistakeLog: list.slice(0, 90),
+        lastMistakeAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+  } catch (e) {
+    console.warn('[review] appendReviewMistakeLog failed', e);
+  }
+}
+
 async function markAnswer(isCorrect) {
   if (!auth.currentUser || !currentCard) return;
   if (reviewMode === 'sprint' && sprintEnded) return;
@@ -1151,6 +1423,10 @@ async function markAnswer(isCorrect) {
   if (isCorrect) sessionCorrect += 1;
   else sessionWrong += 1;
   updateScoreUI();
+
+  if (!isCorrect && currentCard.cardSource !== 'mistake') {
+    await appendReviewMistakeLog(auth.currentUser.uid, currentCard);
+  }
 
   if (currentCard.cardSource !== 'mistake') {
     await saveSrs(auth.currentUser.uid, currentCard, isCorrect);
@@ -1395,6 +1671,7 @@ async function initReview(user) {
   CURRENT_UID = user?.uid || null;
   allowedTopicCache = new Map();
   userDocCache = await getUserDoc(user.uid);
+  await loadPracticarOverview(user.uid);
   const accessibleLevels = getUserLevels(userDocCache);
   const accessible = LEVEL_ORDER.filter((l) => accessibleLevels.includes(l));
   const isAdmin = userDocCache?.admin === true || String(userDocCache?.role || '') === 'admin';

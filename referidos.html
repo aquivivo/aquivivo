@@ -1,47 +1,147 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>Recomendar amigos | AquiVivo</title>
+    <title>Amigos | AquiVivo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260208m" />
-    <script src="assets/js/layout.js?v=20260208m" type="module"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260214t" />
+    <script src="assets/js/layout.js?v=20260214t" type="module"></script>
   </head>
 
   <body data-page="referidos">
     <div id="appHeader"></div>
 
-    <main class="page">
-      <div class="container">
-        <section class="heroBanner">
-          <div class="heroTitleRow">
-            <div class="heroIcon">&#129309;</div>
-            <div>
-              <h1 class="glow-text" style="margin: 0">Recomendar amigos</h1>
-              <div class="subtitle" style="margin-top: 6px">
-                Invita a tus amigos y gana recompensas.
+    <main class="page buscar-page amigos-page">
+      <div class="container buscar-shell">
+        <section class="profile-main">
+          <section class="heroBanner">
+            <div class="heroTitleRow">
+              <div class="heroIcon">&#129309;</div>
+              <div>
+                <h1 class="glow-text" style="margin: 0">Amigos</h1>
+                <div class="subtitle" style="margin-top: 6px">
+                  Buscar personas, invitar y gestionar recomendaciones en un solo lugar.
+                </div>
               </div>
             </div>
-          </div>
+          </section>
+
+          <section class="card" style="margin-top: 12px">
+            <div class="sectionTitle" style="margin-top: 0">Buscar personas</div>
+            <div class="peopleSearchBar buscarSearchBar" style="margin-top: 10px">
+              <div class="ps-avatar" id="buscarAvatar" aria-hidden="true">
+                <img id="buscarAvatarImg" alt="" loading="lazy" />
+                <span id="buscarAvatarFallback">U</span>
+              </div>
+              <input
+                id="buscarInput"
+                class="ps-input"
+                placeholder="Busca por nombre o @usuario..."
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <div class="ps-actions">
+                <button
+                  id="btnBuscarClear"
+                  class="ps-icon"
+                  type="button"
+                  aria-label="Limpiar"
+                  title="Limpiar"
+                >
+                  &times;
+                </button>
+                <button
+                  id="btnBuscar"
+                  class="ps-icon ps-icon--primary"
+                  type="button"
+                  aria-label="Buscar"
+                  title="Buscar"
+                >
+                  &#128269;
+                </button>
+              </div>
+            </div>
+            <div id="buscarStatus" class="hintSmall" style="margin-top: 8px"></div>
+            <div id="buscarResults" class="friendList" style="margin-top: 10px"></div>
+          </section>
+
+          <section class="card" style="margin-top: 12px">
+            <div class="sectionTitle" style="margin-top: 0">Accesos rapidos</div>
+            <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
+              <a class="btn-white-outline" href="perfil.html?tab=friends">Mi red</a>
+              <a class="btn-white-outline" href="mensajes.html">Mensajes</a>
+              <a class="btn-white-outline" href="espanel.html">Libreta</a>
+            </div>
+          </section>
         </section>
 
-        <section class="card" style="margin-top: 12px">
-          <div class="sectionTitle" style="margin-top: 0">Codigo de invitacion</div>
-          <div class="muted">
-            Genera tu codigo y revisa el estado de tus invitaciones.
-          </div>
-          <div style="margin-top: 12px">
-            <a class="btn-yellow" href="espanel.html#referidos">Abrir en Libreta</a>
-          </div>
-        </section>
+        <aside class="profile-side">
+          <section class="card card--promo referral-card referral-card--compact" id="referralCard">
+            <div class="sectionTitle" style="margin-top: 0">Tengo codigo de un pana</div>
+            <div class="muted">Compártelo con tus panas. Si lo usan, tú ganas algo tambien.</div>
+
+            <div class="metaRow" style="margin-top: 12px; gap: 10px; align-items: center">
+              <input
+                id="myRefCode"
+                class="input"
+                disabled
+                style="max-width: 220px; font-weight: 900"
+              />
+              <button id="btnCopyMyRefCode" class="btn-white-outline" type="button">Copiar</button>
+            </div>
+
+            <div id="myRefInfo" class="hintSmall" style="margin-top: 8px"></div>
+
+            <div class="hr"></div>
+
+            <details class="refDetails" open>
+              <summary>Tengo codigo de un pana</summary>
+              <div class="muted">Escribe el codigo para asociarlo a tu cuenta.</div>
+              <div class="metaRow" style="margin-top: 10px; gap: 10px; align-items: center; flex-wrap: wrap">
+                <input
+                  id="useRefCode"
+                  class="input"
+                  placeholder="ej. MAGDAL-8F3K"
+                  style="max-width: 220px"
+                />
+                <button id="btnApplyRefCode" class="btn-yellow" type="button">Aplicar</button>
+                <span id="applyRefStatus" class="hintSmall"></span>
+              </div>
+            </details>
+
+            <div class="hr"></div>
+
+            <details class="refDetails" open>
+              <summary>Como van mis codigos</summary>
+              <div class="metaRow" style="margin-top: 10px; gap: 10px; flex-wrap: wrap">
+                <span id="refStatInvites">Recomendaciones: 0</span>
+                <span id="refStatRewards">Recompensas: 0</span>
+              </div>
+              <div id="refRewardsList" class="muted" style="margin-top: 10px"></div>
+              <div id="refRewardsActions" class="muted" style="margin-top: 10px"></div>
+            </details>
+          </section>
+
+          <section class="card">
+            <div class="sectionTitle" style="margin-top: 0">Sugerencias</div>
+            <div class="muted" id="buscarSuggestionsHint">Cargando...</div>
+            <div class="friendList" id="buscarSuggestions" style="margin-top: 10px"></div>
+          </section>
+
+          <section class="card">
+            <div class="sectionTitle" style="margin-top: 0">Tendencias</div>
+            <div class="muted">Explora gente y crea nuevas conexiones.</div>
+            <div class="metaRow" id="buscarTrends" style="margin-top: 12px; gap: 10px; flex-wrap: wrap"></div>
+          </section>
+        </aside>
       </div>
     </main>
+
+    <script type="module" src="assets/js/pages/buscar-page.js?v=20260214t"></script>
+    <script type="module" src="assets/js/pages/amigos-page.js?v=20260214t"></script>
   </body>
 </html>
-
-
-
