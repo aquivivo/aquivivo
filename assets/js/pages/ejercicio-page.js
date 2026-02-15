@@ -292,12 +292,27 @@ async function getRouteTopicsForLevel(level) {
   const lvl = String(level || '').toUpperCase();
   if (!lvl) return [];
   try {
-    const snap = await getDocs(
+    let all = [];
+    const orderedSnap = await getDocs(
       query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
     );
-    const all = snap.docs
+    all = orderedSnap.docs
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
       .filter((t) => t.isArchived !== true);
+    if (!all.length) {
+      const plainSnap = await getDocs(query(collection(db, 'courses'), where('level', '==', lvl)));
+      all = plainSnap.docs
+        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+        .filter((t) => t.isArchived !== true)
+        .sort((a, b) => {
+          const ao = Number(a?.order);
+          const bo = Number(b?.order);
+          const da = Number.isFinite(ao) ? ao : Number.POSITIVE_INFINITY;
+          const db = Number.isFinite(bo) ? bo : Number.POSITIVE_INFINITY;
+          if (da !== db) return da - db;
+          return String(a?.id || '').localeCompare(String(b?.id || ''));
+        });
+    }
     const selected = selectCoursesForTrack(all);
     return buildMixedRoute(selected);
   } catch (e) {
@@ -658,38 +673,70 @@ function canRecordVoice() {
 }
 
 function ttsTextForExercise(ex) {
-  const direct = extractTtsText(ex);
-  if (direct) return direct;
-
   const prompt = String(ex?.prompt || '').trim();
-  const answers = parseAnswerList(ex?.answer || '');
+  const direct = extractTtsText(ex);
+  if (direct) {
+    const directNorm = normalizeText(direct);
+    const looksLikeOptionId = /^[a-d]$/.test(directNorm);
+    if (!looksLikeOptionId || !prompt) return direct;
+  }
+
+  const answerObj = answerObjectOf(ex?.answer);
+  let answers = [];
+  if (answerObj) {
+    const source = [];
+    if (Array.isArray(answerObj.accepted)) source.push(...answerObj.accepted);
+    if (typeof answerObj.text === 'string') source.push(answerObj.text);
+    if (typeof answerObj.value === 'string') source.push(answerObj.value);
+    if (typeof answerObj.answer === 'string') source.push(answerObj.answer);
+    if (typeof answerObj.correct === 'string') source.push(answerObj.correct);
+    answers = parseAnswerList(source);
+  } else {
+    answers = parseAnswerList(ex?.answer || '');
+  }
+
+  const audioSentence = String(
+    ex?.audioSentencePl || ex?.sentencePl || ex?.sourceExample || '',
+  ).trim();
 
   if (prompt.includes('___') && answers.length) {
     let i = 0;
     return prompt.replaceAll('___', () => answers[i++] ?? answers[0]);
   }
 
-  if (answers.length) return answers.join(' ');
+  if (audioSentence) return audioSentence;
+  if (prompt) return prompt;
+  const answerSpeech = answers
+    .map((x) => String(x || '').trim())
+    .filter((x) => x && !/^[a-d]$/i.test(normalizeText(x)));
+  if (answerSpeech.length) return answerSpeech.join(' ');
   return prompt;
 }
 
 function speakPolish(text) {
   const t = String(text || '').trim();
-  if (!t) return;
-  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
+  if (!t) return false;
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return false;
 
   try {
-    const utter = new SpeechSynthesisUtterance(t);
-    utter.lang = 'pl-PL';
-    const voices = window.speechSynthesis?.getVoices?.() || [];
+    const synth = window.speechSynthesis;
+    const voices = synth?.getVoices?.() || [];
     const plVoice = voices.find((v) =>
       String(v.lang || '').toLowerCase().startsWith('pl'),
     );
-    if (plVoice) utter.voice = plVoice;
+    if (!plVoice) return false;
 
-    window.speechSynthesis?.cancel?.();
-    window.speechSynthesis?.speak?.(utter);
-  } catch {}
+    const utter = new SpeechSynthesisUtterance(t);
+    utter.lang = 'pl-PL';
+    utter.voice = plVoice;
+
+    synth?.cancel?.();
+    synth?.resume?.();
+    synth?.speak?.(utter);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function playAudioUrl(url) {
@@ -701,13 +748,53 @@ function playAudioUrl(url) {
   } catch {}
 }
 
+function fallbackPolishTtsUrl(text) {
+  const t = String(text || '').trim();
+  if (!t) return '';
+  const clipped = t.slice(0, 260);
+  const q = encodeURIComponent(clipped);
+  return `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=pl&q=${q}`;
+}
+
 function playExerciseAudio(ex) {
   const audioUrl = extractAudioUrl(ex);
   if (audioUrl) {
     playAudioUrl(audioUrl);
     return;
   }
-  speakPolish(ttsTextForExercise(ex));
+  const tts = ttsTextForExercise(ex);
+  const spoken = speakPolish(tts);
+  if (spoken) return;
+  const fallback = fallbackPolishTtsUrl(tts);
+  if (fallback) playAudioUrl(fallback);
+}
+
+function speakPolishWithFallback(text) {
+  const t = String(text || '').trim();
+  if (!t) return;
+  const spoken = speakPolish(t);
+  if (spoken) return;
+  const fallback = fallbackPolishTtsUrl(t);
+  if (fallback) playAudioUrl(fallback);
+}
+
+function clearNonInputTextSelection(target = null) {
+  const node = target && target.nodeType === 1 ? target : null;
+  if (node && node.closest('input, textarea, [contenteditable="true"]')) return;
+  try {
+    const sel = window.getSelection?.();
+    if (sel && sel.rangeCount) sel.removeAllRanges();
+  } catch {}
+}
+
+function maybeAutoAcceptChoice(btnCheck, selectedOptionId, correctOptionId) {
+  if (!btnCheck || btnCheck.disabled) return;
+  const selected = normalizeOptionId(selectedOptionId);
+  const correct = normalizeOptionId(correctOptionId);
+  if (!selected || !correct || selected !== correct) return;
+  setTimeout(() => {
+    if (!btnCheck.disabled) btnCheck.click();
+  }, 0);
 }
 
 const SPEAKER_ICON = '\u{1F50A}';
@@ -724,7 +811,7 @@ function makeSpeakerBtn(text, { title = 'Escuchar (PL)', tiny = true } = {}) {
   btn.addEventListener('click', (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
-    speakPolish(t);
+    speakPolishWithFallback(t);
   });
   return btn;
 }
@@ -736,7 +823,7 @@ function wireInlineSpeaker(spanEl, text) {
   const onClick = (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
-    speakPolish(t);
+    speakPolishWithFallback(t);
   };
   spanEl.addEventListener('click', onClick);
   spanEl.addEventListener('keydown', (ev) => {
@@ -1295,6 +1382,38 @@ function looksLikeInstructionEs(raw) {
   );
 }
 
+function isGenericInstructionEs(raw) {
+  const t = normalizeText(raw || '').replace(/[.!?]+$/g, '').trim();
+  if (!t) return false;
+  return (
+    t === 'marca la opcion correcta' ||
+    t === 'elige la opcion correcta' ||
+    t === 'escoge la opcion correcta' ||
+    t === 'selecciona la opcion correcta' ||
+    t === 'completa la frase' ||
+    t === 'ordena las palabras' ||
+    t === 'escucha y escribe' ||
+    t === 'verdadero o falso'
+  );
+}
+
+function promptIsSelfSufficientTask(raw) {
+  const t = normalizeText(raw || '');
+  if (!t) return false;
+  if (
+    t.includes('jak po polsku') ||
+    t.includes('jak po hiszpansku') ||
+    t.includes('co znaczy') ||
+    t.includes('co to znaczy') ||
+    t.includes('uzupelnij') ||
+    t.includes('dopasuj') ||
+    t.includes('uloz zdanie')
+  ) {
+    return true;
+  }
+  return /\?$/.test(String(raw || '').trim());
+}
+
 function isCardsExercise(ex) {
   const t = normalizeText(ex?.type || '');
   return t.includes('tarjeta');
@@ -1518,7 +1637,6 @@ function parseAnswerList(raw) {
     if (typeof raw.value === 'string') parts.push(raw.value);
     if (typeof raw.answer === 'string') parts.push(raw.answer);
     if (typeof raw.correct === 'string') parts.push(raw.correct);
-    if (typeof raw.correctOptionId === 'string') parts.push(raw.correctOptionId);
     return parts
       .flatMap((item) => parseAnswerList(item))
       .map((s) => String(s || '').trim())
@@ -3001,6 +3119,11 @@ function createLetterSlotsInput(template, { disabled = false } = {}) {
     cell.dataset.slotGroup = groupId;
     cell.dataset.slotIndex = String(cells.length);
     cell.disabled = !!disabled;
+    cell.style.color = '#ffffff';
+    cell.style.caretColor = '#ffffff';
+    cell.style.lineHeight = '1';
+    cell.style.textAlign = 'center';
+    cell.style.textShadow = '0 0 0 rgba(0,0,0,0.01)';
     wrapper.appendChild(cell);
     map.push({ space: false, cell });
     cells.push(cell);
@@ -3248,6 +3371,12 @@ function makeExerciseCard(ex) {
   card.className = 'exerciseCard';
   setExerciseCardState(card, 'idle');
   lockExerciseCard(card, false);
+  card.addEventListener('selectstart', (ev) => {
+    const target = ev?.target;
+    if (target && target.closest && target.closest('input, textarea, [contenteditable="true"]')) return;
+    ev.preventDefault();
+  });
+  card.addEventListener('mouseup', (ev) => clearNonInputTextSelection(ev?.target));
 
   const top = document.createElement('div');
   top.className = 'exerciseTop';
@@ -3304,7 +3433,10 @@ function makeExerciseCard(ex) {
     : instructionBase;
   const promptIsInstruction = looksLikeInstructionEs(promptText);
   const hasExplicitHint = hasExplicitExerciseHint(ex) || !!directiveSentence;
-  const showInstructionBlock = hasExplicitHint && !!instructionText && !promptIsInstruction;
+  const redundantGenericHint =
+    isGenericInstructionEs(instructionText) && !!String(promptText || '').trim() && !promptIsInstruction;
+  const showInstructionBlock =
+    hasExplicitHint && !!instructionText && !promptIsInstruction && !redundantGenericHint;
 
   if (showInstructionBlock) {
     const instructionBlock = document.createElement('div');
@@ -3334,7 +3466,13 @@ function makeExerciseCard(ex) {
   promptSpeaker.title = 'Escuchar (PL)';
   promptSpeaker.setAttribute('aria-label', 'Escuchar (PL)');
   promptSpeaker.addEventListener('click', () => {
-    speakPolish(ttsTextForExercise(ex));
+    const visiblePrompt = String(prompt.textContent || promptText || '').trim();
+    const forceExerciseAudio = isListenExercise(ex) || isDictationExercise(ex) || !!extractAudioUrl(ex);
+    if (forceExerciseAudio) {
+      playExerciseAudio(ex);
+      return;
+    }
+    speakPolishWithFallback(visiblePrompt || ttsTextForExercise(ex));
   });
   promptRow.appendChild(promptSpeaker);
 
@@ -3708,6 +3846,7 @@ function makeExerciseCard(ex) {
       const optsWrap = document.createElement('div');
       optsWrap.className = 'exerciseOptions';
       const groupName = `scene_${ex.id}`;
+      let btnCheck = null;
 
       optionItems.forEach((opt, idx) => {
         const label = optionLabelFromIndex(idx);
@@ -3727,6 +3866,7 @@ function makeExerciseCard(ex) {
               correctId: correctOptionId,
               checked: false,
             });
+            maybeAutoAcceptChoice(btnCheck, selectedOptionId, correctOptionId);
           },
           ttsText: optionText,
         });
@@ -3750,7 +3890,7 @@ function makeExerciseCard(ex) {
         actions.appendChild(btnListen);
       }
 
-      const btnCheck = document.createElement('button');
+      btnCheck = document.createElement('button');
       btnCheck.className = 'btn-yellow';
       btnCheck.type = 'button';
       btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
@@ -3816,6 +3956,7 @@ function makeExerciseCard(ex) {
       const optsWrap = document.createElement('div');
       optsWrap.className = 'exerciseOptions';
       const groupName = `fix_${ex.id}`;
+      let btnCheck = null;
 
       optionItems.forEach((opt, idx) => {
         const label = optionLabelFromIndex(idx);
@@ -3835,6 +3976,7 @@ function makeExerciseCard(ex) {
               correctId: correctOptionId,
               checked: false,
             });
+            maybeAutoAcceptChoice(btnCheck, selectedOptionId, correctOptionId);
           },
           ttsText: optionText,
         });
@@ -3846,7 +3988,7 @@ function makeExerciseCard(ex) {
       });
       promptBlock.appendChild(optsWrap);
 
-      const btnCheck = document.createElement('button');
+      btnCheck = document.createElement('button');
       btnCheck.className = 'btn-yellow';
       btnCheck.type = 'button';
       btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
@@ -4488,6 +4630,7 @@ function makeExerciseCard(ex) {
       let selectedLabel = '';
       let selectedOptionId = '';
       const correctOptionId = resolveCorrectOptionId(ex, optionItems);
+      let btnCheck = null;
 
       const optsWrap = document.createElement('div');
       optsWrap.className = 'exerciseOptions';
@@ -4513,6 +4656,7 @@ function makeExerciseCard(ex) {
               correctId: correctOptionId,
               checked: false,
             });
+            maybeAutoAcceptChoice(btnCheck, selectedOptionId, correctOptionId);
           },
           ttsText,
         });
@@ -4536,7 +4680,7 @@ function makeExerciseCard(ex) {
         actions.appendChild(btnListen);
       }
 
-      const btnCheck = document.createElement('button');
+      btnCheck = document.createElement('button');
       btnCheck.className = 'btn-yellow';
       btnCheck.type = 'button';
       btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
@@ -4803,6 +4947,7 @@ function makeExerciseCard(ex) {
       const fillPromptText = promptText;
       const slotFields = [];
       const slotControllers = [];
+      let btnCheck = null;
 
       if (fillPromptText.includes('___')) {
         prompt.textContent = '';
@@ -4835,11 +4980,39 @@ function makeExerciseCard(ex) {
         attachPolishAssistPad(card, slotFields);
       }
 
-      const btnCheck = document.createElement('button');
+      const tryAutoAcceptFill = () => {
+        if (done || !btnCheck || btnCheck.disabled) return;
+        const blanksCount = slotControllers.length || 1;
+        const expectedByBlank = parseExpectedByBlank(ex.answer || '', blanksCount, fillPromptText);
+        const values = slotControllers.map((slot) => String(slot.getValue() || '').trim());
+        if (!values.length) return;
+        if (slotControllers.some((slot) => !slot.isComplete()) || values.some((v) => !v)) return;
+        let ok = true;
+        for (let i = 0; i < values.length; i += 1) {
+          const accepted = expectedByBlank[i] || expectedByBlank[0] || [];
+          const u = normalizeOrthographyText(values[i]);
+          const acc = accepted.map((x) => normalizeOrthographyText(x));
+          if (!acc.includes(u)) {
+            ok = false;
+            break;
+          }
+        }
+        if (ok) btnCheck.click();
+      };
+
+      btnCheck = document.createElement('button');
       btnCheck.className = 'btn-yellow';
       btnCheck.type = 'button';
       btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
       btnCheck.disabled = done;
+
+      slotFields.forEach((field) => {
+        field.addEventListener('input', () => {
+          setTimeout(() => {
+            tryAutoAcceptFill();
+          }, 0);
+        });
+      });
 
       btnCheck.addEventListener('click', async () => {
         if (done) return;
@@ -5226,9 +5399,9 @@ function makeExerciseCard(ex) {
             return;
           }
           const sentence = selected.map((t) => t.text).join(' ').replace(/\s+([?.!,;:])/g, '$1');
-          const accepted = parseAnswerList(ex.answer || '').map((x) => normalizeText(x));
-          const got = normalizeText(sentence);
-          const ok = accepted.length ? accepted.includes(got) : got === normalizeText(ex.answer || '');
+          const ok = strictAnswerMatch(sentence, ex.answer || '', {
+            allowPlainMatch: true,
+          });
 
           setResultText(resultEl, ok, ok ? 'Correcto.' : 'Intenta de nuevo.');
           card.appendChild(resultEl);

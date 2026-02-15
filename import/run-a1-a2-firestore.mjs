@@ -322,6 +322,24 @@ function ensureNoNestedArrays(list, collectionName) {
   }
 }
 
+function ensureUniqueIds(list, collectionName) {
+  const seen = new Set();
+  const duplicates = [];
+  for (const entry of list || []) {
+    const id = String(entry?.id || '').trim();
+    if (!id) {
+      duplicates.push('(missing-id)');
+      continue;
+    }
+    if (seen.has(id)) duplicates.push(id);
+    else seen.add(id);
+  }
+  if (duplicates.length) {
+    const preview = duplicates.slice(0, 12).join(', ');
+    throw new Error(`Duplicate document IDs in ${collectionName}: ${duplicates.length} (e.g. ${preview})`);
+  }
+}
+
 async function commitCollection(
   db,
   collectionName,
@@ -711,6 +729,10 @@ async function main() {
   ensureNoNestedArrays(toWrite.lessons, 'lessons');
   ensureNoNestedArrays(toWrite.modules, 'modules');
   ensureNoNestedArrays(toWrite.courses, 'courses');
+  ensureUniqueIds(toWrite.exercises, 'exercises');
+  ensureUniqueIds(toWrite.lessons, 'lessons');
+  ensureUniqueIds(toWrite.modules, 'modules');
+  ensureUniqueIds(toWrite.courses, 'courses');
 
   const report = {
     generatedAt: pkg.generatedAt,

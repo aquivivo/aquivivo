@@ -222,12 +222,27 @@ async function loadRouteTopicsForLevel(level) {
   const lvl = String(level || '').toUpperCase();
   if (!lvl) return [];
   try {
-    const snap = await getDocs(
+    let all = [];
+    const orderedSnap = await getDocs(
       query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
     );
-    const all = snap.docs
+    all = orderedSnap.docs
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
       .filter((t) => t.isArchived !== true);
+    if (!all.length) {
+      const plainSnap = await getDocs(query(collection(db, 'courses'), where('level', '==', lvl)));
+      all = plainSnap.docs
+        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+        .filter((t) => t.isArchived !== true)
+        .sort((a, b) => {
+          const ao = Number(a?.order);
+          const bo = Number(b?.order);
+          const da = Number.isFinite(ao) ? ao : Number.POSITIVE_INFINITY;
+          const db = Number.isFinite(bo) ? bo : Number.POSITIVE_INFINITY;
+          if (da !== db) return da - db;
+          return String(a?.id || '').localeCompare(String(b?.id || ''));
+        });
+    }
     const selected = selectTopicsForTrack(all);
     return buildMixedRoute(selected);
   } catch (e) {
@@ -389,9 +404,27 @@ function isCardExercise(ex) {
   return t.includes(CARD_TYPE_HINT);
 }
 
+function deckTags(ex) {
+  if (!Array.isArray(ex?.tags)) return [];
+  return ex.tags.map((t) => normalizeText(t)).filter(Boolean);
+}
+
+function isTopicDeckExercise(ex) {
+  const notes = normalizeText(ex?.notes || '');
+  if (notes.includes('deck:topic')) return true;
+  if (deckTags(ex).includes('scope:topic')) return true;
+
+  const lessonId = String(ex?.lessonId || '').trim();
+  const lessonIds = Array.isArray(ex?.lessonIds)
+    ? ex.lessonIds.map((x) => String(x || '').trim()).filter(Boolean)
+    : [];
+  return !lessonId && lessonIds.length > 1;
+}
+
 function exerciseMatchesLesson(ex, lessonId) {
   const wanted = String(lessonId || '').trim();
   if (!wanted) return true;
+  if (isTopicDeckExercise(ex)) return false;
   const one = String(ex?.lessonId || '').trim();
   if (one && one === wanted) return true;
   const many = Array.isArray(ex?.lessonIds)
@@ -696,6 +729,12 @@ async function loadTopics(level, selectedId) {
     const wanted = String(selectedId || '').trim();
     if (wanted && wanted !== 'all' && topics.some((t) => t.id === wanted)) {
       fcTopic.value = wanted;
+    } else if (wanted && wanted !== 'all') {
+      const opt = document.createElement('option');
+      opt.value = wanted;
+      opt.textContent = wanted;
+      fcTopic.appendChild(opt);
+      fcTopic.value = wanted;
     } else {
       fcTopic.value = 'all';
     }
@@ -720,6 +759,7 @@ async function loadAllowedTopicSetsForLevel(level) {
 async function loadCards() {
   const level = String(fcLevel?.value || '').toUpperCase();
   const topicId = String(fcTopic?.value || '').trim();
+  const forcedTopicId = topicId && topicId !== 'all' ? topicId : String(PRE_TOPIC || '').trim();
   const direction = String(fcDirection?.value || 'pl_es');
 
   if (!level) return;
@@ -728,18 +768,27 @@ async function loadCards() {
 
   try {
     let q = query(collection(db, 'exercises'), where('level', '==', level));
-    if (topicId && topicId !== 'all') {
+    if (forcedTopicId) {
       q = query(
         collection(db, 'exercises'),
         where('level', '==', level),
-        where('topicId', '==', topicId),
+        where('topicId', '==', forcedTopicId),
       );
     }
-    const snap = await getDocs(q);
+    let snap = await getDocs(q);
+    if (forcedTopicId && snap.empty) {
+      snap = await getDocs(
+        query(
+          collection(db, 'exercises'),
+          where('level', '==', level),
+          where('topicSlug', '==', forcedTopicId),
+        ),
+      );
+    }
     const exercises = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
     const allowed =
-      topicId && topicId !== 'all' ? null : await loadAllowedTopicSetsForLevel(level);
-    const visibleExercises = allowed
+      forcedTopicId ? null : await loadAllowedTopicSetsForLevel(level);
+    const visibleExercises = allowed && (allowed.idSet.size || allowed.slugSet.size)
       ? exercises.filter((ex) => {
           const tid = String(ex.topicId || '').trim();
           const tslug = String(ex.topicSlug || '').trim();
@@ -750,11 +799,14 @@ async function loadCards() {
         })
       : exercises;
 
-    const lessonFiltered = PRE_LESSON
-      ? visibleExercises.filter((ex) => exerciseMatchesLesson(ex, PRE_LESSON))
-      : visibleExercises;
-    const base = lessonFiltered
-      .filter(isCardExercise)
+    const cardExercises = visibleExercises.filter(isCardExercise);
+    const scopedCards = PRE_LESSON
+      ? cardExercises.filter((ex) => exerciseMatchesLesson(ex, PRE_LESSON))
+      : (() => {
+          const topicDecks = cardExercises.filter(isTopicDeckExercise);
+          return topicDecks.length ? topicDecks : cardExercises;
+        })();
+    const base = scopedCards
       .flatMap(buildCardsFromExercise)
       .map((c) => ({ ...c, favorite: favMap.get(c.id)?.favorite === true }));
 

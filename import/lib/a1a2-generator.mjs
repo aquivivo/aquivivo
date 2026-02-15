@@ -185,8 +185,8 @@ export function parseWorkbookSheets(XLSX, workbook, { levelHint = '', fileName =
       .map((row, idx) => {
         const pl = pickField(row, ['Polski', 'PL', 'Polaco']);
         const es = pickField(row, ['Español (LATAM)', 'Español', 'Espanol', 'ES']);
-        const exPl = pickField(row, ['Example PL', 'Ejemplo PL', 'Ejemplo de uso (PL)', 'Przyklad (PL)']);
-        const exEs = pickField(row, ['Example ES', 'Ejemplo ES', 'Ejemplo de uso (ES)', 'Przyklad (ES)']);
+        const exPl = pickField(row, ['Example PL', 'Ejemplo PL', 'Ejemplo de uso (PL)', 'Przykład (PL)', 'Przyklad (PL)']);
+        const exEs = pickField(row, ['Example ES', 'Ejemplo ES', 'Ejemplo de uso (ES)', 'Przykład (ES)', 'Przyklad (ES)']);
         return { rowNo: idx + 2, pl, es, exPl, exEs, key: hashKey(pl, es, exPl, exEs) };
       })
       .filter((r) => r.pl || r.es || r.exPl || r.exEs);
@@ -403,8 +403,8 @@ function templatePoolForCategory(level, category) {
   const base = [
     { pl: 'To jest {N}.', es: 'Esto es {N}.' },
     { pl: 'Mam {N}.', es: 'Tengo {N}.' },
-    { pl: 'Lubie {N}.', es: 'Me gusta {N}.' },
-    { pl: 'Widze {N}.', es: 'Veo {N}.' },
+    { pl: 'Lubię {N}.', es: 'Me gusta {N}.' },
+    { pl: 'Widzę {N}.', es: 'Veo {N}.' },
   ];
 
   if (category === 'ADJ') {
@@ -413,7 +413,7 @@ function templatePoolForCategory(level, category) {
   if (category === 'PLACE') {
     return [
       { pl: 'Jestem z {N}.', es: 'Soy de {N}.' },
-      { pl: 'Ide do {N}.', es: 'Voy a {N}.' },
+      { pl: 'Idę do {N}.', es: 'Voy a {N}.' },
     ];
   }
 
@@ -511,9 +511,9 @@ function instructionEsForVariant(variant) {
     return 'Completa la frase.';
   }
   if (key.includes('multiple_choice') || key.includes('listen_choose') || key.includes('true_false')) {
-    return 'Elige la opcion correcta.';
+    return 'Elige la opción correcta.';
   }
-  return 'Elige la opcion correcta.';
+  return 'Elige la opción correcta.';
 }
 
 function inferPartOfSpeech(word) {
@@ -784,7 +784,7 @@ function buildWordBasedCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'multiple_choice_es_pl',
-      prompt: `Jak po polsku: "${row.es}"?`,
+      prompt: `¿Cómo se dice en polaco: "${row.es}"?`,
       options: mcqEsPl.options,
       answer: { correctOptionId: mcqEsPl.correctOptionId },
     }),
@@ -798,7 +798,7 @@ function buildWordBasedCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'multiple_choice_pl_es',
-      prompt: `Jak po hiszpansku: "${row.pl}"?`,
+      prompt: `¿Cómo se dice en español: "${row.pl}"?`,
       options: mcqPlEs.options,
       answer: { correctOptionId: mcqPlEs.correctOptionId },
     }),
@@ -813,10 +813,10 @@ function buildWordBasedCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'true_false_translation',
-      prompt: `"${row.pl}" = "${falseCase ? wrongEs : row.es}" ?`,
+      prompt: `¿"${row.pl}" significa "${falseCase ? wrongEs : row.es}"?`,
       options: [
-        { id: 'a', text: 'Prawda' },
-        { id: 'b', text: 'Falsz' },
+        { id: 'a', text: 'Verdadero' },
+        { id: 'b', text: 'Falso' },
       ],
       answer: { correctOptionId: falseCase ? 'b' : 'a' },
     }),
@@ -829,7 +829,7 @@ function buildWordBasedCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'type_translation_es_pl',
-      prompt: `Wpisz po polsku: "${row.es}".`,
+      prompt: `Escribe en polaco: "${row.es}".`,
       answer: { accepted: uniqList([row.pl]) },
     }),
   );
@@ -841,7 +841,7 @@ function buildWordBasedCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'type_translation_pl_es',
-      prompt: `Wpisz po hiszpansku: "${row.pl}".`,
+      prompt: `Escribe en español: "${row.pl}".`,
       answer: { accepted: uniqList([row.es]) },
     }),
   );
@@ -858,7 +858,7 @@ function buildWordBasedCandidates(ctx, row, index) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'sentence_meaning_choice',
-        prompt: `Znaczenie zdania: "${ensureSentence(row.exPl)}"`,
+        prompt: `Elige el significado en español: "${ensureSentence(row.exPl)}"`,
         options: sentenceOpt.options,
         answer: { correctOptionId: sentenceOpt.correctOptionId },
         sourceExample: ensureSentence(row.exPl),
@@ -874,7 +874,7 @@ function buildWordBasedCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'dictation_word',
-      prompt: sentence.audioSentencePl || 'Zapisz slowo, ktore slyszysz.',
+      prompt: sentence.audioSentencePl || 'Escucha y escribe la palabra.',
       answer: { accepted: uniqList([row.pl]), typoTolerance: 1 },
       audio: sentence.audioSentencePl || row.pl,
     }),
@@ -888,7 +888,7 @@ function buildWordBasedCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'listen_choose',
-      prompt: 'Posluchaj i wybierz poprawne slowo.',
+      prompt: 'Escucha y elige la palabra correcta.',
       options: listenOpt.options,
       answer: { correctOptionId: listenOpt.correctOptionId },
       audio: sentence.audioSentencePl || row.pl,
@@ -904,10 +904,10 @@ function buildWordBasedCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'audio_true_false',
-      prompt: tfFalse ? `Czy slyszysz: "${falseWord}"?` : `Czy slyszysz: "${row.pl}"?`,
+      prompt: tfFalse ? `¿Escuchas: "${falseWord}"?` : `¿Escuchas: "${row.pl}"?`,
       options: [
-        { id: 'a', text: 'Prawda' },
-        { id: 'b', text: 'Falsz' },
+        { id: 'a', text: 'Verdadero' },
+        { id: 'b', text: 'Falso' },
       ],
       answer: { correctOptionId: tfFalse ? 'b' : 'a' },
       audio: sentence.audioSentencePl || row.pl,
@@ -943,7 +943,7 @@ function buildExampleCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'pick_correct_sentence',
-      prompt: `Wybierz poprawne zdanie dla: "${exEs || row.es}"`,
+      prompt: `Elige la frase correcta para: "${exEs || row.es}"`,
       options: pickSentence.options,
       answer: { correctOptionId: pickSentence.correctOptionId },
     }),
@@ -956,7 +956,7 @@ function buildExampleCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'word_tiles_sentence',
-      prompt: 'Uloz zdanie z kafelkow.',
+      prompt: 'Ordena las palabras para formar la frase.',
       options: tokens,
       answer: { accepted: [exPl] },
     }),
@@ -969,7 +969,7 @@ function buildExampleCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'reorder_words_sentence',
-      prompt: 'Uloz zdanie we wlasciwej kolejnosci.',
+      prompt: 'Ordena la frase en el orden correcto.',
       options: shuffleDeterministic(tokens, index + 59),
       answer: { accepted: [exPl] },
     }),
@@ -985,7 +985,7 @@ function buildExampleCandidates(ctx, row, index) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'fill_blank_word_bank',
-        prompt: `Uzupelnij z banku: ${blank}`,
+        prompt: `Completa usando el banco de palabras: ${blank}`,
         options: bank,
         answer: { acceptedByBlank: [[row.pl]] },
         audio: exPl,
@@ -1009,7 +1009,7 @@ function buildExampleCandidates(ctx, row, index) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'type_missing_word',
-        prompt: `${blank} (jedno slowo)`,
+        prompt: `${blank} (una palabra)`,
         answer: { acceptedByBlank: [[row.pl]] },
       }),
     );
@@ -1022,7 +1022,7 @@ function buildExampleCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'dictation_sentence',
-      prompt: 'Posluchaj i zapisz zdanie.',
+      prompt: 'Escucha y escribe la frase.',
       answer: { accepted: [exPl], typoTolerance: 1 },
       audio: exPl,
     }),
@@ -1051,7 +1051,7 @@ function buildExampleCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'rewrite_sentence_simple',
-      prompt: `Napisz podobne zdanie: "${exPl}"`,
+      prompt: `Escribe una frase similar: "${exPl}"`,
       answer: '',
     }),
   );
@@ -1071,9 +1071,19 @@ function buildExampleCandidates(ctx, row, index) {
     }),
   );
 
-  const reply = ensureSentence(row.exEs || row.es || row.pl);
+  const dialoguePoolPl = shuffleDeterministic(
+    ctx.rows.map((x) => ensureSentence(x.exPl || x.pl)).filter(Boolean),
+    index + 71,
+  );
+  const reply =
+    dialoguePoolPl.find((x) => normalizeText(x) !== normalizeText(exPl)) || ensureSentence(row.exPl || row.pl);
+  const distractReply =
+    dialoguePoolPl.find(
+      (x) =>
+        normalizeText(x) !== normalizeText(reply) && normalizeText(x) !== normalizeText(exPl),
+    ) || exPl;
   const dlgOpt = optionItemsFromTexts(
-    [reply, shuffleDeterministic(ctx.rows.map((x) => ensureSentence(x.exEs || x.es || x.pl)).filter(Boolean), index + 71)[0] || reply],
+    [reply, distractReply],
     reply,
   );
   out.push(
@@ -1098,7 +1108,7 @@ function buildExampleCandidates(ctx, row, index) {
       variant: 'complete_dialogue',
       prompt: `A: ${exPl}\nB: ___`,
       answer: { acceptedByBlank: [[reply]] },
-      target: { pl: reply, es: row.es },
+      target: { pl: reply, es: row.exEs || row.es },
     }),
   );
 
@@ -1111,15 +1121,20 @@ function buildExampleCandidates(ctx, row, index) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'dialogue_tiles_reply',
-        prompt: 'Uloz odpowiedz w dialogu.',
+        prompt: 'Ordena la respuesta del diálogo.',
         options: shuffleDeterministic(replyTokens, index + 73),
         answer: { accepted: [replyTokens.join(' ')] },
-        target: { pl: replyTokens.join(' '), es: row.es },
+        target: { pl: replyTokens.join(' '), es: row.exEs || row.es },
       }),
     );
   }
 
-  const lines = [`A: ${reply}`, `B: ${exPl}`, `A: ${reply}`];
+  const thirdLine = dialoguePoolPl.find(
+    (x) => normalizeText(x) !== normalizeText(reply) && normalizeText(x) !== normalizeText(exPl),
+  );
+  const lines = thirdLine
+    ? [`A: ${exPl}`, `B: ${reply}`, `A: ${thirdLine}`]
+    : [`A: ${exPl}`, `B: ${reply}`];
   out.push(
     makeExerciseBase({
       ...rowMeta,
@@ -1127,10 +1142,10 @@ function buildExampleCandidates(ctx, row, index) {
       topicId: ctx.topic.topicId,
       topicSlug: ctx.topic.topicSlug,
       variant: 'reorder_dialogue_lines',
-      prompt: 'Uloz linie dialogu.',
+      prompt: 'Ordena las líneas del diálogo.',
       options: shuffleDeterministic(lines, index + 79),
       answer: { accepted: [lines.join(' ')] },
-      target: { pl: lines.join(' '), es: row.es },
+      target: { pl: lines.join(' '), es: row.exEs || row.es },
     }),
   );
 
@@ -1143,19 +1158,37 @@ function buildMatchingCandidates(ctx) {
     pairs
       .map((_, idx) => `${String.fromCharCode(65 + (idx % 26))}-${idx + 1}`)
       .join(',');
+  const uniqPairs = (pairs = []) => {
+    const usedLeft = new Set();
+    const usedRight = new Set();
+    const clean = [];
+    for (const pair of pairs) {
+      const left = safeCell(pair?.left);
+      const right = safeCell(pair?.right);
+      if (!left || !right) continue;
+      const leftKey = normalizeText(left);
+      const rightKey = normalizeText(right);
+      if (!leftKey || !rightKey) continue;
+      if (usedLeft.has(leftKey) || usedRight.has(rightKey)) continue;
+      usedLeft.add(leftKey);
+      usedRight.add(rightKey);
+      clean.push({ left, right });
+    }
+    return clean;
+  };
   const rows = ctx.rows.filter((r) => r.pl && r.es);
   for (let i = 0; i < rows.length; i += 8) {
     const slice = rows.slice(i, i + 8);
-    if (slice.length < 3) continue;
+    const pairs = uniqPairs(slice.map((r) => ({ left: r.pl, right: r.es }))).slice(0, 8);
+    if (pairs.length < 3) continue;
     const first = slice[0] || {};
-    const pairs = slice.map((r) => ({ left: r.pl, right: r.es }));
     out.push(
       makeExerciseBase({
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'matching_pairs_es_pl',
-        prompt: `Dopasuj polski do hiszpanskiego. (${Math.floor(i / 8) + 1})`,
+        prompt: `Relaciona polaco con español. (${Math.floor(i / 8) + 1})`,
         pairs,
         answer: pairAnswer(pairs),
         sourceWord: first.pl || '',
@@ -1166,19 +1199,21 @@ function buildMatchingCandidates(ctx) {
       }),
     );
   }
-  const exRows = ctx.rows.filter((r) => r.exPl && r.pl);
+  const exRows = ctx.rows.filter((r) => r.exPl && r.exEs);
   for (let i = 0; i < exRows.length; i += 6) {
     const slice = exRows.slice(i, i + 6);
-    if (slice.length < 3) continue;
     const first = slice[0] || {};
-    const pairsA = slice.map((r) => ({ left: ensureSentence(r.exPl), right: r.pl }));
+    const pairsA = uniqPairs(
+      slice.map((r) => ({ left: ensureSentence(r.exPl), right: ensureSentence(r.exEs) })),
+    ).slice(0, 6);
+    if (pairsA.length < 3) continue;
     out.push(
       makeExerciseBase({
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'matching_example_to_word',
-        prompt: `Dopasuj zdanie do slowa. (${Math.floor(i / 6) + 1})`,
+        prompt: `Relaciona frase en polaco con su traducción en español. (${Math.floor(i / 6) + 1})`,
         pairs: pairsA,
         answer: pairAnswer(pairsA),
         sourceWord: first.pl || '',
@@ -1188,15 +1223,17 @@ function buildMatchingCandidates(ctx) {
         seedIndex: i + 1,
       }),
     );
+    const pairsB = uniqPairs(slice.map((r) => ({ left: r.es, right: r.pl }))).slice(0, 6);
+    if (pairsB.length < 3) continue;
     out.push(
       makeExerciseBase({
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'matching_word_to_example',
-        prompt: `Dopasuj slowo do zdania. (${Math.floor(i / 6) + 1})`,
-        pairs: slice.map((r) => ({ left: r.pl, right: ensureSentence(r.exPl) })),
-        answer: pairAnswer(slice),
+        prompt: `Relaciona español con polaco. (${Math.floor(i / 6) + 1})`,
+        pairs: pairsB,
+        answer: pairAnswer(pairsB),
         sourceWord: first.pl || '',
         sourceTranslation: first.es || '',
         sourceExample: first.exPl || '',
@@ -1230,14 +1267,16 @@ function buildGrammarCandidates(ctx) {
 
   posData.forEach((item, idx) => {
     const distractors = shuffleDeterministic(PARTS_OF_SPEECH.filter((p) => p !== item.pos), idx + 101).slice(0, 3);
-    const opt = optionItemsFromTexts([item.pos, ...distractors], item.pos);
+    const posLabel = partOfSpeechLabelEs(item.pos);
+    const distractorLabels = distractors.map((p) => partOfSpeechLabelEs(p));
+    const opt = optionItemsFromTexts([posLabel, ...distractorLabels], posLabel);
     out.push(
       makeExerciseBase({
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'identify_part_of_speech',
-        prompt: `Jaka to czesc mowy: "${item.word}"?`,
+        prompt: `¿Qué parte de la oración es "${item.word}"?`,
         options: opt.options,
         answer: { correctOptionId: opt.correctOptionId },
         sourceWord: item.word,
@@ -1248,16 +1287,17 @@ function buildGrammarCandidates(ctx) {
 
     const wrongPos = shuffleDeterministic(PARTS_OF_SPEECH.filter((p) => p !== item.pos), idx + 103)[0] || item.pos;
     const falseCase = idx % 2 === 0;
+    const wrongLabel = partOfSpeechLabelEs(wrongPos);
     out.push(
       makeExerciseBase({
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'pos_true_false',
-        prompt: `Czy "${item.word}" to ${falseCase ? wrongPos : item.pos}?`,
+        prompt: `¿"${item.word}" es ${falseCase ? wrongLabel : posLabel}?`,
         options: [
-          { id: 'a', text: 'Prawda' },
-          { id: 'b', text: 'Falsz' },
+          { id: 'a', text: 'Verdadero' },
+          { id: 'b', text: 'Falso' },
         ],
         answer: { correctOptionId: falseCase ? 'b' : 'a' },
         sourceWord: item.word,
@@ -1269,15 +1309,23 @@ function buildGrammarCandidates(ctx) {
 
   for (let i = 0; i < posData.length; i += 6) {
     const slice = posData.slice(i, i + 6);
-    if (slice.length < 3) continue;
+    const seenPos = new Set();
+    const pairs = [];
+    for (const item of slice) {
+      const posLabel = partOfSpeechLabelEs(item.pos);
+      if (!item?.word || !posLabel || seenPos.has(posLabel)) continue;
+      seenPos.add(posLabel);
+      pairs.push({ left: item.word, right: posLabel });
+    }
+    if (pairs.length < 3) continue;
     out.push(
       makeExerciseBase({
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'part_of_speech_matching',
-        prompt: 'Dopasuj slowo do czesci mowy.',
-        pairs: slice.map((x) => ({ left: x.word, right: x.pos })),
+        prompt: 'Relaciona la palabra con su clase gramatical.',
+        pairs,
         sourceWord: slice[0]?.word || '',
         sourceTranslation: translationByWord.get(slice[0]?.word || '') || '',
         seedIndex: i + 2,
@@ -1286,7 +1334,7 @@ function buildGrammarCandidates(ctx) {
   }
 
   posData.slice(0, 20).forEach((item, idx) => {
-    const sentence = `${['To jest', 'Mam', 'Lubie', 'Ide do', 'Jestem w'][idx % 5]} ${item.word}.`;
+    const sentence = `${['To jest', 'Mam', 'Lubię', 'Idę do', 'Jestem w'][idx % 5]} ${item.word}.`;
     const sameClass = shuffleDeterministic(
       posData.filter((x) => x.pos === item.pos && x.word !== item.word).map((x) => x.word),
       idx + 127,
@@ -1302,7 +1350,7 @@ function buildGrammarCandidates(ctx) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'highlight_part_of_speech',
-        prompt: `Wybierz ${item.pos} w zdaniu: "${sentence}"`,
+        prompt: `Elige el/la ${partOfSpeechLabelEs(item.pos)} en la frase: "${sentence}"`,
         options: opt.options,
         answer: { correctOptionId: opt.correctOptionId },
         sourceWord: item.word,
@@ -1317,7 +1365,7 @@ function buildGrammarCandidates(ctx) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'choose_correct_word_class',
-        prompt: `Wybierz slowo tej samej klasy (${item.pos}): "${sentence}"`,
+        prompt: `Elige una palabra de la misma clase (${partOfSpeechLabelEs(item.pos)}): "${sentence}"`,
         options: opt.options,
         answer: { correctOptionId: opt.correctOptionId },
         sourceWord: item.word,
@@ -1332,7 +1380,7 @@ function buildGrammarCandidates(ctx) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'simple_grammar_fill_blank',
-        prompt: `${sentence.replace(item.word, '___')} (${item.pos})`,
+        prompt: `${sentence.replace(item.word, '___')} (${partOfSpeechLabelEs(item.pos)})`,
         options: uniqList([item.word, sameClass, ...distract]).slice(0, 4),
         answer: { acceptedByBlank: [[item.word]] },
         sourceWord: item.word,
@@ -1358,7 +1406,7 @@ function buildMixedTestCandidates(ctx) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'quick_quiz',
-        prompt: `Quick quiz: "${row.es}"`,
+        prompt: `Quiz rápido: "${row.es}"`,
         options: quick.options,
         answer: { correctOptionId: quick.correctOptionId },
         sourceWord: row.pl,
@@ -1375,7 +1423,7 @@ function buildMixedTestCandidates(ctx) {
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
         variant: 'boss_mixed_test',
-        prompt: `Boss: jak po polsku "${row.es}"?`,
+        prompt: `Test final: ¿cómo se dice en polaco "${row.es}"?`,
         options: boss.options,
         answer: { correctOptionId: boss.correctOptionId },
         sourceWord: row.pl,
@@ -1962,6 +2010,64 @@ function buildTopicPackage(level, sheet, topic, seedSource, seedVersion) {
   };
 }
 
+function mergeSheetsByTopic(level, sheets = [], topics = []) {
+  const groups = new Map();
+  for (const sheet of sheets || []) {
+    const topic = mapSheetToTopic(sheet, topics, level);
+    const topicId = safeCell(topic?.topicId || topic?.topicSlug || sheet?.slugHint || '');
+    const topicSlug = safeCell(topic?.topicSlug || topicId);
+    const key = `${String(level || '').toUpperCase()}__${topicSlug || topicId}`;
+    if (!key.trim()) continue;
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        topic: {
+          ...topic,
+          topicId,
+          topicSlug,
+          topicTitle: safeCell(topic?.topicTitle || topicSlug || topicId),
+          unresolved: topic?.unresolved === true,
+          score: Number(topic?.score || 0),
+        },
+        rows: [],
+        rowKeys: new Set(),
+        sheetNames: [],
+      });
+    }
+
+    const entry = groups.get(key);
+    entry.sheetNames.push(String(sheet?.name || '').trim());
+
+    const incomingScore = Number(topic?.score || 0);
+    if (incomingScore > Number(entry.topic.score || 0)) {
+      entry.topic.topicTitle = safeCell(topic?.topicTitle || entry.topic.topicTitle);
+      entry.topic.score = incomingScore;
+    }
+    if (topic?.unresolved === false) entry.topic.unresolved = false;
+
+    for (const row of sheet?.rows || []) {
+      const dedupeKey = safeCell(row?.key || hashKey(row?.pl, row?.es, row?.exPl, row?.exEs));
+      if (!dedupeKey) continue;
+      if (entry.rowKeys.has(dedupeKey)) continue;
+      entry.rowKeys.add(dedupeKey);
+      entry.rows.push(row);
+    }
+  }
+
+  return Array.from(groups.values())
+    .map((entry, idx) => ({
+      index: idx,
+      topic: entry.topic,
+      sheet: {
+        name: entry.sheetNames.filter(Boolean).join(' + ') || entry.topic.topicSlug || `topic-${idx + 1}`,
+        strippedName: entry.topic.topicTitle || entry.topic.topicSlug || '',
+        slugHint: entry.topic.topicSlug || entry.topic.topicId || '',
+        rows: entry.rows,
+      },
+    }))
+    .filter((entry) => (entry.sheet?.rows || []).length > 0);
+}
+
 export function generateLevelFromWorkbook({
   XLSX,
   workbook,
@@ -1975,10 +2081,10 @@ export function generateLevelFromWorkbook({
   const parsed = parseWorkbookSheets(XLSX, workbook, { levelHint, fileName });
   const level = parsed.level;
   const sheets = Number(topicLimit) > 0 ? parsed.sheets.slice(0, Number(topicLimit)) : parsed.sheets;
-  const topicPackages = sheets.map((sheet) => {
-    const topic = mapSheetToTopic(sheet, topics, level);
-    return buildTopicPackage(level, sheet, topic, seedSource, seedVersion);
-  });
+  const merged = mergeSheetsByTopic(level, sheets, topics);
+  const topicPackages = merged.map(({ sheet, topic }) =>
+    buildTopicPackage(level, sheet, topic, seedSource, seedVersion),
+  );
 
   const lessons = [];
   const modules = [];

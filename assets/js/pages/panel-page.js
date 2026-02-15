@@ -610,7 +610,7 @@ async function renderCourses(userDoc, flags) {
   const host = $('coursesCards');
   if (!host) return;
 
-  const catalog = await loadCourseCatalog();
+  const catalog = auth.currentUser ? await loadCourseCatalog() : [];
   const fallbackCatalog = [
     {
       id: SINGLE_COURSE_KEY,

@@ -1261,14 +1261,6 @@ async function loadTopics(user) {
         .find(Boolean);
       if (subtitle && firstTitle) subtitle.textContent = firstTitle;
     }
-
-    if (!routeTopics.length) {
-      for (const lvl of LEVEL_ORDER) {
-        const selected = await loadTopicsForLevel(lvl);
-        const mixed = buildMixedRoute(selected).map((t) => ({ ...t, __routeLevel: lvl }));
-        routeTopics.push(...mixed);
-      }
-    }
   } else {
     const unlockedLevels = await computeUnlockedLevels(user.uid, flags, progressMap, { previewOnly });
     applyLevelButtonVisibility(unlockedLevels);

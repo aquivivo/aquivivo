@@ -42,7 +42,10 @@ service cloud.firestore {
     }
 
     function notBlocked() {
-      return hasUserDoc() && userDoc().blocked != true;
+      return signedIn() && (
+        !hasUserDoc()
+        || userDoc().blocked != true
+      );
     }
 
     // "Globalny" dostęp (premium / access=true / trial accessUntil)
@@ -235,26 +238,64 @@ service cloud.firestore {
 
     /* ===== COURSES (lista tematów) ===== */
     match /courses/{docId} {
-      allow read: if signedIn()
+      allow read: if isAdmin() || (
+        signedIn()
         && notBlocked()
         && (
           hasGlobalAccess()
           || hasLevel(resource.data.level)
           || resource.data.level == "A1"
-        );
+        )
+      );
       allow write: if isAdmin();
     }
 
-    /* ===== COURSE META (treść lekcji) =====
+    
+    /* ===== COURSE PATHS ===== */
+    match /course_paths/{docId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    /* ===== MODULES ===== */
+    match /modules/{docId} {
+      allow read: if isAdmin() || (
+        signedIn()
+        && notBlocked()
+        && (
+          (("level" in resource.data) && canReadLevel(resource.data.level))
+          || (("level" in resource.data) && resource.data.level == "A1")
+          || !("level" in resource.data)
+        )
+      );
+      allow write: if isAdmin();
+    }
+
+    /* ===== LESSONS ===== */
+    match /lessons/{docId} {
+      allow read: if isAdmin() || (
+        signedIn()
+        && notBlocked()
+        && (
+          (("level" in resource.data) && canReadLevel(resource.data.level))
+          || (("level" in resource.data) && resource.data.level == "A1")
+          || !("level" in resource.data)
+        )
+      );
+      allow write: if isAdmin();
+    }
+
+/* ===== COURSE META (treść lekcji) =====
        docId: "A1__slug" / "A2__slug" / "B1__slug" / "B2__slug"
     */
     match /course_meta/{docId} {
-      allow read: if signedIn() && notBlocked() && (
-        isAdmin()
-        || (docId.matches("^A1__.*") && canReadLevel("A1"))
-        || (docId.matches("^A2__.*") && canReadLevel("A2"))
-        || (docId.matches("^B1__.*") && canReadLevel("B1"))
-        || (docId.matches("^B2__.*") && canReadLevel("B2"))
+      allow read: if isAdmin() || (
+        signedIn() && notBlocked() && (
+          (docId.matches("^A1__.*"))
+          || (docId.matches("^A2__.*") && canReadLevel("A2"))
+          || (docId.matches("^B1__.*") && canReadLevel("B1"))
+          || (docId.matches("^B2__.*") && canReadLevel("B2"))
+        )
       );
 
       allow write: if isAdmin();
@@ -264,9 +305,11 @@ service cloud.firestore {
        Każdy exercise doc powinien mieć pole: level: "A1"/"A2"/"B1"/"B2"
     */
     match /exercises/{id} {
-      allow read: if signedIn() && notBlocked() && (
-        isAdmin()
-        || (("level" in resource.data) && canReadLevel(resource.data.level))
+      allow read: if isAdmin() || (
+        signedIn() && notBlocked() && (
+          (("level" in resource.data) && canReadLevel(resource.data.level))
+          || (("level" in resource.data) && resource.data.level == "A1")
+        )
       );
 
       allow write: if isAdmin();

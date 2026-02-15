@@ -599,7 +599,7 @@ function lessonHrefForRoute(level, topicId, lessonId) {
 function versionsHrefForRoute(level, topicId, lessonId) {
   const lvl = String(level || LEVEL).toUpperCase();
   const topic = String(topicId || COURSE_ID).trim();
-  let href = `versions.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}`;
+  let href = `ejercicio.html?level=${encodeURIComponent(lvl)}&id=${encodeURIComponent(topic)}`;
   if (lessonId) href += `&lessonId=${encodeURIComponent(String(lessonId))}`;
   href += navParams();
   return href;
@@ -660,11 +660,14 @@ async function loadTopicModuleWithLessons(level, topicId, topicSlug = '') {
   if (lvl && normalizedSlug) pushModuleId(`${lvl}__${normalizedSlug}__MODULE`);
   if (lvl && topic && topic !== normalizedSlug) pushModuleId(`${lvl}__${topic}__MODULE`);
 
+  const baseCoursePathIds = [COURSE_KEY, SINGLE_COURSE_KEY, 'COURSE_PATH']
+    .map((x) => String(x || '').trim())
+    .filter(Boolean);
   const coursePathIds = Array.from(
     new Set(
-      [COURSE_KEY, SINGLE_COURSE_KEY, 'COURSE_PATH']
-        .map((x) => String(x || '').trim())
-        .filter(Boolean),
+      baseCoursePathIds.flatMap((id) =>
+        lvl ? [id, `${lvl}__${id}`] : [id],
+      ),
     ),
   );
 
@@ -693,13 +696,43 @@ async function loadTopicModuleWithLessons(level, topicId, topicSlug = '') {
   const moduleSnaps = await Promise.all(
     moduleIdCandidates.map((id) => getDoc(doc(db, 'modules', id)).catch(() => null)),
   );
-  const candidates = moduleIdCandidates
+  let candidates = moduleIdCandidates
     .map((id, idx) => {
       const snap = moduleSnaps[idx];
       if (!snap?.exists?.()) return null;
       return { id, ...(snap.data() || {}) };
     })
     .filter(Boolean);
+
+  if (!candidates.length) {
+    const probeQueries = [];
+    if (topic) {
+      probeQueries.push(getDocs(query(collection(db, 'modules'), where('topicId', '==', topic))));
+    }
+    if (normalizedSlug && normalizedSlug !== topic) {
+      probeQueries.push(
+        getDocs(query(collection(db, 'modules'), where('topicSlug', '==', normalizedSlug))),
+      );
+    } else if (normalizedSlug) {
+      probeQueries.push(
+        getDocs(query(collection(db, 'modules'), where('topicSlug', '==', normalizedSlug))),
+      );
+    }
+
+    const probeSnaps = await Promise.all(probeQueries.map((p) => p.catch(() => null)));
+    const seen = new Set();
+    const fromQueries = [];
+    probeSnaps.forEach((snap) => {
+      if (!snap?.docs?.length) return;
+      snap.docs.forEach((d) => {
+        if (!d?.exists?.()) return;
+        if (seen.has(d.id)) return;
+        seen.add(d.id);
+        fromQueries.push({ id: d.id, ...(d.data() || {}) });
+      });
+    });
+    candidates = fromQueries;
+  }
 
   const module = pickBestModuleForTopic(candidates, { level: lvl, topicSlug: normalizedSlug });
   if (!module) return { module: null, lessons: [] };
@@ -1715,12 +1748,27 @@ async function getRouteTopicsForLevel(level) {
   const lvl = String(level || '').toUpperCase();
   if (!lvl) return [];
   try {
-    const snap = await getDocs(
+    let all = [];
+    const orderedSnap = await getDocs(
       query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
     );
-    const all = snap.docs
+    all = orderedSnap.docs
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
       .filter((t) => t.isArchived !== true);
+    if (!all.length) {
+      const plainSnap = await getDocs(query(collection(db, 'courses'), where('level', '==', lvl)));
+      all = plainSnap.docs
+        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+        .filter((t) => t.isArchived !== true)
+        .sort((a, b) => {
+          const ao = Number(a?.order);
+          const bo = Number(b?.order);
+          const da = Number.isFinite(ao) ? ao : Number.POSITIVE_INFINITY;
+          const db = Number.isFinite(bo) ? bo : Number.POSITIVE_INFINITY;
+          if (da !== db) return da - db;
+          return String(a?.id || '').localeCompare(String(b?.id || ''));
+        });
+    }
     const selected = selectCoursesForTrack(all);
     return buildMixedRoute(selected);
   } catch (e) {
