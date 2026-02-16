@@ -1,0 +1,14 @@
+[
+  {
+    "trapPl": "Pierwszeństwo na skrzyżowaniach równorzędnych — pamiętaj, że pojazd z prawej ma pierwszeństwo!",
+    "trapEs": "Prioridad en cruces sin señalizar — ¡recuerda que el vehículo de la derecha tiene prioridad!"
+  },
+  {
+    "trapPl": "Nie myl znaku zakazu wjazdu z zakazem ruchu w obu kierunkach.",
+    "trapEs": "No confundas la señal de prohibido el paso con la de prohibido circular en ambos sentidos."
+  },
+  {
+    "trapPl": "Zawsze patrz na znaki dodatkowe pod głównym znakiem.",
+    "trapEs": "Mira siempre las placas complementarias bajo la señal principal."
+  }
+]

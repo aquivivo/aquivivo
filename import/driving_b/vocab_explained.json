@@ -1,0 +1,137 @@
+[
+  {
+    "category": "Podstawowe pojęcia",
+    "entries": [
+      {
+        "pl": "skrzyżowanie",
+        "es": "cruce",
+        "ex": "Skrzyżowanie dróg",
+        "exEs": "Cruce de caminos",
+        "descPl": "Miejsce przecięcia się dróg.",
+        "descEs": "Lugar donde se cruzan caminos."
+      },
+      {
+        "pl": "pierwszeństwo",
+        "es": "prioridad",
+        "ex": "Mieć pierwszeństwo",
+        "exEs": "Tener prioridad",
+        "descPl": "Prawo do przejazdu przed innymi pojazdami.",
+        "descEs": "Derecho a pasar antes que otros vehículos."
+      },
+      {
+        "pl": "ustąpić pierwszeństwa",
+        "es": "ceder el paso",
+        "ex": "Ustąp pierwszeństwa pieszym",
+        "exEs": "Cede el paso a los peatones",
+        "descPl": "Zatrzymać się i pozwolić innym przejechać.",
+        "descEs": "Detenerse y dejar pasar a otros."
+      },
+      {
+        "pl": "rondo",
+        "es": "rotonda",
+        "ex": "Wjechać na rondo",
+        "exEs": "Entrar en la rotonda",
+        "descPl": "Skrzyżowanie o ruchu okrężnym.",
+        "descEs": "Cruce con circulación giratoria."
+      },
+      {
+        "pl": "sygnalizacja świetlna",
+        "es": "semáforo",
+        "ex": "Czekać na zielone światło",
+        "exEs": "Esperar la luz verde",
+        "descPl": "Urządzenie regulujące ruch za pomocą świateł.",
+        "descEs": "Dispositivo que regula el tráfico con luces."
+      }
+    ]
+  },
+  {
+    "category": "Manewry i ruch drogowy",
+    "entries": [
+      {
+        "pl": "skręcać",
+        "es": "girar",
+        "ex": "Skręć w lewo",
+        "exEs": "Gira a la izquierda",
+        "descPl": "Zmienić kierunek jazdy.",
+        "descEs": "Cambiar la dirección de la marcha."
+      },
+      {
+        "pl": "zawracać",
+        "es": "dar la vuelta",
+        "ex": "Zawracaj na skrzyżowaniu",
+        "exEs": "Da la vuelta en el cruce",
+        "descPl": "Zmienić kierunek o 180 stopni.",
+        "descEs": "Cambiar la dirección en 180 grados."
+      },
+      {
+        "pl": "cofać",
+        "es": "marchar atrás",
+        "ex": "Cofnij powoli",
+        "exEs": "Da marcha atrás despacio",
+        "descPl": "Poruszać się pojazdem do tyłu.",
+        "descEs": "Mover el vehículo hacia atrás."
+      },
+      {
+        "pl": "zmieniać pas",
+        "es": "cambiar de carril",
+        "ex": "Zmień pas na prawy",
+        "exEs": "Cambia al carril derecho",
+        "descPl": "Przejść na inny pas ruchu.",
+        "descEs": "Pasar a otro carril de circulación."
+      },
+      {
+        "pl": "wyprzedzać",
+        "es": "adelantar",
+        "ex": "Wyprzedź rowerzystę",
+        "exEs": "Adelanta al ciclista",
+        "descPl": "Przejechać obok innego pojazdu w tym samym kierunku.",
+        "descEs": "Pasar a otro vehículo en la misma dirección."
+      }
+    ]
+  },
+  {
+    "category": "Bezpieczeństwo i wyposażenie",
+    "entries": [
+      {
+        "pl": "pasy bezpieczeństwa",
+        "es": "cinturón de seguridad",
+        "ex": "Zapinaj pasy",
+        "exEs": "Ponte el cinturón",
+        "descPl": "Pas chroniący przed skutkami wypadku.",
+        "descEs": "Cinturón que protege en caso de accidente."
+      },
+      {
+        "pl": "fotelik dziecięcy",
+        "es": "silla infantil",
+        "ex": "Dziecko w foteliku",
+        "exEs": "Niño en silla infantil",
+        "descPl": "Siedzenie dla dziecka zapewniające bezpieczeństwo.",
+        "descEs": "Asiento para niños que garantiza seguridad."
+      },
+      {
+        "pl": "trójkąt ostrzegawczy",
+        "es": "triángulo de emergencia",
+        "ex": "Ustaw trójkąt za pojazdem",
+        "exEs": "Coloca el triángulo detrás del vehículo",
+        "descPl": "Urządzenie ostrzegające o awarii.",
+        "descEs": "Dispositivo de advertencia de avería."
+      },
+      {
+        "pl": "apteczka",
+        "es": "botiquín",
+        "ex": "Sprawdź apteczkę",
+        "exEs": "Revisa el botiquín",
+        "descPl": "Zestaw pierwszej pomocy.",
+        "descEs": "Kit de primeros auxilios."
+      },
+      {
+        "pl": "ubezpieczenie OC",
+        "es": "seguro de responsabilidad civil",
+        "ex": "Miej ważne OC",
+        "exEs": "Ten un seguro válido",
+        "descPl": "Ubezpieczenie obowiązkowe pojazdu.",
+        "descEs": "Seguro obligatorio del vehículo."
+      }
+    ]
+  }
+]

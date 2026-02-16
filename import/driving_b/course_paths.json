@@ -1,0 +1,21 @@
+[
+  {
+    "id": "DRIVING_B",
+    "title": "Prawo jazdy kat. B (PL→ES)",
+    "name": "Prawo jazdy kat. B (PL→ES)",
+    "moduleIds": [
+      "DRIVING_B_M1",
+      "DRIVING_B_M2",
+      "DRIVING_B_M3",
+      "DRIVING_B_M4",
+      "DRIVING_B_M5",
+      "DRIVING_B_M6",
+      "DRIVING_B_M7",
+      "DRIVING_B_M8",
+      "DRIVING_B_M9",
+      "DRIVING_B_M10",
+      "DRIVING_B_M11",
+      "DRIVING_B_M12"
+    ]
+  }
+]

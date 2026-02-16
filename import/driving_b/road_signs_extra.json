@@ -1,0 +1,92 @@
+[
+  {
+    "type": "ostrzeżenie",
+    "pl": "Przejazd kolejowy bez zapór",
+    "es": "Paso a nivel sin barrera",
+    "descPl": "Ostrzega o przejeździe kolejowym bez zapór.",
+    "descEs": "Advierte de un paso a nivel sin barrera.",
+    "unicode": "🚂",
+    "uwaga": "Zwolnij i upewnij się, czy nie nadjeżdża pociąg. Siempre hay que detenerse si se acerca un tren."
+  },
+  {
+    "type": "ostrzeżenie",
+    "pl": "Dzieci na drodze",
+    "es": "Niños en la calzada",
+    "descPl": "Ostrzega o miejscu, gdzie mogą pojawić się dzieci.",
+    "descEs": "Advierte de la posible presencia de niños en la vía.",
+    "unicode": "🚸",
+    "uwaga": "Zachowaj szczególną ostrożność w pobliżu szkół. Precaución especial cerca de escuelas."
+  },
+  {
+    "type": "zakaz",
+    "pl": "Zakaz ruchu w obu kierunkach",
+    "es": "Prohibido el paso en ambos sentidos",
+    "descPl": "Zabrania ruchu pojazdów w obu kierunkach.",
+    "descEs": "Prohíbe la circulación en ambos sentidos.",
+    "unicode": "🚫",
+    "uwaga": "Nie wjeżdżaj pod żaden pozorem. No entrar bajo ningún concepto."
+  },
+  {
+    "type": "zakaz",
+    "pl": "Zakaz postoju",
+    "es": "Prohibido estacionar",
+    "descPl": "Zabrania postoju pojazdów.",
+    "descEs": "Prohíbe estacionar vehículos.",
+    "unicode": "🛑",
+    "uwaga": "Możesz się zatrzymać tylko na chwilę (np. wysadzić pasażera). Solo parada momentánea permitida."
+  },
+  {
+    "type": "nakaz",
+    "pl": "Nakaz jazdy z prawej strony znaku",
+    "es": "Obligación de pasar por la derecha",
+    "descPl": "Nakazuje przejazd z prawej strony znaku.",
+    "descEs": "Obliga a pasar por la derecha de la señal.",
+    "unicode": "➡️",
+    "uwaga": "Nie wolno przejeżdżać z lewej strony. Prohibido pasar por la izquierda."
+  },
+  {
+    "type": "informacyjny",
+    "pl": "Droga bez przejazdu",
+    "es": "Calle sin salida",
+    "descPl": "Informuje, że droga nie ma wyjazdu.",
+    "descEs": "Indica que la calle no tiene salida.",
+    "unicode": "⛔",
+    "uwaga": "Uwaga na konieczność zawrócenia. Atención: hay que dar la vuelta."
+  },
+  {
+    "type": "ostrzeżenie",
+    "pl": "Śliska jezdnia",
+    "es": "Calzada resbaladiza",
+    "descPl": "Ostrzega o możliwości poślizgu na jezdni.",
+    "descEs": "Advierte de la posibilidad de deslizamiento en la calzada.",
+    "unicode": "💧",
+    "uwaga": "Dostosuj prędkość do warunków. Ajusta la velocidad a las condiciones."
+  },
+  {
+    "type": "ostrzeżenie",
+    "pl": "Roboty drogowe",
+    "es": "Obras en la carretera",
+    "descPl": "Ostrzega o pracach drogowych.",
+    "descEs": "Advierte de obras en la carretera.",
+    "unicode": "🚧",
+    "uwaga": "Zachowaj ostrożność, mogą być zmiany organizacji ruchu. Precaución: posibles cambios en la circulación."
+  },
+  {
+    "type": "informacyjny",
+    "pl": "Stacja benzynowa",
+    "es": "Gasolinera",
+    "descPl": "Informuje o miejscu tankowania paliwa.",
+    "descEs": "Indica un lugar para repostar combustible.",
+    "unicode": "⛽",
+    "uwaga": "Sprawdź rodzaj paliwa. Verifica el tipo de combustible."
+  },
+  {
+    "type": "informacyjny",
+    "pl": "Przystanek autobusowy",
+    "es": "Parada de autobús",
+    "descPl": "Informuje o miejscu zatrzymania autobusów.",
+    "descEs": "Indica un lugar donde paran los autobuses.",
+    "unicode": "🚌",
+    "uwaga": "Nie zatrzymuj się na przystanku. Prohibido parar en la parada."
+  }
+]

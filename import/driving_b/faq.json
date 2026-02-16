@@ -1,0 +1,20 @@
+[
+  {
+    "questionPl": "Czy można zawracać na skrzyżowaniu z sygnalizacją?",
+    "questionEs": "¿Se puede dar la vuelta en un cruce con semáforo?",
+    "answerPl": "Tylko jeśli nie zabrania tego znak lub sygnalizacja.",
+    "answerEs": "Solo si no lo prohíbe una señal o el semáforo."
+  },
+  {
+    "questionPl": "Jakie dokumenty musisz mieć przy sobie podczas jazdy?",
+    "questionEs": "¿Qué documentos debes llevar al conducir?",
+    "answerPl": "Prawo jazdy, dowód rejestracyjny, ubezpieczenie OC.",
+    "answerEs": "Carnet de conducir, permiso de circulación, seguro obligatorio."
+  },
+  {
+    "questionPl": "Czy można korzystać z telefonu podczas jazdy?",
+    "questionEs": "¿Se puede usar el móvil mientras se conduce?",
+    "answerPl": "Nie, chyba że używasz zestawu głośnomówiącego.",
+    "answerEs": "No, salvo que uses manos libres."
+  }
+]

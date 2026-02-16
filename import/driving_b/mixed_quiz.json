@@ -1,0 +1,50 @@
+[
+  {
+    "type": "tak_nie",
+    "question": "Czy na skrzyżowaniu bez znaków pierwszeństwo ma pojazd z prawej strony?",
+    "questionEs": "¿En un cruce sin señales tiene prioridad el vehículo de la derecha?",
+    "options": ["TAK", "NIE"],
+    "correct": "TAK",
+    "explanationEs": "En Polonia, en los cruces sin señalizar, siempre tiene prioridad el vehículo de la derecha.",
+    "tags": ["modul1", "skrzyżowania"]
+  },
+  {
+    "type": "abc",
+    "question": "Co oznacza znak ⛔?",
+    "questionEs": "¿Qué significa la señal ⛔?",
+    "options": ["Zakaz wjazdu", "Nakaz skrętu", "Parking"],
+    "correct": "Zakaz wjazdu",
+    "explanationEs": "La señal ⛔ significa prohibido el paso a todos los vehículos.",
+    "tags": ["modul2", "znaki"]
+  },
+  {
+    "type": "znak",
+    "question": "Rozpoznaj znak: 🚸",
+    "questionEs": "Reconoce la señal: 🚸",
+    "options": ["Przejście dla pieszych", "Zakaz postoju", "Parking"],
+    "correct": "Przejście dla pieszych",
+    "explanationEs": "La señal 🚸 advierte de un paso de peatones.",
+    "tags": ["modul2", "znaki"]
+  },
+  {
+    "type": "sytuacja",
+    "question": "Jesteś na rondzie, chcesz zjechać na trzecim zjeździe. Jak sygnalizujesz?",
+    "questionEs": "Estás en una rotonda y quieres salir en la tercera salida. ¿Cómo señalizas?",
+    "options": [
+      "Lewy kierunkowskaz przed rondem, prawy przy zjeździe",
+      "Tylko prawy kierunkowskaz",
+      "Nie sygnalizuję"
+    ],
+    "correct": "Lewy kierunkowskaz przed rondem, prawy przy zjeździe",
+    "explanationEs": "En las rotondas en Polonia, se usa el intermitente izquierdo antes de entrar y el derecho al salir.",
+    "tags": ["modul1", "rondo"]
+  },
+  {
+    "type": "tarjeta",
+    "options": [
+      "skrzyżowanie | cruce | ex: Skrzyżowanie dróg | exes: Cruce de caminos"
+    ],
+    "level": "B",
+    "topicId": "DRIVING_B_T11"
+  }
+]

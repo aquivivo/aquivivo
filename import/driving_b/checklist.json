@@ -1,0 +1,38 @@
+[
+  {
+    "titlePl": "Przed egzaminem — lista kontrolna",
+    "titleEs": "Antes del examen — lista de control",
+    "itemsPl": [
+      "Prawo jazdy tymczasowe lub dowód osobisty",
+      "Dowód rejestracyjny pojazdu",
+      "Ubezpieczenie OC",
+      "Sprawdzenie świateł, opon, płynów",
+      "Sprawdzenie działania hamulców i klaksonu"
+    ],
+    "itemsEs": [
+      "Carnet de conducir provisional o DNI",
+      "Permiso de circulación del vehículo",
+      "Seguro obligatorio",
+      "Revisar luces, neumáticos, líquidos",
+      "Comprobar frenos y claxon"
+    ]
+  },
+  {
+    "titlePl": "Wyposażenie obowiązkowe pojazdu",
+    "titleEs": "Equipamiento obligatorio del vehículo",
+    "itemsPl": [
+      "Trójkąt ostrzegawczy",
+      "Gaśnica",
+      "Apteczka",
+      "Kamizelka odblaskowa (zalecana)",
+      "Koło zapasowe lub zestaw naprawczy"
+    ],
+    "itemsEs": [
+      "Triángulo de emergencia",
+      "Extintor",
+      "Botiquín",
+      "Chaleco reflectante (recomendado)",
+      "Rueda de repuesto o kit de reparación"
+    ]
+  }
+]

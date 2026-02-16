@@ -1,0 +1,122 @@
+[
+  {
+    "id": "DRIVING_B_T1",
+    "title": "Prioridad y cruces",
+    "desc": "Reglas de prioridad y comportamiento en cruces. Ejemplos prácticos.",
+    "level": "B",
+    "slug": "prioridad-cruces",
+    "order": 1,
+    "type": "module",
+    "icon": "🚦"
+  },
+  {
+    "id": "DRIVING_B_T2",
+    "title": "Señales de tráfico",
+    "desc": "Reconocimiento y uso de señales de tráfico en Polonia.",
+    "level": "B",
+    "slug": "senales-trafico",
+    "order": 2,
+    "type": "module",
+    "icon": "🚸"
+  },
+  {
+    "id": "DRIVING_B_T3",
+    "title": "Semáforos y policía",
+    "desc": "Interpretación de semáforos y señales manuales de la policía.",
+    "level": "B",
+    "slug": "semaforos-policia",
+    "order": 3,
+    "type": "module",
+    "icon": "🚨"
+  },
+  {
+    "id": "DRIVING_B_T4",
+    "title": "Maniobras y cambios de carril",
+    "desc": "Giros, cambios de carril, marcha atrás y estacionamiento.",
+    "level": "B",
+    "slug": "maniobras-carril",
+    "order": 4,
+    "type": "module",
+    "icon": "↩️"
+  },
+  {
+    "id": "DRIVING_B_T5",
+    "title": "Adelantamiento y evasión",
+    "desc": "Reglas de adelantamiento, evasión y cruce de vehículos.",
+    "level": "B",
+    "slug": "adelantamiento-evasion",
+    "order": 5,
+    "type": "module",
+    "icon": "⏩"
+  },
+  {
+    "id": "DRIVING_B_T6",
+    "title": "Velocidades y condiciones",
+    "desc": "Límites de velocidad, condiciones y distancias de seguridad.",
+    "level": "B",
+    "slug": "velocidades-condiciones",
+    "order": 6,
+    "type": "module",
+    "icon": "🏁"
+  },
+  {
+    "id": "DRIVING_B_T7",
+    "title": "Peatones, bicicletas y autobuses",
+    "desc": "Normas para peatones, ciclistas, niños y transporte público.",
+    "level": "B",
+    "slug": "peatones-bicicletas-autobuses",
+    "order": 7,
+    "type": "module",
+    "icon": "🚶‍♂️"
+  },
+  {
+    "id": "DRIVING_B_T8",
+    "title": "Seguridad y sanciones",
+    "desc": "Cinturones, sillas infantiles, alcohol, teléfono y sanciones.",
+    "level": "B",
+    "slug": "seguridad-sanciones",
+    "order": 8,
+    "type": "module",
+    "icon": "🛡️"
+  },
+  {
+    "id": "DRIVING_B_T9",
+    "title": "Vehículo y obligaciones",
+    "desc": "Documentos, equipamiento obligatorio y averías.",
+    "level": "B",
+    "slug": "vehiculo-obligaciones",
+    "order": 9,
+    "type": "module",
+    "icon": "🚗"
+  },
+  {
+    "id": "DRIVING_B_T10",
+    "title": "Exámenes de prueba",
+    "desc": "Simulacros de examen teórico. Mezcla de preguntas.",
+    "level": "B",
+    "slug": "examenes-prueba",
+    "order": 10,
+    "type": "module",
+    "icon": "📝"
+  },
+  {
+    "id": "DRIVING_B_T11",
+    "title": "Vocabulario — carnet de conducir",
+    "desc": "Palabras y frases clave PL↔ES para el examen y la práctica.",
+    "level": "B",
+    "slug": "vocabulario-carnet",
+    "order": 11,
+    "type": "vocabulary",
+    "icon": "🗣️"
+  },
+  {
+    "id": "DRIVING_B_T12",
+    "title": "Señales — carnet de conducir",
+    "desc": "Lista de señales de tráfico con descripción PL/ES.",
+    "level": "B",
+    "slug": "senales-carnet",
+    "order": 12,
+    "type": "vocabulary",
+    "icon": "🚥"
+  }
+]

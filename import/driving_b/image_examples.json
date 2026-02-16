@@ -1,0 +1,20 @@
+[
+  {
+    "situation": "Skrzyżowanie równorzędne",
+    "imageUrl": "images/skrz_crossroad.svg",
+    "descPl": "Schemat skrzyżowania równorzędnego.",
+    "descEs": "Esquema de un cruce sin prioridad."
+  },
+  {
+    "situation": "Znak zakaz wjazdu",
+    "imageUrl": "images/zakaz_wjazdu.svg",
+    "descPl": "Wygląd znaku zakazu wjazdu.",
+    "descEs": "Aspecto de la señal de prohibido el paso."
+  },
+  {
+    "situation": "Parkowanie równoległe",
+    "imageUrl": "images/parkowanie_rowne.svg",
+    "descPl": "Schemat parkowania równoległego.",
+    "descEs": "Esquema de aparcamiento en paralelo."
+  }
+]

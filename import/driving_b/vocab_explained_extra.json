@@ -1,0 +1,137 @@
+[
+  {
+    "category": "Czynności na drodze",
+    "entries": [
+      {
+        "pl": "zatrzymać się",
+        "es": "detenerse",
+        "ex": "Zatrzymaj się na czerwonym świetle",
+        "exEs": "Detente en el semáforo rojo",
+        "descPl": "Całkowicie przerwać ruch pojazdu.",
+        "descEs": "Parar completamente el vehículo."
+      },
+      {
+        "pl": "ustąpić pieszym",
+        "es": "ceder el paso a los peatones",
+        "ex": "Ustąp pieszym na przejściu",
+        "exEs": "Cede el paso a los peatones en el paso",
+        "descPl": "Pozwolić pieszym przejść pierwszym.",
+        "descEs": "Permitir que los peatones crucen primero."
+      },
+      {
+        "pl": "przyspieszyć",
+        "es": "acelerar",
+        "ex": "Przyspiesz na autostradzie",
+        "exEs": "Acelera en la autopista",
+        "descPl": "Zwiększyć prędkość jazdy.",
+        "descEs": "Aumentar la velocidad de circulación."
+      },
+      {
+        "pl": "zwolnić",
+        "es": "reducir la velocidad",
+        "ex": "Zwolnij przed zakrętem",
+        "exEs": "Reduce la velocidad antes de la curva",
+        "descPl": "Zmniejszyć prędkość jazdy.",
+        "descEs": "Disminuir la velocidad de circulación."
+      },
+      {
+        "pl": "zasygnalizować manewr",
+        "es": "señalizar la maniobra",
+        "ex": "Zasygnalizuj skręt w prawo",
+        "exEs": "Señaliza el giro a la derecha",
+        "descPl": "Użyć kierunkowskazu przed manewrem.",
+        "descEs": "Usar el intermitente antes de la maniobra."
+      }
+    ]
+  },
+  {
+    "category": "Wyposażenie pojazdu i dokumenty",
+    "entries": [
+      {
+        "pl": "prawo jazdy",
+        "es": "carnet de conducir",
+        "ex": "Mam prawo jazdy kat. B",
+        "exEs": "Tengo carnet de conducir B",
+        "descPl": "Dokument uprawniający do prowadzenia pojazdu.",
+        "descEs": "Documento que autoriza a conducir vehículos."
+      },
+      {
+        "pl": "dowód rejestracyjny",
+        "es": "permiso de circulación",
+        "ex": "Pokaż dowód rejestracyjny",
+        "exEs": "Muestra el permiso de circulación",
+        "descPl": "Dokument pojazdu potwierdzający rejestrację.",
+        "descEs": "Documento que acredita la matriculación del vehículo."
+      },
+      {
+        "pl": "ubezpieczenie OC",
+        "es": "seguro obligatorio",
+        "ex": "Sprawdź ważność OC",
+        "exEs": "Verifica la validez del seguro",
+        "descPl": "Ubezpieczenie odpowiedzialności cywilnej.",
+        "descEs": "Seguro de responsabilidad civil obligatorio."
+      },
+      {
+        "pl": "przegląd techniczny",
+        "es": "inspección técnica",
+        "ex": "Pojazd po przeglądzie",
+        "exEs": "Vehículo tras la inspección técnica",
+        "descPl": "Okresowa kontrola stanu technicznego pojazdu.",
+        "descEs": "Revisión periódica del estado técnico del vehículo."
+      },
+      {
+        "pl": "światła mijania",
+        "es": "luces de cruce",
+        "ex": "Włącz światła mijania",
+        "exEs": "Enciende las luces de cruce",
+        "descPl": "Podstawowe światła używane w ruchu drogowym.",
+        "descEs": "Luces principales utilizadas en la circulación."
+      }
+    ]
+  },
+  {
+    "category": "Sytuacje specjalne i ostrzeżenia",
+    "entries": [
+      {
+        "pl": "awaria",
+        "es": "avería",
+        "ex": "Miałem awarię na drodze",
+        "exEs": "Tuve una avería en la carretera",
+        "descPl": "Nagła niesprawność pojazdu.",
+        "descEs": "Fallo repentino del vehículo."
+      },
+      {
+        "pl": "objazd",
+        "es": "desvío",
+        "ex": "Objazd przez wieś",
+        "exEs": "Desvío por el pueblo",
+        "descPl": "Trasa zastępcza z powodu zamknięcia drogi.",
+        "descEs": "Ruta alternativa por cierre de la vía."
+      },
+      {
+        "pl": "korek",
+        "es": "atasco",
+        "ex": "Stać w korku",
+        "exEs": "Estar en un atasco",
+        "descPl": "Zator drogowy, spowolnienie ruchu.",
+        "descEs": "Congestión de tráfico, circulación lenta."
+      },
+      {
+        "pl": "wypadek",
+        "es": "accidente",
+        "ex": "Byłem świadkiem wypadku",
+        "exEs": "Fui testigo de un accidente",
+        "descPl": "Nagłe zdarzenie na drodze z udziałem pojazdów.",
+        "descEs": "Suceso repentino en la vía con vehículos implicados."
+      },
+      {
+        "pl": "ruch wahadłowy",
+        "es": "circulación alterna",
+        "ex": "Ruch wahadłowy na remontowanym odcinku",
+        "exEs": "Circulación alterna en tramo en obras",
+        "descPl": "Ruch naprzemienny jednym pasem.",
+        "descEs": "Circulación por un solo carril en ambos sentidos."
+      }
+    ]
+  }
+]

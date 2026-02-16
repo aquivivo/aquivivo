@@ -1,0 +1,47 @@
+[
+  {
+    "situationPl": "Kontrola drogowa przez policję",
+    "situationEs": "Control de carretera por la policía",
+    "dialogue": [
+      {
+        "pl": "Dzień dobry, dokumenty proszę.",
+        "es": "Buenos días, los documentos por favor."
+      },
+      { "pl": "Oczywiście, proszę bardzo.", "es": "Por supuesto, aquí tiene." },
+      {
+        "pl": "Czy wie Pan/Pani, dlaczego został Pan/Pani zatrzymany/a?",
+        "es": "¿Sabe por qué le hemos parado?"
+      },
+      { "pl": "Nie, proszę wyjaśnić.", "es": "No, por favor explíqueme." }
+    ]
+  },
+  {
+    "situationPl": "Pytanie o drogę",
+    "situationEs": "Preguntar por el camino",
+    "dialogue": [
+      {
+        "pl": "Przepraszam, jak dojadę do centrum?",
+        "es": "Perdone, ¿cómo llego al centro?"
+      },
+      {
+        "pl": "Prosto i na światłach w lewo.",
+        "es": "Todo recto y a la izquierda en el semáforo."
+      }
+    ]
+  },
+  {
+    "situationPl": "Wezwanie pomocy drogowej",
+    "situationEs": "Llamar a la grúa",
+    "dialogue": [
+      {
+        "pl": "Mój samochód się zepsuł. Potrzebuję pomocy.",
+        "es": "Mi coche se ha averiado. Necesito ayuda."
+      },
+      { "pl": "Gdzie Pan/Pani się znajduje?", "es": "¿Dónde se encuentra?" },
+      {
+        "pl": "Na drodze krajowej nr 7, kilometr 120.",
+        "es": "En la carretera nacional 7, kilómetro 120."
+      }
+    ]
+  }
+]

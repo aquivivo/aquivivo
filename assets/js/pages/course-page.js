@@ -6,7 +6,11 @@
 
 import { auth, db } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { KNOWN_LEVELS, levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
+import {
+  KNOWN_LEVELS,
+  levelsFromPlan,
+  normalizeLevelList,
+} from '../plan-levels.js';
 import { isQaAdminUser } from '../qa-admin-tools.js';
 import {
   collection,
@@ -22,7 +26,8 @@ const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
 const SINGLE_COURSE_KEY = 'COURSE_PATH';
-const COURSE_KEY = SINGLE_COURSE_KEY;
+const COURSE_KEY =
+  String(params.get('course') || '').trim() || SINGLE_COURSE_KEY;
 const TRACK = String(params.get('track') || document.body?.dataset?.track || '')
   .trim()
   .toLowerCase();
@@ -32,11 +37,16 @@ const FLOW = String(params.get('flow') || '')
   .toLowerCase();
 const FORCE_CONTINUOUS_FOR_SINGLE_COURSE = COURSE_KEY === SINGLE_COURSE_KEY;
 const CONTINUOUS_FLOW =
-  FORCE_CONTINUOUS_FOR_SINGLE_COURSE || FLOW === 'continuous' || COURSE_VIEW === 'pro';
+  (COURSE_KEY === SINGLE_COURSE_KEY
+    ? FORCE_CONTINUOUS_FOR_SINGLE_COURSE
+    : false) ||
+  FLOW === 'continuous' ||
+  COURSE_VIEW === 'pro';
 const ADMIN_EMAILS = ['aquivivo.pl@gmail.com'];
-const LEVEL_ORDER = Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
-  ? KNOWN_LEVELS
-  : ['A1', 'A2', 'B1', 'B2'];
+const LEVEL_ORDER =
+  Array.isArray(KNOWN_LEVELS) && KNOWN_LEVELS.length
+    ? KNOWN_LEVELS
+    : ['A1', 'A2', 'B1', 'B2'];
 
 const STAMP_CATALOG_BY_LEVEL = {
   A1: {
@@ -154,7 +164,9 @@ const accessModalBuy = document.getElementById('accessModalBuy');
 const accessModalLine1 = document.getElementById('accessModalLine1');
 const accessModalLine2 = document.getElementById('accessModalLine2');
 const courseRouteHint = document.getElementById('courseRouteHint');
-const courseRouteProgressFill = document.getElementById('courseRouteProgressFill');
+const courseRouteProgressFill = document.getElementById(
+  'courseRouteProgressFill',
+);
 const btnCourseContinue = document.getElementById('btnCourseContinue');
 
 function showAccessLocked() {
@@ -211,15 +223,22 @@ async function getUserFlags(authUser) {
     }
 
     const until = d.accessUntil || null;
-    const untilDate = until?.toDate ? until.toDate() : until ? new Date(until) : null;
+    const untilDate = until?.toDate
+      ? until.toDate()
+      : until
+        ? new Date(until)
+        : null;
     const hasUntil = !!untilDate && !Number.isNaN(untilDate.getTime());
     const isUntilValid = hasUntil ? untilDate.getTime() > Date.now() : false;
 
     const rawLevels = normalizeLevelList(d.levels);
-    const levels = rawLevels.length ? rawLevels : normalizeLevelList(levelsFromPlan(d.plan));
+    const levels = rawLevels.length
+      ? rawLevels
+      : normalizeLevelList(levelsFromPlan(d.plan));
 
     const plan = String(d.plan || '').toLowerCase();
-    const hasGlobalAccess = plan === 'premium' || (d.access === true && levels.length === 0);
+    const hasGlobalAccess =
+      plan === 'premium' || (d.access === true && levels.length === 0);
     const hasExplicitLevel = levels.includes(String(LEVEL).toUpperCase());
     const hasLevelAccess =
       hasExplicitLevel || (hasGlobalAccess && (isUntilValid || !hasUntil));
@@ -241,7 +260,8 @@ async function getUserFlags(authUser) {
 
 function showLevelNotice(text) {
   const buttons = document.querySelector('.levelButtons');
-  const host = buttons?.parentElement || buttons || document.querySelector('.container');
+  const host =
+    buttons?.parentElement || buttons || document.querySelector('.container');
   if (!host) return;
 
   let box = document.getElementById('levelNotice');
@@ -300,7 +320,9 @@ function wireLevelButtons(flags) {
 
   links.forEach((link) => {
     const href = link.getAttribute('href') || '';
-    const level = (new URL(href, location.href).searchParams.get('level') || '').toUpperCase();
+    const level = (
+      new URL(href, location.href).searchParams.get('level') || ''
+    ).toUpperCase();
     if (!level || level === 'A1') return;
 
     if (flags?.isAdmin || isAdminSession()) return;
@@ -333,7 +355,9 @@ function initLevelButtonsGuard() {
     if (!link) return;
 
     const href = link.getAttribute('href') || '';
-    const level = (new URL(href, location.href).searchParams.get('level') || '').toUpperCase();
+    const level = (
+      new URL(href, location.href).searchParams.get('level') || ''
+    ).toUpperCase();
 
     if (!level || level === 'A1') return;
 
@@ -360,12 +384,16 @@ function initLevelButtonsGuard() {
 }
 
 function safeText(v) {
-  return String(v ?? '').replace(/[<>&"]/g, (ch) => ({
-    '<': '&lt;',
-    '>': '&gt;',
-    '&': '&amp;',
-    '"': '&quot;',
-  })[ch]);
+  return String(v ?? '').replace(
+    /[<>&"]/g,
+    (ch) =>
+      ({
+        '<': '&lt;',
+        '>': '&gt;',
+        '&': '&amp;',
+        '"': '&quot;',
+      })[ch],
+  );
 }
 
 function truncateText(raw, maxLen) {
@@ -399,7 +427,9 @@ function topicTrackList(topic) {
 }
 
 function topicBaseKey(topic) {
-  return String(topic?.slug || topic?.id || '').trim().toLowerCase();
+  return String(topic?.slug || topic?.id || '')
+    .trim()
+    .toLowerCase();
 }
 
 function topicOrderValue(topic) {
@@ -446,14 +476,17 @@ function prevLevelOf(level) {
 
 function navParams() {
   const parts = [];
-  parts.push(`course=${encodeURIComponent(SINGLE_COURSE_KEY)}`);
+  if (COURSE_KEY) parts.push(`course=${encodeURIComponent(COURSE_KEY)}`);
   if (TRACK) parts.push(`track=${encodeURIComponent(TRACK)}`);
-  if (CONTINUOUS_FLOW) parts.push('flow=continuous');
+  if (COURSE_KEY === SINGLE_COURSE_KEY && CONTINUOUS_FLOW)
+    parts.push('flow=continuous');
   return parts.length ? `&${parts.join('&')}` : '';
 }
 
 function topicLevelOf(topic, fallback = LEVEL) {
-  return String(topic?.level || topic?.__routeLevel || fallback || LEVEL).toUpperCase();
+  return String(
+    topic?.level || topic?.__routeLevel || fallback || LEVEL,
+  ).toUpperCase();
 }
 
 function routeLevelsFromFlags(flags, { previewOnly = false } = {}) {
@@ -461,7 +494,9 @@ function routeLevelsFromFlags(flags, { previewOnly = false } = {}) {
   if (previewOnly) return ['A1'];
   if (flags?.hasGlobalAccess) return [...LEVEL_ORDER];
   if (Array.isArray(flags?.levels) && flags.levels.length) {
-    const allowed = new Set(flags.levels.map((l) => String(l || '').toUpperCase()));
+    const allowed = new Set(
+      flags.levels.map((l) => String(l || '').toUpperCase()),
+    );
     const ordered = LEVEL_ORDER.filter((lvl) => allowed.has(lvl));
     return ordered.length ? ordered : [String(LEVEL || 'A1').toUpperCase()];
   }
@@ -470,7 +505,10 @@ function routeLevelsFromFlags(flags, { previewOnly = false } = {}) {
 }
 
 function courseHref(level = LEVEL) {
-  const page = String(location.pathname || '').split('/').pop() || 'course.html';
+  const page =
+    String(location.pathname || '')
+      .split('/')
+      .pop() || 'course.html';
   const lvl = String(level || LEVEL).toUpperCase();
   let href = `${page}?level=${encodeURIComponent(lvl)}`;
   if (COURSE_KEY) href += `&course=${encodeURIComponent(COURSE_KEY)}`;
@@ -481,7 +519,9 @@ function courseHref(level = LEVEL) {
 
 function applyLevelButtonVisibility(unlockedLevels) {
   if (CONTINUOUS_FLOW) return;
-  const unlocked = new Set((unlockedLevels || []).map((l) => String(l || '').toUpperCase()));
+  const unlocked = new Set(
+    (unlockedLevels || []).map((l) => String(l || '').toUpperCase()),
+  );
   document.querySelectorAll('.levelButtons a[href]').forEach((link) => {
     try {
       const href = link.getAttribute('href') || '';
@@ -499,7 +539,11 @@ async function loadTopicsForLevel(level) {
   if (!lvl) return [];
   try {
     const snap = await getDocs(
-      query(collection(db, 'courses'), where('level', '==', lvl), orderBy('order')),
+      query(
+        collection(db, 'courses'),
+        where('level', '==', lvl),
+        orderBy('order'),
+      ),
     );
     const all = snap.docs
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
@@ -512,7 +556,9 @@ async function loadTopicsForLevel(level) {
 }
 
 function normalizeLevel(raw) {
-  const lvl = String(raw || '').trim().toUpperCase();
+  const lvl = String(raw || '')
+    .trim()
+    .toUpperCase();
   return LEVEL_ORDER.includes(lvl) ? lvl : '';
 }
 
@@ -536,14 +582,17 @@ function coursePathBaseKey(pathOrId) {
 function coursePathLevel(pathOrId) {
   const fromField = normalizeLevel(pathOrId?.level);
   if (fromField) return fromField;
-  const id = String(typeof pathOrId === 'string' ? pathOrId : pathOrId?.id || '').trim();
+  const id = String(
+    typeof pathOrId === 'string' ? pathOrId : pathOrId?.id || '',
+  ).trim();
   const m = id.match(/^([A-Z0-9]+)__/i);
   return m ? normalizeLevel(m[1]) : '';
 }
 
 function sortCoursePathDocs(list) {
   return [...(Array.isArray(list) ? list : [])].sort((a, b) => {
-    const d = levelOrderIndex(coursePathLevel(a)) - levelOrderIndex(coursePathLevel(b));
+    const d =
+      levelOrderIndex(coursePathLevel(a)) - levelOrderIndex(coursePathLevel(b));
     if (d) return d;
     return String(a?.id || '').localeCompare(String(b?.id || ''));
   });
@@ -564,7 +613,9 @@ async function loadCoursePathDocsForKey(key) {
     .filter(Boolean)
     .map((id) => doc(db, 'course_paths', id));
 
-  const snaps = await Promise.all(refs.map((refItem) => getDoc(refItem).catch(() => null)));
+  const snaps = await Promise.all(
+    refs.map((refItem) => getDoc(refItem).catch(() => null)),
+  );
   const found = snaps
     .filter((snap) => snap?.exists?.())
     .map((snap) => ({ id: snap.id, ...(snap.data() || {}) }));
@@ -576,7 +627,11 @@ async function loadDefaultCoursePathDocs() {
     const snap = await getDocs(collection(db, 'course_paths'));
     const rows = snap.docs
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
-      .filter((row) => String(coursePathBaseKey(row) || '').toUpperCase() === SINGLE_COURSE_KEY);
+      .filter(
+        (row) =>
+          String(coursePathBaseKey(row) || '').toUpperCase() ===
+          SINGLE_COURSE_KEY,
+      );
     if (!rows.length) return [];
 
     const groups = new Map();
@@ -593,7 +648,10 @@ async function loadDefaultCoursePathDocs() {
         const aLevels = new Set(a.map((x) => coursePathLevel(x))).size;
         const bLevels = new Set(b.map((x) => coursePathLevel(x))).size;
         if (bLevels !== aLevels) return bLevels - aLevels;
-        return levelOrderIndex(coursePathLevel(a[0])) - levelOrderIndex(coursePathLevel(b[0]));
+        return (
+          levelOrderIndex(coursePathLevel(a[0])) -
+          levelOrderIndex(coursePathLevel(b[0]))
+        );
       });
     return ranked[0] || [];
   } catch {
@@ -620,7 +678,9 @@ async function loadRouteTopicsFromCoursePaths(pathDocs) {
   if (!moduleIds.length) return [];
 
   const moduleSnaps = await Promise.all(
-    moduleIds.map((moduleId) => getDoc(doc(db, 'modules', moduleId)).catch(() => null)),
+    moduleIds.map((moduleId) =>
+      getDoc(doc(db, 'modules', moduleId)).catch(() => null),
+    ),
   );
   const modules = moduleIds
     .map((moduleId, idx) => {
@@ -633,13 +693,13 @@ async function loadRouteTopicsFromCoursePaths(pathDocs) {
 
   const topicIds = [
     ...new Set(
-      modules
-        .map((m) => String(m?.topicId || '').trim())
-        .filter(Boolean),
+      modules.map((m) => String(m?.topicId || '').trim()).filter(Boolean),
     ),
   ];
   const topicSnaps = await Promise.all(
-    topicIds.map((topicId) => getDoc(doc(db, 'courses', topicId)).catch(() => null)),
+    topicIds.map((topicId) =>
+      getDoc(doc(db, 'courses', topicId)).catch(() => null),
+    ),
   );
   const topicMap = new Map();
   topicIds.forEach((topicId, idx) => {
@@ -653,15 +713,19 @@ async function loadRouteTopicsFromCoursePaths(pathDocs) {
   const out = [];
 
   modules.forEach((moduleItem) => {
-    const lvl = coursePathLevel(moduleItem) || moduleLevelMap.get(moduleItem.id) || LEVEL;
+    const lvl =
+      coursePathLevel(moduleItem) || moduleLevelMap.get(moduleItem.id) || LEVEL;
     const topicId =
       String(moduleItem?.topicId || '').trim() ||
       String(moduleItem?.topicSlug || '').trim() ||
       String(moduleItem?.id || '').trim();
     if (!topicId) return;
 
-    const baseTopic = topicMap.get(String(moduleItem?.topicId || '').trim()) || {};
-    const topicSlug = String(moduleItem?.topicSlug || baseTopic?.slug || topicId).trim();
+    const baseTopic =
+      topicMap.get(String(moduleItem?.topicId || '').trim()) || {};
+    const topicSlug = String(
+      moduleItem?.topicSlug || baseTopic?.slug || topicId,
+    ).trim();
     const unique = `${lvl}__${topicSlug || topicId}`;
     if (used.has(unique)) return;
     used.add(unique);
@@ -676,7 +740,8 @@ async function loadRouteTopicsFromCoursePaths(pathDocs) {
         String(baseTopic?.title || baseTopic?.name || '').trim() ||
         `Tema ${seq}`,
       desc: String(baseTopic?.desc || baseTopic?.subtitle || '').trim(),
-      type: moduleItem?.type || baseTopic?.type || baseTopic?.category || 'both',
+      type:
+        moduleItem?.type || baseTopic?.type || baseTopic?.category || 'both',
       order: seq,
       __routeLevel: lvl,
     });
@@ -703,7 +768,12 @@ async function isLevelCompleted(uid, level, progressMap) {
   });
 }
 
-async function computeUnlockedLevels(uid, flags, progressMap, { previewOnly = false } = {}) {
+async function computeUnlockedLevels(
+  uid,
+  flags,
+  progressMap,
+  { previewOnly = false } = {},
+) {
   if (flags?.isAdmin || isAdminSession()) return [...LEVEL_ORDER];
 
   const accessible = new Set();
@@ -718,7 +788,8 @@ async function computeUnlockedLevels(uid, flags, progressMap, { previewOnly = fa
   }
 
   const orderedAccessible = LEVEL_ORDER.filter((l) => accessible.has(l));
-  if (orderedAccessible.length <= 1) return orderedAccessible.length ? orderedAccessible : ['A1'];
+  if (orderedAccessible.length <= 1)
+    return orderedAccessible.length ? orderedAccessible : ['A1'];
 
   const unlocked = [];
   const completionCache = {};
@@ -741,17 +812,22 @@ async function computeUnlockedLevels(uid, flags, progressMap, { previewOnly = fa
 function guessTopicEmoji(topic) {
   const title = String(topic?.title || topic?.name || '').toLowerCase();
   const slug = String(topic?.slug || topic?.id || '').toLowerCase();
-  const tags = Array.isArray(topic?.tags) ? topic.tags.join(' ').toLowerCase() : '';
+  const tags = Array.isArray(topic?.tags)
+    ? topic.tags.join(' ').toLowerCase()
+    : '';
   const hay = `${title} ${slug} ${tags}`;
 
   const table = [
     [/miast|ciudad|city|miejsc|lugar/, '\uD83C\uDFD9\uFE0F'], // Ã°Å¸Ââ„¢Ã¯Â¸Â
-    [/dom|casa|hogar|mieszka|viviend/, '\uD83C\uDFE0'], // Ã°Å¸ÂÂ 
+    [/dom|casa|hogar|mieszka|viviend/, '\uD83C\uDFE0'], // Ã°Å¸ÂÂ
     [/rodzin|familia|amig|friend/, '\uD83D\uDC6A'], // Ã°Å¸â€˜Âª
     [/jedzen|comida|restaur|cocin|food/, '\uD83C\uDF72'], // Ã°Å¸ÂÂ²
     [/kaw|caf\u00e9|cafe|cafetera/, '\u2615'], // Ã¢Ëœâ€¢
     [/zakup|compras|tiend|shop|super/, '\uD83D\uDED2'], // Ã°Å¸â€ºâ€™
-    [/podr\u00f3\u017c|podroz|viaj|travel|aeropuert|av[i\u00ed]on|samolot/, '\u2708\uFE0F'], // Ã¢Å“Ë†Ã¯Â¸Â
+    [
+      /podr\u00f3\u017c|podroz|viaj|travel|aeropuert|av[i\u00ed]on|samolot/,
+      '\u2708\uFE0F',
+    ], // Ã¢Å“Ë†Ã¯Â¸Â
     [/transport|metro|autob|bus|tren|train/, '\uD83D\uDE8C'], // Ã°Å¸Å¡Å’
     [/prac|trabaj|oficin|job/, '\uD83D\uDCBC'], // Ã°Å¸â€™Â¼
     [/studi|estudi|univers|escuel|school/, '\uD83C\uDF93'], // Ã°Å¸Å½â€œ
@@ -775,7 +851,8 @@ function guessTopicEmoji(topic) {
 
 function renderTopicVisual(topic, accent) {
   const img = String(topic?.imageUrl || '').trim();
-  const icon = clampGlyph(topic?.icon || '', { maxChars: 6 }) || guessTopicEmoji(topic);
+  const icon =
+    clampGlyph(topic?.icon || '', { maxChars: 6 }) || guessTopicEmoji(topic);
 
   if (img) {
     return `
@@ -793,7 +870,9 @@ function renderTopicVisual(topic, accent) {
 }
 
 function tileAccentClass(topic) {
-  const raw = String(topic?.tileStyle || topic?.tileClass || '').toLowerCase().trim();
+  const raw = String(topic?.tileStyle || topic?.tileClass || '')
+    .toLowerCase()
+    .trim();
   if (!raw) return '';
   if (raw === 'yellow' || raw === 'amarillo') return 'cardAccentYellow';
   if (raw === 'blue' || raw === 'azul') return 'cardAccentBlue';
@@ -813,7 +892,9 @@ function clamp(n, min, max) {
 }
 
 function typeLabel(raw) {
-  const t = String(raw || '').trim().toLowerCase();
+  const t = String(raw || '')
+    .trim()
+    .toLowerCase();
   if (!t) return '';
   if (t === 'grammar' || t === 'gramatyka') return 'Gramatica';
   if (
@@ -834,11 +915,12 @@ function progressPct(progress) {
   const testTotal = Number(progress.testTotal || 0);
   const testScore = Number(progress.testScore || 0);
   if (!CONTINUOUS_FLOW && progress.completed === true) return 100;
-  const best = testTotal > 0
-    ? CONTINUOUS_FLOW
-      ? Math.min(practice, testScore)
-      : Math.max(practice, testScore)
-    : practice;
+  const best =
+    testTotal > 0
+      ? CONTINUOUS_FLOW
+        ? Math.min(practice, testScore)
+        : Math.max(practice, testScore)
+      : practice;
   return clamp(Math.round(best), 0, 100);
 }
 
@@ -886,7 +968,9 @@ function ringSvg(pct) {
 }
 
 function topicTypeKey(topic) {
-  const raw = String(topic?.type || topic?.category || '').trim().toLowerCase();
+  const raw = String(topic?.type || topic?.category || '')
+    .trim()
+    .toLowerCase();
   if (!raw) return 'grammar';
 
   if (
@@ -906,7 +990,13 @@ function topicTypeKey(topic) {
   )
     return 'grammar';
 
-  if (raw === 'both' || raw === 'mix' || raw === 'mixed' || raw === 'mieszane' || raw.includes('+'))
+  if (
+    raw === 'both' ||
+    raw === 'mix' ||
+    raw === 'mixed' ||
+    raw === 'mieszane' ||
+    raw.includes('+')
+  )
     return 'both';
 
   return raw;
@@ -966,7 +1056,9 @@ function buildMixedRoute(topics) {
 }
 
 function renderUnitHeader(n, level = '') {
-  const lvl = String(level || '').toUpperCase().trim();
+  const lvl = String(level || '')
+    .toUpperCase()
+    .trim();
   const title = lvl ? `Nivel ${lvl}` : `Unidad ${Number(n) || 1}`;
   return `
     <div class="pathUnitHead">
@@ -981,7 +1073,8 @@ function renderMetaPills(topic, exCount, progress) {
   if (label) pills.push(`<span class="pill">${safeText(label)}</span>`);
 
   const n = Number(exCount || 0);
-  if (n > 0) pills.push(`<span class="pill pill-yellow">${n} ejercicios</span>`);
+  if (n > 0)
+    pills.push(`<span class="pill pill-yellow">${n} ejercicios</span>`);
 
   const st = progressState(progress);
   if (st.done) pills.push('<span class="pill pill-blue">Listo</span>');
@@ -1021,7 +1114,11 @@ function renderPathStep({
     .filter(Boolean)
     .join(' ');
 
-  const innerText = st.done ? '&#x2713;' : isCurrent ? '&#9654;' : String(idx + 1);
+  const innerText = st.done
+    ? '&#x2713;'
+    : isCurrent
+      ? '&#9654;'
+      : String(idx + 1);
   const meta = renderMetaPills(topic, exCount, progress);
 
   const nodeInner = `<div class="pathNodeInner" aria-hidden="true">${innerText}</div>`;
@@ -1107,7 +1204,10 @@ function renderPassportStamp(lines = []) {
   const textRows = (Array.isArray(lines) ? lines : [])
     .map((x) => String(x || '').trim())
     .filter(Boolean)
-    .map((line) => `<div style="line-height:1.2; white-space:nowrap;">${safeText(line)}</div>`)
+    .map(
+      (line) =>
+        `<div style="line-height:1.2; white-space:nowrap;">${safeText(line)}</div>`,
+    )
     .join('');
   if (!textRows) return '';
   return `
@@ -1197,7 +1297,9 @@ async function loadExercisesCountMapForTopics(topics) {
   const counts = {};
   for (const [lvl, idSet] of byLevel.entries()) {
     try {
-      const snap = await getDocs(query(collection(db, 'exercises'), where('level', '==', lvl)));
+      const snap = await getDocs(
+        query(collection(db, 'exercises'), where('level', '==', lvl)),
+      );
       snap.forEach((d) => {
         const data = d.data() || {};
         const tid = String(data.topicId || '').trim();
@@ -1236,7 +1338,9 @@ async function loadTopics(user) {
   }
 
   if (subtitle) {
-    subtitle.textContent = CONTINUOUS_FLOW ? 'Curso continuo A1-B2' : `Nivel ${LEVEL}`;
+    subtitle.textContent = CONTINUOUS_FLOW
+      ? 'Curso continuo A1-B2'
+      : `Nivel ${LEVEL}`;
   }
 
   const host = $('topicsList');
@@ -1262,7 +1366,12 @@ async function loadTopics(user) {
       if (subtitle && firstTitle) subtitle.textContent = firstTitle;
     }
   } else {
-    const unlockedLevels = await computeUnlockedLevels(user.uid, flags, progressMap, { previewOnly });
+    const unlockedLevels = await computeUnlockedLevels(
+      user.uid,
+      flags,
+      progressMap,
+      { previewOnly },
+    );
     applyLevelButtonVisibility(unlockedLevels);
     if (!previewOnly && !unlockedLevels.includes(LEVEL)) {
       const prev = prevLevelOf(LEVEL);
@@ -1286,7 +1395,10 @@ async function loadTopics(user) {
     }
 
     const selected = await loadTopicsForLevel(LEVEL);
-    routeTopics = buildMixedRoute(selected).map((t) => ({ ...t, __routeLevel: LEVEL }));
+    routeTopics = buildMixedRoute(selected).map((t) => ({
+      ...t,
+      __routeLevel: LEVEL,
+    }));
   }
 
   if (!routeTopics.length) {
@@ -1302,7 +1414,9 @@ async function loadTopics(user) {
     return;
   }
 
-  const exCountMap = previewOnly ? {} : await loadExercisesCountMapForTopics(routeTopics);
+  const exCountMap = previewOnly
+    ? {}
+    : await loadExercisesCountMapForTopics(routeTopics);
 
   const entries = routeTopics.map((topic) => {
     const key = topicKeyFor(topic);
@@ -1342,7 +1456,9 @@ async function loadTopics(user) {
   const doneCount = entries.filter((e) => e.st.done).length;
   const totalCount = entries.length;
   const avgPct = totalCount
-    ? Math.round(entries.reduce((sum, e) => sum + Number(e.st.pct || 0), 0) / totalCount)
+    ? Math.round(
+        entries.reduce((sum, e) => sum + Number(e.st.pct || 0), 0) / totalCount,
+      )
     : 0;
 
   if (courseRouteHint) {
@@ -1368,7 +1484,8 @@ async function loadTopics(user) {
     } else if (doneCount === totalCount) {
       btnCourseContinue.style.display = '';
       btnCourseContinue.textContent = 'Repasar';
-      const finalTopic = entries[Math.max(0, entries.length - 1)]?.topic || null;
+      const finalTopic =
+        entries[Math.max(0, entries.length - 1)]?.topic || null;
       const finalLevel = topicLevelOf(finalTopic, LEVEL);
       btnCourseContinue.href = `review.html?level=${encodeURIComponent(finalLevel)}${navParams()}`;
     } else {
@@ -1425,10 +1542,15 @@ async function loadTopics(user) {
     });
     renderIdx += 1;
 
-    const nextLevel = i < entries.length - 1 ? topicLevelOf(entries[i + 1]?.topic, LEVEL) : '';
+    const nextLevel =
+      i < entries.length - 1 ? topicLevelOf(entries[i + 1]?.topic, LEVEL) : '';
     const levelEnds = i === entries.length - 1 || nextLevel !== entryLevel;
     if (levelEnds) {
-      const lvlStats = levelStats.get(entryLevel) || { total: 0, done: 0, doneAtMs: 0 };
+      const lvlStats = levelStats.get(entryLevel) || {
+        total: 0,
+        done: 0,
+        doneAtMs: 0,
+      };
       const levelDone = !!(
         flags?.isAdmin ||
         (lvlStats.total > 0 && lvlStats.done >= lvlStats.total)
@@ -1472,7 +1594,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if (CONTINUOUS_FLOW) {
-        const text = String(link.textContent || '').trim().toUpperCase();
+        const text = String(link.textContent || '')
+          .trim()
+          .toUpperCase();
         if (LEVEL_ORDER.includes(text)) link.style.display = 'none';
       }
     } catch {}
@@ -1484,4 +1608,3 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTopics(user);
   });
 });
-

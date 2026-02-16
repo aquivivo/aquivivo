@@ -1,0 +1,17 @@
+[
+  {
+    "word": "skrzyżowanie",
+    "audioPl": "audio/skrzyzowanie_pl.mp3",
+    "audioEs": "audio/cruce_es.mp3"
+  },
+  {
+    "word": "pierwszeństwo",
+    "audioPl": "audio/pierwszenstwo_pl.mp3",
+    "audioEs": "audio/prioridad_es.mp3"
+  },
+  {
+    "word": "sygnalizacja świetlna",
+    "audioPl": "audio/sygnalizacja_pl.mp3",
+    "audioEs": "audio/semaforo_es.mp3"
+  }
+]

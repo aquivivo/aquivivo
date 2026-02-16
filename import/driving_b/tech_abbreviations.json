@@ -1,0 +1,37 @@
+[
+  {
+    "abbr": "ABS",
+    "pl": "system zapobiegający blokowaniu kół podczas hamowania",
+    "es": "sistema antibloqueo de frenos",
+    "descPl": "Zapobiega blokowaniu kół podczas gwałtownego hamowania.",
+    "descEs": "Evita el bloqueo de las ruedas al frenar bruscamente."
+  },
+  {
+    "abbr": "OC",
+    "pl": "ubezpieczenie odpowiedzialności cywilnej",
+    "es": "seguro de responsabilidad civil",
+    "descPl": "Obowiązkowe ubezpieczenie pojazdu.",
+    "descEs": "Seguro obligatorio del vehículo."
+  },
+  {
+    "abbr": "NIP",
+    "pl": "numer identyfikacji podatkowej",
+    "es": "número de identificación fiscal",
+    "descPl": "Numer podatkowy firmy lub osoby.",
+    "descEs": "Número fiscal de empresa o persona."
+  },
+  {
+    "abbr": "VIN",
+    "pl": "numer identyfikacyjny pojazdu",
+    "es": "número de identificación del vehículo",
+    "descPl": "Unikalny numer każdego pojazdu.",
+    "descEs": "Número único de cada vehículo."
+  },
+  {
+    "abbr": "SRS",
+    "pl": "system poduszek powietrznych",
+    "es": "sistema de airbags",
+    "descPl": "System bezpieczeństwa chroniący w razie wypadku.",
+    "descEs": "Sistema de seguridad que protege en caso de accidente."
+  }
+]

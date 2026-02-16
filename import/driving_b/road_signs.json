@@ -1,0 +1,82 @@
+[
+  {
+    "type": "ostrzeżenie",
+    "pl": "Przejście dla pieszych",
+    "es": "Paso de peatones",
+    "descPl": "Ostrzega o miejscu, gdzie piesi mogą przechodzić przez jezdnię.",
+    "descEs": "Advierte de un lugar donde los peatones pueden cruzar la calzada.",
+    "unicode": "🚸"
+  },
+  {
+    "type": "zakaz",
+    "pl": "Zakaz wjazdu",
+    "es": "Prohibido el paso",
+    "descPl": "Zabrania wjazdu wszystkim pojazdom.",
+    "descEs": "Prohíbe la entrada a todos los vehículos.",
+    "unicode": "⛔"
+  },
+  {
+    "type": "nakaz",
+    "pl": "Nakaz jazdy prosto",
+    "es": "Obligación de seguir recto",
+    "descPl": "Nakazuje jazdę tylko na wprost.",
+    "descEs": "Obliga a seguir solo recto.",
+    "unicode": "⬆️"
+  },
+  {
+    "type": "informacyjny",
+    "pl": "Droga jednokierunkowa",
+    "es": "Calle de sentido único",
+    "descPl": "Informuje o ruchu tylko w jednym kierunku.",
+    "descEs": "Indica circulación en un solo sentido.",
+    "unicode": "➡️"
+  },
+  {
+    "type": "tabliczka",
+    "pl": "Tabliczka do znaku",
+    "es": "Placa complementaria",
+    "descPl": "Uzupełnia znaczenie znaku głównego.",
+    "descEs": "Complementa el significado de la señal principal.",
+    "unicode": "🪧"
+  },
+  {
+    "type": "ostrzeżenie",
+    "pl": "Niebezpieczny zakręt w prawo",
+    "es": "Curva peligrosa a la derecha",
+    "descPl": "Ostrzega o ostrym zakręcie w prawo.",
+    "descEs": "Advierte de una curva peligrosa a la derecha.",
+    "unicode": "↪️"
+  },
+  {
+    "type": "zakaz",
+    "pl": "Zakaz wyprzedzania",
+    "es": "Prohibido adelantar",
+    "descPl": "Zabrania wyprzedzania pojazdów.",
+    "descEs": "Prohíbe adelantar vehículos.",
+    "unicode": "🚫"
+  },
+  {
+    "type": "nakaz",
+    "pl": "Nakaz jazdy w lewo",
+    "es": "Obligación de girar a la izquierda",
+    "descPl": "Nakazuje skręt w lewo.",
+    "descEs": "Obliga a girar a la izquierda.",
+    "unicode": "⬅️"
+  },
+  {
+    "type": "informacyjny",
+    "pl": "Parking",
+    "es": "Aparcamiento",
+    "descPl": "Informuje o miejscu do parkowania.",
+    "descEs": "Indica un lugar para aparcar.",
+    "unicode": "🅿️"
+  },
+  {
+    "type": "ostrzeżenie",
+    "pl": "Próg zwalniający",
+    "es": "Reductor de velocidad",
+    "descPl": "Ostrzega o progu zwalniającym na drodze.",
+    "descEs": "Advierte de un reductor de velocidad en la vía.",
+    "unicode": "⛰️"
+  }
+]
