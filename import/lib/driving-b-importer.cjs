@@ -230,6 +230,18 @@ async function runDrivingImport({
       idField: 'id',
       idPrefix: 'courses',
     },
+    {
+      collectionName: 'lessons',
+      file: 'lessons.json',
+      idField: 'id',
+      idPrefix: 'lessons',
+    },
+    {
+      collectionName: 'exercises',
+      file: 'exercises.json',
+      idField: 'id',
+      idPrefix: 'exercises',
+    },
   ];
 
   if (includeExtras) {

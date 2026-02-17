@@ -1,0 +1,817 @@
+[
+  {
+    "id": "A1__prioridad-cruces__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T1",
+    "topicSlug": "prioridad-cruces",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"skrzyżowanie\"",
+    "options": [
+      "cruce",
+      "prioridad",
+      "ceder el paso",
+      "rotonda"
+    ],
+    "answer": "cruce",
+    "lessonId": "A1__prioridad-cruces__L01"
+  },
+  {
+    "id": "A1__prioridad-cruces__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T1",
+    "topicSlug": "prioridad-cruces",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"prioridad\"",
+    "options": [
+      "pierwszeństwo",
+      "skrzyżowanie",
+      "ustąpić pierwszeństwa",
+      "rondo"
+    ],
+    "answer": "pierwszeństwo",
+    "lessonId": "A1__prioridad-cruces__L01"
+  },
+  {
+    "id": "A1__prioridad-cruces__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T1",
+    "topicSlug": "prioridad-cruces",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "¿En un cruce sin señales tiene prioridad el vehículo de la derecha?",
+    "options": [
+      "TAK",
+      "NIE"
+    ],
+    "answer": "TAK",
+    "explanation": "En Polonia, en los cruces sin señalizar, siempre tiene prioridad el vehículo de la derecha.",
+    "lessonId": "A1__prioridad-cruces__L01"
+  },
+  {
+    "id": "A1__prioridad-cruces__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T1",
+    "topicSlug": "prioridad-cruces",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Estás en una rotonda y quieres salir en la tercera salida. ¿Cómo señalizas?",
+    "options": [
+      "Lewy kierunkowskaz przed rondem, prawy przy zjeździe",
+      "Tylko prawy kierunkowskaz",
+      "Nie sygnalizuję"
+    ],
+    "answer": "Lewy kierunkowskaz przed rondem, prawy przy zjeździe",
+    "explanation": "En las rotondas en Polonia, se usa el intermitente izquierdo antes de entrar y el derecho al salir.",
+    "lessonId": "A1__prioridad-cruces__L01"
+  },
+  {
+    "id": "A1__senales-trafico__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T2",
+    "topicSlug": "senales-trafico",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"rondo\"",
+    "options": [
+      "rotonda",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "rotonda",
+    "lessonId": "A1__senales-trafico__L01"
+  },
+  {
+    "id": "A1__senales-trafico__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T2",
+    "topicSlug": "senales-trafico",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"semáforo\"",
+    "options": [
+      "sygnalizacja świetlna",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "sygnalizacja świetlna",
+    "lessonId": "A1__senales-trafico__L01"
+  },
+  {
+    "id": "A1__senales-trafico__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T2",
+    "topicSlug": "senales-trafico",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "¿Qué significa la señal ⛔?",
+    "options": [
+      "Zakaz wjazdu",
+      "Nakaz skrętu",
+      "Parking"
+    ],
+    "answer": "Zakaz wjazdu",
+    "explanation": "La señal ⛔ significa prohibido el paso a todos los vehículos.",
+    "lessonId": "A1__senales-trafico__L01"
+  },
+  {
+    "id": "A1__senales-trafico__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T2",
+    "topicSlug": "senales-trafico",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Reconoce la señal: 🚸",
+    "options": [
+      "Przejście dla pieszych",
+      "Zakaz postoju",
+      "Parking"
+    ],
+    "answer": "Przejście dla pieszych",
+    "explanation": "La señal 🚸 advierte de un paso de peatones.",
+    "lessonId": "A1__senales-trafico__L01"
+  },
+  {
+    "id": "A1__semaforos-policia__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T3",
+    "topicSlug": "semaforos-policia",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"zawracać\"",
+    "options": [
+      "dar la vuelta",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "dar la vuelta",
+    "lessonId": "A1__semaforos-policia__L01"
+  },
+  {
+    "id": "A1__semaforos-policia__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T3",
+    "topicSlug": "semaforos-policia",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"marchar atrás\"",
+    "options": [
+      "cofać",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "cofać",
+    "lessonId": "A1__semaforos-policia__L01"
+  },
+  {
+    "id": "A1__semaforos-policia__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T3",
+    "topicSlug": "semaforos-policia",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"zmieniać pas\"",
+    "options": [
+      "cambiar de carril",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "cambiar de carril",
+    "lessonId": "A1__semaforos-policia__L01"
+  },
+  {
+    "id": "A1__semaforos-policia__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T3",
+    "topicSlug": "semaforos-policia",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"wyprzedzać\"?",
+    "options": [
+      "adelantar",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "adelantar",
+    "lessonId": "A1__semaforos-policia__L01"
+  },
+  {
+    "id": "A1__maniobras-carril__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T4",
+    "topicSlug": "maniobras-carril",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"wyprzedzać\"",
+    "options": [
+      "adelantar",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "adelantar",
+    "lessonId": "A1__maniobras-carril__L01"
+  },
+  {
+    "id": "A1__maniobras-carril__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T4",
+    "topicSlug": "maniobras-carril",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"cinturón de seguridad\"",
+    "options": [
+      "pasy bezpieczeństwa",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "pasy bezpieczeństwa",
+    "lessonId": "A1__maniobras-carril__L01"
+  },
+  {
+    "id": "A1__maniobras-carril__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T4",
+    "topicSlug": "maniobras-carril",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"fotelik dziecięcy\"",
+    "options": [
+      "silla infantil",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "silla infantil",
+    "lessonId": "A1__maniobras-carril__L01"
+  },
+  {
+    "id": "A1__maniobras-carril__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T4",
+    "topicSlug": "maniobras-carril",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"trójkąt ostrzegawczy\"?",
+    "options": [
+      "triángulo de emergencia",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "triángulo de emergencia",
+    "lessonId": "A1__maniobras-carril__L01"
+  },
+  {
+    "id": "A1__adelantamiento-evasion__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T5",
+    "topicSlug": "adelantamiento-evasion",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"trójkąt ostrzegawczy\"",
+    "options": [
+      "triángulo de emergencia",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "triángulo de emergencia",
+    "lessonId": "A1__adelantamiento-evasion__L01"
+  },
+  {
+    "id": "A1__adelantamiento-evasion__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T5",
+    "topicSlug": "adelantamiento-evasion",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"botiquín\"",
+    "options": [
+      "apteczka",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "apteczka",
+    "lessonId": "A1__adelantamiento-evasion__L01"
+  },
+  {
+    "id": "A1__adelantamiento-evasion__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T5",
+    "topicSlug": "adelantamiento-evasion",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"ubezpieczenie OC\"",
+    "options": [
+      "seguro de responsabilidad civil",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "seguro de responsabilidad civil",
+    "lessonId": "A1__adelantamiento-evasion__L01"
+  },
+  {
+    "id": "A1__adelantamiento-evasion__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T5",
+    "topicSlug": "adelantamiento-evasion",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"zatrzymać się\"?",
+    "options": [
+      "detenerse",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "detenerse",
+    "lessonId": "A1__adelantamiento-evasion__L01"
+  },
+  {
+    "id": "A1__velocidades-condiciones__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T6",
+    "topicSlug": "velocidades-condiciones",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"zatrzymać się\"",
+    "options": [
+      "detenerse",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "detenerse",
+    "lessonId": "A1__velocidades-condiciones__L01"
+  },
+  {
+    "id": "A1__velocidades-condiciones__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T6",
+    "topicSlug": "velocidades-condiciones",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"ceder el paso a los peatones\"",
+    "options": [
+      "ustąpić pieszym",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "ustąpić pieszym",
+    "lessonId": "A1__velocidades-condiciones__L01"
+  },
+  {
+    "id": "A1__velocidades-condiciones__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T6",
+    "topicSlug": "velocidades-condiciones",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"przyspieszyć\"",
+    "options": [
+      "acelerar",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "acelerar",
+    "lessonId": "A1__velocidades-condiciones__L01"
+  },
+  {
+    "id": "A1__velocidades-condiciones__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T6",
+    "topicSlug": "velocidades-condiciones",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"zwolnić\"?",
+    "options": [
+      "reducir la velocidad",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "reducir la velocidad",
+    "lessonId": "A1__velocidades-condiciones__L01"
+  },
+  {
+    "id": "A1__peatones-bicicletas-autobuses__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T7",
+    "topicSlug": "peatones-bicicletas-autobuses",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"zwolnić\"",
+    "options": [
+      "reducir la velocidad",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "reducir la velocidad",
+    "lessonId": "A1__peatones-bicicletas-autobuses__L01"
+  },
+  {
+    "id": "A1__peatones-bicicletas-autobuses__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T7",
+    "topicSlug": "peatones-bicicletas-autobuses",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"señalizar la maniobra\"",
+    "options": [
+      "zasygnalizować manewr",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "zasygnalizować manewr",
+    "lessonId": "A1__peatones-bicicletas-autobuses__L01"
+  },
+  {
+    "id": "A1__peatones-bicicletas-autobuses__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T7",
+    "topicSlug": "peatones-bicicletas-autobuses",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"prawo jazdy\"",
+    "options": [
+      "carnet de conducir",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "carnet de conducir",
+    "lessonId": "A1__peatones-bicicletas-autobuses__L01"
+  },
+  {
+    "id": "A1__peatones-bicicletas-autobuses__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T7",
+    "topicSlug": "peatones-bicicletas-autobuses",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"dowód rejestracyjny\"?",
+    "options": [
+      "permiso de circulación",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "permiso de circulación",
+    "lessonId": "A1__peatones-bicicletas-autobuses__L01"
+  },
+  {
+    "id": "A1__seguridad-sanciones__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T8",
+    "topicSlug": "seguridad-sanciones",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"dowód rejestracyjny\"",
+    "options": [
+      "permiso de circulación",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "permiso de circulación",
+    "lessonId": "A1__seguridad-sanciones__L01"
+  },
+  {
+    "id": "A1__seguridad-sanciones__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T8",
+    "topicSlug": "seguridad-sanciones",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"seguro obligatorio\"",
+    "options": [
+      "ubezpieczenie OC",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "ubezpieczenie OC",
+    "lessonId": "A1__seguridad-sanciones__L01"
+  },
+  {
+    "id": "A1__seguridad-sanciones__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T8",
+    "topicSlug": "seguridad-sanciones",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"przegląd techniczny\"",
+    "options": [
+      "inspección técnica",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "inspección técnica",
+    "lessonId": "A1__seguridad-sanciones__L01"
+  },
+  {
+    "id": "A1__seguridad-sanciones__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T8",
+    "topicSlug": "seguridad-sanciones",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"światła mijania\"?",
+    "options": [
+      "luces de cruce",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "luces de cruce",
+    "lessonId": "A1__seguridad-sanciones__L01"
+  },
+  {
+    "id": "A1__vehiculo-obligaciones__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T9",
+    "topicSlug": "vehiculo-obligaciones",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"światła mijania\"",
+    "options": [
+      "luces de cruce",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "luces de cruce",
+    "lessonId": "A1__vehiculo-obligaciones__L01"
+  },
+  {
+    "id": "A1__vehiculo-obligaciones__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T9",
+    "topicSlug": "vehiculo-obligaciones",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"avería\"",
+    "options": [
+      "awaria",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "awaria",
+    "lessonId": "A1__vehiculo-obligaciones__L01"
+  },
+  {
+    "id": "A1__vehiculo-obligaciones__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T9",
+    "topicSlug": "vehiculo-obligaciones",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"objazd\"",
+    "options": [
+      "desvío",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "desvío",
+    "lessonId": "A1__vehiculo-obligaciones__L01"
+  },
+  {
+    "id": "A1__vehiculo-obligaciones__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T9",
+    "topicSlug": "vehiculo-obligaciones",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"korek\"?",
+    "options": [
+      "atasco",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "atasco",
+    "lessonId": "A1__vehiculo-obligaciones__L01"
+  },
+  {
+    "id": "A1__examenes-prueba__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T10",
+    "topicSlug": "examenes-prueba",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"korek\"",
+    "options": [
+      "atasco",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "atasco",
+    "lessonId": "A1__examenes-prueba__L01"
+  },
+  {
+    "id": "A1__examenes-prueba__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T10",
+    "topicSlug": "examenes-prueba",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"accidente\"",
+    "options": [
+      "wypadek",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "wypadek",
+    "lessonId": "A1__examenes-prueba__L01"
+  },
+  {
+    "id": "A1__examenes-prueba__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T10",
+    "topicSlug": "examenes-prueba",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"ruch wahadłowy\"",
+    "options": [
+      "circulación alterna",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "circulación alterna",
+    "lessonId": "A1__examenes-prueba__L01"
+  },
+  {
+    "id": "A1__examenes-prueba__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T10",
+    "topicSlug": "examenes-prueba",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"skrzyżowanie\"?",
+    "options": [
+      "cruce",
+      "prioridad",
+      "ceder el paso",
+      "rotonda"
+    ],
+    "answer": "cruce",
+    "lessonId": "A1__examenes-prueba__L01"
+  },
+  {
+    "id": "A1__vocabulario-carnet__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T11",
+    "topicSlug": "vocabulario-carnet",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"skrzyżowanie\"",
+    "options": [
+      "cruce",
+      "prioridad",
+      "ceder el paso",
+      "rotonda"
+    ],
+    "answer": "cruce",
+    "lessonId": "A1__vocabulario-carnet__L01"
+  },
+  {
+    "id": "A1__vocabulario-carnet__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T11",
+    "topicSlug": "vocabulario-carnet",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"prioridad\"",
+    "options": [
+      "pierwszeństwo",
+      "skrzyżowanie",
+      "ustąpić pierwszeństwa",
+      "rondo"
+    ],
+    "answer": "pierwszeństwo",
+    "lessonId": "A1__vocabulario-carnet__L01"
+  },
+  {
+    "id": "A1__vocabulario-carnet__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T11",
+    "topicSlug": "vocabulario-carnet",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"ustąpić pierwszeństwa\"",
+    "options": [
+      "ceder el paso",
+      "cruce",
+      "prioridad",
+      "rotonda"
+    ],
+    "answer": "ceder el paso",
+    "lessonId": "A1__vocabulario-carnet__L01"
+  },
+  {
+    "id": "A1__vocabulario-carnet__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T11",
+    "topicSlug": "vocabulario-carnet",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"rondo\"?",
+    "options": [
+      "rotonda",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "rotonda",
+    "lessonId": "A1__vocabulario-carnet__L01"
+  },
+  {
+    "id": "A1__senales-carnet__L01__EX01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T12",
+    "topicSlug": "senales-carnet",
+    "order": 10,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta al espanol: \"rondo\"",
+    "options": [
+      "rotonda",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "rotonda",
+    "lessonId": "A1__senales-carnet__L01"
+  },
+  {
+    "id": "A1__senales-carnet__L01__EX02",
+    "level": "A1",
+    "topicId": "DRIVING_B_T12",
+    "topicSlug": "senales-carnet",
+    "order": 20,
+    "type": "multiple choice",
+    "prompt": "Elige la expresion en polaco para: \"semáforo\"",
+    "options": [
+      "sygnalizacja świetlna",
+      "skrzyżowanie",
+      "pierwszeństwo",
+      "ustąpić pierwszeństwa"
+    ],
+    "answer": "sygnalizacja świetlna",
+    "lessonId": "A1__senales-carnet__L01"
+  },
+  {
+    "id": "A1__senales-carnet__L01__EX03",
+    "level": "A1",
+    "topicId": "DRIVING_B_T12",
+    "topicSlug": "senales-carnet",
+    "order": 30,
+    "type": "multiple choice",
+    "prompt": "Selecciona la traduccion correcta: \"skręcać\"",
+    "options": [
+      "girar",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "girar",
+    "lessonId": "A1__senales-carnet__L01"
+  },
+  {
+    "id": "A1__senales-carnet__L01__EX04",
+    "level": "A1",
+    "topicId": "DRIVING_B_T12",
+    "topicSlug": "senales-carnet",
+    "order": 40,
+    "type": "test final - multiple choice",
+    "prompt": "Comprobacion final: que significa \"zawracać\"?",
+    "options": [
+      "dar la vuelta",
+      "cruce",
+      "prioridad",
+      "ceder el paso"
+    ],
+    "answer": "dar la vuelta",
+    "lessonId": "A1__senales-carnet__L01"
+  }
+]

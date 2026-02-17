@@ -5,7 +5,13 @@
     "type": "module",
     "order": 1,
     "level": "A1",
-    "topicId": "DRIVING_B_T1"
+    "topicId": "DRIVING_B_T1",
+    "lessonIds": [
+      "A1__prioridad-cruces__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__prioridad-cruces__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M2",
@@ -13,7 +19,13 @@
     "type": "module",
     "order": 2,
     "level": "A1",
-    "topicId": "DRIVING_B_T2"
+    "topicId": "DRIVING_B_T2",
+    "lessonIds": [
+      "A1__senales-trafico__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__senales-trafico__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M3",
@@ -21,7 +33,13 @@
     "type": "module",
     "order": 3,
     "level": "A1",
-    "topicId": "DRIVING_B_T3"
+    "topicId": "DRIVING_B_T3",
+    "lessonIds": [
+      "A1__semaforos-policia__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__semaforos-policia__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M4",
@@ -29,7 +47,13 @@
     "type": "module",
     "order": 4,
     "level": "A1",
-    "topicId": "DRIVING_B_T4"
+    "topicId": "DRIVING_B_T4",
+    "lessonIds": [
+      "A1__maniobras-carril__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__maniobras-carril__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M5",
@@ -37,7 +61,13 @@
     "type": "module",
     "order": 5,
     "level": "A1",
-    "topicId": "DRIVING_B_T5"
+    "topicId": "DRIVING_B_T5",
+    "lessonIds": [
+      "A1__adelantamiento-evasion__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__adelantamiento-evasion__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M6",
@@ -45,7 +75,13 @@
     "type": "module",
     "order": 6,
     "level": "A1",
-    "topicId": "DRIVING_B_T6"
+    "topicId": "DRIVING_B_T6",
+    "lessonIds": [
+      "A1__velocidades-condiciones__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__velocidades-condiciones__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M7",
@@ -53,7 +89,13 @@
     "type": "module",
     "order": 7,
     "level": "A1",
-    "topicId": "DRIVING_B_T7"
+    "topicId": "DRIVING_B_T7",
+    "lessonIds": [
+      "A1__peatones-bicicletas-autobuses__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__peatones-bicicletas-autobuses__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M8",
@@ -61,7 +103,13 @@
     "type": "module",
     "order": 8,
     "level": "A1",
-    "topicId": "DRIVING_B_T8"
+    "topicId": "DRIVING_B_T8",
+    "lessonIds": [
+      "A1__seguridad-sanciones__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__seguridad-sanciones__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M9",
@@ -69,7 +117,13 @@
     "type": "module",
     "order": 9,
     "level": "A1",
-    "topicId": "DRIVING_B_T9"
+    "topicId": "DRIVING_B_T9",
+    "lessonIds": [
+      "A1__vehiculo-obligaciones__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__vehiculo-obligaciones__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M10",
@@ -77,7 +131,13 @@
     "type": "module",
     "order": 10,
     "level": "A1",
-    "topicId": "DRIVING_B_T10"
+    "topicId": "DRIVING_B_T10",
+    "lessonIds": [
+      "A1__examenes-prueba__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__examenes-prueba__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M11",
@@ -85,7 +145,13 @@
     "type": "material",
     "order": 11,
     "level": "A1",
-    "topicId": "DRIVING_B_T11"
+    "topicId": "DRIVING_B_T11",
+    "lessonIds": [
+      "A1__vocabulario-carnet__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__vocabulario-carnet__L01"
+    ]
   },
   {
     "id": "DRIVING_B_M12",
@@ -93,6 +159,12 @@
     "type": "material",
     "order": 12,
     "level": "A1",
-    "topicId": "DRIVING_B_T12"
+    "topicId": "DRIVING_B_T12",
+    "lessonIds": [
+      "A1__senales-carnet__L01"
+    ],
+    "primaryLessonIds": [
+      "A1__senales-carnet__L01"
+    ]
   }
 ]

@@ -7,7 +7,17 @@
     "slug": "prioridad-cruces",
     "order": 1,
     "type": "module",
-    "icon": "🚦"
+    "icon": "🚦",
+    "lessonIds": [
+      "A1__prioridad-cruces__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__prioridad-cruces__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T2",
@@ -17,7 +27,17 @@
     "slug": "senales-trafico",
     "order": 2,
     "type": "module",
-    "icon": "🚸"
+    "icon": "🚸",
+    "lessonIds": [
+      "A1__senales-trafico__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__senales-trafico__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T3",
@@ -27,7 +47,17 @@
     "slug": "semaforos-policia",
     "order": 3,
     "type": "module",
-    "icon": "🚨"
+    "icon": "🚨",
+    "lessonIds": [
+      "A1__semaforos-policia__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__semaforos-policia__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T4",
@@ -37,7 +67,17 @@
     "slug": "maniobras-carril",
     "order": 4,
     "type": "module",
-    "icon": "↩️"
+    "icon": "↩️",
+    "lessonIds": [
+      "A1__maniobras-carril__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__maniobras-carril__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T5",
@@ -47,7 +87,17 @@
     "slug": "adelantamiento-evasion",
     "order": 5,
     "type": "module",
-    "icon": "⏩"
+    "icon": "⏩",
+    "lessonIds": [
+      "A1__adelantamiento-evasion__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__adelantamiento-evasion__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T6",
@@ -57,7 +107,17 @@
     "slug": "velocidades-condiciones",
     "order": 6,
     "type": "module",
-    "icon": "🏁"
+    "icon": "🏁",
+    "lessonIds": [
+      "A1__velocidades-condiciones__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__velocidades-condiciones__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T7",
@@ -67,7 +127,17 @@
     "slug": "peatones-bicicletas-autobuses",
     "order": 7,
     "type": "module",
-    "icon": "🚶‍♂️"
+    "icon": "🚶‍♂️",
+    "lessonIds": [
+      "A1__peatones-bicicletas-autobuses__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__peatones-bicicletas-autobuses__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T8",
@@ -77,7 +147,17 @@
     "slug": "seguridad-sanciones",
     "order": 8,
     "type": "module",
-    "icon": "🛡️"
+    "icon": "🛡️",
+    "lessonIds": [
+      "A1__seguridad-sanciones__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__seguridad-sanciones__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T9",
@@ -87,7 +167,17 @@
     "slug": "vehiculo-obligaciones",
     "order": 9,
     "type": "module",
-    "icon": "🚗"
+    "icon": "🚗",
+    "lessonIds": [
+      "A1__vehiculo-obligaciones__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__vehiculo-obligaciones__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T10",
@@ -97,7 +187,17 @@
     "slug": "examenes-prueba",
     "order": 10,
     "type": "module",
-    "icon": "📝"
+    "icon": "📝",
+    "lessonIds": [
+      "A1__examenes-prueba__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__examenes-prueba__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T11",
@@ -107,7 +207,17 @@
     "slug": "vocabulario-carnet",
     "order": 11,
     "type": "vocabulary",
-    "icon": "🗣️"
+    "icon": "🗣️",
+    "lessonIds": [
+      "A1__vocabulario-carnet__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__vocabulario-carnet__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   },
   {
     "id": "DRIVING_B_T12",
@@ -117,6 +227,16 @@
     "slug": "senales-carnet",
     "order": 12,
     "type": "vocabulary",
-    "icon": "🚥"
+    "icon": "🚥",
+    "lessonIds": [
+      "A1__senales-carnet__L01"
+    ],
+    "lessonRoadmap": [
+      {
+        "order": 1,
+        "lessonId": "A1__senales-carnet__L01",
+        "lessonTitle": "Leccion 1"
+      }
+    ]
   }
 ]

@@ -1,0 +1,638 @@
+[
+  {
+    "id": "A1__prioridad-cruces__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T1",
+    "topicSlug": "prioridad-cruces",
+    "title": "Prioridad y cruces - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__prioridad-cruces__L01__EX01",
+      "A1__prioridad-cruces__L01__EX02",
+      "A1__prioridad-cruces__L01__EX03",
+      "A1__prioridad-cruces__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Reglas de prioridad y comportamiento en cruces. Ejemplos prácticos.</p><h3>Vocabulario clave</h3><ul><li><b>skrzyżowanie</b> - cruce</li><li><b>pierwszeństwo</b> - prioridad</li><li><b>ustąpić pierwszeństwa</b> - ceder el paso</li><li><b>rondo</b> - rotonda</li><li><b>sygnalizacja świetlna</b> - semáforo</li><li><b>skręcać</b> - girar</li></ul><h3>Dialogo util</h3><p><b>Control de carretera por la policía</b></p><p>PL: Dzień dobry, dokumenty proszę.<br>ES: Buenos días, los documentos por favor.<br><br>PL: Oczywiście, proszę bardzo.<br>ES: Por supuesto, aquí tiene.<br><br>PL: Czy wie Pan/Pani, dlaczego został Pan/Pani zatrzymany/a?<br>ES: ¿Sabe por qué le hemos parado?<br><br>PL: Nie, proszę wyjaśnić.<br>ES: No, por favor explíqueme.</p><h3>Pregunta frecuente</h3><p><b>¿Se puede dar la vuelta en un cruce con semáforo?</b><br>Solo si no lo prohíbe una señal o el semáforo.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Reglas de prioridad y comportamiento en cruces. Ejemplos prácticos."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "skrzyżowanie - cruce",
+        "text": "Cruce de caminos"
+      },
+      {
+        "kind": "tip",
+        "title": "pierwszeństwo - prioridad",
+        "text": "Tener prioridad"
+      },
+      {
+        "kind": "tip",
+        "title": "ustąpić pierwszeństwa - ceder el paso",
+        "text": "Cede el paso a los peatones"
+      },
+      {
+        "kind": "tip",
+        "title": "rondo - rotonda",
+        "text": "Entrar en la rotonda"
+      }
+    ]
+  },
+  {
+    "id": "A1__senales-trafico__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T2",
+    "topicSlug": "senales-trafico",
+    "title": "Señales de tráfico - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__senales-trafico__L01__EX01",
+      "A1__senales-trafico__L01__EX02",
+      "A1__senales-trafico__L01__EX03",
+      "A1__senales-trafico__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Reconocimiento y uso de señales de tráfico en Polonia.</p><h3>Vocabulario clave</h3><ul><li><b>rondo</b> - rotonda</li><li><b>sygnalizacja świetlna</b> - semáforo</li><li><b>skręcać</b> - girar</li><li><b>zawracać</b> - dar la vuelta</li><li><b>cofać</b> - marchar atrás</li><li><b>zmieniać pas</b> - cambiar de carril</li></ul><h3>Dialogo util</h3><p><b>Preguntar por el camino</b></p><p>PL: Przepraszam, jak dojadę do centrum?<br>ES: Perdone, ¿cómo llego al centro?<br><br>PL: Prosto i na światłach w lewo.<br>ES: Todo recto y a la izquierda en el semáforo.</p><h3>Pregunta frecuente</h3><p><b>¿Qué documentos debes llevar al conducir?</b><br>Carnet de conducir, permiso de circulación, seguro obligatorio.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Reconocimiento y uso de señales de tráfico en Polonia."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "rondo - rotonda",
+        "text": "Entrar en la rotonda"
+      },
+      {
+        "kind": "tip",
+        "title": "sygnalizacja świetlna - semáforo",
+        "text": "Esperar la luz verde"
+      },
+      {
+        "kind": "tip",
+        "title": "skręcać - girar",
+        "text": "Gira a la izquierda"
+      },
+      {
+        "kind": "tip",
+        "title": "zawracać - dar la vuelta",
+        "text": "Da la vuelta en el cruce"
+      }
+    ]
+  },
+  {
+    "id": "A1__semaforos-policia__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T3",
+    "topicSlug": "semaforos-policia",
+    "title": "Semáforos y policía - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__semaforos-policia__L01__EX01",
+      "A1__semaforos-policia__L01__EX02",
+      "A1__semaforos-policia__L01__EX03",
+      "A1__semaforos-policia__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Interpretación de semáforos y señales manuales de la policía.</p><h3>Vocabulario clave</h3><ul><li><b>zawracać</b> - dar la vuelta</li><li><b>cofać</b> - marchar atrás</li><li><b>zmieniać pas</b> - cambiar de carril</li><li><b>wyprzedzać</b> - adelantar</li><li><b>pasy bezpieczeństwa</b> - cinturón de seguridad</li><li><b>fotelik dziecięcy</b> - silla infantil</li></ul><h3>Dialogo util</h3><p><b>Llamar a la grúa</b></p><p>PL: Mój samochód się zepsuł. Potrzebuję pomocy.<br>ES: Mi coche se ha averiado. Necesito ayuda.<br><br>PL: Gdzie Pan/Pani się znajduje?<br>ES: ¿Dónde se encuentra?<br><br>PL: Na drodze krajowej nr 7, kilometr 120.<br>ES: En la carretera nacional 7, kilómetro 120.</p><h3>Pregunta frecuente</h3><p><b>¿Se puede usar el móvil mientras se conduce?</b><br>No, salvo que uses manos libres.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Interpretación de semáforos y señales manuales de la policía."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "zawracać - dar la vuelta",
+        "text": "Da la vuelta en el cruce"
+      },
+      {
+        "kind": "tip",
+        "title": "cofać - marchar atrás",
+        "text": "Da marcha atrás despacio"
+      },
+      {
+        "kind": "tip",
+        "title": "zmieniać pas - cambiar de carril",
+        "text": "Cambia al carril derecho"
+      },
+      {
+        "kind": "tip",
+        "title": "wyprzedzać - adelantar",
+        "text": "Adelanta al ciclista"
+      }
+    ]
+  },
+  {
+    "id": "A1__maniobras-carril__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T4",
+    "topicSlug": "maniobras-carril",
+    "title": "Maniobras y cambios de carril - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__maniobras-carril__L01__EX01",
+      "A1__maniobras-carril__L01__EX02",
+      "A1__maniobras-carril__L01__EX03",
+      "A1__maniobras-carril__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Giros, cambios de carril, marcha atrás y estacionamiento.</p><h3>Vocabulario clave</h3><ul><li><b>wyprzedzać</b> - adelantar</li><li><b>pasy bezpieczeństwa</b> - cinturón de seguridad</li><li><b>fotelik dziecięcy</b> - silla infantil</li><li><b>trójkąt ostrzegawczy</b> - triángulo de emergencia</li><li><b>apteczka</b> - botiquín</li><li><b>ubezpieczenie OC</b> - seguro de responsabilidad civil</li></ul><h3>Dialogo util</h3><p><b>Control de carretera por la policía</b></p><p>PL: Dzień dobry, dokumenty proszę.<br>ES: Buenos días, los documentos por favor.<br><br>PL: Oczywiście, proszę bardzo.<br>ES: Por supuesto, aquí tiene.<br><br>PL: Czy wie Pan/Pani, dlaczego został Pan/Pani zatrzymany/a?<br>ES: ¿Sabe por qué le hemos parado?<br><br>PL: Nie, proszę wyjaśnić.<br>ES: No, por favor explíqueme.</p><h3>Pregunta frecuente</h3><p><b>¿Se puede dar la vuelta en un cruce con semáforo?</b><br>Solo si no lo prohíbe una señal o el semáforo.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Giros, cambios de carril, marcha atrás y estacionamiento."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "wyprzedzać - adelantar",
+        "text": "Adelanta al ciclista"
+      },
+      {
+        "kind": "tip",
+        "title": "pasy bezpieczeństwa - cinturón de seguridad",
+        "text": "Ponte el cinturón"
+      },
+      {
+        "kind": "tip",
+        "title": "fotelik dziecięcy - silla infantil",
+        "text": "Niño en silla infantil"
+      },
+      {
+        "kind": "tip",
+        "title": "trójkąt ostrzegawczy - triángulo de emergencia",
+        "text": "Coloca el triángulo detrás del vehículo"
+      }
+    ]
+  },
+  {
+    "id": "A1__adelantamiento-evasion__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T5",
+    "topicSlug": "adelantamiento-evasion",
+    "title": "Adelantamiento y evasión - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__adelantamiento-evasion__L01__EX01",
+      "A1__adelantamiento-evasion__L01__EX02",
+      "A1__adelantamiento-evasion__L01__EX03",
+      "A1__adelantamiento-evasion__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Reglas de adelantamiento, evasión y cruce de vehículos.</p><h3>Vocabulario clave</h3><ul><li><b>trójkąt ostrzegawczy</b> - triángulo de emergencia</li><li><b>apteczka</b> - botiquín</li><li><b>ubezpieczenie OC</b> - seguro de responsabilidad civil</li><li><b>zatrzymać się</b> - detenerse</li><li><b>ustąpić pieszym</b> - ceder el paso a los peatones</li><li><b>przyspieszyć</b> - acelerar</li></ul><h3>Dialogo util</h3><p><b>Preguntar por el camino</b></p><p>PL: Przepraszam, jak dojadę do centrum?<br>ES: Perdone, ¿cómo llego al centro?<br><br>PL: Prosto i na światłach w lewo.<br>ES: Todo recto y a la izquierda en el semáforo.</p><h3>Pregunta frecuente</h3><p><b>¿Qué documentos debes llevar al conducir?</b><br>Carnet de conducir, permiso de circulación, seguro obligatorio.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Reglas de adelantamiento, evasión y cruce de vehículos."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "trójkąt ostrzegawczy - triángulo de emergencia",
+        "text": "Coloca el triángulo detrás del vehículo"
+      },
+      {
+        "kind": "tip",
+        "title": "apteczka - botiquín",
+        "text": "Revisa el botiquín"
+      },
+      {
+        "kind": "tip",
+        "title": "ubezpieczenie OC - seguro de responsabilidad civil",
+        "text": "Ten un seguro válido"
+      },
+      {
+        "kind": "tip",
+        "title": "zatrzymać się - detenerse",
+        "text": "Detente en el semáforo rojo"
+      }
+    ]
+  },
+  {
+    "id": "A1__velocidades-condiciones__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T6",
+    "topicSlug": "velocidades-condiciones",
+    "title": "Velocidades y condiciones - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__velocidades-condiciones__L01__EX01",
+      "A1__velocidades-condiciones__L01__EX02",
+      "A1__velocidades-condiciones__L01__EX03",
+      "A1__velocidades-condiciones__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Límites de velocidad, condiciones y distancias de seguridad.</p><h3>Vocabulario clave</h3><ul><li><b>zatrzymać się</b> - detenerse</li><li><b>ustąpić pieszym</b> - ceder el paso a los peatones</li><li><b>przyspieszyć</b> - acelerar</li><li><b>zwolnić</b> - reducir la velocidad</li><li><b>zasygnalizować manewr</b> - señalizar la maniobra</li><li><b>prawo jazdy</b> - carnet de conducir</li></ul><h3>Dialogo util</h3><p><b>Llamar a la grúa</b></p><p>PL: Mój samochód się zepsuł. Potrzebuję pomocy.<br>ES: Mi coche se ha averiado. Necesito ayuda.<br><br>PL: Gdzie Pan/Pani się znajduje?<br>ES: ¿Dónde se encuentra?<br><br>PL: Na drodze krajowej nr 7, kilometr 120.<br>ES: En la carretera nacional 7, kilómetro 120.</p><h3>Pregunta frecuente</h3><p><b>¿Se puede usar el móvil mientras se conduce?</b><br>No, salvo que uses manos libres.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Límites de velocidad, condiciones y distancias de seguridad."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "zatrzymać się - detenerse",
+        "text": "Detente en el semáforo rojo"
+      },
+      {
+        "kind": "tip",
+        "title": "ustąpić pieszym - ceder el paso a los peatones",
+        "text": "Cede el paso a los peatones en el paso"
+      },
+      {
+        "kind": "tip",
+        "title": "przyspieszyć - acelerar",
+        "text": "Acelera en la autopista"
+      },
+      {
+        "kind": "tip",
+        "title": "zwolnić - reducir la velocidad",
+        "text": "Reduce la velocidad antes de la curva"
+      }
+    ]
+  },
+  {
+    "id": "A1__peatones-bicicletas-autobuses__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T7",
+    "topicSlug": "peatones-bicicletas-autobuses",
+    "title": "Peatones, bicicletas y autobuses - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__peatones-bicicletas-autobuses__L01__EX01",
+      "A1__peatones-bicicletas-autobuses__L01__EX02",
+      "A1__peatones-bicicletas-autobuses__L01__EX03",
+      "A1__peatones-bicicletas-autobuses__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Normas para peatones, ciclistas, niños y transporte público.</p><h3>Vocabulario clave</h3><ul><li><b>zwolnić</b> - reducir la velocidad</li><li><b>zasygnalizować manewr</b> - señalizar la maniobra</li><li><b>prawo jazdy</b> - carnet de conducir</li><li><b>dowód rejestracyjny</b> - permiso de circulación</li><li><b>ubezpieczenie OC</b> - seguro obligatorio</li><li><b>przegląd techniczny</b> - inspección técnica</li></ul><h3>Dialogo util</h3><p><b>Control de carretera por la policía</b></p><p>PL: Dzień dobry, dokumenty proszę.<br>ES: Buenos días, los documentos por favor.<br><br>PL: Oczywiście, proszę bardzo.<br>ES: Por supuesto, aquí tiene.<br><br>PL: Czy wie Pan/Pani, dlaczego został Pan/Pani zatrzymany/a?<br>ES: ¿Sabe por qué le hemos parado?<br><br>PL: Nie, proszę wyjaśnić.<br>ES: No, por favor explíqueme.</p><h3>Pregunta frecuente</h3><p><b>¿Se puede dar la vuelta en un cruce con semáforo?</b><br>Solo si no lo prohíbe una señal o el semáforo.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Normas para peatones, ciclistas, niños y transporte público."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "zwolnić - reducir la velocidad",
+        "text": "Reduce la velocidad antes de la curva"
+      },
+      {
+        "kind": "tip",
+        "title": "zasygnalizować manewr - señalizar la maniobra",
+        "text": "Señaliza el giro a la derecha"
+      },
+      {
+        "kind": "tip",
+        "title": "prawo jazdy - carnet de conducir",
+        "text": "Tengo carnet de conducir B"
+      },
+      {
+        "kind": "tip",
+        "title": "dowód rejestracyjny - permiso de circulación",
+        "text": "Muestra el permiso de circulación"
+      }
+    ]
+  },
+  {
+    "id": "A1__seguridad-sanciones__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T8",
+    "topicSlug": "seguridad-sanciones",
+    "title": "Seguridad y sanciones - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__seguridad-sanciones__L01__EX01",
+      "A1__seguridad-sanciones__L01__EX02",
+      "A1__seguridad-sanciones__L01__EX03",
+      "A1__seguridad-sanciones__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Cinturones, sillas infantiles, alcohol, teléfono y sanciones.</p><h3>Vocabulario clave</h3><ul><li><b>dowód rejestracyjny</b> - permiso de circulación</li><li><b>ubezpieczenie OC</b> - seguro obligatorio</li><li><b>przegląd techniczny</b> - inspección técnica</li><li><b>światła mijania</b> - luces de cruce</li><li><b>awaria</b> - avería</li><li><b>objazd</b> - desvío</li></ul><h3>Dialogo util</h3><p><b>Preguntar por el camino</b></p><p>PL: Przepraszam, jak dojadę do centrum?<br>ES: Perdone, ¿cómo llego al centro?<br><br>PL: Prosto i na światłach w lewo.<br>ES: Todo recto y a la izquierda en el semáforo.</p><h3>Pregunta frecuente</h3><p><b>¿Qué documentos debes llevar al conducir?</b><br>Carnet de conducir, permiso de circulación, seguro obligatorio.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Cinturones, sillas infantiles, alcohol, teléfono y sanciones."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "dowód rejestracyjny - permiso de circulación",
+        "text": "Muestra el permiso de circulación"
+      },
+      {
+        "kind": "tip",
+        "title": "ubezpieczenie OC - seguro obligatorio",
+        "text": "Verifica la validez del seguro"
+      },
+      {
+        "kind": "tip",
+        "title": "przegląd techniczny - inspección técnica",
+        "text": "Vehículo tras la inspección técnica"
+      },
+      {
+        "kind": "tip",
+        "title": "światła mijania - luces de cruce",
+        "text": "Enciende las luces de cruce"
+      }
+    ]
+  },
+  {
+    "id": "A1__vehiculo-obligaciones__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T9",
+    "topicSlug": "vehiculo-obligaciones",
+    "title": "Vehículo y obligaciones - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__vehiculo-obligaciones__L01__EX01",
+      "A1__vehiculo-obligaciones__L01__EX02",
+      "A1__vehiculo-obligaciones__L01__EX03",
+      "A1__vehiculo-obligaciones__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Documentos, equipamiento obligatorio y averías.</p><h3>Vocabulario clave</h3><ul><li><b>światła mijania</b> - luces de cruce</li><li><b>awaria</b> - avería</li><li><b>objazd</b> - desvío</li><li><b>korek</b> - atasco</li><li><b>wypadek</b> - accidente</li><li><b>ruch wahadłowy</b> - circulación alterna</li></ul><h3>Dialogo util</h3><p><b>Llamar a la grúa</b></p><p>PL: Mój samochód się zepsuł. Potrzebuję pomocy.<br>ES: Mi coche se ha averiado. Necesito ayuda.<br><br>PL: Gdzie Pan/Pani się znajduje?<br>ES: ¿Dónde se encuentra?<br><br>PL: Na drodze krajowej nr 7, kilometr 120.<br>ES: En la carretera nacional 7, kilómetro 120.</p><h3>Pregunta frecuente</h3><p><b>¿Se puede usar el móvil mientras se conduce?</b><br>No, salvo que uses manos libres.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Documentos, equipamiento obligatorio y averías."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "światła mijania - luces de cruce",
+        "text": "Enciende las luces de cruce"
+      },
+      {
+        "kind": "tip",
+        "title": "awaria - avería",
+        "text": "Tuve una avería en la carretera"
+      },
+      {
+        "kind": "tip",
+        "title": "objazd - desvío",
+        "text": "Desvío por el pueblo"
+      },
+      {
+        "kind": "tip",
+        "title": "korek - atasco",
+        "text": "Estar en un atasco"
+      }
+    ]
+  },
+  {
+    "id": "A1__examenes-prueba__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T10",
+    "topicSlug": "examenes-prueba",
+    "title": "Exámenes de prueba - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__examenes-prueba__L01__EX01",
+      "A1__examenes-prueba__L01__EX02",
+      "A1__examenes-prueba__L01__EX03",
+      "A1__examenes-prueba__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Simulacros de examen teórico. Mezcla de preguntas.</p><h3>Vocabulario clave</h3><ul><li><b>korek</b> - atasco</li><li><b>wypadek</b> - accidente</li><li><b>ruch wahadłowy</b> - circulación alterna</li><li><b>skrzyżowanie</b> - cruce</li><li><b>pierwszeństwo</b> - prioridad</li><li><b>ustąpić pierwszeństwa</b> - ceder el paso</li></ul><h3>Dialogo util</h3><p><b>Control de carretera por la policía</b></p><p>PL: Dzień dobry, dokumenty proszę.<br>ES: Buenos días, los documentos por favor.<br><br>PL: Oczywiście, proszę bardzo.<br>ES: Por supuesto, aquí tiene.<br><br>PL: Czy wie Pan/Pani, dlaczego został Pan/Pani zatrzymany/a?<br>ES: ¿Sabe por qué le hemos parado?<br><br>PL: Nie, proszę wyjaśnić.<br>ES: No, por favor explíqueme.</p><h3>Pregunta frecuente</h3><p><b>¿Se puede dar la vuelta en un cruce con semáforo?</b><br>Solo si no lo prohíbe una señal o el semáforo.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Simulacros de examen teórico. Mezcla de preguntas."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "korek - atasco",
+        "text": "Estar en un atasco"
+      },
+      {
+        "kind": "tip",
+        "title": "wypadek - accidente",
+        "text": "Fui testigo de un accidente"
+      },
+      {
+        "kind": "tip",
+        "title": "ruch wahadłowy - circulación alterna",
+        "text": "Circulación alterna en tramo en obras"
+      },
+      {
+        "kind": "tip",
+        "title": "skrzyżowanie - cruce",
+        "text": "Cruce de caminos"
+      }
+    ]
+  },
+  {
+    "id": "A1__vocabulario-carnet__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T11",
+    "topicSlug": "vocabulario-carnet",
+    "title": "Vocabulario — carnet de conducir - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__vocabulario-carnet__L01__EX01",
+      "A1__vocabulario-carnet__L01__EX02",
+      "A1__vocabulario-carnet__L01__EX03",
+      "A1__vocabulario-carnet__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Palabras y frases clave PL↔ES para el examen y la práctica.</p><h3>Vocabulario clave</h3><ul><li><b>skrzyżowanie</b> - cruce</li><li><b>pierwszeństwo</b> - prioridad</li><li><b>ustąpić pierwszeństwa</b> - ceder el paso</li><li><b>rondo</b> - rotonda</li><li><b>sygnalizacja świetlna</b> - semáforo</li><li><b>skręcać</b> - girar</li></ul><h3>Dialogo util</h3><p><b>Preguntar por el camino</b></p><p>PL: Przepraszam, jak dojadę do centrum?<br>ES: Perdone, ¿cómo llego al centro?<br><br>PL: Prosto i na światłach w lewo.<br>ES: Todo recto y a la izquierda en el semáforo.</p><h3>Pregunta frecuente</h3><p><b>¿Qué documentos debes llevar al conducir?</b><br>Carnet de conducir, permiso de circulación, seguro obligatorio.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Palabras y frases clave PL↔ES para el examen y la práctica."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "skrzyżowanie - cruce",
+        "text": "Cruce de caminos"
+      },
+      {
+        "kind": "tip",
+        "title": "pierwszeństwo - prioridad",
+        "text": "Tener prioridad"
+      },
+      {
+        "kind": "tip",
+        "title": "ustąpić pierwszeństwa - ceder el paso",
+        "text": "Cede el paso a los peatones"
+      },
+      {
+        "kind": "tip",
+        "title": "rondo - rotonda",
+        "text": "Entrar en la rotonda"
+      }
+    ]
+  },
+  {
+    "id": "A1__senales-carnet__L01",
+    "level": "A1",
+    "topicId": "DRIVING_B_T12",
+    "topicSlug": "senales-carnet",
+    "title": "Señales — carnet de conducir - leccion 1",
+    "order": 1,
+    "published": true,
+    "estimatedMinutes": 12,
+    "exerciseIds": [
+      "A1__senales-carnet__L01__EX01",
+      "A1__senales-carnet__L01__EX02",
+      "A1__senales-carnet__L01__EX03",
+      "A1__senales-carnet__L01__EX04"
+    ],
+    "html": "<h3>Objetivo</h3><p>Lista de señales de tráfico con descripción PL/ES.</p><h3>Vocabulario clave</h3><ul><li><b>rondo</b> - rotonda</li><li><b>sygnalizacja świetlna</b> - semáforo</li><li><b>skręcać</b> - girar</li><li><b>zawracać</b> - dar la vuelta</li><li><b>cofać</b> - marchar atrás</li><li><b>zmieniać pas</b> - cambiar de carril</li></ul><h3>Dialogo util</h3><p><b>Llamar a la grúa</b></p><p>PL: Mój samochód się zepsuł. Potrzebuję pomocy.<br>ES: Mi coche se ha averiado. Necesito ayuda.<br><br>PL: Gdzie Pan/Pani się znajduje?<br>ES: ¿Dónde se encuentra?<br><br>PL: Na drodze krajowej nr 7, kilometr 120.<br>ES: En la carretera nacional 7, kilómetro 120.</p><h3>Pregunta frecuente</h3><p><b>¿Se puede usar el móvil mientras se conduce?</b><br>No, salvo que uses manos libres.</p>",
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Objetivo"
+      },
+      {
+        "kind": "p",
+        "text": "Lista de señales de tráfico con descripción PL/ES."
+      },
+      {
+        "kind": "heading",
+        "level": "h3",
+        "text": "Vocabulario clave"
+      },
+      {
+        "kind": "tip",
+        "title": "rondo - rotonda",
+        "text": "Entrar en la rotonda"
+      },
+      {
+        "kind": "tip",
+        "title": "sygnalizacja świetlna - semáforo",
+        "text": "Esperar la luz verde"
+      },
+      {
+        "kind": "tip",
+        "title": "skręcać - girar",
+        "text": "Gira a la izquierda"
+      },
+      {
+        "kind": "tip",
+        "title": "zawracać - dar la vuelta",
+        "text": "Da la vuelta en el cruce"
+      }
+    ]
+  }
+]
