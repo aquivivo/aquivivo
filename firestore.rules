@@ -315,6 +315,39 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    /* ===== DRIVING MATERIALS ===== */
+    match /{collectionId}/{id} {
+      allow read: if
+        [
+          "driving_vocab",
+          "driving_signs",
+          "driving_faq",
+          "driving_checklist",
+          "driving_dialogues",
+          "driving_exam_traps",
+          "driving_audio",
+          "driving_images",
+          "driving_abbr",
+          "driving_quiz"
+        ].hasAny([collectionId])
+        && signedIn()
+        && notBlocked();
+      allow write: if
+        [
+          "driving_vocab",
+          "driving_signs",
+          "driving_faq",
+          "driving_checklist",
+          "driving_dialogues",
+          "driving_exam_traps",
+          "driving_audio",
+          "driving_images",
+          "driving_abbr",
+          "driving_quiz"
+        ].hasAny([collectionId])
+        && isAdmin();
+    }
+
     /* ===== SERVICES (OFERTA) ===== */
     match /services/{id} {
       allow read: if true;

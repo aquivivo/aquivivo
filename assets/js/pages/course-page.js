@@ -478,8 +478,7 @@ function navParams() {
   const parts = [];
   if (COURSE_KEY) parts.push(`course=${encodeURIComponent(COURSE_KEY)}`);
   if (TRACK) parts.push(`track=${encodeURIComponent(TRACK)}`);
-  if (COURSE_KEY === SINGLE_COURSE_KEY && CONTINUOUS_FLOW)
-    parts.push('flow=continuous');
+  if (CONTINUOUS_FLOW) parts.push('flow=continuous');
   return parts.length ? `&${parts.join('&')}` : '';
 }
 
@@ -599,7 +598,7 @@ function sortCoursePathDocs(list) {
 }
 
 async function loadCoursePathDocsForKey(key) {
-  const requested = String(SINGLE_COURSE_KEY || key || '').trim();
+  const requested = String(key || SINGLE_COURSE_KEY || '').trim();
   if (!requested) return [];
   const base = coursePathBaseKey(requested) || requested;
   const ids = new Set([requested, base]);

@@ -4,7 +4,7 @@
     "title": "Pierwszeństwo i skrzyżowania",
     "type": "module",
     "order": 1,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T1"
   },
   {
@@ -12,7 +12,7 @@
     "title": "Znaki drogowe",
     "type": "module",
     "order": 2,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T2"
   },
   {
@@ -20,7 +20,7 @@
     "title": "Sygnalizacja świetlna + policjant",
     "type": "module",
     "order": 3,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T3"
   },
   {
@@ -28,7 +28,7 @@
     "title": "Manewry: skręt, zawracanie, zmiana pasa, cofanie",
     "type": "module",
     "order": 4,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T4"
   },
   {
@@ -36,7 +36,7 @@
     "title": "Wyprzedzanie/omijanie/wymijanie",
     "type": "module",
     "order": 5,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T5"
   },
   {
@@ -44,7 +44,7 @@
     "title": "Prędkości + warunki + odstęp + hamowanie",
     "type": "module",
     "order": 6,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T6"
   },
   {
@@ -52,7 +52,7 @@
     "title": "Piesi, rowery, przejazdy, dzieci, autobusy",
     "type": "module",
     "order": 7,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T7"
   },
   {
@@ -60,7 +60,7 @@
     "title": "Bezpieczeństwo: pasy, foteliki, telefon, alkohol, wykroczenia",
     "type": "module",
     "order": 8,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T8"
   },
   {
@@ -68,7 +68,7 @@
     "title": "Pojazd i obowiązki: dokumenty, wyposażenie, awaria",
     "type": "module",
     "order": 9,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T9"
   },
   {
@@ -76,7 +76,7 @@
     "title": "Egzaminy próbne",
     "type": "module",
     "order": 10,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T10"
   },
   {
@@ -84,7 +84,7 @@
     "title": "Słownictwo — Prawo jazdy",
     "type": "material",
     "order": 11,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T11"
   },
   {
@@ -92,7 +92,7 @@
     "title": "Znaki — Prawo jazdy",
     "type": "material",
     "order": 12,
-    "level": "B",
+    "level": "A1",
     "topicId": "DRIVING_B_T12"
   }
 ]

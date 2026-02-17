@@ -566,7 +566,6 @@ async function loadCourseCatalog() {
 
     const out = [];
     for (const [baseKey, rows] of groups.entries()) {
-      if (String(baseKey || '').toUpperCase() !== SINGLE_COURSE_KEY) continue;
       const sortedRows = [...rows].sort(
         (a, b) =>
           levelRank(a?.level || String(a?.id || '').split('__')[0]) -
@@ -595,7 +594,7 @@ async function loadCourseCatalog() {
         subtitle,
         levels,
         startLevel: levels[0] || 'A1',
-        href: `course.html?level=${encodeURIComponent(levels[0] || 'A1')}&course=${encodeURIComponent(SINGLE_COURSE_KEY)}&flow=continuous`,
+        href: `course.html?level=${encodeURIComponent(levels[0] || 'A1')}&course=${encodeURIComponent(baseKey)}&flow=continuous`,
       });
     }
 
