@@ -426,6 +426,18 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    /* ===== CONTACT FORM (index) ===== */
+    match /contact_messages/{id} {
+      allow read, update, delete: if isAdmin();
+      allow create: if
+        request.resource.data.email is string
+        && request.resource.data.message is string
+        && request.resource.data.email.size() > 3
+        && request.resource.data.email.size() <= 254
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 4000;
+    }
+
     /* ===== PUBLIC PROFILES ===== */
     match /public_users/{uid} {
       allow read: if signedIn();

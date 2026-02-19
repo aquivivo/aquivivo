@@ -105,7 +105,7 @@ async function loadLessonData() {
   const btnMini = $('btnLessonMiniTest');
   if (btnBack) btnBack.href = withContext('lessonpage.html');
   if (btnFlash) btnFlash.href = withContext('flashcards.html', { includeLesson: true });
-  if (btnEx) btnEx.href = withContext('ejercicio.html', { includeLesson: true });
+  if (btnEx) btnEx.href = withContext('versions.html', { includeLesson: true });
   if (btnMini) btnMini.href = withContext('minitest.html', { includeLesson: true });
 
   let topic = null;

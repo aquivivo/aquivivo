@@ -3464,55 +3464,8 @@ async function sendBroadcast() {
     return;
   }
   try {
-    const fanoutNotifications = async ({ broadcastId, title, body, link, createdByUid }) => {
-      if (!broadcastId) return 0;
-      const usersSnap = await getDocs(collection(db, 'users'));
-      const notifId = `broadcast_${broadcastId}`;
-      let batch = writeBatch(db);
-      let ops = 0;
-      let sent = 0;
-
-      const commit = async () => {
-        if (!ops) return;
-        await batch.commit();
-        batch = writeBatch(db);
-        ops = 0;
-      };
-
-      for (const uDoc of usersSnap.docs) {
-        const uid = String(uDoc.id || '').trim();
-        if (!uid) continue;
-        if (createdByUid && uid === createdByUid) continue;
-        const userData = uDoc.data() || {};
-        if (userData.blocked === true) continue;
-
-        const ref = doc(db, 'user_notifications', uid, 'items', notifId);
-        batch.set(
-          ref,
-          {
-            title: String(title || 'Wiadomosc').trim() || 'Wiadomosc',
-            body: String(body || '').trim(),
-            type: 'broadcast',
-            link: String(link || 'mensajes.html').trim(),
-            data: { broadcastId },
-            read: false,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true },
-        );
-        ops += 1;
-        sent += 1;
-
-        if (ops >= 400) await commit();
-      }
-
-      await commit();
-      return sent;
-    };
-
     setStatus(status, 'Wysylanie...');
-    const ref = await addDoc(collection(db, 'broadcasts'), {
+    await addDoc(collection(db, 'broadcasts'), {
       title: title || 'Wiadomosc',
       body,
       link: 'mensajes.html',
@@ -3520,24 +3473,9 @@ async function sendBroadcast() {
       createdByEmail: createdByEmail || null,
       createdAt: serverTimestamp(),
     });
-    let pushed = 0;
-    try {
-      pushed = await fanoutNotifications({
-        broadcastId: ref.id,
-        title: title || 'Wiadomosc',
-        body,
-        link: 'mensajes.html',
-        createdByUid,
-      });
-    } catch (fanoutErr) {
-      console.warn('[broadcast fanout]', fanoutErr);
-    }
     if (bodyEl) bodyEl.value = '';
     if (titleEl) titleEl.value = '';
-    setStatus(
-      status,
-      pushed > 0 ? `Wyslano (${pushed} powiadomien)` : 'Wyslano',
-    );
+    setStatus(status, 'Wyslano do sekcji wiadomosci.');
     await loadBroadcasts();
   } catch (e) {
     console.error('[broadcast send]', e);
@@ -4265,4 +4203,3 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadBroadcasts();
   });
 });
-

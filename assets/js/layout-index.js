@@ -542,7 +542,7 @@ import {
             <a href="polityka-prywatnosci.html">Pol&iacute;tica de privacidad</a>
             <a href="regulamin.html">T&eacute;rminos</a>
             <a href="zwroty.html">Devoluciones</a>
-            <a href="kontakt.html">Contacto</a>
+            <a href="index.html#contact">Contacto</a>
           </nav>
         </div>
       </footer>
@@ -817,7 +817,9 @@ import {
           limit(6),
         ),
       );
-      const items = snap.docs.map((d) => d.data() || {});
+      const items = snap.docs
+        .map((d) => d.data() || {})
+        .filter((item) => String(item.type || '').toLowerCase() !== 'broadcast');
       const unread = items.filter((i) => i.read !== true).length;
       setBadge(badge, unread);
       if (!items.length) {
@@ -828,10 +830,11 @@ import {
         .map((item) => {
           const title = String(item.title || 'Notificación');
           const body = String(item.body || '');
-          return `<div class="nav-mini-item ${item.read ? '' : 'is-unread'}">
+          const href = String(item.link || 'notificaciones.html').trim();
+          return `<a class="nav-mini-item ${item.read ? '' : 'is-unread'}" href="${href}">
             <div class="nav-mini-title">${title}</div>
             ${body ? `<div class="nav-mini-body">${body}</div>` : ''}
-          </div>`;
+          </a>`;
         })
         .join('');
     } catch (e) {
@@ -864,10 +867,11 @@ import {
         .map((item) => {
           const name = String(item.fromName || item.fromEmail || 'Usuario');
           const text = String(item.text || '');
-          return `<div class="nav-mini-item ${item.read ? '' : 'is-unread'}">
+          const href = String(item.link || 'mensajes.html').trim();
+          return `<a class="nav-mini-item ${item.read ? '' : 'is-unread'}" href="${href}">
             <div class="nav-mini-title">${name}</div>
             ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
-          </div>`;
+          </a>`;
         })
         .join('');
     } catch (e) {

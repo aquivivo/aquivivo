@@ -126,21 +126,24 @@ async function loadPage({ reset = false } = {}) {
 
     const snap = await getDocs(query(...parts));
     const docs = snap.docs || [];
+    const visibleDocs = docs.filter(
+      (d) => String((d.data() || {}).type || '').toLowerCase() !== 'broadcast',
+    );
 
-    if (!docs.length && !lastSnap) {
+    if (!visibleDocs.length && !lastSnap) {
       if (hintEl) hintEl.textContent = 'Aun no hay notificaciones.';
       if (btnMore) btnMore.hidden = true;
       return;
     }
 
     if (hintEl) hintEl.textContent = '';
-    renderItems(docs, { append: !reset && !!lastSnap });
+    renderItems(visibleDocs, { append: !reset && !!lastSnap });
 
     lastSnap = docs.length ? docs[docs.length - 1] : lastSnap;
     if (btnMore) btnMore.hidden = docs.length < PAGE_SIZE;
 
     // Mark the loaded page as read (so the badge clears)
-    await markSnapshotsRead(docs);
+    await markSnapshotsRead(visibleDocs);
   } catch (e) {
     console.warn('[notificaciones] load failed', e);
     if (hintEl) hintEl.textContent = 'No se pudieron cargar las notificaciones.';

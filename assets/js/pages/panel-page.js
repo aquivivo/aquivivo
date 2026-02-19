@@ -1,8 +1,8 @@
 ﻿// assets/js/pages/panel-page.js
-// Panel uÅ¼ytkownika: status dostÄ™pu + kody promo
+// Panel użytkownika: status dostępu + kody promo
 // Dodatki:
-// - jeÅ›li w URL jest ?as=UID i zalogowany jest admin, pokazuje podglÄ…d panelu danego usera (read-only)
-// - jeÅ›li layout.js przekierowaÅ‚ z reason=blocked, pokazuje komunikat
+// - jeśli w URL jest ?as=UID i zalogowany jest admin, pokazuje podgląd panelu danego usera (read-only)
+// - jeśli layout.js przekierował z reason=blocked, pokazuje komunikat
 
 import { auth, db, storage } from '../firebase-init.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
@@ -359,12 +359,16 @@ async function loadInbox() {
       .map((b) => {
         const title = String(b.title || 'Aviso');
         const body = String(b.body || b.message || '');
+        const rawHref = String(b.link || 'mensajes.html').trim();
+        const href = rawHref.includes('notificaciones.html')
+          ? 'mensajes.html'
+          : rawHref;
         return `
-          <div class="inboxItem">
+          <a class="inboxItem" href="${href}">
             <div class="inboxTitle">${title}</div>
             <div class="inboxBody">${body}</div>
             <div class="inboxDate">${formatDate(b.createdAt)}</div>
-          </div>
+          </a>
         `;
       })
       .join('');

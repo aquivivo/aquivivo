@@ -435,6 +435,14 @@ function spellingPromptForWord(word) {
   return out.join('');
 }
 
+function looksSpanishText(value) {
+  const text = normalizeText(value);
+  if (!text) return false;
+  return /\b(hola|gracias|adios|buenos|buenas|mucho gusto|perdon|disculpa|soy|me llamo|de nada|por favor|hasta luego|como|donde|cuando)\b/i.test(
+    text,
+  );
+}
+
 function sentenceBundleForRow({
   level,
   topicSlug,
@@ -1056,98 +1064,107 @@ function buildExampleCandidates(ctx, row, index) {
     }),
   );
 
-  const bad = exPl.replace(row.pl, `${row.pl} ${row.pl}`);
-  const fixOpt = optionItemsFromTexts([exPl, bad], exPl);
-  out.push(
-    makeExerciseBase({
-      ...rowMeta,
-      level: ctx.level,
-      topicId: ctx.topic.topicId,
-      topicSlug: ctx.topic.topicSlug,
-      variant: 'correct_the_error',
-      prompt: bad,
-      options: fixOpt.options,
-      answer: { correctOptionId: fixOpt.correctOptionId },
-    }),
-  );
+  const targetWord = safeCell(row.pl);
+  const escapedWord = targetWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  let bad = '';
+  if (escapedWord) {
+    const re = new RegExp(`\\b${escapedWord}\\b`, 'i');
+    if (re.test(exPl)) bad = exPl.replace(re, `${targetWord}e`);
+  }
+  if (!bad) {
+    bad = exPl.replace(/\b([\p{L}]{4,})\b/u, (m) => m.slice(0, -1));
+  }
+  if (bad && normalizeText(bad) !== normalizeText(exPl)) {
+    const fixOpt = optionItemsFromTexts([exPl, bad], exPl);
+    if (fixOpt.options.length >= 2) {
+      out.push(
+        makeExerciseBase({
+          ...rowMeta,
+          level: ctx.level,
+          topicId: ctx.topic.topicId,
+          topicSlug: ctx.topic.topicSlug,
+          variant: 'correct_the_error',
+          prompt: bad,
+          options: fixOpt.options,
+          answer: { correctOptionId: fixOpt.correctOptionId },
+        }),
+      );
+    }
+  }
 
+  const dialogueQuestionSource = safeCell(row.exEs || row.es);
+  const dialogueQuestion = dialogueQuestionSource
+    ? `Como se dice en polaco: "${dialogueQuestionSource.replace(/[.!?]+$/, '')}"?`
+    : 'Como se dice en polaco?';
+  const reply = ensureSentence(row.exPl || row.pl);
   const dialoguePoolPl = shuffleDeterministic(
-    ctx.rows.map((x) => ensureSentence(x.exPl || x.pl)).filter(Boolean),
+    ctx.rows
+      .map((x) => ensureSentence(x.exPl || x.pl))
+      .filter((line) => line && !looksSpanishText(line)),
     index + 71,
   );
-  const reply =
-    dialoguePoolPl.find((x) => normalizeText(x) !== normalizeText(exPl)) || ensureSentence(row.exPl || row.pl);
-  const distractReply =
-    dialoguePoolPl.find(
-      (x) =>
-        normalizeText(x) !== normalizeText(reply) && normalizeText(x) !== normalizeText(exPl),
-    ) || exPl;
-  const dlgOpt = optionItemsFromTexts(
-    [reply, distractReply],
-    reply,
-  );
-  out.push(
-    makeExerciseBase({
-      ...rowMeta,
-      level: ctx.level,
-      topicId: ctx.topic.topicId,
-      topicSlug: ctx.topic.topicSlug,
-      variant: 'choose_reply_dialogue',
-      prompt: `A: ${exPl}\nB: ...`,
-      options: dlgOpt.options,
-      answer: { correctOptionId: dlgOpt.correctOptionId },
-    }),
-  );
+  const distractReply = dialoguePoolPl.find((x) => normalizeText(x) !== normalizeText(reply)) || '';
 
-  out.push(
-    makeExerciseBase({
-      ...rowMeta,
-      level: ctx.level,
-      topicId: ctx.topic.topicId,
-      topicSlug: ctx.topic.topicSlug,
-      variant: 'complete_dialogue',
-      prompt: `A: ${exPl}\nB: ___`,
-      answer: { acceptedByBlank: [[reply]] },
-      target: { pl: reply, es: row.exEs || row.es },
-    }),
-  );
-
-  const replyTokens = tokenizeSentence(reply).filter((t) => /[\p{L}\p{N}]/u.test(t));
-  if (replyTokens.length >= 2) {
+  if (reply && distractReply) {
+    const dlgOpt = optionItemsFromTexts([reply, distractReply], reply);
     out.push(
       makeExerciseBase({
         ...rowMeta,
         level: ctx.level,
         topicId: ctx.topic.topicId,
         topicSlug: ctx.topic.topicSlug,
-        variant: 'dialogue_tiles_reply',
-        prompt: 'Ordena la respuesta del diálogo.',
-        options: shuffleDeterministic(replyTokens, index + 73),
-        answer: { accepted: [replyTokens.join(' ')] },
-        target: { pl: replyTokens.join(' '), es: row.exEs || row.es },
+        variant: 'choose_reply_dialogue',
+        prompt: `A: ${dialogueQuestion}\nB: ...`,
+        options: dlgOpt.options,
+        answer: { correctOptionId: dlgOpt.correctOptionId },
+      }),
+    );
+
+    out.push(
+      makeExerciseBase({
+        ...rowMeta,
+        level: ctx.level,
+        topicId: ctx.topic.topicId,
+        topicSlug: ctx.topic.topicSlug,
+        variant: 'complete_dialogue',
+        prompt: `A: ${dialogueQuestion}\nB: ___`,
+        answer: { acceptedByBlank: [[reply]] },
+        target: { pl: reply, es: row.exEs || row.es },
+      }),
+    );
+
+    const replyTokens = tokenizeSentence(reply).filter((tok) => /[\p{L}\p{N}]/u.test(tok));
+    if (replyTokens.length >= 2) {
+      out.push(
+        makeExerciseBase({
+          ...rowMeta,
+          level: ctx.level,
+          topicId: ctx.topic.topicId,
+          topicSlug: ctx.topic.topicSlug,
+          variant: 'dialogue_tiles_reply',
+          prompt: 'Ordena la respuesta del dialogo.',
+          options: shuffleDeterministic(replyTokens, index + 73),
+          answer: { accepted: [replyTokens.join(' ')] },
+          target: { pl: replyTokens.join(' '), es: row.exEs || row.es },
+        }),
+      );
+    }
+
+    const lines = [`A: ${dialogueQuestion}`, `B: ${reply}`, 'A: Gracias.'];
+    out.push(
+      makeExerciseBase({
+        ...rowMeta,
+        level: ctx.level,
+        topicId: ctx.topic.topicId,
+        topicSlug: ctx.topic.topicSlug,
+        variant: 'reorder_dialogue_lines',
+        prompt: 'Ordena las lineas del dialogo.',
+        options: shuffleDeterministic(lines, index + 79),
+        answer: { accepted: [lines.join(' ')] },
+        target: { pl: lines.join(' '), es: row.exEs || row.es },
       }),
     );
   }
-
-  const thirdLine = dialoguePoolPl.find(
-    (x) => normalizeText(x) !== normalizeText(reply) && normalizeText(x) !== normalizeText(exPl),
-  );
-  const lines = thirdLine
-    ? [`A: ${exPl}`, `B: ${reply}`, `A: ${thirdLine}`]
-    : [`A: ${exPl}`, `B: ${reply}`];
-  out.push(
-    makeExerciseBase({
-      ...rowMeta,
-      level: ctx.level,
-      topicId: ctx.topic.topicId,
-      topicSlug: ctx.topic.topicSlug,
-      variant: 'reorder_dialogue_lines',
-      prompt: 'Ordena las líneas del diálogo.',
-      options: shuffleDeterministic(lines, index + 79),
-      answer: { accepted: [lines.join(' ')] },
-      target: { pl: lines.join(' '), es: row.exEs || row.es },
-    }),
-  );
 
   return out;
 }
@@ -1659,6 +1676,38 @@ function pullN(arr, n) {
   return out;
 }
 
+function assignLessonRefsToExercises(exercises = [], lessons = []) {
+  const byId = new Map((exercises || []).map((ex) => [safeCell(ex?.id), ex]).filter(([id]) => id));
+  const regular = (lessons || []).filter(
+    (lesson) => !lesson?.miniTest && !lesson?.moduleTest && !lesson?.remedial && !lesson?.finalExam,
+  );
+  const rest = (lessons || []).filter((lesson) => !regular.includes(lesson));
+
+  for (const lesson of [...regular, ...rest]) {
+    const lessonId = safeCell(lesson?.id);
+    if (!lessonId) continue;
+    const ids = Array.isArray(lesson?.exerciseIds) ? lesson.exerciseIds : [];
+    for (const rawId of ids) {
+      const exId = safeCell(rawId);
+      const ex = byId.get(exId);
+      if (!ex) continue;
+      const lessonIds = Array.isArray(ex.lessonIds) ? [...ex.lessonIds] : [];
+      if (!lessonIds.includes(lessonId)) lessonIds.push(lessonId);
+      ex.lessonIds = lessonIds;
+    }
+  }
+
+  for (const ex of exercises || []) {
+    const lessonIds = uniqList(Array.isArray(ex.lessonIds) ? ex.lessonIds : []);
+    if (lessonIds.length) {
+      ex.lessonIds = lessonIds;
+      if (!safeCell(ex.lessonId) || !lessonIds.includes(safeCell(ex.lessonId))) {
+        ex.lessonId = lessonIds[0];
+      }
+    }
+  }
+}
+
 function buildLessonsForTopic(level, topic, exercises, reviewPool, baseLessons = 5, rows = []) {
   const buckets = splitByStage(sortCandidates(exercises));
   const lessons = [];
@@ -1697,7 +1746,7 @@ function buildLessonsForTopic(level, topic, exercises, reviewPool, baseLessons =
           const pl = safeCell(row?.pl);
           const es = safeCell(row?.es);
           if (!pl || !es) return '';
-          return `${pl} — ${es}`;
+          return `${pl} - ${es}`;
         })
         .filter(Boolean),
     ).slice(0, FLASHCARDS_LESSON_MAX);
@@ -2151,7 +2200,9 @@ export function generateLevelFromWorkbook({
     },
   };
 
-  const allExercises = [...topicPackages.flatMap((p) => p.exercises), ...flashcardExercises];
+  const topicExercises = topicPackages.flatMap((p) => p.exercises);
+  assignLessonRefsToExercises(topicExercises, lessons);
+  const allExercises = [...topicExercises, ...flashcardExercises];
   const report = buildLevelReport(level, topicPackages, lessons, modules, course, flashcardExercises);
   return {
     level,

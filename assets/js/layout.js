@@ -785,7 +785,7 @@ import {
             <a href="polityka-prywatnosci.html">Pol&iacute;tica de privacidad</a>
             <a href="regulamin.html">T&eacute;rminos</a>
             <a href="zwroty.html">Devoluciones</a>
-            <a href="kontakt.html">Contacto</a>
+            <a href="index.html#contact">Contacto</a>
           </nav>
         </div>
       </footer>
@@ -945,7 +945,14 @@ import {
   function injectSidePanel() {
     const page = document.body?.dataset?.page || '';
     const isAdminView = adminPages.has(page);
-    const blocked = new Set(['index', 'login']);
+    const blocked = new Set([
+      'index',
+      'login',
+      'contacto',
+      'terms',
+      'privacy',
+      'returns',
+    ]);
     if (!page || blocked.has(page)) return;
     const existingPanel = document.getElementById('sidePanel');
     if (existingPanel) {
@@ -1143,6 +1150,22 @@ import {
     const list = document.getElementById('navNotifList');
     const badge = document.getElementById('navNotifBadge');
     if (!uid || !list || !badge) return;
+    list.dataset.uid = uid;
+    if (!list.dataset.wired) {
+      list.dataset.wired = '1';
+      list.addEventListener('click', (e) => {
+        const item = e.target.closest('[data-notif-id]');
+        const id = item?.dataset?.notifId;
+        const ownerUid = list.dataset.uid;
+        if (!ownerUid) return;
+        if (!id) return;
+        updateDoc(doc(db, 'user_notifications', ownerUid, 'items', id), {
+          read: true,
+          readAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        }).catch(() => null);
+      });
+    }
     try {
       const snap = await getDocs(
         query(
@@ -1151,7 +1174,9 @@ import {
           limit(6),
         ),
       );
-      const items = snap.docs.map((d) => d.data() || {});
+      const items = snap.docs
+        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+        .filter((item) => String(item.type || '').toLowerCase() !== 'broadcast');
       const unread = items.filter((i) => i.read !== true).length;
       setBadge(badge, unread);
       if (!items.length) {
@@ -1161,12 +1186,13 @@ import {
       }
       list.innerHTML = items
         .map((item) => {
-          const title = String(item.title || 'Notificaci×n');
+          const title = String(item.title || 'Notificacion');
           const body = String(item.body || '');
-          return `<div class="nav-mini-item ${item.read ? '' : 'is-unread'}">
+          const href = String(item.link || 'notificaciones.html').trim();
+          return `<a class="nav-mini-item ${item.read ? '' : 'is-unread'}" href="${href}" data-notif-id="${item.id}">
             <div class="nav-mini-title">${title}</div>
             ${body ? `<div class="nav-mini-body">${body}</div>` : ''}
-          </div>`;
+          </a>`;
         })
         .join('');
     } catch (e) {
@@ -1226,19 +1252,20 @@ import {
       });
     }
     try {
-      const snap = await getDocs(
+      const convSnap = await getDocs(
         query(
           collection(db, 'conversations'),
           where('participants', 'array-contains', uid),
         ),
       );
-      const items = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+      const items = convSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
       items.sort((a, b) => {
         const aTime = toDateMaybe(a.lastAt) || toDateMaybe(a.createdAt);
         const bTime = toDateMaybe(b.lastAt) || toDateMaybe(b.createdAt);
         return (bTime?.getTime() || 0) - (aTime?.getTime() || 0);
       });
-      const unread = items.filter((item) => {
+
+      const unreadConversations = items.filter((item) => {
         const lastAt = toDateMaybe(item.lastAt);
         if (!lastAt) return false;
         if (item.lastMessage?.senderId === uid) return false;
@@ -1247,36 +1274,83 @@ import {
         if (!readAt) return true;
         return lastAt.getTime() > readAt.getTime();
       }).length;
+
+      const broadcastSnap = await getDocs(
+        query(collection(db, 'broadcasts'), orderBy('createdAt', 'desc'), limit(4)),
+      );
+
+      let seenBroadcastAt = 0;
+      try {
+        seenBroadcastAt = Number(localStorage.getItem(`av_broadcast_seen_${uid}`) || 0);
+      } catch {
+        seenBroadcastAt = 0;
+      }
+
+      const conversationRows = items.map((item) => {
+        const title =
+          item.title ||
+          (item.type === 'support'
+            ? 'Soporte'
+            : item.type === 'group'
+              ? 'Grupo'
+              : '') ||
+          item.lastMessage?.senderName ||
+          'Conversacion';
+        const text = String(item.lastMessage?.text || '');
+        const lastAt = toDateMaybe(item.lastAt);
+        const readRaw = item.reads ? item.reads[uid] : null;
+        const readAt = toDateMaybe(readRaw);
+        const isUnread =
+          lastAt &&
+          item.lastMessage?.senderId !== uid &&
+          (!readAt || lastAt.getTime() > readAt.getTime());
+        return {
+          key: `conv:${item.id}`,
+          href: `mensajes.html?conv=${encodeURIComponent(item.id)}`,
+          convId: item.id,
+          title: String(title || 'Conversacion'),
+          text,
+          time: lastAt?.getTime() || toDateMaybe(item.createdAt)?.getTime() || 0,
+          isUnread: !!isUnread,
+        };
+      });
+
+      const broadcastRows = (broadcastSnap.docs || []).map((d) => {
+        const b = d.data() || {};
+        const ts = toDateMaybe(b.createdAt)?.getTime() || 0;
+        const rawLink = String(b.link || 'mensajes.html').trim();
+        const href = rawLink.includes('notificaciones.html')
+          ? 'mensajes.html'
+          : rawLink;
+        return {
+          key: `broadcast:${d.id}`,
+          href,
+          convId: '',
+          title: String(b.title || 'Mensaje del equipo'),
+          text: String(b.body || ''),
+          time: ts,
+          isUnread: ts > seenBroadcastAt,
+        };
+      });
+
+      const rows = [...conversationRows, ...broadcastRows]
+        .sort((a, b) => (b.time || 0) - (a.time || 0))
+        .slice(0, 8);
+
+      const unread = unreadConversations + broadcastRows.filter((r) => r.isUnread).length;
       setBadge(badge, unread);
-      if (!items.length) {
+
+      if (!rows.length) {
         list.innerHTML =
           '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
         return;
       }
-      const viewItems = items.slice(0, 8);
-      list.innerHTML = viewItems
-        .map((item) => {
-          const href = `mensajes.html?conv=${encodeURIComponent(item.id)}`;
-          const title =
-            item.title ||
-            (item.type === 'support'
-              ? 'Soporte'
-              : item.type === 'group'
-                ? 'Grupo'
-                : '') ||
-            item.lastMessage?.senderName ||
-            'Conversaci×n';
-          const text = String(item.lastMessage?.text || '');
-          const lastAt = toDateMaybe(item.lastAt);
-          const readRaw = item.reads ? item.reads[uid] : null;
-          const readAt = toDateMaybe(readRaw);
-          const isUnread =
-            lastAt &&
-            item.lastMessage?.senderId !== uid &&
-            (!readAt || lastAt.getTime() > readAt.getTime());
-          return `<a class="nav-mini-item ${isUnread ? 'is-unread' : ''}" href="${href}" data-conv="${item.id}">
-            <div class="nav-mini-title">${String(title || 'Conversaci×n')}</div>
-            ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
+
+      list.innerHTML = rows
+        .map((row) => {
+          return `<a class="nav-mini-item ${row.isUnread ? 'is-unread' : ''}" href="${row.href}" ${row.convId ? `data-conv="${row.convId}"` : ''}>
+            <div class="nav-mini-title">${row.title}</div>
+            ${row.text ? `<div class="nav-mini-body">${row.text}</div>` : ''}
           </a>`;
         })
         .join('');
@@ -1385,7 +1459,16 @@ import {
     wireMiniMenu(navNotifWrap, navNotifBtn, navNotifMenu, () => {
       if (CURRENT_USER?.uid) markRecentNotifsRead(CURRENT_USER.uid);
     });
-    wireMiniMenu(navMsgWrap, navMsgBtn, navMsgMenu);
+    wireMiniMenu(navMsgWrap, navMsgBtn, navMsgMenu, () => {
+      if (!CURRENT_USER?.uid) return;
+      try {
+        localStorage.setItem(
+          `av_broadcast_seen_${CURRENT_USER.uid}`,
+          String(Date.now()),
+        );
+      } catch {}
+      loadMsgDropdown(CURRENT_USER.uid).catch(() => null);
+    });
 
     if (
       profileWrap &&
@@ -1519,11 +1602,90 @@ import {
     // Rely on native anchor navigation (keeps hash scrolling on index and navigation on other pages)
   }
 
+  function setContactFormStatus(form, text, bad = false) {
+    if (!form) return;
+    let status = form.querySelector('[data-contact-status="1"]');
+    if (!status) {
+      status = document.createElement('div');
+      status.setAttribute('data-contact-status', '1');
+      status.className = 'hintSmall';
+      status.style.marginTop = '10px';
+      form.appendChild(status);
+    }
+    status.textContent = String(text || '').trim();
+    status.style.display = text ? 'block' : 'none';
+    status.style.color = bad ? '#ffd1d6' : 'rgba(255,255,255,0.92)';
+  }
+
+  function setupContactForm() {
+    const form = document.querySelector('form.contactFormCard');
+    if (!form || form.dataset.wired) return;
+    form.dataset.wired = '1';
+
+    const emailEl = form.querySelector('#contactEmail');
+    const msgEl = form.querySelector('#contactMsg');
+    const privacyEl = form.querySelector('#contactPrivacy');
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    if (CURRENT_USER?.email && emailEl && !emailEl.value) {
+      emailEl.value = CURRENT_USER.email;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = String(emailEl?.value || CURRENT_USER?.email || '')
+        .trim()
+        .toLowerCase();
+      const message = String(msgEl?.value || '').trim();
+      const privacyOk = !!privacyEl?.checked;
+
+      if (!email || !message || !privacyOk) {
+        setContactFormStatus(form, 'Completa email, mensaje y privacidad.', true);
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      setContactFormStatus(form, 'Enviando...');
+
+      try {
+        await addDoc(collection(db, 'contact_messages'), {
+          email,
+          message,
+          source: 'index_contact_form',
+          page: String(location.pathname || '/'),
+          uid: CURRENT_USER?.uid || null,
+          userEmail: CURRENT_USER?.email || null,
+          status: 'new',
+          createdAt: serverTimestamp(),
+        });
+        if (msgEl) msgEl.value = '';
+        setContactFormStatus(form, 'Mensaje enviado. Gracias!');
+      } catch (err) {
+        console.warn('[contact form] send failed', err);
+        const subject = encodeURIComponent('Mensaje desde AquiVivo');
+        const body = encodeURIComponent(`Email: ${email}\n\n${message}`);
+        const mailto = `mailto:aquivivo.pl@gmail.com?subject=${subject}&body=${body}`;
+        setContactFormStatus(
+          form,
+          'No se pudo guardar en el sistema. Abriendo correo.',
+          true,
+        );
+        window.setTimeout(() => {
+          window.location.href = mailto;
+        }, 120);
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  }
+
   bustStylesCache();
   const mount = ensureMount();
   const footerMount = ensureFooterMount();
   injectSidePanel();
   upgradeInfoCardsToAccordions();
+  setupContactForm();
 
   // Render immediately + re-render on auth changes
   onAuthStateChanged(auth, async (user) => {
@@ -1583,6 +1745,11 @@ import {
     wireHeader();
     injectSidePanel();
     setupAnchorScroll();
+    setupContactForm();
+    const contactEmailInput = document.getElementById('contactEmail');
+    if (user?.email && contactEmailInput && !contactEmailInput.value) {
+      contactEmailInput.value = user.email;
+    }
 
     if (user?.uid) startBadgeRefresh(user.uid);
     else startBadgeRefresh(null);
@@ -1619,4 +1786,3 @@ import {
     trialReady();
   }
 })();
-

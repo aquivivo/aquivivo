@@ -32,6 +32,7 @@ const COURSE_VIEW = String(NAV_QS.get('view') || '').trim().toLowerCase();
 const FLOW = String(NAV_QS.get('flow') || '').trim().toLowerCase();
 const MODE_PARAM = String(NAV_QS.get('mode') || '').trim().toLowerCase();
 const BLOCK_PARAM = Math.max(0, Number(NAV_QS.get('block') || NAV_QS.get('checkpoint') || 0));
+const LESSON_ID_PARAM = String(NAV_QS.get('lessonId') || '').trim();
 
 const DEFAULT_DAILY_LIMIT = 20;
 const DAILY_CHALLENGE_LIMIT = 10;
@@ -79,6 +80,43 @@ function normalizeText(value) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
+}
+
+function seedVersionScore(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return -1;
+  const m = text.match(/^v(\d+)(?:[_-](\d{4})[-_](\d{2})[-_](\d{2}))?/i);
+  if (!m) return 0;
+  const major = Number(m[1] || 0);
+  const year = Number(m[2] || 0);
+  const month = Number(m[3] || 0);
+  const day = Number(m[4] || 0);
+  const datePart = year * 10000 + month * 100 + day;
+  return major * 1_0000_0000 + datePart;
+}
+
+function newestSeedVersion(items = []) {
+  let best = '';
+  let bestScore = -1;
+  for (const item of items || []) {
+    const current = String(item?.seedVersion || '').trim();
+    if (!current) continue;
+    const score = seedVersionScore(current);
+    if (score > bestScore || (score === bestScore && current > best)) {
+      best = current;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+function filterToNewestSeedVersion(items = []) {
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) return list;
+  const best = newestSeedVersion(list);
+  if (!best) return list;
+  const filtered = list.filter((item) => String(item?.seedVersion || '').trim() === best);
+  return filtered.length ? filtered : list;
 }
 
 function modeLabel(mode) {
@@ -923,7 +961,23 @@ async function loadExercisesForLevels(levels, topicId) {
       console.warn('[review] load exercises failed', e);
     }
   }
-  return all;
+  return filterToNewestSeedVersion(all);
+}
+
+function matchesLesson(exercise, lessonId) {
+  const wanted = String(lessonId || '').trim();
+  if (!wanted) return true;
+
+  const one = String(exercise?.lessonId || '').trim();
+  if (one && one === wanted) return true;
+
+  const many = Array.isArray(exercise?.lessonIds)
+    ? exercise.lessonIds.map((x) => String(x || '').trim()).filter(Boolean)
+    : [];
+  if (many.includes(wanted)) return true;
+
+  const notes = String(exercise?.notes || '');
+  return notes.includes(`lessonId:${wanted}`);
 }
 
 async function loadRouteTopicsForLevels(levels) {
@@ -1635,10 +1689,13 @@ async function refreshReview() {
       exercises = exercises.filter((ex) => {
         const tid = String(ex.topicId || '').trim();
         const tslug = String(ex.topicSlug || '').trim();
-        return (
+        const inScope = (
           (tid && (scope.topicIdSet.has(tid) || scope.topicSlugSet.has(tid))) ||
           (tslug && (scope.topicIdSet.has(tslug) || scope.topicSlugSet.has(tslug)))
         );
+        if (!inScope) return false;
+        if (!LESSON_ID_PARAM) return true;
+        return matchesLesson(ex, LESSON_ID_PARAM);
       });
     }
 

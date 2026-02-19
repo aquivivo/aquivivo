@@ -67,6 +67,43 @@ function normalizeText(value) {
     .trim();
 }
 
+function seedVersionScore(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return -1;
+  const m = text.match(/^v(\d+)(?:[_-](\d{4})[-_](\d{2})[-_](\d{2}))?/i);
+  if (!m) return 0;
+  const major = Number(m[1] || 0);
+  const year = Number(m[2] || 0);
+  const month = Number(m[3] || 0);
+  const day = Number(m[4] || 0);
+  const datePart = year * 10000 + month * 100 + day;
+  return major * 1_0000_0000 + datePart;
+}
+
+function newestSeedVersion(items = []) {
+  let best = '';
+  let bestScore = -1;
+  for (const item of items || []) {
+    const current = String(item?.seedVersion || '').trim();
+    if (!current) continue;
+    const score = seedVersionScore(current);
+    if (score > bestScore || (score === bestScore && current > best)) {
+      best = current;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+function filterToNewestSeedVersion(items = []) {
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) return list;
+  const best = newestSeedVersion(list);
+  if (!best) return list;
+  const filtered = list.filter((item) => String(item?.seedVersion || '').trim() === best);
+  return filtered.length ? filtered : list;
+}
+
 function normalizeTrack(raw) {
   return String(raw || '')
     .trim()
@@ -785,7 +822,9 @@ async function loadCards() {
         ),
       );
     }
-    const exercises = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    const exercises = filterToNewestSeedVersion(
+      snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })),
+    );
     const allowed =
       forcedTopicId ? null : await loadAllowedTopicSetsForLevel(level);
     const visibleExercises = allowed && (allowed.idSet.size || allowed.slugSet.size)

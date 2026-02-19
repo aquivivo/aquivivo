@@ -71,3 +71,6 @@ node_modules/
 # Local XLSX parsing temp
 .tmp_a1_vocab_*.zip
 .tmp_xlsx_a1_*/
+
+# Generated import artifacts (can exceed GitHub 100MB limit)
+import/generated/*.json

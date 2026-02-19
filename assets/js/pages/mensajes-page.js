@@ -214,7 +214,10 @@ function renderBroadcastList(items) {
       const title = String(b.title || 'Mensaje del equipo').trim();
       const body = String(b.body || b.message || '').trim();
       const date = formatDateTime(b.createdAt);
-      const href = String(b.link || 'notificaciones.html').trim();
+      const rawHref = String(b.link || 'mensajes.html').trim();
+      const href = rawHref.includes('notificaciones.html')
+        ? 'mensajes.html'
+        : rawHref;
       return `
         <a class="inboxItem" href="${href}">
           <div class="inboxTitle">${title}</div>

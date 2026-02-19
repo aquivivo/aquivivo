@@ -817,25 +817,25 @@ function guessTopicEmoji(topic) {
   const hay = `${title} ${slug} ${tags}`;
 
   const table = [
-    [/miast|ciudad|city|miejsc|lugar/, '\uD83C\uDFD9\uFE0F'], // Ã°Å¸Ââ„¢Ã¯Â¸Â
-    [/dom|casa|hogar|mieszka|viviend/, '\uD83C\uDFE0'], // Ã°Å¸ÂÂ
-    [/rodzin|familia|amig|friend/, '\uD83D\uDC6A'], // Ã°Å¸â€˜Âª
-    [/jedzen|comida|restaur|cocin|food/, '\uD83C\uDF72'], // Ã°Å¸ÂÂ²
-    [/kaw|caf\u00e9|cafe|cafetera/, '\u2615'], // Ã¢Ëœâ€¢
-    [/zakup|compras|tiend|shop|super/, '\uD83D\uDED2'], // Ã°Å¸â€ºâ€™
+    [/miast|ciudad|city|miejsc|lugar/, '\uD83C\uDFD9\uFE0F'], // city
+    [/dom|casa|hogar|mieszka|viviend/, '\uD83C\uDFE0'], // home
+    [/rodzin|familia|amig|friend/, '\uD83D\uDC6A'], // family
+    [/jedzen|comida|restaur|cocin|food/, '\uD83C\uDF72'], // food
+    [/kaw|caf\u00e9|cafe|cafetera/, '\u2615'], // coffee
+    [/zakup|compras|tiend|shop|super/, '\uD83D\uDED2'], // shopping
     [
       /podr\u00f3\u017c|podroz|viaj|travel|aeropuert|av[i\u00ed]on|samolot/,
       '\u2708\uFE0F',
-    ], // Ã¢Å“Ë†Ã¯Â¸Â
-    [/transport|metro|autob|bus|tren|train/, '\uD83D\uDE8C'], // Ã°Å¸Å¡Å’
-    [/prac|trabaj|oficin|job/, '\uD83D\uDCBC'], // Ã°Å¸â€™Â¼
-    [/studi|estudi|univers|escuel|school/, '\uD83C\uDF93'], // Ã°Å¸Å½â€œ
-    [/zdrow|salud|doctor|medic|clinic/, '\uD83E\uDE7A'], // Ã°Å¸Â©Âº
-    [/czas|tiempo|hora|reloj|time/, '\u23F0'], // Ã¢ÂÂ°
-    [/pogon|pogod|clima|weather/, '\uD83C\uDF24\uFE0F'], // Ã°Å¸Å’Â¤Ã¯Â¸Â
-    [/muzyk|m\u00fasica|musica|music/, '\uD83C\uDFB6'], // Ã°Å¸Å½Â¶
-    [/fiest|imprez|party/, '\uD83C\uDF89'], // Ã°Å¸Å½â€°
-    [/telefon|tel[e\u00e9]fon|llamar|call/, '\uD83D\uDCDE'], // Ã°Å¸â€œÅ¾
+    ], // travel
+    [/transport|metro|autob|bus|tren|train/, '\uD83D\uDE8C'], // transport
+    [/prac|trabaj|oficin|job/, '\uD83D\uDCBC'], // work
+    [/studi|estudi|univers|escuel|school/, '\uD83C\uDF93'], // study
+    [/zdrow|salud|doctor|medic|clinic/, '\uD83E\uDE7A'], // health
+    [/czas|tiempo|hora|reloj|time/, '\u23F0'], // time
+    [/pogon|pogod|clima|weather/, '\uD83C\uDF24\uFE0F'], // weather
+    [/muzyk|m\u00fasica|musica|music/, '\uD83C\uDFB6'], // music
+    [/fiest|imprez|party/, '\uD83C\uDF89'], // party
+    [/telefon|tel[e\u00e9]fon|llamar|call/, '\uD83D\uDCDE'], // phone
   ];
 
   for (const [re, icon] of table) {
@@ -843,9 +843,9 @@ function guessTopicEmoji(topic) {
   }
 
   const k = topicTypeKey(topic);
-  if (k === 'vocabulary') return '\uD83D\uDD24'; // Ã°Å¸â€Â¤
-  if (k === 'both') return '\uD83E\uDDE9'; // Ã°Å¸Â§Â©
-  return '\uD83D\uDCD8'; // Ã°Å¸â€œËœ
+  if (k === 'vocabulary') return '\uD83D\uDD24'; // vocabulary
+  if (k === 'both') return '\uD83E\uDDE9'; // mixed
+  return '\uD83D\uDCD8'; // lesson
 }
 
 function renderTopicVisual(topic, accent) {

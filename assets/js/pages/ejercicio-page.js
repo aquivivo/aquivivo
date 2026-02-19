@@ -38,6 +38,7 @@ import {
 const params = new URLSearchParams(window.location.search);
 const LEVEL = (params.get('level') || 'A1').toUpperCase();
 const TOPIC_ID = String(params.get('id') || '').trim();
+const LESSON_ID = String(params.get('lessonId') || '').trim();
 const SINGLE_COURSE_KEY = 'COURSE_PATH';
 const COURSE_KEY = String(params.get('course') || '').trim() || SINGLE_COURSE_KEY;
 const SLUG = String(params.get('slug') || '').trim();
@@ -676,10 +677,16 @@ function ttsTextForExercise(ex) {
   const prompt = String(ex?.prompt || '').trim();
   const direct = extractTtsText(ex);
   if (direct) {
-    const directNorm = normalizeText(direct);
-    const looksLikeOptionId = /^[a-d]$/.test(directNorm);
+    const directNorm = normalizeText(direct).replace(/[().]/g, '').trim();
+    const looksLikeOptionId =
+      /^[a-z]$/.test(directNorm) || /^\d+$/.test(directNorm) || /^[a-z]-\d+$/i.test(directNorm);
     if (!looksLikeOptionId || !prompt) return direct;
   }
+
+  const audioSentence = String(
+    ex?.audioSentencePl || ex?.sentencePl || ex?.sourceExample || ex?.target?.pl || '',
+  ).trim();
+  if (audioSentence) return audioSentence;
 
   const answerObj = answerObjectOf(ex?.answer);
   let answers = [];
@@ -695,22 +702,33 @@ function ttsTextForExercise(ex) {
     answers = parseAnswerList(ex?.answer || '');
   }
 
-  const audioSentence = String(
-    ex?.audioSentencePl || ex?.sentencePl || ex?.sourceExample || '',
-  ).trim();
-
   if (prompt.includes('___') && answers.length) {
     let i = 0;
     return prompt.replaceAll('___', () => answers[i++] ?? answers[0]);
   }
 
-  if (audioSentence) return audioSentence;
   if (prompt) return prompt;
   const answerSpeech = answers
     .map((x) => String(x || '').trim())
-    .filter((x) => x && !/^[a-d]$/i.test(normalizeText(x)));
+    .filter((x) => {
+      const n = normalizeText(x).replace(/[().]/g, '').trim();
+      return n && !/^[a-z]$/i.test(n) && !/^\d+$/.test(n) && !/^[a-z]-\d+$/i.test(n);
+    })
+    .filter((x) => x.length > 1);
   if (answerSpeech.length) return answerSpeech.join(' ');
   return prompt;
+}
+
+function pickPolishVoice(synth) {
+  const voices = synth?.getVoices?.() || [];
+  if (!voices.length) return null;
+  const exact = voices.find((v) => String(v.lang || '').toLowerCase() === 'pl-pl');
+  if (exact) return exact;
+  const pl = voices.find((v) => String(v.lang || '').toLowerCase().startsWith('pl'));
+  if (pl) return pl;
+  const fallback =
+    voices.find((v) => String(v.lang || '').toLowerCase().startsWith('es')) || voices[0];
+  return fallback || null;
 }
 
 function speakPolish(text) {
@@ -720,15 +738,10 @@ function speakPolish(text) {
 
   try {
     const synth = window.speechSynthesis;
-    const voices = synth?.getVoices?.() || [];
-    const plVoice = voices.find((v) =>
-      String(v.lang || '').toLowerCase().startsWith('pl'),
-    );
-    if (!plVoice) return false;
-
+    const preferredVoice = pickPolishVoice(synth);
     const utter = new SpeechSynthesisUtterance(t);
     utter.lang = 'pl-PL';
-    utter.voice = plVoice;
+    if (preferredVoice) utter.voice = preferredVoice;
 
     synth?.cancel?.();
     synth?.resume?.();
@@ -741,11 +754,19 @@ function speakPolish(text) {
 
 function playAudioUrl(url) {
   const u = String(url || '').trim();
-  if (!u) return;
-  try {
-    const audio = new Audio(u);
-    audio.play().catch(() => {});
-  } catch {}
+  if (!u) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    try {
+      const audio = new Audio(u);
+      audio.onended = () => resolve(true);
+      audio.onerror = () => resolve(false);
+      audio.play()
+        .then(() => resolve(true))
+        .catch(() => resolve(false));
+    } catch {
+      resolve(false);
+    }
+  });
 }
 
 function fallbackPolishTtsUrl(text) {
@@ -756,17 +777,17 @@ function fallbackPolishTtsUrl(text) {
   return `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=pl&q=${q}`;
 }
 
-function playExerciseAudio(ex) {
+async function playExerciseAudio(ex) {
   const audioUrl = extractAudioUrl(ex);
   if (audioUrl) {
-    playAudioUrl(audioUrl);
-    return;
+    const played = await playAudioUrl(audioUrl);
+    if (played) return;
   }
   const tts = ttsTextForExercise(ex);
   const spoken = speakPolish(tts);
   if (spoken) return;
   const fallback = fallbackPolishTtsUrl(tts);
-  if (fallback) playAudioUrl(fallback);
+  if (fallback) await playAudioUrl(fallback);
 }
 
 function speakPolishWithFallback(text) {
@@ -775,7 +796,9 @@ function speakPolishWithFallback(text) {
   const spoken = speakPolish(t);
   if (spoken) return;
   const fallback = fallbackPolishTtsUrl(t);
-  if (fallback) playAudioUrl(fallback);
+  if (fallback) {
+    playAudioUrl(fallback).catch(() => {});
+  }
 }
 
 function clearNonInputTextSelection(target = null) {
@@ -1028,6 +1051,43 @@ function normalizeText(value) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
+}
+
+function seedVersionScore(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return -1;
+  const m = text.match(/^v(\d+)(?:[_-](\d{4})[-_](\d{2})[-_](\d{2}))?/i);
+  if (!m) return 0;
+  const major = Number(m[1] || 0);
+  const year = Number(m[2] || 0);
+  const month = Number(m[3] || 0);
+  const day = Number(m[4] || 0);
+  const datePart = year * 10000 + month * 100 + day;
+  return major * 1_0000_0000 + datePart;
+}
+
+function newestSeedVersion(items = []) {
+  let best = '';
+  let bestScore = -1;
+  for (const item of items || []) {
+    const current = String(item?.seedVersion || '').trim();
+    if (!current) continue;
+    const score = seedVersionScore(current);
+    if (score > bestScore || (score === bestScore && current > best)) {
+      best = current;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+function filterToNewestSeedVersion(items = []) {
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) return list;
+  const best = newestSeedVersion(list);
+  if (!best) return list;
+  const filtered = list.filter((item) => String(item?.seedVersion || '').trim() === best);
+  return filtered.length ? filtered : list;
 }
 
 function normalizeOrthographyText(value) {
@@ -1385,16 +1445,18 @@ function looksLikeInstructionEs(raw) {
 function isGenericInstructionEs(raw) {
   const t = normalizeText(raw || '').replace(/[.!?]+$/g, '').trim();
   if (!t) return false;
-  return (
-    t === 'marca la opcion correcta' ||
-    t === 'elige la opcion correcta' ||
-    t === 'escoge la opcion correcta' ||
-    t === 'selecciona la opcion correcta' ||
-    t === 'completa la frase' ||
-    t === 'ordena las palabras' ||
-    t === 'escucha y escribe' ||
-    t === 'verdadero o falso'
-  );
+  const generic = [
+    'marca la opcion correcta',
+    'elige la opcion correcta',
+    'escoge la opcion correcta',
+    'selecciona la opcion correcta',
+    'completa la frase',
+    'ordena las palabras',
+    'escucha y escribe',
+    'verdadero o falso',
+    'relaciona los elementos',
+  ];
+  return generic.some((g) => t === g || t.startsWith(`${g} `));
 }
 
 function promptIsSelfSufficientTask(raw) {
@@ -2320,6 +2382,30 @@ function topicKeyFrom(topic) {
   return slug ? `${lvl}__${slug}` : null;
 }
 
+function matchesLesson(exercise, lessonId) {
+  const wanted = String(lessonId || '').trim();
+  if (!wanted) return true;
+
+  const notesNorm = normalizeText(exercise?.notes || '');
+  const tagsNorm = normalizeTags(exercise?.tags || []).map((t) => normalizeText(t));
+  const one = String(exercise?.lessonId || '').trim();
+  const many = Array.isArray(exercise?.lessonIds)
+    ? exercise.lessonIds.map((x) => String(x || '').trim()).filter(Boolean)
+    : [];
+  const isTopicDeck =
+    notesNorm.includes('deck:topic') ||
+    tagsNorm.includes('scope:topic') ||
+    (!one && many.length > 1);
+  if (isTopicDeck) return false;
+
+  if (one && one === wanted) return true;
+
+  if (many.includes(wanted)) return true;
+
+  const notes = String(exercise?.notes || '');
+  return notes.includes(`lessonId:${wanted}`);
+}
+
 function progressDocRef(uid, topicKey) {
   return doc(db, 'user_progress', uid, 'topics', topicKey);
 }
@@ -3120,10 +3206,13 @@ function createLetterSlotsInput(template, { disabled = false } = {}) {
     cell.dataset.slotIndex = String(cells.length);
     cell.disabled = !!disabled;
     cell.style.color = '#ffffff';
+    cell.style.setProperty('-webkit-text-fill-color', '#ffffff');
     cell.style.caretColor = '#ffffff';
     cell.style.lineHeight = '1';
     cell.style.textAlign = 'center';
-    cell.style.textShadow = '0 0 0 rgba(0,0,0,0.01)';
+    cell.style.fontSize = '1.12rem';
+    cell.style.fontWeight = '700';
+    cell.style.opacity = '1';
     wrapper.appendChild(cell);
     map.push({ space: false, cell });
     cells.push(cell);
@@ -3377,6 +3466,8 @@ function makeExerciseCard(ex) {
     ev.preventDefault();
   });
   card.addEventListener('mouseup', (ev) => clearNonInputTextSelection(ev?.target));
+  card.addEventListener('touchend', (ev) => clearNonInputTextSelection(ev?.target));
+  card.addEventListener('click', (ev) => clearNonInputTextSelection(ev?.target));
 
   const top = document.createElement('div');
   top.className = 'exerciseTop';
@@ -3468,11 +3559,12 @@ function makeExerciseCard(ex) {
   promptSpeaker.addEventListener('click', () => {
     const visiblePrompt = String(prompt.textContent || promptText || '').trim();
     const forceExerciseAudio = isListenExercise(ex) || isDictationExercise(ex) || !!extractAudioUrl(ex);
+    const ttsModel = visiblePrompt ? { ...ex, ttsText: visiblePrompt } : ex;
     if (forceExerciseAudio) {
-      playExerciseAudio(ex);
+      playExerciseAudio(ttsModel);
       return;
     }
-    speakPolishWithFallback(visiblePrompt || ttsTextForExercise(ex));
+    speakPolishWithFallback(visiblePrompt || ttsTextForExercise(ttsModel));
   });
   promptRow.appendChild(promptSpeaker);
 
@@ -5271,6 +5363,22 @@ function makeExerciseCard(ex) {
         const tokens = shuffleArray(rawTokens.map((t, idx) => ({ id: String(idx), text: t })));
         const selected = [];
         const available = new Map(tokens.map((t) => [t.id, t]));
+        let btnCheck = null;
+        const buildSentenceText = () =>
+          selected
+            .map((t) => t.text)
+            .join(' ')
+            .replace(/\s+([?.!,;:])/g, '$1');
+        const tryAutoAcceptOrder = () => {
+          if (done || !btnCheck || btnCheck.disabled) return;
+          if (selected.length < tokens.length) return;
+          const sentence = buildSentenceText();
+          const ok = strictAnswerMatch(sentence, ex.answer || '', { allowPlainMatch: true });
+          if (!ok) return;
+          setTimeout(() => {
+            if (!btnCheck.disabled) btnCheck.click();
+          }, 0);
+        };
 
         const wrap = document.createElement('div');
         wrap.className = 'exerciseOrderWrap';
@@ -5283,7 +5391,7 @@ function makeExerciseCard(ex) {
         bank.className = 'exerciseOrderBank';
 
         const render = () => {
-          const sentence = selected.map((t) => t.text).join(' ').replace(/\s+([?.!,;:])/g, '$1');
+          const sentence = buildSentenceText();
           built.innerHTML = '';
           const builtText = document.createElement('span');
           builtText.textContent = sentence || '-';
@@ -5326,6 +5434,7 @@ function makeExerciseCard(ex) {
             });
             bank.appendChild(btn);
           });
+          tryAutoAcceptOrder();
         };
 
         const reset = () => {
@@ -5386,7 +5495,7 @@ function makeExerciseCard(ex) {
         btnReset.addEventListener('click', reset);
         actions.appendChild(btnReset);
 
-        const btnCheck = document.createElement('button');
+        btnCheck = document.createElement('button');
         btnCheck.className = 'btn-yellow';
         btnCheck.type = 'button';
         btnCheck.textContent = done ? 'Hecho' : 'Comprobar';
@@ -5398,7 +5507,7 @@ function makeExerciseCard(ex) {
             showToast('Ordena la frase primero.', 'warn', 1800);
             return;
           }
-          const sentence = selected.map((t) => t.text).join(' ').replace(/\s+([?.!,;:])/g, '$1');
+          const sentence = buildSentenceText();
           const ok = strictAnswerMatch(sentence, ex.answer || '', {
             allowPlainMatch: true,
           });
@@ -5606,7 +5715,13 @@ async function loadExercises(topic) {
     const data = d.data() || {};
     loaded.push(normalizeExercise({ id: d.id, ...data }));
   });
-  cachedExercises = loaded;
+  const newestSeedScoped = filterToNewestSeedVersion(loaded);
+  let scoped = newestSeedScoped;
+  if (LESSON_ID) {
+    const filtered = newestSeedScoped.filter((item) => matchesLesson(item, LESSON_ID));
+    if (filtered.length) scoped = filtered;
+  }
+  cachedExercises = scoped;
 
   await loadProgressForTopic(CURRENT_UID);
 
