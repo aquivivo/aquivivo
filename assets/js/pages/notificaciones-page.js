@@ -19,12 +19,16 @@ const hintEl = $('notifHint');
 const listEl = $('notifList');
 const btnMarkRead = $('btnNotifMarkRead');
 const btnMore = $('btnNotifMore');
+const btnFilterUnread = $('btnNotifFilterUnread');
+const btnFilterAll = $('btnNotifFilterAll');
 
 const PAGE_SIZE = 20;
 
 let currentUid = null;
 let lastSnap = null;
 let loading = false;
+let showUnreadOnly = true;
+let loadedItems = [];
 
 function esc(text) {
   return String(text || '')
@@ -46,7 +50,7 @@ function formatDate(ts) {
   const d = toDateMaybe(ts);
   if (!d) return '';
   try {
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat('es-ES', {
       year: 'numeric',
       month: 'short',
       day: '2-digit',
@@ -58,13 +62,48 @@ function formatDate(ts) {
   }
 }
 
-function renderItems(docs, { append = false } = {}) {
-  if (!listEl) return;
-  if (!append) listEl.innerHTML = '';
+function setFilterUI() {
+  btnFilterUnread?.classList.toggle('is-active', showUnreadOnly);
+  btnFilterAll?.classList.toggle('is-active', !showUnreadOnly);
+}
 
-  docs.forEach((snap) => {
-    const item = snap.data() || {};
-    const title = String(item.title || 'Notificación');
+function getVisibleItems() {
+  const base = loadedItems
+    .filter((entry) => String(entry?.data?.type || '').toLowerCase() !== 'broadcast')
+    .sort((a, b) => {
+      const aTime = toDateMaybe(a?.data?.createdAt)?.getTime() || 0;
+      const bTime = toDateMaybe(b?.data?.createdAt)?.getTime() || 0;
+      return bTime - aTime;
+    });
+
+  if (!showUnreadOnly) return base;
+  return base.filter((entry) => entry?.data?.read !== true);
+}
+
+function updateHintForList(visibleItems) {
+  if (!hintEl) return;
+  if (!loadedItems.length) {
+    hintEl.textContent = 'Aun no hay notificaciones.';
+    return;
+  }
+  if (!visibleItems.length && showUnreadOnly) {
+    hintEl.textContent = 'No tienes notificaciones no leídas.';
+    return;
+  }
+  hintEl.textContent = '';
+}
+
+function renderList() {
+  if (!listEl) return;
+  const visibleItems = getVisibleItems();
+  listEl.innerHTML = '';
+
+  updateHintForList(visibleItems);
+  if (!visibleItems.length) return;
+
+  visibleItems.forEach((entry) => {
+    const item = entry.data || {};
+    const title = String(item.title || 'Notificacion');
     const body = String(item.body || '');
     const dateText = formatDate(item.createdAt);
     const href = String(item.link || '').trim();
@@ -72,7 +111,7 @@ function renderItems(docs, { append = false } = {}) {
 
     const row = document.createElement(href ? 'a' : 'div');
     row.className = `inboxItem ${isUnread ? 'is-unread' : ''}`;
-    row.dataset.id = snap.id;
+    row.dataset.id = entry.id;
     if (href) row.setAttribute('href', href);
 
     row.innerHTML = `
@@ -82,6 +121,29 @@ function renderItems(docs, { append = false } = {}) {
     `;
 
     listEl.appendChild(row);
+  });
+}
+
+function mergeLoadedItems(items) {
+  const map = new Map(loadedItems.map((entry) => [entry.id, entry]));
+  (items || []).forEach((entry) => {
+    map.set(entry.id, entry);
+  });
+  loadedItems = Array.from(map.values());
+}
+
+function updateLoadedReadState(ids) {
+  if (!Array.isArray(ids) || !ids.length) return;
+  const idSet = new Set(ids);
+  loadedItems = loadedItems.map((entry) => {
+    if (!idSet.has(entry.id)) return entry;
+    return {
+      ...entry,
+      data: {
+        ...(entry.data || {}),
+        read: true,
+      },
+    };
   });
 }
 
@@ -100,13 +162,8 @@ async function markSnapshotsRead(snaps) {
   });
   await batch.commit();
 
-  // Update UI immediately
-  if (listEl) {
-    unread.forEach((s) => {
-      const el = listEl.querySelector(`[data-id="${s.id}"]`);
-      if (el) el.classList.remove('is-unread');
-    });
-  }
+  updateLoadedReadState(unread.map((s) => s.id));
+  renderList();
 }
 
 async function loadPage({ reset = false } = {}) {
@@ -115,7 +172,10 @@ async function loadPage({ reset = false } = {}) {
   try {
     if (hintEl) hintEl.textContent = reset ? 'Cargando...' : '';
     if (btnMore) btnMore.disabled = true;
-    if (reset) lastSnap = null;
+    if (reset) {
+      lastSnap = null;
+      loadedItems = [];
+    }
 
     const parts = [
       collection(db, 'user_notifications', currentUid, 'items'),
@@ -126,24 +186,15 @@ async function loadPage({ reset = false } = {}) {
 
     const snap = await getDocs(query(...parts));
     const docs = snap.docs || [];
-    const visibleDocs = docs.filter(
-      (d) => String((d.data() || {}).type || '').toLowerCase() !== 'broadcast',
-    );
+    const rows = docs
+      .filter((d) => String((d.data() || {}).type || '').toLowerCase() !== 'broadcast')
+      .map((d) => ({ id: d.id, data: d.data() || {} }));
 
-    if (!visibleDocs.length && !lastSnap) {
-      if (hintEl) hintEl.textContent = 'Aun no hay notificaciones.';
-      if (btnMore) btnMore.hidden = true;
-      return;
-    }
-
-    if (hintEl) hintEl.textContent = '';
-    renderItems(visibleDocs, { append: !reset && !!lastSnap });
+    mergeLoadedItems(rows);
+    renderList();
 
     lastSnap = docs.length ? docs[docs.length - 1] : lastSnap;
     if (btnMore) btnMore.hidden = docs.length < PAGE_SIZE;
-
-    // Mark the loaded page as read (so the badge clears)
-    await markSnapshotsRead(visibleDocs);
   } catch (e) {
     console.warn('[notificaciones] load failed', e);
     if (hintEl) hintEl.textContent = 'No se pudieron cargar las notificaciones.';
@@ -172,6 +223,24 @@ async function markRecentRead() {
   }
 }
 
+if (btnFilterUnread && !btnFilterUnread.dataset.wired) {
+  btnFilterUnread.dataset.wired = '1';
+  btnFilterUnread.addEventListener('click', () => {
+    showUnreadOnly = true;
+    setFilterUI();
+    renderList();
+  });
+}
+
+if (btnFilterAll && !btnFilterAll.dataset.wired) {
+  btnFilterAll.dataset.wired = '1';
+  btnFilterAll.addEventListener('click', () => {
+    showUnreadOnly = false;
+    setFilterUI();
+    renderList();
+  });
+}
+
 if (btnMore && !btnMore.dataset.wired) {
   btnMore.dataset.wired = '1';
   btnMore.addEventListener('click', () => loadPage({ reset: false }));
@@ -194,17 +263,20 @@ if (listEl && !listEl.dataset.wired) {
         readAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-      row.classList.remove('is-unread');
+      updateLoadedReadState([id]);
+      renderList();
     } catch {}
   });
 }
 
 onAuthStateChanged(auth, async (user) => {
   currentUid = user?.uid || null;
+  setFilterUI();
   if (!currentUid) {
     if (hintEl) hintEl.textContent = 'Inicia sesión para ver tus notificaciones.';
     if (btnMore) btnMore.hidden = true;
     if (btnMarkRead) btnMarkRead.hidden = true;
+    loadedItems = [];
     if (listEl) listEl.innerHTML = '';
     return;
   }

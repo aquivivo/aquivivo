@@ -37,10 +37,19 @@ import {
 
 const qs = (sel, root = document) => root.querySelector(sel);
 
+const messagesPage = qs('.messages-page');
+const messagesWorkspace = qs('.messages-workspace');
 const chatList = qs('#chatList');
 const groupList = qs('#groupList');
 const supportList = qs('#supportList');
 const messagesSearch = qs('#messagesSearch');
+const messagesFilters = qs('#messagesFilters');
+const filterAllChats = qs('#filterAllChats');
+const filterUnreadChats = qs('#filterUnreadChats');
+const messagesTotalCount = qs('#messagesTotalCount');
+const messagesUnreadCount = qs('#messagesUnreadCount');
+const messagesListTitle = qs('#messagesListTitle');
+const messagesListCount = qs('#messagesListCount');
 const messagesEmpty = qs('#messagesEmpty');
 const messagesThread = qs('#messagesThread');
 const threadMessages = qs('#threadMessages');
@@ -49,11 +58,13 @@ const threadMeta = qs('#threadMeta');
 const threadAvatar = qs('#threadAvatar');
 const threadStatus = qs('#threadStatus');
 const threadTyping = qs('#threadTyping');
+const btnBackToInbox = qs('#btnBackToInbox');
 const threadSearch = qs('#threadSearch');
 const threadSearchAttachments = qs('#threadSearchAttachments');
 const threadFilterInfo = qs('#threadFilterInfo');
 const btnJoinGroup = qs('#btnJoinGroup');
 const btnLeaveGroup = qs('#btnLeaveGroup');
+const btnToggleInfo = qs('#btnToggleInfo');
 const messageInput = qs('#messageInput');
 const btnSend = qs('#btnSend');
 const fileInput = qs('#fileInput');
@@ -126,6 +137,7 @@ let activeConversation = null;
 let activeConversationId = null;
 let currentMessages = [];
 let latestConversations = [];
+let mobileShowInbox = false;
 
 let pendingFiles = [];
 let recorder = null;
@@ -141,6 +153,8 @@ let activeReply = null;
 let activeEditId = null;
 let activeEditSnapshot = null;
 let showArchived = false;
+let showUnreadOnly = false;
+let infoPanelVisible = true;
 let settingsUnsub = null;
 let convSettings = new Map();
 let statusUnsub = null;
@@ -510,6 +524,75 @@ async function updateTypingIndicator(convo) {
   threadTyping.textContent = label;
 }
 
+function updateUnreadFilterUI() {
+  filterAllChats?.classList.toggle('is-active', !showUnreadOnly);
+  filterUnreadChats?.classList.toggle('is-active', showUnreadOnly);
+}
+
+function getActiveTabName() {
+  return document.querySelector('.messages-tab.is-active')?.dataset?.tab || 'chats';
+}
+
+function getActiveListElement() {
+  const tab = getActiveTabName();
+  if (tab === 'groups') return groupList;
+  if (tab === 'support') return supportList;
+  return chatList;
+}
+
+function updateSidebarStats() {
+  if (messagesTotalCount) {
+    messagesTotalCount.textContent = String(Array.isArray(latestConversations) ? latestConversations.length : 0);
+  }
+  if (messagesUnreadCount) {
+    const unread = Array.isArray(latestConversations)
+      ? latestConversations.filter((convo) => convoUnread(convo)).length
+      : 0;
+    messagesUnreadCount.textContent = String(unread);
+  }
+}
+
+function updateListHeaderMeta() {
+  if (messagesListTitle) {
+    const tab = getActiveTabName();
+    messagesListTitle.textContent =
+      tab === 'groups' ? 'Grupos' : tab === 'support' ? 'Soporte' : 'Chats';
+  }
+  if (messagesListCount) {
+    const listEl = getActiveListElement();
+    const visible = listEl
+      ? Array.from(listEl.querySelectorAll('.message-item')).filter((item) => item.style.display !== 'none').length
+      : 0;
+    messagesListCount.textContent = String(visible);
+  }
+}
+
+function isMobileMessagesLayout() {
+  return window.matchMedia('(max-width: 900px)').matches;
+}
+
+function updateThreadViewMode() {
+  if (!messagesPage) return;
+  if (!isMobileMessagesLayout()) {
+    messagesPage.classList.remove('is-thread-open');
+    return;
+  }
+  const shouldOpen = !!activeConversationId && !mobileShowInbox;
+  messagesPage.classList.toggle('is-thread-open', shouldOpen);
+}
+
+function updateInfoPanelVisibility() {
+  if (!messagesInfo) return;
+  const hasConversation = !!activeConversationId;
+  if (!hasConversation) infoPanelVisible = false;
+  const visible = infoPanelVisible && hasConversation;
+  messagesInfo.hidden = !visible;
+  messagesWorkspace?.classList.toggle('is-info-open', visible);
+  if (btnToggleInfo) {
+    btnToggleInfo.textContent = visible ? 'Ocultar detalles' : 'Mostrar detalles';
+  }
+}
+
 function setActiveTab(tab) {
   document.querySelectorAll('.messages-tab').forEach((btn) => {
     btn.classList.toggle('is-active', btn.dataset.tab === tab);
@@ -517,6 +600,16 @@ function setActiveTab(tab) {
   chatList.classList.toggle('is-hidden', tab !== 'chats');
   groupList.classList.toggle('is-hidden', tab !== 'groups');
   supportList.classList.toggle('is-hidden', tab !== 'support');
+  if (messagesFilters) messagesFilters.hidden = tab === 'groups';
+  if (tab === 'groups' && showUnreadOnly) {
+    showUnreadOnly = false;
+    updateUnreadFilterUI();
+  }
+  if (isMobileMessagesLayout()) {
+    mobileShowInbox = true;
+    updateThreadViewMode();
+  }
+  updateListHeaderMeta();
 }
 
 function ensureNotificationPermission() {
@@ -1020,7 +1113,7 @@ function maybeNotify(convId, list) {
 }
 
 async function resolveConversationTitle(convo) {
-  if (!convo) return 'Conversacion';
+  if (!convo) return 'Conversación';
   if (convo.type === 'group' || convo.type === 'support') {
     return convo.title || (convo.type === 'support' ? 'Soporte' : 'Grupo');
   }
@@ -1088,7 +1181,9 @@ function renderConversationItem(convo, target) {
   const time = document.createElement('div');
   time.textContent = formatTime(convo.lastAt);
   right.appendChild(time);
-  if (convoUnread(convo)) {
+  const unread = convoUnread(convo);
+  item.dataset.unread = unread ? '1' : '0';
+  if (unread) {
     const dot = document.createElement('div');
     dot.className = 'message-item-unread';
     right.appendChild(dot);
@@ -1145,6 +1240,7 @@ async function renderPublicGroups(list) {
     item.className = 'message-item';
     item.dataset.id = group.id;
     item.dataset.name = normText(group.title);
+    item.dataset.unread = '0';
 
     const row = document.createElement('div');
     row.className = 'message-item-row';
@@ -1213,16 +1309,21 @@ async function renderPublicGroups(list) {
 
 function applySearchFilter() {
   const q = normText(messagesSearch?.value || '');
-  const currentTab = document.querySelector('.messages-tab.is-active')?.dataset?.tab || 'chats';
+  const currentTab = getActiveTabName();
   const listEl = currentTab === 'groups' ? groupList : (currentTab === 'support' ? supportList : chatList);
   if (!listEl) return;
   listEl.querySelectorAll('.message-item').forEach((item) => {
     const name = item.dataset.name || '';
+    const isUnread = item.dataset.unread === '1';
     const archived = currentTab === 'chats' && isConversationArchived(item.dataset.id);
-    const shouldHide = (!showArchived && archived) || (q && !name.includes(q));
+    const shouldHide =
+      (!showArchived && archived) ||
+      (q && !name.includes(q)) ||
+      (currentTab !== 'groups' && showUnreadOnly && !isUnread);
     item.style.display = shouldHide ? 'none' : '';
     item.classList.toggle('is-muted', isConversationMuted(item.dataset.id));
   });
+  updateListHeaderMeta();
 }
 
 function setComposerEnabled(enabled, placeholder = 'Escribe un mensaje...') {
@@ -1416,6 +1517,8 @@ async function openConversation(id, convo) {
     await clearTyping();
   }
   activeConversationId = id;
+  mobileShowInbox = false;
+  updateThreadViewMode();
   if (!convo) {
     try {
       const snap = await getDoc(doc(db, 'conversations', id));
@@ -1427,7 +1530,12 @@ async function openConversation(id, convo) {
   } else {
     activeConversation = convo;
   }
-  if (!activeConversation) return;
+  if (!activeConversation) {
+    activeConversationId = null;
+    mobileShowInbox = true;
+    updateThreadViewMode();
+    return;
+  }
   activeConversation.id = id;
   currentMessages = [];
   resetComposer();
@@ -1445,7 +1553,8 @@ async function openConversation(id, convo) {
 
   messagesEmpty.hidden = true;
   messagesThread.hidden = false;
-  messagesInfo.hidden = false;
+  updateThreadViewMode();
+  updateInfoPanelVisibility();
 
   if (activeConversation.type === 'support' && IS_SUPPORT) {
     const isMember = (activeConversation.participants || []).includes(CURRENT_USER?.uid);
@@ -1812,9 +1921,12 @@ async function handleLeaveGroup() {
   } catch (e) {
     console.warn('[group] leave failed', e);
   }
+  activeConversationId = null;
+  mobileShowInbox = true;
   messagesThread.hidden = true;
   messagesEmpty.hidden = false;
-  messagesInfo.hidden = true;
+  updateThreadViewMode();
+  updateInfoPanelVisibility();
 }
 
 async function createGroup() {
@@ -2092,6 +2204,25 @@ function wireUI() {
     });
   });
 
+  btnBackToInbox?.addEventListener('click', () => {
+    mobileShowInbox = true;
+    infoPanelVisible = false;
+    updateInfoPanelVisibility();
+    updateThreadViewMode();
+  });
+
+  filterAllChats?.addEventListener('click', () => {
+    showUnreadOnly = false;
+    updateUnreadFilterUI();
+    applySearchFilter();
+  });
+
+  filterUnreadChats?.addEventListener('click', () => {
+    showUnreadOnly = true;
+    updateUnreadFilterUI();
+    applySearchFilter();
+  });
+
   if (messagesSearch) {
     messagesSearch.addEventListener('input', applySearchFilter);
   }
@@ -2186,6 +2317,10 @@ function wireUI() {
     if (activeConversation) handleJoinGroup(activeConversation);
   });
   btnLeaveGroup?.addEventListener('click', handleLeaveGroup);
+  btnToggleInfo?.addEventListener('click', () => {
+    infoPanelVisible = !infoPanelVisible;
+    updateInfoPanelVisibility();
+  });
   btnOpenSupport?.addEventListener('click', openOrCreateSupport);
 
   requestsBox?.addEventListener('click', async (e) => {
@@ -2321,6 +2456,13 @@ function wireUI() {
   window.addEventListener('blur', () => {
     clearTyping();
   });
+  window.addEventListener('resize', updateThreadViewMode);
+
+  updateUnreadFilterUI();
+  updateSidebarStats();
+  updateListHeaderMeta();
+  updateInfoPanelVisibility();
+  updateThreadViewMode();
 }
 
 function listenConversations() {
@@ -2336,6 +2478,7 @@ function listenConversations() {
     );
     latestConversations = list;
     renderConversationList(list, chatList);
+    updateSidebarStats();
     applySearchFilter();
   });
 }
@@ -2372,6 +2515,7 @@ function listenSupportInbox() {
       snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })),
     );
     renderConversationList(list, supportList);
+    applySearchFilter();
   });
 }
 

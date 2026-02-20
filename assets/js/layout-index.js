@@ -17,6 +17,7 @@ import {
   updateDoc,
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js';
 
 (function () {
   function qs(sel, root = document) {
@@ -726,19 +727,27 @@ import {
     if (business) business.addEventListener('click', () => go('#extras'));
   }
 
-  function wireMiniMenu(wrap, btn, menu) {
+  function wireMiniMenu(wrap, btn, menu, onOpen) {
     if (!wrap || !btn || !menu || wrap.dataset.wired) return;
     wrap.dataset.wired = '1';
     const canHover = window.matchMedia('(hover: hover)').matches;
     let closeTimer = null;
 
     const open = () => {
+      const wasOpen = wrap.classList.contains('open');
       if (closeTimer) {
         clearTimeout(closeTimer);
         closeTimer = null;
       }
       wrap.classList.add('open');
       btn.setAttribute('aria-expanded', 'true');
+      if (!wasOpen && typeof onOpen === 'function') {
+        try {
+          onOpen();
+        } catch (e) {
+          console.warn('[mini-menu] onOpen failed', e);
+        }
+      }
     };
     const close = () => {
       wrap.classList.remove('open');
@@ -809,29 +818,46 @@ import {
     const list = document.getElementById('navNotifList');
     const badge = document.getElementById('navNotifBadge');
     if (!uid || !list || !badge) return;
+    list.dataset.uid = uid;
+    if (!list.dataset.wired) {
+      list.dataset.wired = '1';
+      list.addEventListener('click', (e) => {
+        const item = e.target.closest('[data-notif-id]');
+        const id = item?.dataset?.notifId;
+        const ownerUid = list.dataset.uid;
+        if (!ownerUid || !id) return;
+        updateDoc(doc(db, 'user_notifications', ownerUid, 'items', id), {
+          read: true,
+          readAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        }).catch(() => null);
+      });
+    }
     try {
       const snap = await getDocs(
         query(
           collection(db, 'user_notifications', uid, 'items'),
           orderBy('createdAt', 'desc'),
-          limit(6),
+          limit(20),
         ),
       );
       const items = snap.docs
-        .map((d) => d.data() || {})
+        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
         .filter((item) => String(item.type || '').toLowerCase() !== 'broadcast');
-      const unread = items.filter((i) => i.read !== true).length;
+      const unreadItems = items.filter((i) => i.read !== true);
+      const unread = unreadItems.length;
       setBadge(badge, unread);
-      if (!items.length) {
+      if (!unreadItems.length) {
         list.innerHTML = '<div class="nav-mini-empty">Sin notificaciones.</div>';
         return;
       }
-      list.innerHTML = items
+      list.innerHTML = unreadItems
+        .slice(0, 6)
         .map((item) => {
           const title = String(item.title || 'Notificación');
           const body = String(item.body || '');
           const href = String(item.link || 'notificaciones.html').trim();
-          return `<a class="nav-mini-item ${item.read ? '' : 'is-unread'}" href="${href}">
+          return `<a class="nav-mini-item is-unread" href="${href}" data-notif-id="${item.id}">
             <div class="nav-mini-title">${title}</div>
             ${body ? `<div class="nav-mini-body">${body}</div>` : ''}
           </a>`;
@@ -848,27 +874,54 @@ import {
     const list = document.getElementById('navMsgList');
     const badge = document.getElementById('navMsgBadge');
     if (!uid || !list || !badge) return;
+    list.dataset.uid = uid;
+    if (!list.dataset.msgWired) {
+      list.dataset.msgWired = '1';
+      list.addEventListener('click', (e) => {
+        const item = e.target.closest('[data-msg-id]');
+        const id = item?.dataset?.msgId;
+        const convId = item?.dataset?.conv || '';
+        const ownerUid = list.dataset.uid;
+        if (!ownerUid || !id) return;
+        updateDoc(doc(db, 'user_inbox', ownerUid, 'messages', id), {
+          read: true,
+          readAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        }).catch(() => null);
+
+        const isMessagesPage = String(location.pathname || '').toLowerCase().includes('mensajes');
+        const miniApi = window.__avMiniChatApi;
+        if (!isMessagesPage && convId && miniApi && typeof miniApi.openConversation === 'function') {
+          e.preventDefault();
+          miniApi.openConversation(convId);
+        }
+      });
+    }
     try {
       const snap = await getDocs(
         query(
           collection(db, 'user_inbox', uid, 'messages'),
           orderBy('createdAt', 'desc'),
-          limit(8),
+          limit(20),
         ),
       );
-      const items = snap.docs.map((d) => d.data() || {});
-      const unread = items.filter((i) => i.read !== true).length;
+      const items = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+      const unreadItems = items.filter((i) => i.read !== true);
+      const unread = unreadItems.length;
       setBadge(badge, unread);
-      if (!items.length) {
+      if (!unreadItems.length) {
         list.innerHTML = '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
         return;
       }
-      list.innerHTML = items
+      list.innerHTML = unreadItems
+        .slice(0, 8)
         .map((item) => {
           const name = String(item.fromName || item.fromEmail || 'Usuario');
           const text = String(item.text || '');
           const href = String(item.link || 'mensajes.html').trim();
-          return `<a class="nav-mini-item ${item.read ? '' : 'is-unread'}" href="${href}">
+          const convMatch = href.match(/[?&]conv=([^&#]+)/i);
+          const convId = convMatch ? decodeURIComponent(convMatch[1]) : '';
+          return `<a class="nav-mini-item is-unread" href="${href}" data-msg-id="${item.id}" ${convId ? `data-conv="${convId}"` : ''}>
             <div class="nav-mini-title">${name}</div>
             ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
           </a>`;
@@ -1076,8 +1129,18 @@ import {
         wireMiniMenu(navNotifWrap, navNotifBtn, navNotifMenu);
         wireMiniMenu(navMsgWrap, navMsgBtn, navMsgMenu);
         startBadgeRefresh(user.uid);
+        initGlobalMiniChat({
+          uid: user.uid,
+          displayName:
+            CURRENT_DOC?.displayName ||
+            CURRENT_DOC?.name ||
+            user?.displayName ||
+            user?.email ||
+            'Usuario',
+        });
       } else {
         startBadgeRefresh(null);
+        destroyGlobalMiniChat();
       }
 
       idleEnabled = !!user && !isAdmin;

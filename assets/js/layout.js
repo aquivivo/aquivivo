@@ -31,6 +31,7 @@ import {
   resolveAccessUntil,
   levelsFromPlan,
 } from './plan-levels.js';
+import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js';
 
 (function () {
   const path = (location.pathname || '').toLowerCase();
@@ -405,7 +406,7 @@ import {
     if (!CURRENT_USER) {
       btn.disabled = false;
       btn.textContent = defaultLabel;
-      setTrialMessage('Inicia sesion para activar tu prueba gratuita.');
+      setTrialMessage('Inicia sesión para activar tu prueba gratuita.');
       return;
     }
 
@@ -618,7 +619,7 @@ import {
       : {
           navLabel: 'Navegacion',
           home: 'Inicio',
-          login: 'Iniciar sesion',
+          login: 'Iniciar sesión',
           admin: 'Admin',
           polaco: 'POLACO',
           servicios: 'Servicios',
@@ -639,7 +640,7 @@ import {
           rewards: 'Pasaporte',
           help: 'Ayuda / Reportar',
           back: 'Atras',
-          logout: 'Cerrar sesion',
+          logout: 'Cerrar sesión',
         };
 
     if (isLoginPage) {
@@ -1171,25 +1172,27 @@ import {
         query(
           collection(db, 'user_notifications', uid, 'items'),
           orderBy('createdAt', 'desc'),
-          limit(6),
+          limit(20),
         ),
       );
       const items = snap.docs
         .map((d) => ({ id: d.id, ...(d.data() || {}) }))
         .filter((item) => String(item.type || '').toLowerCase() !== 'broadcast');
-      const unread = items.filter((i) => i.read !== true).length;
+      const unreadItems = items.filter((i) => i.read !== true);
+      const unread = unreadItems.length;
       setBadge(badge, unread);
-      if (!items.length) {
+      if (!unreadItems.length) {
         list.innerHTML =
           '<div class="nav-mini-empty">Sin notificaciones.</div>';
         return;
       }
-      list.innerHTML = items
+      list.innerHTML = unreadItems
+        .slice(0, 6)
         .map((item) => {
           const title = String(item.title || 'Notificacion');
           const body = String(item.body || '');
           const href = String(item.link || 'notificaciones.html').trim();
-          return `<a class="nav-mini-item ${item.read ? '' : 'is-unread'}" href="${href}" data-notif-id="${item.id}">
+          return `<a class="nav-mini-item is-unread" href="${href}" data-notif-id="${item.id}">
             <div class="nav-mini-title">${title}</div>
             ${body ? `<div class="nav-mini-body">${body}</div>` : ''}
           </a>`;
@@ -1202,52 +1205,33 @@ import {
     }
   }
 
-  let notifMarkBusy = false;
-  async function markRecentNotifsRead(uid, max = 20) {
-    if (!uid || notifMarkBusy) return;
-    notifMarkBusy = true;
-    try {
-      const safeMax = Math.max(1, Math.min(50, Number(max) || 20));
-      const snap = await getDocs(
-        query(
-          collection(db, 'user_notifications', uid, 'items'),
-          orderBy('createdAt', 'desc'),
-          limit(safeMax),
-        ),
-      );
-      const unreadIds = snap.docs
-        .filter((d) => (d.data() || {}).read !== true)
-        .map((d) => d.id);
-      if (!unreadIds.length) return;
-      await Promise.all(
-        unreadIds.map((id) =>
-          updateDoc(doc(db, 'user_notifications', uid, 'items', id), {
-            read: true,
-            readAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          }).catch(() => null),
-        ),
-      );
-      await loadNotifDropdown(uid);
-    } catch (e) {
-      console.warn('[notifications] mark read failed', e);
-    } finally {
-      notifMarkBusy = false;
-    }
-  }
-
   async function loadMsgDropdown(uid) {
     const list = document.getElementById('navMsgList');
     const badge = document.getElementById('navMsgBadge');
     if (!uid || !list || !badge) return;
+    list.dataset.uid = uid;
     if (!list.dataset.wired) {
       list.dataset.wired = '1';
-      list.addEventListener('click', (e) => {
+      list.addEventListener('click', async (e) => {
         const item = e.target.closest('[data-conv]');
+        const ownerUid = list.dataset.uid;
         if (!item) return;
         const convId = item.dataset.conv;
+        if (!ownerUid) return;
         if (!convId) return;
         e.preventDefault();
+        try {
+          await updateDoc(doc(db, 'conversations', convId), {
+            [`reads.${ownerUid}`]: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+        } catch {}
+        const isMessagesPage = String(location.pathname || '').toLowerCase().includes('mensajes');
+        const miniApi = window.__avMiniChatApi;
+        if (!isMessagesPage && miniApi && typeof miniApi.openConversation === 'function') {
+          miniApi.openConversation(convId);
+          return;
+        }
         location.href = `mensajes.html?conv=${encodeURIComponent(convId)}`;
       });
     }
@@ -1295,7 +1279,7 @@ import {
               ? 'Grupo'
               : '') ||
           item.lastMessage?.senderName ||
-          'Conversacion';
+          'Conversación';
         const text = String(item.lastMessage?.text || '');
         const lastAt = toDateMaybe(item.lastAt);
         const readRaw = item.reads ? item.reads[uid] : null;
@@ -1308,7 +1292,7 @@ import {
           key: `conv:${item.id}`,
           href: `mensajes.html?conv=${encodeURIComponent(item.id)}`,
           convId: item.id,
-          title: String(title || 'Conversacion'),
+          title: String(title || 'Conversación'),
           text,
           time: lastAt?.getTime() || toDateMaybe(item.createdAt)?.getTime() || 0,
           isUnread: !!isUnread,
@@ -1333,7 +1317,10 @@ import {
         };
       });
 
-      const rows = [...conversationRows, ...broadcastRows]
+      const rows = [
+        ...conversationRows.filter((r) => r.isUnread),
+        ...broadcastRows.filter((r) => r.isUnread),
+      ]
         .sort((a, b) => (b.time || 0) - (a.time || 0))
         .slice(0, 8);
 
@@ -1348,7 +1335,7 @@ import {
 
       list.innerHTML = rows
         .map((row) => {
-          return `<a class="nav-mini-item ${row.isUnread ? 'is-unread' : ''}" href="${row.href}" ${row.convId ? `data-conv="${row.convId}"` : ''}>
+          return `<a class="nav-mini-item is-unread" href="${row.href}" ${row.convId ? `data-conv="${row.convId}"` : ''}>
             <div class="nav-mini-title">${row.title}</div>
             ${row.text ? `<div class="nav-mini-body">${row.text}</div>` : ''}
           </a>`;
@@ -1456,9 +1443,7 @@ import {
     const navMsgBtn = document.getElementById('navMsgBtn');
     const navMsgMenu = document.getElementById('navMsgMenu');
 
-    wireMiniMenu(navNotifWrap, navNotifBtn, navNotifMenu, () => {
-      if (CURRENT_USER?.uid) markRecentNotifsRead(CURRENT_USER.uid);
-    });
+    wireMiniMenu(navNotifWrap, navNotifBtn, navNotifMenu);
     wireMiniMenu(navMsgWrap, navMsgBtn, navMsgMenu, () => {
       if (!CURRENT_USER?.uid) return;
       try {
@@ -1753,6 +1738,20 @@ import {
 
     if (user?.uid) startBadgeRefresh(user.uid);
     else startBadgeRefresh(null);
+
+    if (user?.uid) {
+      initGlobalMiniChat({
+        uid: user.uid,
+        displayName:
+          profile?.displayName ||
+          profile?.name ||
+          user?.displayName ||
+          user?.email ||
+          'Usuario',
+      });
+    } else {
+      destroyGlobalMiniChat();
+    }
 
     idleEnabled = !!user && !isAdmin;
     if (idleEnabled) {
