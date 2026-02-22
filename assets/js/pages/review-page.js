@@ -1182,7 +1182,7 @@ function updateStats() {
 
   if (countEl) countEl.textContent = `Para hoy: ${total}`;
   if (newEl) {
-    if (reviewMode === 'errors') newEl.textContent = `Bledy: ${mistakesCache.length}`;
+    if (reviewMode === 'errors') newEl.textContent = `Errores: ${mistakesCache.length}`;
     else newEl.textContent = `Nuevas: ${newCount}`;
   }
   if (progEl) progEl.textContent = `Progreso: ${done}/${total}`;
@@ -1291,12 +1291,12 @@ function renderCard() {
     if (empty) empty.style.display = 'block';
     if (reviewMode === 'errors') {
       setReviewEmpty(
-        'Brak bledow do powtorki',
+        'No hay errores para repasar',
         'Nie ma aktywnych bledow. Rozwiaz kilka cwiczen i wroc tutaj.',
       );
     } else if (reviewMode === 'minitest') {
       setReviewEmpty(
-        'Brak kart do mini-testu',
+        'No hay tarjetas para el mini test',
         'Dla tego checkpointu nie znaleziono kart. Dodaj fiszki do tematow.',
       );
     }

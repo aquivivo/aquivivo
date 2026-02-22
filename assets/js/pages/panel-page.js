@@ -1090,7 +1090,12 @@ function genFriendCode() {
 }
 
 function normName(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function normHandle(value) {
@@ -1486,25 +1491,25 @@ async function loadFriends(uid) {
 }
 
 async function sendFriendRequestToUid(myUid, targetUid) {
-  if (!myUid || !targetUid) return;
+  if (!myUid || !targetUid) return 'invalid';
   if (targetUid === myUid) {
     setFriendReqMsg('Ese código es tuyo.', true);
-    return;
+    return 'self';
   }
   const targetProfile = await getPublicProfile(targetUid);
   if (targetProfile?.allowFriendRequests === false) {
     setFriendReqMsg('No acepta solicitudes.', true);
-    return;
+    return 'blocked_policy';
   }
   const blockedMe = await getDoc(doc(db, 'user_blocks', `${targetUid}__${myUid}`));
   if (blockedMe.exists()) {
     setFriendReqMsg('No puedes enviar solicitud.', true);
-    return;
+    return 'blocked_by_other';
   }
   const blockedByMe = await getDoc(doc(db, 'user_blocks', `${myUid}__${targetUid}`));
   if (blockedByMe.exists()) {
     setFriendReqMsg('Desbloquea primero a este usuario.', true);
-    return;
+    return 'blocked_by_me';
   }
 
   const reverseId = `${targetUid}__${myUid}`;
@@ -1517,11 +1522,11 @@ async function sendFriendRequestToUid(myUid, targetUid) {
         updatedAt: serverTimestamp(),
       });
       setFriendReqMsg('Solicitud aceptada automáticamente.');
-      return;
+      return 'accepted';
     }
     if (data.status === 'accepted') {
       setFriendReqMsg('Ya son amigos.');
-      return;
+      return 'accepted';
     }
   }
 
@@ -1531,11 +1536,11 @@ async function sendFriendRequestToUid(myUid, targetUid) {
     const data = existing.data() || {};
     if (data.status === 'pending') {
       setFriendReqMsg('Solicitud pendiente.');
-      return;
+      return 'pending';
     }
     if (data.status === 'accepted') {
       setFriendReqMsg('Ya son amigos.');
-      return;
+      return 'accepted';
     }
   }
 
@@ -1547,6 +1552,7 @@ async function sendFriendRequestToUid(myUid, targetUid) {
     updatedAt: serverTimestamp(),
   });
   setFriendReqMsg('Solicitud enviada.');
+  return 'pending';
 }
 
 async function sendFriendRequest(myUid, code) {
@@ -1577,13 +1583,70 @@ async function openChat(myUid, friendUid) {
   window.location.href = url;
 }
 
+function tokenizeMessage(text) {
+  const raw = String(text || '').toLowerCase();
+  return Array.from(new Set(raw.split(/[^a-z0-9ąćęłńóśźżüáéíóúñ]+/i).filter(Boolean))).slice(0, 50);
+}
+
+async function ensureDmConversation(myUid, friendUid) {
+  const a = String(myUid || '').trim();
+  const b = String(friendUid || '').trim();
+  if (!a || !b) return null;
+  const dmKey = [a, b].sort().join('__');
+  const snap = await getDocs(
+    query(collection(db, 'conversations'), where('dmKey', '==', dmKey), limit(8)),
+  );
+  if (!snap.empty) {
+    const valid = (snap.docs || [])
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((row) => {
+        const participants = Array.isArray(row.participants) ? row.participants : [];
+        return participants.includes(a) && participants.includes(b);
+      })
+      .sort((x, y) => {
+        const xt = toDateMaybe(x.lastAt)?.getTime() || toDateMaybe(x.createdAt)?.getTime() || 0;
+        const yt = toDateMaybe(y.lastAt)?.getTime() || toDateMaybe(y.createdAt)?.getTime() || 0;
+        return yt - xt;
+      });
+    if (valid.length) return valid[0];
+  }
+  const payload = {
+    type: 'dm',
+    dmKey,
+    createdAt: serverTimestamp(),
+    createdBy: a,
+    ownerId: a,
+    admins: [a],
+    participants: [a, b],
+    memberCount: 2,
+    lastAt: serverTimestamp(),
+    reads: { [a]: serverTimestamp() },
+  };
+  const refConv = await addDoc(collection(db, 'conversations'), payload);
+  return { id: refConv.id, ...payload };
+}
+
 async function loadMessages(myUid, friendUid) {
   if (!myUid || !friendUid) return;
+  const convo = await ensureDmConversation(myUid, friendUid);
+  if (!convo?.id) {
+    renderMessages([], myUid);
+    return;
+  }
   const snap = await getDocs(
-    query(collection(db, 'user_inbox', myUid, 'messages'), where('peerUid', '==', friendUid)),
+    query(collection(db, 'conversations', convo.id, 'messages'), orderBy('createdAt', 'asc'), limit(200)),
   );
   const list = (snap.docs || [])
-    .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+    .map((d) => {
+      const data = d.data() || {};
+      return {
+        id: d.id,
+        fromUid: data.senderId || data.fromUid || '',
+        toUid: '',
+        text: data.text || '',
+        createdAt: data.createdAt,
+      };
+    })
     .sort((a, b) => {
       const ad = toDateMaybe(a.createdAt)?.getTime() || 0;
       const bd = toDateMaybe(b.createdAt)?.getTime() || 0;
@@ -1615,20 +1678,65 @@ async function sendMessage(myUid, friendUid, text) {
   }
   if (btnSendMessage) btnSendMessage.disabled = true;
   setChatMsg('Enviando...');
-  const payload = {
-    fromUid: myUid,
-    toUid: friendUid,
-    peerUid: friendUid,
-    text: msg,
-    createdAt: serverTimestamp(),
-    read: false,
-  };
   try {
-    await addDoc(collection(db, 'user_inbox', myUid, 'messages'), payload);
-    await addDoc(collection(db, 'user_inbox', friendUid, 'messages'), {
-      ...payload,
-      peerUid: myUid,
+    const convo = await ensureDmConversation(myUid, friendUid);
+    if (!convo?.id) {
+      setChatMsg('No se pudo abrir el chat.', true);
+      return;
+    }
+
+    const senderProfile = await getPublicProfile(myUid);
+    const senderName =
+      String(senderProfile?.displayName || senderProfile?.name || '').trim() ||
+      String(auth.currentUser?.displayName || auth.currentUser?.email || 'Usuario').trim();
+    const textLower = String(msg || '').toLowerCase();
+    const tokens = tokenizeMessage(msg);
+
+    const msgRef = await addDoc(collection(db, 'conversations', convo.id, 'messages'), {
+      senderId: myUid,
+      senderName,
+      text: msg,
+      textLower,
+      tokens,
+      attachments: [],
+      replyTo: null,
+      hasAttachments: false,
+      attachmentNames: [],
+      createdAt: serverTimestamp(),
     });
+
+    await updateDoc(doc(db, 'conversations', convo.id), {
+      lastMessage: {
+        text: msg.slice(0, 120),
+        senderId: myUid,
+        senderName,
+      },
+      lastAt: serverTimestamp(),
+      lastMessageId: msgRef.id,
+      [`reads.${myUid}`]: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    // Legacy mirror for old inbox-based widgets/pages.
+    await Promise.allSettled([
+      addDoc(collection(db, 'user_inbox', myUid, 'messages'), {
+        fromUid: myUid,
+        toUid: friendUid,
+        peerUid: friendUid,
+        text: msg,
+        createdAt: serverTimestamp(),
+        read: true,
+      }),
+      addDoc(collection(db, 'user_inbox', friendUid, 'messages'), {
+        fromUid: myUid,
+        toUid: friendUid,
+        peerUid: myUid,
+        text: msg,
+        createdAt: serverTimestamp(),
+        read: false,
+      }),
+    ]);
+
     if (chatInput) chatInput.value = '';
     setChatMsg('Enviado.');
     await loadMessages(myUid, friendUid);
@@ -1679,48 +1787,241 @@ function renderSearchResults(items, myUid) {
     `;
     communitySearchResults.appendChild(wrap);
   });
+  decorateCommunityAddButtons(myUid).catch(() => {});
+}
+
+async function friendRelationState(myUid, targetUid) {
+  const a = String(myUid || '').trim();
+  const b = String(targetUid || '').trim();
+  if (!a || !b || a === b) return 'none';
+  const [direct, reverse] = await Promise.all([
+    getDoc(doc(db, 'friend_requests', `${a}__${b}`)),
+    getDoc(doc(db, 'friend_requests', `${b}__${a}`)),
+  ]);
+  const dd = direct.exists() ? (direct.data() || {}) : null;
+  const rd = reverse.exists() ? (reverse.data() || {}) : null;
+  const statuses = [dd?.status, rd?.status].map((x) => String(x || '').toLowerCase());
+  if (statuses.includes('accepted')) return 'friends';
+  if (statuses.includes('pending')) return 'pending';
+  return 'none';
+}
+
+function applyAddButtonState(btn, state) {
+  if (!btn) return;
+  if (state === 'friends') {
+    btn.textContent = 'Amigos';
+    btn.disabled = true;
+    btn.classList.remove('btn-yellow');
+    return;
+  }
+  if (state === 'pending') {
+    btn.textContent = 'Pendiente';
+    btn.disabled = true;
+    btn.classList.remove('btn-yellow');
+    return;
+  }
+  btn.textContent = 'Agregar';
+  btn.disabled = false;
+}
+
+async function decorateCommunityAddButtons(myUid) {
+  if (!communitySearchResults) return;
+  const buttons = Array.from(communitySearchResults.querySelectorAll('button[data-add]'));
+  await Promise.all(
+    buttons.map(async (btn) => {
+      const targetUid = String(btn.getAttribute('data-add') || '').trim();
+      if (!targetUid || targetUid === myUid) return;
+      const state = await friendRelationState(myUid, targetUid);
+      applyAddButtonState(btn, state);
+    }),
+  );
+}
+
+function getSearchFields(item) {
+  const display = normName(item?.displayNameLower || item?.displayName || item?.name || '');
+  const handle = normName(item?.handleLower || item?.handle || '');
+  const email = normName(item?.emailLower || '');
+  return { display, handle, email };
+}
+
+function matchesSearch(item, q) {
+  const needle = normName(q);
+  if (!needle) return false;
+  const { display, handle, email } = getSearchFields(item);
+  return display.includes(needle) || handle.includes(needle) || email.includes(needle);
+}
+
+function searchRank(item, q) {
+  const needle = normName(q);
+  const { display, handle } = getSearchFields(item);
+  if (handle.startsWith(needle)) return 0;
+  if (display.startsWith(needle)) return 1;
+  if (handle.includes(needle)) return 2;
+  if (display.includes(needle)) return 3;
+  return 4;
+}
+
+function pushDocsToMap(targetMap, docs) {
+  (docs || []).forEach((d) => {
+    if (!d?.id) return;
+    targetMap.set(d.id, { uid: d.id, ...(d.data() || {}) });
+  });
+}
+
+async function fallbackSearchPublicUsers(term, maxRows = 150) {
+  const snap = await getDocs(query(collection(db, 'public_users'), limit(maxRows)));
+  const rows = [];
+  snap.forEach((docSnap) => {
+    rows.push({ uid: docSnap.id, ...(docSnap.data() || {}) });
+  });
+  return rows.filter((row) => matchesSearch(row, term));
+}
+
+async function lookupByEmailIndex(term) {
+  const email = normName(term);
+  if (!email || !email.includes('@')) return null;
+  try {
+    const snap = await getDoc(doc(db, 'email_index', email));
+    if (!snap.exists()) return null;
+    const data = snap.data() || {};
+    const uid = String(data.uid || '').trim();
+    if (!uid) return null;
+    const profileSnap = await getDoc(doc(db, 'public_users', uid));
+    const profile = profileSnap.exists() ? profileSnap.data() : {};
+    return { uid, ...(profile || {}), emailLower: profile?.emailLower || email };
+  } catch (e) {
+    console.warn('[panel] email index lookup failed', e);
+    return null;
+  }
+}
+
+async function lookupByUsersEmailFallback(term) {
+  const email = normName(term);
+  if (!email || !email.includes('@')) return null;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'public_users'), where('emailLower', '==', email), limit(1)),
+    );
+    if (snap.empty) return null;
+    const userDoc = snap.docs[0];
+    const uid = String(userDoc?.id || '').trim();
+    if (!uid) return null;
+    const profile = userDoc.data() || {};
+    return {
+      uid,
+      ...(profile || {}),
+      displayName: profile?.displayName || profile?.name || '',
+      name: profile?.name || profile?.displayName || '',
+      handle: profile?.handle || '',
+      emailLower: profile?.emailLower || email,
+    };
+  } catch {
+    try {
+      const fallbackSnap = await getDocs(query(collection(db, 'public_users'), limit(200)));
+      let hit = null;
+      fallbackSnap.forEach((docSnap) => {
+        if (hit) return;
+        const row = { uid: docSnap.id, ...(docSnap.data() || {}) };
+        const rowEmail = normName(row.emailLower || row.email || '');
+        if (rowEmail && rowEmail === email) hit = row;
+      });
+      return hit;
+    } catch {
+      return null;
+    }
+  }
+}
+
+async function lookupByHandleIndex(term) {
+  const handle = normName(term);
+  if (!handle || handle.includes('@') || handle.length < 2) return null;
+  try {
+    const snap = await getDoc(doc(db, 'login_index', handle));
+    if (!snap.exists()) return null;
+    const data = snap.data() || {};
+    const uid = String(data.uid || '').trim();
+    if (!uid) return null;
+    const profileSnap = await getDoc(doc(db, 'public_users', uid));
+    const profile = profileSnap.exists() ? profileSnap.data() : {};
+    return { uid, ...(profile || {}), handle: profile?.handle || handle, handleLower: profile?.handleLower || handle };
+  } catch (e) {
+    console.warn('[panel] handle index lookup failed', e);
+    return null;
+  }
 }
 
 async function searchPublicUsers(myUid, term) {
-  const q = normName(term);
+  const raw = normName(term);
+  const q = raw.startsWith('@') ? raw.slice(1).trim() : raw;
   if (!q) {
     setCommunitySearchMsg('Escribe un nombre.', true);
     return;
   }
   setCommunitySearchMsg('Buscando...');
-  try {
-    const nameQuery = query(
-      collection(db, 'public_users'),
-      orderBy('displayNameLower'),
-      startAt(q),
-      endAt(`${q}\uf8ff`),
-      limit(10),
-    );
-    const handleQuery = query(
-      collection(db, 'public_users'),
-      orderBy('handleLower'),
-      startAt(q),
-      endAt(`${q}\uf8ff`),
-      limit(10),
-    );
-    const [byName, byHandle] = await Promise.all([
-      getDocs(nameQuery),
-      getDocs(handleQuery),
-    ]);
-    const merged = new Map();
-    [...(byName.docs || []), ...(byHandle.docs || [])].forEach((d) => {
-      if (!d?.id) return;
-      if (!merged.has(d.id)) merged.set(d.id, { uid: d.id, ...(d.data() || {}) });
-    });
-    const results = Array.from(merged.values())
-      .filter((d) => d.publicProfile !== false)
-      .filter((d) => d.uid !== myUid);
-    renderSearchResults(results, myUid);
-    setCommunitySearchMsg(`Resultados: ${results.length}`);
-  } catch (e) {
-    console.warn('search public users failed', e);
-    setCommunitySearchMsg('No se pudo buscar.', true);
+  const merged = new Map();
+  let prefixFailed = false;
+
+  const [emailHit, legacyEmailHit, handleHit] = await Promise.all([
+    lookupByEmailIndex(raw),
+    lookupByUsersEmailFallback(raw),
+    raw.startsWith('@') ? lookupByHandleIndex(q) : Promise.resolve(null),
+  ]);
+  if (emailHit?.uid) merged.set(emailHit.uid, emailHit);
+  if (!emailHit?.uid && legacyEmailHit?.uid) merged.set(legacyEmailHit.uid, legacyEmailHit);
+  if (handleHit?.uid) merged.set(handleHit.uid, handleHit);
+
+  const nameQuery = query(
+    collection(db, 'public_users'),
+    orderBy('displayNameLower'),
+    startAt(q),
+    endAt(`${q}\uf8ff`),
+    limit(10),
+  );
+  const handleQuery = query(
+    collection(db, 'public_users'),
+    orderBy('handleLower'),
+    startAt(q),
+    endAt(`${q}\uf8ff`),
+    limit(10),
+  );
+  const [byName, byHandle] = await Promise.all([
+    getDocs(nameQuery).catch((e) => {
+      prefixFailed = true;
+      console.warn('[panel] name prefix search failed', e);
+      return null;
+    }),
+    getDocs(handleQuery).catch((e) => {
+      prefixFailed = true;
+      console.warn('[panel] handle prefix search failed', e);
+      return null;
+    }),
+  ]);
+
+  pushDocsToMap(merged, byName?.docs);
+  pushDocsToMap(merged, byHandle?.docs);
+
+  if (!merged.size || prefixFailed) {
+    try {
+      const fallbackRows = await fallbackSearchPublicUsers(q, 150);
+      fallbackRows.forEach((row) => {
+        if (row?.uid) merged.set(row.uid, row);
+      });
+    } catch (e) {
+      console.warn('[panel] fallback search failed', e);
+    }
   }
+
+  const results = Array.from(merged.values())
+    .filter((d) => d.publicProfile !== false)
+    .sort((a, b) => searchRank(a, q) - searchRank(b, q))
+    .slice(0, 10);
+
+  renderSearchResults(results, myUid);
+  if (prefixFailed && !results.length) {
+    setCommunitySearchMsg('No se pudo buscar.', true);
+    return;
+  }
+  setCommunitySearchMsg(`Resultados: ${results.length}`);
 }
 
 async function initCommunity(viewUid, viewDoc, email, isPreview) {
@@ -1869,7 +2170,15 @@ async function initCommunity(viewUid, viewDoc, email, isPreview) {
       if (!btn) return;
       const targetUid = btn.getAttribute('data-add');
       if (!targetUid) return;
-      await sendFriendRequestToUid(viewUid, targetUid);
+      try {
+        btn.disabled = true;
+        const result = await sendFriendRequestToUid(viewUid, targetUid);
+        if (result === 'accepted') applyAddButtonState(btn, 'friends');
+        else if (result === 'pending') applyAddButtonState(btn, 'pending');
+        else btn.disabled = false;
+      } catch {
+        btn.disabled = false;
+      }
       await loadFriendRequests(viewUid);
       await loadFriends(viewUid);
     });

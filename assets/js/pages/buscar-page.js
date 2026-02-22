@@ -67,6 +67,132 @@ function renderMyAvatar(url, name) {
   }
 }
 
+function normalizeSearchText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function getSearchFields(item) {
+  const display = normalizeSearchText(item?.displayNameLower || item?.displayName || item?.name || '');
+  const handle = normalizeSearchText(item?.handleLower || item?.handle || '');
+  const email = normalizeSearchText(item?.emailLower || '');
+  return { display, handle, email };
+}
+
+function matchesSearch(item, q) {
+  const needle = normalizeSearchText(q);
+  if (!needle) return false;
+  const { display, handle, email } = getSearchFields(item);
+  return (
+    display.includes(needle) ||
+    handle.includes(needle) ||
+    email.includes(needle)
+  );
+}
+
+function searchRank(item, q) {
+  const needle = normalizeSearchText(q);
+  const { display, handle } = getSearchFields(item);
+  if (handle.startsWith(needle)) return 0;
+  if (display.startsWith(needle)) return 1;
+  if (handle.includes(needle)) return 2;
+  if (display.includes(needle)) return 3;
+  return 4;
+}
+
+function pushDocsToMap(targetMap, docs) {
+  (docs || []).forEach((d) => {
+    if (!d?.id) return;
+    targetMap.set(d.id, { uid: d.id, ...(d.data() || {}) });
+  });
+}
+
+async function fallbackSearchPublicUsers(q, maxRows = 120) {
+  const fallbackSnap = await getDocs(query(collection(db, 'public_users'), limit(maxRows)));
+  const rows = [];
+  fallbackSnap.forEach((docSnap) => {
+    rows.push({ uid: docSnap.id, ...(docSnap.data() || {}) });
+  });
+  return rows.filter((row) => matchesSearch(row, q));
+}
+
+async function lookupByEmailIndex(rawTerm) {
+  const email = normalizeSearchText(rawTerm);
+  if (!email || !email.includes('@')) return null;
+  try {
+    const snap = await getDoc(doc(db, 'email_index', email));
+    if (!snap.exists()) return null;
+    const data = snap.data() || {};
+    const uid = String(data.uid || '').trim();
+    if (!uid) return null;
+    const profileSnap = await getDoc(doc(db, 'public_users', uid));
+    const profile = profileSnap.exists() ? profileSnap.data() : {};
+    return { uid, ...(profile || {}), emailLower: profile?.emailLower || email };
+  } catch (e) {
+    console.warn('[buscar] email index lookup failed', e);
+    return null;
+  }
+}
+
+async function lookupByUsersEmailFallback(rawTerm) {
+  const email = normalizeSearchText(rawTerm);
+  if (!email || !email.includes('@')) return null;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'public_users'), where('emailLower', '==', email), limit(1)),
+    );
+    if (snap.empty) return null;
+    const userDoc = snap.docs[0];
+    const uid = String(userDoc?.id || '').trim();
+    if (!uid) return null;
+    const profile = userDoc.data() || {};
+    return {
+      uid,
+      ...(profile || {}),
+      displayName: profile?.displayName || profile?.name || '',
+      name: profile?.name || profile?.displayName || '',
+      handle: profile?.handle || '',
+      emailLower: profile?.emailLower || email,
+    };
+  } catch {
+    try {
+      // Fallback bez indeksu emailLower: lokalne filtrowanie publicznych profili.
+      const fallbackSnap = await getDocs(query(collection(db, 'public_users'), limit(200)));
+      let hit = null;
+      fallbackSnap.forEach((docSnap) => {
+        if (hit) return;
+        const row = { uid: docSnap.id, ...(docSnap.data() || {}) };
+        const rowEmail = normalizeSearchText(row.emailLower || row.email || '');
+        if (rowEmail && rowEmail === email) hit = row;
+      });
+      return hit;
+    } catch {
+      return null;
+    }
+  }
+}
+
+async function lookupByHandleIndex(q) {
+  const handle = normalizeSearchText(q);
+  if (!handle || handle.includes('@') || handle.length < 2) return null;
+  try {
+    const snap = await getDoc(doc(db, 'login_index', handle));
+    if (!snap.exists()) return null;
+    const data = snap.data() || {};
+    const uid = String(data.uid || '').trim();
+    if (!uid) return null;
+    const profileSnap = await getDoc(doc(db, 'public_users', uid));
+    const profile = profileSnap.exists() ? profileSnap.data() : {};
+    return { uid, ...(profile || {}), handle: profile?.handle || handle, handleLower: profile?.handleLower || handle };
+  } catch (e) {
+    console.warn('[buscar] handle index lookup failed', e);
+    return null;
+  }
+}
+
 function usePrettyProfile() {
   const host = location.hostname || '';
   if (!host) return false;
@@ -155,20 +281,20 @@ async function sendFriendRequest(myUid, targetUid) {
   const status = await getFriendStatus(myUid, targetUid);
   if (status?.status === 'accepted') {
     setMsg('Ya son amigos.');
-    return;
+    return 'accepted';
   }
   if (status?.status === 'pending') {
     setMsg('Solicitud pendiente.');
-    return;
+    return 'pending';
   }
   const { blockedByMe, blockedByOther } = await isBlockedPair(myUid, targetUid);
   if (blockedByMe) {
     setMsg('Desbloquea primero.', true);
-    return;
+    return 'blocked_by_me';
   }
   if (blockedByOther) {
     setMsg('No puedes enviar solicitud.', true);
-    return;
+    return 'blocked_by_other';
   }
 
   await setDoc(doc(db, 'friend_requests', `${myUid}__${targetUid}`), {
@@ -179,6 +305,37 @@ async function sendFriendRequest(myUid, targetUid) {
     updatedAt: serverTimestamp(),
   });
   setMsg('Solicitud enviada.');
+  return 'pending';
+}
+
+function applyAddButtonState(btn, state) {
+  if (!btn) return;
+  if (state === 'accepted') {
+    btn.textContent = 'Amigos';
+    btn.disabled = true;
+    return;
+  }
+  if (state === 'pending') {
+    btn.textContent = 'Pendiente';
+    btn.disabled = true;
+    return;
+  }
+  btn.textContent = 'Agregar';
+  btn.disabled = false;
+}
+
+async function decorateAddButtons(rootEl, myUid) {
+  if (!rootEl) return;
+  const buttons = Array.from(rootEl.querySelectorAll('button[data-add]'));
+  await Promise.all(
+    buttons.map(async (btn) => {
+      const targetUid = String(btn.getAttribute('data-add') || '').trim();
+      if (!targetUid || targetUid === myUid) return;
+      const status = await getFriendStatus(myUid, targetUid);
+      const state = status?.status === 'accepted' ? 'accepted' : status?.status === 'pending' ? 'pending' : 'none';
+      applyAddButtonState(btn, state);
+    }),
+  );
 }
 
 function renderUserRow(item, myUid, opts = {}) {
@@ -237,6 +394,7 @@ function renderResults(items, myUid) {
     return;
   }
   buscarResults.innerHTML = list.map((x) => renderUserRow(x, myUid)).join('');
+  decorateAddButtons(buscarResults, myUid).catch(() => {});
 }
 
 function renderSuggestions(items, myUid) {
@@ -247,10 +405,11 @@ function renderSuggestions(items, myUid) {
     return;
   }
   buscarSuggestions.innerHTML = list.map((x) => renderUserRow(x, myUid, { allowAdd: true })).join('');
+  decorateAddButtons(buscarSuggestions, myUid).catch(() => {});
 }
 
 async function searchUsers(term) {
-  const raw = String(term || '').trim().toLowerCase();
+  const raw = normalizeSearchText(term);
   const q = raw.startsWith('@') ? raw.slice(1).trim() : raw;
   if (!q) {
     setMsg('Escribe un nombre o @usuario.', true);
@@ -259,36 +418,72 @@ async function searchUsers(term) {
   }
 
   setMsg('Buscando...');
-  try {
-    const nameQuery = query(
-      collection(db, 'public_users'),
-      orderBy('displayNameLower'),
-      startAt(q),
-      endAt(`${q}\uf8ff`),
-      limit(12),
-    );
-    const handleQuery = query(
-      collection(db, 'public_users'),
-      orderBy('handleLower'),
-      startAt(q),
-      endAt(`${q}\uf8ff`),
-      limit(12),
-    );
-    const [byName, byHandle] = await Promise.all([getDocs(nameQuery), getDocs(handleQuery)]);
+  const merged = new Map();
+  let prefixFailed = false;
 
-    const merged = new Map();
-    [...(byName.docs || []), ...(byHandle.docs || [])].forEach((d) => {
-      merged.set(d.id, { uid: d.id, ...(d.data() || {}) });
-    });
+  const [emailHit, legacyEmailHit, handleHit] = await Promise.all([
+    lookupByEmailIndex(raw),
+    lookupByUsersEmailFallback(raw),
+    raw.startsWith('@') ? lookupByHandleIndex(q) : Promise.resolve(null),
+  ]);
+  if (emailHit?.uid) merged.set(emailHit.uid, emailHit);
+  if (!emailHit?.uid && legacyEmailHit?.uid) merged.set(legacyEmailHit.uid, legacyEmailHit);
+  if (handleHit?.uid) merged.set(handleHit.uid, handleHit);
 
-    const list = [...merged.values()].slice(0, 12);
-    setMsg(list.length ? `${list.length} resultado(s).` : 'Sin resultados.');
-    return list;
-  } catch (e) {
-    console.warn('[buscar] search failed', e);
+  const nameQuery = query(
+    collection(db, 'public_users'),
+    orderBy('displayNameLower'),
+    startAt(q),
+    endAt(`${q}\uf8ff`),
+    limit(12),
+  );
+  const handleQuery = query(
+    collection(db, 'public_users'),
+    orderBy('handleLower'),
+    startAt(q),
+    endAt(`${q}\uf8ff`),
+    limit(12),
+  );
+
+  const [byName, byHandle] = await Promise.all([
+    getDocs(nameQuery).catch((e) => {
+      prefixFailed = true;
+      console.warn('[buscar] name prefix search failed', e);
+      return null;
+    }),
+    getDocs(handleQuery).catch((e) => {
+      prefixFailed = true;
+      console.warn('[buscar] handle prefix search failed', e);
+      return null;
+    }),
+  ]);
+
+  pushDocsToMap(merged, byName?.docs);
+  pushDocsToMap(merged, byHandle?.docs);
+
+  if (!merged.size || prefixFailed) {
+    try {
+      const fallbackRows = await fallbackSearchPublicUsers(q, 150);
+      fallbackRows.forEach((row) => {
+        if (row?.uid) merged.set(row.uid, row);
+      });
+    } catch (e) {
+      console.warn('[buscar] fallback search failed', e);
+    }
+  }
+
+  const list = [...merged.values()]
+    .filter((item) => item.publicProfile !== false)
+    .sort((a, b) => searchRank(a, q) - searchRank(b, q))
+    .slice(0, 12);
+
+  if (prefixFailed && !list.length) {
     setMsg('No se pudo buscar. Intenta de nuevo.', true);
     return [];
   }
+
+  setMsg(list.length ? `${list.length} resultado(s).` : 'Sin resultados.');
+  return list;
 }
 
 async function loadSuggestions(myUid) {
@@ -376,11 +571,15 @@ function wireActions(myUid) {
       if (!targetUid || targetUid === myUid) return;
       try {
         addBtn.disabled = true;
-        await sendFriendRequest(myUid, targetUid);
+        const result = await sendFriendRequest(myUid, targetUid);
+        if (result === 'accepted' || result === 'pending') {
+          applyAddButtonState(addBtn, result);
+        } else {
+          addBtn.disabled = false;
+        }
       } catch (err) {
         console.warn('[buscar] add failed', err);
         setMsg('No se pudo enviar la solicitud.', true);
-      } finally {
         addBtn.disabled = false;
       }
     }

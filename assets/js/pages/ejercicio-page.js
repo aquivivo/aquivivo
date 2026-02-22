@@ -5998,7 +5998,7 @@ function showFinishModal(stats) {
   if (btnLesson && currentTopic?.id)
     btnLesson.href = `lessonpage.html?level=${encodeURIComponent(topicLevel)}&id=${encodeURIComponent(currentTopic.id)}${navParams()}`;
   if (btnLesson) {
-    btnLesson.textContent = stats.completed ? 'Volver a la leccion' : 'Volver al modulo';
+    btnLesson.textContent = stats.completed ? 'Volver a la lección' : 'Volver al módulo';
   }
   if (btnCourse) {
     btnCourse.href = courseHref(topicLevel);

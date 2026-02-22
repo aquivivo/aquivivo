@@ -14,27 +14,41 @@ import {
 
 let currentUid = '';
 let currentName = 'Usuario';
-let convUnsub = null;
-const msgUnsubs = new Map();
-const openWindows = new Map();
 let conversations = [];
-let dockOutsideWired = false;
-let headerQuickOpenWired = false;
+let activeConversationId = '';
+let convUnsub = null;
+let msgUnsub = null;
 
-function qs(sel, root = document) {
-  return root.querySelector(sel);
+let outsideClickWired = false;
+let quickOpenWired = false;
+let syncWired = false;
+
+function qs(selector, root = document) {
+  return root.querySelector(selector);
 }
 
-function toDateMaybe(v) {
-  if (!v) return null;
-  if (v instanceof Date) return v;
-  if (typeof v.toDate === 'function') return v.toDate();
-  const d = new Date(v);
+function norm(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function esc(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function maybeDate(value) {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value.toDate === 'function') return value.toDate();
+  const d = new Date(value);
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function fmtTime(v) {
-  const d = toDateMaybe(v);
+function fmtTime(value) {
+  const d = maybeDate(value);
   if (!d) return '';
   return new Intl.DateTimeFormat('es-ES', {
     hour: '2-digit',
@@ -42,35 +56,396 @@ function fmtTime(v) {
   }).format(d);
 }
 
-function convLastMs(item) {
-  const d = toDateMaybe(item?.lastAt) || toDateMaybe(item?.createdAt);
+function initials(value) {
+  const text = String(value || '').trim();
+  if (!text) return 'AV';
+  const parts = text.split(/\s+/).slice(0, 2);
+  const joined = parts.map((part) => part[0] || '').join('');
+  return (joined || text.slice(0, 2)).toUpperCase();
+}
+
+function conversationLastMs(conversation) {
+  const d = maybeDate(conversation?.lastAt) || maybeDate(conversation?.updatedAt) || maybeDate(conversation?.createdAt);
   return d ? d.getTime() : 0;
 }
 
-function esc(v) {
-  return String(v || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+function getConversationTitle(conversation) {
+  if (!conversation) return 'Conversacion';
+
+  const explicit = String(conversation.title || '').trim();
+  if (explicit) return explicit;
+
+  if (conversation.type === 'group') return 'Grupo';
+  if (conversation.type === 'support') return 'Soporte';
+
+  const participantNames = Array.isArray(conversation.participantNames)
+    ? conversation.participantNames.map((v) => String(v || '').trim()).filter(Boolean)
+    : [];
+
+  if (participantNames.length) {
+    const otherName = participantNames.find((name) => norm(name) !== norm(currentName));
+    if (otherName) return otherName;
+    return participantNames[0];
+  }
+
+  const lastSender = String(conversation.lastMessage?.senderName || '').trim();
+  if (lastSender && norm(lastSender) !== norm(currentName)) return lastSender;
+
+  return 'Conversacion';
 }
 
-function conversationTitle(item) {
-  if (!item) return 'Conversación';
-  if (item.type === 'group') return String(item.title || 'Grupo').trim();
-  if (item.type === 'support') return String(item.title || 'Soporte').trim();
-  const lastName = String(item.lastMessage?.senderName || '').trim();
-  return lastName || 'Chat privado';
+function getConversationPreview(conversation) {
+  const raw = String(conversation?.lastMessage?.text || '').trim();
+  if (raw) return raw;
+  return 'Sin mensajes';
 }
 
-function isUnread(item) {
-  if (!item || !currentUid) return false;
-  const lastAt = toDateMaybe(item.lastAt);
+function isUnread(conversation) {
+  if (!conversation || !currentUid) return false;
+  if (conversation.lastMessage?.senderId === currentUid) return false;
+
+  const lastAt = maybeDate(conversation.lastAt);
   if (!lastAt) return false;
-  if (item.lastMessage?.senderId === currentUid) return false;
-  const readAt = toDateMaybe(item.reads?.[currentUid]);
+
+  const readAt = maybeDate(conversation.reads?.[currentUid]);
   if (!readAt) return true;
+
   return lastAt.getTime() > readAt.getTime();
+}
+
+function stopMessageStream() {
+  if (typeof msgUnsub === 'function') msgUnsub();
+  msgUnsub = null;
+}
+
+function stopConversationStream() {
+  if (typeof convUnsub === 'function') convUnsub();
+  convUnsub = null;
+}
+
+function stopAllStreams() {
+  stopMessageStream();
+  stopConversationStream();
+}
+
+function setUnreadBadge(count) {
+  const badge = qs('#miniChatBadge');
+  if (!badge) return;
+
+  const n = Number(count || 0);
+  if (!n) {
+    badge.style.display = 'none';
+    badge.textContent = '0';
+    return;
+  }
+
+  badge.style.display = 'inline-flex';
+  badge.textContent = n > 99 ? '99+' : String(n);
+}
+
+function setOpenLinks(conversationId) {
+  const href = conversationId
+    ? `mensajes.html?conv=${encodeURIComponent(conversationId)}`
+    : 'mensajes.html';
+
+  const full = qs('#miniChatOpenFull');
+  const info = qs('#miniChatOpenThread');
+  if (full) full.href = href;
+  if (info) info.href = href;
+}
+
+function markConversationRead(conversationId) {
+  if (!conversationId || !currentUid) return;
+
+  updateDoc(doc(db, 'conversations', conversationId), {
+    [`reads.${currentUid}`]: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  }).catch(() => null);
+}
+
+function setDockOpen(open) {
+  const dock = qs('#miniChatDock');
+  const panel = qs('#miniChatPanel');
+  if (!dock || !panel) return;
+
+  if (open) {
+    dock.classList.add('is-open');
+    dock.classList.remove('is-minimized');
+    panel.hidden = false;
+    window.dispatchEvent(new CustomEvent('av:quickchat-open', { detail: { open: true } }));
+    return;
+  }
+
+  dock.classList.remove('is-open');
+  panel.hidden = true;
+}
+
+function setDockMinimized() {
+  const dock = qs('#miniChatDock');
+  const panel = qs('#miniChatPanel');
+  if (!dock || !panel) return;
+
+  dock.classList.add('is-minimized');
+  dock.classList.remove('is-open');
+  panel.hidden = true;
+}
+
+function setView(view) {
+  const listView = qs('#miniChatListView');
+  const threadView = qs('#miniChatThreadView');
+
+  if (listView) listView.hidden = view !== 'list';
+  if (threadView) threadView.hidden = view !== 'thread';
+}
+
+function resizeInput() {
+  const input = qs('#miniChatInput');
+  if (!input) return;
+
+  input.style.height = '0px';
+  const h = Math.max(38, Math.min(98, input.scrollHeight));
+  input.style.height = `${h}px`;
+}
+
+function filterConversationList() {
+  const queryText = norm(qs('#miniChatSearch')?.value || '');
+  const list = qs('#miniChatList');
+  if (!list) return;
+
+  list.querySelectorAll('.mini-chat-v4-row').forEach((row) => {
+    const haystack = String(row.dataset.search || '');
+    row.style.display = !queryText || haystack.includes(queryText) ? '' : 'none';
+  });
+}
+
+function renderConversationList() {
+  const list = qs('#miniChatList');
+  if (!list) return;
+
+  const sorted = [...conversations].sort((a, b) => conversationLastMs(b) - conversationLastMs(a));
+  setUnreadBadge(sorted.filter(isUnread).length);
+
+  if (!sorted.length) {
+    list.innerHTML = '<div class="mini-chat-v4-empty">Sin conversaciones.</div>';
+    return;
+  }
+
+  list.innerHTML = sorted
+    .slice(0, 40)
+    .map((conversation) => {
+      const titleRaw = getConversationTitle(conversation);
+      const previewRaw = getConversationPreview(conversation);
+      const activeClass = conversation.id === activeConversationId ? ' is-active' : '';
+      const unreadDot = isUnread(conversation) ? '<span class="mini-chat-v4-row-unread"></span>' : '';
+      const search = esc(`${titleRaw} ${previewRaw}`.toLowerCase());
+
+      return `
+        <button class="mini-chat-v4-row${activeClass}" type="button" data-open-conv="${esc(conversation.id)}" data-search="${search}">
+          <span class="mini-chat-v4-row-avatar">${esc(initials(titleRaw))}</span>
+          <span class="mini-chat-v4-row-main">
+            <span class="mini-chat-v4-row-top">
+              <span class="mini-chat-v4-row-title">${esc(titleRaw)}</span>
+              <span class="mini-chat-v4-row-time">${esc(fmtTime(conversation.lastAt))}</span>
+            </span>
+            <span class="mini-chat-v4-row-preview">${esc(previewRaw)}</span>
+          </span>
+          ${unreadDot}
+        </button>
+      `;
+    })
+    .join('');
+
+  list.querySelectorAll('[data-open-conv]').forEach((row) => {
+    row.addEventListener('click', () => {
+      const conversationId = String(row.getAttribute('data-open-conv') || '').trim();
+      if (!conversationId) return;
+      openConversation(conversationId);
+    });
+  });
+
+  filterConversationList();
+}
+
+function renderThreadMeta(conversationId) {
+  const conversation = conversations.find((item) => item.id === conversationId) || null;
+  const title = getConversationTitle(conversation);
+  const status = conversation?.type === 'group'
+    ? 'Grupo'
+    : conversation?.type === 'support'
+      ? 'Soporte'
+      : 'Activo ahora';
+
+  const titleEl = qs('#miniChatThreadTitle');
+  const statusEl = qs('#miniChatThreadStatus');
+  const avatarEl = qs('#miniChatThreadAvatar');
+
+  if (titleEl) titleEl.textContent = title;
+  if (statusEl) statusEl.textContent = status;
+  if (avatarEl) avatarEl.textContent = initials(title);
+
+  setOpenLinks(conversationId);
+}
+
+function renderMessages(rows) {
+  const body = qs('#miniChatMessages');
+  if (!body) return;
+
+  if (!rows.length) {
+    body.innerHTML = '<div class="mini-chat-v4-empty">Sin mensajes.</div>';
+    return;
+  }
+
+  body.innerHTML = rows
+    .map((message) => {
+      const mine = message.senderId === currentUid;
+      const cls = mine
+        ? 'mini-chat-v4-bubble mini-chat-v4-bubble--me'
+        : 'mini-chat-v4-bubble mini-chat-v4-bubble--other';
+
+      return `
+        <article class="${cls}">
+          <div class="mini-chat-v4-bubble-text">${esc(String(message.text || '[Adjunto]'))}</div>
+          <div class="mini-chat-v4-bubble-meta">${esc(fmtTime(message.createdAt))}</div>
+        </article>
+      `;
+    })
+    .join('');
+
+  body.scrollTop = body.scrollHeight;
+}
+
+function attachMessageStream(conversationId) {
+  stopMessageStream();
+  if (!conversationId) return;
+
+  const messagesQuery = query(
+    collection(db, 'conversations', conversationId, 'messages'),
+    orderBy('createdAt', 'asc'),
+    limit(120),
+  );
+
+  msgUnsub = onSnapshot(
+    messagesQuery,
+    (snapshot) => {
+      const rows = (snapshot.docs || []).map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() || {}),
+      }));
+
+      renderMessages(rows);
+      markConversationRead(conversationId);
+    },
+    () => {
+      renderMessages([]);
+    },
+  );
+}
+
+function setActiveConversation(conversationId) {
+  activeConversationId = String(conversationId || '').trim();
+
+  if (!activeConversationId) {
+    stopMessageStream();
+    setView('list');
+    setOpenLinks('');
+    return;
+  }
+
+  renderConversationList();
+  renderThreadMeta(activeConversationId);
+  setView('thread');
+  attachMessageStream(activeConversationId);
+  markConversationRead(activeConversationId);
+}
+
+async function sendMessage() {
+  if (!activeConversationId || !currentUid) return;
+
+  const input = qs('#miniChatInput');
+  const text = String(input?.value || '').trim();
+  if (!text) return;
+
+  if (input) {
+    input.value = '';
+    resizeInput();
+  }
+
+  try {
+    await addDoc(collection(db, 'conversations', activeConversationId, 'messages'), {
+      senderId: currentUid,
+      senderName: currentName,
+      text,
+      createdAt: serverTimestamp(),
+    });
+
+    await updateDoc(doc(db, 'conversations', activeConversationId), {
+      lastMessage: {
+        text: text.slice(0, 180),
+        senderId: currentUid,
+        senderName: currentName,
+      },
+      lastAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      [`reads.${currentUid}`]: serverTimestamp(),
+    });
+  } catch (error) {
+    console.warn('[mini-chat-v4] send failed', error);
+  }
+}
+
+function buildDockMarkup() {
+  return `
+    <button class="mini-chat-v4-launcher" id="miniChatLauncher" type="button" aria-label="Mensajes">
+      <span class="mini-chat-v4-launcher-icon" aria-hidden="true">&#128172;</span>
+      <span class="mini-chat-v4-badge" id="miniChatBadge" style="display:none;">0</span>
+    </button>
+
+    <section class="mini-chat-v4-panel" id="miniChatPanel" hidden>
+      <div class="mini-chat-v4-list-view" id="miniChatListView">
+        <header class="mini-chat-v4-head">
+          <div class="mini-chat-v4-head-left">
+            <div class="mini-chat-v4-head-title">Mensajes</div>
+          </div>
+          <div class="mini-chat-v4-head-actions">
+            <button class="mini-chat-v4-icon" id="miniChatMinimize" type="button" aria-label="Minimizar">&#8722;</button>
+            <button class="mini-chat-v4-icon" id="miniChatClose" type="button" aria-label="Cerrar">&times;</button>
+          </div>
+        </header>
+
+        <div class="mini-chat-v4-search-wrap">
+          <input id="miniChatSearch" type="text" placeholder="Buscar" autocomplete="off" />
+        </div>
+
+        <div class="mini-chat-v4-list" id="miniChatList"></div>
+
+        <a class="mini-chat-v4-open-full" id="miniChatOpenFull" href="mensajes.html">Abrir vista completa</a>
+      </div>
+
+      <div class="mini-chat-v4-thread-view" id="miniChatThreadView" hidden>
+        <header class="mini-chat-v4-thread-head">
+          <button class="mini-chat-v4-icon" id="miniChatBack" type="button" aria-label="Volver">&#8592;</button>
+
+          <div class="mini-chat-v4-thread-user">
+            <div class="mini-chat-v4-thread-avatar" id="miniChatThreadAvatar">AV</div>
+            <div class="mini-chat-v4-thread-meta">
+              <div class="mini-chat-v4-thread-title" id="miniChatThreadTitle">Conversacion</div>
+              <div class="mini-chat-v4-thread-status" id="miniChatThreadStatus">Activo ahora</div>
+            </div>
+          </div>
+
+          <a class="mini-chat-v4-open-thread" id="miniChatOpenThread" href="mensajes.html" aria-label="Abrir detalles">&#8505;</a>
+        </header>
+
+        <div class="mini-chat-v4-messages" id="miniChatMessages"></div>
+
+        <footer class="mini-chat-v4-compose">
+          <button class="mini-chat-v4-attach" type="button" aria-label="Adjuntar">&#128206;</button>
+          <textarea id="miniChatInput" rows="1" placeholder="Escribe un mensaje..."></textarea>
+          <button class="mini-chat-v4-send" id="miniChatSend" type="button" aria-label="Enviar">&#10148;</button>
+        </footer>
+      </div>
+    </section>
+  `;
 }
 
 function ensureDock() {
@@ -79,303 +454,90 @@ function ensureDock() {
 
   dock = document.createElement('div');
   dock.id = 'miniChatDock';
-  dock.className = 'mini-chat-dock';
-  dock.innerHTML = `
-    <button class="mini-chat-launcher" id="miniChatLauncher" type="button" aria-label="Mensajes">
-      <span aria-hidden="true">&#128172;</span>
-      <span class="mini-badge" id="miniChatBadge" style="display:none;">0</span>
-    </button>
-    <section class="mini-chat-hub" id="miniChatHub" aria-label="Lista de conversaciones">
-      <header class="mini-chat-hub-head">
-        <span>Mensajes</span>
-        <button class="mini-chat-btn" id="miniChatHubClose" type="button">&times;</button>
-      </header>
-      <div class="mini-chat-hub-list" id="miniChatHubList"></div>
-    </section>
-    <div class="mini-chat-windows" id="miniChatWindows"></div>
-  `;
-
+  dock.className = 'mini-chat-dock mini-chat-v4';
+  dock.innerHTML = buildDockMarkup();
   document.body.appendChild(dock);
 
   const launcher = qs('#miniChatLauncher', dock);
-  const hub = qs('#miniChatHub', dock);
-  const close = qs('#miniChatHubClose', dock);
+  const closeBtn = qs('#miniChatClose', dock);
+  const minBtn = qs('#miniChatMinimize', dock);
+  const backBtn = qs('#miniChatBack', dock);
+  const sendBtn = qs('#miniChatSend', dock);
+  const searchInput = qs('#miniChatSearch', dock);
+  const textInput = qs('#miniChatInput', dock);
 
   launcher?.addEventListener('click', () => {
-    hub?.classList.toggle('is-open');
-  });
-  close?.addEventListener('click', () => {
-    hub?.classList.remove('is-open');
+    const panel = qs('#miniChatPanel');
+    setDockOpen(!!panel?.hidden);
   });
 
-  if (!dockOutsideWired) {
-    dockOutsideWired = true;
-    document.addEventListener('click', (e) => {
+  closeBtn?.addEventListener('click', () => setDockOpen(false));
+  minBtn?.addEventListener('click', () => setDockMinimized());
+  backBtn?.addEventListener('click', () => setActiveConversation(''));
+  sendBtn?.addEventListener('click', () => sendMessage());
+
+  searchInput?.addEventListener('input', () => filterConversationList());
+
+  textInput?.addEventListener('input', () => resizeInput());
+  textInput?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  resizeInput();
+
+  if (!outsideClickWired) {
+    outsideClickWired = true;
+    document.addEventListener('click', (event) => {
       const currentDock = qs('#miniChatDock');
-      const currentHub = qs('#miniChatHub');
-      if (!currentDock || !currentHub) return;
-      if (!currentDock.contains(e.target)) currentHub.classList.remove('is-open');
+      const panel = qs('#miniChatPanel');
+      if (!currentDock || !panel || panel.hidden) return;
+      if (!currentDock.contains(event.target)) {
+        setDockOpen(false);
+      }
+    });
+  }
+
+  if (!syncWired) {
+    syncWired = true;
+    window.addEventListener('av:messages-drawer', (event) => {
+      if (!event?.detail?.open) return;
+      setDockOpen(false);
     });
   }
 
   return dock;
 }
 
-function setBadge(count) {
-  const badge = qs('#miniChatBadge');
-  if (!badge) return;
-  const num = Number(count || 0);
-  if (!num) {
-    badge.style.display = 'none';
-    badge.textContent = '0';
-    return;
-  }
-  badge.style.display = 'inline-flex';
-  badge.textContent = num > 99 ? '99+' : String(num);
-}
-
-function markConversationRead(convId) {
-  if (!convId || !currentUid) return;
-  updateDoc(doc(db, 'conversations', convId), {
-    [`reads.${currentUid}`]: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  }).catch(() => null);
-}
-
-function renderHub() {
-  const list = qs('#miniChatHubList');
-  if (!list) return;
-
-  const sorted = [...conversations].sort((a, b) => convLastMs(b) - convLastMs(a));
-  const unread = sorted.filter(isUnread).length;
-  setBadge(unread);
-
-  if (!sorted.length) {
-    list.innerHTML = '<div class="mini-chat-empty">Sin conversaciones.</div>';
-    return;
-  }
-
-  list.innerHTML = sorted
-    .slice(0, 24)
-    .map((item) => {
-      const title = esc(conversationTitle(item));
-      const text = esc(String(item?.lastMessage?.text || ''));
-      const dot = isUnread(item) ? '<span class="mini-chat-hub-item-dot"></span>' : '';
-      return `
-        <article class="mini-chat-hub-item" data-open-conv="${esc(item.id)}">
-          <div class="mini-chat-hub-item-title">
-            <span>${title}</span>
-            ${dot}
-          </div>
-          <div class="mini-chat-hub-item-text">${text || 'Sin mensajes'}</div>
-        </article>
-      `;
-    })
-    .join('');
-
-  list.querySelectorAll('[data-open-conv]').forEach((el) => {
-    el.addEventListener('click', () => {
-      const id = el.getAttribute('data-open-conv') || '';
-      if (!id) return;
-      openConversationWindow(id);
-      qs('#miniChatHub')?.classList.remove('is-open');
-    });
-  });
-}
-
-function renderWindowMessages(convId, rows) {
-  const win = openWindows.get(convId);
-  if (!win) return;
-  const body = qs('.mini-chat-window-body', win);
-  if (!body) return;
-
-  if (!rows.length) {
-    body.innerHTML = '<div class="mini-chat-empty">Sin mensajes.</div>';
-    return;
-  }
-
-  body.innerHTML = rows
-    .map((msg) => {
-      const mine = msg.senderId === currentUid;
-      const cls = mine ? 'mini-chat-msg me' : 'mini-chat-msg';
-      const sender = esc(String(msg.senderName || (mine ? currentName : 'Usuario')));
-      const text = esc(String(msg.text || ''));
-      const time = esc(fmtTime(msg.createdAt));
-      return `
-        <div class="${cls}">
-          <div>${text || '[Adjunto]'}</div>
-          <div class="mini-chat-meta">${sender} - ${time}</div>
-        </div>
-      `;
-    })
-    .join('');
-
-  body.scrollTop = body.scrollHeight;
-}
-
-function attachWindowStream(convId) {
-  if (!convId) return;
-  const prev = msgUnsubs.get(convId);
-  if (typeof prev === 'function') prev();
-
-  const q = query(
-    collection(db, 'conversations', convId, 'messages'),
-    orderBy('createdAt', 'asc'),
-    limit(60),
-  );
-
-  const unsub = onSnapshot(
-    q,
-    (snap) => {
-      const rows = (snap.docs || []).map((d) => ({ id: d.id, ...(d.data() || {}) }));
-      renderWindowMessages(convId, rows);
-      markConversationRead(convId);
-    },
-    () => {
-      renderWindowMessages(convId, []);
-    },
-  );
-
-  msgUnsubs.set(convId, unsub);
-}
-
-async function sendWindowMessage(convId) {
-  const win = openWindows.get(convId);
-  if (!win || !currentUid) return;
-  const textarea = qs('textarea', win);
-  const text = String(textarea?.value || '').trim();
-  if (!text) return;
-
-  if (textarea) textarea.value = '';
-
-  try {
-    await addDoc(collection(db, 'conversations', convId, 'messages'), {
-      senderId: currentUid,
-      senderName: currentName,
-      text,
-      createdAt: serverTimestamp(),
-    });
-
-    await updateDoc(doc(db, 'conversations', convId), {
-      lastMessage: { text: text.slice(0, 120), senderId: currentUid, senderName: currentName },
-      lastAt: serverTimestamp(),
-      [`reads.${currentUid}`]: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-  } catch (e) {
-    console.warn('[mini-chat] send failed', e);
-  }
-}
-
-function closeConversationWindow(convId) {
-  const win = openWindows.get(convId);
-  if (win) win.remove();
-  openWindows.delete(convId);
-
-  const unsub = msgUnsubs.get(convId);
-  if (typeof unsub === 'function') unsub();
-  msgUnsubs.delete(convId);
-}
-
-function openConversationWindow(convId) {
-  if (!convId) return;
+function openConversation(conversationId) {
   ensureDock();
-
-  const existing = openWindows.get(convId);
-  if (existing) {
-    existing.classList.remove('minimized');
-    attachWindowStream(convId);
-    return;
-  }
-
-  const item = conversations.find((c) => c.id === convId);
-  const title = esc(conversationTitle(item));
-  const windows = qs('#miniChatWindows');
-  if (!windows) return;
-
-  if (openWindows.size >= 3) {
-    const oldestId = openWindows.keys().next().value;
-    if (oldestId) closeConversationWindow(oldestId);
-  }
-
-  const win = document.createElement('section');
-  win.className = 'mini-chat-window';
-  win.dataset.conv = convId;
-  win.innerHTML = `
-    <header class="mini-chat-window-head">
-      <div class="mini-chat-window-title">${title}</div>
-      <div class="mini-chat-window-actions">
-        <button class="mini-chat-btn" data-mini-min="1" type="button">_</button>
-        <button class="mini-chat-btn" data-mini-close="1" type="button">&times;</button>
-      </div>
-    </header>
-    <div class="mini-chat-window-body"><div class="mini-chat-empty">Cargando...</div></div>
-    <div class="mini-chat-window-compose">
-      <textarea rows="2" placeholder="Escribe un mensaje..."></textarea>
-      <button class="mini-chat-send" type="button">&#10148;</button>
-    </div>
-  `;
-
-  windows.prepend(win);
-  openWindows.set(convId, win);
-
-  qs('[data-mini-close="1"]', win)?.addEventListener('click', () => closeConversationWindow(convId));
-  qs('[data-mini-min="1"]', win)?.addEventListener('click', () => {
-    win.classList.toggle('minimized');
-  });
-  qs('.mini-chat-send', win)?.addEventListener('click', () => sendWindowMessage(convId));
-  qs('textarea', win)?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendWindowMessage(convId);
-    }
-  });
-
-  attachWindowStream(convId);
-  markConversationRead(convId);
+  setDockOpen(true);
+  setActiveConversation(conversationId);
 }
 
-function wireHeaderQuickOpen() {
-  if (headerQuickOpenWired) return;
-  headerQuickOpenWired = true;
-  document.addEventListener('click', (e) => {
-    const item = e.target.closest('#navMsgList [data-conv]');
-    if (!item) return;
-    if (window.location.pathname.toLowerCase().includes('mensajes')) return;
-    const convId = item.getAttribute('data-conv') || '';
-    if (!convId) return;
-    e.preventDefault();
-    openConversationWindow(convId);
-    qs('#miniChatHub')?.classList.remove('is-open');
-    markConversationRead(convId);
-  });
+function wireQuickOpen() {
+  if (quickOpenWired) return;
+  quickOpenWired = true;
 
-  document.addEventListener('click', (e) => {
-    const card = e.target.closest('[data-open-chat]');
-    if (!card) return;
-    const convId = String(card.getAttribute('data-open-chat') || '').trim();
-    if (!convId) return;
-    e.preventDefault();
-    openConversationWindow(convId);
-    markConversationRead(convId);
-  });
-}
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-open-chat]');
+    if (!trigger) return;
 
-function stopAllStreams() {
-  if (typeof convUnsub === 'function') convUnsub();
-  convUnsub = null;
+    const conversationId = String(trigger.getAttribute('data-open-chat') || '').trim();
+    if (!conversationId) return;
 
-  msgUnsubs.forEach((fn) => {
-    if (typeof fn === 'function') fn();
+    event.preventDefault();
+    openConversation(conversationId);
   });
-  msgUnsubs.clear();
 }
 
 export function destroyGlobalMiniChat() {
   stopAllStreams();
-  openWindows.forEach((win) => win.remove());
-  openWindows.clear();
+
   conversations = [];
+  activeConversationId = '';
   currentUid = '';
   currentName = 'Usuario';
 
@@ -396,35 +558,50 @@ export function initGlobalMiniChat({ uid, displayName } = {}) {
   currentName = String(displayName || 'Usuario').trim() || 'Usuario';
 
   if (currentUid === uid && qs('#miniChatDock')) {
-    renderHub();
+    renderConversationList();
     return;
   }
 
   destroyGlobalMiniChat();
+
   currentUid = uid;
   ensureDock();
-  wireHeaderQuickOpen();
+  wireQuickOpen();
 
   window.__avMiniChatApi = {
-    openConversation: openConversationWindow,
+    openConversation,
   };
 
-  const q = query(
+  const conversationQuery = query(
     collection(db, 'conversations'),
     where('participants', 'array-contains', uid),
-    limit(120),
+    limit(250),
   );
 
   convUnsub = onSnapshot(
-    q,
-    (snap) => {
-      conversations = (snap.docs || []).map((d) => ({ id: d.id, ...(d.data() || {}) }));
-      renderHub();
+    conversationQuery,
+    (snapshot) => {
+      conversations = (snapshot.docs || []).map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() || {}),
+      }));
+
+      renderConversationList();
+
+      if (activeConversationId) {
+        const stillExists = conversations.some((item) => item.id === activeConversationId);
+        if (!stillExists) {
+          setActiveConversation('');
+        } else {
+          renderThreadMeta(activeConversationId);
+        }
+      }
     },
-    (e) => {
-      console.warn('[mini-chat] conversations load failed', e);
+    () => {
       conversations = [];
-      renderHub();
+      activeConversationId = '';
+      renderConversationList();
+      setActiveConversation('');
     },
   );
 }

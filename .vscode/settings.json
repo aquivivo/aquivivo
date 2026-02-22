@@ -20,5 +20,6 @@
   "liveServer.settings.port": 5501,
   "liveServer.settings.root": "/",
   "liveServer.settings.CustomBrowser": "chrome",
-  "liveServer.settings.file": "index.html"
+  "liveServer.settings.file": "index.html",
+  "chatgpt.openOnStartup": true
 }

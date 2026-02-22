@@ -447,7 +447,14 @@ service cloud.firestore {
 
     /* ===== FRIEND REQUESTS ===== */
     match /friend_requests/{id} {
-      allow read: if isAdmin() || (signedIn() && idHasUid(id, request.auth.uid));
+      allow read: if isAdmin() || (
+        signedIn()
+        && (
+          idHasUid(id, request.auth.uid)
+          || resource.data.fromUid == request.auth.uid
+          || resource.data.toUid == request.auth.uid
+        )
+      );
 
       allow create: if signedIn()
         && request.resource.data.fromUid == request.auth.uid
@@ -789,8 +796,6 @@ service cloud.firestore {
       allow read: if isAdmin() || (
         signedIn()
         && notBlocked()
-        && !isBlocked(request.auth.uid, resource.data.fromUid)
-        && !isBlocked(request.auth.uid, resource.data.toUid)
       );
       allow create: if signedIn()
         && notBlocked()
@@ -805,7 +810,14 @@ service cloud.firestore {
 
     /* ===== USER BLOCKS ===== */
     match /user_blocks/{id} {
-      allow read: if isAdmin() || (signedIn() && idHasUid(id, request.auth.uid));
+      allow read: if isAdmin() || (
+        signedIn()
+        && (
+          idHasUid(id, request.auth.uid)
+          || resource.data.fromUid == request.auth.uid
+          || resource.data.toUid == request.auth.uid
+        )
+      );
       allow create: if signedIn()
         && request.resource.data.fromUid == request.auth.uid
         && request.resource.data.toUid is string

@@ -606,8 +606,8 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
             search: 'Amigos',
            profile: 'Profil',
            myCourses: 'Moje kursy',
-           messages: 'Wiadomosci',
-           notifications: 'Powiadomienia',
+           messages: 'Mensajes',
+           notifications: 'Notificaciones',
           refer: 'Amigos',
           settings: 'Ustawienia konta',
           payments: 'Historia platnosci',
@@ -617,7 +617,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
           logout: 'Wyloguj',
         }
       : {
-          navLabel: 'Navegacion',
+          navLabel: 'Navegación',
           home: 'Inicio',
           login: 'Iniciar sesión',
           admin: 'Admin',
@@ -639,7 +639,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
           payments: 'Historial de pagos',
           rewards: 'Pasaporte',
           help: 'Ayuda / Reportar',
-          back: 'Atras',
+          back: 'Atrás',
           logout: 'Cerrar sesión',
         };
 
@@ -861,7 +861,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
           },
           {
             href: 'esadmin.html#accBroadcasts',
-            label: 'Wiadomosci',
+            label: 'Mensajes',
             icon: '&#x1F4E2;',
             section: 'accBroadcasts',
           },
@@ -1151,10 +1151,58 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     const list = document.getElementById('navNotifList');
     const badge = document.getElementById('navNotifBadge');
     if (!uid || !list || !badge) return;
+    const seenAcceptedKey = `av_friend_accept_seen_${uid}`;
+    const getSeenAccepted = () => {
+      try {
+        const raw = localStorage.getItem(seenAcceptedKey);
+        const arr = raw ? JSON.parse(raw) : [];
+        return new Set(Array.isArray(arr) ? arr.map((x) => String(x || '').trim()).filter(Boolean) : []);
+      } catch {
+        return new Set();
+      }
+    };
+    const markAcceptedSeen = (id) => {
+      const clean = String(id || '').trim();
+      if (!clean) return;
+      const seen = getSeenAccepted();
+      if (seen.has(clean)) return;
+      seen.add(clean);
+      try {
+        localStorage.setItem(seenAcceptedKey, JSON.stringify(Array.from(seen).slice(-200)));
+      } catch {}
+    };
     list.dataset.uid = uid;
     if (!list.dataset.wired) {
       list.dataset.wired = '1';
       list.addEventListener('click', (e) => {
+        const acceptedItem = e.target.closest('[data-friend-accepted-id]');
+        if (acceptedItem) {
+          const acceptedId = String(acceptedItem.dataset.friendAcceptedId || '').trim();
+          if (acceptedId) markAcceptedSeen(acceptedId);
+          return;
+        }
+
+        const friendBtn = e.target.closest('[data-friend-action][data-friend-id]');
+        if (friendBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const ownerUid = list.dataset.uid;
+          const reqId = String(friendBtn.dataset.friendId || '').trim();
+          const action = String(friendBtn.dataset.friendAction || '').trim();
+          if (!ownerUid || !reqId || !['accept', 'decline'].includes(action)) return;
+          friendBtn.disabled = true;
+          updateDoc(doc(db, 'friend_requests', reqId), {
+            status: action === 'accept' ? 'accepted' : 'declined',
+            updatedAt: serverTimestamp(),
+          })
+            .catch(() => null)
+            .finally(() => {
+              loadNotifDropdown(ownerUid).catch(() => null);
+              loadMsgDropdown(ownerUid).catch(() => null);
+            });
+          return;
+        }
+
         const item = e.target.closest('[data-notif-id]');
         const id = item?.dataset?.notifId;
         const ownerUid = list.dataset.uid;
@@ -1168,25 +1216,115 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
       });
     }
     try {
-      const snap = await getDocs(
-        query(
-          collection(db, 'user_notifications', uid, 'items'),
-          orderBy('createdAt', 'desc'),
-          limit(20),
+      const [snap, friendReqSnap, friendAcceptedSnap] = await Promise.all([
+        getDocs(
+          query(
+            collection(db, 'user_notifications', uid, 'items'),
+            orderBy('createdAt', 'desc'),
+            limit(20),
+          ),
         ),
-      );
+        getDocs(
+          query(
+            collection(db, 'friend_requests'),
+            where('toUid', '==', uid),
+            limit(20),
+          ),
+        ),
+        getDocs(
+          query(
+            collection(db, 'friend_requests'),
+            where('fromUid', '==', uid),
+            limit(20),
+          ),
+        ),
+      ]);
       const items = snap.docs
         .map((d) => ({ id: d.id, ...(d.data() || {}) }))
         .filter((item) => String(item.type || '').toLowerCase() !== 'broadcast');
+
+      const pendingRequests = (friendReqSnap.docs || [])
+        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+        .filter((r) => String(r.status || '').toLowerCase() === 'pending')
+        .slice(0, 6);
+
+      const requestRows = await Promise.all(
+        pendingRequests.map(async (req) => {
+          const fromUid = String(req.fromUid || '').trim();
+          let senderName = 'Usuario';
+          if (fromUid) {
+            try {
+              const prof = await getDoc(doc(db, 'public_users', fromUid));
+              if (prof.exists()) {
+                const data = prof.data() || {};
+                senderName = String(data.displayName || data.name || data.handle || 'Usuario').trim() || 'Usuario';
+              }
+            } catch {}
+          }
+          return {
+            id: req.id,
+            senderName,
+          };
+        }),
+      );
+
+      const seenAccepted = getSeenAccepted();
+      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+      const acceptedRowsRaw = (friendAcceptedSnap?.docs || [])
+        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+        .filter((r) => String(r.status || '').toLowerCase() === 'accepted')
+        .filter((r) => !seenAccepted.has(String(r.id || '').trim()))
+        .filter((r) => {
+          const dt = toDateMaybe(r.updatedAt) || toDateMaybe(r.createdAt);
+          const ms = dt?.getTime?.() || 0;
+          if (!ms) return true;
+          return Date.now() - ms <= thirtyDaysMs;
+        })
+        .slice(0, 6);
+
+      const acceptedRows = await Promise.all(
+        acceptedRowsRaw.map(async (req) => {
+          const toUid = String(req.toUid || '').trim();
+          let targetName = 'Usuario';
+          if (toUid) {
+            try {
+              const prof = await getDoc(doc(db, 'public_users', toUid));
+              if (prof.exists()) {
+                const data = prof.data() || {};
+                targetName = String(data.displayName || data.name || data.handle || 'Usuario').trim() || 'Usuario';
+              }
+            } catch {}
+          }
+          const href = toUid ? `perfil.html?uid=${encodeURIComponent(toUid)}` : 'perfil.html';
+          return {
+            id: String(req.id || ''),
+            targetName,
+            href,
+          };
+        }),
+      );
+
       const unreadItems = items.filter((i) => i.read !== true);
-      const unread = unreadItems.length;
+      const unread = unreadItems.length + requestRows.length + acceptedRows.length;
       setBadge(badge, unread);
-      if (!unreadItems.length) {
+      if (!unreadItems.length && !requestRows.length && !acceptedRows.length) {
         list.innerHTML =
           '<div class="nav-mini-empty">Sin notificaciones.</div>';
         return;
       }
-      list.innerHTML = unreadItems
+
+      const reqHtml = requestRows.map((row) => {
+        return `<div class="nav-mini-item is-unread" data-kind="friend-request">
+          <div class="nav-mini-title">Solicitud de amistad</div>
+          <div class="nav-mini-body">${esc(row.senderName)} quiere agregarte.</div>
+          <div class="metaRow" style="margin-top:6px; gap:6px; flex-wrap:wrap">
+            <button class="btn-white-outline" type="button" data-friend-action="accept" data-friend-id="${esc(row.id)}">Aceptar</button>
+            <button class="btn-white-outline" type="button" data-friend-action="decline" data-friend-id="${esc(row.id)}">Rechazar</button>
+          </div>
+        </div>`;
+      });
+
+      const notifHtml = unreadItems
         .slice(0, 6)
         .map((item) => {
           const title = String(item.title || 'Notificacion');
@@ -1196,8 +1334,16 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
             <div class="nav-mini-title">${title}</div>
             ${body ? `<div class="nav-mini-body">${body}</div>` : ''}
           </a>`;
-        })
-        .join('');
+        });
+
+      const acceptedHtml = acceptedRows.map((row) => {
+        return `<a class="nav-mini-item is-unread" href="${row.href}" data-friend-accepted-id="${esc(row.id)}">
+          <div class="nav-mini-title">Solicitud aceptada</div>
+          <div class="nav-mini-body">${esc(row.targetName)} acepto tu solicitud.</div>
+        </a>`;
+      });
+
+      list.innerHTML = [...reqHtml, ...acceptedHtml, ...notifHtml].slice(0, 8).join('');
     } catch (e) {
       console.warn('[notifications] load failed', e);
       setBadge(badge, 0);
@@ -1213,11 +1359,47 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     if (!list.dataset.wired) {
       list.dataset.wired = '1';
       list.addEventListener('click', async (e) => {
-        const item = e.target.closest('[data-conv]');
+        const row = e.target.closest('.nav-mini-item');
+        if (!row) return;
         const ownerUid = list.dataset.uid;
+        if (!ownerUid) return;
+        const inboxMsgId = String(row.dataset.msgId || '').trim();
+        if (inboxMsgId) {
+          updateDoc(doc(db, 'user_inbox', ownerUid, 'messages', inboxMsgId), {
+            read: true,
+            readAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          }).catch(() => null);
+
+          const convId = String(row.dataset.conv || '').trim();
+          if (convId) {
+            e.preventDefault();
+            const isMessagesPage = String(location.pathname || '').toLowerCase().includes('mensajes');
+            const miniApi = window.__avMiniChatApi;
+            if (!isMessagesPage && miniApi && typeof miniApi.openConversation === 'function') {
+              miniApi.openConversation(convId);
+              return;
+            }
+            location.href = `mensajes.html?conv=${encodeURIComponent(convId)}`;
+          }
+          return;
+        }
+
+        const rowKind = String(row.dataset.kind || '').trim();
+        if (rowKind === 'broadcast') {
+          const ts = Number(row.dataset.time || 0);
+          try {
+            const current = Number(localStorage.getItem(`av_broadcast_seen_${ownerUid}`) || 0);
+            if (Number.isFinite(ts) && ts > current) {
+              localStorage.setItem(`av_broadcast_seen_${ownerUid}`, String(ts));
+            }
+          } catch {}
+          return;
+        }
+
+        const item = row.matches('[data-conv]') ? row : null;
         if (!item) return;
         const convId = item.dataset.conv;
-        if (!ownerUid) return;
         if (!convId) return;
         e.preventDefault();
         try {
@@ -1335,16 +1517,54 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
 
       list.innerHTML = rows
         .map((row) => {
-          return `<a class="nav-mini-item is-unread" href="${row.href}" ${row.convId ? `data-conv="${row.convId}"` : ''}>
+          return `<a class="nav-mini-item is-unread" href="${row.href}" data-kind="${row.convId ? 'conversation' : 'broadcast'}" data-time="${Number(row.time || 0)}" ${row.convId ? `data-conv="${row.convId}"` : ''}>
             <div class="nav-mini-title">${row.title}</div>
             ${row.text ? `<div class="nav-mini-body">${row.text}</div>` : ''}
           </a>`;
         })
         .join('');
     } catch (e) {
-      console.warn('[messages] load failed', e);
-      setBadge(badge, 0);
-      list.innerHTML = '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
+      try {
+        const inboxSnap = await getDocs(
+          query(
+            collection(db, 'user_inbox', uid, 'messages'),
+            orderBy('createdAt', 'desc'),
+            limit(20),
+          ),
+        );
+        const inboxItems = inboxSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+        const unreadItems = inboxItems.filter((i) => i.read !== true).slice(0, 8);
+        setBadge(badge, unreadItems.length);
+        if (!unreadItems.length) {
+          list.innerHTML = '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
+          return;
+        }
+        list.innerHTML = unreadItems
+          .map((item) => {
+            const convId = String(item.sourceConvId || '').trim();
+            const href = convId
+              ? `mensajes.html?conv=${encodeURIComponent(convId)}`
+              : 'mensajes.html';
+            const title = String(
+              item.fromName ||
+                item.fromEmail ||
+                item.fromUid ||
+                item.senderName ||
+                'Usuario',
+            ).trim();
+            const text = String(item.text || '').trim();
+            return `<a class="nav-mini-item is-unread" href="${href}" data-msg-id="${item.id}" ${convId ? `data-conv="${convId}"` : ''}>
+              <div class="nav-mini-title">${esc(title || 'Usuario')}</div>
+              ${text ? `<div class="nav-mini-body">${esc(text)}</div>` : ''}
+            </a>`;
+          })
+          .join('');
+      } catch (legacyErr) {
+        console.warn('[messages] load failed', e);
+        console.warn('[messages] inbox fallback failed', legacyErr);
+        setBadge(badge, 0);
+        list.innerHTML = '<div class="nav-mini-empty">Sin mensajes nuevos.</div>';
+      }
     }
   }
 

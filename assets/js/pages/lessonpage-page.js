@@ -236,7 +236,7 @@ function showAccessLocked() {
   card.innerHTML = `
     <div class="sectionTitle" style="margin-top:0;">Acceso requerido</div>
     <div class="muted" style="margin-top:6px; line-height:1.6;">
-      Esta leccion esta bloqueada para tu cuenta.
+      Esta lección está bloqueada para tu cuenta.
     </div>
     <div class="metaRow" style="margin-top:14px; flex-wrap:wrap; gap:10px;">
       <a class="btn-yellow" href="services.html?level=${encodeURIComponent(LEVEL)}" style="text-decoration:none;">Activar acceso</a>
@@ -463,7 +463,7 @@ function renderLocked() {
     empty.innerHTML = `
       <div style="font-size:16px; line-height:1.6;">
         <b>Acceso premium</b><br/>
-        Para ver esta leccion necesitas acceso.<br/>
+        Para ver esta lección necesitas acceso.<br/>
         Ve al <a href="espanel.html" style="text-decoration:underline;">Panel</a> para aplicar un codigo o activar el plan.
       </div>
     `;
@@ -816,7 +816,7 @@ function normalizeTopicRoadmap(rawRoadmap = []) {
     .map((item, idx) => {
       const order = Number(item?.order || idx + 1);
       const lessonId = String(item?.lessonId || '').trim();
-      const lessonTitle = String(item?.lessonTitle || '').trim() || `Leccion ${idx + 1}`;
+      const lessonTitle = String(item?.lessonTitle || '').trim() || `Lección ${idx + 1}`;
       const miniTestId = String(item?.miniTestId || '').trim();
       const miniTestTitle = String(item?.miniTestTitle || '').trim() || (miniTestId ? 'Mini test' : '');
       if (!lessonId) return null;
@@ -1264,7 +1264,7 @@ function buildRouteStepsFromRoadmap(
         kind: 'lesson',
         seq,
         id: lessonId,
-        title: String(row.lessonTitle || '').trim() || `Leccion ${seq}`,
+        title: String(row.lessonTitle || '').trim() || `Lección ${seq}`,
       });
       unlockAllIds.push(lessonId);
     }
@@ -1378,7 +1378,7 @@ function buildTopicRoadmapFromTopicDoc(topic = {}) {
     return {
       order: idx + 1,
       lessonId,
-      lessonTitle: `Leccion ${idx + 1}`,
+      lessonTitle: `Lección ${idx + 1}`,
       miniTestId,
       miniTestTitle: miniTestId ? `Mini test ${idx + 1}` : '',
     };
@@ -1461,7 +1461,7 @@ function renderTopicRoadmapCards({
 
     const actions = isLesson
       ? [
-          renderLessonPathAction(hrefPrimary, '\uD83D\uDCD6', 'Leccion', !hrefPrimary),
+          renderLessonPathAction(hrefPrimary, '\uD83D\uDCD6', 'Lección', !hrefPrimary),
           renderLessonPathAction(hrefCards, '\uD83D\uDD16', 'Fichas', !hrefCards),
           renderLessonPathAction(hrefExercise, '\u270D\uFE0F', 'Ejercicios', !hrefExercise),
         ].join('')
@@ -1537,7 +1537,7 @@ function renderLessonPathCards({
     return {
       order: idx + 1,
       lessonId,
-      lessonTitle: stripTopicPrefix(lesson.title || lessonId || `Leccion ${idx + 1}`, topicTitle),
+      lessonTitle: stripTopicPrefix(lesson.title || lessonId || `Lección ${idx + 1}`, topicTitle),
       miniTestId: miniId,
       miniTestTitle: stripTopicPrefix(mini?.title || miniId || `Mini test ${idx + 1}`, topicTitle),
     };
@@ -2093,7 +2093,7 @@ async function loadLesson(user) {
 
   setLessonHeroVisual(topic || {});
 
-  const topicTitle = topic?.title || topic?.name || 'Leccion';
+  const topicTitle = topic?.title || topic?.name || 'Lección';
   const topicDesc = topic?.desc || topic?.description || '';
   const topicLevel = topicLevelOf(topic, LEVEL);
   let currentTopicStampSeed = topicStampSeed(
@@ -2214,179 +2214,8 @@ async function loadLesson(user) {
     }
     return;
   }
-  renderEmpty('Todavia no hay lecciones en este tema.');
+  renderEmpty('Todavía no hay lecciones en este tema.');
   return;
-
-  let meta = null;
-  try {
-    const topicLevel = topicLevelOf(topic, LEVEL);
-    const metaSnap = await getDoc(doc(db, 'course_meta', metaDocId(topicLevel, COURSE_ID)));
-    if (metaSnap.exists()) meta = metaSnap.data() || {};
-  } catch (e) {
-    console.error(e);
-  }
-
-  setText('lessonTitle', String(meta?.titleEs || meta?.title || topicTitle || 'Leccion').trim());
-  setText(
-    'lessonDesc',
-    String(meta?.descriptionEs || meta?.desc || meta?.description || topicDesc || '').trim(),
-  );
-
-  function renderExtras(metaData) {
-    if (!extrasWrap) return;
-    const summary = String(metaData?.summary || '').trim();
-    const vocab = Array.isArray(metaData?.vocab) ? metaData.vocab : [];
-    const resources = Array.isArray(metaData?.resources) ? metaData.resources : [];
-    const homework = String(metaData?.homework || '').trim();
-
-    const blocks = [];
-
-    if (summary) {
-      blocks.push(`
-        <div class="card lessonExtraCard">
-          <div class="sectionTitle" style="margin-top:0;">Resumen</div>
-          <div class="muted" style="line-height:1.6;">${summary}</div>
-        </div>
-      `);
-    }
-
-    if (vocab.length) {
-      const VOCAB_PREVIEW_MAX = 18;
-      const preview = vocab.slice(0, VOCAB_PREVIEW_MAX);
-      const rest = vocab.slice(VOCAB_PREVIEW_MAX);
-      blocks.push(`
-        <div class="card lessonExtraCard">
-          <div class="sectionTitle" style="margin-top:0;">Vocabulario clave</div>
-          <div class="lessonExtraList">
-            ${preview.map((v) => `<div class="lessonExtraItem">${v}</div>`).join('')}
-          </div>
-          ${
-            rest.length
-              ? `
-                <details class="lessonVocabMore" style="margin-top:10px;">
-                  <summary class="btn-white-outline" style="list-style:none; cursor:pointer;">
-                    Mostrar ${rest.length} más
-                  </summary>
-                  <div class="lessonExtraList" style="margin-top:10px;">
-                    ${rest.map((v) => `<div class="lessonExtraItem">${v}</div>`).join('')}
-                  </div>
-                </details>
-              `
-              : ''
-          }
-        </div>
-      `);
-    }
-
-    if (resources.length) {
-      blocks.push(`
-        <div class="card lessonExtraCard">
-          <div class="sectionTitle" style="margin-top:0;">Recursos</div>
-          <div class="lessonExtraList">
-            ${resources
-              .map((r) => {
-                const label = (r?.label || r?.title || r?.name || 'Recurso').trim();
-                const url = (r?.url || '').trim();
-                if (!url) return '';
-                return `<a class="lessonExtraLink" href="${url}" target="_blank" rel="noopener">${label}</a>`;
-              })
-              .filter(Boolean)
-              .join('')}
-          </div>
-        </div>
-      `);
-    }
-
-    if (homework) {
-      blocks.push(`
-        <div class="card lessonExtraCard">
-          <div class="sectionTitle" style="margin-top:0;">Tarea</div>
-          <div class="muted" style="line-height:1.6;">${homework}</div>
-        </div>
-      `);
-    }
-
-    if (!blocks.length) {
-      extrasWrap.style.display = 'none';
-      extrasWrap.innerHTML = '';
-      return;
-    }
-
-    extrasWrap.style.display = '';
-    extrasWrap.innerHTML = blocks.join('');
-  }
-
-  if (pillType) {
-    if (meta?.type) {
-      pillType.style.display = 'inline-flex';
-      pillType.textContent = meta.type;
-    } else {
-      pillType.style.display = 'none';
-    }
-  }
-
-  const dur = Number(meta?.durationMin || meta?.duration || 0);
-  if (pillDuration) {
-    if (dur > 0) {
-      pillDuration.style.display = 'inline-flex';
-      pillDuration.textContent = `${dur} min`;
-    } else {
-      pillDuration.style.display = 'none';
-    }
-  }
-
-  const published = meta?.published === true;
-  if (pillPub) {
-    pillPub.style.display = 'inline-flex';
-    pillPub.textContent = published ? 'Publicado' : 'Borrador';
-  }
-
-  if (!flags.hasAccess) {
-    renderLocked();
-    return;
-  }
-
-  if (!published && !flags.isAdmin) {
-    renderEmpty('Esta leccion aun no esta publicada.');
-    const hint = $('studentHint');
-    if (hint) {
-      hint.style.display = 'block';
-      hint.textContent = 'Vuelve mas tarde.';
-    }
-    return;
-  }
-
-  renderExtras(meta || {});
-
-  const html = String(meta?.html || '').trim();
-  if (!html) {
-    if (!routeRendered) {
-      renderEmpty('Todavia no hay contenido de leccion para este tema.');
-      return;
-    }
-    const empty = $('lessonEmpty');
-    if (empty) {
-      empty.style.display = 'none';
-      empty.innerHTML = '';
-    }
-    const contentEl = $('lessonContent');
-    if (contentEl) {
-      contentEl.style.display = 'none';
-      contentEl.innerHTML = '';
-    }
-  } else {
-    const contentEl = $('lessonContent');
-    if (contentEl) {
-      contentEl.innerHTML = html;
-      contentEl.style.display = 'block';
-      decorateLessonTts(contentEl);
-    }
-  }
-
-  if (topic) setupRatingCard(user, topic);
-
-  await trackTopicOpen(user.uid, COURSE_ID, topicLevelOf(topic, LEVEL));
-  await loadProgress(user.uid, topic || { id: COURSE_ID, slug: COURSE_ID });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

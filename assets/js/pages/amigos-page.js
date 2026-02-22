@@ -7,6 +7,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  onSnapshot,
   orderBy,
   query,
   serverTimestamp,
@@ -27,6 +28,10 @@ const refStatInvites = $('refStatInvites');
 const refStatRewards = $('refStatRewards');
 const refRewardsList = $('refRewardsList');
 const refRewardsActions = $('refRewardsActions');
+const friendInvitesHint = $('friendInvitesHint');
+const friendInvitesList = $('friendInvitesList');
+
+let invitesUnsub = null;
 
 function setInlineStatus(el, text, kind = 'ok') {
   if (!el) return;
@@ -58,6 +63,106 @@ function genRefCode(baseRaw) {
   let suffix = '';
   for (let i = 0; i < 4; i += 1) suffix += alphabet[Math.floor(Math.random() * alphabet.length)];
   return `${base}-${suffix}`;
+}
+
+function avatarLetter(name) {
+  const safe = String(name || '').trim();
+  if (!safe) return 'U';
+  const parts = safe.split(/\s+/).filter(Boolean);
+  const letters = parts.map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+  return letters || 'U';
+}
+
+async function getPublicProfile(uid) {
+  const id = String(uid || '').trim();
+  if (!id) return {};
+  try {
+    const snap = await getDoc(doc(db, 'public_users', id));
+    return snap.exists() ? snap.data() || {} : {};
+  } catch {
+    return {};
+  }
+}
+
+function renderFriendInvites(items) {
+  if (!friendInvitesList) return;
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) {
+    friendInvitesList.innerHTML = '<div class="muted">Sin solicitudes pendientes.</div>';
+    return;
+  }
+  friendInvitesList.innerHTML = list
+    .map((item) => {
+      const name = String(item.name || 'Usuario').trim();
+      const handle = String(item.handle || '').trim();
+      const handleLine = handle ? `<div class="friendHint">@${handle}</div>` : '';
+      return `
+        <div class="friendItem">
+          <div class="friendMeta">
+            <span class="friendAvatar">${avatarLetter(name)}</span>
+            <div>
+              <div class="friendName">${name}</div>
+              ${handleLine}
+            </div>
+          </div>
+          <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
+            <button class="btn-yellow" type="button" data-invite-action="accept" data-invite-id="${item.id}">Aceptar</button>
+            <button class="btn-white-outline" type="button" data-invite-action="decline" data-invite-id="${item.id}">Rechazar</button>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+function startFriendInvitesListener(uid) {
+  if (!friendInvitesList || !friendInvitesHint) return;
+  const userId = String(uid || '').trim();
+  if (!userId) return;
+
+  if (invitesUnsub) {
+    try {
+      invitesUnsub();
+    } catch {}
+    invitesUnsub = null;
+  }
+
+  friendInvitesHint.textContent = 'Cargando...';
+  friendInvitesList.innerHTML = '';
+
+  const qInv = query(collection(db, 'friend_requests'), where('toUid', '==', userId), limit(40));
+  invitesUnsub = onSnapshot(
+    qInv,
+    async (snap) => {
+      const rows = (snap.docs || [])
+        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+        .filter((r) => String(r.status || '') === 'pending');
+
+      if (!rows.length) {
+        friendInvitesHint.textContent = 'No tienes invitaciones pendientes.';
+        renderFriendInvites([]);
+        return;
+      }
+
+      const enriched = await Promise.all(
+        rows.map(async (r) => {
+          const profile = await getPublicProfile(r.fromUid);
+          return {
+            ...r,
+            name: profile?.displayName || profile?.name || 'Usuario',
+            handle: profile?.handle || '',
+          };
+        }),
+      );
+
+      friendInvitesHint.textContent = '';
+      renderFriendInvites(enriched);
+    },
+    () => {
+      friendInvitesHint.textContent = 'No se pudieron cargar las invitaciones.';
+      renderFriendInvites([]);
+    },
+  );
 }
 
 async function ensureUserDoc(user) {
@@ -334,6 +439,28 @@ if (refRewardsList && !refRewardsList.dataset.wired) {
   });
 }
 
+if (friendInvitesList && !friendInvitesList.dataset.wired) {
+  friendInvitesList.dataset.wired = '1';
+  friendInvitesList.addEventListener('click', async (e) => {
+    const btn = e.target?.closest?.('[data-invite-action]');
+    if (!btn) return;
+    const action = String(btn.getAttribute('data-invite-action') || '').trim();
+    const inviteId = String(btn.getAttribute('data-invite-id') || '').trim();
+    if (!inviteId || (action !== 'accept' && action !== 'decline')) return;
+    try {
+      btn.disabled = true;
+      await updateDoc(doc(db, 'friend_requests', inviteId), {
+        status: action === 'accept' ? 'accepted' : 'declined',
+        updatedAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.warn('[amigos] invite action failed', err);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     const next = `${location.pathname.split('/').pop() || 'referidos.html'}${location.search || ''}${location.hash || ''}`;
@@ -346,6 +473,7 @@ onAuthStateChanged(auth, async (user) => {
     const refCode = await ensureMyRefCode(user.uid, userDoc);
     renderMyRefCode(refCode);
     await loadReferralStats(user.uid);
+    startFriendInvitesListener(user.uid);
   } catch (e) {
     console.warn('[amigos] init failed', e);
     if (myRefInfo) myRefInfo.textContent = 'No se pudo cargar.';

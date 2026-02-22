@@ -262,7 +262,7 @@ async function loadSummary() {
     const list = LESSON_ID ? raw.filter((x) => matchesLesson(x, LESSON_ID)) : raw;
 
     const parts = [`Nivel: ${LEVEL}`, `Tema: ${TOPIC_ID}`, `Ejercicios: ${list.length}`];
-    if (LESSON_ID) parts.push(`Leccion: ${LESSON_ID}`);
+    if (LESSON_ID) parts.push(`Lección: ${LESSON_ID}`);
     renderMeta(parts.join(' | '));
     renderList(list);
   } catch (e) {

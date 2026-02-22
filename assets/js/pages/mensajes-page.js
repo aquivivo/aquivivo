@@ -46,6 +46,7 @@ const messagesSearch = qs('#messagesSearch');
 const messagesFilters = qs('#messagesFilters');
 const filterAllChats = qs('#filterAllChats');
 const filterUnreadChats = qs('#filterUnreadChats');
+const filterGroupsChats = qs('#filterGroupsChats');
 const messagesTotalCount = qs('#messagesTotalCount');
 const messagesUnreadCount = qs('#messagesUnreadCount');
 const messagesListTitle = qs('#messagesListTitle');
@@ -59,12 +60,15 @@ const threadAvatar = qs('#threadAvatar');
 const threadStatus = qs('#threadStatus');
 const threadTyping = qs('#threadTyping');
 const btnBackToInbox = qs('#btnBackToInbox');
+const btnThreadSearch = qs('#btnThreadSearch');
 const threadSearch = qs('#threadSearch');
 const threadSearchAttachments = qs('#threadSearchAttachments');
 const threadFilterInfo = qs('#threadFilterInfo');
+const threadTools = qs('#threadTools');
 const btnJoinGroup = qs('#btnJoinGroup');
 const btnLeaveGroup = qs('#btnLeaveGroup');
 const btnToggleInfo = qs('#btnToggleInfo');
+const btnCloseInfoDrawer = qs('#btnCloseInfoDrawer');
 const messageInput = qs('#messageInput');
 const btnSend = qs('#btnSend');
 const fileInput = qs('#fileInput');
@@ -109,6 +113,7 @@ const supportAgentInput = qs('#supportAgentInput');
 const btnAddSupportAgent = qs('#btnAddSupportAgent');
 const supportAgentList = qs('#supportAgentList');
 const reportsList = qs('#reportsList');
+const messagesAdminWrap = qs('#messagesAdminWrap');
 
 const toggleArchived = qs('#toggleArchived');
 const togglePush = qs('#togglePush');
@@ -138,6 +143,7 @@ let activeConversationId = null;
 let currentMessages = [];
 let latestConversations = [];
 let mobileShowInbox = false;
+let activeTab = 'chats';
 
 let pendingFiles = [];
 let recorder = null;
@@ -154,7 +160,7 @@ let activeEditId = null;
 let activeEditSnapshot = null;
 let showArchived = false;
 let showUnreadOnly = false;
-let infoPanelVisible = true;
+let infoPanelVisible = false;
 let settingsUnsub = null;
 let convSettings = new Map();
 let statusUnsub = null;
@@ -291,7 +297,36 @@ function buildMessageIndex(text, attachments, extraText = '') {
 }
 
 function normText(text) {
-  return String(text || '').trim().toLowerCase();
+  return String(text || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getUserSearchFields(item) {
+  const display = normText(item?.displayNameLower || item?.displayName || item?.name || '');
+  const handle = normText(item?.handleLower || item?.handle || '');
+  const email = normText(item?.emailLower || item?.email || '');
+  return { display, handle, email };
+}
+
+function matchesUserSearch(item, q) {
+  const needle = normText(q);
+  if (!needle) return false;
+  const { display, handle, email } = getUserSearchFields(item);
+  return display.includes(needle) || handle.includes(needle) || email.includes(needle);
+}
+
+function userSearchRank(item, q) {
+  const needle = normText(q);
+  const { display, handle } = getUserSearchFields(item);
+  if (handle.startsWith(needle)) return 0;
+  if (display.startsWith(needle)) return 1;
+  if (handle.includes(needle)) return 2;
+  if (display.includes(needle)) return 3;
+  return 4;
 }
 
 async function getPublicProfile(uid) {
@@ -525,12 +560,14 @@ async function updateTypingIndicator(convo) {
 }
 
 function updateUnreadFilterUI() {
-  filterAllChats?.classList.toggle('is-active', !showUnreadOnly);
-  filterUnreadChats?.classList.toggle('is-active', showUnreadOnly);
+  filterAllChats?.classList.toggle('is-active', activeTab === 'chats' && !showUnreadOnly);
+  filterUnreadChats?.classList.toggle('is-active', activeTab === 'chats' && showUnreadOnly);
+  filterGroupsChats?.classList.toggle('is-active', activeTab === 'groups');
+  tabSupport?.classList.toggle('is-active', activeTab === 'support');
 }
 
 function getActiveTabName() {
-  return document.querySelector('.messages-tab.is-active')?.dataset?.tab || 'chats';
+  return activeTab || 'chats';
 }
 
 function getActiveListElement() {
@@ -556,7 +593,7 @@ function updateListHeaderMeta() {
   if (messagesListTitle) {
     const tab = getActiveTabName();
     messagesListTitle.textContent =
-      tab === 'groups' ? 'Grupos' : tab === 'support' ? 'Soporte' : 'Chats';
+      tab === 'groups' ? 'Grupos' : tab === 'support' ? 'Support' : 'Chats';
   }
   if (messagesListCount) {
     const listEl = getActiveListElement();
@@ -588,23 +625,21 @@ function updateInfoPanelVisibility() {
   const visible = infoPanelVisible && hasConversation;
   messagesInfo.hidden = !visible;
   messagesWorkspace?.classList.toggle('is-info-open', visible);
-  if (btnToggleInfo) {
-    btnToggleInfo.textContent = visible ? 'Ocultar detalles' : 'Mostrar detalles';
-  }
+  messagesPage?.classList.toggle('is-drawer-open', visible);
+  window.dispatchEvent(new CustomEvent('av:messages-drawer', { detail: { open: visible } }));
+  btnToggleInfo?.setAttribute('aria-pressed', visible ? 'true' : 'false');
 }
 
 function setActiveTab(tab) {
-  document.querySelectorAll('.messages-tab').forEach((btn) => {
-    btn.classList.toggle('is-active', btn.dataset.tab === tab);
-  });
-  chatList.classList.toggle('is-hidden', tab !== 'chats');
-  groupList.classList.toggle('is-hidden', tab !== 'groups');
-  supportList.classList.toggle('is-hidden', tab !== 'support');
-  if (messagesFilters) messagesFilters.hidden = tab === 'groups';
-  if (tab === 'groups' && showUnreadOnly) {
+  activeTab = tab || 'chats';
+  chatList.classList.toggle('is-hidden', activeTab !== 'chats');
+  groupList.classList.toggle('is-hidden', activeTab !== 'groups');
+  supportList.classList.toggle('is-hidden', activeTab !== 'support');
+  if (activeTab === 'groups' && showUnreadOnly) {
     showUnreadOnly = false;
-    updateUnreadFilterUI();
   }
+  if (activeTab === 'support' && showUnreadOnly) showUnreadOnly = false;
+  updateUnreadFilterUI();
   if (isMobileMessagesLayout()) {
     mobileShowInbox = true;
     updateThreadViewMode();
@@ -1319,7 +1354,7 @@ function applySearchFilter() {
     const shouldHide =
       (!showArchived && archived) ||
       (q && !name.includes(q)) ||
-      (currentTab !== 'groups' && showUnreadOnly && !isUnread);
+      (currentTab === 'chats' && showUnreadOnly && !isUnread);
     item.style.display = shouldHide ? 'none' : '';
     item.classList.toggle('is-muted', isConversationMuted(item.dataset.id));
   });
@@ -1350,6 +1385,13 @@ function canPinMessage() {
     activeConversation.ownerId === CURRENT_USER.uid ||
     (activeConversation.admins || []).includes(CURRENT_USER.uid)
   );
+}
+
+function getDmPeerUid(convo, myUid) {
+  if (!convo || convo.type !== 'dm') return '';
+  const participants = Array.isArray(convo.participants) ? convo.participants : [];
+  const peer = participants.find((uid) => uid && uid !== myUid);
+  return String(peer || '').trim();
 }
 
 function setReplyMessage(msg) {
@@ -1541,6 +1583,7 @@ async function openConversation(id, convo) {
   resetComposer();
   if (threadSearch) threadSearch.value = '';
   if (threadSearchAttachments) threadSearchAttachments.checked = false;
+  if (threadTools) threadTools.hidden = true;
   searchMode = false;
   updateThreadSearchInfo(0);
   if (isConversationArchived(id)) {
@@ -1845,6 +1888,28 @@ async function sendMessage() {
       lastMessageId: msgRef.id,
     });
 
+    const peerUid = getDmPeerUid(activeConversation, CURRENT_USER.uid);
+    if (peerUid) {
+      await Promise.allSettled([
+        addDoc(collection(db, 'user_inbox', CURRENT_USER.uid, 'messages'), {
+          fromUid: CURRENT_USER.uid,
+          toUid: peerUid,
+          peerUid,
+          text: preview,
+          createdAt: serverTimestamp(),
+          read: true,
+        }),
+        addDoc(collection(db, 'user_inbox', peerUid, 'messages'), {
+          fromUid: CURRENT_USER.uid,
+          toUid: peerUid,
+          peerUid: CURRENT_USER.uid,
+          text: preview,
+          createdAt: serverTimestamp(),
+          read: false,
+        }),
+      ]);
+    }
+
     await markRead(activeConversationId);
     await clearTyping();
     sendTimestamps.push(now);
@@ -2026,13 +2091,14 @@ async function searchByEmail(term) {
 }
 
 async function searchUsers(term) {
-  const q = normText(term);
+  const raw = normText(term);
+  const q = raw.startsWith('@') ? raw.slice(1).trim() : raw;
   if (!q) return [];
-  if (q.includes('@')) {
+  if (!raw.startsWith('@') && q.includes('@')) {
     const byEmail = await searchByEmail(q);
     if (byEmail.length) return byEmail;
   }
-  const list = [];
+  const merged = new Map();
   const byHandle = query(
     collection(db, 'public_users'),
     orderBy('handleLower'),
@@ -2047,32 +2113,79 @@ async function searchUsers(term) {
     where('displayNameLower', '<=', `${q}\uf8ff`),
     limit(10),
   );
-  const [h, n] = await Promise.all([getDocs(byHandle), getDocs(byName)]);
-  [...h.docs, ...n.docs].forEach((d) => {
-    if (!list.find((i) => i.uid === d.id)) list.push({ uid: d.id, ...(d.data() || {}) });
+  let prefixFailed = false;
+  const [h, n] = await Promise.all([
+    getDocs(byHandle).catch((e) => {
+      prefixFailed = true;
+      console.warn('[mensajes] handle prefix search failed', e);
+      return null;
+    }),
+    getDocs(byName).catch((e) => {
+      prefixFailed = true;
+      console.warn('[mensajes] displayName prefix search failed', e);
+      return null;
+    }),
+  ]);
+  [...(h?.docs || []), ...(n?.docs || [])].forEach((d) => {
+    if (!d?.id) return;
+    merged.set(d.id, { uid: d.id, ...(d.data() || {}) });
   });
-  return list;
+
+  if (!merged.size || prefixFailed) {
+    try {
+      const fallbackSnap = await getDocs(query(collection(db, 'public_users'), limit(150)));
+      fallbackSnap.forEach((docSnap) => {
+        const row = { uid: docSnap.id, ...(docSnap.data() || {}) };
+        if (matchesUserSearch(row, q)) merged.set(row.uid, row);
+      });
+    } catch (e) {
+      console.warn('[mensajes] fallback user search failed', e);
+    }
+  }
+
+  return Array.from(merged.values())
+    .filter((row) => row.uid && row.uid !== CURRENT_USER?.uid)
+    .filter((row) => row.publicProfile !== false)
+    .sort((a, b) => userSearchRank(a, q) - userSearchRank(b, q))
+    .slice(0, 12);
 }
 
 async function openDmWith(uid) {
   if (!uid || !CURRENT_USER) return;
-  const dmKey = [CURRENT_USER.uid, uid].sort().join('__');
-  const q = query(collection(db, 'conversations'), where('dmKey', '==', dmKey), limit(1));
+  const a = String(CURRENT_USER.uid || '').trim();
+  const b = String(uid || '').trim();
+  const dmKey = [a, b].sort().join('__');
+  const q = query(collection(db, 'conversations'), where('dmKey', '==', dmKey), limit(8));
   const snap = await getDocs(q);
   if (!snap.empty) {
-    const docSnap = snap.docs[0];
-    openConversation(docSnap.id, { id: docSnap.id, ...(docSnap.data() || {}) });
-    return;
+    const valid = (snap.docs || [])
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((row) => {
+        const participants = Array.isArray(row.participants) ? row.participants : [];
+        return participants.includes(a) && participants.includes(b);
+      })
+      .sort((x, y) => {
+        const xt = toDateMaybe(x.lastAt)?.getTime() || toDateMaybe(x.createdAt)?.getTime() || 0;
+        const yt = toDateMaybe(y.lastAt)?.getTime() || toDateMaybe(y.createdAt)?.getTime() || 0;
+        return yt - xt;
+      });
+    if (valid.length) {
+      const row = valid[0];
+      openConversation(row.id, row);
+      return;
+    }
   }
   const payload = {
     type: 'dm',
     dmKey,
     createdAt: serverTimestamp(),
-    createdBy: CURRENT_USER.uid,
-    participants: [CURRENT_USER.uid, uid],
+    createdBy: a,
+    ownerId: a,
+    admins: [a],
+    participants: [a, b],
     memberCount: 2,
     lastAt: serverTimestamp(),
-    reads: { [CURRENT_USER.uid]: serverTimestamp() },
+    reads: { [a]: serverTimestamp() },
   };
   const docRef = await addDoc(collection(db, 'conversations'), payload);
   openConversation(docRef.id, { id: docRef.id, ...payload });
@@ -2197,11 +2310,28 @@ function setupRecording() {
 }
 
 function wireUI() {
-  document.querySelectorAll('.messages-tab').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      setActiveTab(btn.dataset.tab);
-      applySearchFilter();
-    });
+  filterAllChats?.addEventListener('click', () => {
+    showUnreadOnly = false;
+    setActiveTab('chats');
+    applySearchFilter();
+  });
+
+  filterUnreadChats?.addEventListener('click', () => {
+    showUnreadOnly = true;
+    setActiveTab('chats');
+    applySearchFilter();
+  });
+
+  filterGroupsChats?.addEventListener('click', () => {
+    showUnreadOnly = false;
+    setActiveTab('groups');
+    applySearchFilter();
+  });
+
+  tabSupport?.addEventListener('click', () => {
+    showUnreadOnly = false;
+    setActiveTab('support');
+    applySearchFilter();
   });
 
   btnBackToInbox?.addEventListener('click', () => {
@@ -2211,16 +2341,10 @@ function wireUI() {
     updateThreadViewMode();
   });
 
-  filterAllChats?.addEventListener('click', () => {
-    showUnreadOnly = false;
-    updateUnreadFilterUI();
-    applySearchFilter();
-  });
-
-  filterUnreadChats?.addEventListener('click', () => {
-    showUnreadOnly = true;
-    updateUnreadFilterUI();
-    applySearchFilter();
+  btnThreadSearch?.addEventListener('click', () => {
+    const opened = !(threadTools?.hidden ?? true);
+    if (threadTools) threadTools.hidden = opened;
+    if (!opened) threadSearch?.focus();
   });
 
   if (messagesSearch) {
@@ -2319,6 +2443,10 @@ function wireUI() {
   btnLeaveGroup?.addEventListener('click', handleLeaveGroup);
   btnToggleInfo?.addEventListener('click', () => {
     infoPanelVisible = !infoPanelVisible;
+    updateInfoPanelVisibility();
+  });
+  btnCloseInfoDrawer?.addEventListener('click', () => {
+    infoPanelVisible = false;
     updateInfoPanelVisibility();
   });
   btnOpenSupport?.addEventListener('click', openOrCreateSupport);
@@ -2457,6 +2585,11 @@ function wireUI() {
     clearTyping();
   });
   window.addEventListener('resize', updateThreadViewMode);
+  window.addEventListener('av:quickchat-open', () => {
+    if (!infoPanelVisible) return;
+    infoPanelVisible = false;
+    updateInfoPanelVisibility();
+  });
 
   updateUnreadFilterUI();
   updateSidebarStats();
@@ -2531,7 +2664,10 @@ async function initFromAuth(user) {
   const supportSnap = await getDoc(doc(db, 'support_agents', user.uid));
   IS_SUPPORT = IS_ADMIN || supportSnap.exists();
 
-  if (IS_ADMIN || IS_SUPPORT) supportAdminBox.hidden = false;
+  if (IS_ADMIN || IS_SUPPORT) {
+    supportAdminBox.hidden = false;
+    messagesAdminWrap?.removeAttribute('hidden');
+  }
   if (!IS_ADMIN) {
     if (supportAgentInput) supportAgentInput.style.display = 'none';
     if (btnAddSupportAgent) btnAddSupportAgent.style.display = 'none';

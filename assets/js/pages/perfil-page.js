@@ -3268,43 +3268,166 @@ function renderProfileSearchResults(items, myUid) {
 }
 
 async function searchPublicUsersForProfile(myUid, term) {
-  const raw = String(term || '').trim().toLowerCase();
+  const raw = normalizeSearchText(term);
   const q = raw.startsWith('@') ? raw.slice(1).trim() : raw;
   if (!q) {
     setProfileSearchMsg('Escribe un nombre.', true);
     return;
   }
   setProfileSearchMsg('Buscando...');
-  try {
-    const nameQuery = query(
-      collection(db, 'public_users'),
-      orderBy('displayNameLower'),
-      startAt(q),
-      endAt(`${q}\uf8ff`),
-      limit(10),
-    );
-    const handleQuery = query(
-      collection(db, 'public_users'),
-      orderBy('handleLower'),
-      startAt(q),
-      endAt(`${q}\uf8ff`),
-      limit(10),
-    );
-    const [byName, byHandle] = await Promise.all([getDocs(nameQuery), getDocs(handleQuery)]);
-    const merged = new Map();
-    [...(byName.docs || []), ...(byHandle.docs || [])].forEach((d) => {
-      if (!d?.id) return;
-      if (!merged.has(d.id)) merged.set(d.id, { uid: d.id, ...(d.data() || {}) });
-    });
-    const results = Array.from(merged.values())
-      .filter((d) => d.publicProfile !== false)
-      .filter((d) => d.uid !== myUid);
-    renderProfileSearchResults(results, myUid);
-    setProfileSearchMsg(`Resultados: ${results.length}`);
-  } catch (e) {
-    console.warn('profile people search failed', e);
-    setProfileSearchMsg('No se pudo buscar.', true);
+  const merged = new Map();
+  let prefixFailed = false;
+
+  const lookupByEmailIndex = async (value) => {
+    const email = normalizeSearchText(value);
+    if (!email || !email.includes('@')) return null;
+    try {
+      const snap = await getDoc(doc(db, 'email_index', email));
+      if (!snap.exists()) return null;
+      const data = snap.data() || {};
+      const uid = String(data.uid || '').trim();
+      if (!uid) return null;
+      const profileSnap = await getDoc(doc(db, 'public_users', uid));
+      const profile = profileSnap.exists() ? profileSnap.data() : {};
+      return { uid, ...(profile || {}), emailLower: profile?.emailLower || email };
+    } catch (e) {
+      console.warn('[perfil] email index lookup failed', e);
+      return null;
+    }
+  };
+
+  const lookupByUsersEmailFallback = async (value) => {
+    const email = normalizeSearchText(value);
+    if (!email || !email.includes('@')) return null;
+    try {
+      const snap = await getDocs(
+        query(collection(db, 'public_users'), where('emailLower', '==', email), limit(1)),
+      );
+      if (snap.empty) return null;
+      const userDoc = snap.docs[0];
+      const uid = String(userDoc?.id || '').trim();
+      if (!uid) return null;
+      const profile = userDoc.data() || {};
+      return {
+        uid,
+        ...(profile || {}),
+        displayName: profile?.displayName || profile?.name || '',
+        name: profile?.name || profile?.displayName || '',
+        handle: profile?.handle || '',
+        emailLower: profile?.emailLower || email,
+      };
+    } catch {
+      try {
+        const fallbackSnap = await getDocs(query(collection(db, 'public_users'), limit(200)));
+        let hit = null;
+        fallbackSnap.forEach((docSnap) => {
+          if (hit) return;
+          const row = { uid: docSnap.id, ...(docSnap.data() || {}) };
+          const rowEmail = normalizeSearchText(row.emailLower || row.email || '');
+          if (rowEmail && rowEmail === email) hit = row;
+        });
+        return hit;
+      } catch {
+        return null;
+      }
+    }
+  };
+
+  const lookupByHandleIndex = async (value) => {
+    const handle = normalizeSearchText(value);
+    if (!handle || handle.includes('@') || handle.length < 2) return null;
+    try {
+      const snap = await getDoc(doc(db, 'login_index', handle));
+      if (!snap.exists()) return null;
+      const data = snap.data() || {};
+      const uid = String(data.uid || '').trim();
+      if (!uid) return null;
+      const profileSnap = await getDoc(doc(db, 'public_users', uid));
+      const profile = profileSnap.exists() ? profileSnap.data() : {};
+      return { uid, ...(profile || {}), handle: profile?.handle || handle, handleLower: profile?.handleLower || handle };
+    } catch (e) {
+      console.warn('[perfil] handle index lookup failed', e);
+      return null;
+    }
+  };
+
+  const [emailHit, legacyEmailHit, handleHit] = await Promise.all([
+    lookupByEmailIndex(raw),
+    lookupByUsersEmailFallback(raw),
+    raw.startsWith('@') ? lookupByHandleIndex(q) : Promise.resolve(null),
+  ]);
+  if (emailHit?.uid) merged.set(emailHit.uid, emailHit);
+  if (!emailHit?.uid && legacyEmailHit?.uid) merged.set(legacyEmailHit.uid, legacyEmailHit);
+  if (handleHit?.uid) merged.set(handleHit.uid, handleHit);
+
+  const nameQuery = query(
+    collection(db, 'public_users'),
+    orderBy('displayNameLower'),
+    startAt(q),
+    endAt(`${q}\uf8ff`),
+    limit(10),
+  );
+  const handleQuery = query(
+    collection(db, 'public_users'),
+    orderBy('handleLower'),
+    startAt(q),
+    endAt(`${q}\uf8ff`),
+    limit(10),
+  );
+  const [byName, byHandle] = await Promise.all([
+    getDocs(nameQuery).catch((e) => {
+      prefixFailed = true;
+      console.warn('[perfil] name prefix search failed', e);
+      return null;
+    }),
+    getDocs(handleQuery).catch((e) => {
+      prefixFailed = true;
+      console.warn('[perfil] handle prefix search failed', e);
+      return null;
+    }),
+  ]);
+
+  [...(byName?.docs || []), ...(byHandle?.docs || [])].forEach((d) => {
+    if (!d?.id) return;
+    merged.set(d.id, { uid: d.id, ...(d.data() || {}) });
+  });
+
+  if (!merged.size || prefixFailed) {
+    try {
+      const fallbackSnap = await getDocs(query(collection(db, 'public_users'), limit(150)));
+      fallbackSnap.forEach((docSnap) => {
+        const row = { uid: docSnap.id, ...(docSnap.data() || {}) };
+        const hay = normalizeSearchText(
+          `${row.displayNameLower || row.displayName || row.name || ''} ${row.handleLower || row.handle || ''} ${row.emailLower || ''}`,
+        );
+        if (hay.includes(q)) merged.set(row.uid, row);
+      });
+    } catch (e) {
+      console.warn('[perfil] fallback search failed', e);
+    }
   }
+
+  const score = (row) => {
+    const display = normalizeSearchText(row.displayNameLower || row.displayName || row.name || '');
+    const handle = normalizeSearchText(row.handleLower || row.handle || '');
+    if (handle.startsWith(q)) return 0;
+    if (display.startsWith(q)) return 1;
+    if (handle.includes(q)) return 2;
+    if (display.includes(q)) return 3;
+    return 4;
+  };
+
+  const results = Array.from(merged.values())
+    .filter((d) => d.publicProfile !== false)
+    .sort((a, b) => score(a) - score(b))
+    .slice(0, 10);
+
+  renderProfileSearchResults(results, myUid);
+  if (prefixFailed && !results.length) {
+    setProfileSearchMsg('No se pudo buscar.', true);
+    return;
+  }
+  setProfileSearchMsg(`Resultados: ${results.length}`);
 }
 
 function initProfilePeopleSearch(opts) {

@@ -8,199 +8,200 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260220d" />
-    <script src="assets/js/layout.js?v=20260208m" type="module"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260222f" />
+    <script src="assets/js/layout.js?v=20260222f" type="module"></script>
   </head>
 
   <body data-page="mensajes">
     <div id="appHeader"></div>
 
-    <main class="page messages-page messages-page--premium">
-      <section class="container messages-upgrade">
-        <div class="messages-upgrade-title">ULEPSZONA WERSJA "Unified Communication Center"</div>
-        <div class="messages-upgrade-bullets">
-          <span>AI: szybkie podsumowania i tagi</span>
-          <span>Filtry i sortowanie rozmów</span>
-          <span>Notatki, historia i zadania w jednym miejscu</span>
-        </div>
-      </section>
-
-      <div class="container messages-shell">
+    <main class="page messages-page messages-page--minimal">
+      <div class="container messages-layout">
         <aside class="card messages-sidebar">
-          <div class="messages-sidebar-grid">
-            <div class="messages-sidebar-rail">
-              <div class="messages-sidebar-head">
-                <div class="messages-sidebar-title">
-                  <div class="messages-kicker">CENTRUM</div>
-                  <div class="sectionTitle" style="margin: 0">Komunikacji</div>
-                </div>
-                <button class="btn-yellow" id="btnNewChat" type="button">Nowy</button>
-              </div>
-
-              <div class="messages-toolbar">
-                <div class="messages-tabs" role="tablist" aria-label="Secciones">
-                  <button class="messages-tab is-active" data-tab="chats" type="button">Mensajes</button>
-                  <button class="messages-tab" data-tab="groups" type="button">Grupos</button>
-                  <button class="messages-tab" data-tab="support" id="tabSupport" type="button" hidden>
-                    Soporte
-                  </button>
-                </div>
-              </div>
-
-              <div class="messages-sidebar-actions">
-                <button class="btn-white-outline" id="btnNewGroup" type="button">Crear grupo</button>
-                <button class="btn-white-outline" id="btnOpenSupport" type="button">Soporte</button>
-              </div>
-
-              <div class="messages-sidebar-toggles">
-                <label class="toggle-line">
-                  <input type="checkbox" id="toggleArchived" />
-                  <span>Archivados</span>
-                </label>
-                <label class="toggle-line">
-                  <input type="checkbox" id="togglePush" />
-                  <span>Push</span>
-                </label>
-              </div>
+          <header class="messages-sidebar-top">
+            <div class="messages-sidebar-title">
+              <div class="sectionTitle" style="margin: 0">Wiadomosci</div>
+              <div class="hintSmall">Szybki podglad i odpowiedzi</div>
             </div>
 
-            <div class="messages-sidebar-inbox">
-              <div class="messages-search">
-                <input class="input" id="messagesSearch" type="text" placeholder="Szukaj..." />
-              </div>
-
-              <div class="messages-filters" id="messagesFilters">
-                <button class="messages-filter is-active" id="filterAllChats" type="button">Todos</button>
-                <button class="messages-filter" id="filterUnreadChats" type="button">No leídos</button>
-              </div>
-
-              <div class="messages-stats" id="messagesStats">
-                <div class="messages-stat-pill">
-                  <span class="messages-stat-label">Conversaciones</span>
-                  <span class="messages-stat-value" id="messagesTotalCount">0</span>
+            <div class="messages-top-actions">
+              <button class="btn-yellow" id="btnNewChat" type="button">+ Nuevo</button>
+              <details class="messages-settings-menu">
+                <summary aria-label="Opciones">⋯</summary>
+                <div class="messages-settings-panel">
+                  <button class="btn-white-outline" id="btnNewGroup" type="button">Nuevo grupo</button>
+                  <button class="btn-white-outline" id="btnOpenSupport" type="button">Soporte</button>
+                  <label class="toggle-line">
+                    <input type="checkbox" id="toggleArchived" />
+                    <span>Archivados</span>
+                  </label>
+                  <label class="toggle-line">
+                    <input type="checkbox" id="togglePush" />
+                    <span>Push</span>
+                  </label>
                 </div>
-                <div class="messages-stat-pill">
-                  <span class="messages-stat-label">Sin leer</span>
-                  <span class="messages-stat-value" id="messagesUnreadCount">0</span>
-                </div>
-              </div>
+              </details>
+            </div>
+          </header>
 
-              <div class="messages-list-head">
-                <div class="messages-list-title" id="messagesListTitle">Chats</div>
-                <div class="messages-list-count" id="messagesListCount">0</div>
-              </div>
+          <nav class="messages-filters" id="messagesFilters" aria-label="Filtros">
+            <button class="messages-filter-tab is-active" id="filterAllChats" data-tab="chats" data-mode="all" type="button">
+              Todos
+            </button>
+            <button class="messages-filter-tab" id="filterUnreadChats" data-tab="chats" data-mode="unread" type="button">
+              No leidos
+            </button>
+            <button class="messages-filter-tab" id="filterGroupsChats" data-tab="groups" type="button">
+              Grupos
+            </button>
+            <button class="messages-filter-tab" id="tabSupport" data-tab="support" type="button" hidden>
+              Support
+            </button>
+          </nav>
 
-              <div class="messages-list-wrap">
-                <div class="messages-list" id="chatList"></div>
-                <div class="messages-list is-hidden" id="groupList"></div>
-                <div class="messages-list is-hidden" id="supportList"></div>
-              </div>
+          <div class="messages-search">
+            <input class="input" id="messagesSearch" type="text" placeholder="Buscar conversacion..." />
+          </div>
+
+          <div class="messages-list-head">
+            <div class="messages-list-title" id="messagesListTitle">Chats</div>
+            <div class="messages-list-count" id="messagesListCount">0</div>
+          </div>
+
+          <div class="messages-list-wrap">
+            <div class="messages-list" id="chatList"></div>
+            <div class="messages-list is-hidden" id="groupList"></div>
+            <div class="messages-list is-hidden" id="supportList"></div>
+          </div>
+
+          <div class="messages-stats" id="messagesStats" aria-hidden="true">
+            <div class="messages-stat-pill">
+              <span class="messages-stat-label">Total</span>
+              <span class="messages-stat-value" id="messagesTotalCount">0</span>
+            </div>
+            <div class="messages-stat-pill">
+              <span class="messages-stat-label">No leidos</span>
+              <span class="messages-stat-value" id="messagesUnreadCount">0</span>
             </div>
           </div>
 
-          <details class="messages-extras">
-            <summary>Novedades y gestión</summary>
+          <details class="messages-mini-section" id="messagesInboxWrap">
+            <summary>Novedades del equipo</summary>
+            <div class="inboxList" id="messagesInboxList"></div>
+          </details>
 
-            <div class="messages-admin card" id="supportAdminBox" hidden>
-              <div class="sectionTitle" style="margin-top: 0">Agentes de soporte</div>
-              <div class="hintSmall">Agrega usuarios sin rol admin.</div>
+          <details class="messages-mini-section" id="messagesAdminWrap" hidden>
+            <summary>Admin soporte</summary>
+            <div class="messages-admin" id="supportAdminBox" hidden>
+              <div class="hintSmall">Agentes de soporte</div>
               <div class="metaRow" style="margin-top: 10px">
                 <input class="input" id="supportAgentInput" type="text" placeholder="@usuario o UID" />
                 <button class="btn-white-outline" id="btnAddSupportAgent" type="button">Agregar</button>
               </div>
               <div class="support-agent-list" id="supportAgentList"></div>
-
-              <div class="sectionTitle" style="margin-top: 16px">Reportes</div>
               <div class="reports-list" id="reportsList"></div>
-            </div>
-
-            <div class="messages-broadcast">
-              <div class="sectionTitle" style="margin-top: 0">Mensajes del equipo</div>
-              <div class="muted">Actualizaciones internas y comunicados.</div>
-              <div class="inboxList" id="messagesInboxList" style="margin-top: 10px"></div>
             </div>
           </details>
         </aside>
 
-        <div class="messages-workspace">
-          <section class="card messages-main">
-            <div class="messages-empty" id="messagesEmpty">
-              <div class="messages-empty-title">Selecciona una conversación</div>
-              <div class="messages-empty-subtitle">Abre un chat de la bandeja o crea una nueva conversación.</div>
-            </div>
+        <section class="card messages-main">
+          <div class="messages-empty" id="messagesEmpty">
+            <div class="messages-empty-title">Selecciona una conversacion</div>
+            <div class="messages-empty-subtitle">Elige un chat de la lista para empezar.</div>
+          </div>
 
-            <div class="messages-thread" id="messagesThread" hidden>
-              <div class="thread-head">
-                <div class="thread-title-wrap">
-                  <button class="btn-white-outline thread-back" id="btnBackToInbox" type="button">Bandeja</button>
-                  <div class="thread-title">
-                    <div class="thread-avatar" id="threadAvatar">AV</div>
-                    <div>
-                      <div class="thread-name" id="threadName">Conversación</div>
-                      <div class="thread-meta" id="threadMeta"></div>
-                      <div class="thread-status" id="threadStatus"></div>
-                      <div class="thread-typing" id="threadTyping"></div>
-                    </div>
+          <div class="messages-thread" id="messagesThread" hidden>
+            <header class="thread-head">
+              <div class="thread-title-wrap">
+                <button class="thread-back" id="btnBackToInbox" type="button" aria-label="Volver">←</button>
+                <div class="thread-title">
+                  <div class="thread-avatar" id="threadAvatar">AV</div>
+                  <div class="thread-title-meta">
+                    <div class="thread-name" id="threadName">Conversacion</div>
+                    <div class="thread-meta" id="threadMeta"></div>
+                    <div class="thread-status" id="threadStatus"></div>
+                    <div class="thread-typing" id="threadTyping"></div>
                   </div>
                 </div>
-                <div class="thread-actions">
-                  <button class="btn-white-outline" id="btnToggleInfo" type="button">Mostrar detalles</button>
-                  <button class="btn-white-outline" id="btnJoinGroup" type="button" hidden>Unirme</button>
-                  <button class="btn-white-outline" id="btnLeaveGroup" type="button" hidden>Salir</button>
-                </div>
               </div>
 
-              <div class="thread-tools">
-                <input class="input" id="threadSearch" type="text" placeholder="Buscar en este chat..." />
-                <label class="toggle-line">
-                  <input type="checkbox" id="threadSearchAttachments" />
-                  <span>Solo adjuntos</span>
-                </label>
-                <div class="thread-filter-info" id="threadFilterInfo"></div>
+              <div class="thread-actions">
+                <button class="thread-icon-btn" id="btnThreadSearch" type="button" aria-label="Buscar">🔍</button>
+                <label class="thread-icon-btn" for="fileInput" aria-label="Adjuntar">📎</label>
+                <button class="thread-icon-btn" id="btnToggleInfo" type="button" aria-label="Detalles">ℹ️</button>
+                <button class="thread-icon-btn" id="btnJoinGroup" type="button" hidden aria-label="Unirme">＋</button>
+                <button class="thread-icon-btn" id="btnLeaveGroup" type="button" hidden aria-label="Salir">⤴</button>
               </div>
+            </header>
 
-              <div class="thread-messages" id="threadMessages"></div>
-
-              <div class="thread-composer">
-                <div class="composer-edit" id="composerEdit" hidden>
-                  <div class="composer-edit-text" id="composerEditText"></div>
-                  <button class="btn-white-outline" id="btnCancelEdit" type="button">Cancelar edición</button>
-                </div>
-                <div class="composer-reply" id="composerReply" hidden>
-                  <div class="composer-reply-text" id="composerReplyText"></div>
-                  <button class="btn-white-outline" id="btnCancelReply" type="button">Cancelar respuesta</button>
-                </div>
-                <div class="composer-tools">
-                  <label class="composer-btn">
-                    Adjuntos
-                    <input id="fileInput" type="file" multiple />
-                  </label>
-                  <button class="composer-btn" id="btnRecord" type="button">Voz</button>
-                  <div class="composer-hint" id="recordHint"></div>
-                </div>
-                <div class="composer-preview" id="attachmentsPreview"></div>
-                <div class="composer-row">
-                  <textarea id="messageInput" rows="2" placeholder="Escribe un mensaje..."></textarea>
-                  <button class="btn-yellow" id="btnSend" type="button">Enviar</button>
-                </div>
-                <div class="thread-tags">
-                  <button class="thread-tag" type="button">Nowy</button>
-                  <button class="thread-tag" type="button">Follow-up</button>
-                  <button class="thread-tag thread-tag--danger" type="button">Problematyczne</button>
-                </div>
-              </div>
+            <div class="thread-tools" id="threadTools" hidden>
+              <input class="input" id="threadSearch" type="text" placeholder="Buscar en esta conversacion..." />
+              <label class="toggle-line">
+                <input type="checkbox" id="threadSearchAttachments" />
+                <span>Solo adjuntos</span>
+              </label>
+              <div class="thread-filter-info" id="threadFilterInfo"></div>
             </div>
-          </section>
 
-          <aside class="card messages-info" id="messagesInfo" hidden>
-            <div class="sectionTitle" style="margin-top: 0">AI resumen</div>
-            <div class="info-body" id="infoBody"></div>
-            <div class="info-actions" id="infoActions"></div>
-            <div class="pinned-box" id="pinnedBox"></div>
-            <div class="participants-box" id="participantsBox"></div>
-            <div class="requests-box" id="requestsBox"></div>
-          </aside>
-        </div>
+            <div class="thread-messages" id="threadMessages"></div>
+
+            <div class="thread-composer">
+              <div class="composer-edit" id="composerEdit" hidden>
+                <div class="composer-edit-text" id="composerEditText"></div>
+                <button class="composer-mini-btn" id="btnCancelEdit" type="button" aria-label="Cancelar">×</button>
+              </div>
+
+              <div class="composer-reply" id="composerReply" hidden>
+                <div class="composer-reply-text" id="composerReplyText"></div>
+                <button class="composer-mini-btn" id="btnCancelReply" type="button" aria-label="Cancelar">×</button>
+              </div>
+
+              <div class="composer-preview" id="attachmentsPreview"></div>
+
+              <div class="composer-row">
+                <label class="composer-icon" for="fileInput" aria-label="Adjuntar">📎</label>
+                <textarea id="messageInput" rows="1" placeholder="Napisz wiadomosc..."></textarea>
+                <button class="composer-icon" id="btnRecord" type="button" aria-label="Audio">🎤</button>
+                <button class="composer-send" id="btnSend" type="button" aria-label="Enviar">➤</button>
+              </div>
+
+              <input id="fileInput" type="file" multiple hidden />
+              <div class="composer-hint" id="recordHint"></div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="card messages-info" id="messagesInfo" hidden>
+          <header class="messages-info-head">
+            <div class="messages-info-title">Detalles</div>
+            <button class="thread-icon-btn" id="btnCloseInfoDrawer" type="button" aria-label="Cerrar">×</button>
+          </header>
+
+          <details class="messages-info-section" open>
+            <summary>Resumen AI</summary>
+            <div class="messages-info-content" id="infoBody"></div>
+          </details>
+
+          <details class="messages-info-section" open>
+            <summary>Notas</summary>
+            <div class="messages-info-content" id="infoActions"></div>
+          </details>
+
+          <details class="messages-info-section" open>
+            <summary>Historia</summary>
+            <div class="messages-info-content" id="pinnedBox"></div>
+          </details>
+
+          <details class="messages-info-section" open>
+            <summary>Participantes</summary>
+            <div class="messages-info-content" id="participantsBox"></div>
+          </details>
+
+          <details class="messages-info-section" open>
+            <summary>Solicitudes</summary>
+            <div class="messages-info-content" id="requestsBox"></div>
+          </details>
+        </aside>
       </div>
     </main>
 
@@ -291,6 +292,6 @@
       </div>
     </div>
 
-    <script type="module" src="assets/js/pages/mensajes-page.js?v=20260220d"></script>
+    <script type="module" src="assets/js/pages/mensajes-page.js?v=20260222f"></script>
   </body>
 </html>
