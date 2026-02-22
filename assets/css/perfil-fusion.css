@@ -1,0 +1,1032 @@
+:root {
+  --fusion-blue: #003893;
+  --fusion-yellow: #fcd116;
+  --fusion-red: #ce1126;
+  --fusion-bg: #f6f8fb;
+  --fusion-card: #ffffff;
+  --fusion-line: #e2e9f5;
+  --fusion-text: #0f2f6d;
+  --fusion-text-soft: #5772a5;
+  --fusion-shadow: 0 6px 18px rgba(8, 46, 120, 0.08);
+}
+
+body.fusion-profile {
+  margin: 0;
+  background: var(--fusion-bg);
+  color: var(--fusion-text);
+  font-family:
+    'Sora',
+    'Segoe UI Emoji',
+    'Noto Color Emoji',
+    'Apple Color Emoji',
+    system-ui,
+    sans-serif;
+}
+
+body.fusion-profile.modal-open {
+  overflow: hidden;
+}
+
+body.fusion-profile * {
+  box-sizing: border-box;
+}
+
+body.fusion-profile a {
+  color: inherit;
+}
+
+body.fusion-profile .fusion-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  height: 64px;
+  border-bottom: 1px solid var(--fusion-line);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 14px;
+}
+
+body.fusion-profile .topbar-logo {
+  display: inline-flex;
+  align-items: center;
+}
+
+body.fusion-profile .topbar-logo img {
+  width: 118px;
+  height: auto;
+  display: block;
+}
+
+body.fusion-profile .topbar-search-wrap {
+  display: block;
+  min-width: 0;
+}
+
+body.fusion-profile .topbar-search {
+  width: 100%;
+  min-height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--fusion-line);
+  background: #f8fafe;
+  color: var(--fusion-text);
+  font-size: 13px;
+  padding: 0 14px;
+  outline: none;
+}
+
+body.fusion-profile .topbar-search:focus {
+  border-color: rgba(0, 56, 147, 0.4);
+  background: #ffffff;
+}
+
+body.fusion-profile .topbar-icon-btn {
+  position: relative;
+  border: 1px solid var(--fusion-line);
+  background: #ffffff;
+  color: var(--fusion-blue);
+  border-radius: 999px;
+  min-width: 40px;
+  min-height: 40px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+body.fusion-profile .topbar-icon-btn i {
+  position: absolute;
+  top: -4px;
+  right: -3px;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  background: var(--fusion-red);
+  color: #ffffff;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+}
+
+body.fusion-profile .topbar-icon-btn.is-active {
+  background: #e8f0ff;
+  border-color: #bfd4fb;
+}
+
+body.fusion-profile .topbar-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--fusion-line);
+  background: #edf2ff;
+  display: grid;
+  place-items: center;
+  color: var(--fusion-blue);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+body.fusion-profile .topbar-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+body.fusion-profile .fusion-main {
+  width: min(1040px, 100%);
+  margin: 0 auto;
+  padding: 16px 14px 116px;
+  display: grid;
+  grid-template-columns: minmax(0, 640px) minmax(0, 260px);
+  justify-content: center;
+  align-items: start;
+  gap: 18px;
+}
+
+body.fusion-profile .fusion-feed-column {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+body.fusion-profile .fusion-right-mini {
+  position: sticky;
+  top: 78px;
+  display: grid;
+  gap: 12px;
+}
+
+body.fusion-profile .fusion-block,
+body.fusion-profile .mini-card,
+body.fusion-profile .feed-card,
+body.fusion-profile .stories-card,
+body.fusion-profile .reel-card,
+body.fusion-profile .mini-list-card {
+  background: var(--fusion-card);
+  border: 1px solid var(--fusion-line);
+  border-radius: 16px;
+  box-shadow: var(--fusion-shadow);
+}
+
+body.fusion-profile .profile-compact {
+  padding: 10px 12px;
+  display: grid;
+  gap: 8px;
+}
+
+body.fusion-profile .profile-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+body.fusion-profile .avatar-frame {
+  width: 62px;
+  height: 62px;
+  border-radius: 999px;
+  border: 2px solid #d8e4f8;
+  background: #eff4ff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--fusion-blue);
+  font-weight: 800;
+}
+
+body.fusion-profile .avatar-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+body.fusion-profile .profile-copy h1 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.04;
+  letter-spacing: 0.01em;
+  color: var(--fusion-blue);
+}
+
+body.fusion-profile .profile-meta-line {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--fusion-text-soft);
+}
+
+body.fusion-profile .profile-meta-line #leftHandle {
+  color: var(--fusion-blue);
+  font-weight: 700;
+}
+
+body.fusion-profile .meta-dot {
+  opacity: 0.6;
+}
+
+body.fusion-profile .profile-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.fusion-profile .profile-actions .btn-yellow,
+body.fusion-profile .profile-actions .btn-white-outline {
+  min-height: 34px;
+  border-radius: 10px;
+  font-size: 12px;
+  padding: 7px 8px;
+}
+
+body.fusion-profile .profile-stats-line {
+  color: var(--fusion-text-soft);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+body.fusion-profile .profile-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+body.fusion-profile .tab-btn {
+  border: 1px solid var(--fusion-line);
+  border-radius: 999px;
+  min-height: 32px;
+  background: #ffffff;
+  color: var(--fusion-blue);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.fusion-profile .tab-btn.is-active {
+  background: #e8f0ff;
+  border-color: #bfd4fb;
+}
+
+body.fusion-profile .stories-row {
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+body.fusion-profile .stories-row-head,
+body.fusion-profile .screen-head,
+body.fusion-profile .feed-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+body.fusion-profile .stories-row-head h2,
+body.fusion-profile .screen-head h3,
+body.fusion-profile .feed-head h3,
+body.fusion-profile .mini-card h2 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--fusion-blue);
+  letter-spacing: 0.01em;
+}
+
+body.fusion-profile .text-link {
+  border: none;
+  background: transparent;
+  color: var(--fusion-blue);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.fusion-profile .story-strip {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+  padding-bottom: 2px;
+}
+
+body.fusion-profile .story-pill {
+  width: 58px;
+  min-width: 58px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: grid;
+  gap: 6px;
+}
+
+body.fusion-profile .story-pill-media {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto;
+  border-radius: 999px;
+  border: 2px solid #c7dbff;
+  overflow: hidden;
+  background: #ecf3ff;
+  display: grid;
+  place-items: center;
+}
+
+body.fusion-profile .story-pill-media img,
+body.fusion-profile .story-tile-media img,
+body.fusion-profile .story-modal-media img,
+body.fusion-profile .story-modal-media video,
+body.fusion-profile .media-block img,
+body.fusion-profile .media-block video,
+body.fusion-profile .reel-media img,
+body.fusion-profile .reel-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.fusion-profile .story-pill-title {
+  display: none;
+}
+
+body.fusion-profile .quick-create {
+  display: grid;
+  gap: 6px;
+}
+
+body.fusion-profile .quick-create-btn {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid var(--fusion-line);
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: var(--fusion-shadow);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+body.fusion-profile .quick-create-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid #c8daf8;
+  background: #ecf3ff;
+  color: var(--fusion-blue);
+  font-size: 13px;
+  font-weight: 800;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+body.fusion-profile .quick-create-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+body.fusion-profile .quick-create-placeholder {
+  color: #6c84b3;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+body.fusion-profile .composer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+body.fusion-profile .composer-head h2 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--fusion-blue);
+}
+
+body.fusion-profile #btnComposerToggle {
+  min-height: 32px;
+  font-size: 11px;
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+body.fusion-profile .composer-body {
+  margin-top: 8px;
+  display: grid;
+  gap: 10px;
+}
+
+body.fusion-profile .composer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.fusion-profile .composer-grid label,
+body.fusion-profile .composer-text-wrap {
+  display: grid;
+  gap: 4px;
+  color: var(--fusion-blue);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+body.fusion-profile .composer-grid .input,
+body.fusion-profile .composer-grid .select,
+body.fusion-profile #composerText {
+  border-radius: 10px;
+  border: 1px solid var(--fusion-line);
+  background: #ffffff;
+  color: var(--fusion-text);
+}
+
+body.fusion-profile #composerText {
+  min-height: 80px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+body.fusion-profile .composer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+body.fusion-profile .composer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 3100;
+}
+
+body.fusion-profile .composer-modal[hidden] {
+  display: none !important;
+}
+
+body.fusion-profile .composer-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 10, 26, 0.54);
+}
+
+body.fusion-profile .composer-modal-card {
+  position: relative;
+  width: min(720px, calc(100% - 16px));
+  margin: 30px auto;
+  border-radius: 16px;
+  border: 1px solid #d6e2f8;
+  background: #ffffff;
+  box-shadow: 0 22px 50px rgba(0, 56, 147, 0.22);
+  padding: 12px;
+}
+
+body.fusion-profile .portal-screen {
+  display: none;
+}
+
+body.fusion-profile .portal-screen.is-active {
+  display: block;
+}
+
+body.fusion-profile .feed-card,
+body.fusion-profile .stories-card,
+body.fusion-profile .reel-card {
+  padding: 12px;
+}
+
+body.fusion-profile .feed-source-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.fusion-profile .feed-source-btn {
+  border: 1px solid var(--fusion-line);
+  border-radius: 999px;
+  min-height: 30px;
+  background: #ffffff;
+  color: var(--fusion-blue);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+body.fusion-profile .feed-source-btn.is-active {
+  background: #e8f0ff;
+  border-color: #bfd4fb;
+}
+
+body.fusion-profile .post-list {
+  display: grid;
+  gap: 10px;
+}
+
+body.fusion-profile .post-card {
+  border: 1px solid var(--fusion-line);
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 12px;
+  display: grid;
+  gap: 9px;
+}
+
+body.fusion-profile .post-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+body.fusion-profile .post-author {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+
+body.fusion-profile .post-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #e8f0ff;
+  color: var(--fusion-blue);
+  font-size: 13px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cbdbf6;
+}
+
+body.fusion-profile .post-author-meta {
+  display: grid;
+  gap: 1px;
+}
+
+body.fusion-profile .post-author strong {
+  font-size: 13px;
+  color: var(--fusion-blue);
+}
+
+body.fusion-profile .post-author span,
+body.fusion-profile .post-time,
+body.fusion-profile .post-tags,
+body.fusion-profile .post-meta,
+body.fusion-profile .simple-item-sub,
+body.fusion-profile .hintSmall {
+  font-size: 11px;
+  color: var(--fusion-text-soft);
+}
+
+body.fusion-profile .post-time {
+  white-space: nowrap;
+}
+
+body.fusion-profile .post-text {
+  margin: 0;
+  color: #1f3d77;
+  font-size: 13px;
+  line-height: 1.42;
+  white-space: pre-wrap;
+}
+
+body.fusion-profile .post-tag {
+  color: var(--fusion-blue);
+  font-weight: 700;
+}
+
+body.fusion-profile .media-block {
+  width: 100%;
+  max-height: 460px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #dbe7fb;
+  background: #eff4ff;
+}
+
+body.fusion-profile .post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.fusion-profile .post-action-btn {
+  border: 1px solid var(--fusion-line);
+  border-radius: 999px;
+  min-height: 30px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: var(--fusion-blue);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.fusion-profile .post-action-btn:hover {
+  background: #f1f6ff;
+}
+
+body.fusion-profile .comments-panel {
+  border-top: 1px solid #ecf1fb;
+  padding-top: 8px;
+  display: none;
+  gap: 7px;
+}
+
+body.fusion-profile .comments-panel.open {
+  display: grid;
+}
+
+body.fusion-profile .comment-item {
+  border: 1px solid #e3ecfa;
+  border-radius: 10px;
+  background: #fafdff;
+  padding: 6px 8px;
+  display: grid;
+  gap: 2px;
+}
+
+body.fusion-profile .comment-item strong {
+  font-size: 12px;
+  color: var(--fusion-blue);
+}
+
+body.fusion-profile .comment-item p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+body.fusion-profile .comment-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+}
+
+body.fusion-profile .stories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 9px;
+}
+
+body.fusion-profile .story-tile {
+  border: 1px solid var(--fusion-line);
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 6px;
+  cursor: pointer;
+  display: grid;
+  gap: 6px;
+}
+
+body.fusion-profile .story-tile-media {
+  width: 100%;
+  aspect-ratio: 9 / 13;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #edf4ff;
+}
+
+body.fusion-profile .story-tile-meta {
+  font-size: 11px;
+  color: var(--fusion-blue);
+  font-weight: 700;
+}
+
+body.fusion-profile .reel-stage {
+  min-height: min(76vh, 760px);
+  border-radius: 12px;
+  border: 1px solid #d9e4f7;
+  background: #0f2f6d;
+  overflow: hidden;
+}
+
+body.fusion-profile .reel-empty,
+body.fusion-profile .empty-state {
+  padding: 18px;
+  text-align: center;
+  color: var(--fusion-text-soft);
+  font-size: 13px;
+}
+
+body.fusion-profile .reel-card-wrap {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+body.fusion-profile .reel-head {
+  padding: 9px 10px;
+  color: #edf4ff;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+body.fusion-profile .reel-head strong {
+  font-size: 13px;
+}
+
+body.fusion-profile .reel-media {
+  margin: 0 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+body.fusion-profile .reel-caption {
+  color: #edf4ff;
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+body.fusion-profile .grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+body.fusion-profile .mini-list-card {
+  padding: 10px;
+}
+
+body.fusion-profile .simple-list {
+  display: grid;
+  gap: 7px;
+  max-height: 340px;
+  overflow: auto;
+}
+
+body.fusion-profile .simple-item {
+  border: 1px solid var(--fusion-line);
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 8px;
+  display: grid;
+  gap: 4px;
+}
+
+body.fusion-profile .simple-item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+body.fusion-profile .simple-item-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fusion-blue);
+}
+
+body.fusion-profile .simple-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.fusion-profile .simple-item-actions .btn-white-outline,
+body.fusion-profile .simple-item-actions .btn-yellow {
+  min-height: 30px;
+  border-radius: 9px;
+  font-size: 11px;
+  padding: 6px 8px;
+}
+
+body.fusion-profile .mini-card {
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+body.fusion-profile .tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.fusion-profile .tag-chip {
+  border-radius: 999px;
+  border: 1px solid var(--fusion-line);
+  background: #ffffff;
+  color: var(--fusion-blue);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 5px 9px;
+  cursor: pointer;
+}
+
+body.fusion-profile .tag-chip:hover {
+  background: #f0f6ff;
+}
+
+body.fusion-profile .fusion-bottom-nav {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 10px;
+  z-index: 130;
+  width: min(640px, calc(100% - 18px));
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--fusion-line);
+  border-radius: 18px;
+  box-shadow: 0 10px 26px rgba(10, 52, 130, 0.16);
+  padding: 7px;
+}
+
+body.fusion-profile .bottom-nav-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fusion-blue);
+  border-radius: 12px;
+  min-height: 38px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.fusion-profile .bottom-nav-btn.is-active {
+  background: #ebf2ff;
+  border-color: #c9dbfb;
+}
+
+body.fusion-profile .bottom-nav-btn-primary {
+  background: var(--fusion-yellow);
+  color: #11326f;
+  border-color: transparent;
+}
+
+body.fusion-profile .story-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+}
+
+body.fusion-profile .story-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 10, 26, 0.62);
+}
+
+body.fusion-profile .story-modal-card {
+  position: relative;
+  width: min(860px, calc(100% - 24px));
+  margin: 20px auto;
+  border-radius: 16px;
+  border: 1px solid #d6e2f8;
+  background: #ffffff;
+  box-shadow: 0 22px 50px rgba(0, 56, 147, 0.3);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+body.fusion-profile .story-modal-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+body.fusion-profile .story-modal-head h3 {
+  margin: 0;
+  color: var(--fusion-blue);
+  font-size: 22px;
+}
+
+body.fusion-profile .story-modal-actions {
+  display: flex;
+  gap: 7px;
+}
+
+body.fusion-profile .story-modal-media {
+  width: 100%;
+  max-height: 70vh;
+  min-height: 220px;
+  border-radius: 12px;
+  border: 1px solid #dbe7fb;
+  overflow: hidden;
+  background: #eef4ff;
+}
+
+body.fusion-profile .story-modal-text {
+  color: var(--fusion-text);
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+body.fusion-profile .fusion-footer {
+  border-top: 1px solid var(--fusion-line);
+  background: #ffffff;
+}
+
+body.fusion-profile .fusion-footer-inner {
+  width: min(1040px, calc(100% - 20px));
+  margin: 0 auto;
+  min-height: 58px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--fusion-text-soft);
+  font-size: 12px;
+}
+
+body.fusion-profile .fusion-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+body.fusion-profile .fusion-footer nav a {
+  color: var(--fusion-blue);
+  text-decoration: none;
+}
+
+body.fusion-profile .is-hidden {
+  display: none !important;
+}
+
+@media (max-width: 1040px) {
+  body.fusion-profile .fusion-main {
+    grid-template-columns: minmax(0, 640px);
+  }
+
+  body.fusion-profile .fusion-right-mini {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  body.fusion-profile .fusion-topbar {
+    grid-template-columns: auto 1fr auto auto;
+    padding: 7px 10px;
+    gap: 8px;
+  }
+
+  body.fusion-profile .topbar-logo img {
+    width: 98px;
+  }
+
+  body.fusion-profile .fusion-main {
+    padding: 12px 8px 110px;
+    gap: 10px;
+  }
+
+  body.fusion-profile .profile-main {
+    align-items: flex-start;
+  }
+
+  body.fusion-profile .profile-copy h1 {
+    font-size: 22px;
+  }
+
+  body.fusion-profile .profile-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.fusion-profile .profile-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.fusion-profile .composer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.fusion-profile .comment-form,
+  body.fusion-profile .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  body.fusion-profile .feed-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  body.fusion-profile .story-modal-card {
+    margin: 8px auto;
+    width: calc(100% - 10px);
+  }
+}

@@ -9,8 +9,8 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260222f" />
-    <script src="assets/js/layout.js?v=20260222g" type="module"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260222l" />
+    <script src="assets/js/layout.js?v=20260222h" type="module"></script>
   </head>
 
   <body data-page="profile" class="with-side-panel profile-flat">
@@ -29,7 +29,7 @@
     <main class="page profile-page">
       <div class="container profile-shell profile-shell--wide">
         <section class="profile-main">
-          <div class="card profile-hero" id="profileCard">
+          <div class="profile-hero" id="profileCard">
             <div class="profileCover" id="profileCover" aria-label="Portada del perfil">
               <img id="profileCoverImg" alt="Portada del perfil" loading="lazy" />
               <div class="profileCoverOverlay" aria-hidden="true"></div>
@@ -60,7 +60,7 @@
                   Perfil
                 </h1>
                 <div class="muted" id="profileHandle" style="margin-top: 6px"></div>
-                <div class="muted" id="profileStatus" style="margin-top: 6px">—</div>
+                <div class="muted" id="profileStatus" style="margin-top: 6px">&mdash;</div>
                 <div class="profileStats">
                   <div class="statCard">
                     <div class="statValue" id="statStreak">0</div>
@@ -71,7 +71,7 @@
                     <div class="statLabel">EXP</div>
                   </div>
                   <div class="statCard">
-                    <div class="statValue" id="statLeague">—</div>
+                    <div class="statValue" id="statLeague">&mdash;</div>
                     <div class="statLabel">Liga</div>
                   </div>
                   <div class="statCard">
@@ -83,68 +83,59 @@
             </div>
 
             <div class="metaRow profileActions">
-              <button class="btn-yellow" id="btnProfileFollow" type="button">Seguir</button>
-              <button class="btn-white-outline" id="btnProfileAdd" type="button">Agregar</button>
-              <a class="btn-white-outline" id="btnProfileChat" href="mensajes.html">Mensaje</a>
-              <button class="btn-white-outline" id="btnProfileShare" type="button">Compartir</button>
-              <button class="btn-white-outline" id="btnProfileBlock" type="button">Bloquear</button>
-              <button class="btn-white-outline" id="btnProfileReport" type="button">Reportar</button>
-              <a class="btn-white-outline" href="perfil.html">Volver</a>
+              <button class="btn-yellow" id="btnProfileFollow" type="button">
+                <span class="btnMiniIcon" aria-hidden="true">&#x2795;</span><span>Seguir</span>
+              </button>
+              <button class="btn-white-outline" id="btnProfileAdd" type="button" style="display: none">
+                <span class="btnMiniIcon" aria-hidden="true">&#x1F91D;</span><span>Agregar</span>
+              </button>
+              <a class="btn-white-outline" id="btnProfileChat" href="mensajes.html">
+                <span class="btnMiniIcon" aria-hidden="true">&#x1F4AC;</span><span>Mensaje</span>
+              </a>
+              <button
+                class="btn-white-outline"
+                id="btnProfileBack"
+                type="button"
+                style="display: none"
+              >
+                <span class="btnMiniIcon" aria-hidden="true">&#x2190;</span><span>Atr&aacute;s</span>
+              </button>
               <span class="hintSmall" id="profileMsg"></span>
             </div>
           </div>
 
-          <div class="card">
-            <div class="sectionTitle" style="margin-top: 0">Comunidad</div>
-            <div class="social-stat">
-              <span>Amigos</span>
-              <strong id="friendsCount">0</strong>
+          <div class="profile-section profile-section--community profile-section--compact">
+            <div class="sectionTitle sectionTitle--icon" style="margin-top: 0">
+              <span class="sectionIcon" aria-hidden="true">&#x1F310;</span><span>Resumen social</span>
             </div>
-            <div class="social-stat">
-              <span>Seguidores</span>
-              <strong id="followersCount">0</strong>
-            </div>
-            <div class="social-stat">
-              <span>Siguiendo</span>
-              <strong id="followingCount">0</strong>
-            </div>
-            <div class="sectionTitle" style="margin-top: 16px">Últimas reacciones</div>
-            <div class="muted" id="recentReactions">Sin reacciones aún.</div>
-            <div class="sectionTitle" style="margin-top: 16px">Sugerencias</div>
-            <div class="friendList" id="suggestionsList"></div>
-            <div class="metaRow" style="margin-top: 12px">
-              <a class="btn-yellow" id="inviteFriendsBtn" href="referidos.html">Invitar amigos</a>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="sectionTitle" style="margin-top: 0">Invitaciones</div>
-            <div class="muted" id="invitesHint">No tienes invitaciones pendientes.</div>
-            <div class="friendList" id="invitesList" style="margin-top: 10px"></div>
-          </div>
-
-          <div class="card profile-stories" id="storiesCard">
-            <div class="storiesHead">
-              <div>
-                <div class="sectionTitle" style="margin-top: 0">Historias</div>
-                <div class="muted" id="storiesHint">—</div>
+            <div class="community-overview">
+              <div class="social-stat">
+                <span><span class="statGlyph" aria-hidden="true">&#x1F91D;</span>Conexiones</span>
+                <strong id="friendsCount">0</strong>
               </div>
-              <div class="metaRow" style="gap: 10px">
-                <input id="storyFileInput" type="file" accept="image/*" hidden />
-                <button class="btn-white-outline" id="storyAddBtn" type="button" style="display: none">
-                  + Nueva
-                </button>
+              <div class="social-stat">
+                <span><span class="statGlyph" aria-hidden="true">&#x1F465;</span>Seguidores</span>
+                <strong id="followersCount">0</strong>
+              </div>
+              <div class="social-stat">
+                <span><span class="statGlyph" aria-hidden="true">&#x1F449;</span>Siguiendo</span>
+                <strong id="followingCount">0</strong>
               </div>
             </div>
-            <div class="storiesRow" id="storiesRow" aria-label="Historias"></div>
-            <div class="hr" style="margin: 14px 0"></div>
-            <div class="storiesHead">
-              <div>
-                <div class="sectionTitle" style="margin-top: 0">Destacados</div>
-                <div class="muted" id="highlightsHint">—</div>
-              </div>
+            <div class="community-quick">
+              <a class="community-quick-link" href="referidos.html">
+                <span class="community-quick-ico" aria-hidden="true">&#x1F91D;</span>
+                <span>Explorar amigos</span>
+              </a>
+              <a class="community-quick-link" href="mensajes.html">
+                <span class="community-quick-ico" aria-hidden="true">&#x1F4AC;</span>
+                <span>Mensajes</span>
+              </a>
             </div>
-            <div class="storiesRow" id="highlightsRow" aria-label="Destacados"></div>
+            <div class="muted community-inline">
+              <span class="community-inline-ico" aria-hidden="true">&#x26A1;</span>
+              <span id="recentReactions">Sin reacciones a&uacute;n.</span>
+            </div>
           </div>
 
           <div class="modalOverlay" id="storyModal" aria-hidden="true">
@@ -152,8 +143,8 @@
               <div class="modalHead">
                 <div class="modalTitle" id="storyModalTitle">Historia</div>
                 <div class="metaRow" style="gap: 8px">
-                  <button class="btn-white-outline" id="storyPrevBtn" type="button">‹</button>
-                  <button class="btn-white-outline" id="storyNextBtn" type="button">›</button>
+                  <button class="btn-white-outline" id="storyPrevBtn" type="button">&#x2039;</button>
+                  <button class="btn-white-outline" id="storyNextBtn" type="button">&#x203A;</button>
                   <button class="btn-white-outline" id="storyCloseBtn" type="button">Cerrar</button>
                 </div>
               </div>
@@ -176,40 +167,38 @@
           </div>
 
           <div class="profile-tabs" role="tablist" aria-label="Secciones del perfil">
-            <button class="profile-tab-btn is-active" data-tab="info" type="button">Sobre mí</button>
-            <button class="profile-tab-btn" data-tab="feed" type="button">Feed</button>
-            <button class="profile-tab-btn" data-tab="media" type="button">Fotos</button>
-            <button
-              class="profile-tab-btn"
-              data-tab="saved"
-              type="button"
-              id="tabBtnSaved"
-              style="display: none"
-            >
-              Guardados
+            <button class="profile-tab-btn is-active" data-tab="info" type="button">
+              <span class="tabIcon" aria-hidden="true">&#x1F464;</span><span>Sobre m&iacute;</span>
             </button>
-            <button class="profile-tab-btn" data-tab="friends" type="button">Amigos</button>
-            <button class="profile-tab-btn" data-tab="followers" type="button">Seguidores</button>
-            <button class="profile-tab-btn" data-tab="following" type="button">Siguiendo</button>
-            <button class="profile-tab-btn" data-tab="rewards" type="button">Recompensas</button>
-            <button class="profile-tab-btn" data-tab="courses" type="button">Cursos</button>
+            <button class="profile-tab-btn" data-tab="feed" type="button">
+              <span class="tabIcon" aria-hidden="true">&#x1F4F0;</span><span>Feed</span>
+            </button>
+            <button class="profile-tab-btn" data-tab="media" type="button">
+              <span class="tabIcon" aria-hidden="true">&#x1F5BC;</span><span>Fotos</span>
+            </button>
+            <button class="profile-tab-btn" data-tab="rewards" type="button">
+              <span class="tabIcon" aria-hidden="true">&#x1F3C5;</span><span>Recompensas</span>
+            </button>
+            <button class="profile-tab-btn" data-tab="courses" type="button">
+              <span class="tabIcon" aria-hidden="true">&#x1F4DA;</span><span>Cursos</span>
+            </button>
           </div>
 
           <section class="profile-tab is-active" id="tab-info">
-            <div class="card profile-public" id="profilePublicCard">
-              <div class="sectionTitle" style="margin-top: 0">Así te ven otros</div>
+            <div class="profile-section profile-public" id="profilePublicCard">
+              <div class="sectionTitle" style="margin-top: 0">As&iacute; te ven otros</div>
               <div class="publicBioGrid">
                 <div class="publicBioItem">
                   <div class="publicBioLabel">Motivo</div>
-                  <div class="publicBioValue" id="publicBioWhy">—</div>
+                  <div class="publicBioValue" id="publicBioWhy">&mdash;</div>
                 </div>
                 <div class="publicBioItem">
-                  <div class="publicBioLabel">Lo más difícil</div>
-                  <div class="publicBioValue" id="publicBioHard">—</div>
+                  <div class="publicBioLabel">Lo m&aacute;s dif&iacute;cil</div>
+                  <div class="publicBioValue" id="publicBioHard">&mdash;</div>
                 </div>
                 <div class="publicBioItem">
                   <div class="publicBioLabel">Meta</div>
-                  <div class="publicBioValue" id="publicBioGoal">—</div>
+                  <div class="publicBioValue" id="publicBioGoal">&mdash;</div>
                 </div>
               </div>
 
@@ -241,26 +230,40 @@
               <div class="hintSmall" id="publicCardHint"></div>
             </div>
 
-            <div class="card" id="activityCard" style="display: none">
+            <div class="profile-section" id="activityCard" style="display: none">
               <div class="sectionTitle" style="margin-top: 0">Actividad</div>
-              <div class="muted" id="activityHint">—</div>
+              <div class="muted" id="activityHint">&mdash;</div>
               <div class="activityGrid" id="activityGrid" style="margin-top: 12px"></div>
               <div class="hintSmall" id="activitySummary" style="margin-top: 10px"></div>
             </div>
 
-            <div class="card" id="profileEditHintCard" style="display: none">
+            <div class="profile-section" id="profileEditHintCard" style="display: none">
               <div class="sectionTitle" style="margin-top: 0">Editar perfil</div>
               <div class="muted">
-                La edición de tu información, privacidad y preferencias está en Ajustes.
+                La edici&oacute;n de tu informaci&oacute;n, privacidad y preferencias est&aacute; en Ajustes.
               </div>
               <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
                 <a class="btn-yellow" href="ajustes.html#perfil">Abrir Ajustes</a>
               </div>
             </div>
+
+            <div class="profile-section profile-connect-cta">
+              <div class="sectionTitle sectionTitle--icon" style="margin-top: 0">
+                <span class="sectionIcon" aria-hidden="true">&#x1F91D;</span><span>Conecta con personas</span>
+              </div>
+              <div class="muted">
+                Descubre usuarios, gestiona invitaciones y construye tu red desde la secci&oacute;n Amigos.
+              </div>
+              <div class="metaRow" style="margin-top: 12px">
+                <a class="btn-yellow" href="referidos.html">
+                  <span class="btnMiniIcon" aria-hidden="true">&#x1F50D;</span><span>Ir a Amigos</span>
+                </a>
+              </div>
+            </div>
           </section>
 
           <section class="profile-tab" id="tab-feed">
-            <div class="card status-card" id="statusCard">
+            <div class="profile-section status-card" id="statusCard">
               <div class="status-heart" id="statusHeart"></div>
               <div class="statusInputRow">
                 <div class="nav-avatar nav-avatar--small statusAvatar" id="statusAvatar">
@@ -271,7 +274,7 @@
                   id="statusInput"
                   class="statusInput"
                   rows="3"
-                  placeholder="¿Cómo te sientes aprendiendo hoy?&#10;Puedes escribir en español o polaco "
+                  placeholder="&iquest;C&oacute;mo te sientes aprendiendo hoy?&#10;Puedes escribir en espa&ntilde;ol o polaco"
                 ></textarea>
               </div>
               <div class="statusTools">
@@ -290,7 +293,7 @@
                   <option value="B1">B1</option>
                   <option value="B2">B2</option>
                 </select>
-                <button class="statusChip" data-tag="motivacion" id="statusMotivation">Motivación</button>
+                <button class="statusChip" data-tag="motivacion" id="statusMotivation">Motivaci&oacute;n</button>
               </div>
               <div class="statusActions">
                 <button class="btn-yellow" id="statusPostBtn" type="button" disabled>Publicar</button>
@@ -298,7 +301,7 @@
               </div>
             </div>
 
-            <div class="card feedFiltersCard" id="feedFiltersCard">
+            <div class="profile-section feedFiltersCard" id="feedFiltersCard">
               <div class="feedFiltersRow" id="feedFiltersRow" aria-label="Filtros del feed">
                 <button class="filterChip is-active" type="button" data-feed-filter="all">Todo</button>
                 <button class="filterChip" type="button" data-feed-filter="pinned">Fijados</button>
@@ -311,7 +314,7 @@
                   id="feedSearchInput"
                   class="input"
                   type="text"
-                  placeholder="Filtra por #tag o texto…"
+                  placeholder="Filtra por #tag o texto..."
                   style="max-width: 260px"
                 />
                 <button class="btn-white-outline" id="btnFeedClear" type="button">Limpiar</button>
@@ -331,7 +334,35 @@
           </section>
 
           <section class="profile-tab" id="tab-media">
-            <div class="card">
+            <div class="profile-section profile-stories" id="storiesCard">
+              <div class="storiesHead">
+                <div>
+                  <div class="sectionTitle sectionTitle--icon" style="margin-top: 0">
+                    <span class="sectionIcon" aria-hidden="true">&#x1F4F8;</span><span>Historias</span>
+                  </div>
+                  <div class="muted" id="storiesHint">&mdash;</div>
+                </div>
+                <div class="metaRow" style="gap: 10px">
+                  <input id="storyFileInput" type="file" accept="image/*" hidden />
+                  <button class="btn-white-outline" id="storyAddBtn" type="button" style="display: none">
+                    + Nueva
+                  </button>
+                </div>
+              </div>
+              <div class="storiesRow" id="storiesRow" aria-label="Historias"></div>
+              <div class="hr" style="margin: 14px 0"></div>
+              <div class="storiesHead">
+                <div>
+                  <div class="sectionTitle sectionTitle--icon" style="margin-top: 0">
+                    <span class="sectionIcon" aria-hidden="true">&#x2728;</span><span>Destacados</span>
+                  </div>
+                  <div class="muted" id="highlightsHint">&mdash;</div>
+                </div>
+              </div>
+              <div class="storiesRow" id="highlightsRow" aria-label="Destacados"></div>
+            </div>
+
+            <div class="profile-section">
               <div class="sectionTitle" style="margin-top: 0">Fotos</div>
               <div class="muted" id="mediaHint">
                 Comparte momentos, notas o capturas de tu aprendizaje.
@@ -360,7 +391,7 @@
                   id="mediaCaption"
                   class="input"
                   type="text"
-                  placeholder="Escribe un pie de foto (opcional)…"
+                  placeholder="Escribe un pie de foto (opcional)..."
                 />
                 <div class="hintSmall" id="mediaMsg"></div>
               </div>
@@ -369,64 +400,14 @@
             </div>
           </section>
 
-          <section class="profile-tab" id="tab-saved" style="display: none">
-            <div class="card">
-              <div class="sectionTitle" style="margin-top: 0">Guardados</div>
-              <div class="muted">Solo visible para ti. Guarda publicaciones para verlas luego.</div>
-              <div class="metaRow" style="margin-top: 12px; gap: 10px; flex-wrap: wrap">
-                <button class="btn-white-outline" id="btnNewCollection" type="button">
-                  + Colección
-                </button>
-                <span class="hintSmall" id="savedStatus"></span>
-              </div>
-              <div class="savedCollectionsRow" id="savedCollectionsRow" style="margin-top: 12px"></div>
-              <div class="savedGrid" id="savedGrid" style="margin-top: 12px"></div>
-            </div>
-          </section>
-
-          <section class="profile-tab" id="tab-friends">
-            <div class="card">
-              <div class="sectionTitle" style="margin-top: 0">Amigos</div>
-              <div class="muted" id="friendsHint">—</div>
-              <div class="friendsToolbar">
-                <input id="friendsSearch" class="input" type="text" placeholder="Buscar amigos…" />
-                <div class="friendsCountPill" id="friendsTotal">0</div>
-              </div>
-              <div class="friendList" id="friendsList" style="margin-top: 12px"></div>
-            </div>
-          </section>
-
-          <section class="profile-tab" id="tab-followers">
-            <div class="card">
-              <div class="sectionTitle" style="margin-top: 0">Seguidores</div>
-              <div class="muted" id="followersHint">—</div>
-              <div class="friendsToolbar">
-                <input id="followersSearch" class="input" type="text" placeholder="Buscar seguidores…" />
-                <div class="friendsCountPill" id="followersTotal">0</div>
-              </div>
-              <div class="friendList" id="followersList" style="margin-top: 12px"></div>
-            </div>
-          </section>
-
-          <section class="profile-tab" id="tab-following">
-            <div class="card">
-              <div class="sectionTitle" style="margin-top: 0">Siguiendo</div>
-              <div class="muted" id="followingHint">—</div>
-              <div class="friendsToolbar">
-                <input id="followingSearch" class="input" type="text" placeholder="Buscar personas…" />
-                <div class="friendsCountPill" id="followingTotal">0</div>
-              </div>
-              <div class="friendList" id="followingList" style="margin-top: 12px"></div>
-            </div>
-          </section>
 
           <section class="profile-tab" id="tab-rewards">
-            <div class="card">
+            <div class="profile-section">
               <div class="sectionTitle" style="margin-top: 0">Tus logros</div>
               <div class="achievement-grid" id="rewardsGrid">
                 <div class="achievement-card" data-achievement="racha">
                   <div class="achievement-title">Rachas</div>
-                  <div class="achievement-value" id="rewardStreak">0 días</div>
+                  <div class="achievement-value" id="rewardStreak">0 d&iacute;as</div>
                   <div class="achievement-meta" id="rewardStreakMeta">Nivel 1</div>
                 </div>
                 <div class="achievement-card" data-achievement="insignias">
@@ -435,8 +416,8 @@
                   <div class="achievement-meta">Desbloqueadas</div>
                 </div>
                 <div class="achievement-card" data-achievement="dias">
-                  <div class="achievement-title">&#x1F4C5; Días de aprendizaje</div>
-                  <div class="achievement-value" id="rewardDays">0 días</div>
+                  <div class="achievement-title">&#x1F4C5; D&iacute;as de aprendizaje</div>
+                  <div class="achievement-value" id="rewardDays">0 d&iacute;as</div>
                   <div class="achievement-meta">Constancia</div>
                 </div>
                 <div class="achievement-card" data-achievement="constancia">
@@ -452,7 +433,7 @@
           </section>
 
           <section class="profile-tab" id="tab-courses">
-            <div class="card">
+            <div class="profile-section">
               <div class="sectionTitle" style="margin-top: 0">Tus cursos</div>
               <div class="coursesList" id="coursesList"></div>
             </div>
@@ -462,9 +443,10 @@
       </div>
     </main>
 
-    <script type="module" src="assets/js/pages/perfil-page.js?v=20260222i"></script>
+    <script type="module" src="assets/js/pages/perfil-page.js?v=20260222n"></script>
   </body>
 </html>
+
 
 
 

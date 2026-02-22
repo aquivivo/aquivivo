@@ -942,6 +942,16 @@ import { buildProfileHref } from './profile-href.js';
   }
 
   function injectSidePanel() {
+    const noSidePanel =
+      document.body?.dataset?.noSidePanel === '1' ||
+      document.body?.classList?.contains('no-side-panel');
+    if (noSidePanel) {
+      document.body.classList.remove('with-side-panel');
+      const existing = document.getElementById('sidePanel');
+      if (existing) existing.remove();
+      return;
+    }
+
     const page = document.body?.dataset?.page || '';
     const isAdminView = adminPages.has(page);
     const blocked = new Set([

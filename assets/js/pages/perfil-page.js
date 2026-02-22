@@ -55,6 +55,7 @@ const btnChat = $('btnProfileChat');
 const btnShare = $('btnProfileShare');
 const btnBlock = $('btnProfileBlock');
 const btnReport = $('btnProfileReport');
+const btnBack = $('btnProfileBack');
 const avatarWrap = $('profileAvatarWrap');
 const avatarImg = $('profileAvatarImg');
 const avatarFallback = $('profileAvatarFallback');
@@ -730,14 +731,19 @@ function playHeart() {
 }
 
 function applyActiveTab(tab) {
+  const wanted = String(tab || '').trim();
+  const hasWanted = tabButtons.some((btn) => btn?.dataset?.tab === wanted);
+  const fallback = tabButtons[0]?.dataset?.tab || 'info';
+  const active = hasWanted ? wanted : fallback;
+
   tabButtons.forEach((btn) => {
-    btn.classList.toggle('is-active', btn.dataset.tab === tab);
+    btn.classList.toggle('is-active', btn.dataset.tab === active);
   });
   tabPanels.forEach((panel) => {
-    panel.classList.toggle('is-active', panel.id === `tab-${tab}`);
+    panel.classList.toggle('is-active', panel.id === `tab-${active}`);
   });
   try {
-    localStorage.setItem('av_profile_tab', tab);
+    localStorage.setItem('av_profile_tab', active);
   } catch {
     // ignore
   }
@@ -4441,17 +4447,26 @@ onAuthStateChanged(auth, async (user) => {
       if (isOwner) btnChat.style.display = 'none';
     }
 
+    if (btnBack) {
+      btnBack.style.display = isOwner ? 'none' : '';
+      if (!btnBack.dataset.wired) {
+        btnBack.dataset.wired = '1';
+        btnBack.addEventListener('click', () => {
+          const ref = String(document.referrer || '').trim();
+          const canGoBack = window.history.length > 1 && !!ref && ref !== location.href;
+          if (canGoBack) {
+            window.history.back();
+            return;
+          }
+          window.location.href = 'referidos.html';
+        });
+      }
+    }
+
     if (btnAdd) {
       if (isOwner) {
-        btnAdd.style.display = '';
-        btnAdd.disabled = false;
-        btnAdd.textContent = 'Amigos';
-        if (!btnAdd.dataset.wired) {
-          btnAdd.dataset.wired = '1';
-          btnAdd.addEventListener('click', () => {
-            window.location.href = 'referidos.html';
-          });
-        }
+        btnAdd.style.display = 'none';
+        btnAdd.disabled = true;
       } else {
         const canAdd =
           targetUid !== user.uid &&

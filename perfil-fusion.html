@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Social Profile | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Bebas+Neue&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260222l" />
+    <link rel="stylesheet" href="assets/css/perfil-fusion.css?v=20260222e" />
+  </head>
+  <body class="fusion-profile" data-portal="feed">
+    <header class="fusion-topbar">
+      <a class="topbar-logo" href="index.html" aria-label="AquiVivo">
+        <img src="assets/img/logo.png" alt="AquiVivo" />
+      </a>
+
+      <label class="topbar-search-wrap" for="feedSearchInput">
+        <input
+          id="feedSearchInput"
+          class="topbar-search"
+          type="text"
+          placeholder="Buscar por texto o #tag"
+          autocomplete="off"
+        />
+      </label>
+
+      <button class="topbar-icon-btn" data-portal-target="pulse" type="button" aria-label="Notificaciones">
+        <span aria-hidden="true">&#x1F514;</span>
+        <i id="topNotifCount" style="display: none">0</i>
+      </button>
+
+      <a class="topbar-avatar" id="topAvatarLink" href="perfil-fusion.html" aria-label="Perfil">
+        <img id="topAvatarImg" alt="avatar" />
+        <span id="topAvatarFallback">U</span>
+      </a>
+    </header>
+
+    <main class="fusion-main">
+      <section class="fusion-feed-column">
+        <section class="fusion-block profile-compact">
+          <div class="profile-main">
+            <div class="avatar-frame profile-avatar">
+              <img id="leftAvatarImg" alt="avatar" />
+              <span id="leftAvatarFallback">U</span>
+            </div>
+
+            <div class="profile-copy">
+              <h1 id="leftName">Usuario</h1>
+              <div class="profile-meta-line">
+                <span id="leftHandle">@usuario</span>
+                <span class="meta-dot">&bull;</span>
+                <span id="profileCity">Gdansk</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button class="btn-yellow" id="btnFusionFollow" type="button">Agregar</button>
+            <a class="btn-white-outline" id="btnFusionMessage" href="mensajes.html">Mensaje</a>
+            <button class="btn-white-outline is-hidden" id="btnFusionFriend" type="button">Seguir</button>
+            <button class="btn-white-outline is-hidden" id="btnFusionShare" type="button">Compartir</button>
+          </div>
+
+          <div class="profile-stats-line">
+            <span id="countFollowers">0</span> followers &middot; <span id="countFriends">0</span> friends
+            <span id="countFollowing" class="is-hidden">0</span>
+            <span id="leftStatus" class="is-hidden"></span>
+          </div>
+
+          <nav class="profile-tabs" aria-label="Tabs de perfil">
+            <button class="tab-btn is-active" data-profile-tab="feed" data-portal-target="feed" type="button">
+              Actividad
+            </button>
+            <button class="tab-btn" data-profile-tab="stories" data-portal-target="stories" type="button">
+              Fotos
+            </button>
+            <button class="tab-btn" data-profile-tab="network" data-portal-target="network" type="button">
+              Ayudas
+            </button>
+            <button class="tab-btn" data-profile-tab="pulse" data-portal-target="pulse" type="button">
+              Eventos
+            </button>
+          </nav>
+        </section>
+
+        <section class="stories-row">
+          <div class="stories-row-head">
+            <h2>Stories</h2>
+            <button class="text-link" data-portal-target="stories" type="button">Todo</button>
+          </div>
+          <div class="story-strip" id="storiesStrip"></div>
+        </section>
+
+        <section class="quick-create" id="fusionComposer">
+          <button class="quick-create-btn" id="btnOpenComposer" type="button">
+            <span class="quick-create-avatar">
+              <img id="composerInlineAvatarImg" alt="avatar" />
+              <span id="composerInlineAvatarFallback">U</span>
+            </span>
+            <span class="quick-create-placeholder">&iquest;Qu&eacute; quieres compartir?</span>
+          </button>
+          <span class="hintSmall" id="composerMsg"></span>
+        </section>
+
+        <section class="portal-screen is-active" data-portal-screen="feed">
+          <article class="feed-card">
+            <div class="feed-head">
+              <h3>Actividad</h3>
+              <div class="feed-source-switch" id="feedSourceSwitch">
+                <button class="feed-source-btn" data-feed-source="target" type="button">Perfil</button>
+                <button class="feed-source-btn" data-feed-source="following" type="button">Following</button>
+                <button class="feed-source-btn is-active" data-feed-source="discover" type="button">Discover</button>
+              </div>
+            </div>
+            <div id="feedList" class="post-list"></div>
+          </article>
+        </section>
+
+        <section class="portal-screen" data-portal-screen="stories">
+          <article class="stories-card">
+            <div class="screen-head">
+              <h3>Fotos</h3>
+              <div class="hintSmall" id="storiesHint"></div>
+            </div>
+            <div id="storiesGrid" class="stories-grid"></div>
+          </article>
+        </section>
+
+        <section class="portal-screen" data-portal-screen="reels">
+          <article class="reel-card">
+            <div class="screen-head">
+              <h3>Reels</h3>
+              <div class="reel-controls">
+                <button class="btn-white-outline" id="btnReelPrev" type="button">Up</button>
+                <button class="btn-white-outline" id="btnReelNext" type="button">Down</button>
+              </div>
+            </div>
+            <div id="reelStage" class="reel-stage"></div>
+          </article>
+        </section>
+
+        <section class="portal-screen" data-portal-screen="network">
+          <div class="grid-2">
+            <article class="mini-list-card">
+              <div class="screen-head"><h3>Solicitudes</h3></div>
+              <div id="networkRequests" class="simple-list"></div>
+            </article>
+            <article class="mini-list-card">
+              <div class="screen-head"><h3>Sugerencias</h3></div>
+              <div id="networkSuggestions" class="simple-list"></div>
+            </article>
+            <article class="mini-list-card">
+              <div class="screen-head"><h3>Followers</h3></div>
+              <div id="networkFollowers" class="simple-list"></div>
+            </article>
+            <article class="mini-list-card">
+              <div class="screen-head"><h3>Following</h3></div>
+              <div id="networkFollowing" class="simple-list"></div>
+            </article>
+            <article class="mini-list-card">
+              <div class="screen-head"><h3>Friends</h3></div>
+              <div id="networkFriends" class="simple-list"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="portal-screen" data-portal-screen="pulse">
+          <div class="grid-2">
+            <article class="mini-list-card">
+              <div class="screen-head"><h3>Notifications</h3></div>
+              <div id="pulseNotifications" class="simple-list"></div>
+            </article>
+            <article class="mini-list-card">
+              <div class="screen-head"><h3>Chats</h3></div>
+              <div id="pulseConversations" class="simple-list"></div>
+            </article>
+            <article class="mini-list-card">
+              <div class="screen-head"><h3>Saved</h3></div>
+              <div id="pulseSaves" class="simple-list"></div>
+            </article>
+            <article class="mini-list-card">
+              <div class="screen-head"><h3>Events + Polls</h3></div>
+              <div id="pulseEvents" class="simple-list"></div>
+            </article>
+          </div>
+        </section>
+      </section>
+
+      <aside class="fusion-right-mini">
+        <section class="mini-card">
+          <h2>Personas cerca</h2>
+          <div id="nearPeople" class="simple-list"></div>
+        </section>
+
+        <section class="mini-card">
+          <h2>Eventos cercanos</h2>
+          <div id="nearEvents" class="simple-list"></div>
+        </section>
+
+        <section class="mini-card">
+          <h2>Preguntas populares</h2>
+          <div id="popularQuestions" class="simple-list"></div>
+        </section>
+      </aside>
+    </main>
+
+    <nav class="fusion-bottom-nav" aria-label="Bottom navigation">
+      <button class="bottom-nav-btn is-active" data-bottom-target="feed" data-portal-target="feed" type="button">
+        Inicio
+      </button>
+      <button class="bottom-nav-btn" data-bottom-target="reels" data-portal-target="reels" type="button">
+        Mapa
+      </button>
+      <button class="bottom-nav-btn bottom-nav-btn-primary" id="btnBottomCreate" type="button">Crear</button>
+      <button class="bottom-nav-btn" data-bottom-target="pulse" data-portal-target="pulse" type="button">
+        Chats
+      </button>
+      <button class="bottom-nav-btn" id="btnBottomProfile" type="button">Perfil</button>
+    </nav>
+
+    <div class="story-modal" id="storyModal" hidden>
+      <div class="story-modal-backdrop" data-story-close="1"></div>
+      <div class="story-modal-card">
+        <div class="story-modal-head">
+          <h3 id="storyModalTitle">Story</h3>
+          <div class="story-modal-actions">
+            <button class="btn-white-outline" id="storyPrevBtn" type="button">Prev</button>
+            <button class="btn-white-outline" id="storyNextBtn" type="button">Next</button>
+            <button class="btn-white-outline" id="storyCloseBtn" type="button">Close</button>
+          </div>
+        </div>
+        <div class="story-modal-media" id="storyModalMediaWrap"></div>
+        <div class="story-modal-text" id="storyModalText"></div>
+      </div>
+    </div>
+
+    <div class="composer-modal" id="composerModal" hidden>
+      <div class="composer-modal-backdrop" data-composer-close="1"></div>
+      <div class="composer-modal-card">
+        <div class="composer-head">
+          <h2>Crear post</h2>
+          <button class="btn-white-outline" id="btnComposerToggle" type="button">Cerrar</button>
+        </div>
+
+        <div class="composer-body">
+          <div class="composer-grid">
+            <label>
+              Tipo
+              <select id="composerMode" class="select">
+                <option value="post">Post</option>
+                <option value="story">Story</option>
+                <option value="reel">Reel</option>
+                <option value="poll">Poll</option>
+                <option value="event">Event</option>
+              </select>
+            </label>
+            <label>
+              Media
+              <input id="composerMedia" class="input" type="url" placeholder="https://..." />
+            </label>
+            <label>
+              Tags
+              <input id="composerTags" class="input" type="text" placeholder="#a2 #reto #network" />
+            </label>
+            <label id="composerExtraPoll" style="display: none">
+              Opciones poll
+              <input id="composerPoll" class="input" type="text" placeholder="Opcion A, Opcion B" />
+            </label>
+            <label id="composerExtraEventDate" style="display: none">
+              Fecha
+              <input id="composerEventDate" class="input" type="date" />
+            </label>
+            <label id="composerExtraEventPlace" style="display: none">
+              Lugar
+              <input id="composerEventPlace" class="input" type="text" placeholder="Online / Ciudad" />
+            </label>
+          </div>
+
+          <label class="composer-text-wrap">
+            Mensaje
+            <textarea id="composerText" rows="3" placeholder="Comparte algo..."></textarea>
+          </label>
+
+          <div class="composer-actions">
+            <button class="btn-yellow" id="btnComposerPublish" type="button">Publicar</button>
+            <button class="btn-white-outline" id="btnComposerClear" type="button">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="fusion-footer">
+      <div class="fusion-footer-inner">
+        <span>&copy; 2026 AquiVivo</span>
+        <nav aria-label="Footer links">
+          <a href="polityka-prywatnosci.html">Privacidad</a>
+          <a href="regulamin.html">Terminos</a>
+          <a href="zwroty.html">Devoluciones</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script type="module" src="assets/js/pages/perfil-fusion-page.js?v=20260222e"></script>
+  </body>
+</html>
