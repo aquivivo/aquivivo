@@ -175,16 +175,37 @@ body.fusion-profile .mini-list-card {
   box-shadow: var(--fusion-shadow);
 }
 
+/* Lighter section rhythm like IG/Threads: separators instead of heavy cards */
+body.fusion-profile .profile-compact,
+body.fusion-profile .stories-row,
+body.fusion-profile .quick-create,
+body.fusion-profile .feed-card {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #e6eaf2;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 body.fusion-profile .profile-compact {
-  padding: 10px 12px;
+  padding: 6px 0 2px;
   display: grid;
   gap: 8px;
 }
 
 body.fusion-profile .profile-main {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+body.fusion-profile .profile-avatar {
+  margin-top: -10px;
+}
+
+body.fusion-profile .profile-copy {
+  display: grid;
+  gap: 1px;
 }
 
 body.fusion-profile .avatar-frame {
@@ -209,18 +230,18 @@ body.fusion-profile .avatar-frame img {
 
 body.fusion-profile .profile-copy h1 {
   margin: 0;
-  font-size: 22px;
+  font-size: 21px;
   line-height: 1.04;
   letter-spacing: 0.01em;
   color: var(--fusion-blue);
 }
 
 body.fusion-profile .profile-meta-line {
-  margin-top: 4px;
+  margin-top: 0;
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 11px;
   color: var(--fusion-text-soft);
 }
 
@@ -236,23 +257,23 @@ body.fusion-profile .meta-dot {
 body.fusion-profile .profile-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 7px;
 }
 
 body.fusion-profile .profile-actions .btn-yellow,
 body.fusion-profile .profile-actions .btn-white-outline {
-  min-height: 34px;
+  min-height: 32px;
   border-radius: 10px;
-  font-size: 12px;
-  padding: 7px 8px;
+  font-size: 11px;
+  padding: 6px 8px;
 }
 
 body.fusion-profile .profile-stats-line {
   color: var(--fusion-text-soft);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 body.fusion-profile .profile-tabs {
@@ -278,7 +299,7 @@ body.fusion-profile .tab-btn.is-active {
 }
 
 body.fusion-profile .stories-row {
-  padding: 0;
+  padding: 8px 0 0;
   display: grid;
   gap: 6px;
 }
@@ -510,6 +531,10 @@ body.fusion-profile .reel-card {
   padding: 12px;
 }
 
+body.fusion-profile .feed-card {
+  padding: 10px 0 0;
+}
+
 body.fusion-profile .feed-source-switch {
   display: inline-flex;
   flex-wrap: wrap;
@@ -536,6 +561,31 @@ body.fusion-profile .feed-source-btn.is-active {
 body.fusion-profile .post-list {
   display: grid;
   gap: 10px;
+}
+
+body.fusion-profile .empty-feed-state {
+  padding: 12px 4px 6px;
+  text-align: center;
+  color: var(--fusion-text-soft);
+}
+
+body.fusion-profile .empty-feed-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fusion-blue);
+}
+
+body.fusion-profile .empty-feed-sub {
+  margin: 4px 0 10px;
+  font-size: 12px;
+}
+
+body.fusion-profile .empty-feed-cta {
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12px;
 }
 
 body.fusion-profile .post-card {

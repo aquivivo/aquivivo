@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>Social Profile | AquiVivo</title>
+    <title>NEU Social App | AquiVivo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <link
@@ -10,34 +10,12 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/css/styles.css?v=20260222l" />
-    <link rel="stylesheet" href="assets/css/perfil-fusion.css?v=20260222f" />
+    <link rel="stylesheet" href="assets/css/neu-theme.css?v=20260222c" />
+    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260222m" />
+    <script src="assets/js/layout.js?v=20260222i" type="module"></script>
   </head>
-  <body class="fusion-profile" data-portal="feed">
-    <header class="fusion-topbar">
-      <a class="topbar-logo" href="index.html" aria-label="AquiVivo">
-        <img src="assets/img/logo.png" alt="AquiVivo" />
-      </a>
-
-      <label class="topbar-search-wrap" for="feedSearchInput">
-        <input
-          id="feedSearchInput"
-          class="topbar-search"
-          type="text"
-          placeholder="Buscar por texto o #tag"
-          autocomplete="off"
-        />
-      </label>
-
-      <button class="topbar-icon-btn" data-portal-target="pulse" type="button" aria-label="Notificaciones">
-        <span aria-hidden="true">&#x1F514;</span>
-        <i id="topNotifCount" style="display: none">0</i>
-      </button>
-
-      <a class="topbar-avatar" id="topAvatarLink" href="perfil-fusion.html" aria-label="Perfil">
-        <img id="topAvatarImg" alt="avatar" />
-        <span id="topAvatarFallback">U</span>
-      </a>
-    </header>
+  <body data-page="profile" data-no-side-panel="1" class="fusion-profile neu-social-app no-side-panel" data-portal="feed">
+    <div id="appHeader"></div>
 
     <main class="fusion-main">
       <section class="fusion-feed-column">
@@ -115,6 +93,9 @@
                 <button class="feed-source-btn" data-feed-source="following" type="button">Following</button>
                 <button class="feed-source-btn is-active" data-feed-source="discover" type="button">Discover</button>
               </div>
+            </div>
+            <div class="feed-tools-inline">
+              <input id="feedSearchInput" class="input" type="text" placeholder="Buscar por texto o #tag" />
             </div>
             <div id="feedList" class="post-list"></div>
           </article>
@@ -293,17 +274,28 @@
       </div>
     </div>
 
-    <footer class="fusion-footer">
-      <div class="fusion-footer-inner">
-        <span>&copy; 2026 AquiVivo</span>
-        <nav aria-label="Footer links">
-          <a href="polityka-prywatnosci.html">Privacidad</a>
-          <a href="regulamin.html">Terminos</a>
-          <a href="zwroty.html">Devoluciones</a>
-        </nav>
-      </div>
-    </footer>
+    <div id="appFooter"></div>
 
-    <script type="module" src="assets/js/pages/perfil-fusion-page.js?v=20260222f"></script>
+    <script type="module">
+      console.log('[NEU BOOT] html module loader start');
+
+      import('./assets/js/pages/neu-social-app-page.js?v=20260222m')
+        .then(() => console.log('[NEU BOOT] module imported OK'))
+        .catch((err) => {
+          console.error('[NEU BOOT] module import FAILED:', err);
+
+          const box = document.createElement('div');
+          box.style.position = 'fixed';
+          box.style.inset = '0';
+          box.style.background = '#000';
+          box.style.color = '#fff';
+          box.style.padding = '40px';
+          box.style.zIndex = '999999';
+          box.style.fontFamily = 'monospace';
+          box.innerText = 'NEU BOOT FAILED\n\n' + (err?.stack || err?.message || err);
+
+          document.body.appendChild(box);
+        });
+    </script>
   </body>
 </html>

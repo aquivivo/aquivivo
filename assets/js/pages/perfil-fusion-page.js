@@ -1063,7 +1063,17 @@ function renderPostList(container, posts, opts = {}) {
   const items = list.slice(0, max);
 
   if (!items.length) {
-    container.innerHTML = '<div class="empty-state">Sin contenido por ahora.</div>';
+    if (container === ui.feedList) {
+      container.innerHTML = `
+        <div class="empty-feed-state">
+          <p class="empty-feed-title">No hay publicaciones aun</p>
+          <p class="empty-feed-sub">Comparte tu primera publicacion</p>
+          <button class="btn-yellow empty-feed-cta" data-open-composer="1" type="button">Crear publicacion</button>
+        </div>
+      `;
+    } else {
+      container.innerHTML = '<div class="empty-state">Sin contenido por ahora.</div>';
+    }
     return;
   }
 
@@ -1353,49 +1363,59 @@ function renderTopbarMeta() {
   ui.topNotifCount.style.display = total > 0 ? 'grid' : 'none';
 }
 
-function renderTagsAndLiveBoard() {
-  const tagScores = new Map();
-  const addTag = (tag) => {
-    const key = normalize(tag).replace(/^#/, '');
-    if (!key) return;
-    tagScores.set(key, Number(tagScores.get(key) || 0) + 1);
-  };
-
-  [...state.targetPosts, ...state.followingPosts, ...state.discoverPosts]
-    .slice(0, 220)
-    .forEach((post) => {
-      (post.tags || []).forEach((tag) => addTag(tag));
-      const inline = String(post.text || '').match(/#[a-z0-9_]{1,30}/gi) || [];
-      inline.forEach((token) => addTag(token));
-    });
-
-  const topTags = Array.from(tagScores.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 24);
-
-  if (ui.trendingTags) {
-    if (!topTags.length) {
-      ui.trendingTags.innerHTML = '<div class="empty-state">Sin tags.</div>';
+function renderRightRail() {
+  if (ui.nearPeople) {
+    const people = (state.network.suggestions || []).slice(0, 8);
+    if (!people.length) {
+      ui.nearPeople.innerHTML = '<div class="empty-state">Sin personas por ahora.</div>';
     } else {
-      ui.trendingTags.innerHTML = topTags
-        .map(
-          ([tag, score]) =>
-            `<button class="tag-chip" data-tag-search="${esc(tag)}" type="button">#${esc(tag)} (${score})</button>`,
-        )
+      ui.nearPeople.innerHTML = people
+        .map((item) => {
+          const profile = item.profile || {};
+          const uid = String(item.uid || '').trim();
+          const title = pickDisplayName(profile, uid || 'Usuario');
+          const sub = pickHandle(profile, uid);
+          const actions = `<a class="btn-white-outline" href="perfil-fusion.html?uid=${encodeURIComponent(uid)}">Ver</a>`;
+          return simpleItemHTML({ title, sub, actions });
+        })
         .join('');
     }
   }
 
-  if (ui.liveBoard) {
-    const top = sortPostsDesc([...state.liveItems, ...state.discoverPosts]).slice(0, 10);
-    if (!top.length) {
-      ui.liveBoard.innerHTML = '<div class="empty-state">Sin actividad en vivo.</div>';
+  if (ui.nearEvents) {
+    const events = sortPostsDesc(state.liveItems.filter((item) => String(item.type || '') === 'event')).slice(0, 8);
+    if (!events.length) {
+      ui.nearEvents.innerHTML = '<div class="empty-state">Sin eventos cercanos.</div>';
     } else {
-      ui.liveBoard.innerHTML = top
-        .map((post) => {
-          const title = `${(post.type || 'post').toUpperCase()} | ${post.authorName || shortUid(post.ownerUid)}`;
-          const sub = `${esc(String(post.text || '').slice(0, 120) || '-')}<br>${formatAgo(post.createdAt)}`;
+      ui.nearEvents.innerHTML = events
+        .map((item) => {
+          const title = item.eventPlace || item.authorName || 'Evento';
+          const sub = `${esc(item.eventDate || formatDate(item.createdAt))}<br>${esc(String(item.text || '').slice(0, 90))}`;
           return simpleItemHTML({ title, sub });
+        })
+        .join('');
+    }
+  }
+
+  if (ui.popularQuestions) {
+    const all = sortPostsDesc([...state.targetPosts, ...state.followingPosts, ...state.discoverPosts]);
+    const questions = all
+      .filter((item) => {
+        const type = String(item.type || '').toLowerCase();
+        const text = String(item.text || '').trim();
+        return type === 'poll' || text.includes('?') || text.includes('\u00bf');
+      })
+      .slice(0, 10);
+
+    if (!questions.length) {
+      ui.popularQuestions.innerHTML = '<div class="empty-state">Sin preguntas populares.</div>';
+    } else {
+      ui.popularQuestions.innerHTML = questions
+        .map((item) => {
+          const title = esc(String(item.text || item.authorName || 'Pregunta').slice(0, 72)) || 'Pregunta';
+          const sub = `${esc(item.authorName || 'Usuario')}<br>${formatAgo(item.createdAt)}`;
+          const actions = `<a class="btn-white-outline" href="perfil-fusion.html?uid=${encodeURIComponent(item.ownerUid || '')}">Abrir</a>`;
+          return simpleItemHTML({ title, sub, actions });
         })
         .join('');
     }
@@ -1409,7 +1429,7 @@ function renderAll() {
   renderReelStage();
   renderNetwork();
   renderPulse();
-  renderTagsAndLiveBoard();
+  renderRightRail();
   renderTopbarMeta();
 }
 
@@ -1898,6 +1918,7 @@ async function publishFromComposer() {
     if (ui.composerEventPlace) ui.composerEventPlace.value = '';
 
     setComposerMsg('Publicado.');
+    setComposerCollapsed(true);
 
     await refreshAllData({ fullNetwork: false });
   } catch (err) {
@@ -1944,6 +1965,23 @@ function bindStaticEvents() {
       const target = String(portalBtn.getAttribute('data-portal-target') || '').trim();
       if (target) setActivePortal(target);
     }
+
+    const openComposer = event.target.closest('#btnOpenComposer');
+    if (openComposer) {
+      setActivePortal('feed');
+      setComposerCollapsed(false);
+      ui.composerText?.focus();
+    }
+
+    const openComposerCta = event.target.closest('[data-open-composer]');
+    if (openComposerCta) {
+      setActivePortal('feed');
+      setComposerCollapsed(false);
+      ui.composerText?.focus();
+    }
+
+    const closeComposer = event.target.closest('[data-composer-close]');
+    if (closeComposer) setComposerCollapsed(true);
 
     const feedBtn = event.target.closest('[data-feed-source]');
     if (feedBtn) {
@@ -2037,11 +2075,7 @@ function bindStaticEvents() {
   ui.composerMode?.addEventListener('change', updateComposerModeUI);
   ui.btnComposerPublish?.addEventListener('click', () => publishFromComposer());
   ui.btnComposerClear?.addEventListener('click', () => clearComposer());
-  ui.btnComposerToggle?.addEventListener('click', () => {
-    const collapsed = String(ui.fusionComposer?.dataset.collapsed || '0') === '1';
-    setComposerCollapsed(!collapsed);
-    if (collapsed) ui.composerText?.focus();
-  });
+  ui.btnComposerToggle?.addEventListener('click', () => setComposerCollapsed(true));
 
   ui.feedSearchInput?.addEventListener('input', () => {
     state.feedSearch = String(ui.feedSearchInput.value || '').trim();
@@ -2137,7 +2171,10 @@ function bindStaticEvents() {
       active instanceof HTMLTextAreaElement ||
       String(active?.getAttribute?.('contenteditable') || '').toLowerCase() === 'true';
 
-    if (key === 'escape') closeStoryModal();
+    if (key === 'escape') {
+      closeStoryModal();
+      setComposerCollapsed(true);
+    }
 
     if (typing) return;
 

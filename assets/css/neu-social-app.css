@@ -1,0 +1,902 @@
+@import url('./perfil-fusion.css');
+
+body.fusion-profile.neu-social-app {
+  --fusion-blue: #8fb3ff;
+  --fusion-yellow: var(--neu-accent-yellow);
+  --fusion-red: #ff5670;
+  --fusion-bg: var(--neu-bg);
+  --fusion-card: var(--neu-card);
+  --fusion-surface: var(--neu-surface);
+  --fusion-line: var(--neu-line);
+  --fusion-text: var(--neu-text);
+  --fusion-text-soft: var(--neu-text-soft);
+  --fusion-shadow: var(--neu-shadow);
+  background: var(--fusion-bg);
+  color: var(--fusion-text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+body.fusion-profile.neu-social-app a {
+  color: var(--fusion-text);
+}
+
+body.fusion-profile.neu-social-app .fusion-main {
+  width: min(1080px, 100%);
+  grid-template-columns: minmax(0, 680px) minmax(0, 320px);
+  gap: 24px;
+  padding-top: 92px;
+}
+
+body.fusion-profile.neu-social-app .fusion-feed-column {
+  gap: 12px;
+}
+
+body.fusion-profile.neu-social-app .fusion-block,
+body.fusion-profile.neu-social-app .feed-card,
+body.fusion-profile.neu-social-app .stories-card,
+body.fusion-profile.neu-social-app .reel-card,
+body.fusion-profile.neu-social-app .mini-card,
+body.fusion-profile.neu-social-app .mini-list-card,
+body.fusion-profile.neu-social-app .post-card,
+body.fusion-profile.neu-social-app .story-tile,
+body.fusion-profile.neu-social-app .simple-item,
+body.fusion-profile.neu-social-app .composer-modal-card,
+body.fusion-profile.neu-social-app .story-modal-card,
+body.fusion-profile.neu-social-app .fusion-bottom-nav {
+  background: var(--fusion-card);
+  border: 1px solid var(--fusion-line);
+  color: var(--fusion-text);
+}
+
+body.fusion-profile.neu-social-app .profile-compact {
+  padding: 8px 2px 4px;
+  border: 0;
+  background: linear-gradient(
+    165deg,
+    rgba(22, 52, 111, 0.54),
+    rgba(16, 42, 92, 0.1)
+  );
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body.fusion-profile.neu-social-app .profile-avatar {
+  margin-top: -12px;
+}
+
+body.fusion-profile.neu-social-app .profile-main {
+  gap: 8px;
+  align-items: flex-end;
+}
+
+body.fusion-profile.neu-social-app .profile-copy {
+  gap: 0;
+}
+
+body.fusion-profile.neu-social-app .profile-copy h1 {
+  color: var(--fusion-text);
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.06;
+}
+
+body.fusion-profile.neu-social-app .profile-meta-line {
+  color: rgba(230, 236, 255, 0.8);
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+body.fusion-profile.neu-social-app .profile-meta-line #leftHandle {
+  color: var(--fusion-text);
+}
+
+body.fusion-profile.neu-social-app .profile-actions .btn-white-outline {
+  color: var(--fusion-text);
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+body.fusion-profile.neu-social-app .profile-actions {
+  margin-top: 12px;
+}
+
+body.fusion-profile.neu-social-app .profile-stats-line {
+  color: rgba(230, 236, 255, 0.8);
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+body.fusion-profile.neu-social-app .profile-tabs {
+  margin-top: 12px;
+}
+
+body.fusion-profile.neu-social-app .tab-btn,
+body.fusion-profile.neu-social-app .feed-source-btn,
+body.fusion-profile.neu-social-app .post-action-btn,
+body.fusion-profile.neu-social-app .simple-item-actions .btn-white-outline {
+  color: var(--fusion-text);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+body.fusion-profile.neu-social-app .tab-btn.is-active,
+body.fusion-profile.neu-social-app .feed-source-btn.is-active,
+body.fusion-profile.neu-social-app .bottom-nav-btn.is-active,
+body.fusion-profile.neu-social-app .topbar-icon-btn.is-active {
+  background: var(--fusion-surface);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+body.fusion-profile.neu-social-app .stories-row {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 8px 0 0;
+  box-shadow: none;
+  margin-bottom: 4px;
+}
+
+body.fusion-profile.neu-social-app .stories-row-head h2,
+body.fusion-profile.neu-social-app .screen-head h3,
+body.fusion-profile.neu-social-app .feed-head h3,
+body.fusion-profile.neu-social-app .mini-card h2,
+body.fusion-profile.neu-social-app .composer-head h2,
+body.fusion-profile.neu-social-app .story-modal-head h3 {
+  color: var(--fusion-text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+body.fusion-profile.neu-social-app .text-link {
+  color: #c8d7fb;
+}
+
+body.fusion-profile.neu-social-app .story-strip {
+  gap: 10px;
+}
+
+body.fusion-profile.neu-social-app .stories-row-head,
+body.fusion-profile.neu-social-app .story-strip,
+body.fusion-profile.neu-social-app .feed-head,
+body.fusion-profile.neu-social-app .feed-tools-inline,
+body.fusion-profile.neu-social-app .post-list {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+body.fusion-profile.neu-social-app .story-pill {
+  width: 56px;
+  min-width: 56px;
+}
+
+body.fusion-profile.neu-social-app .story-pill-media {
+  width: 54px;
+  height: 54px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.fusion-profile.neu-social-app .quick-create-btn {
+  position: relative;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 12px 0 56px;
+  background: var(--fusion-surface);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+body.fusion-profile.neu-social-app .quick-create-btn:hover {
+  background: #1b3f7f;
+  border-color: rgba(255, 255, 255, 0.26);
+  transform: translateY(-1px);
+}
+
+body.fusion-profile.neu-social-app .quick-create-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 2px;
+}
+
+body.fusion-profile.neu-social-app .quick-create-avatar {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--fusion-card);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--fusion-text);
+  pointer-events: none;
+}
+
+body.fusion-profile.neu-social-app .quick-create-placeholder {
+  color: rgba(230, 236, 255, 0.8);
+  opacity: 0.8;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+body.fusion-profile.neu-social-app .feed-tools-inline {
+  margin: 8px 0 6px;
+}
+
+body.fusion-profile.neu-social-app #feedSearchInput {
+  width: 100%;
+  min-height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--fusion-line);
+  background: var(--fusion-surface);
+  color: var(--fusion-text);
+  font-size: 13px;
+  padding: 0 14px;
+  outline: none;
+}
+
+body.fusion-profile.neu-social-app #feedSearchInput::placeholder,
+body.fusion-profile.neu-social-app .input::placeholder,
+body.fusion-profile.neu-social-app #composerText::placeholder {
+  color: rgba(230, 236, 255, 0.84);
+}
+
+body.fusion-profile.neu-social-app #feedSearchInput:focus {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+body.fusion-profile.neu-social-app .input,
+body.fusion-profile.neu-social-app .select,
+body.fusion-profile.neu-social-app #composerText {
+  background: var(--fusion-surface);
+  border: 1px solid var(--fusion-line);
+  color: var(--fusion-text);
+}
+
+body.fusion-profile.neu-social-app .feed-card {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 10px 0 0;
+}
+
+body.fusion-profile.neu-social-app .quick-create {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding-top: 8px;
+}
+
+/* Section separators styled like the header stripe */
+body.fusion-profile.neu-social-app .profile-compact,
+body.fusion-profile.neu-social-app .stories-row,
+body.fusion-profile.neu-social-app .quick-create,
+body.fusion-profile.neu-social-app .feed-card {
+  position: relative;
+}
+
+body.fusion-profile.neu-social-app .profile-compact::before,
+body.fusion-profile.neu-social-app .stories-row::before,
+body.fusion-profile.neu-social-app .quick-create::before,
+body.fusion-profile.neu-social-app .feed-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 2px;
+  right: 2px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(252, 209, 22, 0.82) 0%,
+    rgba(252, 209, 22, 0.78) 18%,
+    rgba(112, 160, 255, 0.8) 36%,
+    rgba(0, 56, 147, 0.84) 52%,
+    rgba(206, 17, 38, 0.82) 70%,
+    rgba(206, 17, 38, 0.78) 86%,
+    rgba(252, 209, 22, 0.82) 100%
+  );
+  background-size: 220% 100%;
+  background-position: 16% 50%;
+  animation: neuStripeFlow 11s ease-in-out infinite alternate;
+  opacity: 0.72;
+  filter: saturate(0.96) brightness(1.01);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+  pointer-events: none;
+  will-change: background-position;
+}
+
+@keyframes neuStripeFlow {
+  from {
+    background-position: 16% 50%;
+  }
+  to {
+    background-position: 72% 50%;
+  }
+}
+
+body.fusion-profile.neu-social-app .post-card {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+body.fusion-profile.neu-social-app .post-author strong,
+body.fusion-profile.neu-social-app .post-avatar,
+body.fusion-profile.neu-social-app .simple-item-title,
+body.fusion-profile.neu-social-app .post-tag {
+  color: var(--fusion-text);
+}
+
+body.fusion-profile.neu-social-app .post-author span,
+body.fusion-profile.neu-social-app .post-time,
+body.fusion-profile.neu-social-app .post-tags,
+body.fusion-profile.neu-social-app .post-meta,
+body.fusion-profile.neu-social-app .simple-item-sub,
+body.fusion-profile.neu-social-app .hintSmall {
+  color: rgba(230, 236, 255, 0.8);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+body.fusion-profile.neu-social-app .post-text {
+  color: var(--fusion-text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+body.fusion-profile.neu-social-app .media-block,
+body.fusion-profile.neu-social-app .story-modal-media,
+body.fusion-profile.neu-social-app .story-tile-media {
+  background: var(--fusion-surface);
+  border-color: var(--fusion-line);
+}
+
+body.fusion-profile.neu-social-app .reel-stage {
+  border-color: var(--fusion-line);
+  background: var(--fusion-surface);
+}
+
+body.fusion-profile.neu-social-app .fusion-right-mini .mini-card {
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease,
+    box-shadow 160ms ease;
+}
+
+body.fusion-profile.neu-social-app .fusion-right-mini .mini-card:hover {
+  background: var(--fusion-surface);
+  border-color: rgba(255, 255, 255, 0.14);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.36);
+}
+
+body.fusion-profile.neu-social-app .fusion-right-mini .simple-item:hover {
+  background: var(--fusion-surface);
+}
+
+body.fusion-profile.neu-social-app .fusion-bottom-nav {
+  background: rgba(16, 42, 92, 0.95);
+  border-color: var(--fusion-line);
+}
+
+body.fusion-profile.neu-social-app .bottom-nav-btn {
+  color: var(--fusion-text);
+  transition: transform 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+body.fusion-profile.neu-social-app .bottom-nav-btn.is-active {
+  background: #16346f;
+  color: #ffffff;
+  transform: scale(1.03);
+}
+
+body.fusion-profile.neu-social-app .bottom-nav-btn-primary {
+  color: #10295d;
+}
+
+body.fusion-profile.neu-social-app .story-modal-backdrop,
+body.fusion-profile.neu-social-app .composer-modal-backdrop {
+  background: rgba(2, 8, 22, 0.68);
+}
+
+body.fusion-profile.neu-social-app .neu-welcome-empty {
+  border: 1px solid var(--fusion-line);
+  background: var(--fusion-card);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+body.fusion-profile.neu-social-app .neu-welcome-ico {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--fusion-surface);
+  display: grid;
+  place-items: center;
+  color: var(--fusion-text);
+}
+
+body.fusion-profile.neu-social-app .neu-welcome-ico svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.fusion-profile.neu-social-app .neu-welcome-title {
+  margin: 0;
+  color: var(--fusion-text);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+body.fusion-profile.neu-social-app .neu-welcome-sub {
+  margin: 6px 0 10px;
+  color: var(--fusion-text-soft);
+  font-size: 12px;
+}
+
+body.fusion-profile.neu-social-app .neu-welcome-btn {
+  min-height: 34px;
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 7px 14px;
+}
+
+@media (max-width: 760px) {
+  body.fusion-profile.neu-social-app .fusion-main {
+    padding-top: 84px;
+  }
+}
+
+/* ===== Glassmorphism Refresh (neu-only) ===== */
+body.fusion-profile.neu-social-app {
+  --fusion-bg: var(--surface-2);
+  --fusion-card: var(--surface-1);
+  --fusion-surface: var(--surface-2-soft);
+  --fusion-line: var(--glass-border);
+  --fusion-text: var(--text-1);
+  --fusion-text-soft: var(--text-2);
+  --fusion-shadow: var(--glass-shadow);
+  --fusion-yellow: var(--accent-2);
+  --fusion-blue: var(--accent);
+  --neu-layout-max: 1080px;
+  --neu-layout-gap: 24px;
+  background:
+    radial-gradient(980px 520px at -6% -10%, rgba(252, 209, 22, 0.1), transparent 62%),
+    radial-gradient(840px 520px at 104% -8%, rgba(143, 179, 255, 0.16), transparent 66%),
+    radial-gradient(760px 500px at 50% 120%, rgba(22, 52, 111, 0.2), transparent 72%),
+    linear-gradient(180deg, #091a3a 0%, var(--fusion-bg) 52%, #091a3a 100%);
+}
+
+body.fusion-profile.neu-social-app .fusion-main {
+  width: min(var(--neu-layout-max), 100%);
+  margin: 0 auto;
+  grid-template-columns: minmax(0, 680px) minmax(0, 320px);
+  gap: var(--neu-layout-gap);
+  padding: 92px 14px calc(152px + env(safe-area-inset-bottom, 0px));
+}
+
+body.fusion-profile.neu-social-app .fusion-feed-column {
+  gap: 14px;
+}
+
+body.fusion-profile.neu-social-app .fusion-right-mini {
+  gap: 14px;
+}
+
+body.fusion-profile.neu-social-app .fusion-block,
+body.fusion-profile.neu-social-app .feed-card,
+body.fusion-profile.neu-social-app .stories-card,
+body.fusion-profile.neu-social-app .reel-card,
+body.fusion-profile.neu-social-app .mini-card,
+body.fusion-profile.neu-social-app .mini-list-card,
+body.fusion-profile.neu-social-app .post-card,
+body.fusion-profile.neu-social-app .story-tile,
+body.fusion-profile.neu-social-app .simple-item,
+body.fusion-profile.neu-social-app .composer-modal-card,
+body.fusion-profile.neu-social-app .story-modal-card,
+body.fusion-profile.neu-social-app .fusion-bottom-nav {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--neu-radius-card);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+body.fusion-profile.neu-social-app .profile-compact {
+  padding: 12px;
+  border-radius: var(--neu-radius-card);
+  background: linear-gradient(160deg, var(--glass-bg), rgba(11, 31, 68, 0.52));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+body.fusion-profile.neu-social-app .mini-card,
+body.fusion-profile.neu-social-app .feed-card,
+body.fusion-profile.neu-social-app .stories-card,
+body.fusion-profile.neu-social-app .mini-list-card {
+  padding: 12px;
+  border-radius: 16px;
+}
+
+body.fusion-profile.neu-social-app .feed-card {
+  min-height: 200px;
+}
+
+body.fusion-profile.neu-social-app .fusion-right-mini .mini-card {
+  padding: 14px;
+}
+
+body.fusion-profile.neu-social-app .fusion-right-mini .empty-state,
+body.fusion-profile.neu-social-app .fusion-right-mini .simple-list .empty-state {
+  padding: 10px 8px;
+  font-size: 12px;
+}
+
+/* Remove separator pseudo-lines in glass mode */
+body.fusion-profile.neu-social-app .profile-compact::before,
+body.fusion-profile.neu-social-app .stories-row::before,
+body.fusion-profile.neu-social-app .quick-create::before,
+body.fusion-profile.neu-social-app .feed-card::before {
+  content: none;
+}
+
+/* Avatar: remove white circle feel */
+body.fusion-profile.neu-social-app .avatar-frame,
+body.fusion-profile.neu-social-app .quick-create-avatar,
+body.fusion-profile.neu-social-app .post-avatar {
+  border: 1px solid var(--glass-border);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 16px rgba(2, 12, 33, 0.22);
+  color: var(--fusion-text);
+}
+
+body.fusion-profile.neu-social-app .avatar-frame span,
+body.fusion-profile.neu-social-app #leftAvatarFallback,
+body.fusion-profile.neu-social-app #composerInlineAvatarFallback {
+  color: var(--fusion-text);
+  font-weight: 700;
+}
+
+/* Tabs + buttons premium component */
+body.fusion-profile.neu-social-app .profile-tabs {
+  padding: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(calc(var(--glass-blur) * 0.72));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 0.72));
+}
+
+body.fusion-profile.neu-social-app .tab-btn {
+  min-height: 36px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fusion-text-soft);
+  font-weight: 600;
+}
+
+body.fusion-profile.neu-social-app .tab-btn.is-active {
+  background: rgba(143, 179, 255, 0.26);
+  border-color: rgba(143, 179, 255, 0.46);
+  color: var(--fusion-text);
+  box-shadow:
+    0 0 0 1px rgba(143, 179, 255, 0.2),
+    0 8px 18px rgba(24, 58, 122, 0.28);
+}
+
+body.fusion-profile.neu-social-app .profile-actions .btn-yellow,
+body.fusion-profile.neu-social-app .profile-actions .btn-white-outline {
+  min-height: 38px;
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+body.fusion-profile.neu-social-app .profile-actions .btn-yellow {
+  box-shadow: 0 7px 16px rgba(252, 209, 22, 0.2);
+}
+
+body.fusion-profile.neu-social-app .profile-actions .btn-white-outline {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+}
+
+body.fusion-profile.neu-social-app .fusion-bottom-nav {
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  background: rgba(16, 42, 92, 0.74);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+/* Fallback when blur is unsupported */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  body.fusion-profile.neu-social-app .fusion-block,
+  body.fusion-profile.neu-social-app .feed-card,
+  body.fusion-profile.neu-social-app .stories-card,
+  body.fusion-profile.neu-social-app .reel-card,
+  body.fusion-profile.neu-social-app .mini-card,
+  body.fusion-profile.neu-social-app .mini-list-card,
+  body.fusion-profile.neu-social-app .post-card,
+  body.fusion-profile.neu-social-app .story-tile,
+  body.fusion-profile.neu-social-app .simple-item,
+  body.fusion-profile.neu-social-app .composer-modal-card,
+  body.fusion-profile.neu-social-app .story-modal-card,
+  body.fusion-profile.neu-social-app .fusion-bottom-nav,
+  body.fusion-profile.neu-social-app .profile-tabs {
+    background: var(--surface-1-fallback);
+  }
+
+  body.fusion-profile.neu-social-app .profile-compact {
+    background: linear-gradient(160deg, var(--surface-1-fallback), var(--surface-2-soft));
+  }
+}
+
+@media (max-width: 760px) {
+  body.fusion-profile.neu-social-app .fusion-main {
+    padding: 84px 10px calc(136px + env(safe-area-inset-bottom, 0px));
+    gap: 12px;
+  }
+
+  body.fusion-profile.neu-social-app .profile-compact,
+  body.fusion-profile.neu-social-app .mini-card,
+  body.fusion-profile.neu-social-app .feed-card,
+  body.fusion-profile.neu-social-app .stories-card,
+  body.fusion-profile.neu-social-app .mini-list-card {
+    padding: 10px;
+  }
+}
+
+/* ===== NEU Post CRUD ===== */
+body.fusion-profile.neu-social-app .post-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+body.fusion-profile.neu-social-app .post-time {
+  margin-left: auto;
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu {
+  position: relative;
+  margin-left: 6px;
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-1);
+  display: grid;
+  place-items: center;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu-toggle:focus-visible {
+  outline: 2px solid rgba(143, 179, 255, 0.45);
+  outline-offset: 2px;
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 150px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  overflow: hidden;
+  z-index: 25;
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu-item {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu-item + .neu-post-menu-item {
+  border-top: 1px solid var(--glass-border);
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu-item-danger {
+  color: #ffb2bf;
+}
+
+body.fusion-profile.neu-social-app .neu-post-menu-item-danger:hover {
+  background: rgba(255, 86, 112, 0.18);
+}
+
+body.fusion-profile.neu-social-app .neu-confirm-modal[hidden] {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app .neu-confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+}
+
+body.fusion-profile.neu-social-app .neu-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 8, 22, 0.68);
+}
+
+body.fusion-profile.neu-social-app .neu-confirm-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 360px);
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.38);
+  padding: 16px;
+}
+
+body.fusion-profile.neu-social-app .neu-confirm-card h3 {
+  margin: 0;
+  color: var(--text-1);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+body.fusion-profile.neu-social-app .neu-confirm-card p {
+  margin: 8px 0 0;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+body.fusion-profile.neu-social-app .neu-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+body.fusion-profile.neu-social-app .neu-confirm-actions .btn-white-outline,
+body.fusion-profile.neu-social-app .neu-confirm-actions .btn-yellow {
+  min-height: 36px;
+  padding: 0 13px;
+  border-radius: 10px;
+}
+
+body.fusion-profile.neu-social-app .neu-danger-btn {
+  background: linear-gradient(120deg, #ff5a73, #ff4060);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+body.fusion-profile.neu-social-app .neu-danger-btn:hover {
+  filter: brightness(1.05);
+}
+
+/* ===== NEU Story CRUD ===== */
+body.fusion-profile.neu-social-app .story-tile {
+  position: relative;
+}
+
+body.fusion-profile.neu-social-app .neu-story-grid-menu {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 12;
+}
+
+body.fusion-profile.neu-social-app .neu-story-modal-menu {
+  position: relative;
+}
+
+body.fusion-profile.neu-social-app .neu-story-menu-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(11, 31, 68, 0.72);
+  color: var(--text-1);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+body.fusion-profile.neu-social-app .neu-story-menu-toggle:hover {
+  background: rgba(22, 52, 111, 0.86);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+body.fusion-profile.neu-social-app .neu-story-menu-toggle:focus-visible {
+  outline: 2px solid rgba(143, 179, 255, 0.45);
+  outline-offset: 2px;
+}
+
+body.fusion-profile.neu-social-app .neu-story-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 130px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  background: rgba(11, 31, 68, 0.92);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+body.fusion-profile.neu-social-app .neu-story-menu-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 12px;
+  text-align: left;
+  cursor: pointer;
+  display: block;
+}
+
+body.fusion-profile.neu-social-app .neu-story-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.fusion-profile.neu-social-app .neu-story-menu-item-danger {
+  color: #ffb7c2;
+}
+
+body.fusion-profile.neu-social-app .neu-story-menu-item-danger:hover {
+  background: rgba(255, 86, 112, 0.18);
+}
