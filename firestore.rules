@@ -449,10 +449,7 @@ service cloud.firestore {
     match /friend_requests/{id} {
       allow read: if isAdmin() || (
         signedIn()
-        && (
-          resource.data.fromUid == request.auth.uid
-          || resource.data.toUid == request.auth.uid
-        )
+        && idHasUid(id, request.auth.uid)
       );
 
       allow create: if signedIn()
@@ -478,6 +475,13 @@ service cloud.firestore {
             resource.data.fromUid == request.auth.uid
             && resource.data.status == "pending"
             && request.resource.data.status == "cancelled"
+          )
+          || (
+            resource.data.fromUid == request.auth.uid
+            && resource.data.status in ["declined","cancelled"]
+            && request.resource.data.status == "pending"
+            && !isBlocked(resource.data.fromUid, resource.data.toUid)
+            && allowsFriendRequests(resource.data.toUid)
           )
         );
 

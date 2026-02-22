@@ -240,14 +240,14 @@ function getNextUrl() {
   try {
     const qs = new URLSearchParams(location.search);
     const next = qs.get('next');
-    if (!next) return 'espanel.html';
+    if (!next) return 'perfil.html';
     // basic safety: allow only same-origin relative paths
     if (next.startsWith('http://') || next.startsWith('https://'))
-      return 'espanel.html';
-    if (next.includes('..')) return 'espanel.html';
+      return 'perfil.html';
+    if (next.includes('..')) return 'perfil.html';
     return next;
   } catch {
-    return 'espanel.html';
+    return 'perfil.html';
   }
 }
 

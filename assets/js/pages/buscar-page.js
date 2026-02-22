@@ -2,6 +2,7 @@
 // Community Explore: search people + suggestions
 
 import { auth, db } from '../firebase-init.js';
+import { buildProfileHref } from '../profile-href.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
   collection,
@@ -194,24 +195,6 @@ async function lookupByHandleIndex(q) {
   }
 }
 
-function usePrettyProfile() {
-  const host = location.hostname || '';
-  if (!host) return false;
-  if (host === 'localhost' || host === '127.0.0.1') return false;
-  if (host.endsWith('github.io')) return false;
-  return true;
-}
-
-function buildProfileHref(handle, uid) {
-  const safeHandle = String(handle || '').trim();
-  if (safeHandle) {
-    return usePrettyProfile()
-      ? `/perfil/${encodeURIComponent(safeHandle)}`
-      : `perfil.html?u=${encodeURIComponent(safeHandle)}`;
-  }
-  return `perfil.html?uid=${encodeURIComponent(uid || '')}`;
-}
-
 function followDocId(fromUid, toUid) {
   const a = String(fromUid || '').trim();
   const b = String(toUid || '').trim();
@@ -298,6 +281,19 @@ async function sendFriendRequest(myUid, targetUid) {
     }
     setMsg('Solicitud pendiente.');
     return 'pending';
+  }
+  if (status?.status === 'declined' || status?.status === 'cancelled') {
+    const outgoingClosed =
+      String(status.fromUid || '').trim() === myUid &&
+      String(status.toUid || '').trim() === targetUid;
+    if (outgoingClosed && status.id) {
+      await updateDoc(doc(db, 'friend_requests', status.id), {
+        status: 'pending',
+        updatedAt: serverTimestamp(),
+      });
+      setMsg('Solicitud reenviada.');
+      return 'pending';
+    }
   }
   const { blockedByMe, blockedByOther } = await isBlockedPair(myUid, targetUid);
   if (blockedByMe) {

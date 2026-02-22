@@ -18,6 +18,7 @@ import {
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js';
+import { buildProfileHref } from './profile-href.js';
 
 (function () {
   function qs(sel, root = document) {
@@ -171,24 +172,6 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     const text = String(nameOrEmail || '').trim();
     if (!text) return 'U';
     return text[0].toUpperCase();
-  }
-
-  function usePrettyProfile() {
-    const host = location.hostname || '';
-    if (!host) return false;
-    if (host === 'localhost' || host === '127.0.0.1') return false;
-    if (host.endsWith('github.io')) return false;
-    return true;
-  }
-
-  function buildProfileHref(handle, uid) {
-    const safeHandle = String(handle || '').trim();
-    if (safeHandle) {
-      return usePrettyProfile()
-        ? `/perfil/${encodeURIComponent(safeHandle)}`
-        : `perfil.html?u=${encodeURIComponent(safeHandle)}`;
-    }
-    return `perfil.html?uid=${encodeURIComponent(uid || '')}`;
   }
 
   function toDateMaybe(v) {
@@ -448,7 +431,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     const hrefServicios = 'services.html';
     const hrefPolaco = '#metodo-disenado-para-ti';
     const hrefTramites = '#mas-que-clases';
-    const hrefPanel = 'espanel.html';
+    const hrefPanel = 'perfil.html';
     const hrefLogin = 'login.html';
 
     host.innerHTML = `
@@ -522,8 +505,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
                 </div>
                 <div class="nav-profile-list">
                   <a class="nav-profile-item" id="navProfilePublic" href="#">&#128100; Perfil</a>
-                  <a class="nav-profile-item" href="${hrefPanel}">&#128211; Libreta</a>
-                  <a class="nav-profile-item" href="${hrefPanel}#cursos">&#128218; Mis cursos</a>
+                  <a class="nav-profile-item" href="${hrefPanel}?tab=courses">&#128218; Mis cursos</a>
                   <a class="nav-profile-item" href="referidos.html">&#129309; Recomendar amigos</a>
                   <a class="nav-profile-item" href="ajustes.html">&#9881; Ajustes de cuenta</a>
                   <a class="nav-profile-item" href="pagos.html">&#128179; Historial de pagos</a>

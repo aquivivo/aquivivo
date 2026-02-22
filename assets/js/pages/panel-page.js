@@ -5,6 +5,7 @@
 // - jeśli layout.js przekierował z reason=blocked, pokazuje komunikat
 
 import { auth, db, storage } from '../firebase-init.js';
+import { buildProfileHref } from '../profile-href.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import { levelsFromPlan, normalizeLevelList } from '../plan-levels.js';
 import {
@@ -1122,25 +1123,6 @@ function isValidHandle(value) {
   return /^[a-z0-9_]{3,20}$/.test(value);
 }
 
-function usePrettyProfile() {
-  const host = location.hostname || '';
-  if (!host) return false;
-  if (host === 'localhost' || host === '127.0.0.1') return false;
-  if (host.endsWith('github.io')) return false;
-  return true;
-}
-
-function buildProfileHref(handle, uid) {
-  const safeHandle = String(handle || '').trim();
-  if (safeHandle) {
-    if (usePrettyProfile()) {
-      return `/perfil/${encodeURIComponent(safeHandle)}`;
-    }
-    return `perfil.html?u=${encodeURIComponent(safeHandle)}`;
-  }
-  return `perfil.html?uid=${encodeURIComponent(uid)}`;
-}
-
 async function isHandleAvailable(handleLower, myUid) {
   if (!handleLower) return true;
   const snap = await getDocs(
@@ -1569,6 +1551,14 @@ async function sendFriendRequestToUid(myUid, targetUid) {
     if (data.status === 'accepted') {
       setFriendReqMsg('Ya son amigos.');
       return 'accepted';
+    }
+    if (data.status === 'declined' || data.status === 'cancelled') {
+      await updateDoc(doc(db, 'friend_requests', reqId), {
+        status: 'pending',
+        updatedAt: serverTimestamp(),
+      });
+      setFriendReqMsg('Solicitud reenviada.');
+      return 'pending';
     }
   }
 

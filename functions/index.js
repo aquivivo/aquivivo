@@ -1,27 +1,33 @@
-const functions = require('firebase-functions');
+const functions = require('firebase-functions/v1');
+const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
 const Stripe = require('stripe');
 
 admin.initializeApp();
 const db = admin.firestore();
 
-// Secrets set via:
-// firebase.cmd functions:config:set stripe.secret="sk_..." stripe.webhook="whsec_..."
-// or env vars: STRIPE_SECRET / STRIPE_WEBHOOK_SECRET
+const STRIPE_SECRET_PARAM = defineSecret('STRIPE_SECRET');
+const STRIPE_WEBHOOK_SECRET_PARAM = defineSecret('STRIPE_WEBHOOK_SECRET');
+const DEFAULT_BASE_URL = 'https://aquivivo.github.io/aquivivo';
+
+// Runtime values:
+// - Secrets: STRIPE_SECRET / STRIPE_WEBHOOK_SECRET (Secret Manager)
+// - Optional env: BASE_URL
+// - Local fallback: DEFAULT_BASE_URL
 function getStripeSecret() {
-  return functions.config().stripe?.secret || process.env.STRIPE_SECRET || '';
+  return STRIPE_SECRET_PARAM.value() || process.env.STRIPE_SECRET || '';
 }
 
 function getStripeWebhookSecret() {
   return (
-    functions.config().stripe?.webhook ||
+    STRIPE_WEBHOOK_SECRET_PARAM.value() ||
     process.env.STRIPE_WEBHOOK_SECRET ||
     ''
   );
 }
 
 function getBaseUrl() {
-  return functions.config().app?.base_url || process.env.BASE_URL || '';
+  return process.env.BASE_URL || DEFAULT_BASE_URL;
 }
 
 // ⏱️ czas dostępu (dni)
@@ -561,7 +567,9 @@ exports.onBroadcastCreated = functions.firestore
     return null;
   });
 
-exports.createCheckoutSession = functions.https.onCall(
+exports.createCheckoutSession = functions
+  .runWith({ secrets: [STRIPE_SECRET_PARAM] })
+  .https.onCall(
   async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Zaloguj się.');
@@ -694,7 +702,9 @@ exports.createCheckoutSession = functions.https.onCall(
 );
 
 // 2️⃣ WEBHOOK STRIPE → FIRESTORE
-exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
+exports.stripeWebhook = functions
+  .runWith({ secrets: [STRIPE_SECRET_PARAM, STRIPE_WEBHOOK_SECRET_PARAM] })
+  .https.onRequest(async (req, res) => {
   try {
     const sig = req.headers['stripe-signature'];
     if (!sig) return res.status(400).send('Missing stripe-signature');
@@ -814,7 +824,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     console.error('stripeWebhook error:', err);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-});
+  });
 
 // Sync email index for chat search
 exports.syncEmailIndex = functions.firestore

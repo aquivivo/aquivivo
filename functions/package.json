@@ -2,13 +2,13 @@
   "name": "aquivivo-functions",
   "private": true,
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "index.js",
   "dependencies": {
     "express": "^5.2.1",
     "firebase-admin": "^12.0.0",
-    "firebase-functions": "^5.1.0",
+    "firebase-functions": "^7.0.5",
     "stripe": "^16.0.0"
   }
 }

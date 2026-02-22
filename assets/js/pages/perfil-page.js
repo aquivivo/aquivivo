@@ -1,5 +1,6 @@
 
 import { auth, db } from '../firebase-init.js';
+import { buildProfileHref } from '../profile-href.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
   getStorage,
@@ -602,24 +603,6 @@ function isHandleValid(value) {
   return /^[a-z0-9._-]{3,20}$/.test(value || '');
 }
 
-function usePrettyProfile() {
-  const host = location.hostname || '';
-  if (!host) return false;
-  if (host === 'localhost' || host === '127.0.0.1') return false;
-  if (host.endsWith('github.io')) return false;
-  return true;
-}
-
-function buildProfileHref(handle, uid) {
-  const safeHandle = String(handle || '').trim();
-  if (safeHandle) {
-    return usePrettyProfile()
-      ? `/perfil/${encodeURIComponent(safeHandle)}`
-      : `perfil.html?u=${encodeURIComponent(safeHandle)}`;
-  }
-  return `perfil.html?uid=${encodeURIComponent(uid || '')}`;
-}
-
 function toAbsoluteUrl(href) {
   const raw = String(href || '').trim();
   if (!raw) return '';
@@ -760,13 +743,50 @@ function applyActiveTab(tab) {
   }
 }
 
+function normalizeProfileTab(raw) {
+  const value = String(raw || '').trim().toLowerCase();
+  if (!value) return '';
+  const aliases = {
+    info: 'info',
+    feed: 'feed',
+    media: 'media',
+    fotos: 'media',
+    saved: 'saved',
+    guardados: 'saved',
+    friends: 'friends',
+    amigos: 'friends',
+    followers: 'followers',
+    seguidores: 'followers',
+    following: 'following',
+    siguiendo: 'following',
+    rewards: 'rewards',
+    recompensas: 'rewards',
+    courses: 'courses',
+    cursos: 'courses',
+  };
+  return aliases[value] || '';
+}
+
 function initTabs() {
   if (!tabButtons.length) return;
   tabButtons.forEach((btn) => {
     btn.addEventListener('click', () => applyActiveTab(btn.dataset.tab));
   });
-  const saved = localStorage.getItem('av_profile_tab');
-  if (saved) applyActiveTab(saved);
+
+  const tabFromUrl = normalizeProfileTab(
+    qs.get('tab') || String(location.hash || '').replace(/^#/, ''),
+  );
+  if (tabFromUrl) {
+    applyActiveTab(tabFromUrl);
+    return;
+  }
+
+  try {
+    const saved = normalizeProfileTab(localStorage.getItem('av_profile_tab'));
+    if (saved) applyActiveTab(saved);
+  } catch {
+    // ignore
+  }
 }
 
 function renderAvatar(url, name) {
@@ -862,12 +882,21 @@ function renderPublicCard(profile, isOwner) {
 }
 
 async function resolveUidFromHandle(handle) {
-  if (!handle) return '';
-  const snap = await getDocs(
-    query(collection(db, 'public_users'), where('handleLower', '==', handle), limit(1)),
+  const normalized = normalizeHandle(handle);
+  if (!normalized) return '';
+
+  const byLower = await getDocs(
+    query(collection(db, 'public_users'), where('handleLower', '==', normalized), limit(1)),
   );
-  if (snap.empty) return '';
-  return snap.docs[0].id || '';
+  if (!byLower.empty) return byLower.docs[0].id || '';
+
+  // Legacy fallback for profiles without handleLower.
+  const fallback = await getDocs(query(collection(db, 'public_users'), limit(300)));
+  const hit = fallback.docs.find((docSnap) => {
+    const data = docSnap.data() || {};
+    return normalizeHandle(data.handle) === normalized;
+  });
+  return hit?.id || '';
 }
 
 function renderFeed(list, ctx) {
@@ -2627,7 +2656,7 @@ async function sendFriendRequest(myUid, targetUid) {
   const status = await getFriendStatus(myUid, targetUid);
   if (status?.status === 'accepted') {
     setMsg('Ya son amigos.');
-    return;
+    return 'accepted';
   }
   if (status?.status === 'pending') {
     const incomingPending =
@@ -2639,19 +2668,32 @@ async function sendFriendRequest(myUid, targetUid) {
         updatedAt: serverTimestamp(),
       });
       setMsg('Solicitud aceptada.');
-      return;
+      return 'accepted';
     }
     setMsg('Solicitud pendiente.');
-    return;
+    return 'pending';
+  }
+  if (status?.status === 'declined' || status?.status === 'cancelled') {
+    const outgoingClosed =
+      String(status.fromUid || '').trim() === myUid &&
+      String(status.toUid || '').trim() === targetUid;
+    if (outgoingClosed && status.id) {
+      await updateDoc(doc(db, 'friend_requests', status.id), {
+        status: 'pending',
+        updatedAt: serverTimestamp(),
+      });
+      setMsg('Solicitud reenviada.');
+      return 'pending';
+    }
   }
   const { blockedByMe, blockedByOther } = await isBlockedPair(myUid, targetUid);
   if (blockedByMe) {
     setMsg('Desbloquea primero.', true);
-    return;
+    return 'blocked_by_me';
   }
   if (blockedByOther) {
     setMsg('No puedes enviar solicitud.', true);
-    return;
+    return 'blocked_by_other';
   }
   try {
     await setDoc(doc(db, 'friend_requests', `${myUid}__${targetUid}`), {
@@ -2662,9 +2704,11 @@ async function sendFriendRequest(myUid, targetUid) {
       updatedAt: serverTimestamp(),
     });
     setMsg('Solicitud enviada.');
+    return 'pending';
   } catch (e) {
     console.warn('send friend request failed', e);
     setMsg('No se pudo enviar la solicitud.', true);
+    return 'error';
   }
 }
 
@@ -3544,11 +3588,19 @@ function initProfilePeopleSearch(opts) {
       if (addBtn) {
         const targetUid = String(addBtn.getAttribute('data-ps-add') || '').trim();
         if (!targetUid || targetUid === myUid) return;
+        let lockState = '';
         try {
           addBtn.disabled = true;
-          await sendFriendRequest(myUid, targetUid);
+          const result = await sendFriendRequest(myUid, targetUid);
+          if (result === 'accepted') {
+            addBtn.textContent = 'Amigos';
+            lockState = 'accepted';
+          } else if (result === 'pending') {
+            addBtn.textContent = 'Pendiente';
+            lockState = 'pending';
+          }
         } finally {
-          addBtn.disabled = false;
+          addBtn.disabled = !!lockState;
         }
       }
     });
@@ -4135,18 +4187,20 @@ onAuthStateChanged(auth, async (user) => {
     ]);
     const isFollowing = myFollowingSet.has(targetUid);
 
-    const viewerName =
-      String(
-        CURRENT_USER_DOC?.displayName ||
-          CURRENT_USER_DOC?.name ||
-          user.displayName ||
-          user.email ||
-          '',
-      ).trim() || 'Usuario';
-    const viewerPhotoURL =
-      String(CURRENT_USER_DOC?.photoURL || '').trim() ||
-      (isOwner ? String(profile.photoURL || '').trim() : '');
-    initProfilePeopleSearch({ myUid: user.uid, targetUid, isOwner, viewerName, viewerPhotoURL });
+    if (profileSearchInput && profileSearchResults) {
+      const viewerName =
+        String(
+          CURRENT_USER_DOC?.displayName ||
+            CURRENT_USER_DOC?.name ||
+            user.displayName ||
+            user.email ||
+            '',
+        ).trim() || 'Usuario';
+      const viewerPhotoURL =
+        String(CURRENT_USER_DOC?.photoURL || '').trim() ||
+        (isOwner ? String(profile.photoURL || '').trim() : '');
+      initProfilePeopleSearch({ myUid: user.uid, targetUid, isOwner, viewerName, viewerPhotoURL });
+    }
 
     const postsVisibility = profile.postsVisibility || (publicProfile ? 'public' : 'private');
     const rewardsVisibility = profile.rewardsVisibility || 'public';
@@ -4391,14 +4445,11 @@ onAuthStateChanged(auth, async (user) => {
       if (isOwner) {
         btnAdd.style.display = '';
         btnAdd.disabled = false;
-        btnAdd.textContent = '+ Buscar';
+        btnAdd.textContent = 'Amigos';
         if (!btnAdd.dataset.wired) {
           btnAdd.dataset.wired = '1';
           btnAdd.addEventListener('click', () => {
-            try {
-              profileSearchInput?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
-            } catch {}
-            setTimeout(() => profileSearchInput?.focus?.(), 150);
+            window.location.href = 'referidos.html';
           });
         }
       } else {
@@ -4413,7 +4464,16 @@ onAuthStateChanged(auth, async (user) => {
         if (!btnAdd.dataset.wired) {
           btnAdd.dataset.wired = '1';
           btnAdd.addEventListener('click', async () => {
-            await sendFriendRequest(user.uid, targetUid);
+            const result = await sendFriendRequest(user.uid, targetUid);
+            if (result === 'accepted') {
+              btnAdd.textContent = 'Amigos';
+              btnAdd.disabled = true;
+              if (profileStatus) profileStatus.textContent = 'Amigos';
+            } else if (result === 'pending') {
+              btnAdd.textContent = 'Pendiente';
+              btnAdd.disabled = true;
+              if (profileStatus) profileStatus.textContent = 'Solicitud pendiente';
+            }
           });
         }
       }

@@ -32,6 +32,7 @@ import {
   levelsFromPlan,
 } from './plan-levels.js';
 import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js';
+import { buildProfileHref } from './profile-href.js';
 
 (function () {
   const path = (location.pathname || '').toLowerCase();
@@ -263,24 +264,6 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     }
   }
 
-  function usePrettyProfile() {
-    const host = location.hostname || '';
-    if (!host) return false;
-    if (host === 'localhost' || host === '127.0.0.1') return false;
-    if (host.endsWith('github.io')) return false;
-    return true;
-  }
-
-  function buildProfileHref(handle, uid) {
-    const safeHandle = String(handle || '').trim();
-    if (safeHandle) {
-      return usePrettyProfile()
-        ? `/perfil/${encodeURIComponent(safeHandle)}`
-        : `perfil.html?u=${encodeURIComponent(safeHandle)}`;
-    }
-    return `perfil.html?uid=${encodeURIComponent(uid || '')}`;
-  }
-
   function getUserLevels(docData) {
     const rawLevels = normalizeLevelList(docData?.levels);
     if (rawLevels.length) return rawLevels;
@@ -495,7 +478,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
       }
 
       if (hasActiveAccess(CURRENT_DOC)) {
-        location.href = 'espanel.html';
+        location.href = 'perfil.html';
         return;
       }
 
@@ -765,8 +748,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
                   </div>
                   <div class="nav-profile-list">
                     <a class="nav-profile-item" href="${profileHref}"><span aria-hidden="true">&#x1F464;</span><span>${labels.profile}</span></a>
-                    <a class="nav-profile-item" href="espanel.html"><span aria-hidden="true">&#x1F4D3;</span><span>${labels.libreta}</span></a>
-                    <a class="nav-profile-item" href="espanel.html#cursos"><span aria-hidden="true">&#x1F4DA;</span><span>${labels.myCourses}</span></a>
+                    <a class="nav-profile-item" href="perfil.html?tab=courses"><span aria-hidden="true">&#x1F4DA;</span><span>${labels.myCourses}</span></a>
                     <a class="nav-profile-item" href="referidos.html"><span aria-hidden="true">&#x1F91D;</span><span>${labels.refer}</span></a>
                     <a class="nav-profile-item" href="ajustes.html"><span aria-hidden="true">&#x2699;</span><span>${labels.settings}</span></a>
                     <a class="nav-profile-item" href="pagos.html"><span aria-hidden="true">&#x1F4B3;</span><span>${labels.payments}</span></a>
@@ -991,11 +973,10 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
       renderAdminSidePanel(panel, page);
     } else {
       panel.innerHTML = `
-      <a href="espanel.html" data-page="panel"><span class="side-panel-ico" aria-hidden="true">&#x1F4D3;</span><span>Libreta</span></a>
+      <a href="perfil.html" data-page="profile"><span class="side-panel-ico" aria-hidden="true">&#x1F464;</span><span>Perfil</span></a>
       <a href="referidos.html" data-page="amigos"><span class="side-panel-ico" aria-hidden="true">&#x1F91D;</span><span>Amigos</span></a>
       <a href="correcciones.html" data-page="correcciones"><span class="side-panel-ico" aria-hidden="true">&#x270D;&#xFE0F;</span><span>Correcciones</span></a>
-      <a href="perfil.html" data-page="profile"><span class="side-panel-ico" aria-hidden="true">&#x1F464;</span><span>Perfil</span></a>
-      <a href="espanel.html#cursos" data-page="cursos"><span class="side-panel-ico" aria-hidden="true">&#x1F4DA;</span><span>Mis cursos</span></a>
+      <a href="perfil.html?tab=courses" data-page="cursos"><span class="side-panel-ico" aria-hidden="true">&#x1F4DA;</span><span>Mis cursos</span></a>
       <a href="review.html" data-page="practicar"><span class="side-panel-ico" aria-hidden="true">&#x1F3AF;</span><span>Practicar</span></a>
       <a href="recompensas.html" data-page="recompensas"><span class="side-panel-ico" aria-hidden="true">&#x1F381;</span><span>Pasaporte</span></a>
       <a href="ajustes.html" data-page="ajustes"><span class="side-panel-ico" aria-hidden="true">&#x2699;</span><span>Ajustes</span></a>
@@ -1011,6 +992,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     if (isAdminView) return;
 
     const activeAliases = {
+      panel: 'profile',
       review: 'practicar',
       flashcards: 'practicar',
       ejercicio: 'practicar',

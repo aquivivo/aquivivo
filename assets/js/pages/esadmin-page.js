@@ -3,6 +3,7 @@
 // Architecture: no inline JS. Page logic lives here.
 
 import { auth, db, storage } from '../firebase-init.js';
+import { buildProfileHref } from '../profile-href.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import { normalizePlanKey, levelsFromPlan } from '../plan-levels.js';
 import {
@@ -39,23 +40,6 @@ function esc(s) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
-}
-
-function usePrettyProfile() {
-  const host = location.hostname || '';
-  if (!host) return false;
-  if (host === 'localhost' || host === '127.0.0.1') return false;
-  if (host.endsWith('github.io')) return false;
-  return true;
-}
-
-function buildProfileHref(handle, uid) {
-  const safeHandle = String(handle || '').trim();
-  if (safeHandle) {
-    if (usePrettyProfile()) return `/perfil/${encodeURIComponent(safeHandle)}`;
-    return `perfil.html?u=${encodeURIComponent(safeHandle)}`;
-  }
-  return `perfil.html?uid=${encodeURIComponent(uid)}`;
 }
 
 function normText(value) {
