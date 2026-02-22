@@ -2604,9 +2604,22 @@ async function loadFollowCounts(uid) {
     setCounts(followers, following);
     return { followers, following };
   } catch (e) {
-    console.warn('follow counts failed', e);
-    setCounts(0, 0);
-    return { followers: 0, following: 0 };
+    // Fallback for clients where runAggregationQuery is denied.
+    try {
+      const [followersSnap, followingSnap] = await Promise.all([
+        getDocs(query(collection(db, 'user_follows'), where('toUid', '==', targetUid), limit(500))),
+        getDocs(query(collection(db, 'user_follows'), where('fromUid', '==', targetUid), limit(500))),
+      ]);
+      const followers = Number(followersSnap?.size || 0);
+      const following = Number(followingSnap?.size || 0);
+      setCounts(followers, following);
+      return { followers, following };
+    } catch (fallbackErr) {
+      console.warn('follow counts failed', e);
+      console.warn('follow counts fallback failed', fallbackErr);
+      setCounts(0, 0);
+      return { followers: 0, following: 0 };
+    }
   }
 }
 
@@ -2617,6 +2630,17 @@ async function sendFriendRequest(myUid, targetUid) {
     return;
   }
   if (status?.status === 'pending') {
+    const incomingPending =
+      String(status.toUid || '').trim() === myUid &&
+      String(status.fromUid || '').trim() === targetUid;
+    if (incomingPending && status.id) {
+      await updateDoc(doc(db, 'friend_requests', status.id), {
+        status: 'accepted',
+        updatedAt: serverTimestamp(),
+      });
+      setMsg('Solicitud aceptada.');
+      return;
+    }
     setMsg('Solicitud pendiente.');
     return;
   }
@@ -2693,8 +2717,8 @@ async function loadInvites(myUid) {
           <div class="muted">${esc(handle)}</div>
         </div>
         <div class="metaRow" style="gap:6px">
-          <button class="btn-white-outline" data-invite="accept" data-id="${item.id}">Aceptar</button>
-          <button class="btn-white-outline" data-invite="decline" data-id="${item.id}">Ignorar</button>
+          <button class="btn-white-outline" data-invite="accept" data-id="${esc(item.id)}">Aceptar</button>
+          <button class="btn-white-outline" data-invite="decline" data-id="${esc(item.id)}">Ignorar</button>
         </div>
       `;
       invitesList.appendChild(wrap);

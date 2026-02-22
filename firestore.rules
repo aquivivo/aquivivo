@@ -450,16 +450,17 @@ service cloud.firestore {
       allow read: if isAdmin() || (
         signedIn()
         && (
-          idHasUid(id, request.auth.uid)
-          || resource.data.fromUid == request.auth.uid
+          resource.data.fromUid == request.auth.uid
           || resource.data.toUid == request.auth.uid
         )
       );
 
       allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(["fromUid","toUid","status","createdAt","updatedAt"])
         && request.resource.data.fromUid == request.auth.uid
         && request.resource.data.toUid is string
         && request.resource.data.toUid != request.auth.uid
+        && id == (request.resource.data.fromUid + "__" + request.resource.data.toUid)
         && !isBlocked(request.resource.data.fromUid, request.resource.data.toUid)
         && allowsFriendRequests(request.resource.data.toUid)
         && request.resource.data.status == "pending";
@@ -468,8 +469,16 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status","updatedAt"])
         && (
           isAdmin()
-          || (resource.data.toUid == request.auth.uid && request.resource.data.status in ["accepted","declined"])
-          || (resource.data.fromUid == request.auth.uid && request.resource.data.status == "cancelled")
+          || (
+            resource.data.toUid == request.auth.uid
+            && resource.data.status == "pending"
+            && request.resource.data.status in ["accepted","declined"]
+          )
+          || (
+            resource.data.fromUid == request.auth.uid
+            && resource.data.status == "pending"
+            && request.resource.data.status == "cancelled"
+          )
         );
 
       allow delete: if isAdmin() || (signedIn() && (
@@ -813,8 +822,7 @@ service cloud.firestore {
       allow read: if isAdmin() || (
         signedIn()
         && (
-          idHasUid(id, request.auth.uid)
-          || resource.data.fromUid == request.auth.uid
+          resource.data.fromUid == request.auth.uid
           || resource.data.toUid == request.auth.uid
         )
       );

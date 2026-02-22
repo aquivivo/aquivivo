@@ -39,6 +39,20 @@ function esc(text) {
     .replaceAll("'", '&#039;');
 }
 
+function safeHref(raw, fallback = 'notificaciones.html') {
+  const value = String(raw || '').trim();
+  if (!value) return fallback;
+  const lower = value.toLowerCase();
+  if (
+    lower.startsWith('javascript:') ||
+    lower.startsWith('data:') ||
+    lower.startsWith('vbscript:')
+  ) {
+    return fallback;
+  }
+  return value;
+}
+
 function toDateMaybe(ts) {
   if (!ts) return null;
   if (ts instanceof Date) return ts;
@@ -106,7 +120,7 @@ function renderList() {
     const title = String(item.title || 'Notificacion');
     const body = String(item.body || '');
     const dateText = formatDate(item.createdAt);
-    const href = String(item.link || '').trim();
+    const href = safeHref(String(item.link || '').trim(), 'notificaciones.html');
     const isUnread = item.read !== true;
 
     const row = document.createElement(href ? 'a' : 'div');

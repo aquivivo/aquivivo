@@ -2155,14 +2155,19 @@ async function openDmWith(uid) {
   const a = String(CURRENT_USER.uid || '').trim();
   const b = String(uid || '').trim();
   const dmKey = [a, b].sort().join('__');
-  const q = query(collection(db, 'conversations'), where('dmKey', '==', dmKey), limit(8));
+  // Rules-safe query: include current user in participants.
+  const q = query(
+    collection(db, 'conversations'),
+    where('participants', 'array-contains', a),
+    limit(200),
+  );
   const snap = await getDocs(q);
   if (!snap.empty) {
     const valid = (snap.docs || [])
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
       .filter((row) => {
         const participants = Array.isArray(row.participants) ? row.participants : [];
-        return participants.includes(a) && participants.includes(b);
+        return row.type === 'dm' && row.dmKey === dmKey && participants.includes(a) && participants.includes(b);
       })
       .sort((x, y) => {
         const xt = toDateMaybe(x.lastAt)?.getTime() || toDateMaybe(x.createdAt)?.getTime() || 0;
@@ -2725,7 +2730,9 @@ async function initFromAuth(user) {
     await openConversation(convId);
     return;
   }
-  if (chatUid) openDmWith(chatUid);
+  if (chatUid) {
+    await openDmWith(chatUid);
+  }
 }
 
 onAuthStateChanged(auth, async (user) => {

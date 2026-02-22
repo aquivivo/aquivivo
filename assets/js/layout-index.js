@@ -24,6 +24,29 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     return root.querySelector(sel);
   }
 
+  function esc(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeHref(raw, fallback = 'notificaciones.html') {
+    const value = String(raw || '').trim();
+    if (!value) return fallback;
+    const lower = value.toLowerCase();
+    if (
+      lower.startsWith('javascript:') ||
+      lower.startsWith('data:') ||
+      lower.startsWith('vbscript:')
+    ) {
+      return fallback;
+    }
+    return value;
+  }
+
   function smoothScrollTo(targetY, duration = 900) {
     const startY = window.pageYOffset;
     const diff = targetY - startY;
@@ -84,22 +107,23 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     const seenKey = popupKey(settings);
     if (settings?.repeat !== true && localStorage.getItem(seenKey) === '1') return;
 
-    const title = String(settings?.title || 'Novedad');
-    const body = String(settings?.body || '');
+    const title = esc(settings?.title || 'Novedad');
+    const body = esc(settings?.body || '');
     const ctaLabel = String(settings?.ctaLabel || '').trim();
     const ctaUrl = String(settings?.ctaUrl || '').trim();
     const imageUrl = String(settings?.imageUrl || '').trim();
+    const safeCtaUrl = safeHref(ctaUrl, '#');
 
     const overlay = document.createElement('div');
     overlay.id = 'sitePopup';
     overlay.className = 'popup-overlay';
     overlay.innerHTML = `
       <div class="popup-card">
-        <button class="popup-close" type="button" aria-label="Cerrar">×</button>
-        ${imageUrl ? `<div class="popup-media"><img src="${imageUrl}" alt="banner" /></div>` : ''}
-        <div class="popup-title">${title.replace(/</g, '&lt;')}</div>
-        ${body ? `<div class="popup-body">${body.replace(/</g, '&lt;')}</div>` : ''}
-        ${ctaLabel && ctaUrl ? `<a class="btn-yellow popup-cta" href="${ctaUrl}">${ctaLabel.replace(/</g, '&lt;')}</a>` : ''}
+        <button class="popup-close" type="button" aria-label="Cerrar">&times;</button>
+        ${imageUrl ? `<div class="popup-media"><img src="${esc(imageUrl)}" alt="banner" /></div>` : ''}
+        <div class="popup-title">${title}</div>
+        ${body ? `<div class="popup-body">${body}</div>` : ''}
+        ${ctaLabel && ctaUrl ? `<a class="btn-yellow popup-cta" href="${esc(safeCtaUrl)}">${esc(ctaLabel)}</a>` : ''}
       </div>
     `;
     overlay.addEventListener('click', (e) => {
@@ -353,11 +377,11 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     try {
       await updateDoc(userRef, payload);
       CURRENT_DOC = { ...(docData || {}), ...payload };
-      setTrialMessage('\u2705 Trial A1 activado por 7 días.', 'ok');
+      setTrialMessage('\u2705 Trial A1 activado por 7 d\u00edas.', 'ok');
       return true;
     } catch (e) {
       console.warn('[trial] activation failed', e);
-      setTrialMessage('No se pudo activar el trial. Inténtalo de nuevo.');
+      setTrialMessage('No se pudo activar el trial. Int\u00e9ntalo de nuevo.');
       return false;
     }
   }
@@ -368,7 +392,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
 
     if (!CURRENT_USER) {
       btn.disabled = false;
-      setTrialMessage('Inicia sesión para activar tu prueba gratuita.');
+      setTrialMessage('Inicia sesi\u00f3n para activar tu prueba gratuita.');
       return;
     }
 
@@ -393,7 +417,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     const ok = isTrialEligible(CURRENT_DOC);
     btn.disabled = !ok;
     if (ok) {
-      setTrialMessage('Activa tu prueba gratuita de A1 (7 días).', 'ok');
+      setTrialMessage('Activa tu prueba gratuita de A1 (7 d\u00edas).', 'ok');
     } else {
       setTrialMessage(
         'Tu prueba ya fue usada. Vuelve cuando no tengas plan activo o tras un tiempo de inactividad.',
@@ -507,7 +531,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
                   <a class="nav-profile-item" href="ayuda.html">&#129509; Ayuda / Reportar</a>
                   <a class="nav-profile-item" id="navProfileAdmin" href="admin-select.html" style="display:none;">&#128737; Admin</a>
                   <div class="nav-profile-sep" aria-hidden="true"></div>
-                  <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">Cerrar sesión</button>
+                  <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">Cerrar sesi\u00f3n</button>
                 </div>
               </div>
             </div>
@@ -854,10 +878,10 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
       list.innerHTML = unreadItems
         .slice(0, 6)
         .map((item) => {
-          const title = String(item.title || 'Notificación');
-          const body = String(item.body || '');
-          const href = String(item.link || 'notificaciones.html').trim();
-          return `<a class="nav-mini-item is-unread" href="${href}" data-notif-id="${item.id}">
+          const title = esc(String(item.title || 'Notificacion'));
+          const body = esc(String(item.body || ''));
+          const href = esc(safeHref(String(item.link || 'notificaciones.html').trim(), 'notificaciones.html'));
+          return `<a class="nav-mini-item is-unread" href="${href}" data-notif-id="${esc(String(item.id || ''))}">
             <div class="nav-mini-title">${title}</div>
             ${body ? `<div class="nav-mini-body">${body}</div>` : ''}
           </a>`;
@@ -916,12 +940,13 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
       list.innerHTML = unreadItems
         .slice(0, 8)
         .map((item) => {
-          const name = String(item.fromName || item.fromEmail || 'Usuario');
-          const text = String(item.text || '');
-          const href = String(item.link || 'mensajes.html').trim();
+          const name = esc(String(item.fromName || item.fromEmail || 'Usuario'));
+          const text = esc(String(item.text || ''));
+          const hrefRaw = String(item.link || 'mensajes.html').trim();
+          const href = safeHref(hrefRaw, 'mensajes.html');
           const convMatch = href.match(/[?&]conv=([^&#]+)/i);
           const convId = convMatch ? decodeURIComponent(convMatch[1]) : '';
-          return `<a class="nav-mini-item is-unread" href="${href}" data-msg-id="${item.id}" ${convId ? `data-conv="${convId}"` : ''}>
+          return `<a class="nav-mini-item is-unread" href="${esc(href)}" data-msg-id="${esc(String(item.id || ''))}" ${convId ? `data-conv="${esc(convId)}"` : ''}>
             <div class="nav-mini-title">${name}</div>
             ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
           </a>`;

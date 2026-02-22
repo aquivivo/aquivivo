@@ -55,12 +55,27 @@ function toCode(raw) {
 }
 
 function escHtml(value) {
-  return String(value ?? '').replace(/[<>&"]/g, (ch) => ({
+  return String(value ?? '').replace(/[<>&"']/g, (ch) => ({
     '<': '&lt;',
     '>': '&gt;',
     '&': '&amp;',
     '"': '&quot;',
+    "'": '&#39;',
   })[ch]);
+}
+
+function safeHref(raw, fallback = '#') {
+  const value = String(raw || '').trim();
+  if (!value) return fallback;
+  const lower = value.toLowerCase();
+  if (
+    lower.startsWith('javascript:') ||
+    lower.startsWith('data:') ||
+    lower.startsWith('vbscript:')
+  ) {
+    return fallback;
+  }
+  return value;
 }
 
 function show(el, yes) {
@@ -357,14 +372,14 @@ async function loadInbox() {
     }
     inboxList.innerHTML = items
       .map((b) => {
-        const title = String(b.title || 'Aviso');
-        const body = String(b.body || b.message || '');
+        const title = escHtml(String(b.title || 'Aviso'));
+        const body = escHtml(String(b.body || b.message || ''));
         const rawHref = String(b.link || 'mensajes.html').trim();
         const href = rawHref.includes('notificaciones.html')
           ? 'mensajes.html'
-          : rawHref;
+          : safeHref(rawHref, 'mensajes.html');
         return `
-          <a class="inboxItem" href="${href}">
+          <a class="inboxItem" href="${escHtml(href)}">
             <div class="inboxTitle">${title}</div>
             <div class="inboxBody">${body}</div>
             <div class="inboxDate">${formatDate(b.createdAt)}</div>
@@ -777,7 +792,7 @@ function renderPromoList(userDoc) {
     .slice(0, 20)
     .map(
       (c) =>
-        `<span style="margin-right:8px; margin-bottom:8px; display:inline-flex;">&#x1F3F7;&#xFE0F; ${String(c)}</span>`,
+        `<span style="margin-right:8px; margin-bottom:8px; display:inline-flex;">&#x1F3F7;&#xFE0F; ${escHtml(String(c))}</span>`,
     )
     .join('');
 }
@@ -1282,19 +1297,23 @@ function renderFriendRequests(items) {
   friendRequestsList.innerHTML = '';
   items.forEach((req) => {
     const handle = req.handle ? `@${req.handle}` : '';
+    const safeName = escHtml(req.name || 'Usuario');
+    const safeHandle = handle ? escHtml(handle) : '';
+    const safeReqId = escHtml(req.id || '');
+    const avatar = escHtml(friendAvatarLetter(req.name));
     const wrap = document.createElement('div');
     wrap.className = 'friendItem';
     wrap.innerHTML = `
       <div class="friendMeta">
-        <span class="friendAvatar">${friendAvatarLetter(req.name)}</span>
+        <span class="friendAvatar">${avatar}</span>
         <div>
-          <div class="friendName">${req.name || 'Usuario'}</div>
-          ${handle ? `<div class="friendHint">${handle}</div>` : ''}
+          <div class="friendName">${safeName}</div>
+          ${safeHandle ? `<div class="friendHint">${safeHandle}</div>` : ''}
         </div>
       </div>
       <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
-        <button class="btn-yellow" type="button" data-accept="${req.id}">Aceptar</button>
-        <button class="btn-white-outline" type="button" data-decline="${req.id}">Rechazar</button>
+        <button class="btn-yellow" type="button" data-accept="${safeReqId}">Aceptar</button>
+        <button class="btn-white-outline" type="button" data-decline="${safeReqId}">Rechazar</button>
       </div>
     `;
     friendRequestsList.appendChild(wrap);
@@ -1310,22 +1329,26 @@ function renderFriends(items) {
   friendsList.innerHTML = '';
   items.forEach((friend) => {
     const handle = friend.handle ? `@${friend.handle}` : '';
-    const profileHref = buildProfileHref(friend.handle, friend.uid);
+    const profileHref = safeHref(buildProfileHref(friend.handle, friend.uid), 'perfil.html');
+    const safeName = escHtml(friend.name || 'Usuario');
+    const safeHandle = handle ? escHtml(handle) : '';
+    const safeUid = escHtml(friend.uid || '');
+    const avatar = escHtml(friendAvatarLetter(friend.name));
     const wrap = document.createElement('div');
     wrap.className = 'friendItem';
     wrap.innerHTML = `
       <div class="friendMeta">
-        <span class="friendAvatar">${friendAvatarLetter(friend.name)}</span>
+        <span class="friendAvatar">${avatar}</span>
         <div>
-          <div class="friendName">${friend.name || 'Usuario'}</div>
-          ${handle ? `<div class="friendHint">${handle}</div>` : ''}
+          <div class="friendName">${safeName}</div>
+          ${safeHandle ? `<div class="friendHint">${safeHandle}</div>` : ''}
         </div>
       </div>
       <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
-        <a class="btn-white-outline" href="${profileHref}">Perfil</a>
-        <button class="btn-white-outline" type="button" data-chat="${friend.uid}">Mensaje</button>
-        <button class="btn-white-outline" type="button" data-remove="${friend.uid}">Eliminar</button>
-        <button class="btn-white-outline" type="button" data-block="${friend.uid}">Bloquear</button>
+        <a class="btn-white-outline" href="${escHtml(profileHref)}">Perfil</a>
+        <button class="btn-white-outline" type="button" data-chat="${safeUid}">Mensaje</button>
+        <button class="btn-white-outline" type="button" data-remove="${safeUid}">Eliminar</button>
+        <button class="btn-white-outline" type="button" data-block="${safeUid}">Bloquear</button>
       </div>
     `;
     friendsList.appendChild(wrap);
@@ -1340,17 +1363,20 @@ function renderBlocked(items) {
   }
   blockedList.innerHTML = '';
   items.forEach((item) => {
+    const safeName = escHtml(item.name || 'Usuario');
+    const safeUid = escHtml(item.uid || '');
+    const avatar = escHtml(friendAvatarLetter(item.name));
     const wrap = document.createElement('div');
     wrap.className = 'friendItem';
     wrap.innerHTML = `
       <div class="friendMeta">
-        <span class="friendAvatar">${friendAvatarLetter(item.name)}</span>
+        <span class="friendAvatar">${avatar}</span>
         <div>
-          <div class="friendName">${item.name || 'Usuario'}</div>
+          <div class="friendName">${safeName}</div>
         </div>
       </div>
       <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
-        <button class="btn-white-outline" type="button" data-unblock="${item.uid}">Desbloquear</button>
+        <button class="btn-white-outline" type="button" data-unblock="${safeUid}">Desbloquear</button>
       </div>
     `;
     blockedList.appendChild(wrap);
@@ -1414,11 +1440,13 @@ function renderMessages(list, myUid) {
   chatMessages.innerHTML = '';
   list.forEach((msg) => {
     const isMine = msg.fromUid === myUid;
+    const safeText = escHtml(msg.text || '');
+    const safeDate = escHtml(formatDate(msg.createdAt));
     const wrap = document.createElement('div');
     wrap.className = `chatMsg ${isMine ? 'chatMsg--me' : 'chatMsg--them'}`;
     wrap.innerHTML = `
-      <div>${msg.text || ''}</div>
-      <div class="chatMeta">${formatDate(msg.createdAt)}</div>
+      <div>${safeText}</div>
+      <div class="chatMeta">${safeDate}</div>
     `;
     chatMessages.appendChild(wrap);
   });
@@ -1594,14 +1622,15 @@ async function ensureDmConversation(myUid, friendUid) {
   if (!a || !b) return null;
   const dmKey = [a, b].sort().join('__');
   const snap = await getDocs(
-    query(collection(db, 'conversations'), where('dmKey', '==', dmKey), limit(8)),
+    // Rules-safe query: must include current user in participants.
+    query(collection(db, 'conversations'), where('participants', 'array-contains', a), limit(200)),
   );
   if (!snap.empty) {
     const valid = (snap.docs || [])
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
       .filter((row) => {
         const participants = Array.isArray(row.participants) ? row.participants : [];
-        return participants.includes(a) && participants.includes(b);
+        return row.type === 'dm' && row.dmKey === dmKey && participants.includes(a) && participants.includes(b);
       })
       .sort((x, y) => {
         const xt = toDateMaybe(x.lastAt)?.getTime() || toDateMaybe(x.createdAt)?.getTime() || 0;
@@ -1758,29 +1787,32 @@ function renderSearchResults(items, myUid) {
   items.forEach((item) => {
     const name = item.displayName || item.name || 'Usuario';
     const handle = item.handle ? `@${item.handle}` : '';
+    const safeName = escHtml(name);
+    const safeHandle = handle ? escHtml(handle) : '';
+    const safeUid = escHtml(item.uid || '');
     const wrap = document.createElement('div');
     wrap.className = 'friendItem';
-    const profileHref = buildProfileHref(item.handle, item.uid);
+    const profileHref = safeHref(buildProfileHref(item.handle, item.uid), 'perfil.html');
     wrap.innerHTML = `
       <div class="friendMeta">
-        <span class="friendAvatar">${friendAvatarLetter(name)}</span>
+        <span class="friendAvatar">${escHtml(friendAvatarLetter(name))}</span>
         <div>
-          <div class="friendName">${name}</div>
-          ${handle ? `<div class="friendHint">${handle}</div>` : ''}
+          <div class="friendName">${safeName}</div>
+          ${safeHandle ? `<div class="friendHint">${safeHandle}</div>` : ''}
         </div>
       </div>
       <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
-        <a class="btn-white-outline" href="${profileHref}">Ver perfil</a>
+        <a class="btn-white-outline" href="${escHtml(profileHref)}">Ver perfil</a>
         ${
           item.uid !== myUid
-            ? `<button class="btn-white-outline" type="button" data-follow="${item.uid}" data-following="${
+            ? `<button class="btn-white-outline" type="button" data-follow="${safeUid}" data-following="${
                 followingSet.has(item.uid) ? '1' : '0'
               }">${followingSet.has(item.uid) ? 'Siguiendo' : 'Seguir'}</button>`
             : ''
         }
         ${
           item.uid !== myUid
-            ? `<button class="btn-white-outline" type="button" data-add="${item.uid}">Agregar</button>`
+            ? `<button class="btn-white-outline" type="button" data-add="${safeUid}">Agregar</button>`
             : ''
         }
       </div>
@@ -2787,7 +2819,7 @@ async function loadReferralStats(viewUid) {
           .map((r) => {
             const pct = Number(r.value || 0);
             const scope = String(r.scope || 'otros servicios');
-            return `<div style="display:inline-flex; margin-right:8px; margin-bottom:8px;">🎫 -${pct}% · ${scope}</div>`;
+            return `<div style="display:inline-flex; margin-right:8px; margin-bottom:8px;">🎫 -${pct}% · ${escHtml(scope)}</div>`;
           })
           .join('');
       }

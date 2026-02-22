@@ -117,7 +117,22 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeHref(raw, fallback = 'notificaciones.html') {
+    const value = String(raw || '').trim();
+    if (!value) return fallback;
+    const lower = value.toLowerCase();
+    if (
+      lower.startsWith('javascript:') ||
+      lower.startsWith('data:') ||
+      lower.startsWith('vbscript:')
+    ) {
+      return fallback;
+    }
+    return value;
   }
 
   function avatarInitial(nameOrEmail) {
@@ -161,6 +176,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     const body = esc(settings?.body || '');
     const ctaLabel = String(settings?.ctaLabel || '').trim();
     const ctaUrl = String(settings?.ctaUrl || '').trim();
+    const safeCtaUrl = safeHref(ctaUrl, '#');
     const imageUrl = String(settings?.imageUrl || '').trim();
 
     const overlay = document.createElement('div');
@@ -172,7 +188,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
         ${imageUrl ? `<div class="popup-media"><img src="${esc(imageUrl)}" alt="banner" /></div>` : ''}
         <div class="popup-title">${title}</div>
         ${body ? `<div class="popup-body">${body}</div>` : ''}
-        ${ctaLabel && ctaUrl ? `<a class="btn-yellow popup-cta" href="${esc(ctaUrl)}">${esc(ctaLabel)}</a>` : ''}
+        ${ctaLabel && ctaUrl ? `<a class="btn-yellow popup-cta" href="${esc(safeCtaUrl)}">${esc(ctaLabel)}</a>` : ''}
       </div>
     `;
     overlay.addEventListener('click', (e) => {
@@ -1151,62 +1167,43 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
     const list = document.getElementById('navNotifList');
     const badge = document.getElementById('navNotifBadge');
     if (!uid || !list || !badge) return;
-    const seenAcceptedKey = `av_friend_accept_seen_${uid}`;
-    const getSeenAccepted = () => {
-      try {
-        const raw = localStorage.getItem(seenAcceptedKey);
-        const arr = raw ? JSON.parse(raw) : [];
-        return new Set(Array.isArray(arr) ? arr.map((x) => String(x || '').trim()).filter(Boolean) : []);
-      } catch {
-        return new Set();
-      }
-    };
-    const markAcceptedSeen = (id) => {
-      const clean = String(id || '').trim();
-      if (!clean) return;
-      const seen = getSeenAccepted();
-      if (seen.has(clean)) return;
-      seen.add(clean);
-      try {
-        localStorage.setItem(seenAcceptedKey, JSON.stringify(Array.from(seen).slice(-200)));
-      } catch {}
-    };
     list.dataset.uid = uid;
     if (!list.dataset.wired) {
       list.dataset.wired = '1';
-      list.addEventListener('click', (e) => {
-        const acceptedItem = e.target.closest('[data-friend-accepted-id]');
-        if (acceptedItem) {
-          const acceptedId = String(acceptedItem.dataset.friendAcceptedId || '').trim();
-          if (acceptedId) markAcceptedSeen(acceptedId);
-          return;
-        }
-
+      list.addEventListener('click', async (e) => {
+        const ownerUid = list.dataset.uid;
+        if (!ownerUid) return;
         const friendBtn = e.target.closest('[data-friend-action][data-friend-id]');
         if (friendBtn) {
           e.preventDefault();
           e.stopPropagation();
-          const ownerUid = list.dataset.uid;
           const reqId = String(friendBtn.dataset.friendId || '').trim();
           const action = String(friendBtn.dataset.friendAction || '').trim();
           if (!ownerUid || !reqId || !['accept', 'decline'].includes(action)) return;
           friendBtn.disabled = true;
-          updateDoc(doc(db, 'friend_requests', reqId), {
-            status: action === 'accept' ? 'accepted' : 'declined',
-            updatedAt: serverTimestamp(),
-          })
-            .catch(() => null)
-            .finally(() => {
-              loadNotifDropdown(ownerUid).catch(() => null);
-              loadMsgDropdown(ownerUid).catch(() => null);
+          const notifId = String(
+            friendBtn.closest('[data-notif-id]')?.getAttribute('data-notif-id') || '',
+          ).trim();
+          try {
+            await updateDoc(doc(db, 'friend_requests', reqId), {
+              status: action === 'accept' ? 'accepted' : 'declined',
+              updatedAt: serverTimestamp(),
             });
+            if (notifId) {
+              await updateDoc(doc(db, 'user_notifications', ownerUid, 'items', notifId), {
+                read: true,
+                readAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+              }).catch(() => null);
+            }
+          } catch {}
+          loadNotifDropdown(ownerUid).catch(() => null);
+          loadMsgDropdown(ownerUid).catch(() => null);
           return;
         }
 
         const item = e.target.closest('[data-notif-id]');
         const id = item?.dataset?.notifId;
-        const ownerUid = list.dataset.uid;
-        if (!ownerUid) return;
         if (!id) return;
         updateDoc(doc(db, 'user_notifications', ownerUid, 'items', id), {
           read: true,
@@ -1216,134 +1213,59 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
       });
     }
     try {
-      const [snap, friendReqSnap, friendAcceptedSnap] = await Promise.all([
-        getDocs(
-          query(
-            collection(db, 'user_notifications', uid, 'items'),
-            orderBy('createdAt', 'desc'),
-            limit(20),
-          ),
+      const snap = await getDocs(
+        query(
+          collection(db, 'user_notifications', uid, 'items'),
+          orderBy('createdAt', 'desc'),
+          limit(20),
         ),
-        getDocs(
-          query(
-            collection(db, 'friend_requests'),
-            where('toUid', '==', uid),
-            limit(20),
-          ),
-        ),
-        getDocs(
-          query(
-            collection(db, 'friend_requests'),
-            where('fromUid', '==', uid),
-            limit(20),
-          ),
-        ),
-      ]);
+      );
       const items = snap.docs
         .map((d) => ({ id: d.id, ...(d.data() || {}) }))
         .filter((item) => String(item.type || '').toLowerCase() !== 'broadcast');
 
-      const pendingRequests = (friendReqSnap.docs || [])
-        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
-        .filter((r) => String(r.status || '').toLowerCase() === 'pending')
-        .slice(0, 6);
-
-      const requestRows = await Promise.all(
-        pendingRequests.map(async (req) => {
-          const fromUid = String(req.fromUid || '').trim();
-          let senderName = 'Usuario';
-          if (fromUid) {
-            try {
-              const prof = await getDoc(doc(db, 'public_users', fromUid));
-              if (prof.exists()) {
-                const data = prof.data() || {};
-                senderName = String(data.displayName || data.name || data.handle || 'Usuario').trim() || 'Usuario';
-              }
-            } catch {}
-          }
-          return {
-            id: req.id,
-            senderName,
-          };
-        }),
-      );
-
-      const seenAccepted = getSeenAccepted();
-      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
-      const acceptedRowsRaw = (friendAcceptedSnap?.docs || [])
-        .map((d) => ({ id: d.id, ...(d.data() || {}) }))
-        .filter((r) => String(r.status || '').toLowerCase() === 'accepted')
-        .filter((r) => !seenAccepted.has(String(r.id || '').trim()))
-        .filter((r) => {
-          const dt = toDateMaybe(r.updatedAt) || toDateMaybe(r.createdAt);
-          const ms = dt?.getTime?.() || 0;
-          if (!ms) return true;
-          return Date.now() - ms <= thirtyDaysMs;
-        })
-        .slice(0, 6);
-
-      const acceptedRows = await Promise.all(
-        acceptedRowsRaw.map(async (req) => {
-          const toUid = String(req.toUid || '').trim();
-          let targetName = 'Usuario';
-          if (toUid) {
-            try {
-              const prof = await getDoc(doc(db, 'public_users', toUid));
-              if (prof.exists()) {
-                const data = prof.data() || {};
-                targetName = String(data.displayName || data.name || data.handle || 'Usuario').trim() || 'Usuario';
-              }
-            } catch {}
-          }
-          const href = toUid ? `perfil.html?uid=${encodeURIComponent(toUid)}` : 'perfil.html';
-          return {
-            id: String(req.id || ''),
-            targetName,
-            href,
-          };
-        }),
-      );
-
       const unreadItems = items.filter((i) => i.read !== true);
-      const unread = unreadItems.length + requestRows.length + acceptedRows.length;
-      setBadge(badge, unread);
-      if (!unreadItems.length && !requestRows.length && !acceptedRows.length) {
+      setBadge(badge, unreadItems.length);
+      if (!unreadItems.length) {
         list.innerHTML =
           '<div class="nav-mini-empty">Sin notificaciones.</div>';
         return;
       }
 
-      const reqHtml = requestRows.map((row) => {
-        return `<div class="nav-mini-item is-unread" data-kind="friend-request">
-          <div class="nav-mini-title">Solicitud de amistad</div>
-          <div class="nav-mini-body">${esc(row.senderName)} quiere agregarte.</div>
-          <div class="metaRow" style="margin-top:6px; gap:6px; flex-wrap:wrap">
-            <button class="btn-white-outline" type="button" data-friend-action="accept" data-friend-id="${esc(row.id)}">Aceptar</button>
-            <button class="btn-white-outline" type="button" data-friend-action="decline" data-friend-id="${esc(row.id)}">Rechazar</button>
-          </div>
-        </div>`;
-      });
-
       const notifHtml = unreadItems
-        .slice(0, 6)
+        .slice(0, 8)
         .map((item) => {
-          const title = String(item.title || 'Notificacion');
-          const body = String(item.body || '');
-          const href = String(item.link || 'notificaciones.html').trim();
-          return `<a class="nav-mini-item is-unread" href="${href}" data-notif-id="${item.id}">
+          const type = String(item.type || '').toLowerCase();
+          const title = esc(String(item.title || 'Notificacion'));
+          const body = esc(String(item.body || ''));
+          const href = esc(safeHref(String(item.link || 'notificaciones.html').trim(), 'notificaciones.html'));
+          const notifId = esc(String(item.id || ''));
+          if (type === 'friend_request') {
+            const data = item.data && typeof item.data === 'object' ? item.data : {};
+            const fromUid = String(data.fromUid || '').trim();
+            const toUid = String(data.toUid || '').trim();
+            const fallbackReqId = fromUid && toUid ? `${fromUid}__${toUid}` : '';
+            const reqId = String(data.requestId || fallbackReqId).trim();
+            const safeReqId = esc(reqId);
+            return `<div class="nav-mini-item is-unread" data-kind="friend-request" data-notif-id="${notifId}">
+              <div class="nav-mini-title">${title}</div>
+              ${body ? `<div class="nav-mini-body">${body}</div>` : ''}
+              ${
+                reqId
+                  ? `<div class="metaRow" style="margin-top:6px; gap:6px; flex-wrap:wrap">
+                <button class="btn-white-outline" type="button" data-friend-action="accept" data-friend-id="${safeReqId}">Aceptar</button>
+                <button class="btn-white-outline" type="button" data-friend-action="decline" data-friend-id="${safeReqId}">Rechazar</button>
+              </div>`
+                  : ''
+              }
+            </div>`;
+          }
+          return `<a class="nav-mini-item is-unread" href="${href}" data-notif-id="${notifId}">
             <div class="nav-mini-title">${title}</div>
             ${body ? `<div class="nav-mini-body">${body}</div>` : ''}
           </a>`;
         });
-
-      const acceptedHtml = acceptedRows.map((row) => {
-        return `<a class="nav-mini-item is-unread" href="${row.href}" data-friend-accepted-id="${esc(row.id)}">
-          <div class="nav-mini-title">Solicitud aceptada</div>
-          <div class="nav-mini-body">${esc(row.targetName)} acepto tu solicitud.</div>
-        </a>`;
-      });
-
-      list.innerHTML = [...reqHtml, ...acceptedHtml, ...notifHtml].slice(0, 8).join('');
+      list.innerHTML = notifHtml.join('');
     } catch (e) {
       console.warn('[notifications] load failed', e);
       setBadge(badge, 0);
@@ -1487,7 +1409,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
         const rawLink = String(b.link || 'mensajes.html').trim();
         const href = rawLink.includes('notificaciones.html')
           ? 'mensajes.html'
-          : rawLink;
+          : safeHref(rawLink, 'mensajes.html');
         return {
           key: `broadcast:${d.id}`,
           href,
@@ -1517,9 +1439,12 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
 
       list.innerHTML = rows
         .map((row) => {
-          return `<a class="nav-mini-item is-unread" href="${row.href}" data-kind="${row.convId ? 'conversation' : 'broadcast'}" data-time="${Number(row.time || 0)}" ${row.convId ? `data-conv="${row.convId}"` : ''}>
-            <div class="nav-mini-title">${row.title}</div>
-            ${row.text ? `<div class="nav-mini-body">${row.text}</div>` : ''}
+          const href = esc(safeHref(row.href, 'mensajes.html'));
+          const title = esc(String(row.title || 'Conversacion'));
+          const text = esc(String(row.text || ''));
+          return `<a class="nav-mini-item is-unread" href="${href}" data-kind="${row.convId ? 'conversation' : 'broadcast'}" data-time="${Number(row.time || 0)}" ${row.convId ? `data-conv="${esc(row.convId)}"` : ''}>
+            <div class="nav-mini-title">${title}</div>
+            ${text ? `<div class="nav-mini-body">${text}</div>` : ''}
           </a>`;
         })
         .join('');
@@ -1553,7 +1478,7 @@ import { initGlobalMiniChat, destroyGlobalMiniChat } from './global-mini-chat.js
                 'Usuario',
             ).trim();
             const text = String(item.text || '').trim();
-            return `<a class="nav-mini-item is-unread" href="${href}" data-msg-id="${item.id}" ${convId ? `data-conv="${convId}"` : ''}>
+            return `<a class="nav-mini-item is-unread" href="${esc(safeHref(href, 'mensajes.html'))}" data-msg-id="${esc(String(item.id || ''))}" ${convId ? `data-conv="${esc(convId)}"` : ''}>
               <div class="nav-mini-title">${esc(title || 'Usuario')}</div>
               ${text ? `<div class="nav-mini-body">${esc(text)}</div>` : ''}
             </a>`;

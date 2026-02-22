@@ -73,6 +73,15 @@ function avatarLetter(name) {
   return letters || 'U';
 }
 
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function getPublicProfile(uid) {
   const id = String(uid || '').trim();
   if (!id) return {};
@@ -95,19 +104,19 @@ function renderFriendInvites(items) {
     .map((item) => {
       const name = String(item.name || 'Usuario').trim();
       const handle = String(item.handle || '').trim();
-      const handleLine = handle ? `<div class="friendHint">@${handle}</div>` : '';
+      const handleLine = handle ? `<div class="friendHint">@${esc(handle)}</div>` : '';
       return `
         <div class="friendItem">
           <div class="friendMeta">
-            <span class="friendAvatar">${avatarLetter(name)}</span>
+            <span class="friendAvatar">${esc(avatarLetter(name))}</span>
             <div>
-              <div class="friendName">${name}</div>
+              <div class="friendName">${esc(name)}</div>
               ${handleLine}
             </div>
           </div>
           <div class="metaRow" style="gap: 8px; flex-wrap: wrap">
-            <button class="btn-yellow" type="button" data-invite-action="accept" data-invite-id="${item.id}">Aceptar</button>
-            <button class="btn-white-outline" type="button" data-invite-action="decline" data-invite-id="${item.id}">Rechazar</button>
+            <button class="btn-yellow" type="button" data-invite-action="accept" data-invite-id="${esc(item.id)}">Aceptar</button>
+            <button class="btn-white-outline" type="button" data-invite-action="decline" data-invite-id="${esc(item.id)}">Rechazar</button>
           </div>
         </div>
       `;
@@ -372,10 +381,10 @@ async function loadReferralStats(uid) {
                 <span class="friendAvatar">%</span>
                 <div>
                   <div class="friendName">-${pct}%</div>
-                  <div class="friendHint">${scope}</div>
+                  <div class="friendHint">${esc(scope)}</div>
                 </div>
               </div>
-              <button class="btn-yellow" type="button" data-reward-act="use" data-reward-id="${r.id}">
+              <button class="btn-yellow" type="button" data-reward-act="use" data-reward-id="${esc(r.id)}">
                 Usar
               </button>
             </div>

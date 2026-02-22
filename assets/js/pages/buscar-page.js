@@ -16,6 +16,7 @@ import {
   serverTimestamp,
   setDoc,
   startAt,
+  updateDoc,
   where,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
@@ -284,6 +285,17 @@ async function sendFriendRequest(myUid, targetUid) {
     return 'accepted';
   }
   if (status?.status === 'pending') {
+    const incomingPending =
+      String(status.toUid || '').trim() === myUid &&
+      String(status.fromUid || '').trim() === targetUid;
+    if (incomingPending && status.id) {
+      await updateDoc(doc(db, 'friend_requests', status.id), {
+        status: 'accepted',
+        updatedAt: serverTimestamp(),
+      });
+      setMsg('Solicitud aceptada.');
+      return 'accepted';
+    }
     setMsg('Solicitud pendiente.');
     return 'pending';
   }

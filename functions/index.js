@@ -1084,6 +1084,7 @@ exports.onFriendRequestWrite = functions.firestore
 
     const fromUid = String(after.fromUid || '').trim();
     const toUid = String(after.toUid || '').trim();
+    const requestId = String(context.params?.id || '').trim();
     if (!fromUid || !toUid) return null;
 
     let fromLabel = '';
@@ -1115,7 +1116,7 @@ exports.onFriendRequestWrite = functions.firestore
         type: 'friend_request',
         title,
         body,
-        data: { fromUid, toUid, status: 'pending' },
+        data: { requestId, fromUid, toUid, status: 'pending' },
         link: 'perfil.html',
       });
       await sendPushToUser(toUid, title, body, {
@@ -1137,7 +1138,7 @@ exports.onFriendRequestWrite = functions.firestore
         type: 'friend_request',
         title,
         body,
-        data: { fromUid, toUid, status: 'accepted' },
+        data: { requestId, fromUid, toUid, status: 'accepted' },
         link: 'perfil.html',
       });
       await sendPushToUser(fromUid, title, body, {
