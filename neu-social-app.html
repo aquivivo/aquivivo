@@ -11,7 +11,7 @@
     />
     <link rel="stylesheet" href="assets/css/styles.css?v=20260222l" />
     <link rel="stylesheet" href="assets/css/neu-theme.css?v=20260222c" />
-    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260222m" />
+    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260222n" />
     <script src="assets/js/layout.js?v=20260222i" type="module"></script>
   </head>
   <body data-page="profile" data-no-side-panel="1" class="fusion-profile neu-social-app no-side-panel" data-portal="feed">
@@ -39,12 +39,13 @@
           <div class="profile-actions">
             <button class="btn-yellow" id="btnFusionFollow" type="button">Agregar</button>
             <a class="btn-white-outline" id="btnFusionMessage" href="mensajes.html">Mensaje</a>
+            <button class="btn-white-outline is-hidden" id="btnNeuEditProfile" type="button">Editar perfil</button>
             <button class="btn-white-outline is-hidden" id="btnFusionFriend" type="button">Seguir</button>
             <button class="btn-white-outline is-hidden" id="btnFusionShare" type="button">Compartir</button>
           </div>
 
           <div class="profile-stats-line">
-            <span id="countFollowers">0</span> followers &middot; <span id="countFriends">0</span> friends
+            <span id="countFollowers">0</span> Seguidores &middot; <span id="countFriends">0</span> Amigos
             <span id="countFollowing" class="is-hidden">0</span>
             <span id="leftStatus" class="is-hidden"></span>
           </div>
@@ -274,12 +275,95 @@
       </div>
     </div>
 
+    <div class="composer-modal" id="neuProfileModal" hidden>
+      <div class="composer-modal-backdrop" data-neu-profile-close="1"></div>
+      <div class="composer-modal-card neu-profile-modal-card">
+        <div class="composer-head">
+          <h2>Editar perfil</h2>
+          <button class="btn-white-outline" id="btnNeuProfileClose" type="button">Cerrar</button>
+        </div>
+
+        <div class="composer-body neu-profile-editor">
+          <div class="neu-profile-avatar-row">
+            <div class="avatar-frame neu-profile-avatar-preview">
+              <img id="neuProfileAvatarPreviewImg" alt="avatar" />
+              <span id="neuProfileAvatarPreviewFallback">U</span>
+            </div>
+            <div class="neu-profile-avatar-actions">
+              <label class="btn-white-outline neu-file-btn" for="neuProfileAvatarFile">Subir avatar</label>
+              <input id="neuProfileAvatarFile" type="file" accept="image/*" />
+              <button class="btn-white-outline neu-danger-outline" id="btnNeuProfileAvatarRemove" type="button">
+                Eliminar avatar
+              </button>
+            </div>
+          </div>
+
+          <div class="composer-grid neu-profile-grid">
+            <label>
+              Nombre
+              <input id="neuProfileNameInput" class="input" type="text" maxlength="60" placeholder="Tu nombre" />
+            </label>
+            <label>
+              Ciudad
+              <input id="neuProfileCityInput" class="input" type="text" maxlength="60" placeholder="Tu ciudad" />
+            </label>
+          </div>
+
+          <label class="composer-text-wrap neu-profile-bio-wrap">
+            Bio
+            <textarea id="neuProfileBioInput" rows="3" maxlength="160" placeholder="Cuéntanos algo sobre ti"></textarea>
+          </label>
+          <p class="hintSmall neu-profile-bio-count" id="neuProfileBioCount">0/160</p>
+          <p class="hintSmall" id="neuProfileMsg"></p>
+
+          <div class="composer-actions">
+            <button class="btn-yellow" id="btnNeuProfileSave" type="button">Guardar cambios</button>
+            <button class="btn-white-outline" id="btnNeuProfileCancel" type="button">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer-modal neu-chat-modal" id="neuChatModal" hidden>
+      <div class="composer-modal-backdrop" data-neu-chat-close="1"></div>
+      <div class="composer-modal-card neu-chat-modal-card" role="dialog" aria-modal="true" aria-labelledby="neuChatPeerName">
+        <div class="neu-chat-head">
+          <div class="neu-chat-peer">
+            <span class="avatar-frame neu-chat-peer-avatar">
+              <img id="neuChatPeerAvatarImg" alt="avatar" />
+              <span id="neuChatPeerAvatarFallback">U</span>
+            </span>
+            <span class="neu-chat-peer-copy">
+              <strong id="neuChatPeerName">Chat</strong>
+              <span id="neuChatPeerHandle">@usuario</span>
+            </span>
+          </div>
+          <button class="btn-white-outline" id="neuChatCloseBtn" type="button">Cerrar</button>
+        </div>
+
+        <div class="neu-chat-body" id="neuChatMessages"></div>
+
+        <form class="neu-chat-foot" id="neuChatForm">
+          <input
+            id="neuChatInput"
+            class="input"
+            type="text"
+            maxlength="1000"
+            placeholder="Escribe un mensaje..."
+            autocomplete="off"
+          />
+          <button class="btn-yellow" id="neuChatSendBtn" type="submit">Enviar</button>
+        </form>
+        <p class="hintSmall" id="neuChatHint"></p>
+      </div>
+    </div>
+
     <div id="appFooter"></div>
 
     <script type="module">
       console.log('[NEU BOOT] html module loader start');
 
-      import('./assets/js/pages/neu-social-app-page.js?v=20260222m')
+      import('./assets/js/pages/neu-social-app-page.js?v=20260222p')
         .then(() => console.log('[NEU BOOT] module imported OK'))
         .catch((err) => {
           console.error('[NEU BOOT] module import FAILED:', err);
