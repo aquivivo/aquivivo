@@ -20,12 +20,13 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 import {
   deleteObject,
+  getStorage,
   getDownloadURL,
   ref as storageRef,
   uploadBytes,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
 import { requireNeuAuth } from '../neu-auth-gate.js?v=20260222c';
-import { auth, db, storage } from '../neu-firebase-init.js?v=20260222c';
+import { app, auth, db, storage } from '../neu-firebase-init.js?v=20260222c';
 
 if (new URLSearchParams(location.search).get('qa') === '1') {
   console.log('[NEU PAGE] neu-social-app-page.js loaded');
@@ -1076,6 +1077,7 @@ function neuWirePostOnboardingEvents() {
     },
     true,
   );
+
 }
 
 async function neuInitPostOnboarding(user, profileSeed = null) {
@@ -2628,6 +2630,21 @@ const NEU_CHAT_MAX_MESSAGES = 50;
 const NEU_CHAT_SCROLL_NEAR_BOTTOM = 120;
 const NEU_CHAT_GROUP_WINDOW_MS = 5 * 60 * 1000;
 const NEU_CHAT_FLOAT_STORAGE_KEY = 'neu_chat_float_pos';
+const NEU_CHAT_UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
+const NEU_CHAT_UPLOAD_PREFIX = 'neuChatUploads/';
+const NEU_CHAT_TYPING_DEBOUNCE_MS = 400;
+const NEU_CHAT_TYPING_IDLE_MS = 2000;
+const NEU_CHAT_TYPING_STALE_MS = 12000;
+const NEU_CHAT_REPLY_SNIPPET_MAX = 80;
+const NEU_CHAT_REPLY_LONG_PRESS_MS = 450;
+const NEU_CHAT_REPLY_HIGHLIGHT_MS = 1000;
+const NEU_CHAT_SEARCH_DEBOUNCE_MS = 150;
+const NEU_CHAT_REACTION_TYPES = ['like', 'heart', 'laugh'];
+const NEU_CHAT_REACTION_EMOJI = {
+  like: '👍',
+  heart: '❤️',
+  laugh: '😆',
+};
 
 const neuChatState = {
   wired: false,
@@ -2636,12 +2653,14 @@ const neuChatState = {
   listUnsub: null,
   listUid: '',
   messageUnsub: null,
+  typingUnsub: null,
   currentConversationId: '',
   currentMembers: [],
   currentMemberKey: '',
   peerUid: '',
   messages: [],
   sending: false,
+  uploading: false,
   profileCache: new Map(),
   profileLoading: new Map(),
   listObserver: null,
@@ -2651,10 +2670,37 @@ const neuChatState = {
   floatWired: false,
   newMessageChipVisible: false,
   peerTyping: false,
+  myLastReadAt: null,
   peerLastReadAt: null,
   bodyScrollWired: false,
   bodyScrollRaf: 0,
   nearBottom: true,
+  lastRenderedMsgId: '',
+  typingDebounceTimer: 0,
+  typingIdleTimer: 0,
+  typingActive: false,
+  typingConversationId: '',
+  reactionUnsubs: new Map(),
+  reactionCounts: new Map(),
+  reactionMine: new Map(),
+  reactionChatId: '',
+  reactionPickerMsgId: '',
+  reactionHideTimers: new Map(),
+  reactionLongPressTimer: 0,
+  reactionLongPressMsgId: '',
+  pendingImageFile: null,
+  pendingImagePreviewUrl: '',
+  replyDraft: null,
+  replyHighlightTimer: 0,
+  longPressReplyTimer: 0,
+  longPressReplyMsgId: '',
+  longPressReplyX: 0,
+  longPressReplyY: 0,
+  longPressMenuMessageId: '',
+  uploadRetryContext: null,
+  chatSearchWired: false,
+  chatSearchQuery: '',
+  chatSearchDebounceTimer: 0,
 };
 
 const neuChatFloatState = {
@@ -2780,11 +2826,99 @@ function neuSetConversationUnreadLocal(conversationId, unreadCount) {
   neuRenderChatList();
 }
 
-function neuChatSetHint(text, bad = false) {
+function neuChatSetHint(text, bad = false, options = {}) {
   const hint = document.getElementById('neuChatHint');
   if (!(hint instanceof HTMLElement)) return;
-  hint.textContent = String(text || '');
+  const message = String(text || '').trim();
+  const retryUpload = options && typeof options === 'object' ? options.retryUpload === true : false;
+  if (!message) {
+    hint.textContent = '';
+    hint.removeAttribute('data-neu-chat-retry-upload');
+    hint.style.color = bad ? '#ffb2bf' : 'rgba(230,236,255,0.85)';
+    return;
+  }
+  if (retryUpload) {
+    hint.innerHTML = `${esc(message)} <button class="btn-white-outline neuChatHintRetry" type="button" data-neu-chat-retry-upload="1">Reintentar</button>`;
+    hint.setAttribute('data-neu-chat-retry-upload', '1');
+  } else {
+    hint.textContent = message;
+    hint.removeAttribute('data-neu-chat-retry-upload');
+  }
   hint.style.color = bad ? '#ffb2bf' : 'rgba(230,236,255,0.85)';
+}
+
+function neuChatStorageInstance() {
+  return storage || getStorage(app);
+}
+
+function neuChatErrorCode(error) {
+  return String(error?.code || error?.name || '').trim();
+}
+
+function neuChatErrorCodeLower(error) {
+  return neuChatErrorCode(error).toLowerCase();
+}
+
+function neuChatIsUploadPermissionError(error) {
+  const code = neuChatErrorCodeLower(error);
+  return code.includes('unauthorized') || code.includes('permission-denied');
+}
+
+function neuChatUploadErrorMessage(error) {
+  const code = neuChatErrorCode(error) || 'unknown';
+  const lowered = code.toLowerCase();
+  if (lowered.includes('unauthorized') || lowered.includes('permission-denied')) {
+    return `No tienes permisos para subir imagenes (Storage rules). (${code})`;
+  }
+  if (lowered.includes('unauthenticated')) {
+    return `Sesion expirada. Vuelve a iniciar. (${code})`;
+  }
+  if (lowered.includes('canceled')) {
+    return `Subida cancelada. (${code})`;
+  }
+  return `Error al subir imagen: ${code}`;
+}
+
+function neuChatFileFingerprint(file) {
+  if (!(file instanceof File)) return '';
+  const name = String(file.name || '').trim();
+  const type = String(file.type || '').trim();
+  const size = Number(file.size || 0);
+  const lastModified = Number(file.lastModified || 0);
+  return `${name}|${type}|${size}|${lastModified}`;
+}
+
+function neuChatSetUploadRetryContext(context = null) {
+  if (!context || typeof context !== 'object') {
+    neuChatState.uploadRetryContext = null;
+    return;
+  }
+  const conversationId = String(context.conversationId || '').trim();
+  const messageId = String(context.messageId || '').trim();
+  const fingerprint = String(context.fileFingerprint || '').trim();
+  if (!conversationId || !messageId || !fingerprint) {
+    neuChatState.uploadRetryContext = null;
+    return;
+  }
+  neuChatState.uploadRetryContext = { conversationId, messageId, fileFingerprint: fingerprint };
+}
+
+function neuChatCanRetryUpload(conversationId, file) {
+  const context = neuChatState.uploadRetryContext;
+  if (!context || typeof context !== 'object') return false;
+  const chatId = String(conversationId || '').trim();
+  const fingerprint = neuChatFileFingerprint(file);
+  if (!chatId || !fingerprint) return false;
+  return context.conversationId === chatId && context.fileFingerprint === fingerprint;
+}
+
+function neuChatLogUploadFail(error, conversationId) {
+  const code = neuChatErrorCode(error) || 'unknown';
+  console.error('[CHAT UPLOAD FAIL]', code, error?.message, error);
+  if (neuChatIsUploadPermissionError(error)) {
+    const chatId = String(conversationId || '').trim() || '{chatId}';
+    console.error(`[HINT] Check Firebase Storage rules / bucket permissions for uploads path neuChatUploads/${chatId}/...`);
+  }
 }
 
 function neuChatDate(value) {
@@ -2832,6 +2966,9 @@ function neuChatBuildGroups(messages = []) {
       id: String(item?.id || '').trim(),
       senderUid,
       text: String(item?.text || '').trim(),
+      imageUrl: String(item?.imageUrl || '').trim(),
+      imageStoragePath: String(item?.imageStoragePath || '').trim(),
+      replyTo: neuChatNormalizeReplyPayload(item?.replyTo),
       createdAt: item?.createdAt || null,
       ts,
     };
@@ -2913,6 +3050,397 @@ function neuSetTypingRowVisible(visible) {
   row.classList.toggle('hidden', !next);
 }
 
+function neuReactionType(rawType) {
+  const key = String(rawType || '').trim().toLowerCase();
+  return NEU_CHAT_REACTION_TYPES.includes(key) ? key : '';
+}
+
+function neuReactionEmoji(type) {
+  const key = neuReactionType(type);
+  return key ? NEU_CHAT_REACTION_EMOJI[key] : '';
+}
+
+function neuReactionBarHtml(messageId) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId) return '';
+  const counts = neuChatState.reactionCounts.get(msgId);
+  if (!counts || !counts.total) return '';
+  const parts = [];
+  NEU_CHAT_REACTION_TYPES.forEach((type) => {
+    const value = Number(counts[type] || 0);
+    if (value <= 0) return;
+    parts.push(`<span class="neuReactChip">${esc(neuReactionEmoji(type))}${value}</span>`);
+  });
+  return parts.join('');
+}
+
+function neuReactionMessageSelector(messageId) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId) return '';
+  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(msgId);
+  return msgId.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function neuReactionWrapNode(messageId) {
+  const selectorValue = neuReactionMessageSelector(messageId);
+  if (!selectorValue) return null;
+  const node = document.querySelector(`.neuReactWrap[data-neu-react-wrap="${selectorValue}"]`);
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuReactionWrapMessageId(node) {
+  if (!(node instanceof Element)) return '';
+  const wrap = node.closest('[data-neu-react-wrap]');
+  if (!(wrap instanceof HTMLElement)) return '';
+  return String(wrap.getAttribute('data-neu-react-wrap') || '').trim();
+}
+
+function neuReactionClearHideTimer(messageId) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId || !(neuChatState.reactionHideTimers instanceof Map)) return;
+  const timer = neuChatState.reactionHideTimers.get(msgId);
+  if (timer) {
+    window.clearTimeout(timer);
+  }
+  neuChatState.reactionHideTimers.delete(msgId);
+}
+
+function neuReactionSetHover(messageId, next) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId) return;
+  const wrap = neuReactionWrapNode(msgId);
+  if (!(wrap instanceof HTMLElement)) return;
+  wrap.classList.toggle('is-hover', next === true);
+}
+
+function neuReactionScheduleHide(messageId, delay = 180) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId || !(neuChatState.reactionHideTimers instanceof Map)) return;
+  neuReactionClearHideTimer(msgId);
+  const timeoutMs = Number.isFinite(Number(delay)) ? Math.max(0, Number(delay)) : 180;
+  const timer = window.setTimeout(() => {
+    neuChatState.reactionHideTimers.delete(msgId);
+    neuReactionSetHover(msgId, false);
+  }, timeoutMs);
+  neuChatState.reactionHideTimers.set(msgId, timer);
+}
+
+function neuPatchReactionUiForMessage(messageId) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId) return;
+  const selectorValue = neuReactionMessageSelector(msgId);
+  if (!selectorValue) return;
+  const wrap = document.querySelector(`.neuMessageItem[data-neu-msg-id="${selectorValue}"]`);
+  if (!(wrap instanceof HTMLElement)) return;
+
+  const mine = neuReactionType(neuChatState.reactionMine.get(msgId));
+  const reactBtn = wrap.querySelector('.neuReactBtn');
+  if (reactBtn instanceof HTMLButtonElement) {
+    reactBtn.textContent = mine ? neuReactionEmoji(mine) : '🙂';
+    reactBtn.classList.toggle('is-active', !!mine);
+  }
+
+  const bar = wrap.querySelector('.neuReactBar');
+  if (bar instanceof HTMLElement) {
+    const html = neuReactionBarHtml(msgId);
+    bar.innerHTML = html;
+    bar.classList.toggle('hidden', !html);
+  }
+
+  wrap.querySelectorAll('.neuReactOption').forEach((node) => {
+    if (!(node instanceof HTMLButtonElement)) return;
+    const type = neuReactionType(node.getAttribute('data-neu-react-type'));
+    node.classList.toggle('is-active', !!type && type === mine);
+  });
+}
+
+function neuPatchAllReactionUi() {
+  const ids = Array.isArray(neuChatState.messages)
+    ? neuChatState.messages.map((row) => String(row?.id || '').trim()).filter(Boolean)
+    : [];
+  ids.forEach((id) => neuPatchReactionUiForMessage(id));
+}
+
+function neuHideReactionPickers() {
+  neuChatState.reactionPickerMsgId = '';
+  document.querySelectorAll('.neuReactPicker.is-open').forEach((node) => {
+    if (node instanceof HTMLElement) node.classList.remove('is-open');
+  });
+  document.querySelectorAll('.neuReactWrap.is-hover').forEach((node) => {
+    if (node instanceof HTMLElement) node.classList.remove('is-hover');
+  });
+  if (neuChatState.reactionHideTimers instanceof Map) {
+    neuChatState.reactionHideTimers.forEach((timer) => {
+      if (timer) window.clearTimeout(timer);
+    });
+    neuChatState.reactionHideTimers.clear();
+  }
+}
+
+function neuToggleReactionPicker(messageId) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId) return;
+  const selectorValue = neuReactionMessageSelector(msgId);
+  if (!selectorValue) return;
+  const picker = document.querySelector(`.neuReactPicker[data-neu-react-picker="${selectorValue}"]`);
+  if (!(picker instanceof HTMLElement)) return;
+  neuReactionClearHideTimer(msgId);
+  const alreadyOpen = picker.classList.contains('is-open');
+  neuHideReactionPickers();
+  if (alreadyOpen) return;
+  neuReactionSetHover(msgId, true);
+  picker.classList.add('is-open');
+  neuChatState.reactionPickerMsgId = msgId;
+}
+
+function neuClearReactionLongPressTimer() {
+  if (neuChatState.reactionLongPressTimer) {
+    window.clearTimeout(neuChatState.reactionLongPressTimer);
+    neuChatState.reactionLongPressTimer = 0;
+  }
+  neuChatState.reactionLongPressMsgId = '';
+}
+
+function neuScheduleReactionLongPress(messageId) {
+  const msgId = String(messageId || '').trim();
+  neuClearReactionLongPressTimer();
+  if (!msgId) return;
+  neuChatState.reactionLongPressMsgId = msgId;
+  neuChatState.reactionLongPressTimer = window.setTimeout(() => {
+    neuChatState.reactionLongPressTimer = 0;
+    neuToggleReactionPicker(msgId);
+  }, 450);
+}
+
+function neuStopReactionListeners() {
+  if (neuChatState.reactionUnsubs instanceof Map) {
+    neuChatState.reactionUnsubs.forEach((unsub) => {
+      if (typeof unsub === 'function') {
+        try {
+          unsub();
+        } catch {
+          // noop
+        }
+      }
+    });
+  }
+  neuChatState.reactionUnsubs = new Map();
+  neuChatState.reactionCounts = new Map();
+  neuChatState.reactionMine = new Map();
+  neuChatState.reactionChatId = '';
+  if (neuChatState.reactionHideTimers instanceof Map) {
+    neuChatState.reactionHideTimers.forEach((timer) => {
+      if (timer) window.clearTimeout(timer);
+    });
+  }
+  neuChatState.reactionHideTimers = new Map();
+  neuHideReactionPickers();
+  neuClearReactionLongPressTimer();
+}
+
+function neuSyncReactionListeners() {
+  const chatId = String(neuChatState.currentConversationId || '').trim();
+  const meUid = neuCurrentUid();
+  if (!chatId || !meUid) {
+    neuStopReactionListeners();
+    return;
+  }
+
+  if (neuChatState.reactionChatId && neuChatState.reactionChatId !== chatId) {
+    neuStopReactionListeners();
+  }
+  neuChatState.reactionChatId = chatId;
+
+  const messageIds = Array.isArray(neuChatState.messages)
+    ? neuChatState.messages.map((row) => String(row?.id || '').trim()).filter(Boolean).slice(-NEU_CHAT_MAX_MESSAGES)
+    : [];
+  const wanted = new Set(messageIds);
+
+  neuChatState.reactionUnsubs.forEach((unsub, messageId) => {
+    if (wanted.has(messageId)) return;
+    if (typeof unsub === 'function') {
+      try {
+        unsub();
+      } catch {
+        // noop
+      }
+    }
+    neuChatState.reactionUnsubs.delete(messageId);
+    neuChatState.reactionCounts.delete(messageId);
+    neuChatState.reactionMine.delete(messageId);
+  });
+
+  messageIds.forEach((messageId) => {
+    if (neuChatState.reactionUnsubs.has(messageId)) return;
+    const reactionsRef = collection(db, 'neuChatReactions', chatId, 'messages', messageId, 'reactions');
+    const unsub = onSnapshot(
+      reactionsRef,
+      (snap) => {
+        const next = { like: 0, heart: 0, laugh: 0, total: 0 };
+        let mine = '';
+        snap.forEach((row) => {
+          const data = row.data() || {};
+          const type = neuReactionType(data.type);
+          if (!type) return;
+          next[type] += 1;
+          next.total += 1;
+          if (String(row.id || '').trim() === meUid) {
+            mine = type;
+          }
+        });
+        neuChatState.reactionCounts.set(messageId, next);
+        if (mine) neuChatState.reactionMine.set(messageId, mine);
+        else neuChatState.reactionMine.delete(messageId);
+        neuPatchReactionUiForMessage(messageId);
+      },
+      (error) => {
+        if (NEU_QA) console.warn('[neu-chat] reaction subscription failed', messageId, error);
+      },
+    );
+    neuChatState.reactionUnsubs.set(messageId, unsub);
+  });
+}
+
+async function neuToggleMessageReaction(messageId, rawType) {
+  const chatId = String(neuChatState.currentConversationId || '').trim();
+  const meUid = neuCurrentUid();
+  const type = neuReactionType(rawType);
+  const msgId = String(messageId || '').trim();
+  if (!chatId || !meUid || !type || !msgId) return;
+  const members = Array.isArray(neuChatState.currentMembers) ? neuChatState.currentMembers : [];
+  if (!members.includes(meUid)) return;
+
+  const current = neuReactionType(neuChatState.reactionMine.get(msgId));
+  const ref = doc(db, 'neuChatReactions', chatId, 'messages', msgId, 'reactions', meUid);
+  if (current && current === type) {
+    await deleteDoc(ref);
+    return;
+  }
+  await setDoc(
+    ref,
+    {
+      type,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+}
+
+function neuStopTypingTimers() {
+  if (neuChatState.typingDebounceTimer) {
+    window.clearTimeout(neuChatState.typingDebounceTimer);
+    neuChatState.typingDebounceTimer = 0;
+  }
+  if (neuChatState.typingIdleTimer) {
+    window.clearTimeout(neuChatState.typingIdleTimer);
+    neuChatState.typingIdleTimer = 0;
+  }
+}
+
+async function neuSetOwnTypingState(nextTyping, { bestEffort = false } = {}) {
+  const chatId = String(neuChatState.currentConversationId || '').trim();
+  const meUid = neuCurrentUid();
+  const next = nextTyping === true;
+  if (!chatId || !meUid) return;
+  const members = Array.isArray(neuChatState.currentMembers) ? neuChatState.currentMembers : [];
+  if (!members.includes(meUid)) return;
+  if (!bestEffort && neuChatState.typingConversationId === chatId && neuChatState.typingActive === next) return;
+
+  const profile = neuProfileState.profile || neuDefaultProfile(meUid);
+  const payload = {
+    typing: next,
+    updatedAt: serverTimestamp(),
+  };
+  if (next) {
+    payload.displayName = String(profile.displayName || auth.currentUser?.displayName || 'Usuario').trim() || 'Usuario';
+    payload.avatarUrl = String(profile.avatarUrl || auth.currentUser?.photoURL || '').trim();
+  }
+  try {
+    await setDoc(doc(db, 'neuChatTyping', chatId, 'users', meUid), payload, { merge: true });
+  } catch (error) {
+    if (!bestEffort && NEU_QA) console.warn('[neu-chat] typing write failed', error);
+    return;
+  }
+  neuChatState.typingConversationId = chatId;
+  neuChatState.typingActive = next;
+}
+
+function neuStopTypingListener() {
+  if (typeof neuChatState.typingUnsub === 'function') {
+    try {
+      neuChatState.typingUnsub();
+    } catch {
+      // noop
+    }
+  }
+  neuChatState.typingUnsub = null;
+  neuChatState.peerTyping = false;
+  neuSetTypingRowVisible(false);
+}
+
+function neuChatHandleTypingInput(rawValue = '') {
+  const chatId = String(neuChatState.currentConversationId || '').trim();
+  const meUid = neuCurrentUid();
+  if (!chatId || !meUid) return;
+  const hasText = String(rawValue || '').trim().length > 0;
+  neuStopTypingTimers();
+
+  if (!hasText) {
+    neuSetOwnTypingState(false).catch(() => null);
+    return;
+  }
+
+  neuChatState.typingDebounceTimer = window.setTimeout(() => {
+    neuChatState.typingDebounceTimer = 0;
+    neuSetOwnTypingState(true).catch(() => null);
+  }, NEU_CHAT_TYPING_DEBOUNCE_MS);
+
+  neuChatState.typingIdleTimer = window.setTimeout(() => {
+    neuChatState.typingIdleTimer = 0;
+    neuSetOwnTypingState(false).catch(() => null);
+  }, NEU_CHAT_TYPING_IDLE_MS);
+}
+
+function neuChatStopTypingAndTimers(options = {}) {
+  neuStopTypingTimers();
+  neuSetOwnTypingState(false, options).catch(() => null);
+}
+
+function neuStartTypingListener(conversationId, members = []) {
+  const chatId = String(conversationId || '').trim();
+  const meUid = neuCurrentUid();
+  if (!chatId || !meUid) return;
+  const memberList = Array.isArray(members) ? members.map((uid) => String(uid || '').trim()).filter(Boolean) : [];
+  if (!memberList.includes(meUid)) return;
+
+  neuStopTypingListener();
+  neuChatState.peerTyping = false;
+  neuSetTypingRowVisible(false);
+
+  const typingRef = collection(db, 'neuChatTyping', chatId, 'users');
+  neuChatState.typingUnsub = onSnapshot(
+    typingRef,
+    (snap) => {
+      const now = Date.now();
+      const hasTyping = snap.docs.some((row) => {
+        const uid = String(row.id || '').trim();
+        if (!uid || uid === meUid) return false;
+        const data = row.data() || {};
+        if (!data.typing) return false;
+        const updatedMs = neuTimeToMs(data.updatedAt);
+        if (updatedMs > 0 && now - updatedMs > NEU_CHAT_TYPING_STALE_MS) return false;
+        return true;
+      });
+      neuChatState.peerTyping = hasTyping;
+      neuSetTypingRowVisible(hasTyping);
+    },
+    () => {
+      neuChatState.peerTyping = false;
+      neuSetTypingRowVisible(false);
+    },
+  );
+}
+
 function neuChatMembers(uidA, uidB) {
   return [String(uidA || '').trim(), String(uidB || '').trim()].filter(Boolean).sort((a, b) => a.localeCompare(b));
 }
@@ -2948,6 +3476,11 @@ function neuChatMessagesNode() {
   return document.getElementById('neuChatMessages');
 }
 
+function neuChatSearchInputNode() {
+  const node = document.getElementById('pulseChatSearchInput');
+  return node instanceof HTMLInputElement ? node : null;
+}
+
 function neuChatInputNode() {
   const node = document.getElementById('neuChatInput');
   return node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement ? node : null;
@@ -2960,6 +3493,56 @@ function neuChatSendButtonNode() {
 function neuChatComposerNode() {
   const node = document.getElementById('neuChatForm');
   return node instanceof HTMLElement ? node : null;
+}
+
+function neuChatAttachButtonNode() {
+  const node = document.getElementById('neuChatAttachBtn');
+  return node instanceof HTMLButtonElement ? node : null;
+}
+
+function neuChatFileInputNode() {
+  const node = document.getElementById('neuChatFileInput');
+  return node instanceof HTMLInputElement ? node : null;
+}
+
+function neuChatAttachmentPreviewNode() {
+  const node = document.getElementById('neuChatAttachmentPreview');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuChatAttachmentPreviewImgNode() {
+  const node = document.getElementById('neuChatAttachmentPreviewImg');
+  return node instanceof HTMLImageElement ? node : null;
+}
+
+function neuChatAttachmentPreviewNameNode() {
+  const node = document.getElementById('neuChatAttachmentPreviewName');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuChatReplyPreviewNode() {
+  const node = document.getElementById('neuChatReplyPreview');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuChatReplyPreviewTextNode() {
+  const node = document.getElementById('neuChatReplyPreviewText');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuChatLongPressMenuNode() {
+  const node = document.getElementById('neuChatLongPressMenu');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuChatImageLightboxNode() {
+  const node = document.getElementById('neuChatImageLightbox');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuChatImageLightboxImgNode() {
+  const node = document.getElementById('neuChatLightboxImg');
+  return node instanceof HTMLImageElement ? node : null;
 }
 
 function neuUpdateChatComposerOffsetVar() {
@@ -2976,6 +3559,244 @@ function neuChatInputValue() {
 
 function neuChatHasTypedText() {
   return neuChatInputValue().trim().length > 0;
+}
+
+function neuChatHasAttachment() {
+  return neuChatState.pendingImageFile instanceof File;
+}
+
+function neuChatFindMessageById(messageId) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId || !Array.isArray(neuChatState.messages)) return null;
+  return (
+    neuChatState.messages.find((row) => String(row?.id || '').trim() === msgId) || null
+  );
+}
+
+function neuChatBuildReplySnippet(message) {
+  const imageUrl = String(message?.imageUrl || '').trim();
+  if (imageUrl) return '📷 Photo';
+  const raw = String(message?.text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!raw) return '';
+  return raw.slice(0, NEU_CHAT_REPLY_SNIPPET_MAX);
+}
+
+function neuChatNormalizeReplyPayload(rawReply) {
+  if (!rawReply || typeof rawReply !== 'object') return null;
+  const messageId = String(rawReply.messageId || '').trim();
+  if (!messageId) return null;
+  const senderUid = String(rawReply.senderUid || '').trim();
+  const snippet = String(rawReply.snippet || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, NEU_CHAT_REPLY_SNIPPET_MAX);
+  return {
+    messageId,
+    senderUid,
+    snippet,
+    createdAt: rawReply.createdAt || null,
+  };
+}
+
+function neuSetChatReplyDraft(rawReply) {
+  neuChatState.replyDraft = neuChatNormalizeReplyPayload(rawReply);
+  neuRenderChatReplyPreview();
+}
+
+function neuClearChatReplyDraft() {
+  neuSetChatReplyDraft(null);
+}
+
+function neuRenderChatReplyPreview() {
+  const wrap = neuChatReplyPreviewNode();
+  const text = neuChatReplyPreviewTextNode();
+  const reply = neuChatNormalizeReplyPayload(neuChatState.replyDraft);
+  const hasReply = !!reply;
+  if (wrap instanceof HTMLElement) wrap.classList.toggle('hidden', !hasReply);
+  if (text instanceof HTMLElement) {
+    const snippet = hasReply ? String(reply.snippet || '').trim() || '...' : '';
+    text.textContent = hasReply ? `Odpowiadasz: ${snippet}` : '';
+  }
+  neuUpdateChatComposerOffsetVar();
+}
+
+function neuStartChatReplyDraft(messageId) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId) return;
+  const message = neuChatFindMessageById(msgId);
+  if (!message) return;
+  const snippet = neuChatBuildReplySnippet(message) || '...';
+  neuSetChatReplyDraft({
+    messageId: msgId,
+    senderUid: String(message.senderUid || '').trim(),
+    snippet,
+    createdAt: message.createdAt || null,
+  });
+  const input = neuChatInputNode();
+  if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+    input.focus({ preventScroll: true });
+  }
+}
+
+function neuSetChatLongPressMenuOpen(messageId = '', clientX = 0, clientY = 0) {
+  const menu = neuChatLongPressMenuNode();
+  if (!(menu instanceof HTMLElement)) return;
+  const msgId = String(messageId || '').trim();
+  if (!msgId) {
+    menu.classList.add('hidden');
+    menu.dataset.neuChatReplyMessage = '';
+    menu.style.left = '';
+    menu.style.top = '';
+    neuChatState.longPressMenuMessageId = '';
+    return;
+  }
+
+  menu.classList.remove('hidden');
+  const width = Math.max(130, Math.round(menu.offsetWidth || 130));
+  const height = Math.max(44, Math.round(menu.offsetHeight || 44));
+  const safe = 8;
+  const nextX = Math.max(safe, Math.min(window.innerWidth - width - safe, Number(clientX) || safe));
+  const nextY = Math.max(safe, Math.min(window.innerHeight - height - safe, Number(clientY) || safe));
+  menu.style.left = `${Math.round(nextX)}px`;
+  menu.style.top = `${Math.round(nextY)}px`;
+  menu.dataset.neuChatReplyMessage = msgId;
+  neuChatState.longPressMenuMessageId = msgId;
+}
+
+function neuClearChatReplyLongPressTimer() {
+  if (neuChatState.longPressReplyTimer) {
+    window.clearTimeout(neuChatState.longPressReplyTimer);
+    neuChatState.longPressReplyTimer = 0;
+  }
+  neuChatState.longPressReplyMsgId = '';
+}
+
+function neuScheduleChatReplyLongPress(messageId, clientX = 0, clientY = 0) {
+  const msgId = String(messageId || '').trim();
+  neuClearChatReplyLongPressTimer();
+  if (!msgId) return;
+  neuChatState.longPressReplyMsgId = msgId;
+  neuChatState.longPressReplyX = Number(clientX) || 0;
+  neuChatState.longPressReplyY = Number(clientY) || 0;
+  neuChatState.longPressReplyTimer = window.setTimeout(() => {
+    neuChatState.longPressReplyTimer = 0;
+    neuSetChatLongPressMenuOpen(msgId, neuChatState.longPressReplyX, neuChatState.longPressReplyY);
+  }, NEU_CHAT_REPLY_LONG_PRESS_MS);
+}
+
+function neuJumpToChatMessage(messageId) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId) return false;
+  const root = neuChatMessagesNode();
+  if (!(root instanceof HTMLElement)) return false;
+  root.querySelectorAll('.neuMessageItem.is-reply-target').forEach((node) => {
+    if (node instanceof HTMLElement) node.classList.remove('is-reply-target');
+  });
+  const selector = neuReactionMessageSelector(msgId);
+  if (!selector) return false;
+  const target = root.querySelector(`.neuMessageItem[data-neu-msg-id="${selector}"]`);
+  if (!(target instanceof HTMLElement)) return false;
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  target.classList.add('is-reply-target');
+  if (neuChatState.replyHighlightTimer) {
+    window.clearTimeout(neuChatState.replyHighlightTimer);
+  }
+  neuChatState.replyHighlightTimer = window.setTimeout(() => {
+    target.classList.remove('is-reply-target');
+    neuChatState.replyHighlightTimer = 0;
+  }, NEU_CHAT_REPLY_HIGHLIGHT_MS);
+  return true;
+}
+
+function neuSafeChatUploadName(file) {
+  const raw = String(file?.name || '').trim();
+  const fallback = String(file?.type || '').toLowerCase().includes('png') ? 'image.png' : 'image.jpg';
+  const base = raw || fallback;
+  return base.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 96) || fallback;
+}
+
+function neuRenderChatAttachmentPreview() {
+  const wrap = neuChatAttachmentPreviewNode();
+  const image = neuChatAttachmentPreviewImgNode();
+  const name = neuChatAttachmentPreviewNameNode();
+  const hasAttachment = neuChatHasAttachment() && !!neuChatState.pendingImagePreviewUrl;
+  if (wrap instanceof HTMLElement) wrap.classList.toggle('hidden', !hasAttachment);
+  if (image instanceof HTMLImageElement) {
+    if (hasAttachment) image.src = neuChatState.pendingImagePreviewUrl;
+    else image.removeAttribute('src');
+  }
+  if (name instanceof HTMLElement) {
+    name.textContent = hasAttachment ? String(neuChatState.pendingImageFile?.name || 'imagen') : '';
+  }
+  neuUpdateChatComposerOffsetVar();
+}
+
+function neuClearChatAttachment() {
+  const fileInput = neuChatFileInputNode();
+  if (fileInput instanceof HTMLInputElement) fileInput.value = '';
+  if (neuChatState.pendingImagePreviewUrl && neuChatState.pendingImagePreviewUrl.startsWith('blob:')) {
+    try {
+      URL.revokeObjectURL(neuChatState.pendingImagePreviewUrl);
+    } catch {
+      // noop
+    }
+  }
+  neuChatState.pendingImageFile = null;
+  neuChatState.pendingImagePreviewUrl = '';
+  neuChatSetUploadRetryContext(null);
+  neuRenderChatAttachmentPreview();
+  neuSyncChatComposerState();
+}
+
+function neuChatSetAttachmentFromFile(file) {
+  const row = file instanceof File ? file : null;
+  if (!row) {
+    neuClearChatAttachment();
+    return;
+  }
+  const size = Number(row.size || 0);
+  if (!String(row.type || '').toLowerCase().startsWith('image/')) {
+    neuChatSetHint('Solo imagenes.', true);
+    neuClearChatAttachment();
+    return;
+  }
+  if (size > NEU_CHAT_UPLOAD_MAX_BYTES) {
+    neuChatSetHint('Max 5MB.', true);
+    neuClearChatAttachment();
+    return;
+  }
+
+  if (neuChatState.pendingImagePreviewUrl && neuChatState.pendingImagePreviewUrl.startsWith('blob:')) {
+    try {
+      URL.revokeObjectURL(neuChatState.pendingImagePreviewUrl);
+    } catch {
+      // noop
+    }
+  }
+  neuChatState.pendingImageFile = row;
+  neuChatState.pendingImagePreviewUrl = URL.createObjectURL(row);
+  neuChatSetUploadRetryContext(null);
+  neuChatSetHint('');
+  neuRenderChatAttachmentPreview();
+  neuSyncChatComposerState();
+}
+
+function neuSetChatImageLightboxOpen(imageUrl) {
+  const modal = neuChatImageLightboxNode();
+  const image = neuChatImageLightboxImgNode();
+  if (!(modal instanceof HTMLElement) || !(image instanceof HTMLImageElement)) return;
+  const url = String(imageUrl || '').trim();
+  if (!url) {
+    modal.hidden = true;
+    image.removeAttribute('src');
+    neuChatRecomputeModalLock();
+    return;
+  }
+  image.src = url;
+  modal.hidden = false;
+  neuChatRecomputeModalLock();
 }
 
 function neuChatAutoGrow(el) {
@@ -2996,10 +3817,16 @@ function neuChatAutoResizeInput() {
 
 function neuSyncChatComposerState() {
   const sendBtn = neuChatSendButtonNode();
-  if (!(sendBtn instanceof HTMLButtonElement)) return;
-  const disabled = neuChatState.sending || !neuChatHasTypedText();
-  sendBtn.disabled = disabled;
-  sendBtn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+  const attachBtn = neuChatAttachButtonNode();
+  const fileInput = neuChatFileInputNode();
+  const busy = neuChatState.sending || neuChatState.uploading;
+  const disabled = busy || (!neuChatHasTypedText() && !neuChatHasAttachment());
+  if (sendBtn instanceof HTMLButtonElement) {
+    sendBtn.disabled = disabled;
+    sendBtn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+  }
+  if (attachBtn instanceof HTMLButtonElement) attachBtn.disabled = busy;
+  if (fileInput instanceof HTMLInputElement) fileInput.disabled = busy;
 }
 
 function neuSetChatSending(on) {
@@ -3009,7 +3836,19 @@ function neuSetChatSending(on) {
   const sendBtn = neuChatSendButtonNode();
   if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) input.disabled = active;
   if (sendBtn instanceof HTMLButtonElement) {
-    sendBtn.textContent = active ? '...' : '>';
+    sendBtn.textContent = active || neuChatState.uploading ? '...' : '>';
+    sendBtn.setAttribute('aria-label', 'Enviar');
+    sendBtn.title = 'Enviar';
+  }
+  neuSyncChatComposerState();
+}
+
+function neuSetChatUploading(on) {
+  const active = on === true;
+  neuChatState.uploading = active;
+  const sendBtn = neuChatSendButtonNode();
+  if (sendBtn instanceof HTMLButtonElement) {
+    sendBtn.textContent = neuChatState.sending || active ? '...' : '>';
     sendBtn.setAttribute('aria-label', 'Enviar');
     sendBtn.title = 'Enviar';
   }
@@ -3074,6 +3913,7 @@ function neuMapUserChatRow(docSnap, meUid) {
     members,
     memberKey: String(data.memberKey || '').trim(),
     lastMessageText: String(data.lastMessageText || '').trim(),
+    lastMessagePreview: String(data.lastMessageText || '').trim(),
     lastMessageAt: data.lastMessageAt || data.updatedAt || null,
     updatedAt: data.updatedAt || data.lastMessageAt || null,
     unreadCount: neuUnreadValue(data.unreadCount),
@@ -3120,17 +3960,109 @@ async function neuEnsureChatProfile(uid) {
   }
 }
 
+function neuEscapeRegex(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function neuChatSearchNeedle(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
+
+function neuChatRowMatchesSearch(row, queryNeedle) {
+  const needle = neuChatSearchNeedle(queryNeedle);
+  if (!needle) return true;
+  const profile = neuChatProfileCached(row?.otherUid);
+  const displayName = String(profile.displayName || '').trim() || 'Usuario';
+  const handle = neuEnsureHandle(profile.handle, displayName, row?.otherUid);
+  const lastMessagePreview = String(row?.lastMessagePreview || row?.lastMessageText || '').trim();
+  const haystack = `${displayName} ${handle} ${lastMessagePreview}`.toLowerCase();
+  return haystack.includes(needle);
+}
+
+function neuChatHighlightName(displayName, rawQuery) {
+  const source = String(displayName || '');
+  const queryValue = String(rawQuery || '').trim();
+  if (!source) return '';
+  if (!queryValue) return esc(source);
+
+  let html = '';
+  let cursor = 0;
+  const regex = new RegExp(neuEscapeRegex(queryValue), 'ig');
+  let match = regex.exec(source);
+  while (match) {
+    const hit = String(match[0] || '');
+    const start = Number(match.index || 0);
+    const end = start + hit.length;
+    html += esc(source.slice(cursor, start));
+    html += `<span class="neuSearchHit">${esc(hit)}</span>`;
+    cursor = end;
+    if (!hit.length) break;
+    match = regex.exec(source);
+  }
+  html += esc(source.slice(cursor));
+  return html;
+}
+
+function neuChatFilteredRows(rows, rawQuery) {
+  const list = Array.isArray(rows) ? rows : [];
+  const needle = neuChatSearchNeedle(rawQuery);
+  if (!needle) return list;
+  return list.filter((row) => neuChatRowMatchesSearch(row, needle));
+}
+
+function neuApplyChatSearchQuery(rawValue) {
+  if (neuChatState.chatSearchDebounceTimer) {
+    window.clearTimeout(neuChatState.chatSearchDebounceTimer);
+    neuChatState.chatSearchDebounceTimer = 0;
+  }
+  const next = String(rawValue || '').trim();
+  if (next === neuChatState.chatSearchQuery) return;
+  neuChatState.chatSearchQuery = next;
+  neuRenderChatList();
+}
+
+function neuQueueChatSearch(rawValue) {
+  if (neuChatState.chatSearchDebounceTimer) {
+    window.clearTimeout(neuChatState.chatSearchDebounceTimer);
+    neuChatState.chatSearchDebounceTimer = 0;
+  }
+  const next = String(rawValue || '');
+  neuChatState.chatSearchDebounceTimer = window.setTimeout(() => {
+    neuChatState.chatSearchDebounceTimer = 0;
+    neuApplyChatSearchQuery(next);
+  }, NEU_CHAT_SEARCH_DEBOUNCE_MS);
+}
+
+function neuWireChatSearchInput() {
+  if (neuChatState.chatSearchWired) return;
+  const input = neuChatSearchInputNode();
+  if (!(input instanceof HTMLInputElement)) return;
+  neuChatState.chatSearchWired = true;
+  input.addEventListener('input', () => {
+    neuQueueChatSearch(input.value);
+  });
+}
+
 function neuRenderChatList() {
   const root = document.getElementById('pulseConversations');
   if (!(root instanceof HTMLElement)) return;
 
-  const rows = Array.isArray(neuChatState.listRows) ? neuChatState.listRows : [];
+  const allRows = Array.isArray(neuChatState.listRows) ? neuChatState.listRows : [];
+  const searchQuery = String(neuChatState.chatSearchQuery || '').trim();
+  const rows = neuChatFilteredRows(allRows, searchQuery);
   if (!rows.length) {
+    const isSearching = !!searchQuery;
+    const title = isSearching ? 'Sin resultados.' : 'Sin conversaciones.';
+    const sub = isSearching
+      ? 'Prueba otro texto o borra el filtro.'
+      : 'Abre un perfil y pulsa "Mensaje" para iniciar chat.';
     root.dataset.neuChatRendering = '1';
     root.innerHTML = `
       <div class="empty-state neu-chat-empty-state" data-neu-chat-root="1">
-        <p class="neu-chat-empty-title">Sin conversaciones.</p>
-        <p class="neu-chat-empty-sub">Abre un perfil y pulsa "Mensaje" para iniciar chat.</p>
+        <p class="neu-chat-empty-title">${esc(title)}</p>
+        <p class="neu-chat-empty-sub">${esc(sub)}</p>
         <a class="btn-white-outline neu-chat-empty-cta" href="neu-social-app.html?portal=feed">Ir al feed</a>
       </div>
     `;
@@ -3143,8 +4075,9 @@ function neuRenderChatList() {
       const profile = neuChatProfileCached(row.otherUid);
       const displayName = String(profile.displayName || '').trim() || 'Usuario';
       const handle = neuEnsureHandle(profile.handle, displayName, row.otherUid);
+      const titleHtml = neuChatHighlightName(displayName, searchQuery);
       const avatarUrl = String(profile.avatarUrl || '').trim();
-      const lastText = row.lastMessageText || 'Sin mensajes todavia';
+      const lastText = row.lastMessagePreview || row.lastMessageText || 'Sin mensajes todavia';
       const timeLabel = row.lastMessageAt ? neuFormatAgoShort(row.lastMessageAt) : '';
       const unread = neuUnreadValue(row.unreadCount);
       const unreadLabel = neuUnreadBadgeLabel(unread);
@@ -3164,7 +4097,7 @@ function neuRenderChatList() {
         >
           <span class="avatar-frame neu-chat-avatar">${avatarHtml}</span>
           <span class="neu-chat-copy">
-            <span class="neu-chat-title">${esc(displayName)} <small>${esc(handle)}</small></span>
+            <span class="neu-chat-title">${titleHtml} <small>${esc(handle)}</small></span>
             <span class="neu-chat-last">${esc(lastText)}</span>
           </span>
           <span class="neu-chat-right">
@@ -3224,11 +4157,15 @@ function neuRenderChatMessages() {
   const messagesRoot = neuChatMessagesNode();
   if (!(body instanceof HTMLElement) || !(messagesRoot instanceof HTMLElement)) return;
   const meUid = neuCurrentUid();
+  const prevLastRenderedMsgId = String(neuChatState.lastRenderedMsgId || '');
   const list = Array.isArray(neuChatState.messages) ? neuChatState.messages : [];
   if (!list.length) {
     messagesRoot.innerHTML = '<div class="neu-chat-empty">Aun no hay mensajes.</div>';
+    neuChatState.lastRenderedMsgId = '';
+    neuSetChatLongPressMenuOpen('');
     neuSetTypingRowVisible(neuChatState.peerTyping);
     neuSetNewMessagesChipVisible(false);
+    neuSyncReactionListeners();
     return;
   }
 
@@ -3241,6 +4178,11 @@ function neuRenderChatMessages() {
 
   const grouped = neuChatBuildGroups(list);
   const delivery = neuChatDeliveryStatus(list, meUid);
+  const newestMessageId = String(list[list.length - 1]?.id || '').trim();
+  const myLastReadMs = neuTimeToMs(neuChatState.myLastReadAt);
+  const firstUnreadIndex =
+    myLastReadMs > 0 ? list.findIndex((item) => neuTimeToMs(item?.createdAt) > myLastReadMs) : -1;
+  let renderMessageIndex = 0;
 
   const rowsHtml = grouped
     .map((group) => {
@@ -3249,9 +4191,61 @@ function neuRenderChatMessages() {
       const bubblesHtml = (group.messages || [])
         .map((item, index, arr) => {
           const text = esc(String(item.text || '').trim()).replace(/\n/g, '<br />');
+          const imageUrl = String(item.imageUrl || '').trim();
+          const replyTo = neuChatNormalizeReplyPayload(item?.replyTo);
           const firstClass = index === 0 ? ' is-group-first' : '';
           const lastClass = index === arr.length - 1 ? ' is-group-last' : '';
-          return `<div class="neuMessageBubble${firstClass}${lastClass}">${text || '-'}</div>`;
+          const messageId = String(item?.id || '').trim();
+          const mineReaction = neuReactionType(neuChatState.reactionMine.get(messageId));
+          const reactionBar = neuReactionBarHtml(messageId);
+          const pickerOptions = NEU_CHAT_REACTION_TYPES.map((type) => {
+            const emoji = neuReactionEmoji(type);
+            const activeClass = mineReaction === type ? ' is-active' : '';
+            return `<button class="neuReactOption${activeClass}" type="button" data-neu-react-message="${esc(messageId)}" data-neu-react-type="${esc(type)}" aria-label="${esc(type)}">${esc(emoji)}</button>`;
+          }).join('');
+          const reactBtnLabel = mineReaction ? neuReactionEmoji(mineReaction) : '🙂';
+          const reactWrapClass = mine ? ' is-outgoing' : ' is-incoming';
+          const unreadDividerHtml =
+            renderMessageIndex === firstUnreadIndex
+              ? '<div class="neuUnreadDivider" data-neu-unread-divider="1">Nuevos mensajes</div>'
+              : '';
+          renderMessageIndex += 1;
+          const imageHtml = imageUrl
+            ? `
+              <button class="neuChatImageBtn" type="button" data-neu-chat-image="${esc(imageUrl)}" aria-label="Abrir imagen">
+                <img class="neuChatImagePreview" loading="lazy" src="${esc(imageUrl)}" alt="chat image" />
+              </button>
+            `
+            : '';
+          const textHtml = text ? `<div class="neuMessageText">${text}</div>` : '';
+          const contentHtml = imageHtml || textHtml ? `${imageHtml}${textHtml}` : '-';
+          const replySnippet = replyTo ? String(replyTo.snippet || '').trim() || '...' : '';
+          const quoteHtml = replyTo
+            ? `
+              <button class="neuReplyQuote" type="button" data-neu-reply-jump="${esc(replyTo.messageId)}" aria-label="Ir al mensaje citado">
+                <span class="neuReplyQuoteSnippet">${esc(replySnippet)}</span>
+              </button>
+            `
+            : '';
+          return `
+            <div class="neuMessageItem${mine ? ' is-outgoing' : ' is-incoming'}" data-neu-msg-id="${esc(messageId)}">
+              <button class="neuReplyBtn" type="button" data-neu-reply-message="${esc(messageId)}" aria-label="Reply">
+                &#x21A9; Reply
+              </button>
+              <div class="neuReactWrap${reactWrapClass}" data-neu-react-wrap="${esc(messageId)}">
+                <button class="neuReactBtn${mineReaction ? ' is-active' : ''}" type="button" data-neu-react-toggle="${esc(messageId)}" aria-label="Reaccionar">
+                  ${esc(reactBtnLabel)}
+                </button>
+                <div class="neuReactPicker${reactWrapClass}" data-neu-react-picker="${esc(messageId)}">
+                  ${pickerOptions}
+                </div>
+              </div>
+              ${unreadDividerHtml}
+              ${quoteHtml}
+              <div class="neuMessageBubble${firstClass}${lastClass}${imageUrl ? ' has-image' : ''}" data-msg-id="${esc(messageId)}">${contentHtml}</div>
+              <div class="neuReactBar${reactionBar ? '' : ' hidden'}" data-neu-react-bar="${esc(messageId)}">${reactionBar}</div>
+            </div>
+          `;
         })
         .join('');
       const meta = neuChatFormatClock(group.lastCreatedAt || group.firstCreatedAt);
@@ -3276,11 +4270,31 @@ function neuRenderChatMessages() {
     .join('');
 
   messagesRoot.innerHTML = rowsHtml;
+  neuSetChatLongPressMenuOpen('');
+  if (newestMessageId && newestMessageId !== prevLastRenderedMsgId) {
+    const escapedMessageId =
+      typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+        ? CSS.escape(newestMessageId)
+        : newestMessageId.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    const newestBubble = messagesRoot.querySelector(`.neuMessageBubble[data-msg-id="${escapedMessageId}"]`);
+    if (newestBubble instanceof HTMLElement) newestBubble.classList.add('neuMsgEnter');
+  }
+  neuChatState.lastRenderedMsgId = newestMessageId;
   neuSetTypingRowVisible(neuChatState.peerTyping);
   neuSetNewMessagesChipVisible(neuChatState.newMessageChipVisible);
+  neuSyncReactionListeners();
+  neuPatchAllReactionUi();
 }
 
 function neuCloseChatModal() {
+  neuChatStopTypingAndTimers({ bestEffort: true });
+  neuStopTypingListener();
+  neuStopReactionListeners();
+  neuClearChatReplyLongPressTimer();
+  neuSetChatLongPressMenuOpen('');
+  neuClearChatAttachment();
+  neuClearChatReplyDraft();
+  neuSetChatImageLightboxOpen('');
   if (neuChatState.currentConversationId) {
     neuChatState.lastConversationId = neuChatState.currentConversationId;
     neuChatState.lastPeerUid = neuChatState.peerUid;
@@ -3296,7 +4310,16 @@ function neuCloseChatModal() {
   neuChatState.messages = [];
   neuChatState.newMessageChipVisible = false;
   neuChatState.peerTyping = false;
+  neuChatState.myLastReadAt = null;
   neuChatState.peerLastReadAt = null;
+  neuChatState.lastRenderedMsgId = '';
+  neuChatState.typingConversationId = '';
+  neuChatState.typingActive = false;
+  if (neuChatState.replyHighlightTimer) {
+    window.clearTimeout(neuChatState.replyHighlightTimer);
+    neuChatState.replyHighlightTimer = 0;
+  }
+  neuSetChatImageLightboxOpen('');
   if (neuChatState.bodyScrollRaf) {
     window.cancelAnimationFrame(neuChatState.bodyScrollRaf);
     neuChatState.bodyScrollRaf = 0;
@@ -3338,6 +4361,7 @@ function neuStartChatListListener(meUid) {
       const activeConvId = String(neuChatState.currentConversationId || '').trim();
       if (activeConvId) {
         const activeRow = neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === activeConvId) || null;
+        neuChatState.myLastReadAt = activeRow?.lastReadAt || null;
         neuChatState.peerLastReadAt = activeRow?.peerLastReadAt || null;
         const modal = neuChatModalNode();
         if (modal instanceof HTMLElement && !modal.hidden) {
@@ -3424,22 +4448,33 @@ function neuStartChatMessagesListener(conversationId, members) {
   neuChatState.messageUnsub = onSnapshot(
     q,
     (snap) => {
+      const bodyEl = neuChatBodyNode();
+      const messagesEl = neuChatMessagesNode();
+      const prevScrollHeight = messagesEl instanceof HTMLElement ? messagesEl.scrollHeight : 0;
       const wasNearBottom = neuChatIsNearBottom(NEU_CHAT_SCROLL_NEAR_BOTTOM);
       const incomingAdded = snap.docChanges().some((change) => {
         if (change.type !== 'added') return false;
         const senderUid = String(change.doc.data()?.senderUid || '').trim();
         return !!senderUid && senderUid !== meUid;
       });
-      const shouldStick = firstSnapshot || wasNearBottom;
-      if (shouldStick) neuSetNewMessagesChipVisible(false);
+      if (firstSnapshot || wasNearBottom) neuSetNewMessagesChipVisible(false);
       else if (incomingAdded) neuSetNewMessagesChipVisible(true);
 
       neuChatState.messages = snap.docs
         .map((row) => ({ id: row.id, ...(row.data() || {}) }))
         .reverse();
       neuRenderChatMessages();
-      if (shouldStick) {
-        window.setTimeout(() => neuChatScrollBottom(firstSnapshot ? 'auto' : 'smooth'), 0);
+      const unreadDivider = messagesEl instanceof HTMLElement ? messagesEl.querySelector('[data-neu-unread-divider="1"]') : null;
+      if (unreadDivider instanceof HTMLElement) {
+        window.setTimeout(() => {
+          unreadDivider.scrollIntoView({ block: 'center' });
+        }, 0);
+      } else if (wasNearBottom) {
+        window.setTimeout(() => neuChatScrollBottom('smooth'), 0);
+      } else if (bodyEl instanceof HTMLElement && messagesEl instanceof HTMLElement) {
+        const nextScrollHeight = messagesEl.scrollHeight;
+        const delta = nextScrollHeight - prevScrollHeight;
+        if (delta !== 0) bodyEl.scrollTop += delta;
       }
 
       const shouldMarkRead = firstSnapshot || incomingAdded;
@@ -3480,6 +4515,16 @@ async function neuOpenConversation(conversationId, seed = {}) {
     return;
   }
 
+  if (String(neuChatState.currentConversationId || '').trim() && String(neuChatState.currentConversationId || '').trim() !== convId) {
+    neuChatStopTypingAndTimers({ bestEffort: true });
+  }
+  neuStopTypingListener();
+  neuStopReactionListeners();
+  neuClearChatReplyLongPressTimer();
+  neuSetChatLongPressMenuOpen('');
+  neuClearChatAttachment();
+  neuClearChatReplyDraft();
+
   const peerUid = String(seed.otherUid || members.find((uid) => uid !== meUid) || '').trim();
   const memberKey = String(data.memberKey || seed.memberKey || neuChatMemberKey(members[0], members[1])).trim();
   const peerReadFromConversation =
@@ -3487,6 +4532,9 @@ async function neuOpenConversation(conversationId, seed = {}) {
     data?.peerLastReadAt ||
     data?.lastReadAtPeer ||
     null;
+  const myReadFromList = Array.isArray(neuChatState.listRows)
+    ? neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === convId)?.lastReadAt || null
+    : null;
 
   neuChatState.lastConversationId = convId;
   neuChatState.lastPeerUid = peerUid;
@@ -3497,8 +4545,12 @@ async function neuOpenConversation(conversationId, seed = {}) {
   neuChatState.messages = [];
   neuChatState.newMessageChipVisible = false;
   neuChatState.peerTyping = false;
+  neuChatState.myLastReadAt = myReadFromList;
   neuChatState.peerLastReadAt = peerReadFromConversation || null;
   neuChatState.nearBottom = true;
+  neuChatState.lastRenderedMsgId = '';
+  neuChatState.typingConversationId = convId;
+  neuChatState.typingActive = false;
   neuChatSetHint('');
   neuRenderChatHeader();
   neuRenderChatMessages();
@@ -3508,8 +4560,15 @@ async function neuOpenConversation(conversationId, seed = {}) {
   if (peerUid) await neuEnsureChatProfile(peerUid);
   neuRenderChatHeader();
   neuStartChatMessagesListener(convId, members);
+  neuStartTypingListener(convId, members);
   window.setTimeout(() => {
-    neuChatScrollBottom('auto');
+    const messagesRoot = neuChatMessagesNode();
+    const unreadDivider = messagesRoot instanceof HTMLElement ? messagesRoot.querySelector('[data-neu-unread-divider="1"]') : null;
+    if (unreadDivider instanceof HTMLElement) {
+      unreadDivider.scrollIntoView({ block: 'center' });
+    } else {
+      neuChatScrollBottom('auto');
+    }
     neuSyncChatComposerState();
     neuChatAutoResizeInput();
     const input = neuChatInputNode();
@@ -3608,19 +4667,23 @@ async function neuOpenChatWithUser(otherUid) {
   }
 }
 
-async function neuSendChatMessage() {
+async function neuSendChatMessage(options = {}) {
+  const retryUpload = options && typeof options === 'object' ? options.retryUpload === true : false;
   const meUid = neuCurrentUid();
   const conversationId = String(neuChatState.currentConversationId || '').trim();
   const textInput = neuChatInputNode();
+  const attachmentFile = neuChatState.pendingImageFile instanceof File ? neuChatState.pendingImageFile : null;
+  const attachmentFingerprint = neuChatFileFingerprint(attachmentFile);
   const rawText = String(
     textInput instanceof HTMLInputElement || textInput instanceof HTMLTextAreaElement ? textInput.value : '',
   );
   const safeText = rawText.trim().slice(0, 1000);
-  if (!meUid || !conversationId || !safeText) {
+  const replyTo = neuChatNormalizeReplyPayload(neuChatState.replyDraft);
+  if (!meUid || !conversationId || (!safeText && !attachmentFile)) {
     neuSyncChatComposerState();
     return;
   }
-  if (neuChatState.sending) return;
+  if (neuChatState.sending || neuChatState.uploading) return;
 
   const members = Array.isArray(neuChatState.currentMembers)
     ? neuChatState.currentMembers.map((uid) => String(uid || '').trim()).filter(Boolean)
@@ -3632,16 +4695,65 @@ async function neuSendChatMessage() {
 
   const memberKey = String(neuChatState.currentMemberKey || neuChatMemberKey(members[0], members[1])).trim();
   const now = serverTimestamp();
+  let messageRef = null;
 
   neuSetChatSending(true);
+  neuSetChatUploading(!!attachmentFile);
   neuChatSetHint('');
   try {
+    let imageUrl = '';
+    let imageStoragePath = '';
+    if (attachmentFile) {
+      if (!(attachmentFile instanceof File)) return;
+      const isImage = String(attachmentFile.type || '').toLowerCase().startsWith('image/');
+      if (!isImage) {
+        neuChatSetHint('Solo imagenes.', true);
+        return;
+      }
+      if (Number(attachmentFile.size || 0) > NEU_CHAT_UPLOAD_MAX_BYTES) {
+        neuChatSetHint('Max 5MB.', true);
+        return;
+      }
+
+      const canRetryUpload = retryUpload && neuChatCanRetryUpload(conversationId, attachmentFile);
+      const retryMessageId = canRetryUpload ? String(neuChatState.uploadRetryContext?.messageId || '').trim() : '';
+      const nextMessageId = retryMessageId || doc(collection(db, 'neuConversations', conversationId, 'messages')).id;
+      messageRef = doc(db, 'neuConversations', conversationId, 'messages', nextMessageId);
+
+      const safeFileName = neuSafeChatUploadName(attachmentFile);
+      imageStoragePath = `${NEU_CHAT_UPLOAD_PREFIX}${conversationId}/${messageRef.id}/${safeFileName}`;
+      neuChatSetUploadRetryContext({
+        conversationId,
+        messageId: messageRef.id,
+        fileFingerprint: attachmentFingerprint,
+      });
+      const uploadRef = storageRef(neuChatStorageInstance(), imageStoragePath);
+      try {
+        await uploadBytes(uploadRef, attachmentFile, {
+          contentType: String(attachmentFile.type || 'image/jpeg').trim() || 'image/jpeg',
+        });
+        imageUrl = await getDownloadURL(uploadRef);
+      } catch (uploadError) {
+        neuChatLogUploadFail(uploadError, conversationId);
+        neuChatSetHint(neuChatUploadErrorMessage(uploadError), true, { retryUpload: true });
+        return;
+      }
+    } else {
+      neuChatSetUploadRetryContext(null);
+    }
+
+    if (!messageRef) {
+      messageRef = doc(collection(db, 'neuConversations', conversationId, 'messages'));
+    }
+
+    const previewText = safeText || (imageUrl ? '📷 Foto' : '');
     const batch = writeBatch(db);
     const conversationRef = doc(db, 'neuConversations', conversationId);
-    const messageRef = doc(collection(db, 'neuConversations', conversationId, 'messages'));
     batch.set(messageRef, {
       senderUid: meUid,
       text: safeText,
+      ...(imageUrl ? { imageUrl, imageStoragePath } : {}),
+      ...(replyTo ? { replyTo } : {}),
       createdAt: now,
     });
     batch.set(
@@ -3649,7 +4761,7 @@ async function neuSendChatMessage() {
       {
         members,
         memberKey,
-        lastMessageText: safeText,
+        lastMessageText: previewText,
         lastMessageAt: now,
         lastSenderUid: meUid,
         updatedAt: now,
@@ -3666,7 +4778,7 @@ async function neuSendChatMessage() {
           otherUid,
           members,
           memberKey,
-          lastMessageText: safeText,
+          lastMessageText: previewText,
           lastMessageAt: now,
           unreadCount: isSender ? 0 : increment(1),
           ...(isSender ? { lastReadAt: now } : {}),
@@ -3677,6 +4789,7 @@ async function neuSendChatMessage() {
     });
 
     await batch.commit();
+    neuChatStopTypingAndTimers();
     neuSetConversationUnreadLocal(conversationId, 0);
     if (textInput instanceof HTMLInputElement || textInput instanceof HTMLTextAreaElement) {
       textInput.value = '';
@@ -3687,14 +4800,24 @@ async function neuSendChatMessage() {
       }
       textInput.focus({ preventScroll: true });
     }
+    neuClearChatAttachment();
+    neuClearChatReplyDraft();
+    neuChatSetUploadRetryContext(null);
+    neuChatSetHint('');
     neuChatAutoResizeInput();
     neuSyncChatComposerState();
     neuSetNewMessagesChipVisible(false);
     window.setTimeout(() => neuChatScrollBottom('auto'), 20);
   } catch (error) {
-    console.error('[neu-chat] send failed', error);
-    neuChatSetHint('No se pudo enviar el mensaje.', true);
+    neuChatLogUploadFail(error, conversationId);
+    if (attachmentFile) {
+      neuChatSetHint(neuChatUploadErrorMessage(error), true, { retryUpload: true });
+    } else {
+      const code = neuChatErrorCode(error) || 'unknown';
+      neuChatSetHint(`No se pudo enviar el mensaje (${code}).`, true);
+    }
   } finally {
+    neuSetChatUploading(false);
     neuSetChatSending(false);
   }
 }
@@ -3961,6 +5084,95 @@ function neuWireChatEvents() {
     (event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
+      const inLongPressMenu = !!target.closest('#neuChatLongPressMenu');
+      if (!inLongPressMenu) neuSetChatLongPressMenuOpen('');
+
+      const retryUploadBtn = target.closest('[data-neu-chat-retry-upload]');
+      if (retryUploadBtn instanceof HTMLButtonElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        neuSendChatMessage({ retryUpload: true }).catch((error) => {
+          neuChatLogUploadFail(error, neuChatState.currentConversationId);
+          neuChatSetHint(neuChatUploadErrorMessage(error), true, { retryUpload: true });
+        });
+        return;
+      }
+
+      const imageBtn = target.closest('[data-neu-chat-image]');
+      if (imageBtn instanceof HTMLElement) {
+        const imageUrl = String(imageBtn.getAttribute('data-neu-chat-image') || '').trim();
+        if (imageUrl) {
+          event.preventDefault();
+          event.stopPropagation();
+          neuSetChatImageLightboxOpen(imageUrl);
+        }
+        return;
+      }
+
+      const closeImage = target.closest('[data-neu-chat-image-close], #neuChatImageCloseBtn');
+      if (closeImage) {
+        event.preventDefault();
+        neuSetChatImageLightboxOpen('');
+        return;
+      }
+
+      const jumpBtn = target.closest('[data-neu-reply-jump]');
+      if (jumpBtn instanceof HTMLElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        const messageId = String(jumpBtn.getAttribute('data-neu-reply-jump') || '').trim();
+        if (!neuJumpToChatMessage(messageId)) {
+          neuChatSetHint('No se encontro el mensaje original.', true);
+        }
+        return;
+      }
+
+      const replyBtn = target.closest('[data-neu-reply-message]');
+      if (replyBtn instanceof HTMLElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        const messageId = String(replyBtn.getAttribute('data-neu-reply-message') || '').trim();
+        neuStartChatReplyDraft(messageId);
+        return;
+      }
+
+      const mobileReplyBtn = target.closest('[data-neu-chat-longpress-reply]');
+      if (mobileReplyBtn instanceof HTMLButtonElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        const menu = neuChatLongPressMenuNode();
+        const messageId = String(menu?.dataset?.neuChatReplyMessage || '').trim();
+        if (messageId) neuStartChatReplyDraft(messageId);
+        neuSetChatLongPressMenuOpen('');
+        return;
+      }
+
+      const reactOption = target.closest('[data-neu-react-type]');
+      if (reactOption instanceof HTMLButtonElement) {
+        const messageId = String(reactOption.getAttribute('data-neu-react-message') || '').trim();
+        const type = neuReactionType(reactOption.getAttribute('data-neu-react-type'));
+        event.preventDefault();
+        event.stopPropagation();
+        neuToggleMessageReaction(messageId, type).catch((error) => {
+          console.error('[neu-chat] react failed', error);
+          neuChatSetHint('No se pudo guardar reaccion.', true);
+        });
+        neuHideReactionPickers();
+        return;
+      }
+
+      const reactToggle = target.closest('[data-neu-react-toggle]');
+      if (reactToggle instanceof HTMLButtonElement) {
+        const messageId = String(reactToggle.getAttribute('data-neu-react-toggle') || '').trim();
+        event.preventDefault();
+        event.stopPropagation();
+        neuToggleReactionPicker(messageId);
+        return;
+      }
+
+      if (!target.closest('.neuReactPicker') && !target.closest('.neuReactBtn')) {
+        neuHideReactionPickers();
+      }
 
       const newChipBtn = target.closest('#neuNewMsgChip');
       if (newChipBtn) {
@@ -4005,6 +5217,35 @@ function neuWireChatEvents() {
     true,
   );
 
+  document.addEventListener(
+    'mouseover',
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const messageId = neuReactionWrapMessageId(target);
+      if (!messageId) return;
+      neuReactionClearHideTimer(messageId);
+      neuReactionSetHover(messageId, true);
+    },
+    true,
+  );
+
+  document.addEventListener(
+    'mouseout',
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const messageId = neuReactionWrapMessageId(target);
+      if (!messageId) return;
+      const wrap = neuReactionWrapNode(messageId);
+      if (!(wrap instanceof HTMLElement)) return;
+      const related = event.relatedTarget;
+      if (related instanceof Node && wrap.contains(related)) return;
+      neuReactionScheduleHide(messageId, 180);
+    },
+    true,
+  );
+
   document.getElementById('neuChatForm')?.addEventListener('submit', (event) => {
     event.preventDefault();
     neuSendChatMessage().catch((error) => {
@@ -4013,11 +5254,50 @@ function neuWireChatEvents() {
     });
   });
 
+  const attachBtn = neuChatAttachButtonNode();
+  const fileInput = neuChatFileInputNode();
+  if (attachBtn instanceof HTMLButtonElement && fileInput instanceof HTMLInputElement) {
+    attachBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      fileInput.click();
+    });
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0] instanceof File ? fileInput.files[0] : null;
+      if (!file) {
+        neuClearChatAttachment();
+        return;
+      }
+      neuChatSetAttachmentFromFile(file);
+    });
+  }
+
+  document.getElementById('neuChatAttachmentClearBtn')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    neuClearChatAttachment();
+    const input = neuChatInputNode();
+    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+      input.focus({ preventScroll: true });
+    }
+  });
+
+  document.getElementById('neuChatReplyCancelBtn')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    neuClearChatReplyDraft();
+    const input = neuChatInputNode();
+    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+      input.focus({ preventScroll: true });
+    }
+  });
+
   const chatInput = neuChatInputNode();
   if (chatInput instanceof HTMLInputElement || chatInput instanceof HTMLTextAreaElement) {
     chatInput.addEventListener('input', () => {
       neuChatAutoGrow(chatInput);
       neuSyncChatComposerState();
+      neuChatHandleTypingInput(chatInput.value);
+    });
+    chatInput.addEventListener('blur', () => {
+      neuChatStopTypingAndTimers({ bestEffort: true });
     });
   }
 
@@ -4042,6 +5322,55 @@ function neuWireChatEvents() {
       },
       { passive: true },
     );
+    chatBody.addEventListener(
+      'touchstart',
+      (event) => {
+        neuSetChatLongPressMenuOpen('');
+        const target = event.target;
+        if (!(target instanceof Element)) {
+          neuClearChatReplyLongPressTimer();
+          return;
+        }
+        const item = target.closest('.neuMessageItem');
+        if (!(item instanceof HTMLElement)) {
+          neuClearChatReplyLongPressTimer();
+          return;
+        }
+        const messageId = String(item.getAttribute('data-neu-msg-id') || '').trim();
+        if (!messageId) {
+          neuClearChatReplyLongPressTimer();
+          return;
+        }
+        const touch = event.touches?.[0];
+        const clientX = Number(touch?.clientX || 0);
+        const clientY = Number(touch?.clientY || 0);
+        neuScheduleChatReplyLongPress(messageId, clientX + 4, clientY + 4);
+      },
+      { passive: true },
+    );
+    chatBody.addEventListener(
+      'touchmove',
+      (event) => {
+        const touch = event.touches?.[0];
+        if (!touch) {
+          neuClearChatReplyLongPressTimer();
+          return;
+        }
+        const dx = Math.abs(Number(touch.clientX || 0) - Number(neuChatState.longPressReplyX || 0));
+        const dy = Math.abs(Number(touch.clientY || 0) - Number(neuChatState.longPressReplyY || 0));
+        if (dx + dy > 12) neuClearChatReplyLongPressTimer();
+      },
+      { passive: true },
+    );
+    ['touchend', 'touchcancel'].forEach((eventName) => {
+      chatBody.addEventListener(
+        eventName,
+        () => {
+          neuClearChatReplyLongPressTimer();
+        },
+        { passive: true },
+      );
+    });
   }
 
   window.addEventListener(
@@ -4052,8 +5381,33 @@ function neuWireChatEvents() {
     { passive: true },
   );
 
+  window.addEventListener(
+    'beforeunload',
+    () => {
+      neuChatStopTypingAndTimers({ bestEffort: true });
+      neuClearChatAttachment();
+      neuClearChatReplyLongPressTimer();
+      neuSetChatLongPressMenuOpen('');
+      if (neuChatState.chatSearchDebounceTimer) {
+        window.clearTimeout(neuChatState.chatSearchDebounceTimer);
+        neuChatState.chatSearchDebounceTimer = 0;
+      }
+    },
+    { passive: true },
+  );
+
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
+    const longPressMenu = neuChatLongPressMenuNode();
+    if (longPressMenu instanceof HTMLElement && !longPressMenu.classList.contains('hidden')) {
+      neuSetChatLongPressMenuOpen('');
+      return;
+    }
+    const lightbox = neuChatImageLightboxNode();
+    if (lightbox instanceof HTMLElement && !lightbox.hidden) {
+      neuSetChatImageLightboxOpen('');
+      return;
+    }
     const modal = neuChatModalNode();
     if (!(modal instanceof HTMLElement) || modal.hidden) return;
     neuCloseChatModal();
@@ -4069,9 +5423,14 @@ async function neuInitChatMvp(user) {
   neuInitChatFloatFlag();
   neuSyncUnreadUi();
   neuWireChatEvents();
+  neuWireChatSearchInput();
+  const chatSearchInput = neuChatSearchInputNode();
+  neuChatState.chatSearchQuery = String(chatSearchInput?.value || '').trim();
   neuStartChatListListener(meUid);
   neuWireChatListGuard();
   neuRenderChatList();
+  neuRenderChatAttachmentPreview();
+  neuRenderChatReplyPreview();
   neuChatAutoResizeInput();
   neuUpdateChatComposerOffsetVar();
   neuSetChatSending(false);

@@ -329,6 +329,16 @@
             </article>
             <article class="mini-list-card">
               <div class="screen-head"><h3>Chats</h3></div>
+              <div class="neu-chat-search-wrap">
+                <input
+                  id="pulseChatSearchInput"
+                  class="input neu-chat-search-input"
+                  type="search"
+                  placeholder="Buscar chats..."
+                  autocomplete="off"
+                  aria-label="Buscar chats"
+                />
+              </div>
               <div id="pulseConversations" class="simple-list"></div>
             </article>
             <article class="mini-list-card">
@@ -568,6 +578,30 @@
         </div>
 
         <form class="neu-chat-foot neuChatComposer" id="neuChatForm">
+          <div class="neu-chat-reply-preview hidden" id="neuChatReplyPreview">
+            <span id="neuChatReplyPreviewText"></span>
+            <button class="btn-white-outline neu-chat-reply-cancel" id="neuChatReplyCancelBtn" type="button" aria-label="Cancelar reply">
+              X
+            </button>
+          </div>
+
+          <div class="neu-chat-attachment-preview hidden" id="neuChatAttachmentPreview">
+            <img id="neuChatAttachmentPreviewImg" alt="preview" />
+            <span id="neuChatAttachmentPreviewName"></span>
+            <button
+              class="btn-white-outline neu-chat-attachment-clear"
+              id="neuChatAttachmentClearBtn"
+              type="button"
+              aria-label="Quitar imagen"
+            >
+              X
+            </button>
+          </div>
+
+          <input id="neuChatFileInput" type="file" accept="image/*" hidden />
+          <button class="btn-white-outline neu-chat-attach-btn" id="neuChatAttachBtn" type="button" aria-label="Adjuntar imagen">
+            📎
+          </button>
           <textarea
             id="neuChatInput"
             class="input"
@@ -578,6 +612,18 @@
           <button class="btn-white-outline neu-chat-send-compact" id="neuChatSendBtn" type="submit">Enviar</button>
         </form>
         <p class="hintSmall" id="neuChatHint"></p>
+
+        <div class="neu-chat-longpress-menu hidden" id="neuChatLongPressMenu" role="menu" aria-label="Opciones mensaje">
+          <button class="btn-white-outline neu-chat-longpress-action" data-neu-chat-longpress-reply type="button" role="menuitem">&#x21A9; Reply</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer-modal neu-chat-image-lightbox" id="neuChatImageLightbox" hidden>
+      <div class="composer-modal-backdrop" data-neu-chat-image-close="1"></div>
+      <div class="composer-modal-card neu-chat-image-lightbox-card" role="dialog" aria-modal="true" aria-label="Vista de imagen">
+        <button class="btn-white-outline neu-chat-image-close" id="neuChatImageCloseBtn" type="button">Cerrar</button>
+        <img id="neuChatLightboxImg" alt="chat image" />
       </div>
     </div>
 
@@ -586,7 +632,7 @@
     <script type="module">
       console.log('[NEU BOOT] html module loader start');
 
-      import('./assets/js/pages/neu-social-app-page.js?v=20260222ap')
+      import('./assets/js/pages/neu-social-app-page.js?v=20260223a')
         .then(() => console.log('[NEU BOOT] module imported OK'))
         .catch((err) => {
           console.error('[NEU BOOT] module import FAILED:', err);

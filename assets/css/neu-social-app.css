@@ -1543,6 +1543,23 @@ body.fusion-profile.neu-social-app .neu-chat-list {
   gap: 8px;
 }
 
+body.fusion-profile.neu-social-app .neu-chat-search-wrap {
+  margin: 0 0 10px;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-search-input {
+  width: 100%;
+  min-height: 36px;
+  border-radius: 12px;
+}
+
+body.fusion-profile.neu-social-app .neuSearchHit {
+  border-radius: 6px;
+  background: rgba(143, 179, 255, 0.24);
+  color: #f4f7ff;
+  padding: 0 1px;
+}
+
 body.fusion-profile.neu-social-app .neu-chat-item {
   width: 100%;
   border: 1px solid var(--glass-border);
@@ -1761,6 +1778,7 @@ body.fusion-profile.neu-social-app .neuMessageRow.incoming {
 }
 
 body.fusion-profile.neu-social-app .neuMessagePack {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -1812,6 +1830,32 @@ body.fusion-profile.neu-social-app .neu-chat-empty {
   font-size: 12px;
 }
 
+body.fusion-profile.neu-social-app .neuUnreadDivider {
+  text-align: center;
+  margin: 10px 0;
+  font-size: 12px;
+  opacity: 0.7;
+  position: relative;
+}
+
+body.fusion-profile.neu-social-app .neuUnreadDivider::before,
+body.fusion-profile.neu-social-app .neuUnreadDivider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body.fusion-profile.neu-social-app .neuUnreadDivider::before {
+  left: 0;
+}
+
+body.fusion-profile.neu-social-app .neuUnreadDivider::after {
+  right: 0;
+}
+
 body.fusion-profile.neu-social-app .neuMessageBubble {
   display: block;
   max-width: 100%;
@@ -1825,6 +1869,281 @@ body.fusion-profile.neu-social-app .neuMessageBubble {
   white-space: pre-wrap;
   line-height: 1.4;
   min-width: 0;
+}
+
+body.fusion-profile.neu-social-app .neuMessageBubble.has-image {
+  padding: 6px;
+}
+
+body.fusion-profile.neu-social-app .neuMessageText {
+  display: block;
+}
+
+body.fusion-profile.neu-social-app .neuChatImageBtn {
+  display: block;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: zoom-in;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+body.fusion-profile.neu-social-app .neuChatImagePreview {
+  display: block;
+  width: auto;
+  max-width: 260px;
+  max-height: 320px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+body.fusion-profile.neu-social-app .neuMessageItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+body.fusion-profile.neu-social-app .neuMessageRow.outgoing .neuMessageItem {
+  align-items: flex-end;
+}
+
+body.fusion-profile.neu-social-app .neuMessageRow.incoming .neuMessageItem {
+  align-items: flex-start;
+}
+
+body.fusion-profile.neu-social-app .neuReplyBtn {
+  position: absolute;
+  top: -24px;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(16, 42, 92, 0.95);
+  color: var(--fusion-text-soft);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(2px);
+  transition: opacity 120ms ease, transform 120ms ease, background 120ms ease, color 120ms ease;
+  z-index: 4;
+}
+
+body.fusion-profile.neu-social-app .neuMessageItem.is-incoming .neuReplyBtn {
+  right: 0;
+}
+
+body.fusion-profile.neu-social-app .neuMessageItem.is-outgoing .neuReplyBtn {
+  left: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.fusion-profile.neu-social-app .neuMessageItem:hover .neuReplyBtn,
+  body.fusion-profile.neu-social-app .neuReplyBtn:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  body.fusion-profile.neu-social-app .neuReplyBtn {
+    display: none !important;
+  }
+}
+
+body.fusion-profile.neu-social-app .neuReplyQuote {
+  width: 100%;
+  max-width: 100%;
+  border: 0;
+  border-left: 3px solid rgba(143, 179, 255, 0.78);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--fusion-text-soft);
+  text-align: left;
+  padding: 6px 9px;
+  cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .neuReplyQuote:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+
+body.fusion-profile.neu-social-app .neuReplyQuoteSnippet {
+  display: block;
+  font-size: 12px;
+  line-height: 1.25;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+body.fusion-profile.neu-social-app .neuMessageItem.is-reply-target .neuMessageBubble {
+  box-shadow: 0 0 0 2px rgba(143, 179, 255, 0.55), 0 0 0 6px rgba(143, 179, 255, 0.12);
+}
+
+body.fusion-profile.neu-social-app .neuReactWrap {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.fusion-profile.neu-social-app .neuReactWrap.is-incoming {
+  right: -30px;
+}
+
+body.fusion-profile.neu-social-app .neuReactWrap.is-outgoing {
+  left: -30px;
+}
+
+body.fusion-profile.neu-social-app .neuReactBtn {
+  position: relative;
+  right: auto;
+  left: auto;
+  top: auto;
+  transform: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(16, 42, 92, 0.95);
+  color: var(--fusion-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.26);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease, transform 120ms ease, background 120ms ease;
+  z-index: 4;
+}
+
+body.fusion-profile.neu-social-app .neuMessagePack:hover .neuReactBtn,
+body.fusion-profile.neu-social-app .neuReactWrap:hover .neuReactBtn,
+body.fusion-profile.neu-social-app .neuReactWrap.is-hover .neuReactBtn,
+body.fusion-profile.neu-social-app .neuReactBtn:focus-visible,
+body.fusion-profile.neu-social-app .neuReactBtn.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.fusion-profile.neu-social-app .neuReactBtn.is-active {
+  background: rgba(40, 78, 150, 0.95);
+}
+
+body.fusion-profile.neu-social-app .neuReactPicker {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(16, 42, 92, 0.98);
+  box-shadow: 0 10px 24px rgba(1, 8, 28, 0.34);
+  pointer-events: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s ease;
+}
+
+body.fusion-profile.neu-social-app .neuReactWrap.is-incoming .neuReactPicker {
+  left: 0;
+  right: auto;
+}
+
+body.fusion-profile.neu-social-app .neuReactWrap.is-outgoing .neuReactPicker {
+  left: auto;
+  right: 0;
+}
+
+body.fusion-profile.neu-social-app .neuMessagePack:hover .neuReactPicker,
+body.fusion-profile.neu-social-app .neuReactWrap:hover .neuReactPicker,
+body.fusion-profile.neu-social-app .neuReactWrap.is-hover .neuReactPicker,
+body.fusion-profile.neu-social-app .neuReactPicker.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+body.fusion-profile.neu-social-app .neuReactOption {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fusion-text);
+  font-size: 15px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .neuReactOption:hover,
+body.fusion-profile.neu-social-app .neuReactOption:focus-visible,
+body.fusion-profile.neu-social-app .neuReactOption.is-active {
+  background: rgba(143, 179, 255, 0.22);
+  outline: none;
+}
+
+body.fusion-profile.neu-social-app .neuReactBar {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 16px;
+  margin-top: 2px;
+}
+
+body.fusion-profile.neu-social-app .neuReactBar.hidden {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app .neuReactChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 16px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(230, 236, 255, 0.9);
+}
+
+body.fusion-profile.neu-social-app .neuMsgEnter {
+  animation: neuMsgEnter 0.16s ease-out both;
+}
+
+@keyframes neuMsgEnter {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 body.fusion-profile.neu-social-app .neuMessageRow.outgoing .neuMessageBubble {
@@ -1895,12 +2214,97 @@ body.fusion-profile.neu-social-app .neuChatComposer {
   position: relative;
   z-index: 2;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   padding: 12px;
   border-top: 1px solid var(--glass-border);
   background: linear-gradient(180deg, rgba(16, 42, 92, 0.84), rgba(16, 42, 92, 0.95));
   flex: 0 0 auto;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-attachment-preview {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.fusion-profile.neu-social-app .neu-chat-reply-preview {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(143, 179, 255, 0.34);
+  background: rgba(30, 74, 152, 0.18);
+}
+
+body.fusion-profile.neu-social-app .neu-chat-reply-preview.hidden {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app #neuChatReplyPreviewText {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--fusion-text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-reply-cancel {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+  border-radius: 999px;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-attachment-preview.hidden {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-attachment-preview img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.fusion-profile.neu-social-app .neu-chat-attachment-preview span {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--fusion-text-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-attachment-clear {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+  border-radius: 999px;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-attach-btn {
+  flex: 0 0 auto;
+  min-width: 38px;
+  min-height: 36px;
+  border-radius: 999px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
 }
 
 body.fusion-profile.neu-social-app .neu-chat-foot #neuChatInput {
@@ -1953,6 +2357,64 @@ body.fusion-profile.neu-social-app #neuChatHint:empty {
   display: none;
   min-height: 0;
   padding: 0;
+}
+
+body.fusion-profile.neu-social-app #neuChatHint .neuChatHintRetry {
+  margin-left: 8px;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-longpress-menu {
+  position: fixed;
+  z-index: 1000002;
+  min-width: 130px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(9, 25, 56, 0.98);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.4);
+}
+
+body.fusion-profile.neu-social-app .neu-chat-longpress-menu.hidden {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-longpress-action {
+  width: 100%;
+  min-height: 36px;
+  font-size: 13px;
+  justify-content: center;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-image-lightbox .composer-modal-backdrop {
+  background: rgba(1, 7, 24, 0.86);
+}
+
+body.fusion-profile.neu-social-app .neu-chat-image-lightbox-card {
+  width: min(94vw, 980px);
+  max-width: 94vw;
+  max-height: 92vh;
+  padding: 14px;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  background: rgba(10, 26, 58, 0.96);
+}
+
+body.fusion-profile.neu-social-app .neu-chat-image-lightbox-card img {
+  width: auto;
+  max-width: 100%;
+  max-height: calc(92vh - 72px);
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-image-close {
+  justify-self: end;
 }
 
 body.fusion-profile.neu-social-app .neu-chat-float-flag {
@@ -2081,6 +2543,11 @@ body.fusion-profile.neu-social-app .neu-chat-float-flag[hidden] {
 
   body.fusion-profile.neu-social-app .neuMessageBubble {
     max-width: 100%;
+  }
+
+  body.fusion-profile.neu-social-app .neuChatImagePreview {
+    max-width: 70vw;
+    max-height: 58vh;
   }
 
   body.fusion-profile.neu-social-app .neuTypingRow {
