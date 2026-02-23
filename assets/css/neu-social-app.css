@@ -391,6 +391,40 @@ body.fusion-profile.neu-social-app .bottom-nav-btn {
   transition: transform 120ms ease, background 120ms ease, color 120ms ease;
 }
 
+body.fusion-profile.neu-social-app .bottom-nav-btn[data-bottom-target='pulse'],
+body.fusion-profile.neu-social-app .bottom-nav-btn[data-portal-target='pulse'] {
+  position: relative;
+  overflow: visible;
+}
+
+body.fusion-profile.neu-social-app .neu-unread-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff3d5f;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  border: 2px solid var(--fusion-card);
+}
+
+body.fusion-profile.neu-social-app .neu-unread-badge[hidden] {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app .neu-bottom-unread-badge {
+  position: absolute;
+  top: 7px;
+  right: 12px;
+  transform: translate(50%, -50%);
+  z-index: 2;
+}
+
 body.fusion-profile.neu-social-app .bottom-nav-btn.is-active {
   background: #16346f;
   color: #ffffff;
@@ -1037,10 +1071,56 @@ body.fusion-profile.neu-social-app .neu-chat-last {
   text-overflow: ellipsis;
 }
 
+body.fusion-profile.neu-social-app .neu-chat-item.is-unread .neu-chat-last {
+  color: var(--fusion-text);
+  font-weight: 600;
+}
+
 body.fusion-profile.neu-social-app .neu-chat-time {
   font-size: 11px;
   color: var(--fusion-text-soft);
   opacity: 0.86;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-right {
+  min-width: 36px;
+  display: grid;
+  justify-items: end;
+  align-content: center;
+  gap: 6px;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-unread-badge {
+  justify-self: end;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-empty-title {
+  margin: 0;
+  color: var(--fusion-text);
+  font-weight: 600;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-empty-sub {
+  margin: 0;
+  color: var(--fusion-text-soft);
+  font-size: 12px;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-empty-cta {
+  min-height: 34px;
+  padding: 8px 12px;
+}
+
+/* Hide legacy floating mini-chat in NEU app (NEU chat uses Pulse + modal). */
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 {
+  display: none !important;
 }
 
 body.fusion-profile.neu-social-app .neu-chat-modal-card {

@@ -238,7 +238,139 @@ service cloud.firestore {
 
     /* ===== NEU USERS ===== */
     match /neuUsers/{uid} {
-      allow read, write: if signedIn() && request.auth.uid == uid;
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    /* ===== NEU POSTS ===== */
+    match /neuPosts/{postId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn() && (
+        request.resource.data.ownerUid == request.auth.uid
+        || request.resource.data.authorUid == request.auth.uid
+        || request.resource.data.userId == request.auth.uid
+      );
+
+      allow update: if signedIn() && (
+        resource.data.ownerUid == request.auth.uid
+        || resource.data.authorUid == request.auth.uid
+        || resource.data.userId == request.auth.uid
+      ) && (
+        request.resource.data.ownerUid == request.auth.uid
+        || request.resource.data.authorUid == request.auth.uid
+        || request.resource.data.userId == request.auth.uid
+      );
+
+      allow delete: if signedIn() && (
+        resource.data.ownerUid == request.auth.uid
+        || resource.data.authorUid == request.auth.uid
+        || resource.data.userId == request.auth.uid
+      );
+    }
+
+    /* ===== NEU STORIES ===== */
+    match /neuStories/{storyId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn() && (
+        request.resource.data.ownerUid == request.auth.uid
+        || request.resource.data.authorUid == request.auth.uid
+        || request.resource.data.userId == request.auth.uid
+      );
+
+      allow update: if signedIn() && (
+        resource.data.ownerUid == request.auth.uid
+        || resource.data.authorUid == request.auth.uid
+        || resource.data.userId == request.auth.uid
+      ) && (
+        request.resource.data.ownerUid == request.auth.uid
+        || request.resource.data.authorUid == request.auth.uid
+        || request.resource.data.userId == request.auth.uid
+      );
+
+      allow delete: if signedIn() && (
+        resource.data.ownerUid == request.auth.uid
+        || resource.data.authorUid == request.auth.uid
+        || resource.data.userId == request.auth.uid
+      );
+    }
+
+    /* ===== NEU FOLLOWS ===== */
+    match /neuFollows/{uid} {
+      allow read: if signedIn();
+
+      match /following/{targetUid} {
+        allow read: if signedIn();
+        allow create, update: if signedIn()
+          && request.auth.uid == uid
+          && targetUid != uid
+          && request.resource.data.sourceUid == uid
+          && request.resource.data.targetUid == targetUid;
+        allow delete: if signedIn() && request.auth.uid == uid;
+      }
+
+      match /followers/{sourceUid} {
+        allow read: if signedIn();
+        allow create, update: if signedIn()
+          && request.auth.uid == sourceUid
+          && sourceUid != uid
+          && request.resource.data.sourceUid == sourceUid
+          && request.resource.data.targetUid == uid;
+        allow delete: if signedIn() && (
+          request.auth.uid == sourceUid
+          || request.auth.uid == uid
+        );
+      }
+    }
+
+    /* ===== NEU CHAT ===== */
+    match /neuConversations/{conversationId} {
+      allow read: if signedIn()
+        && (resource.data.members is list)
+        && resource.data.members.hasAny([request.auth.uid]);
+
+      allow create: if signedIn()
+        && (request.resource.data.members is list)
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members.hasAny([request.auth.uid]);
+
+      allow update: if signedIn()
+        && (resource.data.members is list)
+        && resource.data.members.hasAny([request.auth.uid])
+        && (request.resource.data.members is list)
+        && request.resource.data.members == resource.data.members;
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if signedIn()
+          && exists(/databases/$(database)/documents/neuConversations/$(conversationId))
+          && (get(/databases/$(database)/documents/neuConversations/$(conversationId)).data.members is list)
+          && get(/databases/$(database)/documents/neuConversations/$(conversationId)).data.members.hasAny([request.auth.uid]);
+
+        allow create: if signedIn()
+          && request.resource.data.senderUid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && exists(/databases/$(database)/documents/neuConversations/$(conversationId))
+          && (get(/databases/$(database)/documents/neuConversations/$(conversationId)).data.members is list)
+          && get(/databases/$(database)/documents/neuConversations/$(conversationId)).data.members.hasAny([request.auth.uid]);
+
+        allow update, delete: if false;
+      }
+    }
+
+    match /neuUserChats/{uid}/chats/{conversationId} {
+      allow read: if signedIn() && request.auth.uid == uid;
+
+      allow create, update: if signedIn()
+        && (request.resource.data.members is list)
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members.hasAny([request.auth.uid])
+        && request.resource.data.members.hasAny([uid]);
+
+      allow delete: if signedIn() && request.auth.uid == uid;
     }
 
     /* ===== COURSES (lista tematów) ===== */
