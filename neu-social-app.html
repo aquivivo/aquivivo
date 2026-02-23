@@ -11,11 +11,178 @@
     />
     <link rel="stylesheet" href="assets/css/styles.css?v=20260222l" />
     <link rel="stylesheet" href="assets/css/neu-theme.css?v=20260222c" />
-    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260222o" />
+    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260222aa" />
     <script src="assets/js/layout.js?v=20260222i" type="module"></script>
   </head>
   <body data-page="profile" data-no-side-panel="1" class="fusion-profile neu-social-app no-side-panel" data-portal="feed">
     <div id="appHeader"></div>
+
+    <section class="neu-onboarding-view" id="onboardingView" hidden>
+      <div class="neu-onboarding-card">
+        <header class="neu-onboarding-head">
+          <p class="neu-onboarding-kicker">NEU onboarding</p>
+          <h1>Completa tu perfil</h1>
+          <p class="neu-onboarding-sub">Dos pasos rápidos para activar tu experiencia social.</p>
+        </header>
+
+        <div class="neu-onboarding-progress-wrap" aria-hidden="true">
+          <div class="neu-onboarding-progress-track">
+            <div class="neu-onboarding-progress-fill" id="neuOnboardingProgressFill"></div>
+          </div>
+          <div class="neu-onboarding-steps">
+            <span class="is-active" data-onb-step-label="1">Paso 1</span>
+            <span data-onb-step-label="2">Paso 2</span>
+          </div>
+        </div>
+
+        <form id="neuOnboardingForm" class="neu-onboarding-form" novalidate>
+          <section class="neu-onboarding-step is-active" data-onboarding-step="1">
+            <div class="neu-onboarding-grid">
+              <label>
+                Nombre
+                <input id="onbFirstName" class="input" type="text" maxlength="60" autocomplete="given-name" />
+                <p class="neu-onboarding-error" id="onbError-firstName"></p>
+              </label>
+              <label>
+                Apellido
+                <input id="onbLastName" class="input" type="text" maxlength="80" autocomplete="family-name" />
+                <p class="neu-onboarding-error" id="onbError-lastName"></p>
+              </label>
+              <label>
+                Username
+                <input id="onbUsername" class="input" type="text" maxlength="24" autocapitalize="none" />
+                <p class="neu-onboarding-hint">@ min. 3 caracteres, minúsculas, sin espacios.</p>
+                <p class="neu-onboarding-error" id="onbError-username"></p>
+              </label>
+              <label>
+                País de origen
+                <select id="onbCountry" class="select">
+                  <option value="">Selecciona</option>
+                  <option value="Argentina">Argentina</option>
+                  <option value="Bolivia">Bolivia</option>
+                  <option value="Brazil">Brazil</option>
+                  <option value="Chile">Chile</option>
+                  <option value="Colombia">Colombia</option>
+                  <option value="Cuba">Cuba</option>
+                  <option value="Dominican Republic">Dominican Republic</option>
+                  <option value="Ecuador">Ecuador</option>
+                  <option value="El Salvador">El Salvador</option>
+                  <option value="Guatemala">Guatemala</option>
+                  <option value="Honduras">Honduras</option>
+                  <option value="Mexico">Mexico</option>
+                  <option value="Nicaragua">Nicaragua</option>
+                  <option value="Panama">Panama</option>
+                  <option value="Paraguay">Paraguay</option>
+                  <option value="Peru">Peru</option>
+                  <option value="Poland">Poland</option>
+                  <option value="Spain">Spain</option>
+                  <option value="Ukraine">Ukraine</option>
+                  <option value="Uruguay">Uruguay</option>
+                  <option value="Venezuela">Venezuela</option>
+                  <option value="other">Other</option>
+                </select>
+                <p class="neu-onboarding-error" id="onbError-countryOfOrigin"></p>
+              </label>
+              <label id="onbCountryOtherWrap" hidden>
+                Escribe tu país
+                <input id="onbCountryOther" class="input" type="text" maxlength="80" />
+                <p class="neu-onboarding-error" id="onbError-countryOfOriginOther"></p>
+              </label>
+              <label>
+                Género
+                <select id="onbGender" class="select">
+                  <option value="">Selecciona</option>
+                  <option value="female">female</option>
+                  <option value="male">male</option>
+                  <option value="nonbinary">nonbinary</option>
+                  <option value="prefer_not_to_say">prefer_not_to_say</option>
+                </select>
+                <p class="neu-onboarding-error" id="onbError-gender"></p>
+              </label>
+              <label>
+                Idioma
+                <select id="onbLanguage" class="select">
+                  <option value="">Selecciona</option>
+                  <option value="pl">pl</option>
+                  <option value="es">es</option>
+                  <option value="uk">uk</option>
+                  <option value="en">en</option>
+                </select>
+                <p class="neu-onboarding-error" id="onbError-language"></p>
+              </label>
+              <label>
+                Año de nacimiento (opcional)
+                <input id="onbBirthYear" class="input" type="number" inputmode="numeric" min="1900" max="2100" />
+                <p class="neu-onboarding-error" id="onbError-birthYear"></p>
+              </label>
+            </div>
+          </section>
+
+          <section class="neu-onboarding-step" data-onboarding-step="2">
+            <div class="neu-onboarding-grid">
+              <label>
+                Teléfono
+                <input id="onbPhone" class="input" type="tel" autocomplete="tel" placeholder="+48 600 700 800" />
+                <p class="neu-onboarding-hint">Formato E.164. Si no pones +, usamos prefijo PL (+48).</p>
+                <p class="neu-onboarding-error" id="onbError-phone"></p>
+              </label>
+              <label>
+                Ciudad en Polonia
+                <input id="onbCityPl" class="input" type="text" maxlength="80" />
+                <p class="neu-onboarding-error" id="onbError-cityPl"></p>
+              </label>
+              <label class="neu-onboarding-check">
+                <input id="onbMarketingConsent" type="checkbox" />
+                <span>Acepto recibir novedades y recomendaciones.</span>
+              </label>
+              <label class="neu-onboarding-check">
+                <input id="onbTermsAccepted" type="checkbox" />
+                <span>Acepto términos y política de privacidad.</span>
+              </label>
+              <p class="neu-onboarding-error neu-onboarding-check-error" id="onbError-termsAccepted"></p>
+            </div>
+          </section>
+
+          <p class="neu-onboarding-global-msg" id="onbGlobalMsg" aria-live="polite"></p>
+
+          <div class="neu-onboarding-actions">
+            <button class="btn-white-outline" id="onbPrevBtn" type="button">Volver</button>
+            <button class="btn-yellow" id="onbNextBtn" type="button">Dalej</button>
+            <button class="btn-yellow" id="onbSubmitBtn" type="submit">Finalizar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="neu-post-onboarding-view" id="postOnboardingView" hidden>
+      <div class="neu-post-onboarding-card">
+        <header class="neu-post-onboarding-head">
+          <p class="neu-post-onboarding-kicker">NEU start</p>
+          <h1>Wszystko gotowe</h1>
+          <p>Zrób jeden szybki krok, żeby zacząć aktywnie korzystać z aplikacji.</p>
+        </header>
+
+        <div class="neu-post-onboarding-grid">
+          <button class="neu-post-action-card" type="button" data-post-onb-action="avatar">
+            <strong>Dodaj zdjęcie profilowe</strong>
+            <span>Uzupełnij avatar i dokończ profil.</span>
+          </button>
+          <button class="neu-post-action-card" type="button" data-post-onb-action="suggested">
+            <strong>Znajdź osoby do obserwowania</strong>
+            <span>Przejdź do Pulse i zobacz sekcję Sugerowani.</span>
+          </button>
+          <button class="neu-post-action-card" type="button" data-post-onb-action="post">
+            <strong>Napisz pierwszy post</strong>
+            <span>Otwórz szybki modal i opublikuj pierwszy wpis.</span>
+          </button>
+        </div>
+
+        <p class="neu-post-onboarding-msg" id="postOnboardingMsg"></p>
+        <div class="neu-post-onboarding-actions">
+          <button class="text-link" id="postOnboardingSkipBtn" type="button">Pomiń</button>
+        </div>
+      </div>
+    </section>
 
     <main class="fusion-main">
       <section class="fusion-feed-column">
@@ -38,7 +205,7 @@
 
           <div class="profile-actions">
             <button class="btn-yellow" id="btnFusionFollow" type="button">Agregar</button>
-            <a class="btn-white-outline" id="btnFusionMessage" href="neu-social-app.html?portal=pulse">Mensaje</a>
+            <button class="btn-white-outline" id="btnFusionMessage" type="button" data-chat-uid="">Mensaje</button>
             <button class="btn-white-outline is-hidden" id="btnNeuEditProfile" type="button">Editar perfil</button>
             <button class="btn-white-outline is-hidden" id="btnFusionFriend" type="button">Seguir</button>
             <button class="btn-white-outline is-hidden" id="btnFusionShare" type="button">Compartir</button>
@@ -152,6 +319,10 @@
 
         <section class="portal-screen" data-portal-screen="pulse">
           <div class="grid-2">
+            <article class="mini-list-card" id="pulseSuggestedCard">
+              <div class="screen-head"><h3>Sugerowani</h3></div>
+              <div id="pulseSuggestedUsers" class="simple-list"></div>
+            </article>
             <article class="mini-list-card">
               <div class="screen-head"><h3>Notifications</h3></div>
               <div id="pulseNotifications" class="simple-list"></div>
@@ -203,6 +374,11 @@
       </button>
       <button class="bottom-nav-btn" id="btnBottomProfile" type="button">Perfil</button>
     </nav>
+
+    <button class="neu-chat-float-flag hidden" id="neuChatFloatFlag" type="button" aria-label="Abrir chat">
+      <span class="neu-chat-float-label">Chat</span>
+      <span class="neu-unread-badge neu-chat-float-badge hidden" id="neuChatFloatBadge"></span>
+    </button>
 
     <div class="story-modal" id="storyModal" hidden>
       <div class="story-modal-backdrop" data-story-close="1"></div>
@@ -275,6 +451,44 @@
       </div>
     </div>
 
+    <div class="composer-modal neu-quick-post-modal" id="neuQuickPostModal" hidden>
+      <div class="composer-modal-backdrop" data-neu-quick-close="1"></div>
+      <div class="composer-modal-card neu-quick-post-card" role="dialog" aria-modal="true" aria-labelledby="neuQuickPostTitle">
+        <div class="composer-head">
+          <h2 id="neuQuickPostTitle">Nuevo post</h2>
+          <button class="btn-white-outline" id="btnNeuQuickPostClose" type="button">Cerrar</button>
+        </div>
+
+        <form class="composer-body neu-quick-post-body" id="neuQuickPostForm" novalidate>
+          <label class="composer-text-wrap neu-quick-post-text-wrap">
+            Contenido
+            <textarea
+              id="neuQuickPostContent"
+              rows="5"
+              maxlength="500"
+              placeholder="&iquest;Qu&eacute; quieres compartir?"
+            ></textarea>
+          </label>
+
+          <div class="neu-quick-post-meta">
+            <span class="hintSmall"><span id="neuQuickPostCount">0</span>/500</span>
+          </div>
+
+          <label>
+            Imagen URL (opcional)
+            <input id="neuQuickPostImageUrl" class="input" type="url" placeholder="https://..." />
+          </label>
+
+          <p class="hintSmall neu-quick-post-msg" id="neuQuickPostMsg"></p>
+
+          <div class="composer-actions">
+            <button class="btn-yellow" id="btnNeuQuickPostSubmit" type="submit">Publicar</button>
+            <button class="btn-white-outline" id="btnNeuQuickPostCancel" type="button">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div class="composer-modal" id="neuProfileModal" hidden>
       <div class="composer-modal-backdrop" data-neu-profile-close="1"></div>
       <div class="composer-modal-card neu-profile-modal-card">
@@ -297,6 +511,12 @@
               </button>
             </div>
           </div>
+
+          <label class="neu-profile-avatar-url-wrap">
+            Avatar URL
+            <input id="neuProfileAvatarUrlInput" class="input" type="url" placeholder="https://..." />
+          </label>
+          <p class="hintSmall neu-profile-avatar-url-hint">Możesz wkleić URL obrazka albo użyć uploadu pliku.</p>
 
           <div class="composer-grid neu-profile-grid">
             <label>
@@ -327,7 +547,7 @@
     <div class="composer-modal neu-chat-modal" id="neuChatModal" hidden>
       <div class="composer-modal-backdrop" data-neu-chat-close="1"></div>
       <div class="composer-modal-card neu-chat-modal-card" role="dialog" aria-modal="true" aria-labelledby="neuChatPeerName">
-        <div class="neu-chat-head">
+        <div class="neu-chat-head neuChatHeader">
           <div class="neu-chat-peer">
             <span class="avatar-frame neu-chat-peer-avatar">
               <img id="neuChatPeerAvatarImg" alt="avatar" />
@@ -341,18 +561,21 @@
           <button class="btn-white-outline" id="neuChatCloseBtn" type="button">Cerrar</button>
         </div>
 
-        <div class="neu-chat-body" id="neuChatMessages"></div>
+        <div class="neu-chat-body neuChatBody" id="neuChatBody">
+          <div id="neuChatMessages" class="neuChatMessages"></div>
+          <button id="neuNewMsgChip" class="neuNewMsgChip hidden" type="button">Nuevos mensajes</button>
+          <div id="neuTypingRow" class="neuTypingRow hidden">Escribiendo...</div>
+        </div>
 
-        <form class="neu-chat-foot" id="neuChatForm">
-          <input
+        <form class="neu-chat-foot neuChatComposer" id="neuChatForm">
+          <textarea
             id="neuChatInput"
             class="input"
-            type="text"
+            rows="1"
             maxlength="1000"
             placeholder="Escribe un mensaje..."
-            autocomplete="off"
-          />
-          <button class="btn-yellow" id="neuChatSendBtn" type="submit">Enviar</button>
+          ></textarea>
+          <button class="btn-white-outline neu-chat-send-compact" id="neuChatSendBtn" type="submit">Enviar</button>
         </form>
         <p class="hintSmall" id="neuChatHint"></p>
       </div>
@@ -363,7 +586,7 @@
     <script type="module">
       console.log('[NEU BOOT] html module loader start');
 
-      import('./assets/js/pages/neu-social-app-page.js?v=20260222s')
+      import('./assets/js/pages/neu-social-app-page.js?v=20260222ap')
         .then(() => console.log('[NEU BOOT] module imported OK'))
         .catch((err) => {
           console.error('[NEU BOOT] module import FAILED:', err);

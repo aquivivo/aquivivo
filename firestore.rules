@@ -242,6 +242,25 @@ service cloud.firestore {
       allow write: if signedIn() && request.auth.uid == uid;
     }
 
+    /* ===== NEU USER SETTINGS ===== */
+    match /neuUserSettings/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    /* ===== NEU USERNAMES ===== */
+    match /neuUsernames/{username} {
+      allow read: if signedIn();
+
+      allow create, update: if signedIn()
+        && (request.resource.data.uid is string)
+        && request.resource.data.uid == request.auth.uid;
+
+      allow delete: if signedIn()
+        && (resource.data.uid is string)
+        && resource.data.uid == request.auth.uid;
+    }
+
     /* ===== NEU POSTS ===== */
     match /neuPosts/{postId} {
       allow read: if signedIn();

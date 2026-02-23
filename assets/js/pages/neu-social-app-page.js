@@ -1,4 +1,4 @@
-import { signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+﻿import { signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 import {
   collection,
   deleteDoc,
@@ -11,6 +11,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  runTransaction,
   serverTimestamp,
   setDoc,
   updateDoc,
@@ -46,9 +47,16 @@ function readCity() {
 
 const NEU_USERS_COLLECTION = 'neuUsers';
 const NEU_FOLLOWS_COLLECTION = 'neuFollows';
+const NEU_USER_SETTINGS_COLLECTION = 'neuUserSettings';
 const NEU_PROFILE_AVATAR_PREFIX = 'awatary/neu/';
 const NEU_PROFILE_BIO_MAX = 160;
 const NEU_PROFILE_FEED_LIMIT = 80;
+const NEU_USERNAMES_COLLECTION = 'neuUsernames';
+const NEU_ONBOARDING_MIN_CITY = 2;
+const NEU_ONBOARDING_MIN_NAME = 2;
+const NEU_ONBOARDING_MIN_USERNAME = 3;
+const NEU_ONBOARDING_MAX_USERNAME = 24;
+const NEU_ONBOARDING_STEP_TOTAL = 2;
 
 const neuProfileState = {
   wired: false,
@@ -58,6 +66,7 @@ const neuProfileState = {
   profile: null,
   pendingAvatarFile: null,
   pendingAvatarPreviewUrl: '',
+  pendingAvatarUrlDraft: '',
   removeAvatar: false,
 };
 
@@ -82,6 +91,44 @@ const neuPublicProfileState = {
   posts: [],
   postsLoadedFor: '',
   postsLoading: false,
+};
+
+const neuOnboardingState = {
+  active: false,
+  wired: false,
+  step: 1,
+  uid: '',
+  saving: false,
+  touched: false,
+  form: {},
+  errors: {},
+};
+
+const neuPostOnboardingState = {
+  active: false,
+  wired: false,
+  uid: '',
+  profile: null,
+  finishing: false,
+};
+
+const neuSuggestedState = {
+  wired: false,
+  loading: false,
+  uid: '',
+  rows: [],
+  followingSet: new Set(),
+  focusPulseCard: false,
+};
+
+const neuQuickPostState = {
+  wired: false,
+  submitting: false,
+};
+
+const NEU_ONBOARDING_STEP_FIELDS = {
+  1: ['firstName', 'lastName', 'username', 'countryOfOrigin', 'countryOfOriginOther', 'gender', 'language', 'birthYear'],
+  2: ['phone', 'cityPl', 'termsAccepted'],
 };
 
 function neuProfileDocRef(uid) {
@@ -230,6 +277,821 @@ function neuSetNavAvatarNode(node, photoURL, displayName) {
   span.style.display = 'none';
 }
 
+function neuOnboardingViewNode() {
+  const node = document.getElementById('onboardingView');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuOnboardingFormNode() {
+  const node = document.getElementById('neuOnboardingForm');
+  return node instanceof HTMLFormElement ? node : null;
+}
+
+function neuOnboardingFieldNode(field) {
+  const map = {
+    firstName: 'onbFirstName',
+    lastName: 'onbLastName',
+    username: 'onbUsername',
+    countryOfOrigin: 'onbCountry',
+    countryOfOriginOther: 'onbCountryOther',
+    gender: 'onbGender',
+    language: 'onbLanguage',
+    birthYear: 'onbBirthYear',
+    phone: 'onbPhone',
+    cityPl: 'onbCityPl',
+    marketingConsent: 'onbMarketingConsent',
+    termsAccepted: 'onbTermsAccepted',
+  };
+  const id = map[field];
+  if (!id) return null;
+  return document.getElementById(id);
+}
+
+function neuOnboardingErrorNode(field) {
+  const node = document.getElementById(`onbError-${field}`);
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuOnboardingSetGlobalMsg(text, bad = false) {
+  const node = document.getElementById('onbGlobalMsg');
+  if (!(node instanceof HTMLElement)) return;
+  node.textContent = String(text || '').trim();
+  node.classList.toggle('is-bad', bad === true);
+}
+
+function neuOnboardingSetActive(active) {
+  const enabled = active === true;
+  const view = neuOnboardingViewNode();
+  if (view) view.hidden = !enabled;
+  document.body.classList.toggle('neu-onboarding-active', enabled);
+  neuOnboardingState.active = enabled;
+}
+
+function neuOnboardingSetFieldError(field, text) {
+  const node = neuOnboardingErrorNode(field);
+  if (!(node instanceof HTMLElement)) return;
+  node.textContent = String(text || '');
+}
+
+function neuOnboardingNormalizeName(raw) {
+  return String(raw || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function neuOnboardingNormalizeUsername(raw) {
+  return String(raw || '')
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[^a-z0-9._]/g, '')
+    .slice(0, NEU_ONBOARDING_MAX_USERNAME);
+}
+
+function neuOnboardingNormalizeCity(raw) {
+  return String(raw || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function neuOnboardingNormalizePhone(raw) {
+  let value = String(raw || '').trim();
+  if (!value) return '';
+
+  value = value.replace(/[^\d+]/g, '');
+  if (value.startsWith('00')) value = `+${value.slice(2)}`;
+
+  if (value.startsWith('+')) {
+    const digits = value.slice(1).replace(/\D/g, '');
+    return digits ? `+${digits}` : '';
+  }
+
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('48') && digits.length >= 9) return `+${digits}`;
+  if (digits.startsWith('0') && digits.length > 1) return `+48${digits.slice(1)}`;
+  return digits.length === 9 ? `+48${digits}` : `+48${digits}`;
+}
+
+function neuOnboardingIsE164(value) {
+  return /^\+[1-9]\d{7,14}$/.test(String(value || '').trim());
+}
+
+function neuOnboardingCountryOptions() {
+  return new Set([
+    'Argentina',
+    'Bolivia',
+    'Brazil',
+    'Chile',
+    'Colombia',
+    'Cuba',
+    'Dominican Republic',
+    'Ecuador',
+    'El Salvador',
+    'Guatemala',
+    'Honduras',
+    'Mexico',
+    'Nicaragua',
+    'Panama',
+    'Paraguay',
+    'Peru',
+    'Poland',
+    'Spain',
+    'Ukraine',
+    'Uruguay',
+    'Venezuela',
+  ]);
+}
+
+function neuOnboardingDefaultForm(user, rawProfile = {}) {
+  const uid = String(user?.uid || '').trim();
+  const profile = neuNormalizeProfile(rawProfile || {}, uid);
+  const displayName = String(profile.displayName || user?.displayName || '').trim();
+  const displayParts = displayName.split(/\s+/).filter(Boolean);
+  const firstFromDisplay = displayParts[0] || '';
+  const lastFromDisplay = displayParts.slice(1).join(' ');
+  const existingUsername = neuOnboardingNormalizeUsername(rawProfile.username || String(profile.handle || '').replace(/^@/, ''));
+  const emailCandidate = neuOnboardingNormalizeUsername(neuEmailLocalPart(user?.email || ''));
+  const usernameSeed = existingUsername || emailCandidate || neuOnboardingNormalizeUsername(`user${uid.slice(0, 6)}`);
+  const countrySet = neuOnboardingCountryOptions();
+  const rawCountry = String(rawProfile.countryOfOrigin || rawProfile.country || '').trim();
+  const hasCountry = countrySet.has(rawCountry);
+  const language = ['pl', 'es', 'uk', 'en'].includes(String(rawProfile.language || '').trim())
+    ? String(rawProfile.language || '').trim()
+    : 'es';
+
+  return {
+    firstName: neuOnboardingNormalizeName(rawProfile.firstName || firstFromDisplay),
+    lastName: neuOnboardingNormalizeName(rawProfile.lastName || lastFromDisplay),
+    username: usernameSeed,
+    countryOfOrigin: hasCountry ? rawCountry : rawCountry ? 'other' : '',
+    countryOfOriginOther: hasCountry ? '' : rawCountry,
+    gender: ['female', 'male', 'nonbinary', 'prefer_not_to_say'].includes(String(rawProfile.gender || '').trim())
+      ? String(rawProfile.gender || '').trim()
+      : '',
+    language,
+    birthYear: rawProfile.birthYear ? String(rawProfile.birthYear) : '',
+    phone: neuOnboardingNormalizePhone(rawProfile.phone || ''),
+    cityPl: neuOnboardingNormalizeCity(rawProfile.cityPl || rawProfile.city || ''),
+    marketingConsent: rawProfile.marketingConsent === true,
+    termsAccepted: rawProfile.termsAccepted === true,
+  };
+}
+
+function neuOnboardingReadFormUi() {
+  return {
+    firstName: neuOnboardingNormalizeName(neuOnboardingFieldNode('firstName')?.value || ''),
+    lastName: neuOnboardingNormalizeName(neuOnboardingFieldNode('lastName')?.value || ''),
+    username: neuOnboardingNormalizeUsername(neuOnboardingFieldNode('username')?.value || ''),
+    countryOfOrigin: String(neuOnboardingFieldNode('countryOfOrigin')?.value || '').trim(),
+    countryOfOriginOther: neuOnboardingNormalizeName(neuOnboardingFieldNode('countryOfOriginOther')?.value || ''),
+    gender: String(neuOnboardingFieldNode('gender')?.value || '').trim(),
+    language: String(neuOnboardingFieldNode('language')?.value || '').trim(),
+    birthYear: String(neuOnboardingFieldNode('birthYear')?.value || '').trim(),
+    phone: neuOnboardingNormalizePhone(neuOnboardingFieldNode('phone')?.value || ''),
+    cityPl: neuOnboardingNormalizeCity(neuOnboardingFieldNode('cityPl')?.value || ''),
+    marketingConsent: !!neuOnboardingFieldNode('marketingConsent')?.checked,
+    termsAccepted: !!neuOnboardingFieldNode('termsAccepted')?.checked,
+  };
+}
+
+function neuOnboardingWriteFormUi(form) {
+  const data = form || {};
+  const assign = (field, value) => {
+    const node = neuOnboardingFieldNode(field);
+    if (!node) return;
+    if (node instanceof HTMLInputElement && node.type === 'checkbox') node.checked = value === true;
+    else node.value = String(value || '');
+  };
+
+  assign('firstName', data.firstName);
+  assign('lastName', data.lastName);
+  assign('username', data.username);
+  assign('countryOfOrigin', data.countryOfOrigin);
+  assign('countryOfOriginOther', data.countryOfOriginOther);
+  assign('gender', data.gender);
+  assign('language', data.language);
+  assign('birthYear', data.birthYear);
+  assign('phone', data.phone);
+  assign('cityPl', data.cityPl);
+  assign('marketingConsent', data.marketingConsent === true);
+  assign('termsAccepted', data.termsAccepted === true);
+}
+
+function neuOnboardingToggleCountryOtherInput() {
+  const wrap = document.getElementById('onbCountryOtherWrap');
+  const country = String(neuOnboardingFieldNode('countryOfOrigin')?.value || '').trim();
+  if (!(wrap instanceof HTMLElement)) return;
+  wrap.hidden = country !== 'other';
+}
+
+function neuOnboardingValidateField(field, form) {
+  const data = form || neuOnboardingState.form || {};
+  const currentYear = new Date().getFullYear();
+  const usernameRegex = /^[a-z0-9._]{3,24}$/;
+
+  if (field === 'firstName') {
+    if (String(data.firstName || '').trim().length < NEU_ONBOARDING_MIN_NAME) return 'Min. 2 caracteres.';
+    return '';
+  }
+
+  if (field === 'lastName') {
+    if (String(data.lastName || '').trim().length < NEU_ONBOARDING_MIN_NAME) return 'Min. 2 caracteres.';
+    return '';
+  }
+
+  if (field === 'username') {
+    const value = String(data.username || '').trim();
+    if (value.length < NEU_ONBOARDING_MIN_USERNAME) return 'Min. 3 caracteres.';
+    if (!usernameRegex.test(value)) return 'Solo a-z, 0-9, punto y guion bajo.';
+    return '';
+  }
+
+  if (field === 'countryOfOrigin') {
+    if (!String(data.countryOfOrigin || '').trim()) return 'Selecciona un pais.';
+    return '';
+  }
+
+  if (field === 'countryOfOriginOther') {
+    if (String(data.countryOfOrigin || '').trim() !== 'other') return '';
+    if (String(data.countryOfOriginOther || '').trim().length < 2) return 'Escribe tu pais.';
+    return '';
+  }
+
+  if (field === 'gender') {
+    const allowed = new Set(['female', 'male', 'nonbinary', 'prefer_not_to_say']);
+    if (!allowed.has(String(data.gender || '').trim())) return 'Selecciona una opcion.';
+    return '';
+  }
+
+  if (field === 'language') {
+    const allowed = new Set(['pl', 'es', 'uk', 'en']);
+    if (!allowed.has(String(data.language || '').trim())) return 'Selecciona un idioma.';
+    return '';
+  }
+
+  if (field === 'birthYear') {
+    const value = String(data.birthYear || '').trim();
+    if (!value) return '';
+    const year = Number(value);
+    if (!Number.isInteger(year) || year < 1900 || year > currentYear) return 'Ano invalido.';
+    return '';
+  }
+
+  if (field === 'phone') {
+    const value = String(data.phone || '').trim();
+    if (!value) return 'Telefono obligatorio.';
+    if (!neuOnboardingIsE164(value)) return 'Formato invalido. Usa E.164.';
+    return '';
+  }
+
+  if (field === 'cityPl') {
+    if (String(data.cityPl || '').trim().length < NEU_ONBOARDING_MIN_CITY) return 'Min. 2 caracteres.';
+    return '';
+  }
+
+  if (field === 'termsAccepted') {
+    if (data.termsAccepted !== true) return 'Debes aceptar los terminos.';
+    return '';
+  }
+
+  return '';
+}
+
+function neuOnboardingValidateStep(step, { showErrors = true } = {}) {
+  const stepNumber = Number(step);
+  const fields = NEU_ONBOARDING_STEP_FIELDS[stepNumber] || [];
+  const form = neuOnboardingReadFormUi();
+  neuOnboardingState.form = form;
+  let valid = true;
+
+  fields.forEach((field) => {
+    const message = neuOnboardingValidateField(field, form);
+    if (showErrors) neuOnboardingSetFieldError(field, message);
+    if (message) valid = false;
+  });
+
+  return valid;
+}
+
+function neuOnboardingRenderStep() {
+  const step = Number(neuOnboardingState.step || 1);
+  const touched = neuOnboardingState.touched === true;
+  document.querySelectorAll('.neu-onboarding-step').forEach((node) => {
+    const match = Number(node.getAttribute('data-onboarding-step') || 0) === step;
+    node.classList.toggle('is-active', match);
+  });
+
+  document.querySelectorAll('[data-onb-step-label]').forEach((node) => {
+    const match = Number(node.getAttribute('data-onb-step-label') || 0) === step;
+    node.classList.toggle('is-active', match);
+  });
+
+  const fill = document.getElementById('neuOnboardingProgressFill');
+  if (fill instanceof HTMLElement) {
+    const ratio = step <= 1 ? 50 : 100;
+    fill.style.width = `${ratio}%`;
+  }
+
+  const prevBtn = document.getElementById('onbPrevBtn');
+  const nextBtn = document.getElementById('onbNextBtn');
+  const submitBtn = document.getElementById('onbSubmitBtn');
+  if (prevBtn instanceof HTMLElement) prevBtn.hidden = step <= 1;
+  if (nextBtn instanceof HTMLElement) nextBtn.hidden = step >= NEU_ONBOARDING_STEP_TOTAL;
+  if (submitBtn instanceof HTMLElement) submitBtn.hidden = step < NEU_ONBOARDING_STEP_TOTAL;
+
+  const stepValid = neuOnboardingValidateStep(step, { showErrors: touched });
+  if (nextBtn instanceof HTMLButtonElement) nextBtn.disabled = neuOnboardingState.saving || !stepValid;
+  if (submitBtn instanceof HTMLButtonElement) {
+    const finalValid = neuOnboardingValidateStep(NEU_ONBOARDING_STEP_TOTAL, {
+      showErrors: touched && step >= NEU_ONBOARDING_STEP_TOTAL,
+    });
+    submitBtn.disabled = neuOnboardingState.saving || !finalValid;
+    submitBtn.textContent = neuOnboardingState.saving ? 'Guardando...' : 'Finalizar';
+  }
+  if (prevBtn instanceof HTMLButtonElement) prevBtn.disabled = neuOnboardingState.saving;
+}
+
+function neuOnboardingSetStep(step) {
+  const next = Math.min(NEU_ONBOARDING_STEP_TOTAL, Math.max(1, Number(step) || 1));
+  neuOnboardingState.step = next;
+  neuOnboardingRenderStep();
+}
+
+function neuOnboardingFinalCountry(form) {
+  const value = String(form.countryOfOrigin || '').trim();
+  if (value === 'other') return String(form.countryOfOriginOther || '').trim();
+  return value;
+}
+
+function neuOnboardingHandleInputUpdate(target, { normalizePhone = false } = {}) {
+  if (!(target instanceof HTMLElement)) return;
+  neuOnboardingState.touched = true;
+  if (target.id === 'onbUsername' && target instanceof HTMLInputElement) {
+    const normalized = neuOnboardingNormalizeUsername(target.value);
+    if (target.value !== normalized) target.value = normalized;
+  }
+  if (target.id === 'onbCountry') neuOnboardingToggleCountryOtherInput();
+  if (normalizePhone && target.id === 'onbPhone' && target instanceof HTMLInputElement && target.value.trim()) {
+    target.value = neuOnboardingNormalizePhone(target.value);
+  }
+  neuOnboardingState.form = neuOnboardingReadFormUi();
+  neuOnboardingValidateStep(neuOnboardingState.step, { showErrors: true });
+  neuOnboardingRenderStep();
+}
+
+function neuOnboardingIsUsernameTakenError(error) {
+  const code = String(error?.code || '').toLowerCase();
+  const message = String(error?.message || '').toUpperCase();
+  return code.includes('username-taken') || message.includes('USERNAME_TAKEN');
+}
+
+function neuOnboardingErrorMessage(error) {
+  const code = String(error?.code || '').toLowerCase();
+  if (!code) return 'No se pudo guardar onboarding. Intenta de nuevo.';
+  if (code.includes('permission-denied')) {
+    return 'Brak uprawnień Firestore. Sprawdź reguły neuUsers/neuUsernames i deploy.';
+  }
+  if (code.includes('unavailable') || code.includes('network-request-failed')) {
+    return 'Brak połączenia z Firebase. Sprawdź internet i spróbuj ponownie.';
+  }
+  if (code.includes('deadline-exceeded') || code.includes('aborted')) {
+    return 'Firebase timeout. Spróbuj ponownie za chwilę.';
+  }
+  if (code.includes('failed-precondition')) {
+    return 'Brakuje konfiguracji Firestore (reguły/index).';
+  }
+  return `No se pudo guardar onboarding (${code}).`;
+}
+
+function neuBuildOnboardingPayload({
+  form,
+  username,
+  countryValue,
+  displayName,
+  normalizedPhone,
+  existingUser = {},
+} = {}) {
+  const payload = {
+    firstName: String(form?.firstName || '').trim(),
+    lastName: String(form?.lastName || '').trim(),
+    displayName: String(displayName || '').trim() || 'Usuario',
+    username,
+    handle: `@${username}`,
+    countryOfOrigin: countryValue,
+    gender: form?.gender,
+    phone: normalizedPhone,
+    cityPl: form?.cityPl,
+    city: form?.cityPl,
+    language: form?.language,
+    marketingConsent: form?.marketingConsent === true,
+    termsAccepted: form?.termsAccepted === true,
+    onboardingCompleted: true,
+    onboardingCompletedAt: serverTimestamp(),
+    postOnboardingDone: false,
+    postOnboardingDoneAt: deleteField(),
+    updatedAt: serverTimestamp(),
+    birthYear: form?.birthYear ? Number(form.birthYear) : deleteField(),
+  };
+  if (!existingUser?.createdAt) payload.createdAt = serverTimestamp();
+  return payload;
+}
+
+async function neuOnboardingSaveDirect(uid, form, username, countryValue, displayName, normalizedPhone) {
+  const userRef = doc(db, NEU_USERS_COLLECTION, uid);
+  const userSnap = await getDoc(userRef);
+  const existingUser = userSnap.exists() ? userSnap.data() || {} : {};
+
+  const usernameSnap = await getDocs(query(collection(db, NEU_USERS_COLLECTION), where('username', '==', username), limit(3)));
+  const takenByOther = usernameSnap.docs.some((row) => String(row.id || '').trim() !== uid);
+  if (takenByOther) {
+    const conflict = new Error('USERNAME_TAKEN');
+    conflict.code = 'username-taken';
+    throw conflict;
+  }
+
+  const payload = neuBuildOnboardingPayload({
+    form,
+    username,
+    countryValue,
+    displayName,
+    normalizedPhone,
+    existingUser,
+  });
+  await setDoc(userRef, payload, { merge: true });
+}
+
+async function neuOnboardingSubmit() {
+  if (neuOnboardingState.saving) return;
+  neuOnboardingState.touched = true;
+  const uid = String(neuOnboardingState.uid || auth.currentUser?.uid || '').trim();
+  if (!uid) return;
+
+  const step1Valid = neuOnboardingValidateStep(1, { showErrors: true });
+  if (!step1Valid) {
+    neuOnboardingSetStep(1);
+    return;
+  }
+  const step2Valid = neuOnboardingValidateStep(2, { showErrors: true });
+  if (!step2Valid) {
+    neuOnboardingSetStep(2);
+    return;
+  }
+
+  const form = neuOnboardingReadFormUi();
+  const username = neuOnboardingNormalizeUsername(form.username);
+  const countryValue = neuOnboardingFinalCountry(form);
+  const displayName = `${form.firstName} ${form.lastName}`.replace(/\s+/g, ' ').trim();
+  const normalizedPhone = neuOnboardingNormalizePhone(form.phone);
+  if (!neuOnboardingIsE164(normalizedPhone)) {
+    neuOnboardingSetFieldError('phone', 'Formato invalido. Usa E.164.');
+    return;
+  }
+
+  const userRef = doc(db, NEU_USERS_COLLECTION, uid);
+  const usernameRef = doc(db, NEU_USERNAMES_COLLECTION, username);
+  neuOnboardingState.saving = true;
+  neuOnboardingSetGlobalMsg('Guardando datos...');
+  neuOnboardingRenderStep();
+
+  try {
+    await runTransaction(db, async (tx) => {
+      const userSnap = await tx.get(userRef);
+      const existingUser = userSnap.exists() ? userSnap.data() || {} : {};
+      const previousUsername = neuOnboardingNormalizeUsername(existingUser.username || '');
+
+      const usernameSnap = await tx.get(usernameRef);
+      const usernameOwner = String(usernameSnap.data()?.uid || '').trim();
+      if (usernameSnap.exists() && usernameOwner && usernameOwner !== uid) {
+        const conflict = new Error('USERNAME_TAKEN');
+        conflict.code = 'username-taken';
+        throw conflict;
+      }
+
+      if (previousUsername && previousUsername !== username) {
+        const prevRef = doc(db, NEU_USERNAMES_COLLECTION, previousUsername);
+        const prevSnap = await tx.get(prevRef);
+        if (prevSnap.exists() && String(prevSnap.data()?.uid || '').trim() === uid) {
+          tx.delete(prevRef);
+        }
+      }
+
+      const payload = neuBuildOnboardingPayload({
+        form,
+        username,
+        countryValue,
+        displayName,
+        normalizedPhone,
+        existingUser,
+      });
+
+      tx.set(userRef, payload, { merge: true });
+      tx.set(
+        usernameRef,
+        {
+          uid,
+          updatedAt: serverTimestamp(),
+          createdAt: usernameSnap.exists() ? usernameSnap.data()?.createdAt || serverTimestamp() : serverTimestamp(),
+        },
+        { merge: true },
+      );
+    });
+
+    neuOnboardingSetGlobalMsg('Listo. Redirigiendo...');
+    location.href = 'neu-social-app.html?postOnboarding=1';
+  } catch (error) {
+    if (neuOnboardingIsUsernameTakenError(error)) {
+      neuOnboardingSetFieldError('username', 'Username ocupado.');
+      neuOnboardingSetGlobalMsg('Elige otro username.', true);
+      neuOnboardingSetStep(1);
+    } else if (neuIsPermissionDenied(error)) {
+      try {
+        await neuOnboardingSaveDirect(uid, form, username, countryValue, displayName, normalizedPhone);
+        neuOnboardingSetGlobalMsg('Listo. Redirigiendo...');
+        location.href = 'neu-social-app.html?postOnboarding=1';
+      } catch (fallbackError) {
+        if (neuOnboardingIsUsernameTakenError(fallbackError)) {
+          neuOnboardingSetFieldError('username', 'Username ocupado.');
+          neuOnboardingSetGlobalMsg('Elige otro username.', true);
+          neuOnboardingSetStep(1);
+        } else {
+          neuOnboardingSetGlobalMsg(neuOnboardingErrorMessage(fallbackError), true);
+          console.error('[neu-onboarding] submit failed', error);
+          console.error('[neu-onboarding] fallback failed', fallbackError);
+        }
+      }
+    } else {
+      neuOnboardingSetGlobalMsg(neuOnboardingErrorMessage(error), true);
+      console.error('[neu-onboarding] submit failed', error);
+    }
+  } finally {
+    neuOnboardingState.saving = false;
+    neuOnboardingRenderStep();
+  }
+}
+
+function neuWireOnboardingEvents() {
+  if (neuOnboardingState.wired) return;
+  const form = neuOnboardingFormNode();
+  if (!(form instanceof HTMLFormElement)) return;
+  neuOnboardingState.wired = true;
+
+  form.addEventListener('input', (event) => {
+    neuOnboardingHandleInputUpdate(event.target);
+  });
+
+  form.addEventListener('change', (event) => {
+    neuOnboardingHandleInputUpdate(event.target, { normalizePhone: true });
+  });
+
+  form.addEventListener(
+    'blur',
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (target.id === 'onbPhone' || target.id === 'onbUsername') {
+        neuOnboardingHandleInputUpdate(target, { normalizePhone: true });
+      }
+    },
+    true,
+  );
+
+  document.getElementById('onbPrevBtn')?.addEventListener('click', () => {
+    if (neuOnboardingState.saving) return;
+    neuOnboardingSetStep(1);
+  });
+
+  document.getElementById('onbNextBtn')?.addEventListener('click', () => {
+    if (neuOnboardingState.saving) return;
+    neuOnboardingState.touched = true;
+    if (!neuOnboardingValidateStep(1, { showErrors: true })) {
+      neuOnboardingRenderStep();
+      return;
+    }
+    neuOnboardingSetStep(2);
+  });
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    neuOnboardingSubmit().catch((error) => {
+      neuOnboardingSetGlobalMsg('No se pudo guardar onboarding.', true);
+      if (NEU_QA) console.error('[neu-onboarding] submit exception', error);
+    });
+  });
+}
+
+async function neuNeedsOnboarding(uid) {
+  const targetUid = String(uid || '').trim();
+  if (!targetUid) return { needed: false, profile: null };
+  try {
+    const snap = await getDoc(neuProfileDocRef(targetUid));
+    if (!snap.exists()) return { needed: true, profile: null };
+    const data = snap.data() || {};
+    return { needed: data.onboardingCompleted !== true, profile: data };
+  } catch (error) {
+    if (NEU_QA) console.warn('[neu-onboarding] gate read failed', error);
+    return { needed: true, profile: null };
+  }
+}
+
+async function neuInitOnboarding(user, profileSeed = null) {
+  const uid = String(user?.uid || auth.currentUser?.uid || '').trim();
+  if (!uid) return false;
+  neuOnboardingSetActive(true);
+  neuOnboardingState.uid = uid;
+  neuOnboardingState.saving = false;
+  neuOnboardingState.touched = false;
+  neuOnboardingState.errors = {};
+  neuOnboardingState.form = neuOnboardingDefaultForm(user, profileSeed || {});
+  neuOnboardingWriteFormUi(neuOnboardingState.form);
+  neuOnboardingToggleCountryOtherInput();
+  neuOnboardingSetGlobalMsg('');
+  neuWireOnboardingEvents();
+  neuOnboardingSetStep(1);
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  return true;
+}
+
+function neuPostOnboardingViewNode() {
+  const node = document.getElementById('postOnboardingView');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuPostOnboardingSetMsg(text, bad = false) {
+  const node = document.getElementById('postOnboardingMsg');
+  if (!(node instanceof HTMLElement)) return;
+  node.textContent = String(text || '').trim();
+  node.classList.toggle('is-bad', bad === true);
+}
+
+function neuPostOnboardingSetActive(active) {
+  const enabled = active === true;
+  const view = neuPostOnboardingViewNode();
+  if (view) view.hidden = !enabled;
+  document.body.classList.toggle('neu-post-onboarding-active', enabled);
+  neuPostOnboardingState.active = enabled;
+}
+
+function neuStripQueryParams(names = []) {
+  if (!Array.isArray(names) || !names.length) return;
+  const url = new URL(location.href);
+  let changed = false;
+  names.forEach((name) => {
+    if (url.searchParams.has(name)) {
+      url.searchParams.delete(name);
+      changed = true;
+    }
+  });
+  if (!changed) return;
+  const nextHref = `${url.pathname}${url.search}${url.hash}`;
+  const currentHref = `${location.pathname}${location.search}${location.hash}`;
+  if (nextHref !== currentHref) history.replaceState(null, '', nextHref);
+}
+
+async function neuGetOwnUserDoc(uid) {
+  const cleanUid = String(uid || '').trim();
+  if (!cleanUid) return null;
+  try {
+    const snap = await getDoc(neuProfileDocRef(cleanUid));
+    return snap.exists() ? snap.data() || {} : null;
+  } catch {
+    return null;
+  }
+}
+
+async function neuNeedsPostOnboarding(uid, profileSeed = null) {
+  const cleanUid = String(uid || '').trim();
+  if (!cleanUid) return { needed: false, profile: null };
+  const fromQuery = new URLSearchParams(location.search).get('postOnboarding') === '1';
+
+  let profile = profileSeed && typeof profileSeed === 'object' ? profileSeed : null;
+  if (!profile) profile = await neuGetOwnUserDoc(cleanUid);
+  if (!profile || profile.onboardingCompleted !== true) return { needed: false, profile };
+
+  const done = profile.postOnboardingDone === true;
+  if (!done) return { needed: true, profile };
+  if (fromQuery) neuStripQueryParams(['postOnboarding']);
+  return { needed: false, profile };
+}
+
+async function neuSeedUserSettings(uid, language = '') {
+  const cleanUid = String(uid || '').trim();
+  if (!cleanUid) return;
+  const ref = doc(db, NEU_USER_SETTINGS_COLLECTION, cleanUid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    const data = snap.data() || {};
+    const patch = {};
+    if (!String(data.language || '').trim() && language) patch.language = language;
+    if (typeof data.notificationsEnabled === 'undefined') patch.notificationsEnabled = true;
+    if (!String(data.theme || '').trim()) patch.theme = 'dark';
+    if (Object.keys(patch).length) {
+      patch.updatedAt = serverTimestamp();
+      await setDoc(ref, patch, { merge: true });
+    }
+    return;
+  }
+
+  await setDoc(
+    ref,
+    {
+      language: language || 'es',
+      notificationsEnabled: true,
+      theme: 'dark',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+}
+
+async function neuCompletePostOnboarding(uid, profile = null) {
+  const cleanUid = String(uid || '').trim();
+  if (!cleanUid) return;
+  await setDoc(
+    neuProfileDocRef(cleanUid),
+    {
+      postOnboardingDone: true,
+      postOnboardingDoneAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+  const language = String(profile?.language || '').trim();
+  try {
+    await neuSeedUserSettings(cleanUid, language);
+  } catch (error) {
+    if (NEU_QA) console.warn('[neu-post-onboarding] settings seed skipped', error);
+  }
+}
+
+function neuPostOnboardingRoute(action) {
+  if (action === 'avatar') return 'neu-social-app.html?portal=feed&profile=me&openProfileEdit=1';
+  if (action === 'post') return 'neu-social-app.html?portal=feed&openQuickPost=1';
+  if (action === 'suggested') return 'neu-social-app.html?portal=pulse&suggested=1';
+  return 'neu-social-app.html?portal=pulse';
+}
+
+async function neuHandlePostOnboardingAction(action) {
+  if (neuPostOnboardingState.finishing) return;
+  const uid = String(neuPostOnboardingState.uid || auth.currentUser?.uid || '').trim();
+  if (!uid) return;
+
+  neuPostOnboardingState.finishing = true;
+  neuPostOnboardingSetMsg('Zapisywanie...');
+
+  try {
+    await neuCompletePostOnboarding(uid, neuPostOnboardingState.profile || {});
+    if (action === 'suggested') sessionStorage.setItem('neu_open_suggested', '1');
+    location.href = neuPostOnboardingRoute(action);
+  } catch (error) {
+    neuPostOnboardingState.finishing = false;
+    neuPostOnboardingSetMsg('No se pudo completar la pantalla inicial. Intenta de nuevo.', true);
+    if (NEU_QA) console.error('[neu-post-onboarding] complete failed', error);
+  }
+}
+
+function neuWirePostOnboardingEvents() {
+  if (neuPostOnboardingState.wired) return;
+  neuPostOnboardingState.wired = true;
+
+  document.addEventListener(
+    'click',
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const actionBtn = target.closest('[data-post-onb-action]');
+      if (actionBtn instanceof HTMLElement) {
+        event.preventDefault();
+        const action = String(actionBtn.getAttribute('data-post-onb-action') || '').trim();
+        neuHandlePostOnboardingAction(action).catch(() => null);
+        return;
+      }
+
+      const skipBtn = target.closest('#postOnboardingSkipBtn');
+      if (skipBtn) {
+        event.preventDefault();
+        neuHandlePostOnboardingAction('skip').catch(() => null);
+      }
+    },
+    true,
+  );
+}
+
+async function neuInitPostOnboarding(user, profileSeed = null) {
+  const uid = String(user?.uid || auth.currentUser?.uid || '').trim();
+  if (!uid) return false;
+  neuOnboardingSetActive(false);
+  neuPostOnboardingSetActive(true);
+  neuPostOnboardingState.uid = uid;
+  neuPostOnboardingState.profile = profileSeed && typeof profileSeed === 'object' ? profileSeed : await neuGetOwnUserDoc(uid);
+  neuPostOnboardingState.finishing = false;
+  neuPostOnboardingSetMsg('');
+  neuWirePostOnboardingEvents();
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  return true;
+}
+
 function neuApplyProfileToUi(profile) {
   if (!profile) return;
   const displayName = String(profile.displayName || '').trim() || 'Usuario';
@@ -282,6 +1144,28 @@ function neuApplyProfileToUi(profile) {
   if (leftStatus instanceof HTMLElement) {
     leftStatus.textContent = bio;
     leftStatus.classList.toggle('is-hidden', !bio);
+  }
+}
+
+function neuSyncChatProfileAvatarUi(uid, profile) {
+  const cleanUid = String(uid || '').trim();
+  if (!cleanUid) return;
+  const data = profile && typeof profile === 'object' ? profile : {};
+  try {
+    if (neuChatState?.profileCache instanceof Map) {
+      neuChatState.profileCache.set(cleanUid, neuNormalizeProfile(data, cleanUid));
+    }
+    if (String(neuChatState?.peerUid || '').trim() === cleanUid) {
+      neuRenderChatHeader();
+    }
+    if (
+      Array.isArray(neuChatState?.listRows) &&
+      neuChatState.listRows.some((row) => String(row?.otherUid || '').trim() === cleanUid)
+    ) {
+      neuRenderChatList();
+    }
+  } catch {
+    // chat module may be unavailable in safe/debug modes
   }
 }
 
@@ -387,9 +1271,39 @@ function neuRevokeProfilePreviewUrl() {
   neuProfileState.pendingAvatarPreviewUrl = '';
 }
 
+function neuNormalizeAvatarUrl(raw, { allowEmpty = true } = {}) {
+  const value = String(raw || '').trim();
+  if (!value) {
+    return allowEmpty ? { value: '' } : { error: 'URL de avatar invalida.' };
+  }
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return { error: 'URL de avatar invalida.' };
+    }
+    return { value: parsed.href };
+  } catch {
+    return { error: 'URL de avatar invalida.' };
+  }
+}
+
+function neuResetProfileAvatarDraft({ keepInputValue = false } = {}) {
+  neuProfileState.pendingAvatarFile = null;
+  neuProfileState.removeAvatar = false;
+  neuProfileState.pendingAvatarUrlDraft = '';
+  neuRevokeProfilePreviewUrl();
+  const fileInput = document.getElementById('neuProfileAvatarFile');
+  if (fileInput instanceof HTMLInputElement) fileInput.value = '';
+  if (!keepInputValue) {
+    const urlInput = document.getElementById('neuProfileAvatarUrlInput');
+    if (urlInput instanceof HTMLInputElement) urlInput.value = '';
+  }
+}
+
 function neuCurrentProfileAvatarUrl() {
-  if (neuProfileState.pendingAvatarPreviewUrl) return neuProfileState.pendingAvatarPreviewUrl;
   if (neuProfileState.removeAvatar) return '';
+  if (neuProfileState.pendingAvatarPreviewUrl) return neuProfileState.pendingAvatarPreviewUrl;
+  if (neuProfileState.pendingAvatarUrlDraft) return String(neuProfileState.pendingAvatarUrlDraft || '').trim();
   return String(neuProfileState.profile?.avatarUrl || '').trim();
 }
 
@@ -416,9 +1330,14 @@ function neuHydrateProfileForm(profile) {
   const nameInput = document.getElementById('neuProfileNameInput');
   const cityInput = document.getElementById('neuProfileCityInput');
   const bioInput = document.getElementById('neuProfileBioInput');
+  const avatarUrlInput = document.getElementById('neuProfileAvatarUrlInput');
+  const currentAvatarUrl = String(data.avatarUrl || '').trim();
+  neuResetProfileAvatarDraft({ keepInputValue: true });
+  neuProfileState.pendingAvatarUrlDraft = currentAvatarUrl;
   if (nameInput instanceof HTMLInputElement) nameInput.value = String(data.displayName || '').trim();
   if (cityInput instanceof HTMLInputElement) cityInput.value = String(data.city || '').trim();
   if (bioInput instanceof HTMLTextAreaElement) bioInput.value = String(data.bio || '').trim().slice(0, NEU_PROFILE_BIO_MAX);
+  if (avatarUrlInput instanceof HTMLInputElement) avatarUrlInput.value = currentAvatarUrl;
   neuUpdateProfileBioCount();
   neuRenderProfileAvatarPreview();
 }
@@ -497,6 +1416,7 @@ function neuSetProfileSaving(saving) {
   const closeBtn = document.getElementById('btnNeuProfileClose');
   const removeBtn = document.getElementById('btnNeuProfileAvatarRemove');
   const fileInput = document.getElementById('neuProfileAvatarFile');
+  const avatarUrlInput = document.getElementById('neuProfileAvatarUrlInput');
   const nameInput = document.getElementById('neuProfileNameInput');
   const cityInput = document.getElementById('neuProfileCityInput');
   const bioInput = document.getElementById('neuProfileBioInput');
@@ -509,6 +1429,7 @@ function neuSetProfileSaving(saving) {
   if (closeBtn instanceof HTMLButtonElement) closeBtn.disabled = on;
   if (removeBtn instanceof HTMLButtonElement) removeBtn.disabled = disabled;
   if (fileInput instanceof HTMLInputElement) fileInput.disabled = disabled;
+  if (avatarUrlInput instanceof HTMLInputElement) avatarUrlInput.disabled = disabled;
   if (nameInput instanceof HTMLInputElement) nameInput.disabled = neuProfileState.readOnly;
   if (cityInput instanceof HTMLInputElement) cityInput.disabled = neuProfileState.readOnly;
   if (bioInput instanceof HTMLTextAreaElement) bioInput.disabled = neuProfileState.readOnly;
@@ -534,6 +1455,15 @@ async function neuSaveProfileChanges() {
   const nameInput = document.getElementById('neuProfileNameInput');
   const cityInput = document.getElementById('neuProfileCityInput');
   const bioInput = document.getElementById('neuProfileBioInput');
+  const avatarUrlInput = document.getElementById('neuProfileAvatarUrlInput');
+  const avatarUrlInputRaw = String(avatarUrlInput instanceof HTMLInputElement ? avatarUrlInput.value : '').trim();
+  const normalizedAvatarUrl = neuNormalizeAvatarUrl(avatarUrlInputRaw, { allowEmpty: true });
+  if (normalizedAvatarUrl.error) {
+    neuSetProfileMsg(normalizedAvatarUrl.error, true);
+    if (avatarUrlInput instanceof HTMLInputElement) avatarUrlInput.focus({ preventScroll: true });
+    return;
+  }
+  const manualAvatarUrl = String(normalizedAvatarUrl.value || '').trim();
 
   const displayName = String(nameInput instanceof HTMLInputElement ? nameInput.value : '')
     .trim()
@@ -567,6 +1497,10 @@ async function neuSaveProfileChanges() {
       }
       avatarUrl = uploaded.avatarUrl;
       avatarStoragePath = uploaded.avatarStoragePath;
+    } else if (!neuProfileState.removeAvatar && manualAvatarUrl && manualAvatarUrl !== avatarUrl) {
+      if (avatarStoragePath) await neuDeleteManagedAvatar(avatarStoragePath);
+      avatarUrl = manualAvatarUrl;
+      avatarStoragePath = '';
     }
 
     await setDoc(
@@ -594,8 +1528,10 @@ async function neuSaveProfileChanges() {
     };
     neuProfileState.pendingAvatarFile = null;
     neuProfileState.removeAvatar = false;
+    neuProfileState.pendingAvatarUrlDraft = avatarUrl;
     neuRevokeProfilePreviewUrl();
     neuApplyProfileToUi(neuProfileState.profile);
+    neuSyncChatProfileAvatarUi(uid, neuProfileState.profile);
     neuQueueProfileUiSync(0);
     neuSetProfileMsg('Perfil actualizado.');
     neuSetProfileModalOpen(false);
@@ -644,10 +1580,13 @@ function neuWireProfileEditorEvents() {
       if (removeAvatarBtn) {
         event.preventDefault();
         neuProfileState.pendingAvatarFile = null;
+        neuProfileState.pendingAvatarUrlDraft = '';
         neuRevokeProfilePreviewUrl();
         neuProfileState.removeAvatar = true;
         const input = document.getElementById('neuProfileAvatarFile');
         if (input instanceof HTMLInputElement) input.value = '';
+        const avatarUrlInput = document.getElementById('neuProfileAvatarUrlInput');
+        if (avatarUrlInput instanceof HTMLInputElement) avatarUrlInput.value = '';
         neuRenderProfileAvatarPreview();
         return;
       }
@@ -667,7 +1606,7 @@ function neuWireProfileEditorEvents() {
     const file = input.files?.[0] || null;
     if (!file) return;
     if (!String(file.type || '').toLowerCase().startsWith('image/')) {
-      neuSetProfileMsg('Selecciona una imagen válida.', true);
+      neuSetProfileMsg('Selecciona una imagen valida.', true);
       input.value = '';
       return;
     }
@@ -675,7 +1614,29 @@ function neuWireProfileEditorEvents() {
     neuRevokeProfilePreviewUrl();
     neuProfileState.pendingAvatarFile = file;
     neuProfileState.pendingAvatarPreviewUrl = URL.createObjectURL(file);
+    neuProfileState.pendingAvatarUrlDraft = '';
     neuProfileState.removeAvatar = false;
+    const avatarUrlInput = document.getElementById('neuProfileAvatarUrlInput');
+    if (avatarUrlInput instanceof HTMLInputElement) avatarUrlInput.value = '';
+    neuRenderProfileAvatarPreview();
+  });
+
+  document.getElementById('neuProfileAvatarUrlInput')?.addEventListener('input', (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
+    const normalized = neuNormalizeAvatarUrl(input.value, { allowEmpty: true });
+    if (normalized.error) {
+      neuSetProfileMsg(normalized.error, true);
+      return;
+    }
+
+    neuSetProfileMsg('');
+    neuProfileState.pendingAvatarFile = null;
+    neuRevokeProfilePreviewUrl();
+    neuProfileState.removeAvatar = false;
+    neuProfileState.pendingAvatarUrlDraft = String(normalized.value || '').trim();
+    const fileInput = document.getElementById('neuProfileAvatarFile');
+    if (fileInput instanceof HTMLInputElement) fileInput.value = '';
     neuRenderProfileAvatarPreview();
   });
 
@@ -748,15 +1709,22 @@ function neuProfileFallback(uid) {
 function neuApplyProfileRouteDefault(meUid) {
   const params = new URLSearchParams(location.search);
   const currentProfile = String(params.get(NEU_PROFILE_PARAM) || '').trim();
+  const legacyUid = String(params.get('uid') || '').trim();
 
-  if (!currentProfile) {
+  if (!currentProfile && legacyUid) {
+    params.set(NEU_PROFILE_PARAM, legacyUid);
+    params.delete('uid');
+  }
+
+  const effectiveProfile = String(params.get(NEU_PROFILE_PARAM) || '').trim();
+  if (!effectiveProfile) {
     if (!String(params.get('portal') || '').trim()) {
       params.set('portal', 'feed');
     }
     params.set(NEU_PROFILE_PARAM, NEU_PROFILE_ME);
-  } else if (currentProfile) {
-    const normalized = normalizeProfileParam(currentProfile, meUid);
-    if (normalized && normalized !== currentProfile) params.set(NEU_PROFILE_PARAM, normalized);
+  } else {
+    const normalized = normalizeProfileParam(effectiveProfile, meUid);
+    if (normalized && normalized !== effectiveProfile) params.set(NEU_PROFILE_PARAM, normalized);
   }
 
   const nextHref = `${location.pathname}?${params.toString()}${location.hash}`;
@@ -839,13 +1807,12 @@ function neuSyncProfileActionsUi() {
   if (friendBtn instanceof HTMLElement) friendBtn.classList.add('is-hidden');
   if (shareBtn instanceof HTMLElement) shareBtn.classList.add('is-hidden');
 
+  const messageTargetUid = isProfileMode ? String(neuPublicProfileState.targetUid || '').trim() : '';
+  if (messageBtn instanceof HTMLElement) {
+    messageBtn.setAttribute('data-chat-uid', messageTargetUid);
+  }
   if (messageBtn instanceof HTMLAnchorElement) {
-    if (isProfileMode && !isOwn && neuPublicProfileState.targetUid) {
-      // JS handler opens NEU chat modal; href is only safe fallback within NEU.
-      messageBtn.href = neuProfileHref(neuPublicProfileState.targetUid);
-    } else {
-      messageBtn.href = 'neu-social-app.html?portal=pulse';
-    }
+    messageBtn.href = 'neu-social-app.html?portal=pulse';
   }
 
   if (!(followBtn instanceof HTMLButtonElement)) return;
@@ -904,7 +1871,7 @@ function neuProfilePostFromDoc(docSnap, targetUid, profile) {
   return {
     id: String(docSnap.id || '').trim(),
     ownerUid,
-    text: String(data.text || '').trim(),
+    text: String(data.text || data.content || '').trim(),
     tags,
     type: String(data.type || 'post').trim().toLowerCase() || 'post',
     media: String(data.videoURL || data.mediaURL || data.imageURL || data.imageUrl || data.media || '').trim(),
@@ -1119,6 +2086,217 @@ async function neuToggleFollowForViewedProfile() {
   }
 }
 
+function neuSuggestedRootNode() {
+  const node = document.getElementById('pulseSuggestedUsers');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuSuggestedCardNode() {
+  const node = document.getElementById('pulseSuggestedCard');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuSuggestedButtonLabel(uid) {
+  const cleanUid = String(uid || '').trim();
+  if (!cleanUid) return 'Seguir';
+  return neuSuggestedState.followingSet.has(cleanUid) ? 'Siguiendo' : 'Seguir';
+}
+
+function neuRenderSuggestedUsers() {
+  const root = neuSuggestedRootNode();
+  if (!(root instanceof HTMLElement)) return;
+
+  if (neuSuggestedState.loading) {
+    root.innerHTML = '<div class="empty-state">Cargando sugerencias...</div>';
+    return;
+  }
+
+  if (!Array.isArray(neuSuggestedState.rows) || !neuSuggestedState.rows.length) {
+    root.innerHTML = '<div class="empty-state">Sin sugerencias por ahora.</div>';
+    return;
+  }
+
+  const items = neuSuggestedState.rows
+    .map((row) => {
+      const uid = String(row.uid || '').trim();
+      const displayName = String(row.displayName || 'Usuario').trim() || 'Usuario';
+      const handle = neuEnsureHandle(row.handle || row.username || '', displayName, uid);
+      const city = String(row.cityPl || row.city || '').trim();
+      const avatarUrl = String(row.avatarUrl || '').trim();
+      const followLabel = neuSuggestedButtonLabel(uid);
+      const isFollowing = followLabel === 'Siguiendo';
+      const avatarHtml = avatarUrl
+        ? `<img loading="lazy" src="${esc(avatarUrl)}" alt="avatar" />`
+        : `<span>${esc(neuAvatarLetter(displayName))}</span>`;
+      return `
+        <article class="neu-suggested-item" data-neu-suggested-item="${esc(uid)}">
+          <a class="avatar-frame neu-suggested-avatar" href="${esc(neuProfileHref(uid))}">${avatarHtml}</a>
+          <a class="neu-suggested-copy" href="${esc(neuProfileHref(uid))}">
+            <strong>${esc(displayName)}</strong>
+            <span>${esc(handle)}${city ? ` Â· ${esc(city)}` : ''}</span>
+          </a>
+          <button
+            class="${isFollowing ? 'btn-white-outline' : 'btn-yellow'} neu-suggested-follow-btn${isFollowing ? ' is-following' : ''}"
+            type="button"
+            data-neu-suggest-follow="${esc(uid)}"
+          >${esc(followLabel)}</button>
+        </article>
+      `;
+    })
+    .join('');
+
+  root.innerHTML = `<div class="neu-suggested-list">${items}</div>`;
+}
+
+async function neuLoadFollowingSet(meUid) {
+  const cleanUid = String(meUid || '').trim();
+  if (!cleanUid) return new Set();
+  try {
+    const snap = await getDocs(query(collection(db, NEU_FOLLOWS_COLLECTION, cleanUid, 'following'), limit(400)));
+    const next = new Set();
+    snap.forEach((row) => {
+      const id = String(row.id || '').trim();
+      const targetUid = String(row.data()?.targetUid || '').trim();
+      if (id) next.add(id);
+      if (targetUid) next.add(targetUid);
+    });
+    return next;
+  } catch {
+    return new Set();
+  }
+}
+
+async function neuFetchSuggestedUsers(meUid) {
+  const cleanUid = String(meUid || '').trim();
+  if (!cleanUid) return [];
+
+  const attempts = [
+    query(
+      collection(db, NEU_USERS_COLLECTION),
+      where('onboardingCompleted', '==', true),
+      orderBy('followersCount', 'desc'),
+      limit(20),
+    ),
+    query(
+      collection(db, NEU_USERS_COLLECTION),
+      where('onboardingCompleted', '==', true),
+      orderBy('createdAt', 'desc'),
+      limit(20),
+    ),
+    query(collection(db, NEU_USERS_COLLECTION), where('onboardingCompleted', '==', true), limit(20)),
+  ];
+
+  const byUid = new Map();
+  for (const q of attempts) {
+    try {
+      const snap = await getDocs(q);
+      snap.forEach((row) => {
+        const uid = String(row.id || '').trim();
+        if (!uid || uid === cleanUid || byUid.has(uid)) return;
+        const profile = neuNormalizeProfile(row.data() || {}, uid);
+        byUid.set(uid, {
+          uid,
+          displayName: profile.displayName,
+          handle: profile.handle,
+          username: String(row.data()?.username || '').trim(),
+          city: profile.city,
+          cityPl: String(row.data()?.cityPl || '').trim(),
+          avatarUrl: profile.avatarUrl,
+        });
+      });
+      if (byUid.size >= 10) break;
+    } catch {
+      // try next fallback
+    }
+  }
+
+  return Array.from(byUid.values()).slice(0, 10);
+}
+
+function neuFocusSuggestedCard() {
+  const card = neuSuggestedCardNode();
+  if (!(card instanceof HTMLElement)) return;
+  card.classList.add('is-focus');
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  window.setTimeout(() => {
+    card.classList.remove('is-focus');
+  }, 1800);
+}
+
+async function neuLoadSuggestedUsers({ force = false, focus = false } = {}) {
+  const meUid = String(neuCurrentUid() || '').trim();
+  if (!meUid) return;
+  if (neuSuggestedState.loading) return;
+  if (!force && neuSuggestedState.uid === meUid && neuSuggestedState.rows.length) {
+    if (focus) neuFocusSuggestedCard();
+    return;
+  }
+
+  neuSuggestedState.loading = true;
+  neuRenderSuggestedUsers();
+  try {
+    const [rows, followingSet] = await Promise.all([neuFetchSuggestedUsers(meUid), neuLoadFollowingSet(meUid)]);
+    neuSuggestedState.uid = meUid;
+    neuSuggestedState.rows = rows;
+    neuSuggestedState.followingSet = followingSet;
+  } catch (error) {
+    neuSuggestedState.rows = [];
+    neuSuggestedState.followingSet = new Set();
+    if (NEU_QA) console.warn('[neu-suggested] load failed', error);
+  } finally {
+    neuSuggestedState.loading = false;
+    neuRenderSuggestedUsers();
+    if (focus) neuFocusSuggestedCard();
+  }
+}
+
+async function neuToggleSuggestedFollow(targetUid) {
+  const meUid = String(neuCurrentUid() || '').trim();
+  const cleanTarget = String(targetUid || '').trim();
+  if (!meUid || !cleanTarget || cleanTarget === meUid) return;
+  if (neuSuggestedState.loading) return;
+
+  const wasFollowing = neuSuggestedState.followingSet.has(cleanTarget);
+  if (wasFollowing) neuSuggestedState.followingSet.delete(cleanTarget);
+  else neuSuggestedState.followingSet.add(cleanTarget);
+  neuRenderSuggestedUsers();
+
+  if (neuPublicProfileState.profileMode && !neuPublicProfileState.isOwn && neuPublicProfileState.targetUid === cleanTarget) {
+    neuPublicProfileState.isFollowing = !wasFollowing;
+    neuPublicProfileState.followersCount = Math.max(0, Number(neuPublicProfileState.followersCount || 0) + (wasFollowing ? -1 : 1));
+    neuSyncProfileCountsUi();
+    neuSyncProfileActionsUi();
+  }
+
+  try {
+    if (wasFollowing) {
+      await Promise.all([
+        deleteDoc(doc(db, NEU_FOLLOWS_COLLECTION, meUid, 'following', cleanTarget)),
+        deleteDoc(doc(db, NEU_FOLLOWS_COLLECTION, cleanTarget, 'followers', meUid)),
+      ]);
+    } else {
+      const now = serverTimestamp();
+      await Promise.all([
+        setDoc(
+          doc(db, NEU_FOLLOWS_COLLECTION, meUid, 'following', cleanTarget),
+          { sourceUid: meUid, targetUid: cleanTarget, createdAt: now, updatedAt: now },
+          { merge: true },
+        ),
+        setDoc(
+          doc(db, NEU_FOLLOWS_COLLECTION, cleanTarget, 'followers', meUid),
+          { sourceUid: meUid, targetUid: cleanTarget, createdAt: now, updatedAt: now },
+          { merge: true },
+        ),
+      ]);
+    }
+  } catch (error) {
+    if (wasFollowing) neuSuggestedState.followingSet.add(cleanTarget);
+    else neuSuggestedState.followingSet.delete(cleanTarget);
+    neuRenderSuggestedUsers();
+    if (NEU_QA) console.warn('[neu-suggested] follow failed', error);
+  }
+}
+
 function neuProfileHref(uid) {
   const clean = String(uid || '').trim();
   if (!clean) return 'neu-social-app.html?profile=me';
@@ -1183,7 +2361,64 @@ function neuHasModifiedClick(event) {
   return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button === 1;
 }
 
+function neuRewriteLegacyLinksInRoot(root = document) {
+  if (!root || typeof root.querySelectorAll !== 'function') return;
+
+  const profileLinks = root.querySelectorAll('a[href*="perfil-fusion.html"]');
+  profileLinks.forEach((anchor) => {
+    if (anchor instanceof HTMLAnchorElement) neuPatchLegacyProfileLinkHref(anchor);
+  });
+
+  const chatLinks = root.querySelectorAll('a[href*="mensajes.html"]');
+  chatLinks.forEach((anchor) => {
+    if (anchor instanceof HTMLAnchorElement) neuPatchLegacyChatLinkHref(anchor);
+  });
+}
+
 let neuLegacyProfileLinkBridgeWired = false;
+const neuLegacyLinkRewriteState = {
+  observer: null,
+  tick: null,
+};
+
+function neuScheduleLegacyLinkRewrite() {
+  if (neuLegacyLinkRewriteState.tick) window.clearTimeout(neuLegacyLinkRewriteState.tick);
+  neuLegacyLinkRewriteState.tick = window.setTimeout(() => {
+    neuLegacyLinkRewriteState.tick = null;
+    neuRewriteLegacyLinksInRoot(document);
+  }, 40);
+}
+
+function wireNeuLegacyLinkRewriteObserver() {
+  if (isDisabled('observers')) return;
+  if (neuLegacyLinkRewriteState.observer instanceof MutationObserver) return;
+
+  const watchIds = [
+    'feedList',
+    'networkFollowers',
+    'networkFollowing',
+    'networkFriends',
+    'networkSuggestions',
+    'nearPeople',
+    'popularQuestions',
+    'pulseConversations',
+    'pulseSaves',
+  ];
+
+  const nodes = watchIds
+    .map((id) => document.getElementById(id))
+    .filter((node) => node instanceof HTMLElement);
+  if (!nodes.length) return;
+
+  neuLegacyLinkRewriteState.observer = new MutationObserver(() => {
+    neuScheduleLegacyLinkRewrite();
+  });
+
+  nodes.forEach((node) => {
+    neuLegacyLinkRewriteState.observer.observe(node, { childList: true, subtree: true });
+  });
+}
+
 function wireNeuLegacyProfileLinkBridge() {
   if (neuLegacyProfileLinkBridgeWired) return;
   neuLegacyProfileLinkBridgeWired = true;
@@ -1209,32 +2444,45 @@ function wireNeuLegacyProfileLinkBridge() {
       const chatAnchor = target.closest('a[href*="mensajes.html"]');
       if (chatAnchor instanceof HTMLAnchorElement) {
         const chatUid = neuPatchLegacyChatLinkHref(chatAnchor);
+        if (neuHasModifiedClick(event)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
         if (chatUid) {
-          if (neuHasModifiedClick(event)) return;
-          event.preventDefault();
-          event.stopPropagation();
-          event.stopImmediatePropagation();
-          neuOpenOrStartDirectChat(chatUid).catch((error) => {
+          neuOpenChatWithUser(chatUid).catch((error) => {
             if (NEU_QA) console.warn('[neu-chat] legacy chat bridge failed', error);
           });
-          return;
+        } else if (NEU_QA) {
+          console.warn('[neu-chat] ignored legacy chat link without uid', chatAnchor.getAttribute('href'));
         }
+        return;
       }
 
       const anchor = target.closest('a[href*="perfil-fusion.html"]');
       if (!(anchor instanceof HTMLAnchorElement)) return;
 
       const uid = neuPatchLegacyProfileLinkHref(anchor);
-      if (!uid) return;
       if (neuHasModifiedClick(event)) return;
 
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
-      location.href = neuProfileHref(uid);
+      if (uid) {
+        location.href = neuProfileHref(uid);
+      } else if (NEU_QA) {
+        console.warn('[neu-profile] ignored legacy profile link without uid', anchor.getAttribute('href'));
+      }
     },
     true,
   );
+
+  const scheduleRewrite = () => {
+    window.setTimeout(() => neuRewriteLegacyLinksInRoot(document), 0);
+    window.setTimeout(() => neuRewriteLegacyLinksInRoot(document), 240);
+    window.setTimeout(() => neuRewriteLegacyLinksInRoot(document), 900);
+  };
+  scheduleRewrite();
+  wireNeuLegacyLinkRewriteObserver();
 }
 
 function neuWirePublicProfileEvents() {
@@ -1246,6 +2494,18 @@ function neuWirePublicProfileEvents() {
     (event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
+
+      const suggestFollowBtn = target.closest('[data-neu-suggest-follow]');
+      if (suggestFollowBtn instanceof HTMLElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        const targetUid = String(suggestFollowBtn.getAttribute('data-neu-suggest-follow') || '').trim();
+        neuToggleSuggestedFollow(targetUid).catch((error) => {
+          if (NEU_QA) console.warn('[neu-suggested] follow click failed', error);
+        });
+        return;
+      }
 
       const followBtn = target.closest('#btnFusionFollow');
       if (followBtn && neuPublicProfileState.profileMode) {
@@ -1315,7 +2575,16 @@ async function neuInitPublicProfile(user) {
       return;
     }
 
-    const targetUid = getProfileUidFromQuery(meUid) || meUid;
+    const targetUid = getProfileUidFromQuery(meUid);
+    if (!targetUid) {
+      // Invalid/empty profile id should not force redirect to own profile.
+      neuPublicProfileState.profileMode = false;
+      neuPublicProfileState.targetUid = '';
+      neuPublicProfileState.isOwn = true;
+      neuSyncProfileActionsUi();
+      neuWirePublicProfileEvents();
+      return;
+    }
     const isOwn = targetUid === meUid;
     const changedTarget = neuPublicProfileState.targetUid !== targetUid;
     neuPublicProfileState.meUid = meUid;
@@ -1356,6 +2625,9 @@ async function neuInitPublicProfile(user) {
 }
 
 const NEU_CHAT_MAX_MESSAGES = 50;
+const NEU_CHAT_SCROLL_NEAR_BOTTOM = 120;
+const NEU_CHAT_GROUP_WINDOW_MS = 5 * 60 * 1000;
+const NEU_CHAT_FLOAT_STORAGE_KEY = 'neu_chat_float_pos';
 
 const neuChatState = {
   wired: false,
@@ -1374,6 +2646,25 @@ const neuChatState = {
   profileLoading: new Map(),
   listObserver: null,
   totalUnread: 0,
+  lastConversationId: '',
+  lastPeerUid: '',
+  floatWired: false,
+  newMessageChipVisible: false,
+  peerTyping: false,
+  peerLastReadAt: null,
+  bodyScrollWired: false,
+  bodyScrollRaf: 0,
+  nearBottom: true,
+};
+
+const neuChatFloatState = {
+  dragging: false,
+  moved: false,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+  suppressClickUntil: 0,
 };
 
 function neuUnreadValue(value) {
@@ -1433,9 +2724,42 @@ function neuRenderBottomUnreadBadge() {
   badge.setAttribute('aria-label', `Chats sin leer: ${count}`);
 }
 
+function neuChatFloatNode() {
+  const node = document.getElementById('neuChatFloatFlag');
+  return node instanceof HTMLButtonElement ? node : null;
+}
+
+function neuEnsureFloatUnreadBadge() {
+  const flag = neuChatFloatNode();
+  if (!(flag instanceof HTMLButtonElement)) return null;
+  let badge = flag.querySelector('.neu-chat-float-badge');
+  if (!(badge instanceof HTMLElement)) {
+    badge = document.createElement('span');
+    badge.className = 'neu-unread-badge neu-chat-float-badge hidden';
+    flag.append(badge);
+  }
+  return badge;
+}
+
+function neuRenderFloatUnreadBadge() {
+  const badge = neuEnsureFloatUnreadBadge();
+  if (!(badge instanceof HTMLElement)) return;
+  const count = neuUnreadValue(neuChatState.totalUnread);
+  const label = neuUnreadBadgeLabel(count);
+  if (!label) {
+    badge.classList.add('hidden');
+    badge.textContent = '';
+    return;
+  }
+  badge.classList.remove('hidden');
+  badge.textContent = label;
+  badge.setAttribute('aria-label', `Chats sin leer: ${count}`);
+}
+
 function neuSyncUnreadUi() {
   neuChatState.totalUnread = neuTotalUnreadFromRows(neuChatState.listRows);
   neuRenderBottomUnreadBadge();
+  neuRenderFloatUnreadBadge();
 }
 
 function neuSetConversationUnreadLocal(conversationId, unreadCount) {
@@ -1481,6 +2805,114 @@ function neuChatFormatClock(value) {
   }
 }
 
+function neuTimeToMs(t) {
+  if (!t) return 0;
+  if (typeof t === 'number') return t;
+  if (t instanceof Date) return t.getTime();
+  if (typeof t.toMillis === 'function') return t.toMillis();
+  if (t.seconds) return t.seconds * 1000 + Math.floor((t.nanoseconds || 0) / 1e6);
+  return 0;
+}
+
+function neuChatTsValue(value) {
+  const direct = neuTimeToMs(value);
+  if (direct > 0) return direct;
+  const date = neuChatDate(value);
+  return date ? date.getTime() : 0;
+}
+
+function neuChatBuildGroups(messages = []) {
+  const list = Array.isArray(messages) ? messages : [];
+  const groups = [];
+
+  list.forEach((item) => {
+    const senderUid = String(item?.senderUid || '').trim();
+    const ts = neuChatTsValue(item?.createdAt);
+    const current = {
+      id: String(item?.id || '').trim(),
+      senderUid,
+      text: String(item?.text || '').trim(),
+      createdAt: item?.createdAt || null,
+      ts,
+    };
+    const prev = groups[groups.length - 1];
+    const canMerge =
+      !!prev &&
+      prev.senderUid === senderUid &&
+      prev.lastTs > 0 &&
+      ts > 0 &&
+      ts - prev.lastTs <= NEU_CHAT_GROUP_WINDOW_MS;
+
+    if (canMerge) {
+      prev.messages.push(current);
+      prev.lastTs = ts;
+      prev.lastCreatedAt = current.createdAt;
+      prev.lastMessageId = current.id;
+      return;
+    }
+
+    groups.push({
+      senderUid,
+      messages: [current],
+      firstTs: ts,
+      lastTs: ts,
+      firstCreatedAt: current.createdAt,
+      lastCreatedAt: current.createdAt,
+      lastMessageId: current.id,
+    });
+  });
+
+  return groups;
+}
+
+function neuChatDeliveryStatus(messages = [], meUid = '') {
+  const list = Array.isArray(messages) ? messages : [];
+  const ownUid = String(meUid || '').trim();
+  if (!list.length || !ownUid) return null;
+
+  let lastOutgoing = null;
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    const row = list[i];
+    if (String(row?.senderUid || '').trim() === ownUid) {
+      lastOutgoing = row;
+      break;
+    }
+  }
+  if (!lastOutgoing) return null;
+
+  const lastOutgoingTs = neuTimeToMs(lastOutgoing.createdAt);
+  const peerReadTs = neuTimeToMs(neuChatState.peerLastReadAt);
+  const seen = peerReadTs > 0 && lastOutgoingTs > 0 ? peerReadTs >= lastOutgoingTs : false;
+
+  return {
+    messageId: String(lastOutgoing.id || '').trim(),
+    label: seen ? 'Visto' : 'Enviado',
+  };
+}
+
+function neuChatNewMessageChipNode() {
+  return document.getElementById('neuNewMsgChip');
+}
+
+function neuChatTypingRowNode() {
+  return document.getElementById('neuTypingRow');
+}
+
+function neuSetNewMessagesChipVisible(visible) {
+  const next = visible === true;
+  neuChatState.newMessageChipVisible = next;
+  const chip = neuChatNewMessageChipNode();
+  if (!(chip instanceof HTMLElement)) return;
+  chip.classList.toggle('hidden', !next);
+}
+
+function neuSetTypingRowVisible(visible) {
+  const next = visible === true;
+  const row = neuChatTypingRowNode();
+  if (!(row instanceof HTMLElement)) return;
+  row.classList.toggle('hidden', !next);
+}
+
 function neuChatMembers(uidA, uidB) {
   return [String(uidA || '').trim(), String(uidB || '').trim()].filter(Boolean).sort((a, b) => a.localeCompare(b));
 }
@@ -1509,15 +2941,65 @@ function neuSetChatModalOpen(open) {
 }
 
 function neuChatBodyNode() {
+  return document.getElementById('neuChatBody');
+}
+
+function neuChatMessagesNode() {
   return document.getElementById('neuChatMessages');
 }
 
 function neuChatInputNode() {
-  return document.getElementById('neuChatInput');
+  const node = document.getElementById('neuChatInput');
+  return node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement ? node : null;
 }
 
 function neuChatSendButtonNode() {
   return document.getElementById('neuChatSendBtn');
+}
+
+function neuChatComposerNode() {
+  const node = document.getElementById('neuChatForm');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuUpdateChatComposerOffsetVar() {
+  const composer = neuChatComposerNode();
+  const height = composer instanceof HTMLElement ? composer.offsetHeight : 72;
+  const safe = Math.max(0, Math.round(Number(height) || 72));
+  document.documentElement.style.setProperty('--neuChatComposerH', `${safe}px`);
+}
+
+function neuChatInputValue() {
+  const input = neuChatInputNode();
+  return String(input?.value || '');
+}
+
+function neuChatHasTypedText() {
+  return neuChatInputValue().trim().length > 0;
+}
+
+function neuChatAutoGrow(el) {
+  if (!(el instanceof HTMLTextAreaElement)) return;
+  el.style.height = 'auto';
+  const line = parseFloat(getComputedStyle(el).lineHeight) || 20;
+  const max = line * 4 + 20;
+  const next = Math.min(el.scrollHeight, max);
+  el.style.height = `${next}px`;
+  el.style.overflowY = el.scrollHeight > max ? 'auto' : 'hidden';
+  neuUpdateChatComposerOffsetVar();
+}
+
+function neuChatAutoResizeInput() {
+  const input = neuChatInputNode();
+  neuChatAutoGrow(input);
+}
+
+function neuSyncChatComposerState() {
+  const sendBtn = neuChatSendButtonNode();
+  if (!(sendBtn instanceof HTMLButtonElement)) return;
+  const disabled = neuChatState.sending || !neuChatHasTypedText();
+  sendBtn.disabled = disabled;
+  sendBtn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
 }
 
 function neuSetChatSending(on) {
@@ -1525,23 +3007,42 @@ function neuSetChatSending(on) {
   neuChatState.sending = active;
   const input = neuChatInputNode();
   const sendBtn = neuChatSendButtonNode();
-  if (input instanceof HTMLInputElement) input.disabled = active;
+  if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) input.disabled = active;
   if (sendBtn instanceof HTMLButtonElement) {
-    sendBtn.disabled = active;
-    sendBtn.textContent = active ? 'Enviando...' : 'Enviar';
+    sendBtn.textContent = active ? '...' : '>';
+    sendBtn.setAttribute('aria-label', 'Enviar');
+    sendBtn.title = 'Enviar';
   }
+  neuSyncChatComposerState();
 }
 
-function neuChatIsNearBottom() {
-  const body = neuChatBodyNode();
-  if (!(body instanceof HTMLElement)) return true;
-  return body.scrollHeight - body.scrollTop - body.clientHeight < 72;
+function neuChatIsNearBottom(threshold = NEU_CHAT_SCROLL_NEAR_BOTTOM) {
+  const el = neuChatBodyNode();
+  if (!(el instanceof HTMLElement)) return true;
+  const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+  neuChatState.nearBottom = nearBottom;
+  return nearBottom;
 }
 
-function neuChatScrollBottom() {
+function neuChatScrollBottom(behavior = 'auto') {
   const body = neuChatBodyNode();
   if (!(body instanceof HTMLElement)) return;
+  if (behavior === 'smooth' && typeof body.scrollTo === 'function') {
+    body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' });
+    return;
+  }
   body.scrollTop = body.scrollHeight;
+  neuChatState.nearBottom = true;
+}
+
+function neuChatHandleBodyScrollThrottled() {
+  if (neuChatState.bodyScrollRaf) return;
+  neuChatState.bodyScrollRaf = window.requestAnimationFrame(() => {
+    neuChatState.bodyScrollRaf = 0;
+    if (neuChatIsNearBottom(NEU_CHAT_SCROLL_NEAR_BOTTOM)) {
+      neuSetNewMessagesChipVisible(false);
+    }
+  });
 }
 
 async function neuFindConversationByMemberKey(memberKey) {
@@ -1577,6 +3078,8 @@ function neuMapUserChatRow(docSnap, meUid) {
     updatedAt: data.updatedAt || data.lastMessageAt || null,
     unreadCount: neuUnreadValue(data.unreadCount),
     lastReadAt: data.lastReadAt || null,
+    lastSenderUid: String(data.lastSenderUid || '').trim(),
+    peerLastReadAt: data.peerLastReadAt || data.lastReadAtPeer || null,
   };
 }
 
@@ -1718,31 +3221,71 @@ function neuRenderChatHeader() {
 
 function neuRenderChatMessages() {
   const body = neuChatBodyNode();
-  if (!(body instanceof HTMLElement)) return;
+  const messagesRoot = neuChatMessagesNode();
+  if (!(body instanceof HTMLElement) || !(messagesRoot instanceof HTMLElement)) return;
   const meUid = neuCurrentUid();
   const list = Array.isArray(neuChatState.messages) ? neuChatState.messages : [];
   if (!list.length) {
-    body.innerHTML = '<div class="neu-chat-empty">Aun no hay mensajes.</div>';
+    messagesRoot.innerHTML = '<div class="neu-chat-empty">Aun no hay mensajes.</div>';
+    neuSetTypingRowVisible(neuChatState.peerTyping);
+    neuSetNewMessagesChipVisible(false);
     return;
   }
 
-  body.innerHTML = list
-    .map((item) => {
-      const mine = String(item.senderUid || '').trim() === meUid;
-      const bubbleClass = mine ? 'neu-chat-bubble neu-chat-bubble-mine' : 'neu-chat-bubble neu-chat-bubble-peer';
-      const text = esc(String(item.text || '').trim()).replace(/\n/g, '<br />');
-      const meta = neuChatFormatClock(item.createdAt);
+  const peerProfile = neuChatProfileCached(neuChatState.peerUid);
+  const peerDisplayName = String(peerProfile.displayName || '').trim() || 'Usuario';
+  const peerAvatarUrl = String(peerProfile.avatarUrl || '').trim();
+  const incomingAvatar = peerAvatarUrl
+    ? `<img class="neuMsgAvatar" loading="lazy" src="${esc(peerAvatarUrl)}" alt="avatar" />`
+    : `<div class="neuMsgAvatar neuMsgAvatarPlaceholder">${esc(neuAvatarLetter(peerDisplayName))}</div>`;
+
+  const grouped = neuChatBuildGroups(list);
+  const delivery = neuChatDeliveryStatus(list, meUid);
+
+  const rowsHtml = grouped
+    .map((group) => {
+      const mine = String(group.senderUid || '').trim() === meUid;
+      const rowClass = mine ? 'neuMessageRow outgoing' : 'neuMessageRow incoming';
+      const bubblesHtml = (group.messages || [])
+        .map((item, index, arr) => {
+          const text = esc(String(item.text || '').trim()).replace(/\n/g, '<br />');
+          const firstClass = index === 0 ? ' is-group-first' : '';
+          const lastClass = index === arr.length - 1 ? ' is-group-last' : '';
+          return `<div class="neuMessageBubble${firstClass}${lastClass}">${text || '-'}</div>`;
+        })
+        .join('');
+      const meta = neuChatFormatClock(group.lastCreatedAt || group.firstCreatedAt);
+      const metaHtml = `<div class="neuMsgMeta">${esc(meta)}</div>`;
+      const statusHtml =
+        mine && delivery && String(delivery.messageId || '') === String(group.lastMessageId || '')
+          ? `<div class="neuMsgStatus">${esc(delivery.label)}</div>`
+          : '';
+      const avatarHtml = mine ? '' : `<div class="neuAvatarGutter">${incomingAvatar}</div>`;
+
       return `
-        <article class="${bubbleClass}">
-          <div class="neu-chat-text">${text || '-'}</div>
-          <div class="neu-chat-meta">${esc(meta)}</div>
-        </article>
+        <div class="${rowClass}">
+          ${avatarHtml}
+          <div class="neuMessagePack">
+            ${bubblesHtml}
+            ${metaHtml}
+            ${statusHtml}
+          </div>
+        </div>
       `;
     })
     .join('');
+
+  messagesRoot.innerHTML = rowsHtml;
+  neuSetTypingRowVisible(neuChatState.peerTyping);
+  neuSetNewMessagesChipVisible(neuChatState.newMessageChipVisible);
 }
 
 function neuCloseChatModal() {
+  if (neuChatState.currentConversationId) {
+    neuChatState.lastConversationId = neuChatState.currentConversationId;
+    neuChatState.lastPeerUid = neuChatState.peerUid;
+  }
+  neuSetChatSending(false);
   neuSetChatModalOpen(false);
   neuChatSetHint('');
   neuStopChatMessageListener();
@@ -1751,6 +3294,16 @@ function neuCloseChatModal() {
   neuChatState.currentMemberKey = '';
   neuChatState.peerUid = '';
   neuChatState.messages = [];
+  neuChatState.newMessageChipVisible = false;
+  neuChatState.peerTyping = false;
+  neuChatState.peerLastReadAt = null;
+  if (neuChatState.bodyScrollRaf) {
+    window.cancelAnimationFrame(neuChatState.bodyScrollRaf);
+    neuChatState.bodyScrollRaf = 0;
+  }
+  neuSetNewMessagesChipVisible(false);
+  neuSetTypingRowVisible(false);
+  neuSyncChatComposerState();
 }
 
 function neuStopChatListListener() {
@@ -1761,6 +3314,7 @@ function neuStopChatListListener() {
   neuChatState.listUid = '';
   neuChatState.totalUnread = 0;
   neuRenderBottomUnreadBadge();
+  neuRenderFloatUnreadBadge();
 }
 
 function neuStopChatMessageListener() {
@@ -1781,6 +3335,15 @@ function neuStartChatListListener(meUid) {
     q,
     (snap) => {
       neuChatState.listRows = snap.docs.map((row) => neuMapUserChatRow(row, uid));
+      const activeConvId = String(neuChatState.currentConversationId || '').trim();
+      if (activeConvId) {
+        const activeRow = neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === activeConvId) || null;
+        neuChatState.peerLastReadAt = activeRow?.peerLastReadAt || null;
+        const modal = neuChatModalNode();
+        if (modal instanceof HTMLElement && !modal.hidden) {
+          neuRenderChatMessages();
+        }
+      }
       neuSyncUnreadUi();
       neuRenderChatList();
     },
@@ -1861,18 +3424,24 @@ function neuStartChatMessagesListener(conversationId, members) {
   neuChatState.messageUnsub = onSnapshot(
     q,
     (snap) => {
-      const stickBottom = neuChatIsNearBottom();
-      neuChatState.messages = snap.docs
-        .map((row) => ({ id: row.id, ...(row.data() || {}) }))
-        .reverse();
-      neuRenderChatMessages();
-      if (stickBottom) window.setTimeout(neuChatScrollBottom, 0);
-
+      const wasNearBottom = neuChatIsNearBottom(NEU_CHAT_SCROLL_NEAR_BOTTOM);
       const incomingAdded = snap.docChanges().some((change) => {
         if (change.type !== 'added') return false;
         const senderUid = String(change.doc.data()?.senderUid || '').trim();
         return !!senderUid && senderUid !== meUid;
       });
+      const shouldStick = firstSnapshot || wasNearBottom;
+      if (shouldStick) neuSetNewMessagesChipVisible(false);
+      else if (incomingAdded) neuSetNewMessagesChipVisible(true);
+
+      neuChatState.messages = snap.docs
+        .map((row) => ({ id: row.id, ...(row.data() || {}) }))
+        .reverse();
+      neuRenderChatMessages();
+      if (shouldStick) {
+        window.setTimeout(() => neuChatScrollBottom(firstSnapshot ? 'auto' : 'smooth'), 0);
+      }
+
       const shouldMarkRead = firstSnapshot || incomingAdded;
       if (shouldMarkRead) {
         neuMarkConversationRead(conversationId, {
@@ -1913,20 +3482,45 @@ async function neuOpenConversation(conversationId, seed = {}) {
 
   const peerUid = String(seed.otherUid || members.find((uid) => uid !== meUid) || '').trim();
   const memberKey = String(data.memberKey || seed.memberKey || neuChatMemberKey(members[0], members[1])).trim();
+  const peerReadFromConversation =
+    (peerUid && data?.lastReadAtBy && typeof data.lastReadAtBy === 'object' ? data.lastReadAtBy[peerUid] : null) ||
+    data?.peerLastReadAt ||
+    data?.lastReadAtPeer ||
+    null;
 
+  neuChatState.lastConversationId = convId;
+  neuChatState.lastPeerUid = peerUid;
   neuChatState.currentConversationId = convId;
   neuChatState.currentMembers = members;
   neuChatState.currentMemberKey = memberKey;
   neuChatState.peerUid = peerUid;
   neuChatState.messages = [];
+  neuChatState.newMessageChipVisible = false;
+  neuChatState.peerTyping = false;
+  neuChatState.peerLastReadAt = peerReadFromConversation || null;
+  neuChatState.nearBottom = true;
   neuChatSetHint('');
   neuRenderChatHeader();
   neuRenderChatMessages();
+  neuSetNewMessagesChipVisible(false);
+  neuSetTypingRowVisible(false);
   neuSetChatModalOpen(true);
   if (peerUid) await neuEnsureChatProfile(peerUid);
   neuRenderChatHeader();
   neuStartChatMessagesListener(convId, members);
-  window.setTimeout(neuChatScrollBottom, 40);
+  window.setTimeout(() => {
+    neuChatScrollBottom('auto');
+    neuSyncChatComposerState();
+    neuChatAutoResizeInput();
+    const input = neuChatInputNode();
+    if (input instanceof HTMLTextAreaElement) {
+      neuChatAutoGrow(input);
+      input.focus({ preventScroll: true });
+    } else if (input instanceof HTMLInputElement) {
+      input.focus({ preventScroll: true });
+    }
+    neuUpdateChatComposerOffsetVar();
+  }, 40);
 }
 
 async function neuEnsureDirectConversation(uidA, uidB) {
@@ -1999,12 +3593,33 @@ async function neuOpenOrStartDirectChat(otherUid) {
   });
 }
 
+async function neuOpenChatWithUser(otherUid) {
+  const meUid = neuCurrentUid();
+  const targetUid = String(otherUid || '').trim();
+  if (!meUid) return;
+  if (!targetUid || targetUid === meUid) {
+    routeBottomNav(NEU_BOTTOM_KEYS.PULSE);
+    return;
+  }
+  await neuOpenOrStartDirectChat(targetUid);
+  const modal = neuChatModalNode();
+  if (modal instanceof HTMLElement && modal.hidden) {
+    neuSetChatModalOpen(true);
+  }
+}
+
 async function neuSendChatMessage() {
   const meUid = neuCurrentUid();
   const conversationId = String(neuChatState.currentConversationId || '').trim();
   const textInput = neuChatInputNode();
-  const rawText = String(textInput instanceof HTMLInputElement ? textInput.value : '').trim();
-  if (!meUid || !conversationId || !rawText) return;
+  const rawText = String(
+    textInput instanceof HTMLInputElement || textInput instanceof HTMLTextAreaElement ? textInput.value : '',
+  );
+  const safeText = rawText.trim().slice(0, 1000);
+  if (!meUid || !conversationId || !safeText) {
+    neuSyncChatComposerState();
+    return;
+  }
   if (neuChatState.sending) return;
 
   const members = Array.isArray(neuChatState.currentMembers)
@@ -2016,7 +3631,6 @@ async function neuSendChatMessage() {
   }
 
   const memberKey = String(neuChatState.currentMemberKey || neuChatMemberKey(members[0], members[1])).trim();
-  const safeText = rawText.slice(0, 1000);
   const now = serverTimestamp();
 
   neuSetChatSending(true);
@@ -2064,14 +3678,278 @@ async function neuSendChatMessage() {
 
     await batch.commit();
     neuSetConversationUnreadLocal(conversationId, 0);
-    if (textInput instanceof HTMLInputElement) textInput.value = '';
-    window.setTimeout(neuChatScrollBottom, 20);
+    if (textInput instanceof HTMLInputElement || textInput instanceof HTMLTextAreaElement) {
+      textInput.value = '';
+      if (textInput instanceof HTMLTextAreaElement) {
+        textInput.style.height = 'auto';
+        textInput.style.overflowY = 'hidden';
+        neuUpdateChatComposerOffsetVar();
+      }
+      textInput.focus({ preventScroll: true });
+    }
+    neuChatAutoResizeInput();
+    neuSyncChatComposerState();
+    neuSetNewMessagesChipVisible(false);
+    window.setTimeout(() => neuChatScrollBottom('auto'), 20);
   } catch (error) {
     console.error('[neu-chat] send failed', error);
     neuChatSetHint('No se pudo enviar el mensaje.', true);
   } finally {
     neuSetChatSending(false);
   }
+}
+
+function neuEnsureChatModalLayoutClass() {
+  const card = document.querySelector('#neuChatModal .neu-chat-modal-card');
+  if (card instanceof HTMLElement) card.classList.add('neuChatModalContent');
+}
+
+function neuChatReadFloatPosition() {
+  try {
+    const raw = localStorage.getItem(NEU_CHAT_FLOAT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const side = String(parsed?.side || '').trim().toLowerCase();
+    const top = Number(parsed?.top ?? parsed?.y);
+    if ((side !== 'left' && side !== 'right') || !Number.isFinite(top)) return null;
+    return { side, top };
+  } catch {
+    return null;
+  }
+}
+
+function neuChatSaveFloatPosition(side, top) {
+  try {
+    localStorage.setItem(
+      NEU_CHAT_FLOAT_STORAGE_KEY,
+      JSON.stringify({
+        side: side === 'left' ? 'left' : 'right',
+        top: Math.round(Number(top) || 0),
+      }),
+    );
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function neuClampNumber(value, min, max) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return min;
+  return Math.min(max, Math.max(min, n));
+}
+
+function neuChatFloatMetrics(flag) {
+  const margin = 16;
+  const width = Math.max(56, Math.round(flag?.offsetWidth || 76));
+  const height = Math.max(44, Math.round(flag?.offsetHeight || 56));
+  const maxX = Math.max(margin, window.innerWidth - width - margin);
+  const maxY = Math.max(margin, window.innerHeight - height - margin);
+  return { margin, width, height, maxX, maxY };
+}
+
+function neuApplyFloatRawPosition(x, y) {
+  const flag = neuChatFloatNode();
+  if (!(flag instanceof HTMLButtonElement)) return;
+  const metrics = neuChatFloatMetrics(flag);
+  const nextX = neuClampNumber(x, metrics.margin, metrics.maxX);
+  const nextY = neuClampNumber(y, metrics.margin, metrics.maxY);
+  const side = nextX + metrics.width / 2 < window.innerWidth / 2 ? 'left' : 'right';
+
+  flag.style.left = `${Math.round(nextX)}px`;
+  flag.style.top = `${Math.round(nextY)}px`;
+  flag.style.right = 'auto';
+  flag.style.bottom = 'auto';
+  flag.classList.toggle('is-left', side === 'left');
+}
+
+function neuApplyFloatSnapped(side = 'right', y = 96, persist = false) {
+  const flag = neuChatFloatNode();
+  if (!(flag instanceof HTMLButtonElement)) return;
+  const metrics = neuChatFloatMetrics(flag);
+  const resolvedSide = side === 'left' ? 'left' : 'right';
+  const nextY = neuClampNumber(y, metrics.margin, metrics.maxY);
+  const nextX = resolvedSide === 'left' ? metrics.margin : metrics.maxX;
+
+  flag.style.left = `${Math.round(nextX)}px`;
+  flag.style.top = `${Math.round(nextY)}px`;
+  flag.style.right = 'auto';
+  flag.style.bottom = 'auto';
+  flag.classList.toggle('is-left', resolvedSide === 'left');
+
+  if (persist) neuChatSaveFloatPosition(resolvedSide, nextY);
+}
+
+function neuDefaultFloatY() {
+  const flag = neuChatFloatNode();
+  if (!(flag instanceof HTMLButtonElement)) return 96;
+  const metrics = neuChatFloatMetrics(flag);
+  const fromBottom = window.innerHeight - metrics.height - 96;
+  return neuClampNumber(fromBottom, metrics.margin, metrics.maxY);
+}
+
+function neuFloatStartDrag(clientX, clientY) {
+  const flag = neuChatFloatNode();
+  if (!(flag instanceof HTMLButtonElement)) return;
+  const rect = flag.getBoundingClientRect();
+  neuChatFloatState.dragging = true;
+  neuChatFloatState.moved = false;
+  neuChatFloatState.startX = clientX;
+  neuChatFloatState.startY = clientY;
+  neuChatFloatState.originX = rect.left;
+  neuChatFloatState.originY = rect.top;
+  flag.classList.add('is-dragging');
+}
+
+function neuFloatMoveDrag(clientX, clientY) {
+  if (!neuChatFloatState.dragging) return;
+  const dx = clientX - neuChatFloatState.startX;
+  const dy = clientY - neuChatFloatState.startY;
+  if (Math.abs(dx) + Math.abs(dy) > 6) {
+    neuChatFloatState.moved = true;
+  }
+  neuApplyFloatRawPosition(neuChatFloatState.originX + dx, neuChatFloatState.originY + dy);
+}
+
+function neuFloatEndDrag() {
+  const flag = neuChatFloatNode();
+  if (!(flag instanceof HTMLButtonElement)) return;
+  if (!neuChatFloatState.dragging) return;
+
+  neuChatFloatState.dragging = false;
+  flag.classList.remove('is-dragging');
+
+  const rect = flag.getBoundingClientRect();
+  const side = rect.left + rect.width / 2 < window.innerWidth / 2 ? 'left' : 'right';
+  neuApplyFloatSnapped(side, rect.top, true);
+  if (neuChatFloatState.moved) {
+    neuChatFloatState.suppressClickUntil = Date.now() + 260;
+  }
+}
+
+async function neuOpenChatFromFloatFlag() {
+  const modal = neuChatModalNode();
+  if (modal instanceof HTMLElement && !modal.hidden) {
+    const input = neuChatInputNode();
+    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+      input.focus({ preventScroll: true });
+    }
+    return;
+  }
+
+  const lastConversationId = String(neuChatState.lastConversationId || neuChatState.currentConversationId || '').trim();
+  const lastPeerUid = String(neuChatState.lastPeerUid || neuChatState.peerUid || '').trim();
+  if (lastConversationId) {
+    try {
+      await neuOpenConversation(lastConversationId, { otherUid: lastPeerUid });
+      return;
+    } catch {
+      // fallback to list
+    }
+  }
+
+  const first = Array.isArray(neuChatState.listRows) ? neuChatState.listRows[0] : null;
+  const firstConversationId = String(first?.conversationId || '').trim();
+  if (firstConversationId) {
+    await neuOpenConversation(firstConversationId, { otherUid: String(first?.otherUid || '').trim() });
+    return;
+  }
+
+  routeBottomNav(NEU_BOTTOM_KEYS.PULSE);
+}
+
+async function neuOpenLastChatOrList() {
+  await neuOpenChatFromFloatFlag();
+}
+
+function neuInitChatFloatFlag() {
+  if (neuChatState.floatWired) return;
+  const flag = neuChatFloatNode();
+  if (!(flag instanceof HTMLButtonElement)) return;
+  neuChatState.floatWired = true;
+  flag.classList.remove('hidden');
+
+  const saved = neuChatReadFloatPosition();
+  if (saved) {
+    neuApplyFloatSnapped(saved.side, saved.top, false);
+  } else {
+    neuApplyFloatSnapped('right', neuDefaultFloatY(), false);
+  }
+
+  let moved = false;
+
+  const readPoint = (event) => {
+    const touchPoint = event?.touches?.[0] || event?.changedTouches?.[0];
+    const point = touchPoint || event;
+    const x = Number(point?.clientX);
+    const y = Number(point?.clientY);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    return { x, y };
+  };
+
+  const onStart = (event) => {
+    const point = readPoint(event);
+    if (!point) return;
+    moved = false;
+    neuFloatStartDrag(point.x, point.y);
+    if (event.cancelable) event.preventDefault();
+  };
+
+  const onMove = (event) => {
+    if (!neuChatFloatState.dragging) return;
+    const point = readPoint(event);
+    if (!point) return;
+
+    const dx = point.x - neuChatFloatState.startX;
+    const dy = point.y - neuChatFloatState.startY;
+    if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+
+    neuFloatMoveDrag(point.x, point.y);
+    if (event.cancelable) event.preventDefault();
+  };
+
+  const onEnd = () => {
+    if (!neuChatFloatState.dragging) return;
+    neuFloatEndDrag();
+    if (moved) neuChatFloatState.suppressClickUntil = Date.now() + 220;
+    window.setTimeout(() => {
+      moved = false;
+    }, 50);
+  };
+
+  flag.addEventListener('mousedown', (event) => {
+    if (event.button !== 0) return;
+    onStart(event);
+  });
+  flag.addEventListener('touchstart', onStart, { passive: false });
+
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup', onEnd);
+  window.addEventListener('touchend', onEnd);
+  window.addEventListener('touchcancel', onEnd);
+  window.addEventListener('blur', onEnd);
+
+  flag.addEventListener('click', (event) => {
+    if (moved || Date.now() < neuChatFloatState.suppressClickUntil) {
+      event.preventDefault();
+      return;
+    }
+    event.preventDefault();
+    neuOpenLastChatOrList().catch((error) => {
+      console.error('[neu-chat] float open failed', error);
+      neuChatSetHint('No se pudo abrir el chat.', true);
+    });
+  });
+
+  window.addEventListener(
+    'resize',
+    () => {
+      const rect = flag.getBoundingClientRect();
+      const side = flag.classList.contains('is-left') ? 'left' : 'right';
+      neuApplyFloatSnapped(side, rect.top, true);
+    },
+    { passive: true },
+  );
 }
 
 function neuWireChatEvents() {
@@ -2083,6 +3961,14 @@ function neuWireChatEvents() {
     (event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
+
+      const newChipBtn = target.closest('#neuNewMsgChip');
+      if (newChipBtn) {
+        event.preventDefault();
+        neuSetNewMessagesChipVisible(false);
+        neuChatScrollBottom('smooth');
+        return;
+      }
 
       const openRow = target.closest('[data-neu-chat-open]');
       if (openRow) {
@@ -2104,14 +3990,16 @@ function neuWireChatEvents() {
       }
 
       const messageProfileBtn = target.closest('#btnFusionMessage');
-      if (messageProfileBtn && neuPublicProfileState.profileMode && !neuPublicProfileState.isOwn) {
+      if (messageProfileBtn instanceof HTMLButtonElement) {
+        const chatUid = String(messageProfileBtn.getAttribute('data-chat-uid') || '').trim();
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        neuOpenOrStartDirectChat(neuPublicProfileState.targetUid).catch((error) => {
+        neuOpenChatWithUser(chatUid).catch((error) => {
           console.error('[neu-chat] profile message start failed', error);
           neuChatSetHint('No se pudo iniciar el chat.', true);
         });
+        return;
       }
     },
     true,
@@ -2124,6 +4012,45 @@ function neuWireChatEvents() {
       neuChatSetHint('No se pudo enviar.', true);
     });
   });
+
+  const chatInput = neuChatInputNode();
+  if (chatInput instanceof HTMLInputElement || chatInput instanceof HTMLTextAreaElement) {
+    chatInput.addEventListener('input', () => {
+      neuChatAutoGrow(chatInput);
+      neuSyncChatComposerState();
+    });
+  }
+
+  if (chatInput instanceof HTMLTextAreaElement) {
+    chatInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+      event.preventDefault();
+      neuSendChatMessage().catch((error) => {
+        console.error('[neu-chat] send Enter handler failed', error);
+        neuChatSetHint('No se pudo enviar.', true);
+      });
+    });
+  }
+
+  const chatBody = neuChatBodyNode();
+  if (chatBody instanceof HTMLElement && !neuChatState.bodyScrollWired) {
+    neuChatState.bodyScrollWired = true;
+    chatBody.addEventListener(
+      'scroll',
+      () => {
+        neuChatHandleBodyScrollThrottled();
+      },
+      { passive: true },
+    );
+  }
+
+  window.addEventListener(
+    'resize',
+    () => {
+      neuUpdateChatComposerOffsetVar();
+    },
+    { passive: true },
+  );
 
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
@@ -2138,12 +4065,16 @@ async function neuInitChatMvp(user) {
   if (!meUid) return;
 
   neuChatState.meUid = meUid;
+  neuEnsureChatModalLayoutClass();
+  neuInitChatFloatFlag();
   neuSyncUnreadUi();
-  neuRenderBottomUnreadBadge();
   neuWireChatEvents();
   neuStartChatListListener(meUid);
   neuWireChatListGuard();
   neuRenderChatList();
+  neuChatAutoResizeInput();
+  neuUpdateChatComposerOffsetVar();
+  neuSetChatSending(false);
 }
 
 function getRouteChatUid() {
@@ -2166,7 +4097,7 @@ async function neuRunRouteChatIntent() {
   const targetUid = getRouteChatUid();
   if (!targetUid) return;
   clearRouteChatUid();
-  await neuOpenOrStartDirectChat(targetUid);
+  await neuOpenChatWithUser(targetUid);
 }
 
 const NEU_URL_PARAMS = new URLSearchParams(location.search);
@@ -2557,6 +4488,7 @@ function initNeuFlowBridge() {
 const NEU_POST_MODE_CREATE = 'create';
 const NEU_POST_MODE_EDIT = 'edit';
 const NEU_POST_PRIMARY_COLLECTION = 'neuPosts';
+const NEU_QUICK_POST_MAX = 500;
 
 const neuPostCrudState = {
   wired: false,
@@ -2715,7 +4647,7 @@ function neuSetComposerMode(mode) {
     publish.dataset.neuEditMode = editOn ? '1' : '0';
   }
   if (title instanceof HTMLElement) {
-    title.textContent = editOn ? 'Editar publicación' : neuPostCrudState.composerDefaultTitle || 'Crear post';
+    title.textContent = editOn ? 'Editar publicacion' : neuPostCrudState.composerDefaultTitle || 'Crear post';
   }
 }
 
@@ -2749,6 +4681,223 @@ function neuCloseComposer() {
   document.body.classList.remove('modal-open');
 }
 
+function neuQuickPostEls() {
+  return {
+    modal: document.getElementById('neuQuickPostModal'),
+    form: document.getElementById('neuQuickPostForm'),
+    content: document.getElementById('neuQuickPostContent'),
+    imageUrl: document.getElementById('neuQuickPostImageUrl'),
+    msg: document.getElementById('neuQuickPostMsg'),
+    count: document.getElementById('neuQuickPostCount'),
+    submit: document.getElementById('btnNeuQuickPostSubmit'),
+    cancel: document.getElementById('btnNeuQuickPostCancel'),
+    close: document.getElementById('btnNeuQuickPostClose'),
+  };
+}
+
+function neuQuickPostSetMsg(text, bad = false) {
+  const { msg } = neuQuickPostEls();
+  if (!(msg instanceof HTMLElement)) return;
+  msg.textContent = String(text || '').trim();
+  msg.style.color = bad ? '#ffb7c2' : 'rgba(230,236,255,0.85)';
+}
+
+function neuQuickPostCurrentLength() {
+  const { content } = neuQuickPostEls();
+  return String(content?.value || '').trim().length;
+}
+
+function neuQuickPostUpdateUiState() {
+  const { count, submit } = neuQuickPostEls();
+  const len = neuQuickPostCurrentLength();
+
+  if (count instanceof HTMLElement) count.textContent = String(len);
+  if (submit instanceof HTMLButtonElement) {
+    submit.disabled = neuQuickPostState.submitting || len < 1 || len > NEU_QUICK_POST_MAX;
+  }
+}
+
+function neuQuickPostSetSubmitting(submitting) {
+  neuQuickPostState.submitting = submitting === true;
+  const { submit, cancel, close, imageUrl, content } = neuQuickPostEls();
+  if (submit instanceof HTMLButtonElement) {
+    submit.textContent = neuQuickPostState.submitting ? 'Publicando...' : 'Publicar';
+  }
+  if (cancel instanceof HTMLButtonElement) cancel.disabled = neuQuickPostState.submitting;
+  if (close instanceof HTMLButtonElement) close.disabled = neuQuickPostState.submitting;
+  if (imageUrl instanceof HTMLInputElement) imageUrl.disabled = neuQuickPostState.submitting;
+  if (content instanceof HTMLTextAreaElement) content.disabled = neuQuickPostState.submitting;
+  neuQuickPostUpdateUiState();
+}
+
+function neuQuickPostResetForm() {
+  const { form, content, imageUrl } = neuQuickPostEls();
+  if (form instanceof HTMLFormElement) form.reset();
+  if (content instanceof HTMLTextAreaElement) content.value = '';
+  if (imageUrl instanceof HTMLInputElement) imageUrl.value = '';
+  neuQuickPostSetMsg('');
+  neuQuickPostSetSubmitting(false);
+}
+
+function neuQuickPostNormalizeImageUrl(raw) {
+  const value = String(raw || '').trim();
+  if (!value) return { value: '' };
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return { error: 'URL de imagen invalida.' };
+    }
+    return { value: parsed.href };
+  } catch {
+    return { error: 'URL de imagen invalida.' };
+  }
+}
+
+function neuOpenQuickPostModal() {
+  neuWireQuickPostEvents();
+  const { modal, content } = neuQuickPostEls();
+  if (!(modal instanceof HTMLElement)) return;
+  neuQuickPostSetMsg('');
+  neuQuickPostSetSubmitting(false);
+  modal.hidden = false;
+  neuChatRecomputeModalLock();
+  window.setTimeout(() => {
+    if (content instanceof HTMLTextAreaElement) content.focus({ preventScroll: true });
+  }, 30);
+}
+
+function neuCloseQuickPostModal({ reset = false } = {}) {
+  const { modal } = neuQuickPostEls();
+  if (modal instanceof HTMLElement) modal.hidden = true;
+  if (reset) neuQuickPostResetForm();
+  neuChatRecomputeModalLock();
+}
+
+async function neuSubmitQuickPost() {
+  if (neuQuickPostState.submitting) return;
+
+  const uid = neuCurrentUid();
+  if (!uid) {
+    neuQuickPostSetMsg('Necesitas iniciar sesion para publicar.', true);
+    return;
+  }
+
+  const { content, imageUrl } = neuQuickPostEls();
+  const body = String(content?.value || '').trim();
+  if (!body) {
+    neuQuickPostSetMsg('Escribe algo para publicar.', true);
+    neuQuickPostUpdateUiState();
+    if (content instanceof HTMLTextAreaElement) content.focus({ preventScroll: true });
+    return;
+  }
+  if (body.length > NEU_QUICK_POST_MAX) {
+    neuQuickPostSetMsg(`Maximo ${NEU_QUICK_POST_MAX} caracteres.`, true);
+    neuQuickPostUpdateUiState();
+    return;
+  }
+
+  const normalizedUrl = neuQuickPostNormalizeImageUrl(imageUrl?.value);
+  if (normalizedUrl.error) {
+    neuQuickPostSetMsg(normalizedUrl.error, true);
+    if (imageUrl instanceof HTMLInputElement) imageUrl.focus({ preventScroll: true });
+    return;
+  }
+
+  const profile = neuProfileState.profile || neuProfileFromUi(uid) || {};
+  const displayName = String(profile.displayName || auth.currentUser?.displayName || 'Usuario').trim() || 'Usuario';
+  const handle = neuEnsureHandle(profile.handle || '', displayName, uid);
+  const payload = {
+    ownerUid: uid,
+    authorUid: uid,
+    authorName: displayName,
+    authorHandle: handle,
+    content: body,
+    text: body,
+    visibility: 'public',
+    type: 'post',
+    story: false,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  const mediaUrl = String(normalizedUrl.value || '').trim();
+  if (mediaUrl) {
+    payload.imageUrl = mediaUrl;
+    payload.imageURL = mediaUrl;
+  }
+
+  neuQuickPostSetSubmitting(true);
+  neuQuickPostSetMsg('Publicando...');
+  try {
+    const postRef = doc(collection(db, NEU_POST_PRIMARY_COLLECTION));
+    await setDoc(postRef, payload);
+    neuCloseQuickPostModal({ reset: true });
+    location.href = neuProfileHref(NEU_PROFILE_ME);
+  } catch (error) {
+    console.error('[neu-quick-post] publish failed', error);
+    neuQuickPostSetMsg('No se pudo publicar. Intenta de nuevo.', true);
+  } finally {
+    neuQuickPostSetSubmitting(false);
+  }
+}
+
+function neuWireQuickPostEvents() {
+  if (neuQuickPostState.wired) return;
+  neuQuickPostState.wired = true;
+
+  const { form, content, cancel, close, modal } = neuQuickPostEls();
+  if (content instanceof HTMLTextAreaElement) {
+    content.addEventListener('input', () => {
+      neuQuickPostUpdateUiState();
+      if (neuQuickPostCurrentLength() > 0 && !neuQuickPostState.submitting) neuQuickPostSetMsg('');
+    });
+  }
+
+  if (form instanceof HTMLFormElement) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      neuSubmitQuickPost().catch((error) => {
+        console.error('[neu-quick-post] submit handler failed', error);
+        neuQuickPostSetMsg('No se pudo publicar.', true);
+      });
+    });
+  }
+
+  if (cancel instanceof HTMLButtonElement) {
+    cancel.addEventListener('click', () => {
+      if (neuQuickPostState.submitting) return;
+      neuCloseQuickPostModal({ reset: true });
+    });
+  }
+
+  if (close instanceof HTMLButtonElement) {
+    close.addEventListener('click', () => {
+      if (neuQuickPostState.submitting) return;
+      neuCloseQuickPostModal({ reset: true });
+    });
+  }
+
+  if (modal instanceof HTMLElement) {
+    modal.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest('[data-neu-quick-close]')) return;
+      if (neuQuickPostState.submitting) return;
+      neuCloseQuickPostModal({ reset: true });
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const node = document.getElementById('neuQuickPostModal');
+    if (!(node instanceof HTMLElement) || node.hidden || neuQuickPostState.submitting) return;
+    event.preventDefault();
+    neuCloseQuickPostModal({ reset: true });
+  });
+
+  neuQuickPostUpdateUiState();
+}
+
 function neuBuildPostFromDocData(data = {}) {
   const tags = Array.isArray(data.tags) ? data.tags.map((x) => String(x || '').trim()).filter(Boolean) : [];
   const pollOptions = Array.isArray(data.pollOptions)
@@ -2756,7 +4905,7 @@ function neuBuildPostFromDocData(data = {}) {
     : [];
   return {
     type: String(data.type || 'post').trim().toLowerCase(),
-    text: String(data.text || '').trim(),
+    text: String(data.text || data.content || '').trim(),
     tags,
     media: String(data.videoURL || data.mediaURL || data.imageURL || data.imageUrl || data.media || '').trim(),
     pollOptions,
@@ -2844,7 +4993,7 @@ function neuBuildPostPatchFromComposer() {
     return { error: 'Escribe texto o media URL para guardar.' };
   }
   if (draft.mode === 'poll' && draft.pollOptions.length < 2) {
-    return { error: 'Poll necesita mínimo 2 opciones.' };
+    return { error: 'Poll necesita minimo 2 opciones.' };
   }
   if (draft.mode === 'event' && !draft.eventDate) {
     return { error: 'Event necesita fecha.' };
@@ -2938,7 +5087,7 @@ async function neuStartEditPost(card) {
   };
   neuSetComposerMode(NEU_POST_MODE_EDIT);
   neuPrefillComposerFromPost(sourceData);
-  neuSetComposerInlineMsg('Modo edición activado.');
+  neuSetComposerInlineMsg('Modo edicion activado.');
 }
 
 async function neuSaveEditedPost() {
@@ -2946,7 +5095,7 @@ async function neuSaveEditedPost() {
   const edit = neuPostCrudState.editing;
   const meUid = neuCurrentUid();
   if (!meUid || edit.ownerUid !== meUid) {
-    neuSetComposerInlineMsg('No tienes permiso para editar esta publicación.', true);
+    neuSetComposerInlineMsg('No tienes permiso para editar esta publicacion.', true);
     neuClearEditState();
     return;
   }
@@ -2967,13 +5116,13 @@ async function neuSaveEditedPost() {
 
   try {
     await updateDoc(edit.ref, patch);
-    neuSetComposerInlineMsg('Publicación actualizada.');
+    neuSetComposerInlineMsg('Publicacion actualizada.');
     neuCloseComposer();
     neuClearEditState();
     window.setTimeout(() => location.reload(), 150);
   } catch (err) {
     console.error('[neu-post] update failed', err);
-    neuSetComposerInlineMsg('No se pudo actualizar la publicación.', true);
+    neuSetComposerInlineMsg('No se pudo actualizar la publicacion.', true);
   } finally {
     neuPostCrudState.saving = false;
     if (publish instanceof HTMLButtonElement) {
@@ -2995,8 +5144,8 @@ function neuEnsureDeleteModal() {
   modal.innerHTML = `
     <div class="neu-confirm-backdrop" data-neu-delete-close="1"></div>
     <div class="neu-confirm-card" role="dialog" aria-modal="true" aria-labelledby="neuDeleteTitle">
-      <h3 id="neuDeleteTitle">Eliminar publicación</h3>
-      <p>Esta acción no se puede deshacer.</p>
+      <h3 id="neuDeleteTitle">Eliminar publicacion</h3>
+      <p>Esta accion no se puede deshacer.</p>
       <div class="neu-confirm-actions">
         <button class="btn-white-outline" id="neuDeleteCancelBtn" type="button">Cancelar</button>
         <button class="btn-yellow neu-danger-btn" id="neuDeleteConfirmBtn" type="button">Eliminar</button>
@@ -3027,7 +5176,7 @@ async function neuConfirmDeletePost() {
   const target = neuPostCrudState.pendingDelete;
   const meUid = neuCurrentUid();
   if (!target || !meUid || target.ownerUid !== meUid) {
-    neuSetComposerInlineMsg('No tienes permiso para eliminar esta publicación.', true);
+    neuSetComposerInlineMsg('No tienes permiso para eliminar esta publicacion.', true);
     neuCloseDeleteModal();
     return;
   }
@@ -3043,12 +5192,12 @@ async function neuConfirmDeletePost() {
     await deleteDoc(resolved.ref);
     const card = neuFindFeedCard(target.ownerUid, target.postId);
     card?.remove();
-    neuSetComposerInlineMsg('Publicación eliminada.');
+    neuSetComposerInlineMsg('Publicacion eliminada.');
     neuCloseDeleteModal();
     window.setTimeout(() => location.reload(), 120);
   } catch (err) {
     console.error('[neu-post] delete failed', err);
-    neuSetComposerInlineMsg('No se pudo eliminar la publicación.', true);
+    neuSetComposerInlineMsg('No se pudo eliminar la publicacion.', true);
     neuCloseDeleteModal();
   } finally {
     neuPostCrudState.deleting = false;
@@ -3087,7 +5236,7 @@ function neuCreatePostMenu(ownerUid, postId) {
   menu.dataset.owner = ownerUid;
   menu.dataset.post = postId;
   menu.innerHTML = `
-    <button class="neu-post-menu-toggle" type="button" aria-label="Opciones" title="Opciones">⋯</button>
+    <button class="neu-post-menu-toggle" type="button" aria-label="Opciones" title="Opciones">&#x22ef;</button>
     <div class="neu-post-menu-panel" hidden>
       <button class="neu-post-menu-item" data-neu-post-action="edit" type="button">Editar</button>
       <button class="neu-post-menu-item neu-post-menu-item-danger" data-neu-post-action="delete" type="button">Eliminar</button>
@@ -3216,7 +5365,7 @@ function neuWirePostCrudEvents() {
       if (action === 'edit') {
         neuStartEditPost(card).catch((error) => {
           console.error('[neu-post] edit init failed', error);
-          neuSetComposerInlineMsg('No se pudo abrir edición.', true);
+          neuSetComposerInlineMsg('No se pudo abrir edicion.', true);
         });
         return;
       }
@@ -3657,7 +5806,7 @@ function neuEnsureStoryDeleteModal() {
     <div class="neu-confirm-backdrop" data-neu-story-delete-close="1"></div>
     <div class="neu-confirm-card" role="dialog" aria-modal="true" aria-labelledby="neuStoryDeleteTitle">
       <h3 id="neuStoryDeleteTitle">Eliminar story</h3>
-      <p>Se eliminará de stories y del perfil.</p>
+      <p>Se eliminara de stories y del perfil.</p>
       <div class="neu-confirm-actions">
         <button class="btn-white-outline" id="neuStoryDeleteCancelBtn" type="button">Cancelar</button>
         <button class="btn-yellow neu-danger-btn" id="neuStoryDeleteConfirmBtn" type="button">Eliminar</button>
@@ -4072,6 +6221,55 @@ function openComposerModalFromBottom() {
   }
 }
 
+function openQuickPostModalFromIntent() {
+  updateNeuRouteParams({ portal: 'feed', profileMode: false });
+  activatePortal('feed');
+  window.setTimeout(() => {
+    neuOpenQuickPostModal();
+  }, 220);
+}
+
+function neuConsumePostOnboardingIntents() {
+  const params = new URLSearchParams(location.search);
+  const openProfileEdit = params.get('openProfileEdit') === '1';
+  const openComposer = params.get('openComposer') === '1';
+  const openQuickPost = params.get('openQuickPost') === '1';
+  const openSuggested = params.get('suggested') === '1' || sessionStorage.getItem('neu_open_suggested') === '1';
+  if (!openProfileEdit && !openComposer && !openQuickPost && !openSuggested) return;
+
+  sessionStorage.removeItem('neu_open_suggested');
+  neuStripQueryParams(['openProfileEdit', 'openComposer', 'openQuickPost', 'suggested', 'postOnboarding']);
+
+  if (openProfileEdit) {
+    updateNeuRouteParams({ portal: 'feed', profileMode: true, profileUid: NEU_PROFILE_ME });
+    activatePortal('feed');
+    activateFeedSource('target');
+    window.setTimeout(() => {
+      document.getElementById('btnNeuEditProfile')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }, 220);
+  }
+
+  if (openComposer && !openQuickPost) {
+    updateNeuRouteParams({ portal: 'feed', profileMode: false });
+    activatePortal('feed');
+    window.setTimeout(() => {
+      openComposerModalFromBottom();
+    }, 220);
+  }
+
+  if (openQuickPost) {
+    openQuickPostModalFromIntent();
+  }
+
+  if (openSuggested) {
+    updateNeuRouteParams({ portal: 'pulse', profileMode: false });
+    activatePortal('pulse');
+    window.setTimeout(() => {
+      neuLoadSuggestedUsers({ force: true, focus: true }).catch(() => null);
+    }, 240);
+  }
+}
+
 function resolveBottomNavActiveKey() {
   const activePortal = String(document.body?.dataset?.portal || '').trim().toLowerCase();
   if (activePortal === 'feed') {
@@ -4126,6 +6324,7 @@ function routeBottomNav(key) {
   if (key === NEU_BOTTOM_KEYS.PULSE) {
     updateNeuRouteParams({ portal: 'pulse', profileMode: false });
     activatePortal('pulse');
+    neuLoadSuggestedUsers({ force: false, focus: false }).catch(() => null);
     scrollTopSmooth();
     syncBottomNavActiveState();
     return;
@@ -4262,11 +6461,28 @@ async function startNeuSocialApp() {
     email: String(user?.email || ''),
   });
   wireNeuDropdownLogout();
+  const onboardingGate = await neuNeedsOnboarding(user?.uid || '');
+  if (onboardingGate.needed) {
+    await neuInitOnboarding(user, onboardingGate.profile || {});
+    return 'onboarding';
+  }
+  neuOnboardingSetActive(false);
+  const postOnboardingGate = await neuNeedsPostOnboarding(user?.uid || '', onboardingGate.profile || null);
+  if (postOnboardingGate.needed) {
+    await neuInitPostOnboarding(user, postOnboardingGate.profile || onboardingGate.profile || {});
+    return 'post_onboarding';
+  }
+  neuPostOnboardingSetActive(false);
+  neuStripQueryParams(['postOnboarding']);
   wireNeuLegacyProfileLinkBridge();
 
   // Keep legacy profile fusion logic untouched; run it only after neu auth gate passed.
   await import('./perfil-fusion-page.js');
   await neuInitPublicProfile(user);
+  neuWireQuickPostEvents();
+  neuRewriteLegacyLinksInRoot(document);
+  window.setTimeout(() => neuRewriteLegacyLinksInRoot(document), 700);
+  window.setTimeout(() => neuRewriteLegacyLinksInRoot(document), 1800);
   if (!SAFE_MODE) {
     await neuInitChatMvp(user);
     await neuRunRouteChatIntent();
@@ -4292,6 +6508,8 @@ async function startNeuSocialApp() {
     });
   }
   wireNeuBottomNavRouter();
+  await neuLoadSuggestedUsers({ force: false, focus: false });
+  neuConsumePostOnboardingIntents();
   if (isProfileRouteActive()) {
     window.setTimeout(() => {
       neuRefreshProfileFeed(false).catch(() => null);
@@ -4299,6 +6517,7 @@ async function startNeuSocialApp() {
       neuSyncProfileCountsUi();
     }, 180);
   }
+  return 'app';
 }
 
 let __neuBooted = false;
@@ -4313,8 +6532,8 @@ async function neuBoot() {
   }
 
   try {
-    await startNeuSocialApp();
-    if (!SAFE_MODE) {
+    const bootMode = await startNeuSocialApp();
+    if (!SAFE_MODE && bootMode === 'app') {
       const results = [];
       if (!isDisabled('crud_posts')) {
         results.push(await neuBootModule('crud_posts', () => neuWirePostCrudEvents()));
@@ -4369,3 +6588,13 @@ if (document.readyState === 'loading') {
 } else {
   neuBoot();
 }
+
+/*
+  NEU Post-Onboarding - Manual test checklist:
+  1) New user finishes onboarding -> sees postOnboarding view once.
+  2) Click "Pomin" -> sets postOnboardingDone=true and goes to Pulse.
+  3) Refresh after skip/action -> postOnboarding does not appear again.
+  4) "Sugerowani" in Pulse shows users and follow toggle works.
+  5) Actions A/B/C route correctly:
+     A -> profile edit flow, B -> Pulse + suggested focus, C -> quick post modal.
+*/
