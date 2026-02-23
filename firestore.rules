@@ -134,6 +134,25 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/user_feed/$(uid)/posts/$(postId)).data.type == "correction";
     }
 
+    function neuConversationRef(conversationId) {
+      return /databases/$(database)/documents/neuConversations/$(conversationId);
+    }
+
+    function neuConversationExists(conversationId) {
+      return exists(neuConversationRef(conversationId));
+    }
+
+    function neuConversationMembers(conversationId) {
+      return get(neuConversationRef(conversationId)).data.members;
+    }
+
+    function isNeuConversationMember(conversationId) {
+      return signedIn()
+        && neuConversationExists(conversationId)
+        && (neuConversationMembers(conversationId) is list)
+        && neuConversationMembers(conversationId).hasAny([request.auth.uid]);
+    }
+
     /* ===== USERS ===== */
 
     // User może zmieniać tylko "bezpieczne" pola profilu
@@ -390,6 +409,27 @@ service cloud.firestore {
         && request.resource.data.members.hasAny([uid]);
 
       allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /neuChatTyping/{conversationId}/users/{uid} {
+      allow read: if isNeuConversationMember(conversationId);
+      allow create, update: if isNeuConversationMember(conversationId)
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["typing", "updatedAt"])
+        && request.resource.data.typing is bool;
+      allow delete: if isNeuConversationMember(conversationId)
+        && request.auth.uid == uid;
+    }
+
+    match /neuChatReactions/{conversationId}/messages/{messageId}/reactions/{uid} {
+      allow read: if isNeuConversationMember(conversationId);
+      allow create, update: if isNeuConversationMember(conversationId)
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["type", "updatedAt"])
+        && (request.resource.data.type is string)
+        && ["like", "heart", "laugh"].hasAny([request.resource.data.type]);
+      allow delete: if isNeuConversationMember(conversationId)
+        && request.auth.uid == uid;
     }
 
     /* ===== COURSES (lista tematów) ===== */
@@ -1017,4 +1057,5 @@ service cloud.firestore {
     }
   }
 }
+
 

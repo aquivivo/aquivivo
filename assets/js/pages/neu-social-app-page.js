@@ -14,6 +14,7 @@ import {
   runTransaction,
   serverTimestamp,
   setDoc,
+  startAfter,
   updateDoc,
   writeBatch,
   where,
@@ -1977,6 +1978,11 @@ function neuRenderProfileFeedPosts(posts) {
         : '';
     const meta = `${esc(String(post.type || 'post').toUpperCase())} | ${esc(neuFormatAgoShort(post.createdAt))}`;
     const textHtml = esc(String(post.text || '')).replace(/\n/g, '<br />');
+    const actionsHtml = `
+      <div class="neu-post-quick-actions">
+        <button class="btn-white-outline neu-post-share-chat" type="button" data-neu-post-share-chat="1">Enviar por chat</button>
+      </div>
+    `;
 
     return `
       <article class="post-card" data-owner="${esc(post.ownerUid)}" data-post="${esc(post.id)}">
@@ -1993,6 +1999,7 @@ function neuRenderProfileFeedPosts(posts) {
         ${mediaHtml}
         ${tagsHtml}
         <div class="post-meta">${meta}</div>
+        ${actionsHtml}
       </article>
     `;
   });
@@ -2628,6 +2635,7 @@ async function neuInitPublicProfile(user) {
 
 const NEU_CHAT_MAX_MESSAGES = 50;
 const NEU_CHAT_SCROLL_NEAR_BOTTOM = 120;
+const NEU_CHAT_LOAD_MORE_TOP_THRESHOLD = 120;
 const NEU_CHAT_GROUP_WINDOW_MS = 5 * 60 * 1000;
 const NEU_CHAT_FLOAT_STORAGE_KEY = 'neu_chat_float_pos';
 const NEU_CHAT_UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
@@ -2672,6 +2680,7 @@ const neuChatState = {
   peerTyping: false,
   myLastReadAt: null,
   peerLastReadAt: null,
+  peerLastReadMessageId: '',
   bodyScrollWired: false,
   bodyScrollRaf: 0,
   nearBottom: true,
@@ -2690,7 +2699,17 @@ const neuChatState = {
   reactionLongPressMsgId: '',
   pendingImageFile: null,
   pendingImagePreviewUrl: '',
+  pageSize: 50,
+  isLoadingMore: false,
+  hasMore: true,
+  oldestDoc: null,
+  lastQueryCursor: null,
+  loadedCount: 0,
+  liveMessages: [],
+  olderMessages: [],
+  _endHintT: 0,
   replyDraft: null,
+  editDraft: null,
   replyHighlightTimer: 0,
   longPressReplyTimer: 0,
   longPressReplyMsgId: '',
@@ -2701,6 +2720,11 @@ const neuChatState = {
   chatSearchWired: false,
   chatSearchQuery: '',
   chatSearchDebounceTimer: 0,
+  sharePostDraft: null,
+  shareSearchWired: false,
+  shareSearchQuery: '',
+  shareSearchDebounceTimer: 0,
+  shareSending: false,
 };
 
 const neuChatFloatState = {
@@ -2921,6 +2945,19 @@ function neuChatLogUploadFail(error, conversationId) {
   }
 }
 
+function neuShowChatEndHint() {
+  const el = document.getElementById('neuChatTopEnd');
+  if (!(el instanceof HTMLElement)) return;
+  el.classList.remove('hidden');
+  el.classList.add('is-show');
+  if (neuChatState._endHintT) window.clearTimeout(neuChatState._endHintT);
+  neuChatState._endHintT = window.setTimeout(() => {
+    el.classList.add('hidden');
+    el.classList.remove('is-show');
+    neuChatState._endHintT = 0;
+  }, 2500);
+}
+
 function neuChatDate(value) {
   if (!value) return null;
   if (value instanceof Date) return value;
@@ -2955,6 +2992,41 @@ function neuChatTsValue(value) {
   return date ? date.getTime() : 0;
 }
 
+function neuMapChatMessagesFromDocs(docs = []) {
+  const rows = Array.isArray(docs) ? docs : [];
+  return rows
+    .map((row) => ({ id: String(row?.id || '').trim(), ...(row?.data?.() || {}) }))
+    .filter((row) => !!String(row?.id || '').trim())
+    .reverse();
+}
+
+function neuRebuildChatMessagesFromBuckets() {
+  const older = Array.isArray(neuChatState.olderMessages) ? neuChatState.olderMessages : [];
+  const live = Array.isArray(neuChatState.liveMessages) ? neuChatState.liveMessages : [];
+  const byId = new Map();
+
+  older.forEach((row) => {
+    const id = String(row?.id || '').trim();
+    if (!id) return;
+    byId.set(id, row);
+  });
+  live.forEach((row) => {
+    const id = String(row?.id || '').trim();
+    if (!id) return;
+    byId.set(id, row);
+  });
+
+  const merged = Array.from(byId.values()).sort((a, b) => {
+    const tsA = neuChatTsValue(a?.createdAt);
+    const tsB = neuChatTsValue(b?.createdAt);
+    if (tsA !== tsB) return tsA - tsB;
+    return String(a?.id || '').localeCompare(String(b?.id || ''));
+  });
+
+  neuChatState.messages = merged;
+  neuChatState.loadedCount = merged.length;
+}
+
 function neuChatBuildGroups(messages = []) {
   const list = Array.isArray(messages) ? messages : [];
   const groups = [];
@@ -2965,10 +3037,13 @@ function neuChatBuildGroups(messages = []) {
     const current = {
       id: String(item?.id || '').trim(),
       senderUid,
-      text: String(item?.text || '').trim(),
+      text: neuChatMessageText(item),
+      content: String(item?.content || '').trim(),
       imageUrl: String(item?.imageUrl || '').trim(),
       imageStoragePath: String(item?.imageStoragePath || '').trim(),
       replyTo: neuChatNormalizeReplyPayload(item?.replyTo),
+      editedAt: item?.editedAt || null,
+      deletedAt: item?.deletedAt || null,
       createdAt: item?.createdAt || null,
       ts,
     };
@@ -3025,6 +3100,58 @@ function neuChatDeliveryStatus(messages = [], meUid = '') {
     messageId: String(lastOutgoing.id || '').trim(),
     label: seen ? 'Visto' : 'Enviado',
   };
+}
+
+function neuChatCanCompareReadMessageIds(messages = [], peerLastReadMessageId = '') {
+  const peerId = String(peerLastReadMessageId || '').trim();
+  if (!peerId) return false;
+  const rows = Array.isArray(messages) ? messages : [];
+  const ids = rows
+    .map((row) => String(row?.id || '').trim())
+    .filter(Boolean);
+  if (!ids.length) return false;
+
+  const numericRe = /^\d+$/;
+  if (numericRe.test(peerId) && ids.every((id) => numericRe.test(id))) return true;
+
+  const ulidRe = /^[0-9A-HJKMNP-TV-Z]{26}$/;
+  if (ulidRe.test(peerId) && ids.every((id) => ulidRe.test(id))) return true;
+
+  return false;
+}
+
+function neuChatOutgoingStatusMap(messages = [], meUid = '') {
+  const list = Array.isArray(messages) ? messages : [];
+  const ownUid = String(meUid || '').trim();
+  const statuses = new Map();
+  if (!list.length || !ownUid) return statuses;
+
+  const outgoingRecent = [];
+  for (let i = list.length - 1; i >= 0 && outgoingRecent.length < 20; i -= 1) {
+    const item = list[i];
+    if (String(item?.senderUid || '').trim() !== ownUid) continue;
+    outgoingRecent.push(item);
+  }
+  if (!outgoingRecent.length) return statuses;
+
+  const peerReadId = String(neuChatState.peerLastReadMessageId || '').trim();
+  const peerReadTs = neuTimeToMs(neuChatState.peerLastReadAt);
+  const canCompareById = neuChatCanCompareReadMessageIds(outgoingRecent, peerReadId);
+
+  outgoingRecent.forEach((item) => {
+    const messageId = String(item?.id || '').trim();
+    if (!messageId) return;
+    let seen = false;
+    if (canCompareById && peerReadId) {
+      seen = messageId <= peerReadId;
+    } else {
+      const messageTs = neuTimeToMs(item?.createdAt);
+      seen = peerReadTs > 0 && messageTs > 0 && messageTs <= peerReadTs;
+    }
+    statuses.set(messageId, seen ? 'Visto' : 'Enviado');
+  });
+
+  return statuses;
 }
 
 function neuChatNewMessageChipNode() {
@@ -3481,6 +3608,21 @@ function neuChatSearchInputNode() {
   return node instanceof HTMLInputElement ? node : null;
 }
 
+function neuChatShareModalNode() {
+  const node = document.getElementById('neuShareChatModal');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuChatShareSearchInputNode() {
+  const node = document.getElementById('neuShareChatSearchInput');
+  return node instanceof HTMLInputElement ? node : null;
+}
+
+function neuChatShareListNode() {
+  const node = document.getElementById('neuShareChatList');
+  return node instanceof HTMLElement ? node : null;
+}
+
 function neuChatInputNode() {
   const node = document.getElementById('neuChatInput');
   return node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement ? node : null;
@@ -3493,6 +3635,23 @@ function neuChatSendButtonNode() {
 function neuChatComposerNode() {
   const node = document.getElementById('neuChatForm');
   return node instanceof HTMLElement ? node : null;
+}
+
+function neuEnsureChatEditPreviewNode() {
+  const form = neuChatComposerNode();
+  if (!(form instanceof HTMLElement)) return null;
+  let wrap = document.getElementById('neuChatEditPreview');
+  if (!(wrap instanceof HTMLElement)) {
+    wrap = document.createElement('div');
+    wrap.id = 'neuChatEditPreview';
+    wrap.className = 'neu-chat-reply-preview neu-chat-edit-preview hidden';
+    wrap.innerHTML = `
+      <span id="neuChatEditPreviewText"></span>
+      <button class="btn-white-outline neu-chat-edit-cancel" type="button" data-neu-chat-edit-cancel="1" aria-label="Cancelar edicion">X</button>
+    `;
+    form.prepend(wrap);
+  }
+  return wrap;
 }
 
 function neuChatAttachButtonNode() {
@@ -3530,9 +3689,47 @@ function neuChatReplyPreviewTextNode() {
   return node instanceof HTMLElement ? node : null;
 }
 
+function neuChatEditPreviewNode() {
+  const node = document.getElementById('neuChatEditPreview');
+  return node instanceof HTMLElement ? node : null;
+}
+
+function neuChatEditPreviewTextNode() {
+  const node = document.getElementById('neuChatEditPreviewText');
+  return node instanceof HTMLElement ? node : null;
+}
+
 function neuChatLongPressMenuNode() {
   const node = document.getElementById('neuChatLongPressMenu');
-  return node instanceof HTMLElement ? node : null;
+  if (!(node instanceof HTMLElement)) return null;
+  if (!node.querySelector('[data-neu-chat-longpress-reply]')) {
+    const replyBtn = document.createElement('button');
+    replyBtn.className = 'btn-white-outline neu-chat-longpress-action';
+    replyBtn.type = 'button';
+    replyBtn.setAttribute('role', 'menuitem');
+    replyBtn.setAttribute('data-neu-chat-longpress-reply', '1');
+    replyBtn.textContent = '↩ Reply';
+    node.append(replyBtn);
+  }
+  if (!node.querySelector('[data-neu-chat-longpress-edit]')) {
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-white-outline neu-chat-longpress-action hidden';
+    editBtn.type = 'button';
+    editBtn.setAttribute('role', 'menuitem');
+    editBtn.setAttribute('data-neu-chat-longpress-edit', '1');
+    editBtn.textContent = 'Editar';
+    node.append(editBtn);
+  }
+  if (!node.querySelector('[data-neu-chat-longpress-delete]')) {
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-white-outline neu-chat-longpress-action neu-chat-longpress-action-danger hidden';
+    deleteBtn.type = 'button';
+    deleteBtn.setAttribute('role', 'menuitem');
+    deleteBtn.setAttribute('data-neu-chat-longpress-delete', '1');
+    deleteBtn.textContent = 'Eliminar';
+    node.append(deleteBtn);
+  }
+  return node;
 }
 
 function neuChatImageLightboxNode() {
@@ -3565,6 +3762,12 @@ function neuChatHasAttachment() {
   return neuChatState.pendingImageFile instanceof File;
 }
 
+function neuChatMessageText(message) {
+  const fromText = String(message?.text || '').trim();
+  if (fromText) return fromText;
+  return String(message?.content || '').trim();
+}
+
 function neuChatFindMessageById(messageId) {
   const msgId = String(messageId || '').trim();
   if (!msgId || !Array.isArray(neuChatState.messages)) return null;
@@ -3574,9 +3777,10 @@ function neuChatFindMessageById(messageId) {
 }
 
 function neuChatBuildReplySnippet(message) {
+  if (message?.deletedAt) return 'Mensaje eliminado';
   const imageUrl = String(message?.imageUrl || '').trim();
   if (imageUrl) return '📷 Photo';
-  const raw = String(message?.text || '')
+  const raw = neuChatMessageText(message)
     .replace(/\s+/g, ' ')
     .trim();
   if (!raw) return '';
@@ -3609,6 +3813,60 @@ function neuClearChatReplyDraft() {
   neuSetChatReplyDraft(null);
 }
 
+function neuChatNormalizeEditDraft(rawEdit) {
+  if (!rawEdit || typeof rawEdit !== 'object') return null;
+  const messageId = String(rawEdit.messageId || '').trim();
+  if (!messageId) return null;
+  const text = String(rawEdit.text || '').slice(0, 1000);
+  return { messageId, text };
+}
+
+function neuSetChatEditDraft(rawEdit) {
+  neuChatState.editDraft = neuChatNormalizeEditDraft(rawEdit);
+  neuRenderChatEditPreview();
+}
+
+function neuClearChatEditDraft() {
+  neuSetChatEditDraft(null);
+}
+
+function neuRenderChatEditPreview() {
+  neuEnsureChatEditPreviewNode();
+  const wrap = neuChatEditPreviewNode();
+  const textNode = neuChatEditPreviewTextNode();
+  const draft = neuChatNormalizeEditDraft(neuChatState.editDraft);
+  const hasDraft = !!draft;
+  if (wrap instanceof HTMLElement) wrap.classList.toggle('hidden', !hasDraft);
+  if (textNode instanceof HTMLElement) textNode.textContent = hasDraft ? 'Editando...' : '';
+  neuUpdateChatComposerOffsetVar();
+}
+
+function neuChatCanManageMessage(message, meUid = neuCurrentUid()) {
+  const ownUid = String(meUid || '').trim();
+  if (!ownUid || !message || typeof message !== 'object') return false;
+  return String(message.senderUid || '').trim() === ownUid;
+}
+
+function neuStartChatEditDraft(messageId) {
+  const msgId = String(messageId || '').trim();
+  if (!msgId) return;
+  const message = neuChatFindMessageById(msgId);
+  if (!message || !neuChatCanManageMessage(message) || message?.deletedAt) return;
+
+  neuClearChatReplyDraft();
+  neuClearChatAttachment();
+  const nextText = neuChatMessageText(message);
+  neuSetChatEditDraft({ messageId: msgId, text: nextText });
+
+  const input = neuChatInputNode();
+  if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+    input.value = nextText;
+    if (input instanceof HTMLTextAreaElement) neuChatAutoGrow(input);
+    input.focus({ preventScroll: true });
+  }
+  neuSyncChatComposerState();
+}
+
 function neuRenderChatReplyPreview() {
   const wrap = neuChatReplyPreviewNode();
   const text = neuChatReplyPreviewTextNode();
@@ -3628,6 +3886,7 @@ function neuStartChatReplyDraft(messageId) {
   const message = neuChatFindMessageById(msgId);
   if (!message) return;
   const snippet = neuChatBuildReplySnippet(message) || '...';
+  neuClearChatEditDraft();
   neuSetChatReplyDraft({
     messageId: msgId,
     senderUid: String(message.senderUid || '').trim(),
@@ -3643,15 +3902,26 @@ function neuStartChatReplyDraft(messageId) {
 function neuSetChatLongPressMenuOpen(messageId = '', clientX = 0, clientY = 0) {
   const menu = neuChatLongPressMenuNode();
   if (!(menu instanceof HTMLElement)) return;
+  const replyBtn = menu.querySelector('[data-neu-chat-longpress-reply]');
+  const editBtn = menu.querySelector('[data-neu-chat-longpress-edit]');
+  const deleteBtn = menu.querySelector('[data-neu-chat-longpress-delete]');
   const msgId = String(messageId || '').trim();
   if (!msgId) {
     menu.classList.add('hidden');
     menu.dataset.neuChatReplyMessage = '';
+    menu.dataset.neuChatEditMessage = '';
+    menu.dataset.neuChatDeleteMessage = '';
     menu.style.left = '';
     menu.style.top = '';
     neuChatState.longPressMenuMessageId = '';
     return;
   }
+
+  const message = neuChatFindMessageById(msgId);
+  const canManage = !!message && neuChatCanManageMessage(message) && !message?.deletedAt;
+  if (replyBtn instanceof HTMLElement) replyBtn.classList.remove('hidden');
+  if (editBtn instanceof HTMLElement) editBtn.classList.toggle('hidden', !canManage);
+  if (deleteBtn instanceof HTMLElement) deleteBtn.classList.toggle('hidden', !canManage);
 
   menu.classList.remove('hidden');
   const width = Math.max(130, Math.round(menu.offsetWidth || 130));
@@ -3662,6 +3932,8 @@ function neuSetChatLongPressMenuOpen(messageId = '', clientX = 0, clientY = 0) {
   menu.style.left = `${Math.round(nextX)}px`;
   menu.style.top = `${Math.round(nextY)}px`;
   menu.dataset.neuChatReplyMessage = msgId;
+  menu.dataset.neuChatEditMessage = canManage ? msgId : '';
+  menu.dataset.neuChatDeleteMessage = canManage ? msgId : '';
   neuChatState.longPressMenuMessageId = msgId;
 }
 
@@ -3708,6 +3980,62 @@ function neuJumpToChatMessage(messageId) {
     neuChatState.replyHighlightTimer = 0;
   }, NEU_CHAT_REPLY_HIGHLIGHT_MS);
   return true;
+}
+
+async function neuEditChatMessage(messageId, text) {
+  const conversationId = String(neuChatState.currentConversationId || '').trim();
+  const msgId = String(messageId || '').trim();
+  const nextText = String(text || '').trim().slice(0, 1000);
+  const meUid = neuCurrentUid();
+  if (!conversationId || !msgId || !meUid || !nextText) return;
+
+  const message = neuChatFindMessageById(msgId);
+  if (!message || !neuChatCanManageMessage(message, meUid) || message?.deletedAt) {
+    neuChatSetHint('No puedes editar este mensaje.', true);
+    return;
+  }
+
+  await updateDoc(doc(db, 'neuConversations', conversationId, 'messages', msgId), {
+    text: nextText,
+    content: nextText,
+    editedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+async function neuDeleteChatMessage(messageId) {
+  const conversationId = String(neuChatState.currentConversationId || '').trim();
+  const msgId = String(messageId || '').trim();
+  const meUid = neuCurrentUid();
+  if (!conversationId || !msgId || !meUid) return;
+
+  const message = neuChatFindMessageById(msgId);
+  if (!message || !neuChatCanManageMessage(message, meUid)) {
+    neuChatSetHint('No puedes eliminar este mensaje.', true);
+    return;
+  }
+  if (!window.confirm('Eliminar mensaje?')) return;
+
+  await updateDoc(doc(db, 'neuConversations', conversationId, 'messages', msgId), {
+    text: 'Mensaje eliminado',
+    content: 'Mensaje eliminado',
+    imageUrl: null,
+    imageStoragePath: deleteField(),
+    postRef: deleteField(),
+    postUrl: deleteField(),
+    deletedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  const editDraft = neuChatNormalizeEditDraft(neuChatState.editDraft);
+  if (editDraft && editDraft.messageId === msgId) {
+    neuClearChatEditDraft();
+    const input = neuChatInputNode();
+    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+      input.value = '';
+      if (input instanceof HTMLTextAreaElement) neuChatAutoGrow(input);
+    }
+  }
 }
 
 function neuSafeChatUploadName(file) {
@@ -3820,13 +4148,14 @@ function neuSyncChatComposerState() {
   const attachBtn = neuChatAttachButtonNode();
   const fileInput = neuChatFileInputNode();
   const busy = neuChatState.sending || neuChatState.uploading;
+  const editing = !!neuChatNormalizeEditDraft(neuChatState.editDraft);
   const disabled = busy || (!neuChatHasTypedText() && !neuChatHasAttachment());
   if (sendBtn instanceof HTMLButtonElement) {
     sendBtn.disabled = disabled;
     sendBtn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
   }
-  if (attachBtn instanceof HTMLButtonElement) attachBtn.disabled = busy;
-  if (fileInput instanceof HTMLInputElement) fileInput.disabled = busy;
+  if (attachBtn instanceof HTMLButtonElement) attachBtn.disabled = busy || editing;
+  if (fileInput instanceof HTMLInputElement) fileInput.disabled = busy || editing;
 }
 
 function neuSetChatSending(on) {
@@ -3878,8 +4207,14 @@ function neuChatHandleBodyScrollThrottled() {
   if (neuChatState.bodyScrollRaf) return;
   neuChatState.bodyScrollRaf = window.requestAnimationFrame(() => {
     neuChatState.bodyScrollRaf = 0;
+    const body = neuChatBodyNode();
     if (neuChatIsNearBottom(NEU_CHAT_SCROLL_NEAR_BOTTOM)) {
       neuSetNewMessagesChipVisible(false);
+    }
+    if (body instanceof HTMLElement && body.scrollTop < NEU_CHAT_LOAD_MORE_TOP_THRESHOLD) {
+      neuChatLoadOlderMessages().catch((error) => {
+        if (NEU_QA) console.warn('[neu-chat] load older failed', error);
+      });
     }
   });
 }
@@ -3918,9 +4253,29 @@ function neuMapUserChatRow(docSnap, meUid) {
     updatedAt: data.updatedAt || data.lastMessageAt || null,
     unreadCount: neuUnreadValue(data.unreadCount),
     lastReadAt: data.lastReadAt || null,
+    lastReadMessageId: String(data.lastReadMessageId || '').trim(),
     lastSenderUid: String(data.lastSenderUid || '').trim(),
+    pinned: data.pinned === true,
     peerLastReadAt: data.peerLastReadAt || data.lastReadAtPeer || null,
+    peerLastReadMessageId:
+      String(data.peerLastReadMessageId || data.lastReadMessageIdPeer || data.peerReadMessageId || '').trim(),
   };
+}
+
+function neuSortChatRows(rows = []) {
+  const list = Array.isArray(rows) ? [...rows] : [];
+  list.sort((a, b) => {
+    const aPinned = a?.pinned === true ? 1 : 0;
+    const bPinned = b?.pinned === true ? 1 : 0;
+    if (aPinned !== bPinned) return bPinned - aPinned;
+
+    const aTs = neuTimeToMs(a?.lastMessageAt) || neuTimeToMs(a?.updatedAt) || 0;
+    const bTs = neuTimeToMs(b?.lastMessageAt) || neuTimeToMs(b?.updatedAt) || 0;
+    if (aTs !== bTs) return bTs - aTs;
+
+    return String(a?.conversationId || '').localeCompare(String(b?.conversationId || ''));
+  });
+  return list;
 }
 
 function neuChatProfileCached(uid) {
@@ -4012,6 +4367,248 @@ function neuChatFilteredRows(rows, rawQuery) {
   return list.filter((row) => neuChatRowMatchesSearch(row, needle));
 }
 
+async function neuToggleChatPinned(conversationId) {
+  const convId = String(conversationId || '').trim();
+  const meUid = neuCurrentUid();
+  if (!convId || !meUid) return;
+
+  const prevRows = Array.isArray(neuChatState.listRows) ? [...neuChatState.listRows] : [];
+  const currentRow = prevRows.find((row) => String(row?.conversationId || '').trim() === convId) || null;
+  const nextPinned = !(currentRow?.pinned === true);
+
+  neuChatState.listRows = prevRows.map((row) => {
+    if (String(row?.conversationId || '').trim() !== convId) return row;
+    return { ...row, pinned: nextPinned, updatedAt: row?.updatedAt || new Date() };
+  });
+  neuChatState.listRows = neuSortChatRows(neuChatState.listRows);
+  neuRenderChatList();
+
+  try {
+    await setDoc(
+      doc(db, 'neuUserChats', meUid, 'chats', convId),
+      {
+        pinned: nextPinned,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+  } catch (error) {
+    neuChatState.listRows = neuSortChatRows(prevRows);
+    neuRenderChatList();
+    const code = neuChatErrorCode(error) || 'unknown';
+    console.error('[neu-chat] pin toggle failed', code, error?.message, error);
+    neuChatSetHint(`No se pudo fijar chat (${code}).`, true);
+  }
+}
+
+function neuBuildSharePostDraftFromCard(card) {
+  const identity = neuReadPostIdentity(card);
+  if (!identity) return null;
+  const rawText = neuCardText(card).replace(/\s+/g, ' ').trim();
+  const snippet = (rawText || 'Post compartido').slice(0, 120);
+  const postUrl = `neu-social-app.html?post=${encodeURIComponent(identity.postId)}`;
+  return {
+    ownerUid: identity.ownerUid,
+    postId: identity.postId,
+    snippet,
+    postUrl,
+    content: `📎 Post: ${snippet.slice(0, 80)}`,
+  };
+}
+
+function neuSetChatShareModalOpen(open) {
+  const modal = neuChatShareModalNode();
+  if (!(modal instanceof HTMLElement)) return;
+  modal.hidden = !open;
+  neuChatRecomputeModalLock();
+}
+
+function neuCloseSharePostModal() {
+  neuSetChatShareModalOpen(false);
+  neuChatState.sharePostDraft = null;
+  neuChatState.shareSearchQuery = '';
+  neuChatState.shareSending = false;
+  if (neuChatState.shareSearchDebounceTimer) {
+    window.clearTimeout(neuChatState.shareSearchDebounceTimer);
+    neuChatState.shareSearchDebounceTimer = 0;
+  }
+  const input = neuChatShareSearchInputNode();
+  if (input instanceof HTMLInputElement) input.value = '';
+  const list = neuChatShareListNode();
+  if (list instanceof HTMLElement) list.innerHTML = '';
+}
+
+function neuRenderSharePostChatList() {
+  const listNode = neuChatShareListNode();
+  if (!(listNode instanceof HTMLElement)) return;
+  const draft = neuChatState.sharePostDraft;
+  if (!draft || typeof draft !== 'object') {
+    listNode.innerHTML = '<p class="neu-share-chat-empty">Selecciona un post para compartir.</p>';
+    return;
+  }
+
+  const allRows = neuSortChatRows(Array.isArray(neuChatState.listRows) ? neuChatState.listRows : []);
+  const rows = neuChatFilteredRows(allRows, neuChatState.shareSearchQuery);
+  if (!rows.length) {
+    listNode.innerHTML = '<p class="neu-share-chat-empty">Sin conversaciones.</p>';
+    return;
+  }
+
+  const html = rows
+    .map((row) => {
+      const profile = neuChatProfileCached(row.otherUid);
+      const displayName = String(profile.displayName || '').trim() || 'Usuario';
+      const handle = neuEnsureHandle(profile.handle, displayName, row.otherUid);
+      const avatarUrl = String(profile.avatarUrl || '').trim();
+      const avatarHtml = avatarUrl
+        ? `<img loading="lazy" src="${esc(avatarUrl)}" alt="avatar" />`
+        : `<span>${esc(neuAvatarLetter(displayName))}</span>`;
+      return `
+        <button
+          class="neu-share-chat-item"
+          type="button"
+          data-neu-chat-share-open="${esc(row.conversationId)}"
+          data-neu-chat-share-other="${esc(row.otherUid)}"
+        >
+          <span class="avatar-frame neu-chat-avatar">${avatarHtml}</span>
+          <span class="neu-share-chat-copy">
+            <strong>${esc(displayName)}</strong>
+            <small>${esc(handle)}</small>
+          </span>
+        </button>
+      `;
+    })
+    .join('');
+  listNode.innerHTML = html;
+
+  rows.forEach((row) => {
+    if (!row?.otherUid) return;
+    if (neuChatState.profileCache instanceof Map && neuChatState.profileCache.has(row.otherUid)) return;
+    neuEnsureChatProfile(row.otherUid)
+      .then(() => {
+        if (!neuChatState.sharePostDraft) return;
+        neuRenderSharePostChatList();
+      })
+      .catch(() => null);
+  });
+}
+
+function neuQueueShareChatSearch(rawValue) {
+  if (neuChatState.shareSearchDebounceTimer) {
+    window.clearTimeout(neuChatState.shareSearchDebounceTimer);
+    neuChatState.shareSearchDebounceTimer = 0;
+  }
+  const next = String(rawValue || '');
+  neuChatState.shareSearchDebounceTimer = window.setTimeout(() => {
+    neuChatState.shareSearchDebounceTimer = 0;
+    neuChatState.shareSearchQuery = String(next || '').trim();
+    neuRenderSharePostChatList();
+  }, NEU_CHAT_SEARCH_DEBOUNCE_MS);
+}
+
+function neuOpenSharePostModalFromCard(card) {
+  const draft = neuBuildSharePostDraftFromCard(card);
+  if (!draft) {
+    neuChatSetHint('No se pudo compartir este post.', true);
+    return;
+  }
+  neuChatState.sharePostDraft = draft;
+  neuChatState.shareSearchQuery = '';
+  neuChatState.shareSending = false;
+  const input = neuChatShareSearchInputNode();
+  if (input instanceof HTMLInputElement) input.value = '';
+  neuRenderSharePostChatList();
+  neuSetChatShareModalOpen(true);
+  if (input instanceof HTMLInputElement) input.focus({ preventScroll: true });
+}
+
+async function neuSharePostToConversation(conversationId) {
+  const convId = String(conversationId || '').trim();
+  const draft = neuChatState.sharePostDraft;
+  const meUid = neuCurrentUid();
+  if (!convId || !draft || typeof draft !== 'object' || !meUid || neuChatState.shareSending) return;
+
+  neuChatState.shareSending = true;
+  try {
+    let members = [];
+    let memberKey = '';
+    const listRow = Array.isArray(neuChatState.listRows)
+      ? neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === convId) || null
+      : null;
+    if (Array.isArray(listRow?.members) && listRow.members.length === 2) {
+      members = listRow.members.map((uid) => String(uid || '').trim()).filter(Boolean);
+      memberKey = String(listRow?.memberKey || '').trim();
+    }
+    if (members.length !== 2) {
+      const convSnap = await getDoc(doc(db, 'neuConversations', convId));
+      if (!convSnap.exists()) throw new Error('conversation-not-found');
+      const data = convSnap.data() || {};
+      members = Array.isArray(data.members) ? data.members.map((uid) => String(uid || '').trim()).filter(Boolean) : [];
+      memberKey = String(data.memberKey || '').trim();
+    }
+    if (members.length !== 2 || !members.includes(meUid)) throw new Error('conversation-members-invalid');
+    if (!memberKey) memberKey = neuChatMemberKey(members[0], members[1]);
+
+    const now = serverTimestamp();
+    const messageRef = doc(collection(db, 'neuConversations', convId, 'messages'));
+    const previewText = String(draft.content || '').trim() || '📎 Post compartido';
+    const postRef = {
+      postId: String(draft.postId || '').trim(),
+      ownerUid: String(draft.ownerUid || '').trim(),
+    };
+    const postUrl = String(draft.postUrl || '').trim();
+
+    const batch = writeBatch(db);
+    batch.set(messageRef, {
+      senderUid: meUid,
+      text: previewText,
+      content: previewText,
+      postRef,
+      ...(postUrl ? { postUrl } : {}),
+      createdAt: now,
+    });
+    batch.set(
+      doc(db, 'neuConversations', convId),
+      {
+        members,
+        memberKey,
+        lastMessageText: previewText,
+        lastMessageAt: now,
+        lastSenderUid: meUid,
+        updatedAt: now,
+      },
+      { merge: true },
+    );
+    members.forEach((uid) => {
+      const otherUid = members.find((candidate) => candidate !== uid) || '';
+      const isSender = uid === meUid;
+      batch.set(
+        doc(db, 'neuUserChats', uid, 'chats', convId),
+        {
+          otherUid,
+          members,
+          memberKey,
+          lastMessageText: previewText,
+          lastMessageAt: now,
+          unreadCount: isSender ? 0 : increment(1),
+          ...(isSender ? { lastReadAt: now, lastReadMessageId: messageRef.id } : {}),
+          updatedAt: now,
+        },
+        { merge: true },
+      );
+    });
+
+    await batch.commit();
+    neuCloseSharePostModal();
+  } catch (error) {
+    const code = neuChatErrorCode(error) || 'unknown';
+    console.error('[neu-chat] share post failed', code, error?.message, error);
+    neuChatSetHint(`No se pudo compartir post (${code}).`, true);
+  } finally {
+    neuChatState.shareSending = false;
+  }
+}
+
 function neuApplyChatSearchQuery(rawValue) {
   if (neuChatState.chatSearchDebounceTimer) {
     window.clearTimeout(neuChatState.chatSearchDebounceTimer);
@@ -4045,11 +4642,21 @@ function neuWireChatSearchInput() {
   });
 }
 
+function neuWireShareChatSearchInput() {
+  if (neuChatState.shareSearchWired) return;
+  const input = neuChatShareSearchInputNode();
+  if (!(input instanceof HTMLInputElement)) return;
+  neuChatState.shareSearchWired = true;
+  input.addEventListener('input', () => {
+    neuQueueShareChatSearch(input.value);
+  });
+}
+
 function neuRenderChatList() {
   const root = document.getElementById('pulseConversations');
   if (!(root instanceof HTMLElement)) return;
 
-  const allRows = Array.isArray(neuChatState.listRows) ? neuChatState.listRows : [];
+  const allRows = neuSortChatRows(Array.isArray(neuChatState.listRows) ? neuChatState.listRows : []);
   const searchQuery = String(neuChatState.chatSearchQuery || '').trim();
   const rows = neuChatFilteredRows(allRows, searchQuery);
   if (!rows.length) {
@@ -4087,24 +4694,36 @@ function neuRenderChatList() {
       const avatarHtml = avatarUrl
         ? `<img loading="lazy" src="${esc(avatarUrl)}" alt="avatar" />`
         : `<span>${esc(neuAvatarLetter(displayName))}</span>`;
+      const pinned = row.pinned === true;
 
       return `
-        <button
-          class="neu-chat-item${unread > 0 ? ' is-unread' : ''}"
-          type="button"
-          data-neu-chat-open="${esc(row.conversationId)}"
-          data-neu-chat-other="${esc(row.otherUid)}"
-        >
-          <span class="avatar-frame neu-chat-avatar">${avatarHtml}</span>
-          <span class="neu-chat-copy">
-            <span class="neu-chat-title">${titleHtml} <small>${esc(handle)}</small></span>
-            <span class="neu-chat-last">${esc(lastText)}</span>
-          </span>
-          <span class="neu-chat-right">
-            <span class="neu-chat-time">${esc(timeLabel)}</span>
-            ${unreadBadge}
-          </span>
-        </button>
+        <div class="neu-chat-item-wrap${pinned ? ' is-pinned' : ''}">
+          <button
+            class="neu-chat-item${unread > 0 ? ' is-unread' : ''}"
+            type="button"
+            data-neu-chat-open="${esc(row.conversationId)}"
+            data-neu-chat-other="${esc(row.otherUid)}"
+          >
+            <span class="avatar-frame neu-chat-avatar">${avatarHtml}</span>
+            <span class="neu-chat-copy">
+              <span class="neu-chat-title">${titleHtml} <small>${esc(handle)}</small></span>
+              <span class="neu-chat-last">${esc(lastText)}</span>
+            </span>
+            <span class="neu-chat-right">
+              <span class="neu-chat-time">${esc(timeLabel)}</span>
+              ${unreadBadge}
+            </span>
+          </button>
+          <button
+            class="btn-white-outline neu-chat-pin-btn${pinned ? ' is-pinned' : ''}"
+            type="button"
+            data-neu-chat-pin="${esc(row.conversationId)}"
+            aria-label="${pinned ? 'Quitar pin' : 'Fijar chat'}"
+            title="${pinned ? 'Quitar pin' : 'Fijar chat'}"
+          >
+            📌
+          </button>
+        </div>
       `;
     })
     .join('');
@@ -4156,11 +4775,15 @@ function neuRenderChatMessages() {
   const body = neuChatBodyNode();
   const messagesRoot = neuChatMessagesNode();
   if (!(body instanceof HTMLElement) || !(messagesRoot instanceof HTMLElement)) return;
+  const topStatusHtml = `
+    <div id="neuChatTopLoader" class="neuChatTopLoader${neuChatState.isLoadingMore ? '' : ' hidden'}">Cargando...</div>
+    <div id="neuChatTopEnd" class="neuChatTopEnd hidden">No hay mensajes anteriores</div>
+  `;
   const meUid = neuCurrentUid();
   const prevLastRenderedMsgId = String(neuChatState.lastRenderedMsgId || '');
   const list = Array.isArray(neuChatState.messages) ? neuChatState.messages : [];
   if (!list.length) {
-    messagesRoot.innerHTML = '<div class="neu-chat-empty">Aun no hay mensajes.</div>';
+    messagesRoot.innerHTML = `${topStatusHtml}<div class="neu-chat-empty">Aun no hay mensajes.</div>`;
     neuChatState.lastRenderedMsgId = '';
     neuSetChatLongPressMenuOpen('');
     neuSetTypingRowVisible(neuChatState.peerTyping);
@@ -4177,7 +4800,7 @@ function neuRenderChatMessages() {
     : `<div class="neuMsgAvatar neuMsgAvatarPlaceholder">${esc(neuAvatarLetter(peerDisplayName))}</div>`;
 
   const grouped = neuChatBuildGroups(list);
-  const delivery = neuChatDeliveryStatus(list, meUid);
+  const outgoingStatusMap = neuChatOutgoingStatusMap(list, meUid);
   const newestMessageId = String(list[list.length - 1]?.id || '').trim();
   const myLastReadMs = neuTimeToMs(neuChatState.myLastReadAt);
   const firstUnreadIndex =
@@ -4190,8 +4813,11 @@ function neuRenderChatMessages() {
       const rowClass = mine ? 'neuMessageRow outgoing' : 'neuMessageRow incoming';
       const bubblesHtml = (group.messages || [])
         .map((item, index, arr) => {
-          const text = esc(String(item.text || '').trim()).replace(/\n/g, '<br />');
+          const rawText = neuChatMessageText(item);
+          const text = esc(rawText).replace(/\n/g, '<br />');
           const imageUrl = String(item.imageUrl || '').trim();
+          const isDeleted = !!item?.deletedAt;
+          const isEdited = !!item?.editedAt;
           const replyTo = neuChatNormalizeReplyPayload(item?.replyTo);
           const firstClass = index === 0 ? ' is-group-first' : '';
           const lastClass = index === arr.length - 1 ? ' is-group-last' : '';
@@ -4217,8 +4843,24 @@ function neuRenderChatMessages() {
               </button>
             `
             : '';
-          const textHtml = text ? `<div class="neuMessageText">${text}</div>` : '';
-          const contentHtml = imageHtml || textHtml ? `${imageHtml}${textHtml}` : '-';
+          const postRefRaw = item?.postRef && typeof item.postRef === 'object' ? item.postRef : null;
+          const postId = String(postRefRaw?.postId || '').trim();
+          const postOwnerUid = String(postRefRaw?.ownerUid || '').trim();
+          const hasPostRef = !!postId && !!postOwnerUid;
+          const postUrl = String(item?.postUrl || '').trim() || (hasPostRef ? `neu-social-app.html?post=${encodeURIComponent(postId)}` : '');
+          const postSnippet = rawText.replace(/^📎\s*Post:\s*/i, '').trim() || 'Post compartido';
+          const postCardHtml = hasPostRef
+            ? `
+              <div class="neuChatPostCard">
+                <div class="neuChatPostCardTitle">📎 Post</div>
+                <div class="neuChatPostCardSnippet">${esc(postSnippet.slice(0, 120))}</div>
+                <button class="btn-white-outline neuChatPostOpenBtn" type="button" data-neu-chat-open-post="${esc(postUrl)}">Abrir</button>
+              </div>
+            `
+            : '';
+          const textHtml = !hasPostRef && text ? `<div class="neuMessageText">${text}</div>` : '';
+          const deletedTextHtml = isDeleted && !textHtml ? '<div class="neuMessageText">Mensaje eliminado</div>' : '';
+          const contentHtml = imageHtml || postCardHtml || textHtml || deletedTextHtml ? `${imageHtml}${postCardHtml}${textHtml}${deletedTextHtml}` : '-';
           const replySnippet = replyTo ? String(replyTo.snippet || '').trim() || '...' : '';
           const quoteHtml = replyTo
             ? `
@@ -4227,11 +4869,18 @@ function neuRenderChatMessages() {
               </button>
             `
             : '';
+          const outgoingStatus = mine ? String(outgoingStatusMap.get(messageId) || '').trim() : '';
+          const outgoingStatusHtml = outgoingStatus ? `<div class="neuMsgSeen">${esc(outgoingStatus)}</div>` : '';
+          const editedHtml = isEdited && !isDeleted ? '<div class="neuMsgEdited">(editado)</div>' : '';
+          const menuBtnHtml = mine && !isDeleted
+            ? `<button class="neuMsgMenuBtn" type="button" data-neu-chat-message-menu="${esc(messageId)}" aria-label="Opciones">&#x22ef;</button>`
+            : '';
           return `
             <div class="neuMessageItem${mine ? ' is-outgoing' : ' is-incoming'}" data-neu-msg-id="${esc(messageId)}">
               <button class="neuReplyBtn" type="button" data-neu-reply-message="${esc(messageId)}" aria-label="Reply">
                 &#x21A9; Reply
               </button>
+              ${menuBtnHtml}
               <div class="neuReactWrap${reactWrapClass}" data-neu-react-wrap="${esc(messageId)}">
                 <button class="neuReactBtn${mineReaction ? ' is-active' : ''}" type="button" data-neu-react-toggle="${esc(messageId)}" aria-label="Reaccionar">
                   ${esc(reactBtnLabel)}
@@ -4242,18 +4891,16 @@ function neuRenderChatMessages() {
               </div>
               ${unreadDividerHtml}
               ${quoteHtml}
-              <div class="neuMessageBubble${firstClass}${lastClass}${imageUrl ? ' has-image' : ''}" data-msg-id="${esc(messageId)}">${contentHtml}</div>
+              <div class="neuMessageBubble${firstClass}${lastClass}${imageUrl ? ' has-image' : ''}${isDeleted ? ' is-deleted' : ''}" data-msg-id="${esc(messageId)}">${contentHtml}</div>
               <div class="neuReactBar${reactionBar ? '' : ' hidden'}" data-neu-react-bar="${esc(messageId)}">${reactionBar}</div>
+              ${editedHtml}
+              ${outgoingStatusHtml}
             </div>
           `;
         })
         .join('');
       const meta = neuChatFormatClock(group.lastCreatedAt || group.firstCreatedAt);
       const metaHtml = `<div class="neuMsgMeta">${esc(meta)}</div>`;
-      const statusHtml =
-        mine && delivery && String(delivery.messageId || '') === String(group.lastMessageId || '')
-          ? `<div class="neuMsgStatus">${esc(delivery.label)}</div>`
-          : '';
       const avatarHtml = mine ? '' : `<div class="neuAvatarGutter">${incomingAvatar}</div>`;
 
       return `
@@ -4262,14 +4909,13 @@ function neuRenderChatMessages() {
           <div class="neuMessagePack">
             ${bubblesHtml}
             ${metaHtml}
-            ${statusHtml}
           </div>
         </div>
       `;
     })
     .join('');
 
-  messagesRoot.innerHTML = rowsHtml;
+  messagesRoot.innerHTML = `${topStatusHtml}${rowsHtml}`;
   neuSetChatLongPressMenuOpen('');
   if (newestMessageId && newestMessageId !== prevLastRenderedMsgId) {
     const escapedMessageId =
@@ -4294,6 +4940,8 @@ function neuCloseChatModal() {
   neuSetChatLongPressMenuOpen('');
   neuClearChatAttachment();
   neuClearChatReplyDraft();
+  neuClearChatEditDraft();
+  neuClearChatEditDraft();
   neuSetChatImageLightboxOpen('');
   if (neuChatState.currentConversationId) {
     neuChatState.lastConversationId = neuChatState.currentConversationId;
@@ -4308,16 +4956,29 @@ function neuCloseChatModal() {
   neuChatState.currentMemberKey = '';
   neuChatState.peerUid = '';
   neuChatState.messages = [];
+  neuChatState.pageSize = 50;
+  neuChatState.isLoadingMore = false;
+  neuChatState.hasMore = true;
+  neuChatState.oldestDoc = null;
+  neuChatState.lastQueryCursor = null;
+  neuChatState.loadedCount = 0;
+  neuChatState.liveMessages = [];
+  neuChatState.olderMessages = [];
   neuChatState.newMessageChipVisible = false;
   neuChatState.peerTyping = false;
   neuChatState.myLastReadAt = null;
   neuChatState.peerLastReadAt = null;
+  neuChatState.peerLastReadMessageId = '';
   neuChatState.lastRenderedMsgId = '';
   neuChatState.typingConversationId = '';
   neuChatState.typingActive = false;
   if (neuChatState.replyHighlightTimer) {
     window.clearTimeout(neuChatState.replyHighlightTimer);
     neuChatState.replyHighlightTimer = 0;
+  }
+  if (neuChatState._endHintT) {
+    window.clearTimeout(neuChatState._endHintT);
+    neuChatState._endHintT = 0;
   }
   neuSetChatImageLightboxOpen('');
   if (neuChatState.bodyScrollRaf) {
@@ -4347,6 +5008,71 @@ function neuStopChatMessageListener() {
   neuChatState.messageUnsub = null;
 }
 
+async function neuChatLoadOlderMessages() {
+  const conversationId = String(neuChatState.currentConversationId || '').trim();
+  const pageSize = Math.max(1, Math.floor(Number(neuChatState.pageSize) || 50));
+  const cursor = neuChatState.lastQueryCursor || neuChatState.oldestDoc;
+  if (!conversationId || !cursor || neuChatState.isLoadingMore) return;
+  if (!neuChatState.hasMore) {
+    neuShowChatEndHint();
+    return;
+  }
+
+  const bodyEl = neuChatBodyNode();
+  if (!(bodyEl instanceof HTMLElement)) return;
+
+  neuChatState.isLoadingMore = true;
+  neuRenderChatMessages();
+
+  const prevHeight = bodyEl.scrollHeight;
+  const prevTop = bodyEl.scrollTop;
+  let prepended = false;
+  let shouldShowEndHint = false;
+
+  try {
+    const olderQuery = query(
+      collection(db, 'neuConversations', conversationId, 'messages'),
+      orderBy('createdAt', 'desc'),
+      startAfter(cursor),
+      limit(pageSize),
+    );
+    const snap = await getDocs(olderQuery);
+    if (snap.empty) {
+      neuChatState.hasMore = false;
+      shouldShowEndHint = true;
+      return;
+    }
+
+    const nextBatchAsc = neuMapChatMessagesFromDocs(snap.docs);
+    const existingIds = new Set(
+      [...(Array.isArray(neuChatState.olderMessages) ? neuChatState.olderMessages : []), ...(Array.isArray(neuChatState.liveMessages) ? neuChatState.liveMessages : [])]
+        .map((row) => String(row?.id || '').trim())
+        .filter(Boolean),
+    );
+    const filtered = nextBatchAsc.filter((row) => !existingIds.has(String(row?.id || '').trim()));
+    if (filtered.length) {
+      neuChatState.olderMessages = [...filtered, ...(Array.isArray(neuChatState.olderMessages) ? neuChatState.olderMessages : [])];
+      prepended = true;
+    }
+
+    const oldest = snap.docs[snap.docs.length - 1] || null;
+    neuChatState.oldestDoc = oldest;
+    neuChatState.lastQueryCursor = oldest;
+    if (snap.docs.length < pageSize) neuChatState.hasMore = false;
+  } catch (error) {
+    if (NEU_QA) console.warn('[neu-chat] older page load failed', error);
+  } finally {
+    neuChatState.isLoadingMore = false;
+    neuRebuildChatMessagesFromBuckets();
+    neuRenderChatMessages();
+    if (shouldShowEndHint) neuShowChatEndHint();
+    if (prepended) {
+      const nextHeight = bodyEl.scrollHeight;
+      bodyEl.scrollTop = prevTop + (nextHeight - prevHeight);
+    }
+  }
+}
+
 function neuStartChatListListener(meUid) {
   const uid = String(meUid || '').trim();
   if (!uid) return;
@@ -4357,12 +5083,13 @@ function neuStartChatListListener(meUid) {
   neuChatState.listUnsub = onSnapshot(
     q,
     (snap) => {
-      neuChatState.listRows = snap.docs.map((row) => neuMapUserChatRow(row, uid));
+      neuChatState.listRows = neuSortChatRows(snap.docs.map((row) => neuMapUserChatRow(row, uid)));
       const activeConvId = String(neuChatState.currentConversationId || '').trim();
       if (activeConvId) {
         const activeRow = neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === activeConvId) || null;
         neuChatState.myLastReadAt = activeRow?.lastReadAt || null;
         neuChatState.peerLastReadAt = activeRow?.peerLastReadAt || null;
+        neuChatState.peerLastReadMessageId = String(activeRow?.peerLastReadMessageId || '').trim();
         const modal = neuChatModalNode();
         if (modal instanceof HTMLElement && !modal.hidden) {
           neuRenderChatMessages();
@@ -4379,6 +5106,18 @@ function neuStartChatListListener(meUid) {
     },
   );
   neuChatState.listUid = uid;
+}
+
+function neuChatLastRenderedMessageId(conversationId = '') {
+  const convId = String(conversationId || '').trim();
+  const activeId = String(neuChatState.currentConversationId || '').trim();
+  if (!convId || convId !== activeId) return '';
+  const list = Array.isArray(neuChatState.messages) ? neuChatState.messages : [];
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    const messageId = String(list[i]?.id || '').trim();
+    if (messageId) return messageId;
+  }
+  return '';
 }
 
 async function neuMarkConversationRead(conversationId, { members = [], peerUid = '', force = false } = {}) {
@@ -4415,6 +5154,8 @@ async function neuMarkConversationRead(conversationId, { members = [], peerUid =
     lastReadAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
+  const lastReadMessageId = neuChatLastRenderedMessageId(convId) || String(row?.lastReadMessageId || '').trim();
+  if (lastReadMessageId) payload.lastReadMessageId = lastReadMessageId;
   if (normalizedMembers.length === 2) {
     payload.members = normalizedMembers;
     payload.memberKey = neuChatMemberKey(normalizedMembers[0], normalizedMembers[1]);
@@ -4437,11 +5178,21 @@ function neuStartChatMessagesListener(conversationId, members) {
     return;
   }
 
+  neuChatState.pageSize = NEU_CHAT_MAX_MESSAGES;
+  neuChatState.isLoadingMore = false;
+  neuChatState.hasMore = true;
+  neuChatState.oldestDoc = null;
+  neuChatState.lastQueryCursor = null;
+  neuChatState.loadedCount = 0;
+  neuChatState.liveMessages = [];
+  neuChatState.olderMessages = [];
+  neuRebuildChatMessagesFromBuckets();
+
   neuStopChatMessageListener();
   const q = query(
     collection(db, 'neuConversations', conversationId, 'messages'),
     orderBy('createdAt', 'desc'),
-    limit(NEU_CHAT_MAX_MESSAGES),
+    limit(neuChatState.pageSize),
   );
   let firstSnapshot = true;
 
@@ -4460,9 +5211,15 @@ function neuStartChatMessagesListener(conversationId, members) {
       if (firstSnapshot || wasNearBottom) neuSetNewMessagesChipVisible(false);
       else if (incomingAdded) neuSetNewMessagesChipVisible(true);
 
-      neuChatState.messages = snap.docs
-        .map((row) => ({ id: row.id, ...(row.data() || {}) }))
-        .reverse();
+      neuChatState.liveMessages = neuMapChatMessagesFromDocs(snap.docs);
+      if (firstSnapshot) {
+        const oldest = snap.docs.length ? snap.docs[snap.docs.length - 1] : null;
+        neuChatState.oldestDoc = oldest;
+        neuChatState.lastQueryCursor = oldest;
+        neuChatState.hasMore = snap.docs.length >= neuChatState.pageSize;
+        if (!oldest) neuChatState.hasMore = false;
+      }
+      neuRebuildChatMessagesFromBuckets();
       neuRenderChatMessages();
       const unreadDivider = messagesEl instanceof HTMLElement ? messagesEl.querySelector('[data-neu-unread-divider="1"]') : null;
       if (unreadDivider instanceof HTMLElement) {
@@ -4532,9 +5289,19 @@ async function neuOpenConversation(conversationId, seed = {}) {
     data?.peerLastReadAt ||
     data?.lastReadAtPeer ||
     null;
+  const peerReadMessageFromConversation =
+    (peerUid && data?.lastReadMessageIdBy && typeof data.lastReadMessageIdBy === 'object'
+      ? data.lastReadMessageIdBy[peerUid]
+      : null) ||
+    data?.peerLastReadMessageId ||
+    data?.lastReadMessageIdPeer ||
+    null;
   const myReadFromList = Array.isArray(neuChatState.listRows)
     ? neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === convId)?.lastReadAt || null
     : null;
+  const peerReadMessageFromList = Array.isArray(neuChatState.listRows)
+    ? neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === convId)?.peerLastReadMessageId || ''
+    : '';
 
   neuChatState.lastConversationId = convId;
   neuChatState.lastPeerUid = peerUid;
@@ -4547,6 +5314,7 @@ async function neuOpenConversation(conversationId, seed = {}) {
   neuChatState.peerTyping = false;
   neuChatState.myLastReadAt = myReadFromList;
   neuChatState.peerLastReadAt = peerReadFromConversation || null;
+  neuChatState.peerLastReadMessageId = String(peerReadMessageFromList || peerReadMessageFromConversation || '').trim();
   neuChatState.nearBottom = true;
   neuChatState.lastRenderedMsgId = '';
   neuChatState.typingConversationId = convId;
@@ -4672,6 +5440,7 @@ async function neuSendChatMessage(options = {}) {
   const meUid = neuCurrentUid();
   const conversationId = String(neuChatState.currentConversationId || '').trim();
   const textInput = neuChatInputNode();
+  const editDraft = neuChatNormalizeEditDraft(neuChatState.editDraft);
   const attachmentFile = neuChatState.pendingImageFile instanceof File ? neuChatState.pendingImageFile : null;
   const attachmentFingerprint = neuChatFileFingerprint(attachmentFile);
   const rawText = String(
@@ -4679,11 +5448,46 @@ async function neuSendChatMessage(options = {}) {
   );
   const safeText = rawText.trim().slice(0, 1000);
   const replyTo = neuChatNormalizeReplyPayload(neuChatState.replyDraft);
-  if (!meUid || !conversationId || (!safeText && !attachmentFile)) {
+  if (!meUid || !conversationId || (!safeText && !attachmentFile && !editDraft)) {
     neuSyncChatComposerState();
     return;
   }
   if (neuChatState.sending || neuChatState.uploading) return;
+
+  if (editDraft) {
+    if (attachmentFile) {
+      neuChatSetHint('No se puede adjuntar imagen al editar.', true);
+      neuSyncChatComposerState();
+      return;
+    }
+    if (!safeText) {
+      neuChatSetHint('Escribe un mensaje para editar.', true);
+      neuSyncChatComposerState();
+      return;
+    }
+
+    neuSetChatSending(true);
+    neuChatSetHint('');
+    try {
+      await neuEditChatMessage(editDraft.messageId, safeText);
+      if (textInput instanceof HTMLInputElement || textInput instanceof HTMLTextAreaElement) {
+        textInput.value = '';
+        if (textInput instanceof HTMLTextAreaElement) neuChatAutoGrow(textInput);
+        textInput.focus({ preventScroll: true });
+      }
+      neuClearChatEditDraft();
+      neuChatAutoResizeInput();
+      neuChatSetHint('');
+      neuSyncChatComposerState();
+    } catch (error) {
+      const code = neuChatErrorCode(error) || 'unknown';
+      console.error('[neu-chat] edit failed', code, error?.message, error);
+      neuChatSetHint(`No se pudo editar (${code}).`, true);
+    } finally {
+      neuSetChatSending(false);
+    }
+    return;
+  }
 
   const members = Array.isArray(neuChatState.currentMembers)
     ? neuChatState.currentMembers.map((uid) => String(uid || '').trim()).filter(Boolean)
@@ -4752,6 +5556,7 @@ async function neuSendChatMessage(options = {}) {
     batch.set(messageRef, {
       senderUid: meUid,
       text: safeText,
+      content: safeText,
       ...(imageUrl ? { imageUrl, imageStoragePath } : {}),
       ...(replyTo ? { replyTo } : {}),
       createdAt: now,
@@ -4781,7 +5586,7 @@ async function neuSendChatMessage(options = {}) {
           lastMessageText: previewText,
           lastMessageAt: now,
           unreadCount: isSender ? 0 : increment(1),
-          ...(isSender ? { lastReadAt: now } : {}),
+          ...(isSender ? { lastReadAt: now, lastReadMessageId: messageRef.id } : {}),
           updatedAt: now,
         },
         { merge: true },
@@ -4802,6 +5607,7 @@ async function neuSendChatMessage(options = {}) {
     }
     neuClearChatAttachment();
     neuClearChatReplyDraft();
+    neuClearChatEditDraft();
     neuChatSetUploadRetryContext(null);
     neuChatSetHint('');
     neuChatAutoResizeInput();
@@ -5098,6 +5904,55 @@ function neuWireChatEvents() {
         return;
       }
 
+      const sharePostBtn = target.closest('[data-neu-post-share-chat]');
+      if (sharePostBtn instanceof HTMLButtonElement) {
+        const card = sharePostBtn.closest('.post-card');
+        if (card instanceof HTMLElement) {
+          event.preventDefault();
+          event.stopPropagation();
+          neuOpenSharePostModalFromCard(card);
+        }
+        return;
+      }
+
+      const shareCloseBtn = target.closest('[data-neu-chat-share-close]');
+      if (shareCloseBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        neuCloseSharePostModal();
+        return;
+      }
+
+      const shareConversationBtn = target.closest('[data-neu-chat-share-open]');
+      if (shareConversationBtn instanceof HTMLButtonElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        const conversationId = String(shareConversationBtn.getAttribute('data-neu-chat-share-open') || '').trim();
+        if (conversationId) {
+          neuSharePostToConversation(conversationId).catch((error) => {
+            const code = neuChatErrorCode(error) || 'unknown';
+            console.error('[neu-chat] share send failed', code, error?.message, error);
+            neuChatSetHint(`No se pudo compartir post (${code}).`, true);
+          });
+        }
+        return;
+      }
+
+      const openSharedPostBtn = target.closest('[data-neu-chat-open-post]');
+      if (openSharedPostBtn instanceof HTMLButtonElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        const rawUrl = String(openSharedPostBtn.getAttribute('data-neu-chat-open-post') || '').trim();
+        if (!rawUrl) return;
+        try {
+          const opened = window.open(rawUrl, '_blank', 'noopener');
+          if (!opened) location.href = rawUrl;
+        } catch {
+          location.href = rawUrl;
+        }
+        return;
+      }
+
       const imageBtn = target.closest('[data-neu-chat-image]');
       if (imageBtn instanceof HTMLElement) {
         const imageUrl = String(imageBtn.getAttribute('data-neu-chat-image') || '').trim();
@@ -5136,6 +5991,17 @@ function neuWireChatEvents() {
         return;
       }
 
+      const messageMenuBtn = target.closest('[data-neu-chat-message-menu]');
+      if (messageMenuBtn instanceof HTMLButtonElement) {
+        const messageId = String(messageMenuBtn.getAttribute('data-neu-chat-message-menu') || '').trim();
+        if (!messageId) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const rect = messageMenuBtn.getBoundingClientRect();
+        neuSetChatLongPressMenuOpen(messageId, rect.left, rect.bottom + 6);
+        return;
+      }
+
       const mobileReplyBtn = target.closest('[data-neu-chat-longpress-reply]');
       if (mobileReplyBtn instanceof HTMLButtonElement) {
         event.preventDefault();
@@ -5147,6 +6013,43 @@ function neuWireChatEvents() {
         return;
       }
 
+      const editBtn = target.closest('[data-neu-chat-longpress-edit]');
+      if (editBtn instanceof HTMLButtonElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        const menu = neuChatLongPressMenuNode();
+        const messageId = String(menu?.dataset?.neuChatEditMessage || '').trim();
+        if (messageId) neuStartChatEditDraft(messageId);
+        neuSetChatLongPressMenuOpen('');
+        return;
+      }
+
+      const deleteBtn = target.closest('[data-neu-chat-longpress-delete]');
+      if (deleteBtn instanceof HTMLButtonElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        const menu = neuChatLongPressMenuNode();
+        const messageId = String(menu?.dataset?.neuChatDeleteMessage || '').trim();
+        if (messageId) {
+          neuDeleteChatMessage(messageId).catch((error) => {
+            const code = neuChatErrorCode(error) || 'unknown';
+            console.error('[neu-chat] delete failed', code, error?.message, error);
+            neuChatSetHint(`No se pudo eliminar (${code}).`, true);
+          });
+        }
+        neuSetChatLongPressMenuOpen('');
+        return;
+      }
+
+      const cancelEditBtn = target.closest('[data-neu-chat-edit-cancel]');
+      if (cancelEditBtn instanceof HTMLButtonElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        neuClearChatEditDraft();
+        neuSyncChatComposerState();
+        return;
+      }
+
       const reactOption = target.closest('[data-neu-react-type]');
       if (reactOption instanceof HTMLButtonElement) {
         const messageId = String(reactOption.getAttribute('data-neu-react-message') || '').trim();
@@ -5154,8 +6057,9 @@ function neuWireChatEvents() {
         event.preventDefault();
         event.stopPropagation();
         neuToggleMessageReaction(messageId, type).catch((error) => {
-          console.error('[neu-chat] react failed', error);
-          neuChatSetHint('No se pudo guardar reaccion.', true);
+          const code = neuChatErrorCode(error) || 'unknown';
+          console.error('[neu-chat] react failed', code, error?.message, error);
+          neuChatSetHint(`No se pudo guardar reaccion (${code}).`, true);
         });
         neuHideReactionPickers();
         return;
@@ -5179,6 +6083,19 @@ function neuWireChatEvents() {
         event.preventDefault();
         neuSetNewMessagesChipVisible(false);
         neuChatScrollBottom('smooth');
+        return;
+      }
+
+      const pinBtn = target.closest('[data-neu-chat-pin]');
+      if (pinBtn instanceof HTMLButtonElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        const conversationId = String(pinBtn.getAttribute('data-neu-chat-pin') || '').trim();
+        neuToggleChatPinned(conversationId).catch((error) => {
+          const code = neuChatErrorCode(error) || 'unknown';
+          console.error('[neu-chat] pin action failed', code, error?.message, error);
+          neuChatSetHint(`No se pudo fijar chat (${code}).`, true);
+        });
         return;
       }
 
@@ -5392,6 +6309,10 @@ function neuWireChatEvents() {
         window.clearTimeout(neuChatState.chatSearchDebounceTimer);
         neuChatState.chatSearchDebounceTimer = 0;
       }
+      if (neuChatState.shareSearchDebounceTimer) {
+        window.clearTimeout(neuChatState.shareSearchDebounceTimer);
+        neuChatState.shareSearchDebounceTimer = 0;
+      }
     },
     { passive: true },
   );
@@ -5406,6 +6327,11 @@ function neuWireChatEvents() {
     const lightbox = neuChatImageLightboxNode();
     if (lightbox instanceof HTMLElement && !lightbox.hidden) {
       neuSetChatImageLightboxOpen('');
+      return;
+    }
+    const shareModal = neuChatShareModalNode();
+    if (shareModal instanceof HTMLElement && !shareModal.hidden) {
+      neuCloseSharePostModal();
       return;
     }
     const modal = neuChatModalNode();
@@ -5424,13 +6350,16 @@ async function neuInitChatMvp(user) {
   neuSyncUnreadUi();
   neuWireChatEvents();
   neuWireChatSearchInput();
+  neuWireShareChatSearchInput();
   const chatSearchInput = neuChatSearchInputNode();
   neuChatState.chatSearchQuery = String(chatSearchInput?.value || '').trim();
   neuStartChatListListener(meUid);
   neuWireChatListGuard();
   neuRenderChatList();
+  neuEnsureChatEditPreviewNode();
   neuRenderChatAttachmentPreview();
   neuRenderChatReplyPreview();
+  neuRenderChatEditPreview();
   neuChatAutoResizeInput();
   neuUpdateChatComposerOffsetVar();
   neuSetChatSending(false);
@@ -6604,6 +7533,34 @@ function neuCreatePostMenu(ownerUid, postId) {
   return menu;
 }
 
+function neuEnsurePostShareButton(card) {
+  if (!(card instanceof HTMLElement)) return;
+  const identity = neuReadPostIdentity(card);
+  if (!identity) return;
+  let actions = card.querySelector('.neu-post-quick-actions');
+  if (!(actions instanceof HTMLElement)) {
+    actions = document.createElement('div');
+    actions.className = 'neu-post-quick-actions';
+    card.append(actions);
+  }
+  if (actions.querySelector('[data-neu-post-share-chat]')) return;
+  const shareBtn = document.createElement('button');
+  shareBtn.className = 'btn-white-outline neu-post-share-chat';
+  shareBtn.type = 'button';
+  shareBtn.setAttribute('data-neu-post-share-chat', '1');
+  shareBtn.textContent = 'Enviar por chat';
+  actions.append(shareBtn);
+}
+
+function neuDecorateFeedShareButtons() {
+  if (isDisabled('decorators')) return;
+  const feed = neuGetFeedList();
+  if (!(feed instanceof HTMLElement)) return;
+  feed.querySelectorAll('.post-card').forEach((card) => {
+    neuEnsurePostShareButton(card);
+  });
+}
+
 function neuDecorateFeedPostMenus() {
   if (isDisabled('decorators')) return;
   const feed = neuGetFeedList();
@@ -6628,6 +7585,7 @@ function neuDecorateFeedPostMenus() {
     if (existing) return;
     head.append(neuCreatePostMenu(identity.ownerUid, identity.postId));
   });
+  neuDecorateFeedShareButtons();
 }
 
 function neuWirePostCrudEvents() {
