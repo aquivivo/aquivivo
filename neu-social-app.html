@@ -327,19 +327,32 @@
               <div class="screen-head"><h3>Notifications</h3></div>
               <div id="pulseNotifications" class="simple-list"></div>
             </article>
-            <article class="mini-list-card">
-              <div class="screen-head"><h3>Chats</h3></div>
-              <div class="neu-chat-search-wrap">
-                <input
-                  id="pulseChatSearchInput"
-                  class="input neu-chat-search-input"
-                  type="search"
-                  placeholder="Buscar chats..."
-                  autocomplete="off"
-                  aria-label="Buscar chats"
-                />
+            <article class="mini-list-card neu-chat-inbox-card">
+              <div class="neuChatInbox">
+                <aside class="neuChatInboxList">
+                  <div class="neuChatInboxHead">
+                    <h3>Chats</h3>
+                    <input
+                      id="neuInboxSearch"
+                      class="input neu-chat-search-input"
+                      type="search"
+                      placeholder="Buscar chats..."
+                      autocomplete="off"
+                      aria-label="Buscar chats"
+                    />
+                  </div>
+                  <div id="neuInboxList" class="neuInboxList"></div>
+                </aside>
+
+                <section class="neuChatInboxPanel">
+                  <div id="neuInboxEmpty" class="neuInboxEmpty">
+                    <p>Selecciona una conversación</p>
+                  </div>
+                  <div id="neuInboxChatHost" class="neuInboxChatHost hidden"></div>
+                </section>
               </div>
-              <div id="pulseConversations" class="simple-list"></div>
+              <div id="pulseConversations" class="simple-list hidden" hidden></div>
+              <input id="pulseChatSearchInput" class="input neu-chat-search-input hidden" type="search" hidden />
             </article>
             <article class="mini-list-card">
               <div class="screen-head"><h3>Saved</h3></div>
@@ -389,6 +402,10 @@
       <span class="neu-chat-float-label">Chat</span>
       <span class="neu-unread-badge neu-chat-float-badge hidden" id="neuChatFloatBadge"></span>
     </button>
+
+    <div id="neuChatDock" class="neuChatDock hidden">
+      <div id="neuChatDockHost" class="neuChatDockCard"></div>
+    </div>
 
     <div class="story-modal" id="storyModal" hidden>
       <div class="story-modal-backdrop" data-story-close="1"></div>
@@ -614,7 +631,7 @@
         <p class="hintSmall" id="neuChatHint"></p>
 
         <div class="neu-chat-longpress-menu hidden" id="neuChatLongPressMenu" role="menu" aria-label="Opciones mensaje">
-          <button class="btn-white-outline neu-chat-longpress-action" data-neu-chat-longpress-reply type="button" role="menuitem">&#x21A9; Reply</button>
+          <button class="btn-white-outline neu-chat-longpress-action" data-neu-chat-longpress-reply type="button" role="menuitem">&#x21A9; Responder</button>
         </div>
       </div>
     </div>
@@ -627,12 +644,37 @@
       </div>
     </div>
 
+    <div id="neuMsgMenu" class="neuMsgMenu hidden" role="menu" aria-label="Opciones mensaje">
+      <button data-action="msg-edit" type="button" role="menuitem">Editar</button>
+      <button data-action="msg-unsend" type="button" role="menuitem">Cofnij wysłanie</button>
+      <button data-action="msg-delete" type="button" role="menuitem">Eliminar</button>
+    </div>
+
+    <div class="composer-modal neu-chat-share-modal" id="neuShareChatModal" hidden>
+      <div class="composer-modal-backdrop" data-neu-chat-share-close="1"></div>
+      <div class="composer-modal-card neu-chat-share-card" role="dialog" aria-modal="true" aria-label="Enviar post por chat">
+        <div class="neu-chat-share-head">
+          <strong>Enviar por chat</strong>
+          <button class="btn-white-outline" type="button" data-neu-chat-share-close="1">Cerrar</button>
+        </div>
+        <input
+          id="neuShareChatSearchInput"
+          class="input neu-chat-share-search"
+          type="search"
+          placeholder="Buscar chats..."
+          maxlength="80"
+          autocomplete="off"
+        />
+        <div id="neuShareChatList" class="neu-chat-share-list"></div>
+      </div>
+    </div>
+
     <div id="appFooter"></div>
 
     <script type="module">
       console.log('[NEU BOOT] html module loader start');
 
-      import('./assets/js/pages/neu-social-app-page.js?v=20260223a')
+      import('./assets/js/pages/neu-social-app-page.js?v=20260223d')
         .then(() => console.log('[NEU BOOT] module imported OK'))
         .catch((err) => {
           console.error('[NEU BOOT] module import FAILED:', err);

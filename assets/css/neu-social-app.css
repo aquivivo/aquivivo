@@ -1543,6 +1543,146 @@ body.fusion-profile.neu-social-app .neu-chat-list {
   gap: 8px;
 }
 
+body.fusion-profile.neu-social-app .neu-chat-inbox-card {
+  grid-column: span 2;
+}
+
+body.fusion-profile.neu-social-app .neuChatInbox {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 16px;
+  min-height: 70vh;
+}
+
+body.fusion-profile.neu-social-app .neuChatInboxList {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body.fusion-profile.neu-social-app .neuChatInboxHead {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(9, 25, 56, 0.48);
+}
+
+body.fusion-profile.neu-social-app .neuChatInboxHead h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+body.fusion-profile.neu-social-app .neuChatInboxPanel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+body.fusion-profile.neu-social-app .neuInboxList {
+  max-height: 70vh;
+  overflow: auto;
+  min-height: 0;
+  padding: 4px;
+}
+
+body.fusion-profile.neu-social-app .neuInboxItemWrap {
+  position: relative;
+  margin-bottom: 6px;
+}
+
+body.fusion-profile.neu-social-app .neuInboxItem {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  padding: 12px 46px 12px 12px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  text-align: left;
+  color: var(--fusion-text);
+}
+
+body.fusion-profile.neu-social-app .neuInboxItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.fusion-profile.neu-social-app .neuInboxItem.is-active {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(143, 179, 255, 0.36);
+}
+
+body.fusion-profile.neu-social-app .neuInboxCopy {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  flex: 1;
+}
+
+body.fusion-profile.neu-social-app .neuInboxTop {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+body.fusion-profile.neu-social-app .neuInboxName {
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.fusion-profile.neu-social-app .neuInboxTime {
+  margin-left: auto;
+  font-size: 11px;
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+body.fusion-profile.neu-social-app .neuInboxPreview {
+  font-size: 12px;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.fusion-profile.neu-social-app .neuInboxUnread {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+}
+
+body.fusion-profile.neu-social-app .neuInboxEmpty {
+  margin: auto;
+  text-align: center;
+  opacity: 0.78;
+  padding: 18px;
+}
+
+body.fusion-profile.neu-social-app .neuInboxChatHost {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body.fusion-profile.neu-social-app .neuInboxChatHost.hidden {
+  display: none !important;
+}
+
 body.fusion-profile.neu-social-app .neu-chat-item-wrap {
   position: relative;
 }
@@ -1687,6 +1827,19 @@ body.fusion-profile.neu-social-app .neu-chat-empty-sub {
   font-size: 12px;
 }
 
+body.fusion-profile.neu-social-app .neu-post-quick-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+body.fusion-profile.neu-social-app .neu-post-share-chat {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
 body.fusion-profile.neu-social-app .neu-chat-empty-cta {
   min-height: 34px;
   padding: 8px 12px;
@@ -1710,6 +1863,16 @@ body.fusion-profile.neu-social-app .neuChatModalContent {
   gap: 0;
   padding: 0;
   overflow: hidden;
+}
+
+body.fusion-profile.neu-social-app .neuInboxChatHost .neu-chat-modal-card,
+body.fusion-profile.neu-social-app .neuInboxChatHost .neuChatModalContent {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 body.fusion-profile.neu-social-app .neu-chat-head,
@@ -2008,6 +2171,42 @@ body.fusion-profile.neu-social-app .neuMsgMenuBtn {
   z-index: 8;
 }
 
+body.fusion-profile.neu-social-app .neuMsgMenu {
+  position: fixed;
+  z-index: 999999;
+  background: rgba(15, 17, 23, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 6px;
+  min-width: 180px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35);
+}
+
+body.fusion-profile.neu-social-app .neuMsgMenu button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 10px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .neuMsgMenu button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+body.fusion-profile.neu-social-app .neuMsgMenu button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+body.fusion-profile.neu-social-app .neuMsgMenu button[data-action='msg-delete'] {
+  color: rgba(255, 122, 142, 0.98);
+}
+
 body.fusion-profile.neu-social-app .neuMessageItem.is-incoming .neuMsgMenuBtn {
   display: none !important;
 }
@@ -2079,6 +2278,37 @@ body.fusion-profile.neu-social-app .neuReplyQuoteSnippet {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+body.fusion-profile.neu-social-app .neuChatPostCard {
+  width: 100%;
+  max-width: 260px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 8px 10px;
+  display: grid;
+  gap: 6px;
+}
+
+body.fusion-profile.neu-social-app .neuChatPostCardTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fusion-text);
+}
+
+body.fusion-profile.neu-social-app .neuChatPostCardSnippet {
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--fusion-text-soft);
+}
+
+body.fusion-profile.neu-social-app .neuChatPostOpenBtn {
+  min-height: 26px;
+  justify-self: start;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
 }
 
 body.fusion-profile.neu-social-app .neuMessageItem.is-reply-target .neuMessageBubble {
@@ -2508,6 +2738,98 @@ body.fusion-profile.neu-social-app .neu-chat-longpress-action.hidden {
 
 body.fusion-profile.neu-social-app .neu-chat-longpress-action-danger {
   color: #ffbac7;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-share-card {
+  width: min(92vw, 420px);
+  max-height: min(82vh, 620px);
+  display: grid;
+  gap: 10px;
+  overflow: hidden;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-share-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-share-search {
+  width: 100%;
+  min-height: 36px;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-share-list {
+  min-height: 120px;
+  max-height: min(62vh, 440px);
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  padding-right: 2px;
+}
+
+@media (max-width: 900px) {
+  body.fusion-profile.neu-social-app .neu-chat-inbox-card {
+    grid-column: span 1;
+  }
+
+  body.fusion-profile.neu-social-app .neuChatInbox {
+    display: block;
+    min-height: auto;
+  }
+
+  body.fusion-profile.neu-social-app .neuChatInboxPanel {
+    display: none;
+  }
+
+  body.fusion-profile.neu-social-app .neuInboxList {
+    max-height: none;
+  }
+}
+
+body.fusion-profile.neu-social-app .neu-share-chat-item {
+  width: 100%;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--fusion-text);
+  padding: 9px 10px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+body.fusion-profile.neu-social-app .neu-share-chat-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+body.fusion-profile.neu-social-app .neu-share-chat-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+body.fusion-profile.neu-social-app .neu-share-chat-copy strong {
+  font-size: 13px;
+}
+
+body.fusion-profile.neu-social-app .neu-share-chat-copy small {
+  font-size: 12px;
+  color: var(--fusion-text-soft);
+}
+
+body.fusion-profile.neu-social-app .neu-share-chat-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fusion-text-soft);
+  text-align: center;
+  opacity: 0.78;
+  padding: 8px;
 }
 
 body.fusion-profile.neu-social-app .neu-chat-image-lightbox .composer-modal-backdrop {
