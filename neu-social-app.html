@@ -11,7 +11,7 @@
     />
     <link rel="stylesheet" href="assets/css/styles.css?v=20260222l" />
     <link rel="stylesheet" href="assets/css/neu-theme.css?v=20260222c" />
-    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260222aa" />
+    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260223q" />
     <script src="assets/js/layout.js?v=20260222i" type="module"></script>
   </head>
   <body data-page="profile" data-no-side-panel="1" class="fusion-profile neu-social-app no-side-panel" data-portal="feed">
@@ -403,8 +403,8 @@
       <span class="neu-unread-badge neu-chat-float-badge hidden" id="neuChatFloatBadge"></span>
     </button>
 
-    <div id="neuChatDock" class="neuChatDock hidden">
-      <div id="neuChatDockHost" class="neuChatDockCard"></div>
+    <div id="neuFloatingChat" class="hidden" role="dialog" aria-label="Chat">
+      <div id="neuFloatingChatMount"></div>
     </div>
 
     <div class="story-modal" id="storyModal" hidden>
@@ -583,9 +583,15 @@
             <span class="neu-chat-peer-copy">
               <strong id="neuChatPeerName">Chat</strong>
               <span id="neuChatPeerHandle">@usuario</span>
+              <span id="neuChatPeerPresence" class="neu-chat-peer-presence">Desconectado &middot; activo recientemente</span>
             </span>
           </div>
-          <button class="btn-white-outline" id="neuChatCloseBtn" type="button">Cerrar</button>
+          <div class="neu-chat-head-actions">
+            <button class="btn-white-outline neu-chat-head-icon" id="neuChatCallBtn" type="button" aria-label="Llamar">&#128222;</button>
+            <button class="btn-white-outline neu-chat-head-icon" id="neuChatVideoBtn" type="button" aria-label="Videollamada">&#127909;</button>
+            <button class="btn-white-outline neu-chat-head-icon" id="neuChatMoreBtn" type="button" aria-label="Mas opciones">&#8942;</button>
+            <button class="btn-white-outline" id="neuChatCloseBtn" type="button">Cerrar</button>
+          </div>
         </div>
 
         <div class="neu-chat-body neuChatBody" id="neuChatBody">
@@ -616,9 +622,8 @@
           </div>
 
           <input id="neuChatFileInput" type="file" accept="image/*" hidden />
-          <button class="btn-white-outline neu-chat-attach-btn" id="neuChatAttachBtn" type="button" aria-label="Adjuntar imagen">
-            📎
-          </button>
+          <button class="btn-white-outline neu-chat-emoji-btn" id="neuChatEmojiBtn" type="button" aria-label="Emoji">&#128522;</button>
+          <button class="btn-white-outline neu-chat-attach-btn" id="neuChatAttachBtn" type="button" aria-label="Adjuntar imagen">&#128206;</button>
           <textarea
             id="neuChatInput"
             class="input"
@@ -626,6 +631,7 @@
             maxlength="1000"
             placeholder="Escribe un mensaje..."
           ></textarea>
+          <button class="btn-white-outline neu-chat-like-btn" id="neuChatLikeBtn" type="button" aria-label="Me gusta rapido">&#128077;</button>
           <button class="btn-white-outline neu-chat-send-compact" id="neuChatSendBtn" type="submit">Enviar</button>
         </form>
         <p class="hintSmall" id="neuChatHint"></p>
@@ -645,9 +651,10 @@
     </div>
 
     <div id="neuMsgMenu" class="neuMsgMenu hidden" role="menu" aria-label="Opciones mensaje">
-      <button data-action="msg-edit" type="button" role="menuitem">Editar</button>
-      <button data-action="msg-unsend" type="button" role="menuitem">Cofnij wysłanie</button>
-      <button data-action="msg-delete" type="button" role="menuitem">Eliminar</button>
+      <button data-action="msg-reply" type="button" role="menuitem">Responder</button>
+      <button data-action="msg-copy" type="button" role="menuitem">Copiar</button>
+      <button data-action="msg-hide-local" type="button" role="menuitem">Eliminar para mi</button>
+      <button data-action="msg-delete-all" type="button" role="menuitem">Eliminar para todos</button>
     </div>
 
     <div class="composer-modal neu-chat-share-modal" id="neuShareChatModal" hidden>
@@ -674,7 +681,7 @@
     <script type="module">
       console.log('[NEU BOOT] html module loader start');
 
-      import('./assets/js/pages/neu-social-app-page.js?v=20260223d')
+      import('./assets/js/pages/neu-social-app-page.js?v=20260223o')
         .then(() => console.log('[NEU BOOT] module imported OK'))
         .catch((err) => {
           console.error('[NEU BOOT] module import FAILED:', err);
@@ -694,3 +701,5 @@
     </script>
   </body>
 </html>
+
+

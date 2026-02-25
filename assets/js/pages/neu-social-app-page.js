@@ -28,6 +28,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
 import { requireNeuAuth } from '../neu-auth-gate.js?v=20260222c';
 import { app, auth, db, storage } from '../neu-firebase-init.js?v=20260222c';
+import { neuInitPush } from '../neu-push.js?v=20260225a';
 
 if (new URLSearchParams(location.search).get('qa') === '1') {
   console.log('[NEU PAGE] neu-social-app-page.js loaded');
@@ -50,6 +51,14 @@ function readCity() {
 const NEU_USERS_COLLECTION = 'neuUsers';
 const NEU_FOLLOWS_COLLECTION = 'neuFollows';
 const NEU_USER_SETTINGS_COLLECTION = 'neuUserSettings';
+const NEU_CHAT_CONVERSATIONS_COLLECTION = 'neuChatConversations';
+const NEU_CHAT_INBOXES_COLLECTION = 'neuChatInboxes';
+const NEU_CHAT_INBOX_THREADS_COLLECTION = 'threads';
+const NEU_CHAT_MESSAGES_COLLECTION = 'messages';
+const NEU_CHAT_TYPING_COLLECTION = 'neuChatTyping';
+const NEU_CHAT_READS_COLLECTION = 'neuChatReads';
+const NEU_CHAT_READS_PARTICIPANTS_COLLECTION = 'participants';
+const NEU_CHAT_REACTIONS_COLLECTION = 'neuChatReactions';
 const NEU_PROFILE_AVATAR_PREFIX = 'awatary/neu/';
 const NEU_PROFILE_BIO_MAX = 160;
 const NEU_PROFILE_FEED_LIMIT = 80;
@@ -207,6 +216,9 @@ function neuNormalizeProfile(raw = {}, uid = '') {
     bio: String(raw.bio || '').trim().slice(0, NEU_PROFILE_BIO_MAX),
     avatarUrl,
     avatarStoragePath,
+    isOnline: raw.isOnline === true || raw.online === true,
+    lastActiveAt: raw.lastActiveAt || raw.lastSeenAt || null,
+    lastSeenAt: raw.lastSeenAt || raw.lastActiveAt || null,
   };
 }
 
@@ -1801,6 +1813,7 @@ function neuSyncProfileActionsUi() {
   const friendBtn = document.getElementById('btnFusionFriend');
   const shareBtn = document.getElementById('btnFusionShare');
   const messageBtn = document.getElementById('btnFusionMessage');
+  const profileMessageBtn = document.getElementById('btnProfileMessage');
   const sourceSwitch = document.getElementById('feedSourceSwitch');
 
   const isProfileMode = neuPublicProfileState.profileMode;
@@ -1813,6 +1826,9 @@ function neuSyncProfileActionsUi() {
   const messageTargetUid = isProfileMode ? String(neuPublicProfileState.targetUid || '').trim() : '';
   if (messageBtn instanceof HTMLElement) {
     messageBtn.setAttribute('data-chat-uid', messageTargetUid);
+  }
+  if (profileMessageBtn instanceof HTMLElement) {
+    profileMessageBtn.setAttribute('data-chat-uid', messageTargetUid);
   }
   if (messageBtn instanceof HTMLAnchorElement) {
     messageBtn.href = 'neu-social-app.html?portal=pulse';
@@ -2648,6 +2664,7 @@ const NEU_CHAT_REPLY_LONG_PRESS_MS = 450;
 const NEU_CHAT_REPLY_HIGHLIGHT_MS = 1000;
 const NEU_CHAT_SEARCH_DEBOUNCE_MS = 150;
 const NEU_CHAT_REACTION_TYPES = ['like', 'heart', 'laugh'];
+const NEU_CHAT_PRESENCE_REFRESH_MS = 45 * 1000;
 const NEU_CHAT_REACTION_EMOJI = {
   like: '👍',
   heart: '❤️',
@@ -2662,6 +2679,7 @@ const neuChatState = {
   listUid: '',
   messageUnsub: null,
   typingUnsub: null,
+  readsUnsub: null,
   currentConversationId: '',
   currentMembers: [],
   currentMemberKey: '',
@@ -2681,8 +2699,12 @@ const neuChatState = {
   newMessageChipVisible: false,
   peerTyping: false,
   myLastReadAt: null,
+  mySeenMessageId: '',
+  myDeliveredMessageId: '',
   peerLastReadAt: null,
   peerLastReadMessageId: '',
+  peerDeliveredAt: null,
+  peerDeliveredMessageId: '',
   bodyScrollWired: false,
   bodyScrollRaf: 0,
   nearBottom: true,
@@ -2691,6 +2713,7 @@ const neuChatState = {
   typingIdleTimer: 0,
   typingActive: false,
   typingConversationId: '',
+  readsConversationId: '',
   reactionUnsubs: new Map(),
   reactionCounts: new Map(),
   reactionMine: new Map(),
@@ -2701,6 +2724,8 @@ const neuChatState = {
   reactionLongPressMsgId: '',
   pendingImageFile: null,
   pendingImagePreviewUrl: '',
+  sendingConversationId: '',
+  sendingStartedAt: 0,
   pageSize: 50,
   isLoadingMore: false,
   hasMore: true,
@@ -2727,6 +2752,9 @@ const neuChatState = {
   shareSearchQuery: '',
   shareSearchDebounceTimer: 0,
   shareSending: false,
+  presenceWired: false,
+  peerPresenceUnsub: null,
+  activePeerPresenceUid: '',
 };
 
 const neuChatFloatState = {
@@ -2804,10 +2832,14 @@ function neuChatFloatNode() {
 function neuEnsureFloatUnreadBadge() {
   const flag = neuChatFloatNode();
   if (!(flag instanceof HTMLButtonElement)) return null;
-  let badge = flag.querySelector('.neu-chat-float-badge');
+  let badge = document.getElementById('neuChatFloatBadge');
+  if (!(badge instanceof HTMLElement)) {
+    badge = flag.querySelector('.neu-chat-float-badge');
+  }
   if (!(badge instanceof HTMLElement)) {
     badge = document.createElement('span');
     badge.className = 'neu-unread-badge neu-chat-float-badge hidden';
+    badge.id = 'neuChatFloatBadge';
     flag.append(badge);
   }
   return badge;
@@ -2820,10 +2852,12 @@ function neuRenderFloatUnreadBadge() {
   const label = neuUnreadBadgeLabel(count);
   if (!label) {
     badge.classList.add('hidden');
+    badge.hidden = true;
     badge.textContent = '';
     return;
   }
   badge.classList.remove('hidden');
+  badge.hidden = false;
   badge.textContent = label;
   badge.setAttribute('aria-label', `Chats sin leer: ${count}`);
 }
@@ -3045,6 +3079,7 @@ function neuChatBuildGroups(messages = []) {
       postUrl: String(item?.postUrl || '').trim(),
       replyTo: neuChatNormalizeReplyPayload(item?.replyTo),
       editedAt: item?.editedAt || null,
+      deleted: item?.deleted === true,
       deletedAt: item?.deletedAt || null,
       createdAt: item?.createdAt || null,
       ts,
@@ -3156,22 +3191,50 @@ function neuChatOutgoingStatusMap(messages = [], meUid = '') {
   }
   if (!outgoingRecent.length) return statuses;
 
-  const peerReadId = String(neuChatState.peerLastReadMessageId || '').trim();
-  const peerReadTs = neuTimeToMs(neuChatState.peerLastReadAt);
-  const canCompareById = neuChatCanCompareReadMessageIds(outgoingRecent, peerReadId);
+  const peerSeenId = String(neuChatState.peerLastReadMessageId || '').trim();
+  const peerSeenTs = neuTimeToMs(neuChatState.peerLastReadAt);
+  const peerDeliveredId = String(neuChatState.peerDeliveredMessageId || '').trim();
+  const peerDeliveredTs = neuTimeToMs(neuChatState.peerDeliveredAt);
+  const canCompareSeenById = neuChatCanCompareReadMessageIds(outgoingRecent, peerSeenId);
+  const canCompareDeliveredById = neuChatCanCompareReadMessageIds(outgoingRecent, peerDeliveredId);
 
   outgoingRecent.forEach((item) => {
     const messageId = String(item?.id || '').trim();
     if (!messageId) return;
+    const messageTs = neuTimeToMs(item?.createdAt);
     let seen = false;
-    if (canCompareById && peerReadId) {
-      seen = messageId <= peerReadId;
+    if (canCompareSeenById && peerSeenId) {
+      seen = messageId <= peerSeenId;
     } else {
-      const messageTs = neuTimeToMs(item?.createdAt);
-      seen = peerReadTs > 0 && messageTs > 0 && messageTs <= peerReadTs;
+      seen = peerSeenTs > 0 && messageTs > 0 && messageTs <= peerSeenTs;
     }
-    statuses.set(messageId, seen ? 'Visto' : 'Enviado');
+    if (seen) {
+      statuses.set(messageId, 'Visto');
+      return;
+    }
+
+    let delivered = false;
+    if (canCompareDeliveredById && peerDeliveredId) {
+      delivered = messageId <= peerDeliveredId;
+    } else {
+      delivered = peerDeliveredTs > 0 && messageTs > 0 && messageTs <= peerDeliveredTs;
+    }
+    statuses.set(messageId, delivered ? 'Entregado' : 'Enviado');
   });
+
+  const activeConversationId = String(neuChatState.currentConversationId || '').trim();
+  const latestOutgoingId = String(outgoingRecent[0]?.id || '').trim();
+  if (
+    latestOutgoingId &&
+    neuChatState.sending === true &&
+    neuChatState.sendingConversationId === activeConversationId
+  ) {
+    const latestOutgoingTs = neuTimeToMs(outgoingRecent[0]?.createdAt);
+    const startedAt = Number(neuChatState.sendingStartedAt || 0);
+    if (startedAt > 0 && latestOutgoingTs >= startedAt - 5000) {
+      statuses.set(latestOutgoingId, 'Enviando...');
+    }
+  }
 
   return statuses;
 }
@@ -3402,7 +3465,7 @@ function neuSyncReactionListeners() {
 
   const messageIds = Array.isArray(neuChatState.messages)
     ? neuChatState.messages
-        .filter((row) => !row?.deletedAt)
+        .filter((row) => !neuChatMessageDeleted(row))
         .map((row) => String(row?.id || '').trim())
         .filter(Boolean)
         .slice(-NEU_CHAT_MAX_MESSAGES)
@@ -3425,7 +3488,14 @@ function neuSyncReactionListeners() {
 
   messageIds.forEach((messageId) => {
     if (neuChatState.reactionUnsubs.has(messageId)) return;
-    const reactionsRef = collection(db, 'neuChatReactions', chatId, 'messages', messageId, 'reactions');
+    const reactionsRef = collection(
+      db,
+      NEU_CHAT_REACTIONS_COLLECTION,
+      chatId,
+      'messages',
+      messageId,
+      'reactions',
+    );
     const unsub = onSnapshot(
       reactionsRef,
       (snap) => {
@@ -3464,7 +3534,15 @@ async function neuToggleMessageReaction(messageId, rawType) {
   if (!members.includes(meUid)) return;
 
   const current = neuReactionType(neuChatState.reactionMine.get(msgId));
-  const ref = doc(db, 'neuChatReactions', chatId, 'messages', msgId, 'reactions', meUid);
+  const ref = doc(
+    db,
+    NEU_CHAT_REACTIONS_COLLECTION,
+    chatId,
+    'messages',
+    msgId,
+    'reactions',
+    meUid,
+  );
   if (current && current === type) {
     await deleteDoc(ref);
     return;
@@ -3509,7 +3587,7 @@ async function neuSetOwnTypingState(nextTyping, { bestEffort = false } = {}) {
     payload.avatarUrl = String(profile.avatarUrl || auth.currentUser?.photoURL || '').trim();
   }
   try {
-    await setDoc(doc(db, 'neuChatTyping', chatId, 'users', meUid), payload, { merge: true });
+    await setDoc(doc(db, NEU_CHAT_TYPING_COLLECTION, chatId, 'users', meUid), payload, { merge: true });
   } catch (error) {
     if (!bestEffort && NEU_QA) console.warn('[neu-chat] typing write failed', error);
     return;
@@ -3570,7 +3648,7 @@ function neuStartTypingListener(conversationId, members = []) {
   neuChatState.peerTyping = false;
   neuSetTypingRowVisible(false);
 
-  const typingRef = collection(db, 'neuChatTyping', chatId, 'users');
+  const typingRef = collection(db, NEU_CHAT_TYPING_COLLECTION, chatId, 'users');
   neuChatState.typingUnsub = onSnapshot(
     typingRef,
     (snap) => {
@@ -3594,6 +3672,122 @@ function neuStartTypingListener(conversationId, members = []) {
   );
 }
 
+function neuStopReadsListener() {
+  if (typeof neuChatState.readsUnsub === 'function') {
+    try {
+      neuChatState.readsUnsub();
+    } catch {
+      // noop
+    }
+  }
+  neuChatState.readsUnsub = null;
+  neuChatState.readsConversationId = '';
+}
+
+function neuNormalizeReadState(raw = {}) {
+  return {
+    deliveredAt: raw.deliveredAt || raw.lastDeliveredAt || raw.updatedAt || null,
+    deliveredMessageId: String(
+      raw.deliveredMessageId || raw.lastDeliveredMessageId || raw.deliveredMsgId || '',
+    ).trim(),
+    seenAt: raw.seenAt || raw.lastReadAt || raw.readAt || null,
+    seenMessageId: String(raw.seenMessageId || raw.lastReadMessageId || raw.readMessageId || '').trim(),
+  };
+}
+
+async function neuWriteOwnReadState(conversationId, payload = {}) {
+  const convId = String(conversationId || '').trim();
+  const meUid = neuCurrentUid();
+  if (!convId || !meUid) return;
+
+  const next = payload && typeof payload === 'object' ? payload : {};
+  const update = {
+    uid: meUid,
+    conversationId: convId,
+    updatedAt: serverTimestamp(),
+  };
+  if (next.deliveredAt) update.deliveredAt = next.deliveredAt;
+  if (next.deliveredMessageId) update.deliveredMessageId = String(next.deliveredMessageId || '').trim();
+  if (next.seenAt) update.seenAt = next.seenAt;
+  if (next.seenMessageId) update.seenMessageId = String(next.seenMessageId || '').trim();
+
+  await setDoc(neuChatReadParticipantRef(convId, meUid), update, { merge: true });
+}
+
+function neuStartReadsListener(conversationId, members = []) {
+  const convId = String(conversationId || '').trim();
+  const meUid = neuCurrentUid();
+  if (!convId || !meUid) return;
+  const memberList = Array.isArray(members) ? members.map((uid) => String(uid || '').trim()).filter(Boolean) : [];
+  if (memberList.length && !memberList.includes(meUid)) return;
+
+  neuStopReadsListener();
+  neuChatState.readsConversationId = convId;
+
+  const peerUidFromState = String(neuChatState.peerUid || '').trim();
+  const readsRef = collection(db, NEU_CHAT_READS_COLLECTION, convId, NEU_CHAT_READS_PARTICIPANTS_COLLECTION);
+  neuChatState.readsUnsub = onSnapshot(
+    readsRef,
+    (snap) => {
+      let peerRead = null;
+      let myRead = null;
+      snap.forEach((row) => {
+        const uid = String(row.id || '').trim();
+        if (!uid) return;
+        const normalized = neuNormalizeReadState(row.data() || {});
+        if (uid === meUid) {
+          myRead = normalized;
+          return;
+        }
+        const peerMatches = peerUidFromState ? uid === peerUidFromState : true;
+        if (!peerMatches) return;
+        if (!peerRead) {
+          peerRead = { uid, ...normalized };
+        }
+      });
+
+      if (myRead) {
+        if (myRead.seenAt) neuChatState.myLastReadAt = myRead.seenAt;
+        if (myRead.seenMessageId) neuChatState.mySeenMessageId = myRead.seenMessageId;
+        if (myRead.deliveredMessageId) neuChatState.myDeliveredMessageId = myRead.deliveredMessageId;
+      }
+
+      if (peerRead) {
+        neuChatState.peerLastReadAt = peerRead.seenAt || null;
+        neuChatState.peerLastReadMessageId = peerRead.seenMessageId || '';
+        neuChatState.peerDeliveredAt = peerRead.deliveredAt || peerRead.seenAt || null;
+        neuChatState.peerDeliveredMessageId = peerRead.deliveredMessageId || peerRead.seenMessageId || '';
+      } else {
+        neuChatState.peerDeliveredAt = null;
+        neuChatState.peerDeliveredMessageId = '';
+      }
+
+      if (String(neuChatState.currentConversationId || '').trim() === convId) {
+        neuRenderChatMessages();
+      }
+    },
+    () => {
+      neuChatState.peerDeliveredAt = null;
+      neuChatState.peerDeliveredMessageId = '';
+    },
+  );
+}
+
+async function neuMarkConversationDelivered(conversationId, latestMessage = null) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return;
+  const latestId = String(latestMessage?.id || '').trim();
+  if (!latestId) return;
+  if (latestId === String(neuChatState.myDeliveredMessageId || '').trim()) return;
+
+  const now = serverTimestamp();
+  await neuWriteOwnReadState(convId, {
+    deliveredAt: now,
+    deliveredMessageId: latestId,
+  });
+  neuChatState.myDeliveredMessageId = latestId;
+}
+
 function neuChatMembers(uidA, uidB) {
   return [String(uidA || '').trim(), String(uidB || '').trim()].filter(Boolean).sort((a, b) => a.localeCompare(b));
 }
@@ -3601,6 +3795,50 @@ function neuChatMembers(uidA, uidB) {
 function neuChatMemberKey(uidA, uidB) {
   const members = neuChatMembers(uidA, uidB);
   return members.length === 2 ? `${members[0]}_${members[1]}` : '';
+}
+
+function neuConversationParticipants(raw = {}) {
+  const data = raw && typeof raw === 'object' ? raw : {};
+  const source = Array.isArray(data.participants) ? data.participants : Array.isArray(data.members) ? data.members : [];
+  return source.map((item) => String(item || '').trim()).filter(Boolean);
+}
+
+function neuChatConversationRef(conversationId) {
+  return doc(db, NEU_CHAT_CONVERSATIONS_COLLECTION, String(conversationId || '').trim());
+}
+
+function neuChatMessagesCollectionRef(conversationId) {
+  return collection(db, NEU_CHAT_CONVERSATIONS_COLLECTION, String(conversationId || '').trim(), NEU_CHAT_MESSAGES_COLLECTION);
+}
+
+function neuChatMessageRef(conversationId, messageId) {
+  return doc(
+    db,
+    NEU_CHAT_CONVERSATIONS_COLLECTION,
+    String(conversationId || '').trim(),
+    NEU_CHAT_MESSAGES_COLLECTION,
+    String(messageId || '').trim(),
+  );
+}
+
+function neuChatInboxThreadRef(uid, conversationId) {
+  return doc(
+    db,
+    NEU_CHAT_INBOXES_COLLECTION,
+    String(uid || '').trim(),
+    NEU_CHAT_INBOX_THREADS_COLLECTION,
+    String(conversationId || '').trim(),
+  );
+}
+
+function neuChatReadParticipantRef(conversationId, uid) {
+  return doc(
+    db,
+    NEU_CHAT_READS_COLLECTION,
+    String(conversationId || '').trim(),
+    NEU_CHAT_READS_PARTICIPANTS_COLLECTION,
+    String(uid || '').trim(),
+  );
 }
 
 function neuChatModalNode() {
@@ -3636,6 +3874,18 @@ function neuInboxChatHostNode() {
   return node instanceof HTMLElement ? node : null;
 }
 
+function neuChatDockNode() {
+  const classNode = document.querySelector('.neuChatDock');
+  if (classNode instanceof HTMLElement) return classNode;
+  const floating = document.getElementById('neuFloatingChat');
+  return floating instanceof HTMLElement ? floating : null;
+}
+
+function neuChatDockHostNode() {
+  const node = document.getElementById('neuFloatingChatMount');
+  return node instanceof HTMLElement ? node : null;
+}
+
 function neuIsMobileChatViewport() {
   return window.matchMedia('(max-width: 900px)').matches;
 }
@@ -3647,30 +3897,57 @@ function neuIsPulsePortalActive() {
   return routePortal === 'pulse';
 }
 
+function neuCanUseDockHost() {
+  return !neuIsMobileChatViewport() && neuChatDockNode() instanceof HTMLElement && neuChatDockHostNode() instanceof HTMLElement;
+}
+
 function neuCanUseInboxHost() {
-  return !neuIsMobileChatViewport() && neuIsPulsePortalActive() && neuInboxChatHostNode() instanceof HTMLElement;
+  return neuIsPulsePortalActive() && neuInboxChatHostNode() instanceof HTMLElement;
 }
 
 function neuResolveChatHostMode(requestedMode = '') {
   const requested = String(requestedMode || '').trim().toLowerCase();
   if (requested === 'modal') return 'modal';
-  if (requested === 'inbox') return neuCanUseInboxHost() ? 'inbox' : 'modal';
-  return neuCanUseInboxHost() ? 'inbox' : 'modal';
+  if (requested === 'dock') return neuCanUseDockHost() ? 'dock' : neuCanUseInboxHost() ? 'inbox' : 'modal';
+  if (requested === 'inbox') return neuCanUseInboxHost() ? 'inbox' : neuCanUseDockHost() ? 'dock' : 'modal';
+  if (neuCanUseDockHost()) return 'dock';
+  if (neuCanUseInboxHost()) return 'inbox';
+  return 'modal';
+}
+
+function neuSetChatDockOpen(open) {
+  const dock = neuChatDockNode();
+  if (!(dock instanceof HTMLElement)) return;
+  const active = open === true;
+  dock.classList.toggle('hidden', !active);
+  dock.hidden = !active;
 }
 
 function neuSetInboxPanelOpen(open) {
+  const panel = document.querySelector('.neuChatInboxPanel');
   const host = neuInboxChatHostNode();
   const empty = neuInboxEmptyNode();
   const active = open === true;
+  if (panel instanceof HTMLElement) panel.classList.toggle('hidden', !active);
   if (host instanceof HTMLElement) host.classList.toggle('hidden', !active);
   if (empty instanceof HTMLElement) empty.classList.toggle('hidden', active);
 }
 
 function neuMountChatCardForMode(mode = '') {
-  const targetMode = String(mode || '').trim().toLowerCase() === 'inbox' ? 'inbox' : 'modal';
+  const raw = String(mode || '').trim().toLowerCase();
+  const targetMode = raw === 'dock' ? 'dock' : raw === 'inbox' ? 'inbox' : 'modal';
   const card = neuChatModalCardNode();
   const modal = neuChatModalNode();
   if (!(card instanceof HTMLElement) || !(modal instanceof HTMLElement)) return false;
+
+  if (targetMode === 'dock') {
+    const host = neuChatDockHostNode();
+    if (!(host instanceof HTMLElement)) return false;
+    if (card.parentElement !== host) host.append(card);
+    modal.hidden = true;
+    neuChatRecomputeModalLock();
+    return true;
+  }
 
   if (targetMode === 'inbox') {
     const host = neuInboxChatHostNode();
@@ -3687,15 +3964,27 @@ function neuMountChatCardForMode(mode = '') {
 }
 
 function neuSyncChatHostSurface() {
+  if (neuCanUseDockHost()) {
+    neuChatState.hostMode = 'dock';
+    neuMountChatCardForMode('dock');
+    neuSetInboxPanelOpen(false);
+    const hasConversation = !!String(neuChatState.currentConversationId || '').trim();
+    const dock = neuChatDockNode();
+    const alreadyOpen = dock instanceof HTMLElement ? !dock.classList.contains('hidden') : false;
+    neuSetChatDockOpen(hasConversation || alreadyOpen);
+    return;
+  }
   if (neuCanUseInboxHost()) {
     neuChatState.hostMode = 'inbox';
     neuMountChatCardForMode('inbox');
     neuSetInboxPanelOpen(!!String(neuChatState.currentConversationId || '').trim());
+    neuSetChatDockOpen(false);
     return;
   }
   neuChatState.hostMode = 'modal';
   neuMountChatCardForMode('modal');
   neuSetInboxPanelOpen(false);
+  neuSetChatDockOpen(false);
 }
 
 function neuChatRecomputeModalLock() {
@@ -3708,7 +3997,8 @@ function neuChatRecomputeModalLock() {
 function neuSetChatModalOpen(open) {
   const modal = neuChatModalNode();
   if (!(modal instanceof HTMLElement)) return;
-  if (String(neuChatState.hostMode || '').trim() === 'inbox') {
+  const hostMode = String(neuChatState.hostMode || '').trim();
+  if (hostMode === 'inbox' || hostMode === 'dock') {
     modal.hidden = true;
     neuChatRecomputeModalLock();
     return;
@@ -3889,6 +4179,10 @@ function neuChatMessageText(message) {
   return String(message?.content || '').trim();
 }
 
+function neuChatMessageDeleted(message) {
+  return !!message && (message.deleted === true || !!message.deletedAt);
+}
+
 function neuChatFindMessageById(messageId) {
   const msgId = String(messageId || '').trim();
   if (!msgId || !Array.isArray(neuChatState.messages)) return null;
@@ -3898,7 +4192,7 @@ function neuChatFindMessageById(messageId) {
 }
 
 function neuChatBuildReplySnippet(message) {
-  if (message?.deletedAt) return 'Mensaje eliminado';
+  if (neuChatMessageDeleted(message)) return 'Mensaje eliminado';
   const imageUrl = String(message?.imageUrl || '').trim();
   if (imageUrl) return '📷 Foto';
   const raw = neuChatMessageText(message)
@@ -3970,7 +4264,7 @@ function neuChatCanManageMessage(message, meUid = neuCurrentUid()) {
 
 function neuChatCanEditMessage(message, meUid = neuCurrentUid()) {
   if (!neuChatCanManageMessage(message, meUid)) return false;
-  if (message?.deletedAt) return false;
+  if (neuChatMessageDeleted(message)) return false;
   const text = neuChatMessageText(message);
   const hasText = text.trim().length > 0;
   const hasImageOnly = !hasText && String(message?.imageUrl || '').trim().length > 0;
@@ -4049,7 +4343,7 @@ function neuSetChatLongPressMenuOpen(messageId = '', clientX = 0, clientY = 0) {
   }
 
   const message = neuChatFindMessageById(msgId);
-  const canManage = !!message && neuChatCanManageMessage(message) && !message?.deletedAt;
+  const canManage = !!message && neuChatCanManageMessage(message) && !neuChatMessageDeleted(message);
   const canEdit = !!message && neuChatCanEditMessage(message);
   if (replyBtn instanceof HTMLElement) replyBtn.classList.remove('hidden');
   if (editBtn instanceof HTMLElement) editBtn.classList.toggle('hidden', !canEdit);
@@ -4127,7 +4421,7 @@ async function neuEditChatMessage(messageId, text) {
     return;
   }
 
-  await updateDoc(doc(db, 'neuConversations', conversationId, 'messages', msgId), {
+  await updateDoc(neuChatMessageRef(conversationId, msgId), {
     text: nextText,
     content: nextText,
     editedAt: serverTimestamp(),
@@ -4148,9 +4442,10 @@ async function neuDeleteChatMessage(messageId) {
   }
   if (!window.confirm('Eliminar mensaje?')) return;
 
-  await updateDoc(doc(db, 'neuConversations', conversationId, 'messages', msgId), {
+  await updateDoc(neuChatMessageRef(conversationId, msgId), {
     text: 'Mensaje eliminado',
     content: 'Mensaje eliminado',
+    deleted: true,
     imageUrl: null,
     imageStoragePath: deleteField(),
     postRef: deleteField(),
@@ -4355,7 +4650,13 @@ async function neuFindConversationByMemberKey(memberKey) {
   const key = String(memberKey || '').trim();
   if (!key) return null;
   try {
-    const snap = await getDocs(query(collection(db, 'neuConversations'), where('memberKey', '==', key), limit(1)));
+    const direct = await getDoc(neuChatConversationRef(key));
+    if (direct.exists()) return { id: direct.id, data: direct.data() || {} };
+  } catch {
+    // fallback query below
+  }
+  try {
+    const snap = await getDocs(query(collection(db, NEU_CHAT_CONVERSATIONS_COLLECTION), where('memberKey', '==', key), limit(1)));
     if (snap.empty) return null;
     const row = snap.docs[0];
     return { id: row.id, data: row.data() || {} };
@@ -4366,19 +4667,20 @@ async function neuFindConversationByMemberKey(memberKey) {
 
 function neuMapUserChatRow(docSnap, meUid) {
   const data = docSnap.data() || {};
-  const members = Array.isArray(data.members)
-    ? data.members.map((item) => String(item || '').trim()).filter(Boolean)
-    : [];
-  let otherUid = String(data.otherUid || '').trim();
+  const participants = neuConversationParticipants(data);
+  const members = participants.length ? participants : [];
+  let otherUid = String(data.peerUid || data.otherUid || '').trim();
   if (!otherUid && members.length === 2) {
     otherUid = members.find((uid) => uid !== meUid) || '';
   }
   return {
     id: String(docSnap.id || '').trim(),
     conversationId: String(docSnap.id || '').trim(),
+    peerUid: otherUid,
     otherUid,
+    participants: members,
     members,
-    memberKey: String(data.memberKey || '').trim(),
+    memberKey: String(data.memberKey || neuChatMemberKey(members[0], members[1]) || '').trim(),
     lastMessageText: String(data.lastMessageText || '').trim(),
     lastMessagePreview: String(data.lastMessageText || '').trim(),
     lastMessageAt: data.lastMessageAt || data.updatedAt || null,
@@ -4517,7 +4819,7 @@ async function neuToggleChatPinned(conversationId) {
 
   try {
     await setDoc(
-      doc(db, 'neuUserChats', meUid, 'chats', convId),
+      neuChatInboxThreadRef(meUid, convId),
       {
         pinned: nextPinned,
         updatedAt: serverTimestamp(),
@@ -4678,17 +4980,17 @@ async function neuSharePostToConversation(conversationId) {
       memberKey = String(listRow?.memberKey || '').trim();
     }
     if (members.length !== 2) {
-      const convSnap = await getDoc(doc(db, 'neuConversations', convId));
+      const convSnap = await getDoc(neuChatConversationRef(convId));
       if (!convSnap.exists()) throw new Error('conversation-not-found');
       const data = convSnap.data() || {};
-      members = Array.isArray(data.members) ? data.members.map((uid) => String(uid || '').trim()).filter(Boolean) : [];
+      members = neuConversationParticipants(data);
       memberKey = String(data.memberKey || '').trim();
     }
     if (members.length !== 2 || !members.includes(meUid)) throw new Error('conversation-members-invalid');
     if (!memberKey) memberKey = neuChatMemberKey(members[0], members[1]);
 
     const now = serverTimestamp();
-    const messageRef = doc(collection(db, 'neuConversations', convId, 'messages'));
+    const messageRef = doc(neuChatMessagesCollectionRef(convId));
     const previewText = String(draft.content || '').trim() || '📎 Post compartido';
     const postRef = {
       postId: String(draft.postId || '').trim(),
@@ -4704,11 +5006,16 @@ async function neuSharePostToConversation(conversationId) {
       content: previewText,
       postRef,
       ...(postUrl ? { postUrl } : {}),
+      attachmentUrl: null,
       createdAt: now,
+      editedAt: null,
+      deleted: false,
+      deletedAt: null,
     });
     batch.set(
-      doc(db, 'neuConversations', convId),
+      neuChatConversationRef(convId),
       {
+        participants: members,
         members,
         memberKey,
         lastMessageText: previewText,
@@ -4722,9 +5029,11 @@ async function neuSharePostToConversation(conversationId) {
       const otherUid = members.find((candidate) => candidate !== uid) || '';
       const isSender = uid === meUid;
       batch.set(
-        doc(db, 'neuUserChats', uid, 'chats', convId),
+        neuChatInboxThreadRef(uid, convId),
         {
+          peerUid: otherUid,
           otherUid,
+          participants: members,
           members,
           memberKey,
           lastMessageText: previewText,
@@ -4896,6 +5205,99 @@ function neuWireChatListGuard() {
   neuChatState.listObserver.observe(root, { childList: true });
 }
 
+function neuChatPeerPresenceLabel(profile = {}) {
+  const online = profile?.isOnline === true || profile?.online === true;
+  if (online) return 'Conectado';
+  const lastRaw = profile?.lastActiveAt || profile?.lastSeenAt || profile?.updatedAt || null;
+  const lastMs = neuTimeToMs(lastRaw);
+  if (!lastMs) return 'Desconectado';
+  const mins = Math.max(1, Math.floor((Date.now() - lastMs) / 60000));
+  return `Desconectado · activo hace ${mins} min`;
+}
+
+function neuStopPeerPresenceListener() {
+  if (typeof neuChatState.peerPresenceUnsub === 'function') {
+    try {
+      neuChatState.peerPresenceUnsub();
+    } catch {
+      // noop
+    }
+  }
+  neuChatState.peerPresenceUnsub = null;
+  neuChatState.activePeerPresenceUid = '';
+}
+
+function neuStartPeerPresenceListener(peerUid) {
+  const uid = String(peerUid || '').trim();
+  if (!uid) {
+    neuStopPeerPresenceListener();
+    return;
+  }
+  if (neuChatState.activePeerPresenceUid === uid && typeof neuChatState.peerPresenceUnsub === 'function') return;
+  neuStopPeerPresenceListener();
+
+  neuChatState.peerPresenceUnsub = onSnapshot(
+    neuProfileDocRef(uid),
+    (snap) => {
+      const raw = snap.exists() ? snap.data() || {} : {};
+      const normalized = neuNormalizeProfile(raw, uid);
+      neuChatState.profileCache.set(uid, {
+        ...normalized,
+        isOnline: raw.isOnline === true || normalized.isOnline === true,
+        lastActiveAt: raw.lastActiveAt || normalized.lastActiveAt || null,
+      });
+      if (String(neuChatState.peerUid || '').trim() === uid) neuRenderChatHeader();
+      neuRenderChatList();
+    },
+    () => {
+      const fallback = neuChatProfileCached(uid);
+      neuChatState.profileCache.set(uid, {
+        ...fallback,
+        isOnline: false,
+      });
+      if (String(neuChatState.peerUid || '').trim() === uid) neuRenderChatHeader();
+    },
+  );
+  neuChatState.activePeerPresenceUid = uid;
+}
+
+async function neuSetOwnPresence(isOnline) {
+  const uid = neuCurrentUid();
+  if (!uid) return;
+  try {
+    await setDoc(
+      neuProfileDocRef(uid),
+      {
+        isOnline: isOnline === true,
+        lastActiveAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+  } catch {
+    // ignore best-effort presence writes
+  }
+}
+
+function neuWireOwnPresence() {
+  if (neuChatState.presenceWired) return;
+  neuChatState.presenceWired = true;
+  neuSetOwnPresence(!document.hidden).catch(() => null);
+
+  document.addEventListener('visibilitychange', () => {
+    neuSetOwnPresence(!document.hidden).catch(() => null);
+  });
+
+  window.addEventListener('beforeunload', () => {
+    neuSetOwnPresence(false).catch(() => null);
+  });
+
+  window.setInterval(() => {
+    if (document.hidden) return;
+    neuSetOwnPresence(true).catch(() => null);
+  }, NEU_CHAT_PRESENCE_REFRESH_MS);
+}
+
 function neuRenderChatHeader() {
   const profile = neuChatProfileCached(neuChatState.peerUid);
   const displayName = String(profile.displayName || '').trim() || 'Usuario';
@@ -4909,8 +5311,10 @@ function neuRenderChatHeader() {
   );
   const nameNode = document.getElementById('neuChatPeerName');
   const handleNode = document.getElementById('neuChatPeerHandle');
+  const presenceNode = document.getElementById('neuChatPeerPresence');
   if (nameNode instanceof HTMLElement) nameNode.textContent = displayName;
   if (handleNode instanceof HTMLElement) handleNode.textContent = handle;
+  if (presenceNode instanceof HTMLElement) presenceNode.textContent = neuChatPeerPresenceLabel(profile);
 }
 
 function neuRenderChatMessages() {
@@ -4958,7 +5362,7 @@ function neuRenderChatMessages() {
           const rawText = neuChatMessageText(item);
           const text = esc(rawText).replace(/\n/g, '<br />');
           const imageUrl = String(item.imageUrl || '').trim();
-          const isDeleted = !!item?.deletedAt;
+          const isDeleted = neuChatMessageDeleted(item);
           const isEdited = !!item?.editedAt;
           const replyTo = neuChatNormalizeReplyPayload(item?.replyTo);
           const firstClass = index === 0 ? ' is-group-first' : '';
@@ -5084,6 +5488,7 @@ function neuRenderChatMessages() {
 function neuCloseChatModal() {
   neuChatStopTypingAndTimers({ bestEffort: true });
   neuStopTypingListener();
+  neuStopReadsListener();
   neuStopReactionListeners();
   neuClearChatReplyLongPressTimer();
   neuSetChatLongPressMenuOpen('');
@@ -5098,9 +5503,11 @@ function neuCloseChatModal() {
   }
   neuSetChatSending(false);
   neuSetInboxPanelOpen(false);
+  neuSetChatDockOpen(false);
   neuSetChatModalOpen(false);
   neuChatSetHint('');
   neuStopChatMessageListener();
+  neuStopPeerPresenceListener();
   neuChatState.activeChatId = '';
   neuChatState.currentConversationId = '';
   neuChatState.currentMembers = [];
@@ -5118,11 +5525,18 @@ function neuCloseChatModal() {
   neuChatState.newMessageChipVisible = false;
   neuChatState.peerTyping = false;
   neuChatState.myLastReadAt = null;
+  neuChatState.mySeenMessageId = '';
+  neuChatState.myDeliveredMessageId = '';
   neuChatState.peerLastReadAt = null;
   neuChatState.peerLastReadMessageId = '';
+  neuChatState.peerDeliveredAt = null;
+  neuChatState.peerDeliveredMessageId = '';
   neuChatState.lastRenderedMsgId = '';
   neuChatState.typingConversationId = '';
   neuChatState.typingActive = false;
+  neuChatState.readsConversationId = '';
+  neuChatState.sendingConversationId = '';
+  neuChatState.sendingStartedAt = 0;
   if (neuChatState.replyHighlightTimer) {
     window.clearTimeout(neuChatState.replyHighlightTimer);
     neuChatState.replyHighlightTimer = 0;
@@ -5184,7 +5598,7 @@ async function neuChatLoadOlderMessages() {
 
   try {
     const olderQuery = query(
-      collection(db, 'neuConversations', conversationId, 'messages'),
+      neuChatMessagesCollectionRef(conversationId),
       orderBy('createdAt', 'desc'),
       startAfter(cursor),
       limit(pageSize),
@@ -5232,7 +5646,11 @@ function neuStartChatListListener(meUid) {
   if (neuChatState.listUid === uid && typeof neuChatState.listUnsub === 'function') return;
   neuStopChatListListener();
 
-  const q = query(collection(db, 'neuUserChats', uid, 'chats'), orderBy('lastMessageAt', 'desc'), limit(80));
+  const q = query(
+    collection(db, NEU_CHAT_INBOXES_COLLECTION, uid, NEU_CHAT_INBOX_THREADS_COLLECTION),
+    orderBy('lastMessageAt', 'desc'),
+    limit(80),
+  );
   neuChatState.listUnsub = onSnapshot(
     q,
     (snap) => {
@@ -5240,9 +5658,16 @@ function neuStartChatListListener(meUid) {
       const activeConvId = String(neuChatState.currentConversationId || '').trim();
       if (activeConvId) {
         const activeRow = neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === activeConvId) || null;
-        neuChatState.myLastReadAt = activeRow?.lastReadAt || null;
-        neuChatState.peerLastReadAt = activeRow?.peerLastReadAt || null;
-        neuChatState.peerLastReadMessageId = String(activeRow?.peerLastReadMessageId || '').trim();
+        if (activeRow?.lastReadAt) neuChatState.myLastReadAt = activeRow.lastReadAt;
+        if (activeRow?.lastReadMessageId) neuChatState.mySeenMessageId = String(activeRow.lastReadMessageId || '').trim();
+        const hasLiveReads = String(neuChatState.readsConversationId || '').trim() === activeConvId;
+        if (!hasLiveReads || activeRow?.peerLastReadAt) {
+          neuChatState.peerLastReadAt = activeRow?.peerLastReadAt || neuChatState.peerLastReadAt || null;
+        }
+        if (!hasLiveReads || activeRow?.peerLastReadMessageId) {
+          neuChatState.peerLastReadMessageId =
+            String(activeRow?.peerLastReadMessageId || neuChatState.peerLastReadMessageId || '').trim();
+        }
         const modal = neuChatModalNode();
         const inboxActive = String(neuChatState.hostMode || '').trim() === 'inbox';
         if ((modal instanceof HTMLElement && !modal.hidden) || inboxActive) {
@@ -5287,7 +5712,6 @@ async function neuMarkConversationRead(conversationId, { members = [], peerUid =
     ? neuChatState.listRows.find((item) => String(item?.conversationId || '').trim() === convId)
     : null;
   const currentUnread = neuUnreadValue(row?.unreadCount);
-  if (!force && currentUnread <= 0) return;
 
   const memberList = Array.isArray(members)
     ? members.map((item) => String(item || '').trim()).filter(Boolean)
@@ -5304,99 +5728,107 @@ async function neuMarkConversationRead(conversationId, { members = [], peerUid =
 
   const resolvedPeerUid =
     String(peerUid || '').trim() ||
+    String(row?.peerUid || '').trim() ||
     String(row?.otherUid || '').trim() ||
     normalizedMembers.find((uid) => uid !== meUid) ||
     String(neuChatState.peerUid || '').trim();
+  const lastReadMessageId = neuChatLastRenderedMessageId(convId) || String(row?.lastReadMessageId || '').trim();
+  if (!force && currentUnread <= 0 && !lastReadMessageId) return;
+  if (!force && currentUnread <= 0 && lastReadMessageId === String(neuChatState.mySeenMessageId || '').trim()) return;
+
+  const now = serverTimestamp();
   const payload = {
     unreadCount: 0,
-    lastReadAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+    lastReadAt: now,
+    updatedAt: now,
   };
-  const lastReadMessageId = neuChatLastRenderedMessageId(convId) || String(row?.lastReadMessageId || '').trim();
   if (lastReadMessageId) payload.lastReadMessageId = lastReadMessageId;
   if (normalizedMembers.length === 2) {
+    payload.peerUid = resolvedPeerUid || normalizedMembers.find((uid) => uid !== meUid) || '';
     payload.members = normalizedMembers;
+    payload.participants = normalizedMembers;
     payload.memberKey = neuChatMemberKey(normalizedMembers[0], normalizedMembers[1]);
     payload.otherUid = resolvedPeerUid || normalizedMembers.find((uid) => uid !== meUid) || '';
   }
 
   try {
-    await setDoc(doc(db, 'neuUserChats', meUid, 'chats', convId), payload, { merge: true });
+    const writeJobs = [setDoc(neuChatInboxThreadRef(meUid, convId), payload, { merge: true })];
+    const conversationPatch = {
+      [`lastReadAtBy.${meUid}`]: now,
+      updatedAt: now,
+    };
+    if (lastReadMessageId) conversationPatch[`lastReadMessageIdBy.${meUid}`] = lastReadMessageId;
+    writeJobs.push(setDoc(neuChatConversationRef(convId), conversationPatch, { merge: true }));
+    writeJobs.push(
+      neuWriteOwnReadState(convId, {
+        deliveredAt: now,
+        deliveredMessageId: lastReadMessageId,
+        seenAt: now,
+        seenMessageId: lastReadMessageId,
+      }),
+    );
+    await Promise.all(writeJobs);
     neuSetConversationUnreadLocal(convId, 0);
+    neuChatState.myLastReadAt = new Date();
+    if (lastReadMessageId) {
+      neuChatState.mySeenMessageId = lastReadMessageId;
+      neuChatState.myDeliveredMessageId = lastReadMessageId;
+    }
   } catch (error) {
     if (NEU_QA) console.warn('[neu-chat] mark read failed', error);
   }
 }
 
-function neuStartChatMessagesListener(conversationId, members) {
+function neuListenToMessages(conversationId) {
+  const convId = String(conversationId || '').trim();
   const meUid = neuCurrentUid();
-  const memberList = Array.isArray(members) ? members : [];
-  if (!memberList.includes(meUid)) {
-    neuChatSetHint('Sin acceso a este chat.', true);
-    return;
-  }
-
-  neuChatState.pageSize = NEU_CHAT_MAX_MESSAGES;
-  neuChatState.isLoadingMore = false;
-  neuChatState.hasMore = true;
-  neuChatState.oldestDoc = null;
-  neuChatState.lastQueryCursor = null;
-  neuChatState.loadedCount = 0;
-  neuChatState.liveMessages = [];
-  neuChatState.olderMessages = [];
-  neuRebuildChatMessagesFromBuckets();
+  if (!convId || !meUid) return () => {};
 
   neuStopChatMessageListener();
-  const q = query(
-    collection(db, 'neuConversations', conversationId, 'messages'),
-    orderBy('createdAt', 'desc'),
-    limit(neuChatState.pageSize),
-  );
+  const messagesQuery = query(neuChatMessagesCollectionRef(convId), orderBy('createdAt', 'asc'));
   let firstSnapshot = true;
 
   neuChatState.messageUnsub = onSnapshot(
-    q,
+    messagesQuery,
     (snap) => {
-      const bodyEl = neuChatBodyNode();
-      const messagesEl = neuChatMessagesNode();
-      const prevScrollHeight = messagesEl instanceof HTMLElement ? messagesEl.scrollHeight : 0;
       const wasNearBottom = neuChatIsNearBottom(NEU_CHAT_SCROLL_NEAR_BOTTOM);
       const incomingAdded = snap.docChanges().some((change) => {
         if (change.type !== 'added') return false;
         const senderUid = String(change.doc.data()?.senderUid || '').trim();
         return !!senderUid && senderUid !== meUid;
       });
-      if (firstSnapshot || wasNearBottom) neuSetNewMessagesChipVisible(false);
-      else if (incomingAdded) neuSetNewMessagesChipVisible(true);
 
-      neuChatState.liveMessages = neuMapChatMessagesFromDocs(snap.docs);
-      if (firstSnapshot) {
-        const oldest = snap.docs.length ? snap.docs[snap.docs.length - 1] : null;
-        neuChatState.oldestDoc = oldest;
-        neuChatState.lastQueryCursor = oldest;
-        neuChatState.hasMore = snap.docs.length >= neuChatState.pageSize;
-        if (!oldest) neuChatState.hasMore = false;
-      }
-      neuRebuildChatMessagesFromBuckets();
+      const rows = (snap.docs || [])
+        .map((docSnap) => {
+          const data = docSnap.data() || {};
+          return {
+            ...data,
+            createdAt: data.createdAt || data.sentAt || data.timestamp || data.updatedAt || null,
+            id: String(docSnap.id || '').trim(),
+          };
+        })
+        .filter((row) => !!String(row?.id || '').trim());
+
+      neuChatState.messages = rows;
+      neuChatState.liveMessages = rows;
+      neuChatState.olderMessages = [];
+      neuChatState.hasMore = false;
+      neuChatState.isLoadingMore = false;
       neuRenderChatMessages();
-      const unreadDivider = messagesEl instanceof HTMLElement ? messagesEl.querySelector('[data-neu-unread-divider="1"]') : null;
-      if (unreadDivider instanceof HTMLElement) {
-        window.setTimeout(() => {
-          unreadDivider.scrollIntoView({ block: 'center' });
-        }, 0);
-      } else if (wasNearBottom) {
-        window.setTimeout(() => neuChatScrollBottom('smooth'), 0);
-      } else if (bodyEl instanceof HTMLElement && messagesEl instanceof HTMLElement) {
-        const nextScrollHeight = messagesEl.scrollHeight;
-        const delta = nextScrollHeight - prevScrollHeight;
-        if (delta !== 0) bodyEl.scrollTop += delta;
+      const newest = rows.length ? rows[rows.length - 1] : null;
+      neuMarkConversationDelivered(convId, newest).catch(() => null);
+
+      if (firstSnapshot || wasNearBottom) {
+        neuSetNewMessagesChipVisible(false);
+        window.setTimeout(() => neuChatScrollBottom(firstSnapshot ? 'auto' : 'smooth'), 0);
+      } else if (incomingAdded) {
+        neuSetNewMessagesChipVisible(true);
       }
 
-      const shouldMarkRead = firstSnapshot || incomingAdded;
-      if (shouldMarkRead) {
-        neuMarkConversationRead(conversationId, {
-          members: memberList,
-          peerUid: memberList.find((uid) => uid !== meUid) || neuChatState.peerUid,
+      if (firstSnapshot || incomingAdded) {
+        neuMarkConversationRead(convId, {
+          members: neuChatState.currentMembers,
+          peerUid: neuChatState.peerUid,
           force: firstSnapshot,
         }).catch(() => null);
       }
@@ -5407,6 +5839,27 @@ function neuStartChatMessagesListener(conversationId, members) {
       neuChatSetHint('No se pudo cargar mensajes.', true);
     },
   );
+
+  return neuChatState.messageUnsub;
+}
+
+function neuStartChatMessagesListener(conversationId, members) {
+  const meUid = neuCurrentUid();
+  const memberList = Array.isArray(members) ? members : [];
+  if (!memberList.includes(meUid)) {
+    neuChatSetHint('Sin acceso a este chat.', true);
+    return;
+  }
+  neuChatState.pageSize = NEU_CHAT_MAX_MESSAGES;
+  neuChatState.isLoadingMore = false;
+  neuChatState.hasMore = false;
+  neuChatState.oldestDoc = null;
+  neuChatState.lastQueryCursor = null;
+  neuChatState.loadedCount = 0;
+  neuChatState.liveMessages = [];
+  neuChatState.olderMessages = [];
+  neuRebuildChatMessagesFromBuckets();
+  return neuListenToMessages(conversationId);
 }
 
 async function neuOpenConversation(conversationId, seed = {}) {
@@ -5414,7 +5867,7 @@ async function neuOpenConversation(conversationId, seed = {}) {
   const meUid = neuCurrentUid();
   if (!convId || !meUid) return;
 
-  const convRef = doc(db, 'neuConversations', convId);
+  const convRef = neuChatConversationRef(convId);
   const snap = await getDoc(convRef);
   if (!snap.exists()) {
     neuChatSetHint('Conversacion no encontrada.', true);
@@ -5422,9 +5875,7 @@ async function neuOpenConversation(conversationId, seed = {}) {
   }
 
   const data = snap.data() || {};
-  const members = Array.isArray(data.members)
-    ? data.members.map((item) => String(item || '').trim()).filter(Boolean)
-    : [];
+  const members = neuConversationParticipants(data);
   if (!members.includes(meUid)) {
     neuChatSetHint('Sin acceso a esta conversacion.', true);
     return;
@@ -5432,7 +5883,13 @@ async function neuOpenConversation(conversationId, seed = {}) {
 
   const requestedMode = neuResolveChatHostMode(seed?.mode);
   let resolvedMode = requestedMode;
-  if (requestedMode === 'inbox') {
+  if (requestedMode === 'dock') {
+    const mounted = neuMountChatCardForMode('dock');
+    if (!mounted) {
+      neuMountChatCardForMode('modal');
+      resolvedMode = 'modal';
+    }
+  } else if (requestedMode === 'inbox') {
     const mounted = neuMountChatCardForMode('inbox');
     if (!mounted) {
       neuMountChatCardForMode('modal');
@@ -5446,6 +5903,7 @@ async function neuOpenConversation(conversationId, seed = {}) {
     neuChatStopTypingAndTimers({ bestEffort: true });
   }
   neuStopTypingListener();
+  neuStopReadsListener();
   neuStopReactionListeners();
   neuClearChatReplyLongPressTimer();
   neuSetChatLongPressMenuOpen('');
@@ -5459,6 +5917,13 @@ async function neuOpenConversation(conversationId, seed = {}) {
     data?.peerLastReadAt ||
     data?.lastReadAtPeer ||
     null;
+  const peerDeliveredFromConversation =
+    (peerUid && data?.lastDeliveredAtBy && typeof data.lastDeliveredAtBy === 'object'
+      ? data.lastDeliveredAtBy[peerUid]
+      : null) ||
+    data?.peerDeliveredAt ||
+    data?.lastDeliveredAtPeer ||
+    null;
   const peerReadMessageFromConversation =
     (peerUid && data?.lastReadMessageIdBy && typeof data.lastReadMessageIdBy === 'object'
       ? data.lastReadMessageIdBy[peerUid]
@@ -5466,9 +5931,19 @@ async function neuOpenConversation(conversationId, seed = {}) {
     data?.peerLastReadMessageId ||
     data?.lastReadMessageIdPeer ||
     null;
+  const peerDeliveredMessageFromConversation =
+    (peerUid && data?.lastDeliveredMessageIdBy && typeof data.lastDeliveredMessageIdBy === 'object'
+      ? data.lastDeliveredMessageIdBy[peerUid]
+      : null) ||
+    data?.peerDeliveredMessageId ||
+    data?.lastDeliveredMessageIdPeer ||
+    null;
   const myReadFromList = Array.isArray(neuChatState.listRows)
     ? neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === convId)?.lastReadAt || null
     : null;
+  const myReadMessageFromList = Array.isArray(neuChatState.listRows)
+    ? neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === convId)?.lastReadMessageId || ''
+    : '';
   const peerReadMessageFromList = Array.isArray(neuChatState.listRows)
     ? neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === convId)?.peerLastReadMessageId || ''
     : '';
@@ -5485,23 +5960,33 @@ async function neuOpenConversation(conversationId, seed = {}) {
   neuChatState.newMessageChipVisible = false;
   neuChatState.peerTyping = false;
   neuChatState.myLastReadAt = myReadFromList;
+  neuChatState.mySeenMessageId = String(myReadMessageFromList || '').trim();
+  neuChatState.myDeliveredMessageId = String(myReadMessageFromList || '').trim();
   neuChatState.peerLastReadAt = peerReadFromConversation || null;
   neuChatState.peerLastReadMessageId = String(peerReadMessageFromList || peerReadMessageFromConversation || '').trim();
+  neuChatState.peerDeliveredAt = peerDeliveredFromConversation || peerReadFromConversation || null;
+  neuChatState.peerDeliveredMessageId = String(
+    peerDeliveredMessageFromConversation || peerReadMessageFromList || peerReadMessageFromConversation || '',
+  ).trim();
   neuChatState.nearBottom = true;
   neuChatState.lastRenderedMsgId = '';
   neuChatState.typingConversationId = convId;
   neuChatState.typingActive = false;
+  neuChatState.readsConversationId = convId;
   neuChatSetHint('');
   neuRenderChatHeader();
   neuRenderChatMessages();
   neuSetNewMessagesChipVisible(false);
   neuSetTypingRowVisible(false);
   neuSetInboxPanelOpen(resolvedMode === 'inbox');
-  neuSetChatModalOpen(resolvedMode !== 'inbox');
+  neuSetChatDockOpen(resolvedMode === 'dock');
+  neuSetChatModalOpen(resolvedMode === 'modal');
   neuRenderChatList();
   if (peerUid) await neuEnsureChatProfile(peerUid);
+  neuStartPeerPresenceListener(peerUid);
   neuRenderChatHeader();
   neuStartChatMessagesListener(convId, members);
+  neuStartReadsListener(convId, members);
   neuStartTypingListener(convId, members);
   window.setTimeout(() => {
     const messagesRoot = neuChatMessagesNode();
@@ -5524,62 +6009,75 @@ async function neuOpenConversation(conversationId, seed = {}) {
   }, 40);
 }
 
+async function neuGetOrCreateConversation(peerUid) {
+  const meUid = neuCurrentUid();
+  const targetUid = String(peerUid || '').trim();
+  if (!meUid || !targetUid || targetUid === meUid) return '';
+
+  const participants = neuChatMembers(meUid, targetUid);
+  if (participants.length !== 2) return '';
+  const conversationId = participants.join('_');
+  const conversationRef = neuChatConversationRef(conversationId);
+
+  await runTransaction(db, async (tx) => {
+    const conversationSnap = await tx.get(conversationRef);
+    if (!conversationSnap.exists()) {
+      tx.set(conversationRef, {
+        participants,
+        members: participants,
+        memberKey: conversationId,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        lastMessageText: '',
+        lastMessageAt: null,
+      });
+    } else {
+      const data = conversationSnap.data() || {};
+      if (!Array.isArray(data.participants) || data.participants.length !== 2) {
+        tx.set(
+          conversationRef,
+          {
+            participants,
+            members: participants,
+            memberKey: conversationId,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+      }
+    }
+
+    for (const uid of participants) {
+      const peer = participants.find((candidate) => candidate !== uid) || '';
+      const inboxRef = neuChatInboxThreadRef(uid, conversationId);
+      const inboxSnap = await tx.get(inboxRef);
+      if (!inboxSnap.exists()) {
+        tx.set(inboxRef, {
+          peerUid: peer,
+          otherUid: peer,
+          participants,
+          members: participants,
+          memberKey: conversationId,
+          lastMessageText: '',
+          lastMessageAt: null,
+          unreadCount: 0,
+          pinned: false,
+        });
+      }
+    }
+  });
+
+  return conversationId;
+}
+
 async function neuEnsureDirectConversation(uidA, uidB) {
-  const members = neuChatMembers(uidA, uidB);
-  if (members.length !== 2) return null;
-  const memberKey = `${members[0]}_${members[1]}`;
-
-  const found = await neuFindConversationByMemberKey(memberKey);
-  if (found?.id) {
-    return { conversationId: found.id, members, memberKey };
-  }
-
-  const conversationId = memberKey;
-  const now = serverTimestamp();
-  const batch = writeBatch(db);
-  batch.set(
-    doc(db, 'neuConversations', conversationId),
-    {
-      members,
-      memberKey,
-      lastMessageText: '',
-      lastMessageAt: now,
-      lastSenderUid: '',
-      createdAt: now,
-      updatedAt: now,
-    },
-    { merge: true },
-  );
-  batch.set(
-    doc(db, 'neuUserChats', members[0], 'chats', conversationId),
-    {
-      otherUid: members[1],
-      members,
-      memberKey,
-      lastMessageText: '',
-      lastMessageAt: now,
-      unreadCount: 0,
-      lastReadAt: now,
-      updatedAt: now,
-    },
-    { merge: true },
-  );
-  batch.set(
-    doc(db, 'neuUserChats', members[1], 'chats', conversationId),
-    {
-      otherUid: members[0],
-      members,
-      memberKey,
-      lastMessageText: '',
-      lastMessageAt: now,
-      unreadCount: 0,
-      lastReadAt: now,
-      updatedAt: now,
-    },
-    { merge: true },
-  );
-  await batch.commit();
-  return { conversationId, members, memberKey };
+  const sourceUid = String(uidA || '').trim();
+  const peerUid = String(uidB || '').trim();
+  if (!sourceUid || !peerUid || sourceUid === peerUid) return null;
+  const conversationId = await neuGetOrCreateConversation(peerUid);
+  if (!conversationId) return null;
+  const members = neuChatMembers(sourceUid, peerUid);
+  return { conversationId, members, memberKey: conversationId };
 }
 
 async function neuOpenOrStartDirectChat(otherUid, options = {}) {
@@ -5612,6 +6110,138 @@ async function neuOpenChatWithUser(otherUid, options = {}) {
   }
 }
 
+function neuResolveProfileMessagePeerUid(trigger = null) {
+  const node = trigger instanceof HTMLElement ? trigger : null;
+  const candidate = String(
+    node?.getAttribute('data-chat-uid') ||
+      node?.getAttribute('data-peer-uid') ||
+      node?.dataset?.chatUid ||
+      node?.dataset?.peerUid ||
+      neuPublicProfileState.targetUid ||
+      '',
+  ).trim();
+  const meUid = String(neuCurrentUid() || '').trim();
+  if (!candidate || (meUid && candidate === meUid)) return '';
+  return candidate;
+}
+
+async function neuOpenChatFromProfileMessageButton(trigger = null) {
+  const peerUid = neuResolveProfileMessagePeerUid(trigger);
+  if (!peerUid) return;
+
+  const conversationId = await neuGetOrCreateConversation(peerUid);
+  if (!conversationId) return;
+
+  if (neuIsMobileChatViewport()) {
+    const needsPulse = !neuIsPulsePortalActive();
+    routeBottomNav(NEU_BOTTOM_KEYS.PULSE);
+    if (needsPulse) {
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 0);
+      });
+    }
+  }
+  const mode = neuIsMobileChatViewport() ? 'inbox' : 'dock';
+  await neuOpenConversation(conversationId, {
+    otherUid: peerUid,
+    memberKey: conversationId,
+    mode,
+  });
+}
+
+async function neuSendMessage(conversationId, text, attachmentUrl = null) {
+  const convId = String(conversationId || '').trim();
+  const meUid = neuCurrentUid();
+  const safeText = String(text || '').trim().slice(0, 1000);
+  const safeAttachmentUrl = String(attachmentUrl || '').trim();
+  if (!convId || !meUid || (!safeText && !safeAttachmentUrl)) return null;
+
+  const conversationRef = neuChatConversationRef(convId);
+  const conversationSnap = await getDoc(conversationRef);
+  if (!conversationSnap.exists()) {
+    throw new Error('conversation-not-found');
+  }
+
+  const conversationData = conversationSnap.data() || {};
+  const participants = neuConversationParticipants(conversationData);
+  if (!participants.includes(meUid)) {
+    throw new Error('conversation-access-denied');
+  }
+
+  const now = serverTimestamp();
+  const messageRef = doc(neuChatMessagesCollectionRef(convId));
+  const previewText = (safeText || (safeAttachmentUrl ? '📎 Adjunto' : '')).slice(0, 200);
+  const replyTo = neuChatNormalizeReplyPayload(neuChatState.replyDraft);
+
+  const batch = writeBatch(db);
+  batch.set(messageRef, {
+    messageId: messageRef.id,
+    senderUid: meUid,
+    text: safeText,
+    content: safeText,
+    attachmentUrl: safeAttachmentUrl || null,
+    ...(safeAttachmentUrl ? { imageUrl: safeAttachmentUrl } : {}),
+    createdAt: now,
+    editedAt: null,
+    deleted: false,
+    deletedAt: null,
+    ...(replyTo ? { replyTo } : {}),
+  });
+  batch.set(
+    conversationRef,
+    {
+      participants,
+      members: participants,
+      memberKey: String(conversationData.memberKey || neuChatMemberKey(participants[0], participants[1]) || convId).trim() || convId,
+      lastMessageText: previewText,
+      lastMessageAt: now,
+      lastMessageSenderId: meUid,
+      lastSenderUid: meUid,
+      updatedAt: now,
+    },
+    { merge: true },
+  );
+
+  participants.forEach((uid) => {
+    const peerUid = participants.find((candidate) => candidate !== uid) || '';
+    const isSender = uid === meUid;
+    batch.set(
+      neuChatInboxThreadRef(uid, convId),
+      {
+        peerUid,
+        otherUid: peerUid,
+        participants,
+        members: participants,
+        memberKey: String(conversationData.memberKey || neuChatMemberKey(participants[0], participants[1]) || convId).trim() || convId,
+        lastMessageText: previewText,
+        lastMessageAt: now,
+        unreadCount: isSender ? 0 : increment(1),
+        ...(isSender ? { lastReadAt: now, lastReadMessageId: messageRef.id } : {}),
+        updatedAt: now,
+      },
+      { merge: true },
+    );
+  });
+
+  await batch.commit();
+  neuSetConversationUnreadLocal(convId, 0);
+  const input = neuChatInputNode();
+  if (
+    convId === String(neuChatState.currentConversationId || '').trim() &&
+    (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement)
+  ) {
+    input.value = '';
+    if (input instanceof HTMLTextAreaElement) {
+      input.style.height = 'auto';
+      input.style.overflowY = 'hidden';
+      neuUpdateChatComposerOffsetVar();
+    }
+  }
+  neuChatScrollBottom('auto');
+  neuChatSetHint('Mensaje enviado');
+  return { messageId: messageRef.id };
+}
+
 async function neuSendChatMessage(options = {}) {
   const retryUpload = options && typeof options === 'object' ? options.retryUpload === true : false;
   const meUid = neuCurrentUid();
@@ -5624,7 +6254,6 @@ async function neuSendChatMessage(options = {}) {
     textInput instanceof HTMLInputElement || textInput instanceof HTMLTextAreaElement ? textInput.value : '',
   );
   const safeText = rawText.trim().slice(0, 1000);
-  const replyTo = neuChatNormalizeReplyPayload(neuChatState.replyDraft);
   if (!meUid || !conversationId || (!safeText && !attachmentFile && !editDraft)) {
     neuSyncChatComposerState();
     return;
@@ -5674,10 +6303,10 @@ async function neuSendChatMessage(options = {}) {
     return;
   }
 
-  const memberKey = String(neuChatState.currentMemberKey || neuChatMemberKey(members[0], members[1])).trim();
-  const now = serverTimestamp();
   let messageRef = null;
 
+  neuChatState.sendingConversationId = conversationId;
+  neuChatState.sendingStartedAt = Date.now();
   neuSetChatSending(true);
   neuSetChatUploading(!!attachmentFile);
   neuChatSetHint('');
@@ -5698,8 +6327,8 @@ async function neuSendChatMessage(options = {}) {
 
       const canRetryUpload = retryUpload && neuChatCanRetryUpload(conversationId, attachmentFile);
       const retryMessageId = canRetryUpload ? String(neuChatState.uploadRetryContext?.messageId || '').trim() : '';
-      const nextMessageId = retryMessageId || doc(collection(db, 'neuConversations', conversationId, 'messages')).id;
-      messageRef = doc(db, 'neuConversations', conversationId, 'messages', nextMessageId);
+      const nextMessageId = retryMessageId || doc(neuChatMessagesCollectionRef(conversationId)).id;
+      messageRef = neuChatMessageRef(conversationId, nextMessageId);
 
       const safeFileName = neuSafeChatUploadName(attachmentFile);
       imageStoragePath = `${NEU_CHAT_UPLOAD_PREFIX}${conversationId}/${messageRef.id}/${safeFileName}`;
@@ -5723,64 +6352,9 @@ async function neuSendChatMessage(options = {}) {
       neuChatSetUploadRetryContext(null);
     }
 
-    if (!messageRef) {
-      messageRef = doc(collection(db, 'neuConversations', conversationId, 'messages'));
-    }
-
-    const previewText = safeText || (imageUrl ? '📷 Foto' : '');
-    const batch = writeBatch(db);
-    const conversationRef = doc(db, 'neuConversations', conversationId);
-    batch.set(messageRef, {
-      messageId: messageRef.id,
-      senderUid: meUid,
-      text: safeText,
-      content: safeText,
-      ...(imageUrl ? { imageUrl, imageStoragePath } : {}),
-      ...(replyTo ? { replyTo } : {}),
-      createdAt: now,
-    });
-    batch.set(
-      conversationRef,
-      {
-        members,
-        memberKey,
-        lastMessageText: previewText,
-        lastMessageAt: now,
-        lastSenderUid: meUid,
-        updatedAt: now,
-      },
-      { merge: true },
-    );
-
-    members.forEach((uid) => {
-      const otherUid = members.find((candidate) => candidate !== uid) || '';
-      const isSender = uid === meUid;
-      batch.set(
-        doc(db, 'neuUserChats', uid, 'chats', conversationId),
-        {
-          otherUid,
-          members,
-          memberKey,
-          lastMessageText: previewText,
-          lastMessageAt: now,
-          unreadCount: isSender ? 0 : increment(1),
-          ...(isSender ? { lastReadAt: now, lastReadMessageId: messageRef.id } : {}),
-          updatedAt: now,
-        },
-        { merge: true },
-      );
-    });
-
-    await batch.commit();
+    await neuSendMessage(conversationId, safeText, imageUrl || null);
     neuChatStopTypingAndTimers();
-    neuSetConversationUnreadLocal(conversationId, 0);
     if (textInput instanceof HTMLInputElement || textInput instanceof HTMLTextAreaElement) {
-      textInput.value = '';
-      if (textInput instanceof HTMLTextAreaElement) {
-        textInput.style.height = 'auto';
-        textInput.style.overflowY = 'hidden';
-        neuUpdateChatComposerOffsetVar();
-      }
       textInput.focus({ preventScroll: true });
     }
     neuClearChatAttachment();
@@ -5801,6 +6375,8 @@ async function neuSendChatMessage(options = {}) {
       neuChatSetHint(`No se pudo enviar el mensaje (${code}).`, true);
     }
   } finally {
+    neuChatState.sendingConversationId = '';
+    neuChatState.sendingStartedAt = 0;
     neuSetChatUploading(false);
     neuSetChatSending(false);
   }
@@ -5934,8 +6510,13 @@ function neuFloatEndDrag() {
 }
 
 async function neuOpenChatFromFloatFlag() {
+  const dock = neuChatDockNode();
+  if (dock instanceof HTMLElement && dock.classList.contains('hidden')) {
+    neuSetChatDockOpen(true);
+  }
+
   const modal = neuChatModalNode();
-  if (modal instanceof HTMLElement && !modal.hidden) {
+  if ((modal instanceof HTMLElement && !modal.hidden) || (dock instanceof HTMLElement && !dock.classList.contains('hidden'))) {
     const input = neuChatInputNode();
     if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
       input.focus({ preventScroll: true });
@@ -5966,6 +6547,18 @@ async function neuOpenChatFromFloatFlag() {
 
 async function neuOpenLastChatOrList() {
   await neuOpenChatFromFloatFlag();
+}
+
+async function neuToggleFloatingChatPanel() {
+  const dock = neuChatDockNode();
+  if (dock instanceof HTMLElement) {
+    const isOpen = !dock.classList.contains('hidden');
+    if (isOpen) {
+      neuSetChatDockOpen(false);
+      return;
+    }
+  }
+  await neuOpenLastChatOrList();
 }
 
 function neuInitChatFloatFlag() {
@@ -6042,7 +6635,7 @@ function neuInitChatFloatFlag() {
       return;
     }
     event.preventDefault();
-    neuOpenLastChatOrList().catch((error) => {
+    neuToggleFloatingChatPanel().catch((error) => {
       console.error('[neu-chat] float open failed', error);
       neuChatSetHint('No se pudo abrir el chat.', true);
     });
@@ -6285,7 +6878,7 @@ function neuWireChatEvents() {
         event.preventDefault();
         const conversationId = String(openRow.getAttribute('data-neu-chat-open') || '').trim();
         const otherUid = String(openRow.getAttribute('data-neu-chat-other') || '').trim();
-        const mode = neuResolveChatHostMode('inbox');
+        const mode = neuResolveChatHostMode('dock');
         neuOpenConversation(conversationId, { otherUid, mode }).catch((error) => {
           console.error('[neu-chat] open conversation failed', error);
           neuChatSetHint('No se pudo abrir la conversacion.', true);
@@ -6296,17 +6889,20 @@ function neuWireChatEvents() {
       const closeChat = target.closest('[data-neu-chat-close], #neuChatCloseBtn');
       if (closeChat) {
         event.preventDefault();
+        if (String(neuChatState.hostMode || '').trim() === 'dock') {
+          neuSetChatDockOpen(false);
+          return;
+        }
         neuCloseChatModal();
         return;
       }
 
-      const messageProfileBtn = target.closest('#btnFusionMessage');
+      const messageProfileBtn = target.closest('#btnFusionMessage, #btnProfileMessage');
       if (messageProfileBtn instanceof HTMLButtonElement) {
-        const chatUid = String(messageProfileBtn.getAttribute('data-chat-uid') || '').trim();
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        neuOpenChatWithUser(chatUid).catch((error) => {
+        neuOpenChatFromProfileMessageButton(messageProfileBtn).catch((error) => {
           console.error('[neu-chat] profile message start failed', error);
           neuChatSetHint('No se pudo iniciar el chat.', true);
         });
@@ -6520,7 +7116,12 @@ function neuWireChatEvents() {
       neuCloseSharePostModal();
       return;
     }
-    if (String(neuChatState.hostMode || '').trim() === 'inbox' && String(neuChatState.currentConversationId || '').trim()) {
+    const hostMode = String(neuChatState.hostMode || '').trim();
+    if (hostMode === 'dock') {
+      neuSetChatDockOpen(false);
+      return;
+    }
+    if (hostMode === 'inbox' && String(neuChatState.currentConversationId || '').trim()) {
       neuCloseChatModal();
       return;
     }
@@ -6538,6 +7139,7 @@ async function neuInitChatMvp(user) {
   neuSyncChatHostSurface();
   neuEnsureChatModalLayoutClass();
   neuInitChatFloatFlag();
+  neuWireOwnPresence();
   neuSyncUnreadUi();
   neuWireChatEvents();
   neuWireChatSearchInput();
@@ -6563,6 +7165,21 @@ function getRouteChatUid() {
   return raw;
 }
 
+function getRouteHashChatId() {
+  const rawHash = String(location.hash || '').replace(/^#/, '').trim();
+  if (!rawHash) return '';
+  const params = new URLSearchParams(rawHash);
+  const direct = rawHash.startsWith('chat=') ? rawHash.slice(5) : '';
+  const fromParams = String(params.get('chat') || '').trim();
+  const candidate = String(fromParams || direct || '').trim();
+  if (!candidate) return '';
+  try {
+    return decodeURIComponent(candidate).trim();
+  } catch {
+    return candidate.trim();
+  }
+}
+
 function clearRouteChatUid() {
   const url = new URL(location.href);
   if (!url.searchParams.has('chat')) return;
@@ -6572,29 +7189,54 @@ function clearRouteChatUid() {
   if (nextHref !== currentHref) history.replaceState(null, '', nextHref);
 }
 
-async function neuRunRouteChatIntent() {
-  const routeChat = getRouteChatUid();
-  if (!routeChat) return;
-  clearRouteChatUid();
-  const desiredMode = neuResolveChatHostMode('inbox');
+function clearRouteHashChatId() {
+  if (!String(location.hash || '').trim()) return;
+  const rawHash = String(location.hash || '').replace(/^#/, '').trim();
+  if (!rawHash) return;
+  const params = new URLSearchParams(rawHash);
+  if (params.has('chat')) {
+    params.delete('chat');
+    const nextHash = params.toString();
+    const nextHref = `${location.pathname}${location.search}${nextHash ? `#${nextHash}` : ''}`;
+    const currentHref = `${location.pathname}${location.search}${location.hash}`;
+    if (nextHref !== currentHref) history.replaceState(null, '', nextHref);
+    return;
+  }
+  if (rawHash.startsWith('chat=')) {
+    const nextHref = `${location.pathname}${location.search}`;
+    const currentHref = `${location.pathname}${location.search}${location.hash}`;
+    if (nextHref !== currentHref) history.replaceState(null, '', nextHref);
+  }
+}
 
+function neuRouteChatIntent() {
+  const hashChat = getRouteHashChatId();
+  if (hashChat) return { target: hashChat, source: 'hash' };
+  const queryChat = getRouteChatUid();
+  if (queryChat) return { target: queryChat, source: 'query' };
+  return null;
+}
+
+async function neuOpenRouteChatTarget(routeChat, desiredMode) {
+  const target = String(routeChat || '').trim();
+  if (!target) return;
   const fromList = Array.isArray(neuChatState.listRows)
-    ? neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === routeChat) || null
+    ? neuChatState.listRows.find((row) => String(row?.conversationId || '').trim() === target) || null
     : null;
   if (fromList) {
-    await neuOpenConversation(routeChat, { otherUid: String(fromList.otherUid || '').trim(), mode: desiredMode });
+    await neuOpenConversation(target, { otherUid: String(fromList.otherUid || '').trim(), mode: desiredMode });
     return;
   }
 
   try {
-    const convSnap = await getDoc(doc(db, 'neuConversations', routeChat));
+    const convSnap = await getDoc(neuChatConversationRef(target));
     if (convSnap.exists()) {
       const convData = convSnap.data() || {};
-      const members = Array.isArray(convData.members) ? convData.members.map((uid) => String(uid || '').trim()) : [];
+      const members = neuConversationParticipants(convData);
       const meUid = neuCurrentUid();
       if (meUid && members.includes(meUid)) {
         const otherUid = members.find((uid) => uid && uid !== meUid) || '';
-        await neuOpenConversation(routeChat, { otherUid, mode: desiredMode });
+        await neuOpenConversation(target, { otherUid, mode: desiredMode });
         return;
       }
     }
@@ -6602,7 +7244,28 @@ async function neuRunRouteChatIntent() {
     // fallback to uid-style route chat
   }
 
-  await neuOpenChatWithUser(routeChat, { mode: desiredMode });
+  await neuOpenChatWithUser(target, { mode: desiredMode });
+}
+
+async function neuRunRouteChatIntent() {
+  const intent = neuRouteChatIntent();
+  if (!intent) return;
+  const routeChat = String(intent.target || '').trim();
+  if (!routeChat) return;
+  if (intent.source === 'hash') clearRouteHashChatId();
+  else clearRouteChatUid();
+  const desiredMode = neuResolveChatHostMode('dock');
+  await neuOpenRouteChatTarget(routeChat, desiredMode);
+}
+
+function neuWireRouteChatIntent() {
+  if (neuWireRouteChatIntent._wired) return;
+  neuWireRouteChatIntent._wired = true;
+  window.addEventListener('hashchange', () => {
+    neuRunRouteChatIntent().catch((error) => {
+      if (NEU_QA) console.warn('[neu-chat] hash route intent failed', error);
+    });
+  });
 }
 
 const NEU_URL_PARAMS = new URLSearchParams(location.search);
@@ -9023,7 +9686,9 @@ async function startNeuSocialApp() {
   window.setTimeout(() => neuRewriteLegacyLinksInRoot(document), 1800);
   if (!SAFE_MODE) {
     await neuInitChatMvp(user);
+    neuWireRouteChatIntent();
     await neuRunRouteChatIntent();
+    await neuInitPush({ user });
   }
   if (SAFE_MODE) {
     if (SAFE_ENABLE_CRUD_POSTS && !isDisabled('crud_posts')) {
@@ -9120,6 +9785,10 @@ async function neuBoot() {
     showFatalOverlay(e, { source: 'startNeuSocialApp' });
   }
 }
+
+window.neuGetOrCreateConversation = neuGetOrCreateConversation;
+window.neuSendMessage = neuSendMessage;
+window.neuListenToMessages = neuListenToMessages;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', neuBoot, { once: true });

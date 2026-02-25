@@ -1,4 +1,4 @@
-const functions = require('firebase-functions/v1');
+﻿const functions = require('firebase-functions/v1');
 const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
 const Stripe = require('stripe');
@@ -30,7 +30,7 @@ function getBaseUrl() {
   return process.env.BASE_URL || DEFAULT_BASE_URL;
 }
 
-// ⏱️ czas dostępu (dni)
+// â±ï¸ czas dostÄ™pu (dni)
 const PLAN_TO_DAYS = {
   premium_a1: 90,
   premium_b1: 90,
@@ -39,7 +39,7 @@ const PLAN_TO_DAYS = {
   'vip a1 + a2 + b1 + b2': 90,
 };
 
-// 🔓 levele odblokowane przez plan
+// ðŸ”“ levele odblokowane przez plan
 const PLAN_TO_LEVELS = {
   premium_a1: ['A1', 'A2'],
   premium_b1: ['B1'],
@@ -48,7 +48,7 @@ const PLAN_TO_LEVELS = {
   'vip a1 + a2 + b1 + b2': ['A1', 'A2', 'B1', 'B2'],
 };
 
-// Fallback price IDs (Stripe) – used when services doc is missing stripePriceId.
+// Fallback price IDs (Stripe) â€“ used when services doc is missing stripePriceId.
 const PLAN_TO_PRICE_ID = {
   premium_a1: 'price_1Sw2t5CI9cIUEmOtYvVwzq30',
   premium_b1: 'price_1Sw2rUCI9cIUEmOtj7nhkJFQ',
@@ -203,7 +203,7 @@ function computeNextUntil(existingTs, days) {
   );
 }
 
-// 1️⃣ START CHECKOUT (callable)
+// 1ï¸âƒ£ START CHECKOUT (callable)
 /* =======================
    NOTIFICATIONS (in-app + push)
    Collection: user_notifications/{uid}/items/{id}
@@ -468,6 +468,33 @@ async function sendPushToUser(uid, title, body, data = {}) {
   return null;
 }
 
+function chunk(items, size = 500) {
+  const source = Array.isArray(items) ? items : [];
+  const out = [];
+  for (let i = 0; i < source.length; i += size) {
+    out.push(source.slice(i, i + size));
+  }
+  return out;
+}
+
+async function loadNeuPushTokens(uid) {
+  const cleanUid = String(uid || '').trim();
+  if (!cleanUid) return [];
+  try {
+    const snap = await db
+      .collection('neuPushTokens')
+      .doc(cleanUid)
+      .collection('tokens')
+      .get();
+    return snap.docs
+      .map((row) => String(row.id || '').trim())
+      .filter(Boolean);
+  } catch (e) {
+    console.warn('[neu-push] tokens read failed', cleanUid, e);
+    return [];
+  }
+}
+
 let ADMIN_UIDS_CACHE = { uids: [], fetchedAt: 0 };
 async function getAdminUids() {
   const now = Date.now();
@@ -572,7 +599,7 @@ exports.createCheckoutSession = functions
   .https.onCall(
   async (data, context) => {
     if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Zaloguj się.');
+      throw new functions.https.HttpsError('unauthenticated', 'Zaloguj siÄ™.');
     }
 
     const STRIPE_SECRET = getStripeSecret();
@@ -701,7 +728,7 @@ exports.createCheckoutSession = functions
   },
 );
 
-// 2️⃣ WEBHOOK STRIPE → FIRESTORE
+// 2ï¸âƒ£ WEBHOOK STRIPE â†’ FIRESTORE
 exports.stripeWebhook = functions
   .runWith({ secrets: [STRIPE_SECRET_PARAM, STRIPE_WEBHOOK_SECRET_PARAM] })
   .https.onRequest(async (req, res) => {
@@ -915,6 +942,155 @@ exports.onConversationMessage = functions.firestore
       notification: { title, body },
       data: { convId },
     });
+
+    return null;
+  });
+
+// Push notifications for NEU 1:1 chat (neuChatConversations)
+exports.onNeuChatMessageCreated = functions.firestore
+  .document('neuChatConversations/{chatId}/messages/{msgId}')
+  .onCreate(async (snap, context) => {
+    const message = snap.data() || {};
+    const chatId = String(context.params.chatId || '').trim();
+    const msgId = String(context.params.msgId || '').trim();
+    const senderUid = String(message.senderUid || message.senderId || '').trim();
+    if (!chatId || !senderUid) return null;
+
+    const conversationSnap = await db.doc(`neuChatConversations/${chatId}`).get();
+    if (!conversationSnap.exists) return null;
+
+    const conversation = conversationSnap.data() || {};
+    const participants = Array.isArray(conversation.participants)
+      ? conversation.participants
+          .map((uid) => String(uid || '').trim())
+          .filter(Boolean)
+      : [];
+    const recipients = participants.filter((uid) => uid && uid !== senderUid);
+
+    let senderName = '';
+    try {
+      const senderSnap = await db.doc(`neuUsers/${senderUid}`).get();
+      if (senderSnap.exists) {
+        const profile = senderSnap.data() || {};
+        senderName = String(profile.displayName || profile.name || '').trim();
+      }
+    } catch (e) {
+      console.warn('[neu-push] sender profile read failed', senderUid, e);
+    }
+
+    const title = senderName || 'Nuevo mensaje';
+    const rawText = String(message.text || message.content || '').trim();
+    const hasAttachment =
+      !!String(message.attachmentUrl || '').trim() ||
+      !!String(message.imageUrl || '').trim();
+    const body = rawText || (hasAttachment ? 'Adjunto' : 'Nuevo mensaje');
+    const previewText = body.slice(0, 200);
+    const link = `/neu-social-app.html#chat=${encodeURIComponent(chatId)}`;
+    const now = admin.firestore.FieldValue.serverTimestamp();
+
+    // Keep inbox state consistent on the server (works with strict client rules).
+    const fanoutWrites = [];
+    fanoutWrites.push(
+      db.doc(`neuChatConversations/${chatId}`).set(
+        {
+          participants,
+          members: participants,
+          memberKey: chatId,
+          lastMessageText: previewText,
+          lastMessageAt: now,
+          lastMessageSenderId: senderUid,
+          lastSenderUid: senderUid,
+          updatedAt: now,
+        },
+        { merge: true },
+      ),
+    );
+    participants.forEach((uid) => {
+      const peerUid = participants.find((value) => value !== uid) || '';
+      const isSender = uid === senderUid;
+      fanoutWrites.push(
+        db.doc(`neuChatInboxes/${uid}/threads/${chatId}`).set(
+          {
+            peerUid,
+            otherUid: peerUid,
+            participants,
+            members: participants,
+            memberKey: chatId,
+            lastMessageText: previewText,
+            lastMessageAt: now,
+            unreadCount: isSender ? 0 : admin.firestore.FieldValue.increment(1),
+            ...(isSender ? { lastReadAt: now, lastReadMessageId: msgId } : {}),
+            updatedAt: now,
+          },
+          { merge: true },
+        ),
+      );
+    });
+    await Promise.all(fanoutWrites);
+
+    if (!recipients.length) return null;
+    const rows = [];
+    await Promise.all(
+      recipients.map(async (uid) => {
+        try {
+          const settingsSnap = await db.doc(`neuUserSettings/${uid}`).get();
+          const settings = settingsSnap.exists ? settingsSnap.data() || {} : {};
+          if (settings.pushEnabled === false || settings.notificationsEnabled === false) return;
+
+          const tokens = await loadNeuPushTokens(uid);
+          tokens.forEach((token) => rows.push({ uid, token }));
+        } catch (e) {
+          console.warn('[neu-push] recipient processing failed', uid, e);
+        }
+      }),
+    );
+
+    if (!rows.length) return null;
+    const allTokens = rows.map((row) => row.token);
+    const payloadData = {
+      chatId,
+      senderUid,
+      msgId,
+    };
+
+    const invalidRows = [];
+    for (const tokenPack of chunk(allTokens, 500)) {
+      const sendResult = await admin.messaging().sendEachForMulticast({
+        tokens: tokenPack,
+        notification: { title, body },
+        data: payloadData,
+        webpush: {
+          fcmOptions: { link },
+        },
+      });
+
+      sendResult.responses.forEach((response, idx) => {
+        if (response.success) return;
+        const code = String(response.error?.code || '').trim();
+        if (
+          code === 'messaging/registration-token-not-registered' ||
+          code === 'messaging/invalid-registration-token'
+        ) {
+          const token = tokenPack[idx];
+          const row = rows.find((item) => item.token === token) || null;
+          if (row) invalidRows.push(row);
+        }
+      });
+    }
+
+    if (invalidRows.length) {
+      await Promise.all(
+        invalidRows.map((row) =>
+          db
+            .collection('neuPushTokens')
+            .doc(row.uid)
+            .collection('tokens')
+            .doc(row.token)
+            .delete()
+            .catch(() => null),
+        ),
+      );
+    }
 
     return null;
   });
@@ -1188,7 +1364,7 @@ exports.onCorrectionPostWrite = functions.firestore
     }
 
     const rawText = String(after.text || '').trim();
-    const snippet = rawText.length > 220 ? `${rawText.slice(0, 220)}…` : rawText;
+    const snippet = rawText.length > 220 ? `${rawText.slice(0, 220)}â€¦` : rawText;
 
     const payload = {
       ownerUid: uid,
@@ -1266,4 +1442,5 @@ exports.onCorrectionCommentCreated = functions.firestore
 
     return null;
   });
+
 
