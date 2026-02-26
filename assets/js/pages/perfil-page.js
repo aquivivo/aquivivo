@@ -36,14 +36,15 @@ import {
 const $ = (id) => document.getElementById(id);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-const qs = new URLSearchParams(location.search);
-const PROFILE_UID = (qs.get('uid') || '').trim();
+const urlParams = new URLSearchParams(window.location.search);
+const profileUid = (urlParams.get('uid') || '').trim();
+const PROFILE_UID = profileUid;
 const PATH_HANDLE = (() => {
   const m = (location.pathname || '').match(/\/perfil\/([^/]+)\/?$/i);
   return m ? decodeURIComponent(m[1]) : '';
 })();
-const PROFILE_HANDLE = (qs.get('u') || PATH_HANDLE || '').trim().toLowerCase();
-let focusPostId = (qs.get('post') || '').trim();
+const PROFILE_HANDLE = (urlParams.get('u') || PATH_HANDLE || '').trim().toLowerCase();
+let focusPostId = (urlParams.get('post') || '').trim();
 
 const profileName = $('profileName');
 const profileHandle = $('profileHandle');
@@ -4055,7 +4056,8 @@ function applyInfo(profile, isOwner) {
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = 'login.html?next=perfil.html';
+    const next = `${location.pathname}${location.search}${location.hash}`;
+    window.location.href = `login.html?next=${encodeURIComponent(next)}`;
     return;
   }
 
@@ -4065,7 +4067,7 @@ onAuthStateChanged(auth, async (user) => {
     // ignore
   }
 
-  const requestedUid = PROFILE_UID;
+  const requestedUid = profileUid;
   const requestedHandle = PROFILE_HANDLE;
 
   let targetUid = requestedUid;
@@ -4082,7 +4084,9 @@ onAuthStateChanged(auth, async (user) => {
       setMsg('Perfil no encontrado.', true);
       return;
     }
-    targetUid = user.uid;
+    if (!profileUid) {
+      targetUid = user.uid;
+    }
   }
 
   if (profileStatus) profileStatus.textContent = 'Cargando...';

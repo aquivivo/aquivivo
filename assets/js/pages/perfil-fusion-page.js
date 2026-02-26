@@ -401,7 +401,7 @@ async function resolveTargetUid(me) {
     // ignore
   }
 
-  return me.uid;
+  return '';
 }
 
 async function getPublicUser(uid) {
@@ -867,20 +867,27 @@ async function loadNetworkLists() {
 }
 function renderIdentity() {
   const target = state.targetPublic || {};
+  const mePublic = state.mePublic || {};
   const me = state.me || {};
   const isSelf = state.targetUid === state.me.uid;
-
-  const displayName = pickDisplayName(target, me.displayName || me.email || 'Usuario');
+  const fallbackName = isSelf
+    ? me.displayName || me.email || 'Usuario'
+    : state.targetUid
+      ? `Usuario ${shortUid(state.targetUid)}`
+      : 'Usuario';
+  const displayName = pickDisplayName(target, fallbackName);
   const handle = pickHandle(target, state.targetUid);
   const photoURL = String(target.photoURL || '').trim();
+  const meName = pickDisplayName(mePublic, me.displayName || me.email || 'Usuario');
+  const mePhotoURL = String(mePublic.photoURL || me.photoURL || '').trim();
   const coverURL = String(target.coverURL || '').trim();
   const bio = pickBio(target);
   const city = pickCity(target);
 
   setAvatar(ui.leftAvatarImg, ui.leftAvatarFallback, photoURL, displayName);
   setAvatar(ui.heroAvatarImg, ui.heroAvatarFallback, photoURL, displayName);
-  setAvatar(ui.topAvatarImg, ui.topAvatarFallback, photoURL, displayName);
-  setAvatar(ui.composerInlineAvatarImg, ui.composerInlineAvatarFallback, photoURL, displayName);
+  setAvatar(ui.topAvatarImg, ui.topAvatarFallback, mePhotoURL, meName);
+  setAvatar(ui.composerInlineAvatarImg, ui.composerInlineAvatarFallback, mePhotoURL, meName);
 
   if (ui.leftName) ui.leftName.textContent = displayName;
   if (ui.leftHandle) ui.leftHandle.textContent = handle;
@@ -890,13 +897,11 @@ function renderIdentity() {
   if (ui.heroBio) ui.heroBio.textContent = bio;
 
   if (ui.topAvatarLink) {
-    ui.topAvatarLink.href = isSelf
-      ? 'perfil-fusion.html'
-      : `perfil-fusion.html?uid=${encodeURIComponent(state.targetUid)}`;
+    ui.topAvatarLink.href = 'perfil-fusion.html';
   }
 
-  const plan = String(target.plan || state.meUserDoc?.plan || 'free').trim();
-  const role = String(target.role || state.meUserDoc?.role || 'user').trim();
+  const plan = String(target.plan || (isSelf ? state.meUserDoc?.plan : '') || 'free').trim();
+  const role = String(target.role || (isSelf ? state.meUserDoc?.role : '') || 'user').trim();
 
   if (ui.heroPlanBadge) ui.heroPlanBadge.textContent = plan.toUpperCase();
   if (ui.heroRoleBadge) ui.heroRoleBadge.textContent = role === 'admin' ? 'ADMIN' : 'CREATOR';
@@ -2213,8 +2218,16 @@ function bindStaticEvents() {
 
 async function bootstrap(user) {
   state.me = user;
+  const explicitTargetRequested =
+    !!String(qs.get('uid') || '').trim() || !!normalize(qs.get('u'));
   state.targetUid = await resolveTargetUid(user);
-  if (!state.targetUid) state.targetUid = user.uid;
+  if (!state.targetUid) {
+    if (explicitTargetRequested) {
+      setComposerMsg('Perfil no encontrado.', true);
+      return;
+    }
+    state.targetUid = user.uid;
+  }
 
   const [mePublic, targetPublic, myUserDoc] = await Promise.all([
     getPublicUser(user.uid),
@@ -2223,7 +2236,7 @@ async function bootstrap(user) {
   ]);
 
   state.mePublic = mePublic;
-  state.targetPublic = targetPublic || mePublic;
+  state.targetPublic = targetPublic || (state.targetUid === user.uid ? mePublic : null);
   state.meUserDoc = myUserDoc;
 
   await refreshAllData({ fullNetwork: true });
