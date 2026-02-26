@@ -4038,8 +4038,22 @@ function neuChatModalNode() {
 }
 
 function neuChatModalCardNode() {
-  const node = document.querySelector('.neu-chat-modal-card');
-  return node instanceof HTMLElement ? node : null;
+  const nodes = Array.from(document.querySelectorAll('.neu-chat-modal-card')).filter((node) => node instanceof HTMLElement);
+  if (!nodes.length) return null;
+
+  const root = document.getElementById('neu-chat-root');
+  const preferred =
+    root instanceof HTMLElement
+      ? nodes.find((node) => node.parentElement === root) || nodes[0]
+      : nodes[0];
+  const keep = preferred instanceof HTMLElement ? preferred : null;
+  if (!(keep instanceof HTMLElement)) return null;
+
+  nodes.forEach((node) => {
+    if (node === keep) return;
+    node.remove();
+  });
+  return keep;
 }
 
 function neuChatRootNode() {
@@ -7280,8 +7294,9 @@ function neuRenderChatHeader() {
     const node = document.getElementById(id);
     if (node instanceof HTMLButtonElement) {
       const disabled = !hasConversation;
-      node.disabled = disabled;
+      node.disabled = false;
       node.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+      node.setAttribute('data-neu-chat-action-disabled', disabled ? '1' : '0');
       if (id === 'neuChatCallBtn') node.title = disabled ? 'No disponible' : 'Llamar';
       if (id === 'neuChatVideoBtn') node.title = disabled ? 'No disponible' : 'Videollamada';
       if (id === 'neuChatMoreBtn') node.title = disabled ? 'No disponible' : 'Mas opciones';
@@ -8939,7 +8954,10 @@ function neuWireChatEvents() {
       if (chatCallBtn instanceof HTMLButtonElement) {
         event.preventDefault();
         event.stopPropagation();
-        if (chatCallBtn.disabled) return;
+        if (chatCallBtn.getAttribute('data-neu-chat-action-disabled') === '1') {
+          neuChatSetHint('Selecciona una conversacion primero.');
+          return;
+        }
         neuChatSetHint('Funcion proximamente');
         return;
       }
@@ -8948,7 +8966,10 @@ function neuWireChatEvents() {
       if (chatMoreBtn instanceof HTMLButtonElement) {
         event.preventDefault();
         event.stopPropagation();
-        if (chatMoreBtn.disabled) return;
+        if (chatMoreBtn.getAttribute('data-neu-chat-action-disabled') === '1') {
+          neuChatSetHint('Selecciona una conversacion primero.');
+          return;
+        }
         const menu = neuChatHeaderMenuNode();
         if (menu instanceof HTMLElement && !menu.classList.contains('hidden')) neuCloseChatHeaderMenu();
         else neuOpenChatHeaderMenu(chatMoreBtn);
@@ -9314,6 +9335,7 @@ function neuWireChatEvents() {
       const closeChat = target.closest('[data-neu-chat-close], #neuChatCloseBtn');
       if (closeChat) {
         event.preventDefault();
+        console.log('CLICK');
         const activeHostMode = String(neuChatState.hostMode || '').trim();
         if (activeHostMode === 'dock') {
           neuSyncOwnActiveThreadState('');
@@ -12121,10 +12143,7 @@ async function startNeuSocialApp() {
   neuRewriteLegacyLinksInRoot(document);
   window.setTimeout(() => neuRewriteLegacyLinksInRoot(document), 700);
   window.setTimeout(() => neuRewriteLegacyLinksInRoot(document), 1800);
-  if (!SAFE_MODE) {
-    await neuInitChatMvp(user);
-    await neuRunRouteChatIntent();
-  }
+  // NEU chat init disabled: legacy mini-chat-v4 is the active chat system.
   if (SAFE_MODE) {
     if (SAFE_ENABLE_CRUD_POSTS && !isDisabled('crud_posts')) {
       await neuBootModule('crud_posts', () => neuWirePostCrudEvents());
@@ -12226,3 +12245,8 @@ if (document.readyState === 'loading') {
   5) Actions A/B/C route correctly:
      A -> profile edit flow, B -> Pulse + suggested focus, C -> quick post modal.
 */
+
+document.addEventListener("click", function (e) {
+  console.log("CLICK TARGET:", e.target);
+  console.log("ELEMENT FROM POINT:", document.elementFromPoint(e.clientX, e.clientY));
+});

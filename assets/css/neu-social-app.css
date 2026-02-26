@@ -11,7 +11,7 @@ body.fusion-profile.neu-social-app {
   --fusion-text: var(--neu-text);
   --fusion-text-soft: var(--neu-text-soft);
   --fusion-shadow: var(--neu-shadow);
-  --neu-chat-layer: 999998;
+  --neu-chat-layer: 20;
   background: var(--fusion-bg);
   color: var(--fusion-text);
   font-size: 14px;
@@ -35,8 +35,7 @@ body.fusion-profile.neu-social-app.neu-onboarding-active .story-modal,
 body.fusion-profile.neu-social-app.neu-onboarding-active #composerModal,
 body.fusion-profile.neu-social-app.neu-onboarding-active #neuQuickPostModal,
 body.fusion-profile.neu-social-app.neu-onboarding-active #neuProfileModal,
-body.fusion-profile.neu-social-app.neu-onboarding-active #neuChatModal,
-body.fusion-profile.neu-social-app.neu-onboarding-active .mini-chat-dock.mini-chat-v4 {
+body.fusion-profile.neu-social-app.neu-onboarding-active #neuChatModal {
   display: none !important;
 }
 
@@ -48,8 +47,7 @@ body.fusion-profile.neu-social-app.neu-post-onboarding-active .story-modal,
 body.fusion-profile.neu-social-app.neu-post-onboarding-active #composerModal,
 body.fusion-profile.neu-social-app.neu-post-onboarding-active #neuQuickPostModal,
 body.fusion-profile.neu-social-app.neu-post-onboarding-active #neuProfileModal,
-body.fusion-profile.neu-social-app.neu-post-onboarding-active #neuChatModal,
-body.fusion-profile.neu-social-app.neu-post-onboarding-active .mini-chat-dock.mini-chat-v4 {
+body.fusion-profile.neu-social-app.neu-post-onboarding-active #neuChatModal {
   display: none !important;
 }
 
@@ -1858,464 +1856,6 @@ body.fusion-profile.neu-social-app .neu-chat-empty-cta {
   padding: 8px 12px;
 }
 
-/* Hide legacy floating mini-chat in NEU app. */
-body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4,
-body.fusion-profile.neu-social-app #miniChatLauncher,
-body.fusion-profile.neu-social-app #miniChatPanel,
-body.fusion-profile.neu-social-app .mini-chat-v4-launcher {
-  display: none !important;
-}
-
-body.fusion-profile.neu-social-app .neu-chat-modal-card,
-body.fusion-profile.neu-social-app .neuChatModalContent {
-  width: min(920px, 96vw);
-  height: min(80vh, 720px);
-  max-height: min(80vh, 720px);
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 0;
-  overflow: hidden;
-}
-
-body.fusion-profile.neu-social-app .neuInboxChatHost .neu-chat-modal-card,
-body.fusion-profile.neu-social-app .neuInboxChatHost .neuChatModalContent {
-  width: 100%;
-  height: 100%;
-  max-height: none;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-body.fusion-profile.neu-social-app .zneuChatDock,
-body.fusion-profile.neu-social-app .neuChatDock {
-  position: fixed;
-  z-index: 999998;
-  max-width: min(420px, calc(100vw - 32px));
-  width: min(420px, calc(100vw - 32px));
-  height: clamp(520px, 70vh, 640px);
-  max-height: calc(100vh - 120px);
-  pointer-events: none;
-  right: 16px;
-  bottom: 96px;
-  left: auto !important;
-  top: auto !important;
-  overflow: hidden;
-  box-sizing: border-box;
-  min-width: 0;
-}
-body.fusion-profile.neu-social-app .neuChatDockBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 999997;
-  background: rgba(4, 10, 24, 0.15);
-  pointer-events: auto;
-}
-
-body.fusion-profile.neu-social-app .neuChatDockCard {
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 17, 23, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  pointer-events: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-  min-width: 0;
-}
-
-body.fusion-profile.neu-social-app .neuChatDockShell {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  gap: 0;
-  overflow: hidden;
-  min-width: 0;
-}
-
-body.fusion-profile.neu-social-app .neuChatDockInbox {
-  flex: 0 0 320px;
-  width: 320px;
-  max-width: 320px;
-  flex-shrink: 0;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(10, 16, 28, 0.96);
-}
-
-body.fusion-profile.neu-social-app .neuChatDockInboxHead {
-  display: grid;
-  gap: 8px;
-  padding: 10px 10px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-body.fusion-profile.neu-social-app .neuChatDockInboxHead h3 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--fusion-text);
-}
-
-body.fusion-profile.neu-social-app .neuDockInboxList {
-  flex: 1;
-  min-height: 0;
-  max-height: none;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 6px;
-}
-
-body.fusion-profile.neu-social-app .neuChatDockThread {
-  flex: 1 1 auto;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  background: rgba(10, 16, 28, 0.96);
-}
-
-body.fusion-profile.neu-social-app .neuChatDockThreadMount {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-body.fusion-profile.neu-social-app .neuChatDockCard .neu-chat-modal-card,
-body.fusion-profile.neu-social-app .neuChatDockCard .neuChatModalContent {
-  width: 100%;
-  height: 100%;
-  max-height: none;
-  margin: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-body.fusion-profile.neu-social-app .neuChatDockCard .neu-chat-modal-card {
-  border-radius: 0;
-}
-
-body.fusion-profile.neu-social-app .neuDockBubbleTray {
-  position: fixed;
-  right: 16px;
-  bottom: 24px;
-  z-index: 999997;
-  max-width: calc(100vw - 32px);
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  gap: 8px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
-  pointer-events: auto;
-  padding: 2px;
-}
-
-body.fusion-profile.neu-social-app .neuDockBubbleTray.hidden {
-  display: none !important;
-}
-
-body.fusion-profile.neu-social-app .neuDockBubble {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: rgba(12, 30, 67, 0.96);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.34);
-  padding: 0;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-body.fusion-profile.neu-social-app .neuDockBubbleAvatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-body.fusion-profile.neu-social-app .neuDockBubbleAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-body.fusion-profile.neu-social-app .neuDockBubbleUnread {
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  min-width: 18px;
-  min-height: 18px;
-  font-size: 10px;
-  line-height: 1;
-  display: grid;
-  place-items: center;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadWindow {
-  position: fixed;
-  right: 16px;
-  bottom: 96px;
-  width: min(360px, calc(100vw - 32px));
-  height: min(560px, calc(100vh - 120px));
-  z-index: 999996;
-  pointer-events: auto;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadWindow.hidden {
-  display: none !important;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadWindowCard {
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  background: rgba(15, 17, 23, 0.97);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.42);
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadWindowHead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(16, 42, 92, 0.94), rgba(16, 42, 92, 0.84));
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadAvatar {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadPeerCopy {
-  min-width: 0;
-  display: grid;
-  gap: 1px;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadPeerCopy strong {
-  font-size: 13px;
-  line-height: 1.2;
-  color: var(--fusion-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadPeerCopy span {
-  font-size: 12px;
-  line-height: 1.2;
-  color: var(--fusion-text-soft);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadCloseBtn {
-  margin-left: auto;
-  min-height: 30px;
-  padding: 0 10px;
-  font-size: 12px;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadWindowBody {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: 12px;
-  background: rgba(11, 31, 68, 0.34);
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadMessages {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadMsgRow {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 100%;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadMsgRow.incoming {
-  align-items: flex-start;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadMsgRow.outgoing {
-  align-items: flex-end;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadBubble {
-  max-width: 80%;
-  border-radius: 16px;
-  padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: var(--fusion-text);
-  line-height: 1.35;
-  word-break: break-word;
-  white-space: pre-wrap;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadMsgRow.outgoing .neuDockThreadBubble {
-  background: rgba(31, 76, 157, 0.44);
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadBubble.is-deleted {
-  opacity: 0.72;
-  font-style: italic;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadImage {
-  display: block;
-  width: auto;
-  max-width: 210px;
-  max-height: 220px;
-  border-radius: 10px;
-  object-fit: cover;
-  margin-bottom: 6px;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadMeta {
-  font-size: 10px;
-  opacity: 0.72;
-  color: var(--fusion-text-soft);
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadTyping {
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--fusion-text-soft);
-  opacity: 0.86;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadJump {
-  position: absolute;
-  left: 50%;
-  bottom: 12px;
-  transform: translateX(-50%);
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(18, 52, 111, 0.95);
-  color: var(--fusion-text);
-  font-size: 12px;
-  font-weight: 600;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
-  z-index: 4;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadJump.hidden {
-  display: none !important;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadSkeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  padding: 4px 0;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadSkeletonRow {
-  width: 100%;
-  display: flex;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadSkeletonRow.incoming {
-  justify-content: flex-start;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadSkeletonRow.outgoing {
-  justify-content: flex-end;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadSkeletonBubble {
-  max-width: min(78%, 260px);
-  height: 13px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.08);
-  animation: neuChatSkeletonPulse 0.9s ease-in-out infinite alternate;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadEmpty {
-  margin: 16px auto;
-  font-size: 12px;
-  color: var(--fusion-text-soft);
-  opacity: 0.8;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadComposer {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 8px;
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  background: rgba(9, 25, 56, 0.94);
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadInput {
-  flex: 1;
-  min-height: 36px;
-  max-height: 106px;
-  resize: none;
-  overflow-y: auto;
-  line-height: 1.35;
-  padding: 8px 10px;
-}
-
-body.fusion-profile.neu-social-app .neuDockThreadSendBtn {
-  min-height: 36px;
-  min-width: 36px;
-  padding: 0;
-  border-radius: 10px;
-}
-
 body.fusion-profile.neu-social-app .neu-chat-head,
 body.fusion-profile.neu-social-app .neuChatHeader {
   position: sticky;
@@ -2657,7 +2197,6 @@ body.fusion-profile.neu-social-app .neuReplyBtn {
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
-  pointer-events: none;
   transform: translateY(2px);
   transition: opacity 120ms ease, transform 120ms ease, background 120ms ease, color 120ms ease, visibility 120ms ease;
   z-index: 8;
@@ -2679,7 +2218,6 @@ body.fusion-profile.neu-social-app .neuMsgMenuBtn {
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
-  pointer-events: auto;
   transform: translateY(2px);
   transition: opacity 120ms ease, transform 120ms ease, background 120ms ease, color 120ms ease, visibility 120ms ease;
   z-index: 8;
@@ -2687,7 +2225,7 @@ body.fusion-profile.neu-social-app .neuMsgMenuBtn {
 
 body.fusion-profile.neu-social-app .neuMsgMenu {
   position: fixed;
-  z-index: 999999;
+  z-index: 19;
   background: rgba(15, 17, 23, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -2750,7 +2288,6 @@ body.fusion-profile.neu-social-app .neuMessageItem.is-outgoing .neuReplyBtn {
   body.fusion-profile.neu-social-app .neuReplyBtn:focus-visible {
     opacity: 1;
     visibility: visible;
-    pointer-events: auto;
     transform: translateY(0);
   }
 }
@@ -2902,7 +2439,6 @@ body.fusion-profile.neu-social-app .neuReactWrap {
   justify-content: center;
   width: 36px;
   height: 36px;
-  pointer-events: auto;
 }
 
 body.fusion-profile.neu-social-app .neuReactWrap.is-incoming {
@@ -2933,7 +2469,6 @@ body.fusion-profile.neu-social-app .neuReactBtn {
   cursor: pointer;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.26);
   opacity: 0;
-  pointer-events: none;
   transition: opacity 120ms ease, transform 120ms ease, background 120ms ease;
   z-index: 4;
 }
@@ -2944,7 +2479,6 @@ body.fusion-profile.neu-social-app .neuReactWrap.is-hover .neuReactBtn,
 body.fusion-profile.neu-social-app .neuReactBtn:focus-visible,
 body.fusion-profile.neu-social-app .neuReactBtn.is-active {
   opacity: 1;
-  pointer-events: auto;
 }
 
 body.fusion-profile.neu-social-app .neuReactBtn.is-active {
@@ -2963,7 +2497,6 @@ body.fusion-profile.neu-social-app .neuReactPicker {
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(16, 42, 92, 0.98);
   box-shadow: 0 10px 24px rgba(1, 8, 28, 0.34);
-  pointer-events: auto;
   opacity: 0;
   visibility: hidden;
   transform: translateY(4px);
@@ -3020,7 +2553,6 @@ body.fusion-profile.neu-social-app .neuReactBar {
   gap: 4px;
   min-height: 16px;
   margin-top: 2px;
-  pointer-events: auto;
   transition: opacity 120ms ease, visibility 120ms ease;
 }
 
@@ -3028,7 +2560,6 @@ body.fusion-profile.neu-social-app .neuReactBar.is-empty {
   position: absolute;
   opacity: 0;
   visibility: hidden;
-  pointer-events: none;
   height: 0;
   width: 0;
   overflow: hidden;
@@ -3298,7 +2829,7 @@ body.fusion-profile.neu-social-app #neuChatHint .neuChatHintRetry {
 
 body.fusion-profile.neu-social-app .neu-chat-longpress-menu {
   position: fixed;
-  z-index: 1000002;
+  z-index: 19;
   min-width: 130px;
   padding: 6px;
   border-radius: 12px;
@@ -3359,20 +2890,7 @@ body.fusion-profile.neu-social-app .neu-chat-share-list {
   body.fusion-profile.neu-social-app .neu-chat-inbox-card {
     grid-column: span 1;
   }
-
-  body.fusion-profile.neu-social-app .neuChatDock {
-    display: none !important;
-  }
-
-  body.fusion-profile.neu-social-app .neuDockThreadWindow {
-    display: none !important;
-  }
-
-  body.fusion-profile.neu-social-app .neuDockBubbleTray {
-    display: none !important;
-  }
-
-  body.fusion-profile.neu-social-app .neuChatInbox {
+body.fusion-profile.neu-social-app .neuChatInbox {
     display: block;
     min-height: auto;
   }
@@ -3457,113 +2975,6 @@ body.fusion-profile.neu-social-app .neu-chat-image-close {
   justify-self: end;
 }
 
-/* NEU FLOATING CHAT COMPONENT */
-#neuFloatingChat {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  width: 380px;
-  height: 560px;
-  display: flex;
-  flex-direction: column;
-  border-radius: 20px;
-  overflow: hidden;
-  background: rgba(10, 16, 28, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
-  z-index: 999998;
-}
-
-#neuFloatingChat.hidden {
-  display: none;
-}
-
-#neuFloatingChatMount {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-#neuFloatingChatMount > .neu-chat-modal-card,
-#neuFloatingChatMount > .neuChatModalContent {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-#neuFloatingChatMount .neuChatHeader,
-#neuFloatingChatMount .neu-chat-head {
-  flex: 0 0 auto;
-  min-height: 52px;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-#neuFloatingChatMount #neuChatBody,
-#neuFloatingChatMount .neuChatBody,
-#neuFloatingChatMount .neu-chat-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-#neuFloatingChatMount #neuChatMessages,
-#neuFloatingChatMount .neuChatMessages {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-#neuFloatingChatMount #neuChatForm,
-#neuFloatingChatMount .neuChatComposer,
-#neuFloatingChatMount .neu-chat-foot {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(10, 16, 28, 0.74);
-}
-
-#neuFloatingChatMount #neuChatInput {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: auto;
-  resize: none;
-  max-height: 120px;
-  overflow-y: auto;
-  line-height: 1.3;
-  padding: 10px 12px;
-}
-
-#neuFloatingChatMount .neu-chat-reply-preview,
-#neuFloatingChatMount .neu-chat-attachment-preview {
-  display: none;
-}
-
-#neuFloatingChatMount #neuChatHint {
-  display: none;
-}
-
 #neuChatFloatFlag {
   position: fixed;
   right: 20px;
@@ -3579,7 +2990,7 @@ body.fusion-profile.neu-social-app .neu-chat-image-close {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 999999;
+  z-index: 18;
   transition: transform 120ms ease, box-shadow 140ms ease;
 }
 
@@ -3619,109 +3030,17 @@ body.fusion-profile.neu-social-app .neu-chat-image-close {
 }
 
 @media (max-width: 900px) {
-  #neuFloatingChat {
-    display: none;
-  }
 }
 
 
-
-/* NEU FLOATING CHAT — RICH SKIN */
-#neuFloatingChatMount #neuChatForm,
-#neuFloatingChatMount .neuChatComposer,
-#neuFloatingChatMount .neu-chat-foot {
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(180deg, rgba(19, 34, 61, 0.92), rgba(10, 18, 34, 0.96));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 12px 24px rgba(0, 0, 0, 0.22);
-}
-
-#neuFloatingChatMount #neuChatInput {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: auto;
-  border-radius: 999px;
-  border: 1px solid rgba(153, 181, 236, 0.34);
-  background: linear-gradient(180deg, rgba(35, 64, 119, 0.64), rgba(21, 44, 87, 0.72));
-  color: rgba(235, 242, 255, 0.95);
-  padding: 11px 14px;
-  line-height: 1.35;
-  min-height: 44px;
-  max-height: calc(1.35em * 5 + 22px);
-  overflow-y: auto;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-#neuFloatingChatMount #neuChatInput::placeholder {
-  color: rgba(207, 220, 248, 0.68);
-}
-
-#neuFloatingChatMount #neuChatInput:focus {
-  outline: none;
-  border-color: rgba(157, 197, 255, 0.74);
-  box-shadow: 0 0 0 3px rgba(97, 146, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-#neuFloatingChatMount #neuChatInput::-webkit-scrollbar {
-  width: 8px;
-}
-
-#neuFloatingChatMount #neuChatInput::-webkit-scrollbar-thumb {
-  background: rgba(154, 182, 236, 0.38);
-  border-radius: 999px;
-}
-
-#neuFloatingChatMount #neuChatEmojiBtn,
-#neuFloatingChatMount #neuChatAttachBtn,
-#neuFloatingChatMount #neuChatLikeBtn,
-#neuFloatingChatMount #neuChatSendBtn {
-  flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(180deg, rgba(35, 63, 118, 0.9), rgba(22, 43, 85, 0.94));
-  color: rgba(236, 244, 255, 0.96);
-  box-shadow: 0 8px 20px rgba(2, 9, 24, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: transform 120ms ease, box-shadow 140ms ease, border-color 140ms ease, filter 140ms ease;
-}
-
-#neuFloatingChatMount #neuChatEmojiBtn:hover,
-#neuFloatingChatMount #neuChatAttachBtn:hover,
-#neuFloatingChatMount #neuChatLikeBtn:hover,
-#neuFloatingChatMount #neuChatSendBtn:hover {
-  border-color: rgba(171, 205, 255, 0.74);
-  box-shadow: 0 10px 24px rgba(8, 24, 56, 0.34), 0 0 18px rgba(89, 149, 255, 0.28);
-}
-
-#neuFloatingChatMount #neuChatEmojiBtn:active,
-#neuFloatingChatMount #neuChatAttachBtn:active,
-#neuFloatingChatMount #neuChatLikeBtn:active,
-#neuFloatingChatMount #neuChatSendBtn:active {
-  transform: scale(0.96);
-}
 
 /* NEU MESSAGE ACTIONS — MESSENGER FEEL */
 body.fusion-profile.neu-social-app .neuMsgMenuBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000000;
-  background: rgba(6, 10, 20, 0.12);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
+  display: none;
 }
 
 body.fusion-profile.neu-social-app .neuMsgMenu {
-  z-index: 1000001;
+  z-index: 19;
   min-width: 196px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -3776,7 +3095,6 @@ body.fusion-profile.neu-social-app .neuMessageItem .neuMsgMenuBtn {
   visibility: hidden;
   transform: translateY(2px);
   transition: opacity 120ms ease, transform 120ms ease, background 120ms ease, visibility 120ms ease;
-  pointer-events: auto;
   z-index: 9;
 }
 
@@ -3798,151 +3116,3 @@ body.fusion-profile.neu-social-app .neuMsgMenuBtn:focus-visible {
 }
 
 
-
-/* NEU CHAT LAYOUT CORE (single source) */
-body.fusion-profile.neu-social-app .neu-chat-modal-card,
-body.fusion-profile.neu-social-app .neuChatModalContent,
-body.fusion-profile.neu-social-app #neu-chat-root > .neu-chat-modal-card,
-body.fusion-profile.neu-social-app #neu-chat-root > .neuChatModalContent {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  min-width: 0;
-}
-
-body.fusion-profile.neu-social-app .neu-chat-body,
-body.fusion-profile.neu-social-app .neuChatBody {
-  flex: 1 1 auto;
-  min-height: 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-body.fusion-profile.neu-social-app .neuChatMessages {
-  flex: 1 1 auto;
-  height: 100%;
-  min-height: 0;
-  min-width: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-body.fusion-profile.neu-social-app .neu-chat-foot,
-body.fusion-profile.neu-social-app .neuChatComposer {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-
-body.fusion-profile.neu-social-app .neu-chat-foot #neuChatInput,
-body.fusion-profile.neu-social-app .neuChatComposer textarea {
-  flex: 1 1 auto;
-  min-width: 120px;
-  width: auto;
-}
-
-body.fusion-profile.neu-social-app .neuChatComposer,
-body.fusion-profile.neu-social-app .neuMessageItem,
-body.fusion-profile.neu-social-app .neuMsgWrap {
-  width: auto;
-}
-
-/* NEU CHAT SINGLE ROOT */
-body.fusion-profile.neu-social-app #neu-chat-root {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: var(--neu-chat-layer);
-  width: min(920px, 96vw);
-  height: min(80vh, 720px);
-  max-height: min(80vh, 720px);
-  display: none;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-}
-
-body.fusion-profile.neu-social-app #neu-chat-root.is-open {
-  display: flex;
-}
-
-body.fusion-profile.neu-social-app #neu-chat-root.hidden {
-  display: none;
-}
-
-body.fusion-profile.neu-social-app #neu-chat-root.mode-dock {
-  transform: none;
-  width: min(420px, calc(100vw - 32px));
-  height: clamp(520px, 70vh, 640px);
-  max-height: calc(100vh - 120px);
-}
-
-body.fusion-profile.neu-social-app #neu-chat-root.mode-modal,
-body.fusion-profile.neu-social-app #neu-chat-root.mode-inbox {
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: min(920px, 96vw);
-  height: min(80vh, 720px);
-  max-height: min(80vh, 720px);
-}
-
-body.fusion-profile.neu-social-app #neu-chat-root > .neu-chat-modal-card,
-body.fusion-profile.neu-social-app #neu-chat-root > .neuChatModalContent {
-  width: 100%;
-  height: 100%;
-  max-height: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: 16px;
-  background: rgba(10, 16, 28, 0.96);
-  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.42);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Single-source chat layout aliases */
-body.fusion-profile.neu-social-app .chat-container {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  min-width: 0;
-  overflow: hidden;
-}
-
-body.fusion-profile.neu-social-app .chat-sidebar {
-  flex: 0 0 320px;
-  width: 320px;
-  max-width: 320px;
-  flex-shrink: 0;
-  min-height: 0;
-  min-width: 0;
-}
-
-body.fusion-profile.neu-social-app .chat-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  min-width: 0;
-  overflow: hidden;
-}
-
-body.fusion-profile.neu-social-app #neuChatModal .composer-modal-backdrop,
-body.fusion-profile.neu-social-app .neuChatDockBackdrop {
-  display: none;
-}
-
-/* Legacy dock host kept inert: single chat root is the layout source of truth. */
-#neuChatDock,
-#neuChatDockHost,
-#neuDockChatMount {
-  display: none;
-}

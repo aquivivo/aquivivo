@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="es"><head>
+    <meta charset="UTF-8">
+    <title>NEU Login | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&amp;family=Bebas+Neue&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css?v=1772134030444">
+    <link rel="stylesheet" href="assets/css/neu-theme.css?v=20260226fix">
+    <link rel="stylesheet" href="assets/css/neu-auth.css?v=20260222f">
+    <script src="assets/js/layout.js?v=20260226fix" type="module"></script>
+  </head>
+  <body data-page="neu-login" data-no-side-panel="1" class="neu-auth-page no-side-panel">
+    <div id="appHeader"></div>
+
+    <main class="page neu-auth-main">
+      <div class="container">
+        <section class="neu-auth-wrap">
+          <article class="neu-auth-card">
+            <header class="neu-auth-head">
+              <h1 class="neu-auth-title" id="neuAuthTitle">Inicia sesión en neu</h1>
+              <p class="neu-auth-sub" id="neuAuthSubtitle">Accede para continuar en la aplicación neu.</p>
+            </header>
+
+            <div class="neu-auth-mode">
+              <button class="neu-auth-mode-btn is-active" id="neuModeLogin" type="button">Inicia sesión</button>
+              <button class="neu-auth-mode-btn" id="neuModeRegister" type="button">Crear cuenta</button>
+            </div>
+
+            <form class="neu-auth-form" id="neuAuthForm" novalidate="">
+              <label class="neu-auth-label" for="neuEmail">
+                Email
+                <input id="neuEmail" class="neu-auth-input" type="email" autocomplete="email" placeholder="tu@email.com" required="">
+              </label>
+
+              <label class="neu-auth-label" for="neuPassword">
+                Contraseña
+                <input id="neuPassword" class="neu-auth-input" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres" required="">
+              </label>
+
+              <div class="neu-auth-pass-tools">
+                <button class="neu-auth-link neu-auth-password-toggle" id="neuTogglePassword" type="button" aria-pressed="false">👁 Mostrar</button>
+              </div>
+
+              <div class="neu-auth-actions">
+                <button class="btn-yellow neu-auth-submit" id="neuSubmitBtn" type="submit"><span class="neu-auth-btn-label">Inicia sesión</span><span class="neu-auth-spinner" aria-hidden="true"></span></button>
+                <div class="neu-auth-divider" aria-hidden="true"><span>o</span></div>
+                <button class="btn-white-outline neu-auth-google" id="neuGoogleBtn" type="button"><span class="neu-auth-btn-label">Continuar con Google</span><span class="neu-auth-spinner" aria-hidden="true"></span></button>
+              </div>
+
+              <div class="neu-auth-switch-row">
+                <button class="neu-auth-link" id="neuToggleMode" type="button">¿No tienes cuenta? Crear cuenta</button>
+              </div>
+
+              <button class="neu-auth-link" id="neuResetBtn" type="button">
+                Olvidé mi contraseña
+              </button>
+              <p class="neu-auth-message" id="neuAuthMessage"></p>
+            </form>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <div id="appFooter"></div>
+
+    <script type="module" src="assets/js/neu-auth.js?v=20260222e"></script>
+  <!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+
+
+</body></html>

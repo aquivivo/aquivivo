@@ -398,13 +398,6 @@
       <button class="bottom-nav-btn" id="btnBottomProfile" type="button">Perfil</button>
     </nav>
 
-    <button class="neu-chat-float-flag hidden" id="neuChatFloatFlag" type="button" aria-label="Abrir chat">
-      <span class="neu-chat-float-label">Chat</span>
-      <span class="neu-unread-badge neu-chat-float-badge hidden" id="neuChatFloatBadge"></span>
-    </button>
-
-    <div id="neu-chat-root" class="neu-chat-root hidden" aria-live="polite"></div>
-
     <div class="story-modal" id="storyModal" hidden>
       <div class="story-modal-backdrop" data-story-close="1"></div>
       <div class="story-modal-card">
@@ -566,111 +559,6 @@
             <button class="btn-white-outline" id="btnNeuProfileCancel" type="button">Cancelar</button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="composer-modal neu-chat-modal" id="neuChatModal" hidden>
-      <div class="composer-modal-backdrop" data-neu-chat-close="1"></div>
-      <div class="composer-modal-card neu-chat-modal-card" role="dialog" aria-modal="true" aria-labelledby="neuChatPeerName">
-        <div class="neu-chat-head neuChatHeader">
-          <div class="neu-chat-peer">
-            <span class="avatar-frame neu-chat-peer-avatar">
-              <img id="neuChatPeerAvatarImg" alt="avatar" />
-              <span id="neuChatPeerAvatarFallback">U</span>
-            </span>
-            <span class="neu-chat-peer-copy">
-              <strong id="neuChatPeerName">Chat</strong>
-              <span id="neuChatPeerHandle">@usuario</span>
-              <span id="neuChatPeerPresence" class="neu-chat-peer-presence">Desconectado &middot; activo recientemente</span>
-            </span>
-          </div>
-          <div class="neu-chat-head-actions">
-            <button class="btn-white-outline neu-chat-head-icon" id="neuChatCallBtn" type="button" aria-label="Llamar">&#128222;</button>
-            <button class="btn-white-outline neu-chat-head-icon" id="neuChatVideoBtn" type="button" aria-label="Videollamada">&#127909;</button>
-            <button class="btn-white-outline neu-chat-head-icon" id="neuChatMoreBtn" type="button" aria-label="Mas opciones">&#8942;</button>
-            <button class="btn-white-outline" id="neuChatCloseBtn" type="button">Cerrar</button>
-          </div>
-        </div>
-
-        <div class="neu-chat-body neuChatBody" id="neuChatBody">
-          <div id="neuChatMessages" class="neuChatMessages"></div>
-          <button id="neuNewMsgChip" class="neuNewMsgChip hidden" type="button">Nuevos mensajes</button>
-          <div id="neuTypingRow" class="neuTypingRow hidden">Escribiendo...</div>
-        </div>
-
-        <form class="neu-chat-foot neuChatComposer" id="neuChatForm">
-          <div class="neu-chat-reply-preview hidden" id="neuChatReplyPreview">
-            <span id="neuChatReplyPreviewText"></span>
-            <button class="btn-white-outline neu-chat-reply-cancel" id="neuChatReplyCancelBtn" type="button" aria-label="Cancelar reply">
-              X
-            </button>
-          </div>
-
-          <div class="neu-chat-attachment-preview hidden" id="neuChatAttachmentPreview">
-            <img id="neuChatAttachmentPreviewImg" alt="preview" />
-            <span id="neuChatAttachmentPreviewName"></span>
-            <button
-              class="btn-white-outline neu-chat-attachment-clear"
-              id="neuChatAttachmentClearBtn"
-              type="button"
-              aria-label="Quitar imagen"
-            >
-              X
-            </button>
-          </div>
-
-          <input id="neuChatFileInput" type="file" accept="image/*" hidden />
-          <button class="btn-white-outline neu-chat-emoji-btn" id="neuChatEmojiBtn" type="button" aria-label="Emoji">&#128522;</button>
-          <button class="btn-white-outline neu-chat-attach-btn" id="neuChatAttachBtn" type="button" aria-label="Adjuntar imagen">&#128206;</button>
-          <textarea
-            id="neuChatInput"
-            class="input"
-            rows="1"
-            maxlength="1000"
-            placeholder="Escribe un mensaje..."
-          ></textarea>
-          <button class="btn-white-outline neu-chat-like-btn" id="neuChatLikeBtn" type="button" aria-label="Me gusta rapido">&#128077;</button>
-          <button class="btn-white-outline neu-chat-send-compact" id="neuChatSendBtn" type="submit">Enviar</button>
-        </form>
-        <p class="hintSmall" id="neuChatHint"></p>
-
-        <div class="neu-chat-longpress-menu hidden" id="neuChatLongPressMenu" role="menu" aria-label="Opciones mensaje">
-          <button class="btn-white-outline neu-chat-longpress-action" data-neu-chat-longpress-reply type="button" role="menuitem">&#x21A9; Responder</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="composer-modal neu-chat-image-lightbox" id="neuChatImageLightbox" hidden>
-      <div class="composer-modal-backdrop" data-neu-chat-image-close="1"></div>
-      <div class="composer-modal-card neu-chat-image-lightbox-card" role="dialog" aria-modal="true" aria-label="Vista de imagen">
-        <button class="btn-white-outline neu-chat-image-close" id="neuChatImageCloseBtn" type="button">Cerrar</button>
-        <img id="neuChatLightboxImg" alt="chat image" />
-      </div>
-    </div>
-
-    <div id="neuMsgMenu" class="neuMsgMenu hidden" role="menu" aria-label="Opciones mensaje">
-      <button data-action="msg-reply" type="button" role="menuitem">Responder</button>
-      <button data-action="msg-copy" type="button" role="menuitem">Copiar</button>
-      <button data-action="msg-hide-local" type="button" role="menuitem">Eliminar para mi</button>
-      <button data-action="msg-delete-all" type="button" role="menuitem">Eliminar para todos</button>
-    </div>
-
-    <div class="composer-modal neu-chat-share-modal" id="neuShareChatModal" hidden>
-      <div class="composer-modal-backdrop" data-neu-chat-share-close="1"></div>
-      <div class="composer-modal-card neu-chat-share-card" role="dialog" aria-modal="true" aria-label="Enviar post por chat">
-        <div class="neu-chat-share-head">
-          <strong>Enviar por chat</strong>
-          <button class="btn-white-outline" type="button" data-neu-chat-share-close="1">Cerrar</button>
-        </div>
-        <input
-          id="neuShareChatSearchInput"
-          class="input neu-chat-share-search"
-          type="search"
-          placeholder="Buscar chats..."
-          maxlength="80"
-          autocomplete="off"
-        />
-        <div id="neuShareChatList" class="neu-chat-share-list"></div>
       </div>
     </div>
 
