@@ -403,30 +403,7 @@
       <span class="neu-unread-badge neu-chat-float-badge hidden" id="neuChatFloatBadge"></span>
     </button>
 
-    <div id="neuChatDock" class="neuChatDock hidden">
-      <div id="neuChatDockHost" class="neuChatDockCard">
-        <div class="neuChatDockShell">
-          <aside class="neuChatDockInbox">
-            <div class="neuChatDockInboxHead">
-              <h3>Chats</h3>
-              <input
-                id="neuDockInboxSearch"
-                class="input neu-chat-search-input"
-                type="search"
-                placeholder="Buscar chats..."
-                autocomplete="off"
-                aria-label="Buscar chats"
-              />
-            </div>
-            <div id="neuDockInboxList" class="neuInboxList neuDockInboxList"></div>
-          </aside>
-
-          <section class="neuChatDockThread">
-            <div id="neuDockChatMount" class="neuChatDockThreadMount"></div>
-          </section>
-        </div>
-      </div>
-    </div>
+    <div id="neu-chat-root" class="neu-chat-root hidden" aria-live="polite"></div>
 
     <div class="story-modal" id="storyModal" hidden>
       <div class="story-modal-backdrop" data-story-close="1"></div>
@@ -722,5 +699,3 @@
     </script>
   </body>
 </html>
-
-

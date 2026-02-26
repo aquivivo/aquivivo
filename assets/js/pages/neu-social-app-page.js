@@ -2694,6 +2694,7 @@ const neuChatState = {
   forceScrollOnFirstSnapshotConversationId: '',
   hostMode: 'modal',
   dockOpen: false,
+  chatRootOpen: false,
   messages: [],
   sending: false,
   uploading: false,
@@ -2715,6 +2716,8 @@ const neuChatState = {
   bodyScrollRaf: 0,
   nearBottom: true,
   lastRenderedMsgId: '',
+  messagesContainerEl: null,
+  lastMessageEl: null,
   typingDebounceTimer: 0,
   typingIdleTimer: 0,
   typingActive: false,
@@ -2890,7 +2893,6 @@ function neuSyncUnreadUi() {
   neuChatState.totalUnread = neuTotalUnreadFromRows(neuChatState.listRows);
   neuRenderBottomUnreadBadge();
   neuRenderFloatUnreadBadge();
-  neuRenderDockBubbleTray();
 }
 
 function neuSetConversationUnreadLocal(conversationId, unreadCount) {
@@ -4043,6 +4045,47 @@ function neuChatModalCardNode() {
   return node instanceof HTMLElement ? node : null;
 }
 
+function neuChatRootNode() {
+  const existing = document.getElementById('neu-chat-root');
+  if (existing instanceof HTMLElement) return existing;
+  const node = document.createElement('div');
+  node.id = 'neu-chat-root';
+  node.className = 'neu-chat-root hidden';
+  document.body.append(node);
+  return node;
+}
+
+function neuSetChatRootMode(mode = '') {
+  const root = neuChatRootNode();
+  if (!(root instanceof HTMLElement)) return;
+  const resolvedMode = String(mode || '').trim().toLowerCase();
+  root.classList.remove('mode-modal', 'mode-dock', 'mode-inbox');
+  if (resolvedMode === 'inbox') root.classList.add('mode-inbox');
+  else if (resolvedMode === 'modal') root.classList.add('mode-modal');
+  else root.classList.add('mode-dock');
+  if (resolvedMode !== 'dock') {
+    root.style.left = '';
+    root.style.top = '';
+    root.style.right = '';
+    root.style.bottom = '';
+  }
+}
+
+function neuSetChatRootOpen(open, mode = '') {
+  const root = neuChatRootNode();
+  if (!(root instanceof HTMLElement)) return;
+  if (mode) neuSetChatRootMode(mode);
+  const active = open === true;
+  neuChatState.chatRootOpen = active;
+  root.classList.toggle('hidden', !active);
+  root.classList.toggle('is-open', active);
+}
+
+function neuIsChatRootOpen() {
+  const root = neuChatRootNode();
+  return root instanceof HTMLElement && !root.classList.contains('hidden') && root.classList.contains('is-open');
+}
+
 function neuChatDockNode() {
   const node = document.getElementById('neuChatDock');
   return node instanceof HTMLElement ? node : null;
@@ -4694,7 +4737,7 @@ function neuCanUseInboxHost() {
 }
 
 function neuCanUseDockHost() {
-  return !neuIsMobileChatViewport() && (neuChatDockThreadMountNode() instanceof HTMLElement || neuChatDockHostNode() instanceof HTMLElement);
+  return !neuIsMobileChatViewport() && neuChatRootNode() instanceof HTMLElement;
 }
 
 function neuResolveChatHostMode(requestedMode = '') {
@@ -4711,8 +4754,11 @@ function neuSetInboxPanelOpen(open) {
   const host = neuInboxChatHostNode();
   const empty = neuInboxEmptyNode();
   const active = open === true;
-  if (host instanceof HTMLElement) host.classList.toggle('hidden', !active);
+  if (host instanceof HTMLElement) host.classList.add('hidden');
   if (empty instanceof HTMLElement) empty.classList.toggle('hidden', active);
+  if (String(neuChatState.hostMode || '').trim() === 'inbox') {
+    neuSetChatRootOpen(active, 'inbox');
+  }
 }
 
 function neuChatDockBackdropNode() {
@@ -4729,8 +4775,7 @@ function neuChatDockBackdropNode() {
 function neuSetChatDockBackdropOpen(open) {
   const backdrop = neuChatDockBackdropNode();
   if (!(backdrop instanceof HTMLElement)) return;
-  const visible = open === true && neuCanUseDockHost() && !neuIsMobileChatViewport();
-  backdrop.classList.toggle('hidden', !visible);
+  backdrop.classList.add('hidden');
 }
 
 function neuMountChatCardForMode(mode = '') {
@@ -4738,57 +4783,40 @@ function neuMountChatCardForMode(mode = '') {
   const targetMode = rawMode === 'inbox' ? 'inbox' : rawMode === 'dock' ? 'dock' : 'modal';
   const card = neuChatModalCardNode();
   const modal = neuChatModalNode();
-  if (!(card instanceof HTMLElement) || !(modal instanceof HTMLElement)) return false;
-
-  if (targetMode === 'inbox') {
-    const host = neuInboxChatHostNode();
-    if (!(host instanceof HTMLElement)) return false;
-    if (card.parentElement !== host) host.append(card);
-    modal.hidden = true;
-    neuChatRecomputeModalLock();
-    neuBindChatScrollSurface(true);
-    return true;
-  }
-
-  if (targetMode === 'dock') {
-    const host = neuChatDockThreadMountNode() || neuChatDockHostNode();
-    if (!(host instanceof HTMLElement)) return false;
-    if (card.parentElement !== host) host.append(card);
-    modal.hidden = true;
-    neuChatRecomputeModalLock();
-    neuBindChatScrollSurface(true);
-    return true;
-  }
-
-  if (card.parentElement !== modal) modal.append(card);
+  const root = neuChatRootNode();
+  if (!(card instanceof HTMLElement) || !(root instanceof HTMLElement)) return false;
+  if (card.parentElement !== root) root.append(card);
+  if (modal instanceof HTMLElement) modal.hidden = true;
+  neuSetChatRootMode(targetMode);
   neuChatRecomputeModalLock();
   neuBindChatScrollSurface(true);
   return true;
 }
 
 function neuSetChatDockOpen(open, options = {}) {
-  const dock = neuChatDockNode();
-  if (!(dock instanceof HTMLElement)) return;
   const persist = options.persist !== false;
   const active = open === true;
   neuChatState.dockOpen = active;
-  dock.classList.toggle('hidden', !active);
-  neuSetChatDockBackdropOpen(active);
+  if (String(neuChatState.hostMode || '').trim() === 'dock') {
+    neuSetChatRootOpen(active, 'dock');
+  }
   if (persist && neuCanUseDockHost()) neuChatSaveDockOpenPreference(active);
   if (active) neuPositionDockToLauncher();
   neuLayoutDockThreadWindows();
 }
 
 function neuPositionDockToLauncher() {
-  const dock = neuChatDockNode();
+  const mode = String(neuChatState.hostMode || '').trim();
+  const root = neuChatRootNode();
+  const dockTarget = mode === 'dock' && root instanceof HTMLElement ? root : null;
   const flag = neuChatFloatNode();
-  if (!(dock instanceof HTMLElement) || !(flag instanceof HTMLElement)) return;
-  if (dock.classList.contains('hidden')) return;
+  if (!(dockTarget instanceof HTMLElement) || !(flag instanceof HTMLElement)) return;
+  if (dockTarget.classList.contains('hidden')) return;
   if (neuIsMobileChatViewport()) return;
 
   const flagRect = flag.getBoundingClientRect();
-  const dockWidth = Math.max(280, Math.round(dock.offsetWidth || 360));
-  const dockHeight = Math.max(320, Math.round(dock.offsetHeight || 520));
+  const dockWidth = Math.max(280, Math.round(dockTarget.offsetWidth || 360));
+  const dockHeight = Math.max(320, Math.round(dockTarget.offsetHeight || 520));
   const gap = 10;
   const margin = 12;
 
@@ -4799,8 +4827,10 @@ function neuPositionDockToLauncher() {
   if (top < margin) top = flagRect.bottom + gap;
   top = neuClampNumber(top, margin, Math.max(margin, window.innerHeight - dockHeight - margin));
 
-  dock.style.left = `${Math.round(left)}px`;
-  dock.style.top = `${Math.round(top)}px`;
+  dockTarget.style.left = `${Math.round(left)}px`;
+  dockTarget.style.top = `${Math.round(top)}px`;
+  dockTarget.style.right = 'auto';
+  dockTarget.style.bottom = 'auto';
   neuLayoutDockThreadWindows();
 }
 
@@ -4819,9 +4849,9 @@ function neuDockThreadWindowWidth() {
 }
 
 function neuDockThreadBaseRightOffset() {
-  const dock = neuChatDockNode();
-  if (!(dock instanceof HTMLElement) || dock.classList.contains('hidden')) return NEU_DOCK_THREAD_MARGIN;
-  const width = Math.round(dock.getBoundingClientRect().width);
+  const root = neuChatRootNode();
+  if (!(root instanceof HTMLElement) || root.classList.contains('hidden')) return NEU_DOCK_THREAD_MARGIN;
+  const width = Math.round(root.getBoundingClientRect().width);
   return NEU_DOCK_THREAD_MARGIN + Math.max(0, width) + NEU_DOCK_THREAD_GAP;
 }
 
@@ -5649,14 +5679,13 @@ function neuChatRecomputeModalLock() {
 
 function neuSetChatModalOpen(open) {
   const modal = neuChatModalNode();
-  if (!(modal instanceof HTMLElement)) return;
+  if (modal instanceof HTMLElement) modal.hidden = true;
   const mode = String(neuChatState.hostMode || '').trim();
   if (mode === 'inbox' || mode === 'dock') {
-    modal.hidden = true;
     neuChatRecomputeModalLock();
     return;
   }
-  modal.hidden = !open;
+  neuSetChatRootOpen(open === true, 'modal');
   neuChatRecomputeModalLock();
 }
 
@@ -5667,7 +5696,10 @@ function neuChatBodyNode() {
 
 function neuChatMessagesNode() {
   const node = document.getElementById('neuChatMessages');
-  if (node instanceof HTMLElement) neuChatScrollEl = node;
+  if (node instanceof HTMLElement) {
+    neuChatScrollEl = node;
+    neuChatState.messagesContainerEl = node;
+  }
   return node;
 }
 
@@ -5705,12 +5737,55 @@ function neuChatComposerNode() {
 }
 
 function neuChatScrollNode() {
+  const stateRef = neuChatState.messagesContainerEl;
+  if (stateRef instanceof HTMLElement && stateRef.isConnected) {
+    neuChatScrollEl = stateRef;
+    return stateRef;
+  }
   if (neuChatScrollEl instanceof HTMLElement && neuChatScrollEl.isConnected) return neuChatScrollEl;
   const node = neuChatMessagesNode();
   if (node instanceof HTMLElement) {
     neuChatScrollEl = node;
     return node;
   }
+  return null;
+}
+
+function neuChatSetLastMessageRef(node) {
+  const root = neuChatMessagesNode();
+  if (root instanceof HTMLElement) {
+    const previous = root.querySelector('[data-neu-last-message="1"]');
+    if (previous instanceof HTMLElement) previous.removeAttribute('data-neu-last-message');
+  }
+  if (node instanceof HTMLElement) {
+    node.setAttribute('data-neu-last-message', '1');
+    neuChatState.lastMessageEl = node;
+    return;
+  }
+  neuChatState.lastMessageEl = null;
+}
+
+function neuChatLastMessageNode() {
+  const cached = neuChatState.lastMessageEl;
+  if (cached instanceof HTMLElement && cached.isConnected) return cached;
+  const root = neuChatMessagesNode();
+  if (!(root instanceof HTMLElement)) return null;
+  const marked = root.querySelector('[data-neu-last-message="1"]');
+  if (marked instanceof HTMLElement) {
+    neuChatState.lastMessageEl = marked;
+    return marked;
+  }
+  const items = root.querySelectorAll('.neuMessageItem');
+  if (!items.length) {
+    neuChatState.lastMessageEl = null;
+    return null;
+  }
+  const last = items[items.length - 1];
+  if (last instanceof HTMLElement) {
+    neuChatSetLastMessageRef(last);
+    return last;
+  }
+  neuChatState.lastMessageEl = null;
   return null;
 }
 
@@ -6527,7 +6602,14 @@ function neuChatScrollToBottom(options = {}) {
   const body = neuChatScrollNode();
   if (!(body instanceof HTMLElement)) return;
   if (!force && !neuChatIsNearBottom(NEU_CHAT_SCROLL_NEAR_BOTTOM)) return;
-  if (behavior === 'smooth' && typeof body.scrollTo === 'function') {
+  const lastMessage = neuChatLastMessageNode();
+  if (lastMessage instanceof HTMLElement && typeof lastMessage.scrollIntoView === 'function') {
+    lastMessage.scrollIntoView({
+      behavior: behavior === 'smooth' ? 'smooth' : 'auto',
+      block: 'end',
+      inline: 'nearest',
+    });
+  } else if (behavior === 'smooth' && typeof body.scrollTo === 'function') {
     body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' });
   } else {
     body.scrollTop = body.scrollHeight;
@@ -7146,7 +7228,6 @@ function neuRenderChatList() {
   rows.forEach((row) => {
     if (row.otherUid) neuEnsureChatProfile(row.otherUid).catch(() => null);
   });
-  neuRenderDockBubbleTray();
 }
 
 function neuWireChatListGuard() {
@@ -7249,6 +7330,7 @@ function neuRenderChatMessages() {
       `;
     }
     neuChatState.lastRenderedMsgId = '';
+    neuChatSetLastMessageRef(null);
     neuSetChatLongPressMenuOpen('');
     neuSetTypingRowVisible(neuChatState.peerTyping);
     neuSetNewMessagesChipVisible(false);
@@ -7490,6 +7572,13 @@ function neuRenderChatMessages() {
     .join('');
 
   messagesRoot.innerHTML = `${topStatusHtml}${rowsHtml}`;
+  const renderedMessageNodes = messagesRoot.querySelectorAll('.neuMessageItem');
+  if (renderedMessageNodes.length) {
+    const lastNode = renderedMessageNodes[renderedMessageNodes.length - 1];
+    neuChatSetLastMessageRef(lastNode instanceof HTMLElement ? lastNode : null);
+  } else {
+    neuChatSetLastMessageRef(null);
+  }
   neuSetChatLongPressMenuOpen('');
   if (newestMessageId && newestMessageId !== prevLastRenderedMsgId) {
     const escapedMessageId =
@@ -7553,6 +7642,7 @@ function neuCloseChatModal() {
   neuChatState.peerLastReadAt = null;
   neuChatState.peerLastReadMessageId = '';
   neuChatState.lastRenderedMsgId = '';
+  neuChatSetLastMessageRef(null);
   neuChatState.typingConversationId = '';
   neuChatState.typingActive = false;
   if (neuChatState.replyHighlightTimer) {
@@ -7682,10 +7772,9 @@ function neuStartChatListListener(meUid) {
         neuChatState.myLastReadMessageId = String(activeRow?.lastReadMessageId || '').trim();
         neuChatState.peerLastReadAt = activeRow?.peerLastReadAt || null;
         neuChatState.peerLastReadMessageId = String(activeRow?.peerLastReadMessageId || '').trim();
-        const modal = neuChatModalNode();
         const inboxActive = String(neuChatState.hostMode || '').trim() === 'inbox';
         const dockActive = String(neuChatState.hostMode || '').trim() === 'dock';
-        if ((modal instanceof HTMLElement && !modal.hidden) || inboxActive || dockActive) {
+        if (neuIsChatRootOpen() || inboxActive || dockActive) {
           neuRenderChatMessages();
         }
       }
@@ -7848,6 +7937,7 @@ function neuStartChatMessagesListener(conversationId, members, options = {}) {
       if (convId !== String(neuChatState.currentConversationId || '').trim()) return;
       const bodyEl = neuChatScrollNode();
       const prevScrollHeight = bodyEl instanceof HTMLElement ? bodyEl.scrollHeight : 0;
+      const prevLastRenderedMsgId = String(neuChatState.lastRenderedMsgId || '').trim();
       const wasNearBottom = neuChatIsNearBottom(NEU_CHAT_SCROLL_NEAR_BOTTOM);
       const isFirstSnapshot = firstSnapshot === true;
       const incomingAdded = snap.docChanges().some((change) => {
@@ -7871,6 +7961,8 @@ function neuStartChatMessagesListener(conversationId, members, options = {}) {
       }
       neuRebuildChatMessagesFromBuckets();
       neuRenderChatMessages();
+      const nextLastRenderedMsgId = String(neuChatState.lastRenderedMsgId || '').trim();
+      const hasNewTailMessage = !!nextLastRenderedMsgId && nextLastRenderedMsgId !== prevLastRenderedMsgId;
 
       const shouldForceBottomOnFirst =
         isFirstSnapshot && String(neuChatState.forceScrollOnFirstSnapshotConversationId || '').trim() === convId;
@@ -7878,12 +7970,12 @@ function neuStartChatMessagesListener(conversationId, members, options = {}) {
         neuChatState.forceScrollOnFirstSnapshotConversationId = '';
         neuSetNewMessagesChipVisible(false);
         neuChatScrollBottomAfterPaint('auto', { conversationId: convId, listenerToken, openSeq: expectedOpenSeq, force: true });
-      } else if (wasNearBottom) {
+      } else if (wasNearBottom && hasNewTailMessage) {
         neuChatScrollBottomAfterPaint('smooth', { conversationId: convId, listenerToken, openSeq: expectedOpenSeq });
       } else if (!isFirstSnapshot && bodyEl instanceof HTMLElement) {
         const nextScrollHeight = bodyEl.scrollHeight;
         const delta = nextScrollHeight - prevScrollHeight;
-        if (delta > 0) bodyEl.scrollTop += delta;
+        if (delta > 0 && !hasNewTailMessage) bodyEl.scrollTop += delta;
       }
 
       const shouldMarkRead = incomingAdded;
@@ -8371,7 +8463,12 @@ async function neuSendChatMessage(options = {}) {
     neuChatAutoResizeInput();
     neuSyncChatComposerState();
     neuSetNewMessagesChipVisible(false);
-    window.setTimeout(() => neuChatScrollBottom('auto'), 20);
+    neuChatScrollBottomAfterPaint('auto', {
+      conversationId,
+      listenerToken: Number(neuChatState.messageListenerToken || 0),
+      openSeq: Number(neuChatState.openSeq || 0),
+      force: true,
+    });
   } catch (error) {
     if (neuChatHandlePermissionDenied(error, 'send', conversationId, 'Sin permisos para enviar mensajes.')) return;
     neuChatLogUploadFail(error, { stage: lastFailStage, ...uploadDebug });
@@ -8537,18 +8634,18 @@ function neuFloatEndDrag() {
 }
 
 async function neuOpenChatFromFloatFlag() {
-  const mode = String(neuChatState.hostMode || '').trim();
-  if (mode === 'dock') {
-    const dock = neuChatDockNode();
-    if (dock instanceof HTMLElement && !dock.classList.contains('hidden')) {
-      neuPositionDockNearFlag();
-      const input = neuChatInputNode();
-      if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
-        input.focus({ preventScroll: true });
-      }
-      return;
+  const root = neuChatRootNode();
+  if (root instanceof HTMLElement && !root.classList.contains('hidden') && root.classList.contains('is-open')) {
+    if (String(neuChatState.hostMode || '').trim() === 'dock') neuPositionDockNearFlag();
+    const input = neuChatInputNode();
+    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+      input.focus({ preventScroll: true });
     }
-  } else if (mode === 'inbox') {
+    return;
+  }
+
+  const mode = String(neuChatState.hostMode || '').trim();
+  if (mode === 'inbox') {
     const host = neuInboxChatHostNode();
     if (host instanceof HTMLElement && !host.classList.contains('hidden')) {
       const input = neuChatInputNode();
@@ -8623,8 +8720,8 @@ async function neuToggleChatDockFromLauncher() {
   neuMountChatCardForMode('dock');
   neuSetInboxPanelOpen(false);
 
-  const dock = neuChatDockNode();
-  const dockOpen = dock instanceof HTMLElement && !dock.classList.contains('hidden');
+  const root = neuChatRootNode();
+  const dockOpen = neuChatState.dockOpen === true && root instanceof HTMLElement && !root.classList.contains('hidden');
   if (dockOpen) {
     neuSetChatDockOpen(false);
     neuSetTypingRowVisible(false);
@@ -8648,23 +8745,13 @@ function neuInitChatDockLauncher() {
     neuChatState.dockOpen = savedOpen;
   }
 
-  const backdrop = neuChatDockBackdropNode();
-  if (backdrop instanceof HTMLElement) {
-    backdrop.addEventListener('click', (event) => {
-      event.preventDefault();
-      if (!neuCanUseDockHost() || !neuChatState.dockOpen) return;
-      neuSetChatDockOpen(false);
-      neuSetTypingRowVisible(false);
-    });
-  }
-
   document.addEventListener(
     'pointerdown',
     (event) => {
       if (!neuCanUseDockHost() || !neuChatState.dockOpen) return;
       const target = event.target;
       if (!(target instanceof Element)) return;
-      const dock = neuChatDockNode();
+      const dock = neuChatRootNode();
       const flag = neuChatFloatNode();
       if (dock instanceof HTMLElement && dock.contains(target)) return;
       if (flag instanceof HTMLElement && (target === flag || flag.contains(target))) return;
@@ -8680,7 +8767,7 @@ function neuInitChatDockLauncher() {
     (event) => {
       if (event.key !== 'Tab') return;
       if (!neuCanUseDockHost() || !neuChatState.dockOpen) return;
-      const dock = neuChatDockNode();
+      const dock = neuChatRootNode();
       if (!(dock instanceof HTMLElement) || dock.classList.contains('hidden')) return;
       const focusables = Array.from(
         dock.querySelectorAll(
@@ -9495,6 +9582,11 @@ function neuWireChatEvents() {
       return;
     }
     if (activeHostMode === 'inbox' && String(neuChatState.currentConversationId || '').trim()) {
+      neuCloseChatModal();
+      return;
+    }
+    const root = neuChatRootNode();
+    if (root instanceof HTMLElement && !root.classList.contains('hidden') && root.classList.contains('is-open')) {
       neuCloseChatModal();
       return;
     }
