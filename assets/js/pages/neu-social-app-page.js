@@ -3472,16 +3472,13 @@ function neuSetTypingRowVisible(visible) {
 
 function neuAfterNextPaint(callback) {
   if (typeof callback !== 'function') return;
-  const run = () => {
-    if (typeof window.requestAnimationFrame === 'function') {
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => callback());
-      });
-      return;
-    }
-    window.setTimeout(() => callback(), 0);
-  };
-  run();
+  if (typeof window.requestAnimationFrame === 'function') {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => callback());
+    });
+    return;
+  }
+  callback();
 }
 
 function neuChatScrollBottomAfterPaint(behavior = 'auto', options = {}) {
@@ -4974,7 +4971,7 @@ function neuDockThreadScrollBottomAfterPaint(state, behavior = 'auto') {
     window.requestAnimationFrame(() => window.requestAnimationFrame(run));
     return;
   }
-  window.setTimeout(run, 0);
+  run();
 }
 
 function neuDockThreadSetJumpVisible(state, visible) {
@@ -5193,10 +5190,10 @@ function neuRestoreDockThreadWindow(conversationId, options = {}) {
   neuDockThreadRenderHeader(state);
   neuDockThreadRenderMessages(state, { forceBottom: false, behavior: 'auto' });
   if (state.bodyEl instanceof HTMLElement && Number.isFinite(state.savedScrollTop)) {
-    window.setTimeout(() => {
+    neuAfterNextPaint(() => {
       if (!(state.bodyEl instanceof HTMLElement)) return;
       state.bodyEl.scrollTop = Number(state.savedScrollTop || 0);
-    }, 0);
+    });
   }
   neuLayoutDockThreadWindows();
   neuRenderDockBubbleTray();
@@ -5877,6 +5874,7 @@ function neuWireQaChatScrollProbe() {
 function neuBindChatScrollSurface(force = false) {
   const chatMessages = neuChatMessagesNode();
   if (!(chatMessages instanceof HTMLElement)) return null;
+  neuChatState.messagesContainerEl = chatMessages;
 
   if (!force && neuChatState.bodyScrollWired === true && neuChatScrollEl === chatMessages) return chatMessages;
 
@@ -8122,7 +8120,9 @@ async function neuOpenConversation(conversationId, seed = {}) {
   }).catch(() => null);
   neuStartChatMessagesListener(convId, members, { openSeq });
   neuStartTypingListener(convId, members);
-  window.setTimeout(() => {
+  neuAfterNextPaint(() => {
+    if (String(neuChatState.currentConversationId || '').trim() !== convId) return;
+    if (Number(neuChatState.openSeq || 0) !== openSeq) return;
     neuChatScrollBottomAfterPaint('auto', { conversationId: convId, openSeq, force: true });
     neuSyncChatComposerState();
     neuChatAutoResizeInput();
@@ -8134,7 +8134,7 @@ async function neuOpenConversation(conversationId, seed = {}) {
       input.focus({ preventScroll: true });
     }
     neuUpdateChatComposerOffsetVar();
-  }, 0);
+  });
 }
 
 /*
