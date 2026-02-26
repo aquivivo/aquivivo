@@ -9,10 +9,10 @@
       href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Bebas+Neue&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260222l" />
-    <link rel="stylesheet" href="assets/css/neu-theme.css?v=20260222c" />
-    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260223q" />
-    <script src="assets/js/layout.js?v=20260222i" type="module"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260226fix" />
+    <link rel="stylesheet" href="assets/css/neu-theme.css?v=20260226fix" />
+    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260226fix" />
+    <script src="assets/js/layout.js?v=20260226fix" type="module"></script>
   </head>
   <body data-page="profile" data-no-side-panel="1" class="fusion-profile neu-social-app no-side-panel" data-portal="feed">
     <div id="appHeader"></div>
@@ -403,8 +403,29 @@
       <span class="neu-unread-badge neu-chat-float-badge hidden" id="neuChatFloatBadge"></span>
     </button>
 
-    <div id="neuFloatingChat" class="hidden" role="dialog" aria-label="Chat">
-      <div id="neuFloatingChatMount"></div>
+    <div id="neuChatDock" class="neuChatDock hidden">
+      <div id="neuChatDockHost" class="neuChatDockCard">
+        <div class="neuChatDockShell">
+          <aside class="neuChatDockInbox">
+            <div class="neuChatDockInboxHead">
+              <h3>Chats</h3>
+              <input
+                id="neuDockInboxSearch"
+                class="input neu-chat-search-input"
+                type="search"
+                placeholder="Buscar chats..."
+                autocomplete="off"
+                aria-label="Buscar chats"
+              />
+            </div>
+            <div id="neuDockInboxList" class="neuInboxList neuDockInboxList"></div>
+          </aside>
+
+          <section class="neuChatDockThread">
+            <div id="neuDockChatMount" class="neuChatDockThreadMount"></div>
+          </section>
+        </div>
+      </div>
     </div>
 
     <div class="story-modal" id="storyModal" hidden>
@@ -681,7 +702,7 @@
     <script type="module">
       console.log('[NEU BOOT] html module loader start');
 
-      import('./assets/js/pages/neu-social-app-page.js?v=20260223o')
+      import('./assets/js/pages/neu-social-app-page.js?v=20260226fix')
         .then(() => console.log('[NEU BOOT] module imported OK'))
         .catch((err) => {
           console.error('[NEU BOOT] module import FAILED:', err);
