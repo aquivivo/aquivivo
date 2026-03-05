@@ -5,6 +5,17 @@ import * as postRepository from '../data/post.repository.js';
 import * as profileRepository from '../data/profile.repository.js';
 import * as storyRepository from '../data/story.repository.js';
 import {
+  annotateStoriesStrip as annotateStoriesStripUi,
+  closeStoryDeleteModal as closeStoryDeleteModalUi,
+  decorateStoriesGrid as decorateStoriesGridUi,
+  ensureStoryDeleteModal as ensureStoryDeleteModalUi,
+  ensureStoryModalMenu as ensureStoryModalMenuUi,
+  openStoryDeleteModal as openStoryDeleteModalUi,
+  refreshStoryModalMenu as refreshStoryModalMenuUi,
+  removeDeletedStoryFromUi as removeDeletedStoryFromUiUi,
+  wireStoryCrudEvents as wireStoryCrudEventsUi,
+} from '../stories/story.ui.js';
+import {
   neuLegacyLinkRewriteState,
   neuOnboardingState,
   neuPostOnboardingState,
@@ -2655,11 +2666,25 @@ function neuWirePublicProfileEvents() {
         event.stopImmediatePropagation();
         const meUid = neuCurrentUid();
         const routeProfileUid = getProfileUidFromQuery(meUid);
+        const dataUid = String(messageBtn.getAttribute('data-chat-uid') || '').trim();
         const chatUid =
-          String(messageBtn.getAttribute('data-chat-uid') || '').trim() ||
+          dataUid ||
           String(neuPublicProfileState.targetUid || '').trim() ||
           String(routeProfileUid || '').trim();
-        if (!chatUid || chatUid === meUid) return;
+        neuQaTrace('profile_message_click', {
+          meUid,
+          dataUid,
+          profileTargetUid: String(neuPublicProfileState.targetUid || '').trim(),
+          routeProfileUid: String(routeProfileUid || '').trim(),
+          resolvedChatUid: chatUid,
+        });
+        if (!chatUid || chatUid === meUid) {
+          neuQaTrace('profile_message_click_guard_block', {
+            meUid,
+            resolvedChatUid: chatUid,
+          });
+          return;
+        }
         neuOpenProfileMessage(chatUid).catch((error) => {
           console.error('[neu-chat] profile button failed', error);
           neuChatSetHint('No se pudo iniciar el chat.', true);
@@ -2812,7 +2837,8 @@ const NEU_CHAT_REACTION_EMOJI = {
 const NEU_DOCK_THREAD_MAX_WINDOWS = 3;
 const NEU_DOCK_THREAD_GAP = 12;
 const NEU_DOCK_THREAD_MARGIN = 16;
-const NEU_DOCK_THREAD_BOTTOM = 96;
+const NEU_DOCK_THREAD_BOTTOM = 0;
+const NEU_DOCK_THREAD_STACK_STEP = 380;
 const NEU_DOCK_BUBBLE_BOTTOM = 24;
 const neuChatFeatures = {
   typingEnabled: true,
@@ -2821,6 +2847,7 @@ const neuChatFeatures = {
 };
 
 let neuChatScrollEl = null;
+let neuChatDockWindowZ = 100;
 
 function neuUnreadValue(value) {
   const n = Number(value);
@@ -4047,7 +4074,8 @@ function neuStartTypingListener(conversationId, members = []) {
 }
 
 function neuChatMembers(uidA, uidB) {
-  return [String(uidA || '').trim(), String(uidB || '').trim()].filter(Boolean).sort((a, b) => a.localeCompare(b));
+  const members = Array.from(new Set([String(uidA || '').trim(), String(uidB || '').trim()].filter(Boolean)));
+  return members.sort((a, b) => a.localeCompare(b));
 }
 
 function neuChatMemberKey(uidA, uidB) {
@@ -4057,6 +4085,175 @@ function neuChatMemberKey(uidA, uidB) {
 
 function neuChatModalNode() {
   return document.getElementById('neuChatModal');
+}
+
+function neuEnsureChatFloatFlagDom() {
+  const existing = document.getElementById('neuChatFloatFlag');
+  if (existing instanceof HTMLButtonElement) return existing;
+  const floatBtn = document.createElement('button');
+  floatBtn.id = 'neuChatFloatFlag';
+  floatBtn.className = 'hidden';
+  floatBtn.type = 'button';
+  floatBtn.setAttribute('aria-label', 'Abrir chat');
+  floatBtn.innerHTML = '<span class="neu-chat-float-label">Chat</span><span id="neuChatFloatBadge" class="hidden"></span>';
+  document.body.append(floatBtn);
+  return floatBtn;
+}
+
+function neuEnsureChatShellDom() {
+  const existingCard = document.getElementById('neuChatModalRoot');
+  if (existingCard instanceof HTMLElement) return;
+
+  if (typeof window !== 'undefined') window.__NEU_DISABLE_MINI_CHAT__ = true;
+
+  const legacyMiniDock = document.getElementById('miniChatDock');
+  if (legacyMiniDock instanceof HTMLElement) legacyMiniDock.remove();
+  const legacyMiniTray = document.getElementById('miniChatTray');
+  if (legacyMiniTray instanceof HTMLElement) legacyMiniTray.remove();
+  const legacyMiniThreadRoot = document.getElementById('miniChatThreadRoot');
+  if (legacyMiniThreadRoot instanceof HTMLElement) legacyMiniThreadRoot.remove();
+  if (typeof window !== 'undefined' && window.__avMiniChatApi) {
+    delete window.__avMiniChatApi;
+  }
+
+  const root = neuChatRootNode();
+  if (!(root instanceof HTMLElement)) return;
+  let createdFallbackCard = false;
+
+  let modal = neuChatModalNode();
+  if (!(modal instanceof HTMLElement)) {
+    modal = document.createElement('div');
+    modal.id = 'neuChatModal';
+    modal.className = 'composer-modal';
+    modal.hidden = true;
+    document.body.append(modal);
+  }
+
+  let card = document.getElementById('neuChatModalRoot');
+  if (!(card instanceof HTMLElement)) {
+    createdFallbackCard = true;
+    card = document.createElement('div');
+    card.id = 'neuChatModalRoot';
+    card.className = 'neu-chat-modal-card neuChatModalContent';
+    card.innerHTML = `
+      <header class="neu-chat-head neuChatHeader">
+        <div class="neu-chat-peer">
+          <span class="avatar-frame neu-chat-peer-avatar">
+            <img id="neuChatPeerAvatarImg" alt="avatar" hidden />
+            <span id="neuChatPeerAvatarFallback">U</span>
+          </span>
+          <span class="neu-chat-peer-copy">
+            <strong id="neuChatPeerName">Usuario</strong>
+            <span id="neuChatPeerHandle">@usuario</span>
+            <small id="neuChatPeerPresence" class="hintSmall"></small>
+          </span>
+        </div>
+        <div class="neu-chat-actions">
+          <button id="neuChatCallBtn" class="btn-white-outline" type="button" aria-label="Llamar">Llamar</button>
+          <button id="neuChatVideoBtn" class="btn-white-outline" type="button" aria-label="Video">Video</button>
+          <button id="neuChatMoreBtn" class="btn-white-outline" type="button" aria-label="Mas">Mas</button>
+          <button id="neuChatCloseBtn" class="btn-white-outline" type="button" data-neu-chat-close="1" aria-label="Cerrar">Cerrar</button>
+        </div>
+      </header>
+
+      <div id="neuChatBody" class="neu-chat-body neuChatBody">
+        <div id="neuChatMessages" class="neuChatMessages"></div>
+        <div id="neuTypingRow" class="hidden"></div>
+        <button id="neuNewMsgChip" class="btn-white-outline hidden" type="button">Nuevos mensajes</button>
+        <div id="neuChatTopEnd" class="neuChatTopEnd hidden"></div>
+      </div>
+
+      <footer class="neu-chat-foot">
+        <div id="neuChatHint" class="hintSmall"></div>
+
+        <div id="neuChatReplyPreview" class="hidden">
+          <span id="neuChatReplyPreviewText"></span>
+          <button id="neuChatReplyCancelBtn" class="btn-white-outline" type="button" aria-label="Cancelar respuesta">X</button>
+        </div>
+
+        <div id="neuChatAttachmentPreview" class="hidden">
+          <img id="neuChatAttachmentPreviewImg" alt="preview" />
+          <span id="neuChatAttachmentPreviewName"></span>
+          <button id="neuChatAttachmentClearBtn" class="btn-white-outline" type="button" aria-label="Quitar adjunto">X</button>
+        </div>
+
+        <form id="neuChatForm" class="neu-chat-form" autocomplete="off">
+          <input id="neuChatFileInput" type="file" accept="image/*" hidden />
+          <button id="neuChatAttachBtn" class="btn-white-outline" type="button" aria-label="Adjuntar">+</button>
+          <button id="neuChatEmojiBtn" class="btn-white-outline" type="button" aria-label="Emoji">:)</button>
+          <textarea id="neuChatInput" class="input" rows="1" maxlength="1000" placeholder="Escribe un mensaje..."></textarea>
+          <button id="neuChatSendBtn" class="btn-white-outline" type="submit" aria-label="Enviar">></button>
+          <button id="neuChatLikeBtn" class="btn-white-outline" type="button" aria-label="Like">Corazon</button>
+        </form>
+      </footer>
+    `;
+    root.append(card);
+  }
+
+  if (!document.getElementById('neuChatLongPressMenu')) {
+    const menu = document.createElement('div');
+    menu.id = 'neuChatLongPressMenu';
+    menu.className = 'neuMsgMenu hidden';
+    document.body.append(menu);
+  }
+
+  if (!document.getElementById('neuChatImageLightbox')) {
+    const lightbox = document.createElement('div');
+    lightbox.id = 'neuChatImageLightbox';
+    lightbox.className = 'composer-modal neu-chat-image-lightbox';
+    lightbox.hidden = true;
+    lightbox.innerHTML = `
+      <div class="composer-modal-backdrop" data-neu-chat-image-close="1"></div>
+      <div class="composer-modal-card neu-chat-image-lightbox-card">
+        <button id="neuChatImageCloseBtn" class="btn-white-outline neu-chat-image-close" type="button" data-neu-chat-image-close="1">Cerrar</button>
+        <img id="neuChatLightboxImg" alt="chat image" />
+      </div>
+    `;
+    document.body.append(lightbox);
+  }
+
+  if (!document.getElementById('neuShareChatModal')) {
+    const shareModal = document.createElement('div');
+    shareModal.id = 'neuShareChatModal';
+    shareModal.className = 'composer-modal neu-chat-share-modal';
+    shareModal.hidden = true;
+    shareModal.innerHTML = `
+      <div class="composer-modal-backdrop" data-neu-chat-share-close="1"></div>
+      <div class="composer-modal-card neu-chat-share-card">
+        <div class="neu-chat-share-head">
+          <h3>Compartir</h3>
+          <button class="btn-white-outline" type="button" data-neu-chat-share-close="1">Cerrar</button>
+        </div>
+        <input id="neuShareChatSearchInput" class="input neu-chat-share-search" type="search" placeholder="Buscar chat..." />
+        <div id="neuShareChatList" class="neu-chat-share-list"></div>
+      </div>
+    `;
+    document.body.append(shareModal);
+  }
+
+  neuEnsureChatFloatFlagDom();
+
+  // Fallback layout in case legacy markup is missing from HTML.
+  if (createdFallbackCard && root.dataset.neuChatShellFallback !== '1') {
+    root.dataset.neuChatShellFallback = '1';
+    root.style.position = 'fixed';
+    root.style.right = '16px';
+    root.style.bottom = '86px';
+    root.style.width = 'min(92vw, 390px)';
+    root.style.height = 'min(78vh, 640px)';
+    root.style.zIndex = '35';
+
+    if (card instanceof HTMLElement) {
+      card.style.height = '100%';
+      card.style.display = 'flex';
+      card.style.flexDirection = 'column';
+      card.style.border = '1px solid rgba(255,255,255,0.16)';
+      card.style.borderRadius = '14px';
+      card.style.background = 'rgba(8,20,44,0.96)';
+      card.style.backdropFilter = 'blur(12px)';
+      card.style.overflow = 'hidden';
+    }
+  }
 }
 
 function neuChatModalCardNode() {
@@ -4084,6 +4281,15 @@ function neuChatRootNode() {
   const node = document.createElement('div');
   node.id = 'neu-chat-root';
   node.className = 'neu-chat-root hidden';
+  document.body.append(node);
+  return node;
+}
+
+function neuChatWindowsLayerNode() {
+  const existing = document.getElementById('neuChatWindowsLayer');
+  if (existing instanceof HTMLElement) return existing;
+  const node = document.createElement('div');
+  node.id = 'neuChatWindowsLayer';
   document.body.append(node);
   return node;
 }
@@ -4882,10 +5088,7 @@ function neuDockThreadWindowWidth() {
 }
 
 function neuDockThreadBaseRightOffset() {
-  const root = neuChatRootNode();
-  if (!(root instanceof HTMLElement) || root.classList.contains('hidden')) return NEU_DOCK_THREAD_MARGIN;
-  const width = Math.round(root.getBoundingClientRect().width);
-  return NEU_DOCK_THREAD_MARGIN + Math.max(0, width) + NEU_DOCK_THREAD_GAP;
+  return NEU_DOCK_THREAD_MARGIN;
 }
 
 function neuDockBubbleTrayNode() {
@@ -4950,41 +5153,10 @@ function neuRenderDockBubble(state) {
 }
 
 function neuRenderDockBubbleTray() {
-  const tray = neuDockBubbleTrayNode();
+  const tray = document.getElementById('neuDockBubbleTray');
   if (!(tray instanceof HTMLElement)) return;
-  if (neuIsMobileChatViewport()) {
-    tray.classList.add('hidden');
-    tray.innerHTML = '';
-    return;
-  }
-
-  const minimizedIds = neuDockThreadWindowsState.minimizedOrder.filter((id) => {
-    const state = neuDockThreadWindowsState.windows.get(id);
-    return !!state && state.minimized === true;
-  });
-
-  if (!minimizedIds.length) {
-    tray.classList.add('hidden');
-    tray.innerHTML = '';
-    return;
-  }
-
-  const rightOffset = neuDockThreadBaseRightOffset();
-  const maxWidth = Math.max(140, window.innerWidth - rightOffset - NEU_DOCK_THREAD_MARGIN);
-  tray.style.right = `${Math.max(NEU_DOCK_THREAD_MARGIN, Math.round(rightOffset))}px`;
-  tray.style.bottom = `${NEU_DOCK_BUBBLE_BOTTOM}px`;
-  tray.style.maxWidth = `${Math.round(maxWidth)}px`;
-
-  const frag = document.createDocumentFragment();
-  [...minimizedIds].reverse().forEach((conversationId) => {
-    const state = neuDockThreadWindowsState.windows.get(conversationId);
-    if (!state) return;
-    neuRenderDockBubble(state);
-    if (state.bubbleEl instanceof HTMLElement) frag.append(state.bubbleEl);
-  });
+  tray.classList.add('hidden');
   tray.innerHTML = '';
-  tray.append(frag);
-  tray.classList.remove('hidden');
 }
 
 function neuDockThreadIsNearBottom(bodyEl, threshold = NEU_CHAT_SCROLL_NEAR_BOTTOM) {
@@ -5199,7 +5371,7 @@ function neuMinimizeDockThreadWindow(conversationId, options = {}) {
     state.savedScrollTop = state.bodyEl.scrollTop;
   }
   state.minimized = true;
-  if (state.windowEl instanceof HTMLElement) state.windowEl.classList.add('hidden');
+  if (state.windowEl instanceof HTMLElement) state.windowEl.classList.add('neu-chat-minimized');
   if (!neuDockThreadWindowsState.minimizedOrder.includes(convId)) {
     neuDockThreadWindowsState.minimizedOrder.push(convId);
   }
@@ -5214,6 +5386,7 @@ function neuRestoreDockThreadWindow(conversationId, options = {}) {
   const state = neuDockThreadWindowsState.windows.get(convId);
   if (!state) return;
   if (!state.minimized) {
+    neuFocusDockThreadWindow(state);
     if (options.focus !== false && state.inputEl instanceof HTMLTextAreaElement) {
       state.inputEl.focus({ preventScroll: true });
     }
@@ -5222,7 +5395,7 @@ function neuRestoreDockThreadWindow(conversationId, options = {}) {
 
   state.minimized = false;
   neuDockThreadWindowsState.minimizedOrder = neuDockThreadWindowsState.minimizedOrder.filter((id) => id !== convId);
-  if (state.windowEl instanceof HTMLElement) state.windowEl.classList.remove('hidden');
+  if (state.windowEl instanceof HTMLElement) state.windowEl.classList.remove('neu-chat-minimized');
   neuDockThreadRenderHeader(state);
   neuDockThreadRenderMessages(state, { forceBottom: false, behavior: 'auto' });
   if (state.bodyEl instanceof HTMLElement && Number.isFinite(state.savedScrollTop)) {
@@ -5233,6 +5406,7 @@ function neuRestoreDockThreadWindow(conversationId, options = {}) {
   }
   neuLayoutDockThreadWindows();
   neuRenderDockBubbleTray();
+  neuFocusDockThreadWindow(state);
   if (options.focus !== false && state.inputEl instanceof HTMLTextAreaElement) {
     state.inputEl.focus({ preventScroll: true });
   }
@@ -5241,70 +5415,84 @@ function neuRestoreDockThreadWindow(conversationId, options = {}) {
 function neuLayoutDockThreadWindows() {
   const states = neuDockThreadWindowsState;
   if (!states || !Array.isArray(states.order)) return;
-  if (neuIsMobileChatViewport()) {
-    states.order.forEach((id) => {
-      const win = states.windows.get(id);
-      if (win?.windowEl instanceof HTMLElement) win.windowEl.classList.add('hidden');
-    });
-    neuRenderDockBubbleTray();
-    return;
-  }
-
-  const baseRight = neuDockThreadBaseRightOffset();
-  const availableWidth = Math.max(0, window.innerWidth - NEU_DOCK_THREAD_MARGIN * 2);
-  const windowWidth = neuDockThreadWindowWidth();
-  const perWindow = windowWidth + NEU_DOCK_THREAD_GAP;
-  let maxByViewport = Math.floor((availableWidth - baseRight + NEU_DOCK_THREAD_GAP) / perWindow);
-  if (!Number.isFinite(maxByViewport)) maxByViewport = 0;
-  maxByViewport = Math.max(0, maxByViewport);
-
-  const visibleCap = Math.max(0, Math.min(NEU_DOCK_THREAD_MAX_WINDOWS, maxByViewport));
-  const openIds = states.order.filter((conversationId) => {
-    const state = states.windows.get(conversationId);
-    return !!state && state.minimized !== true;
-  });
-
-  while (openIds.length > visibleCap) {
-    const oldestOpenId = openIds.shift();
-    if (!oldestOpenId) break;
-    neuMinimizeDockThreadWindow(oldestOpenId, { reason: 'viewport', skipLayout: true });
-  }
-
-  const orderedNewestFirst = [...states.order]
-    .filter((conversationId) => {
-      const state = states.windows.get(conversationId);
-      return !!state && state.minimized !== true;
-    })
-    .reverse();
-
-  orderedNewestFirst.forEach((conversationId, index) => {
+  states.order.forEach((conversationId, index) => {
     const state = states.windows.get(conversationId);
     if (!state?.windowEl) return;
-    const right = baseRight + index * (windowWidth + NEU_DOCK_THREAD_GAP);
+    state.windowEl.classList.remove('hidden');
+    state.windowEl.classList.toggle('neu-chat-minimized', state.minimized === true);
+    if (state.manualPosition === true) return;
+    const right = neuDockThreadBaseRightOffset() + index * NEU_DOCK_THREAD_STACK_STEP;
+    state.windowEl.style.left = 'auto';
+    state.windowEl.style.top = 'auto';
     state.windowEl.style.right = `${Math.max(NEU_DOCK_THREAD_MARGIN, Math.round(right))}px`;
     state.windowEl.style.bottom = `${NEU_DOCK_THREAD_BOTTOM}px`;
-    state.windowEl.style.zIndex = `${999996 + index}`;
-    state.windowEl.classList.remove('hidden');
   });
+}
 
-  states.order.forEach((conversationId) => {
-    const state = states.windows.get(conversationId);
-    if (!state?.windowEl || state.minimized === true) return;
-    if (orderedNewestFirst.includes(conversationId)) return;
-    state.windowEl.classList.add('hidden');
+function neuFocusDockThreadWindow(target) {
+  if (!target) return;
+  const state =
+    typeof target === 'string'
+      ? neuDockThreadWindowsState.windows.get(String(target || '').trim())
+      : target instanceof HTMLElement
+        ? neuDockThreadWindowsState.windows.get(String(target.getAttribute('data-neu-dock-conversation') || '').trim())
+      : target && typeof target === 'object'
+        ? target
+        : null;
+  if (!state?.windowEl) return;
+  const convId = String(state.conversationId || '').trim();
+  if (convId) neuChatState.lastConversationId = convId;
+  const peerUid = String(state.peerUid || '').trim();
+  if (peerUid) neuChatState.lastPeerUid = peerUid;
+  neuChatDockWindowZ += 1;
+  state.windowEl.style.zIndex = `${neuChatDockWindowZ}`;
+}
+
+function neuMakeDockThreadWindowDraggable(state, headerEl) {
+  if (!state?.windowEl || !(headerEl instanceof HTMLElement)) return;
+  let dragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  const onMove = (event) => {
+    if (!dragging || !state.windowEl) return;
+    const maxX = Math.max(0, window.innerWidth - state.windowEl.offsetWidth);
+    const maxY = Math.max(0, window.innerHeight - state.windowEl.offsetHeight);
+    const left = neuClampNumber(event.clientX - offsetX, 0, maxX);
+    const top = neuClampNumber(event.clientY - offsetY, 0, maxY);
+    state.windowEl.style.left = `${Math.round(left)}px`;
+    state.windowEl.style.top = `${Math.round(top)}px`;
+    state.windowEl.style.right = 'auto';
+    state.windowEl.style.bottom = 'auto';
+  };
+
+  const onUp = () => {
+    if (!dragging) return;
+    dragging = false;
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+  };
+
+  headerEl.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest('button, a, input, textarea, select, label')) return;
+    const rect = state.windowEl.getBoundingClientRect();
+    dragging = true;
+    state.manualPosition = true;
+    offsetX = event.clientX - rect.left;
+    offsetY = event.clientY - rect.top;
+    neuFocusDockThreadWindow(state);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    event.preventDefault();
   });
-
-  neuRenderDockBubbleTray();
 }
 
 function neuBringDockThreadWindowToFront(conversationId) {
   const convId = String(conversationId || '').trim();
   if (!convId) return;
-  const order = neuDockThreadWindowsState.order;
-  const index = order.indexOf(convId);
-  if (index >= 0) order.splice(index, 1);
-  order.push(convId);
-  neuLayoutDockThreadWindows();
+  neuFocusDockThreadWindow(convId);
 }
 
 function neuWireDockThreadWindowResize() {
@@ -5324,7 +5512,8 @@ function neuCreateDockThreadWindow(conversationId) {
   if (!convId) return null;
 
   const wrap = document.createElement('section');
-  wrap.className = 'neuDockThreadWindow';
+  wrap.className = 'neu-chat-window neuDockThreadWindow';
+  wrap.id = `neuChatWindow_${convId}`;
   wrap.setAttribute('data-neu-dock-conversation', convId);
   wrap.innerHTML = `
     <div class="neuDockThreadWindowCard">
@@ -5337,37 +5526,44 @@ function neuCreateDockThreadWindow(conversationId) {
           <strong>Usuario</strong>
           <span>@usuario</span>
         </span>
-        <button class="btn-white-outline neuDockThreadCloseBtn" type="button" aria-label="Cerrar chat">Cerrar</button>
+        <span class="neuDockThreadHeadActions">
+          <button class="btn-white-outline neuDockThreadMinBtn" type="button" aria-label="Minimizar chat">_</button>
+          <button class="btn-white-outline neuDockThreadCloseBtn" type="button" aria-label="Cerrar chat">X</button>
+        </span>
       </header>
-      <div class="neuDockThreadWindowBody">
-        <div class="neuDockThreadMessages"></div>
+      <div class="neuDockThreadWindowBody neuChatBody">
+        <div class="neuDockThreadMessages neuChatMessages"></div>
         <div class="neuDockThreadTyping hidden">Escribiendo...</div>
         <button class="neuDockThreadJump hidden" type="button">Nuevos mensajes</button>
       </div>
       <form class="neuDockThreadComposer" autocomplete="off">
-        <textarea class="input neuDockThreadInput" rows="1" maxlength="1000" placeholder="Escribe un mensaje..."></textarea>
+        <textarea class="input neuDockThreadInput neuChatInput" rows="1" maxlength="1000" placeholder="Escribe un mensaje..."></textarea>
         <button class="btn-white-outline neuDockThreadSendBtn" type="submit" aria-label="Enviar">></button>
       </form>
     </div>
   `;
-  document.body.append(wrap);
+  const layer = neuChatWindowsLayerNode();
+  layer.append(wrap);
 
   const avatarWrap = wrap.querySelector('.neuDockThreadAvatar');
   const avatarImgEl = avatarWrap?.querySelector('img') || null;
   const avatarFallbackEl = avatarWrap?.querySelector('span') || null;
+  const headEl = wrap.querySelector('.neuDockThreadWindowHead');
   const nameEl = wrap.querySelector('.neuDockThreadPeerCopy strong');
   const handleEl = wrap.querySelector('.neuDockThreadPeerCopy span');
-  const bodyEl = wrap.querySelector('.neuDockThreadWindowBody');
-  const messagesEl = wrap.querySelector('.neuDockThreadMessages');
+  const bodyEl = wrap.querySelector('.neuChatBody');
+  const messagesEl = wrap.querySelector('.neuChatMessages');
   const typingEl = wrap.querySelector('.neuDockThreadTyping');
   const jumpEl = wrap.querySelector('.neuDockThreadJump');
   const formEl = wrap.querySelector('.neuDockThreadComposer');
-  const inputEl = wrap.querySelector('.neuDockThreadInput');
+  const inputEl = wrap.querySelector('.neuChatInput');
+  const minimizeEl = wrap.querySelector('.neuDockThreadMinBtn');
   const closeEl = wrap.querySelector('.neuDockThreadCloseBtn');
 
   const state = {
     conversationId: convId,
     windowEl: wrap,
+    headEl: headEl instanceof HTMLElement ? headEl : null,
     avatarImgEl: avatarImgEl instanceof HTMLImageElement ? avatarImgEl : null,
     avatarFallbackEl: avatarFallbackEl instanceof HTMLElement ? avatarFallbackEl : null,
     nameEl: nameEl instanceof HTMLElement ? nameEl : null,
@@ -5378,6 +5574,7 @@ function neuCreateDockThreadWindow(conversationId) {
     jumpEl: jumpEl instanceof HTMLButtonElement ? jumpEl : null,
     formEl: formEl instanceof HTMLFormElement ? formEl : null,
     inputEl: inputEl instanceof HTMLTextAreaElement ? inputEl : null,
+    minimizeEl: minimizeEl instanceof HTMLButtonElement ? minimizeEl : null,
     closeEl: closeEl instanceof HTMLButtonElement ? closeEl : null,
     messages: [],
     members: [],
@@ -5390,6 +5587,7 @@ function neuCreateDockThreadWindow(conversationId) {
     minimized: false,
     savedScrollTop: 0,
     bubbleEl: null,
+    manualPosition: false,
     typingActive: false,
     typingDebounceTimer: 0,
     typingIdleTimer: 0,
@@ -5400,7 +5598,19 @@ function neuCreateDockThreadWindow(conversationId) {
   if (state.closeEl) {
     state.closeEl.addEventListener('click', (event) => {
       event.preventDefault();
-      neuCloseDockThreadWindow(convId, { reason: 'user' });
+      event.stopPropagation();
+      neuCloseDockThreadWindow(convId, { reason: 'user', destroy: true });
+    });
+  }
+  if (state.minimizeEl) {
+    state.minimizeEl.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (state.minimized) {
+        neuRestoreDockThreadWindow(convId, { focus: true });
+        return;
+      }
+      neuMinimizeDockThreadWindow(convId, { reason: 'user' });
     });
   }
   if (state.formEl) {
@@ -5447,7 +5657,11 @@ function neuCreateDockThreadWindow(conversationId) {
       neuDockThreadScrollBottomAfterPaint(state, 'smooth');
     });
   }
+  if (state.headEl instanceof HTMLElement) {
+    neuMakeDockThreadWindowDraggable(state, state.headEl);
+  }
   wrap.addEventListener('pointerdown', () => neuBringDockThreadWindowToFront(convId), { passive: true });
+  neuFocusDockThreadWindow(state);
   return state;
 }
 
@@ -5484,7 +5698,6 @@ async function neuStartDockThreadWindowListeners(state) {
       state.hasSnapshot = true;
       if (state.minimized) {
         state.newMessageChipVisible = false;
-        neuRenderDockBubble(state);
         return;
       }
       state.nearBottom = wasNearBottom;
@@ -5623,17 +5836,20 @@ async function neuOpenOrFocusDockThreadWindow(conversationId, seed = {}) {
   const meUid = neuCurrentUid();
   if (!convId || !meUid || !neuCanUseDockHost()) return;
 
-  let existing = neuDockThreadWindowsState.windows.get(convId);
-  if (existing) {
-    if (existing.minimized) {
-      neuRestoreDockThreadWindow(convId, { focus: true });
+  const windowId = `neuChatWindow_${convId}`;
+  const existingWin = document.getElementById(windowId);
+  if (existingWin instanceof HTMLElement) {
+    const existingState = neuDockThreadWindowsState.windows.get(convId);
+    if (!existingState) {
+      existingWin.remove();
+    } else {
+      if (existingState.minimized) {
+        neuRestoreDockThreadWindow(convId, { focus: true });
+        return;
+      }
+      neuFocusDockThreadWindow(existingWin);
       return;
     }
-    neuBringDockThreadWindowToFront(convId);
-    if (existing.inputEl instanceof HTMLTextAreaElement) {
-      existing.inputEl.focus({ preventScroll: true });
-    }
-    return;
   }
 
   const snap = await getDoc(doc(db, 'neuConversations', convId));
@@ -5671,6 +5887,8 @@ function neuCloseDockThreadWindow(conversationId, options = {}) {
     neuDockThreadWindowsState.windows.delete(convId);
     neuDockThreadWindowsState.order = neuDockThreadWindowsState.order.filter((id) => id !== convId);
     neuDockThreadWindowsState.minimizedOrder = neuDockThreadWindowsState.minimizedOrder.filter((id) => id !== convId);
+    const nextActiveId = [...neuDockThreadWindowsState.order].reverse().find((id) => neuDockThreadWindowsState.windows.has(id));
+    if (nextActiveId) neuChatState.lastConversationId = nextActiveId;
     if (options.reason !== 'viewport' && options.reason !== 'limit') {
       neuChatSetHint('');
     }
@@ -7651,6 +7869,7 @@ function neuCloseChatModal() {
   neuStopChatMessageListener();
   neuChatState.activeChatId = '';
   neuChatState.currentConversationId = '';
+  neuChatState.activeConversationId = null;
   neuChatState.currentMembers = [];
   neuChatState.currentMemberKey = '';
   neuChatState.currentConversationMeta = null;
@@ -7671,6 +7890,7 @@ function neuCloseChatModal() {
   neuChatState.peerLastReadAt = null;
   neuChatState.peerLastReadMessageId = '';
   neuChatState.lastRenderedMsgId = '';
+  neuQaAssertState('conversation_close');
   neuChatSetLastMessageRef(null);
   neuChatState.typingConversationId = '';
   neuChatState.typingActive = false;
@@ -7705,10 +7925,66 @@ function neuStopChatListListener() {
   neuRenderFloatUnreadBadge();
 }
 
+function neuQaRuntime() {
+  if (typeof window === 'undefined') return null;
+  const qa = window.__NEU_QA__;
+  if (!qa || typeof qa !== 'object' || qa.enabled !== true) return null;
+  return qa;
+}
+
+function neuQaAssertState(reason = '') {
+  const qa = neuQaRuntime();
+  if (!qa || typeof qa.assertState !== 'function') return true;
+  try {
+    return qa.assertState(reason) !== false;
+  } catch (error) {
+    console.error('[QA] assertState failed', error);
+    return false;
+  }
+}
+
+function neuQaTrace(tag, data = {}) {
+  const qa = neuQaRuntime();
+  if (!qa) return;
+  if (!Array.isArray(qa.chatTrace)) qa.chatTrace = [];
+  const entry = {
+    at: Date.now(),
+    tag: String(tag || ''),
+    data: data && typeof data === 'object' ? { ...data } : { value: data },
+  };
+  qa.chatTrace.push(entry);
+  if (qa.chatTrace.length > 120) {
+    qa.chatTrace.splice(0, qa.chatTrace.length - 120);
+  }
+  console.debug('[QA][chat]', entry.tag, entry.data);
+}
+
+function neuQaMessageListenerAttach(convId, token) {
+  const qa = neuQaRuntime();
+  if (!qa) return;
+  const next = Math.max(0, Number(qa.activeMessageListeners || 0)) + 1;
+  qa.activeMessageListeners = next;
+  console.debug('[QA] attach listener', 'convId:', convId, 'token:', token, 'active:', next);
+  if (next > 1) {
+    console.error('[QA] More than 1 active message listener!', 'convId:', convId, 'token:', token, 'active:', next);
+  }
+  neuQaAssertState('listener_attach');
+}
+
+function neuQaMessageListenerDetach(reason = '') {
+  const qa = neuQaRuntime();
+  if (!qa) return;
+  const next = Math.max(0, Number(qa.activeMessageListeners || 0) - 1);
+  qa.activeMessageListeners = next;
+  console.debug('[QA] detach listener', 'reason:', String(reason || ''), 'active:', next);
+  neuQaAssertState('listener_detach');
+}
+
 function neuStopChatMessageListener() {
   neuChatState.messageListenerToken = Number(neuChatState.messageListenerToken || 0) + 1;
   neuChatState.messageListenerConversationId = '';
   if (typeof neuChatState.messageUnsub === 'function') {
+    neuQaMessageListenerDetach('stop');
     try {
       neuChatState.messageUnsub();
     } catch {
@@ -8032,16 +8308,38 @@ function neuStartChatMessagesListener(conversationId, members, options = {}) {
       neuChatSetHint('No se pudo cargar mensajes.', true);
     },
   );
+  neuQaMessageListenerAttach(convId, listenerToken);
 }
 
 async function neuOpenConversation(conversationId, seed = {}) {
   const convId = String(conversationId || '').trim();
   const meUid = neuCurrentUid();
+  const preferredMode = neuResolveChatHostMode(seed?.mode);
+  neuQaTrace('open_conversation_start', {
+    convId,
+    meUid,
+    seedOtherUid: String(seed?.otherUid || '').trim(),
+    seedMode: String(seed?.mode || '').trim(),
+  });
   if (!convId || !meUid) return;
+
+  if (preferredMode === 'dock' && neuCanUseDockHost()) {
+    await neuOpenOrFocusDockThreadWindow(convId, {
+      otherUid: String(seed?.otherUid || '').trim(),
+      memberKey: String(seed?.memberKey || '').trim(),
+      mode: preferredMode,
+    });
+    return;
+  }
+
+  if (!document.getElementById('neuChatModalRoot')) {
+    neuEnsureChatShellDom();
+  }
 
   const convRef = doc(db, 'neuConversations', convId);
   const snap = await getDoc(convRef);
   if (!snap.exists()) {
+    neuQaTrace('open_conversation_missing_doc', { convId });
     neuChatSetHint('Conversacion no encontrada.', true);
     return;
   }
@@ -8051,13 +8349,13 @@ async function neuOpenConversation(conversationId, seed = {}) {
     ? data.members.map((item) => String(item || '').trim()).filter(Boolean)
     : [];
   if (!members.includes(meUid)) {
+    neuQaTrace('open_conversation_access_denied', { convId, meUid, members });
     neuChatSetHint('Sin acceso a esta conversacion.', true);
     return;
   }
 
-  const requestedMode = neuResolveChatHostMode(seed?.mode);
-  let resolvedMode = requestedMode;
-  if (!neuMountChatCardForMode(requestedMode)) {
+  let resolvedMode = preferredMode;
+  if (!neuMountChatCardForMode(preferredMode)) {
     neuMountChatCardForMode('modal');
     resolvedMode = 'modal';
   }
@@ -8102,6 +8400,7 @@ async function neuOpenConversation(conversationId, seed = {}) {
   neuChatState.activeChatId = convId;
   neuChatState.hostMode = resolvedMode;
   neuChatState.currentConversationId = convId;
+  neuChatState.activeConversationId = convId;
   neuChatState.currentMembers = members;
   neuChatState.currentMemberKey = memberKey;
   neuChatState.currentConversationMeta = data;
@@ -8123,6 +8422,13 @@ async function neuOpenConversation(conversationId, seed = {}) {
   neuChatState.lastRenderedMsgId = '';
   neuChatState.typingConversationId = convId;
   neuChatState.typingActive = false;
+  neuQaAssertState('conversation_open');
+  neuQaTrace('open_conversation_ready', {
+    convId,
+    hostMode: resolvedMode,
+    peerUid,
+    memberKey,
+  });
   neuSyncOwnActiveThreadState(convId);
   neuChatSetHint('');
   neuRenderChatHeader();
@@ -8178,19 +8484,33 @@ Manual test plan (open-thread scroll + skeleton):
 */
 
 async function neuEnsureDirectConversation(uidA, uidB) {
-  const members = neuChatMembers(uidA, uidB);
+  const firstUid = String(uidA || '').trim();
+  const secondUid = String(uidB || '').trim();
+  neuQaTrace('ensure_direct_start', { uidA: firstUid, uidB: secondUid });
+  if (!firstUid || !secondUid || firstUid === secondUid) {
+    console.error('[neu-chat] Invalid conversation pair', firstUid, secondUid);
+    neuQaTrace('ensure_direct_invalid_pair', { uidA: firstUid, uidB: secondUid });
+    return null;
+  }
+
+  const members = neuChatMembers(firstUid, secondUid);
   if (members.length !== 2) return null;
   const memberKey = `${members[0]}_${members[1]}`;
-  if (neuChatIsActionBlocked('conversation_create', memberKey)) return null;
+  if (neuChatIsActionBlocked('conversation_create', memberKey)) {
+    neuQaTrace('ensure_direct_action_blocked', { memberKey, members });
+    return null;
+  }
 
   const found = await neuFindConversationByMemberKey(memberKey);
   if (found?.id) {
+    neuQaTrace('ensure_direct_found_existing', { conversationId: found.id, memberKey, members });
     return { conversationId: found.id, members, memberKey };
   }
 
   const conversationId = memberKey;
   const now = serverTimestamp();
   const batch = writeBatch(db);
+  if (NEU_QA) console.log('[neu-chat] creating conversation', members[0], members[1]);
   batch.set(
     doc(db, 'neuConversations', conversationId),
     {
@@ -8237,11 +8557,14 @@ async function neuEnsureDirectConversation(uidA, uidB) {
   );
   try {
     await batch.commit();
+    neuQaTrace('ensure_direct_created', { conversationId, memberKey, members });
     return { conversationId, members, memberKey };
   } catch (error) {
     if (neuChatHandlePermissionDenied(error, 'conversation_create', memberKey, 'Sin permisos para crear conversacion.')) {
+      neuQaTrace('ensure_direct_permission_denied', { memberKey, members });
       return null;
     }
+    neuQaTrace('ensure_direct_commit_error', { memberKey, message: String(error?.message || '') });
     throw error;
   }
 }
@@ -8249,10 +8572,15 @@ async function neuEnsureDirectConversation(uidA, uidB) {
 async function neuOpenOrStartDirectChat(otherUid, options = {}) {
   const meUid = neuCurrentUid();
   const targetUid = String(otherUid || '').trim();
+  neuQaTrace('open_or_start_direct_start', { meUid, targetUid, mode: String(options?.mode || '') });
   if (!meUid || !targetUid || targetUid === meUid) return;
   const ensured = await neuEnsureDirectConversation(meUid, targetUid);
-  if (!ensured?.conversationId) return;
+  if (!ensured?.conversationId) {
+    neuQaTrace('open_or_start_direct_no_conversation', { meUid, targetUid });
+    return;
+  }
   const mode = neuResolveChatHostMode(options?.mode);
+  neuQaTrace('open_or_start_direct_opening', { conversationId: ensured.conversationId, targetUid, mode });
   await neuOpenConversation(ensured.conversationId, {
     otherUid: targetUid,
     memberKey: ensured.memberKey,
@@ -8300,14 +8628,25 @@ async function neuEnsureChatReadyOnDemand() {
 async function neuOpenProfileMessage(chatUid) {
   const targetUid = String(chatUid || '').trim();
   const meUid = neuCurrentUid();
-  if (!targetUid || !meUid || targetUid === meUid) return;
+  neuQaTrace('open_profile_message_start', { targetUid, meUid });
+  if (!targetUid || !meUid || targetUid === meUid) {
+    neuQaTrace('open_profile_message_guard_block', { targetUid, meUid });
+    return;
+  }
 
   try {
     await neuEnsureChatReadyOnDemand();
     // Keep current profile route intact; open chat overlay without portal switch.
+    neuQaTrace('open_profile_message_ready', { targetUid, meUid });
     await neuOpenChatWithUser(targetUid, { mode: 'dock' });
+    neuQaTrace('open_profile_message_done', {
+      targetUid,
+      currentConversationId: String(neuChatState.currentConversationId || '').trim(),
+      activeConversationId: String(neuChatState.activeConversationId || '').trim(),
+    });
   } catch (error) {
     console.error('[neu-chat] open from profile failed', error);
+    neuQaTrace('open_profile_message_error', { targetUid, message: String(error?.message || '') });
     neuChatSetHint('No se pudo iniciar el chat.', true);
   }
 }
@@ -8701,6 +9040,25 @@ function neuFloatEndDrag() {
 }
 
 async function neuOpenChatFromFloatFlag() {
+  const openDockWindowId = [...neuDockThreadWindowsState.order]
+    .reverse()
+    .find((id) => {
+      const state = neuDockThreadWindowsState.windows.get(id);
+      return !!state?.windowEl;
+    });
+  if (openDockWindowId) {
+    const state = neuDockThreadWindowsState.windows.get(openDockWindowId);
+    if (state?.minimized) {
+      neuRestoreDockThreadWindow(openDockWindowId, { focus: true });
+      return;
+    }
+    neuFocusDockThreadWindow(state);
+    if (state?.inputEl instanceof HTMLTextAreaElement) {
+      state.inputEl.focus({ preventScroll: true });
+    }
+    return;
+  }
+
   const root = neuChatRootNode();
   if (root instanceof HTMLElement && !root.classList.contains('hidden') && root.classList.contains('is-open')) {
     if (String(neuChatState.hostMode || '').trim() === 'dock') neuPositionDockNearFlag();
@@ -8779,6 +9137,11 @@ function neuFocusChatDockLauncherTarget() {
 
 async function neuToggleChatDockFromLauncher() {
   if (!neuCanUseDockHost()) {
+    await neuOpenLastChatOrList();
+    return;
+  }
+
+  if (!(neuChatModalCardNode() instanceof HTMLElement)) {
     await neuOpenLastChatOrList();
     return;
   }
@@ -9402,10 +9765,7 @@ function neuWireChatEvents() {
 
       const messageProfileBtn = target.closest('#btnFusionMessage');
       if (messageProfileBtn instanceof HTMLButtonElement) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        // Profile "Mensaje" is handled by neuWirePublicProfileEvents.
+        // Let neuWirePublicProfileEvents handle profile "Mensaje" click.
         return;
       }
     },
@@ -9673,6 +10033,7 @@ async function neuInitChatMvp(user) {
   neuChatState.meUid = meUid;
   neuSyncChatHostSurface();
   neuEnsureChatModalLayoutClass();
+  neuEnsureChatFloatFlagDom();
   neuInitChatFloatFlag();
   neuInitChatDockLauncher();
   neuSyncUnreadUi();
@@ -9751,6 +10112,180 @@ const NEU_PARAMS = new URLSearchParams(location.search);
 const SAFE_MODE = NEU_URL_PARAMS.get('safe') === '1';
 const NEU_QA = NEU_PARAMS.get('qa') === '1';
 const NEU_QA_MODE = NEU_QA;
+if (NEU_QA && typeof window !== 'undefined') {
+  const qaRoot = window.__NEU_QA__ && typeof window.__NEU_QA__ === 'object' ? window.__NEU_QA__ : {};
+  qaRoot.enabled = true;
+  if (typeof qaRoot.activeMessageListeners !== 'number') qaRoot.activeMessageListeners = 0;
+  if (!Array.isArray(qaRoot.chatTrace)) qaRoot.chatTrace = [];
+  qaRoot.dumpState = function dumpState() {
+    const state = {
+      currentConversationId: String(neuChatState.currentConversationId || '').trim(),
+      activeConversationId: String(neuChatState.activeConversationId || '').trim(),
+      openingConversationId: String(neuChatState.openingConversationId || '').trim(),
+      messageListenerToken: Number(neuChatState.messageListenerToken || 0),
+      activeMessageListeners: Number(qaRoot.activeMessageListeners || 0),
+    };
+    console.debug('[QA] dumpState', state);
+    return state;
+  };
+  qaRoot.assertState = function assertState(reason = 'manual') {
+    const snapshot =
+      typeof qaRoot.dumpState === 'function'
+        ? qaRoot.dumpState()
+        : {
+            currentConversationId: String(neuChatState.currentConversationId || '').trim(),
+            activeConversationId: String(neuChatState.activeConversationId || '').trim(),
+            openingConversationId: String(neuChatState.openingConversationId || '').trim(),
+            messageListenerToken: Number(neuChatState.messageListenerToken || 0),
+            activeMessageListeners: Number(qaRoot.activeMessageListeners || 0),
+          };
+    const currentConversationId = String(snapshot.currentConversationId || '').trim();
+    const activeConversationId = String(snapshot.activeConversationId || '').trim();
+    const openingConversationId = String(snapshot.openingConversationId || '').trim();
+    const active = Number(snapshot.activeMessageListeners || 0);
+    let ok = true;
+
+    if (active < 0) {
+      ok = false;
+      console.error('[QA] activeMessageListeners < 0');
+    }
+    if (active > 1) {
+      ok = false;
+      console.error('[QA] More than 1 active message listener!');
+    }
+    if (activeConversationId && currentConversationId !== activeConversationId) {
+      ok = false;
+      console.error('[QA] active/current conversation mismatch', {
+        currentConversationId,
+        activeConversationId,
+      });
+    }
+    if (!activeConversationId && currentConversationId) {
+      ok = false;
+      console.error('[QA] current conversation set while active conversation is empty', {
+        currentConversationId,
+      });
+    }
+    if (activeConversationId && active === 0 && openingConversationId !== activeConversationId) {
+      ok = false;
+      console.error('[QA] Active conversation without listener', {
+        activeConversationId,
+      });
+    }
+    if (!ok) {
+      console.error('[QA] assertState failed', {
+        reason: String(reason || 'manual'),
+        snapshot,
+      });
+    }
+    return ok;
+  };
+  qaRoot.getProfileMessageContext = function getProfileMessageContext() {
+    const btn = document.getElementById('btnFusionMessage');
+    const meUid = String(neuCurrentUid() || '').trim();
+    const routeProfileUid = String(getProfileUidFromQuery(meUid) || '').trim();
+    const dataUid = String(btn?.getAttribute?.('data-chat-uid') || '').trim();
+    const stateTargetUid = String(neuPublicProfileState.targetUid || '').trim();
+    return {
+      buttonFound: btn instanceof HTMLElement,
+      buttonType: btn ? String(btn.tagName || '').toLowerCase() : '',
+      meUid,
+      dataUid,
+      stateTargetUid,
+      routeProfileUid,
+      resolvedChatUid: dataUid || stateTargetUid || routeProfileUid,
+      profileMode: neuPublicProfileState.profileMode === true,
+      isOwn: neuPublicProfileState.isOwn === true,
+    };
+  };
+  qaRoot.triggerProfileMessageClick = function triggerProfileMessageClick() {
+    const btn = document.getElementById('btnFusionMessage');
+    if (!(btn instanceof HTMLElement)) {
+      console.warn('[QA] triggerProfileMessageClick: #btnFusionMessage not found');
+      return false;
+    }
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    return true;
+  };
+  qaRoot.openProfileMessage = async function openProfileMessage(uid = '') {
+    const clean = String(uid || '').trim();
+    const context = qaRoot.getProfileMessageContext();
+    const targetUid = clean || String(context.resolvedChatUid || '').trim();
+    if (!targetUid) {
+      console.warn('[QA] openProfileMessage: missing target uid', context);
+      return null;
+    }
+    try {
+      await neuOpenProfileMessage(targetUid);
+      return { ok: true, dump: qaRoot.dumpState() };
+    } catch (error) {
+      console.error('[QA] openProfileMessage failed', error);
+      return {
+        ok: false,
+        error: String(error?.message || error),
+        dump: qaRoot.dumpState(),
+      };
+    }
+  };
+  qaRoot.ensureDirectConversation = async function ensureDirectConversation(uidA, uidB) {
+    const a = String(uidA || '').trim();
+    const b = String(uidB || '').trim();
+    if (!a || !b) {
+      console.warn('[QA] ensureDirectConversation: provide uidA and uidB');
+      return null;
+    }
+    try {
+      return await neuEnsureDirectConversation(a, b);
+    } catch (error) {
+      console.error('[QA] ensureDirectConversation failed', error);
+      return {
+        ok: false,
+        error: String(error?.message || error),
+      };
+    }
+  };
+  qaRoot.openConversation = async function openConversation(convId, otherUid = '') {
+    const id = String(convId || '').trim();
+    if (!id) {
+      console.warn('[QA] openConversation: missing convId');
+      return false;
+    }
+    try {
+      await neuOpenConversation(id, {
+        otherUid: String(otherUid || '').trim(),
+        mode: neuResolveChatHostMode('dock'),
+      });
+      return {
+        ok: true,
+        dump: qaRoot.dumpState(),
+      };
+    } catch (error) {
+      console.error('[QA] openConversation failed', error);
+      return {
+        ok: false,
+        error: String(error?.message || error),
+        dump: qaRoot.dumpState(),
+      };
+    }
+  };
+  qaRoot.getChatTrace = function getChatTrace() {
+    return Array.isArray(qaRoot.chatTrace) ? [...qaRoot.chatTrace] : [];
+  };
+  qaRoot.clearChatTrace = function clearChatTrace() {
+    qaRoot.chatTrace = [];
+    return true;
+  };
+  if (qaRoot.beforeUnloadWired !== true) {
+    window.addEventListener('beforeunload', () => {
+      const active = Number(qaRoot.activeMessageListeners || 0);
+      if (active > 0) {
+        console.warn('[QA] Page unload with active listeners', active);
+      }
+    });
+    qaRoot.beforeUnloadWired = true;
+  }
+  window.__NEU_QA__ = qaRoot;
+}
 const NEU_SAFE_MOD_ALLOWED = new Set(['portal_obs', 'flow_bridge', 'crud_posts', 'crud_stories']);
 const DISABLE = new Set(
   NEU_PARAMS.getAll('disable')
@@ -11281,184 +11816,32 @@ function neuFindOwnStoryCandidate({ author = '', media = '' } = {}) {
   return null;
 }
 
-function neuStoryDescriptorFromGridTile(tile) {
-  const meta = String(tile.querySelector('.story-tile-meta')?.textContent || '');
-  const author = meta.includes('|') ? meta.split('|')[0].trim() : meta.trim();
-  const media = String(
-    tile.querySelector('.story-tile-media img')?.getAttribute('src') ||
-      tile.querySelector('.story-tile-media video')?.getAttribute('src') ||
-      '',
-  ).trim();
-  return { author, media };
-}
-
-function neuStoryDescriptorFromStripPill(pill) {
-  const author = String(pill.querySelector('.story-pill-title')?.textContent || '').trim();
-  const media = String(
-    pill.querySelector('.story-pill-media img')?.getAttribute('src') ||
-      pill.querySelector('.story-pill-media video')?.getAttribute('src') ||
-      '',
-  ).trim();
-  return { author, media };
-}
-
-function neuApplyStoryKey(node, item) {
-  if (!(node instanceof HTMLElement)) return;
-  const key = neuStoryCandidateKey(item);
-  node.dataset.neuStoryKey = key;
-  node.dataset.neuStorySource = item.source;
-  node.dataset.neuStoryId = item.id;
-}
-
-function neuClearStoryKey(node) {
-  if (!(node instanceof HTMLElement)) return;
-  delete node.dataset.neuStoryKey;
-  delete node.dataset.neuStorySource;
-  delete node.dataset.neuStoryId;
-}
-
-function neuEnsureStoryGridMenu(tile) {
-  let menu = tile.querySelector('.neu-story-grid-menu');
-  if (menu instanceof HTMLElement) return menu;
-
-  menu = document.createElement('span');
-  menu.className = 'neu-story-grid-menu';
-  menu.innerHTML = `
-    <span class="neu-story-menu-toggle" data-neu-story-menu-toggle="1" role="button" tabindex="0" aria-label="Opciones">&#x22ef;</span>
-    <span class="neu-story-menu-panel" hidden>
-      <span class="neu-story-menu-item neu-story-menu-item-danger" data-neu-story-action="delete" role="button" tabindex="0">Eliminar</span>
-    </span>
-  `;
-  tile.append(menu);
-  return menu;
-}
-
-function neuCloseAllStoryMenus(except = null) {
-  document.querySelectorAll('.neu-story-grid-menu').forEach((menu) => {
-    if (menu === except) return;
-    menu.classList.remove('is-open');
-    const panel = menu.querySelector('.neu-story-menu-panel');
-    if (panel instanceof HTMLElement) panel.hidden = true;
-  });
-
-  const modalMenu = document.getElementById('neuStoryModalMenu');
-  if (modalMenu instanceof HTMLElement && modalMenu !== except) {
-    modalMenu.classList.remove('is-open');
-    const panel = modalMenu.querySelector('.neu-story-menu-panel');
-    if (panel instanceof HTMLElement) panel.hidden = true;
-  }
-}
-
-function neuToggleStoryMenu(menu) {
-  if (!(menu instanceof HTMLElement)) return;
-  const isOpen = menu.classList.contains('is-open');
-  if (isOpen) {
-    menu.classList.remove('is-open');
-    const panel = menu.querySelector('.neu-story-menu-panel');
-    if (panel instanceof HTMLElement) panel.hidden = true;
-    return;
-  }
-
-  neuCloseAllStoryMenus(menu);
-  menu.classList.add('is-open');
-  const panel = menu.querySelector('.neu-story-menu-panel');
-  if (panel instanceof HTMLElement) panel.hidden = false;
-}
-
 function neuDecorateStoriesGrid() {
-  if (isDisabled('decorators')) return;
-  const grid = document.getElementById('storiesGrid');
-  if (!(grid instanceof HTMLElement)) return;
-
-  grid.querySelectorAll('.story-tile[data-story-open]').forEach((tile) => {
-    const descriptor = neuStoryDescriptorFromGridTile(tile);
-    const match = neuFindOwnStoryCandidate(descriptor);
-    const existingMenu = tile.querySelector('.neu-story-grid-menu');
-
-    if (!match) {
-      existingMenu?.remove();
-      neuClearStoryKey(tile);
-      return;
-    }
-
-    neuApplyStoryKey(tile, match);
-    neuEnsureStoryGridMenu(tile);
+  return decorateStoriesGridUi({
+    isDisabled,
+    findOwnStoryCandidate: neuFindOwnStoryCandidate,
+    storyCandidateKey: neuStoryCandidateKey,
   });
 }
 
 function neuAnnotateStoriesStrip() {
-  if (isDisabled('decorators')) return;
-  const strip = document.getElementById('storiesStrip');
-  if (!(strip instanceof HTMLElement)) return;
-
-  strip.querySelectorAll('.story-pill[data-story-open]').forEach((pill) => {
-    const descriptor = neuStoryDescriptorFromStripPill(pill);
-    const match = neuFindOwnStoryCandidate(descriptor);
-    if (!match) {
-      neuClearStoryKey(pill);
-      return;
-    }
-    neuApplyStoryKey(pill, match);
+  return annotateStoriesStripUi({
+    isDisabled,
+    findOwnStoryCandidate: neuFindOwnStoryCandidate,
+    storyCandidateKey: neuStoryCandidateKey,
   });
 }
 
 function neuEnsureStoryModalMenu() {
-  const actions = document.querySelector('#storyModal .story-modal-actions');
-  if (!(actions instanceof HTMLElement)) return null;
-
-  let menu = document.getElementById('neuStoryModalMenu');
-  if (menu instanceof HTMLElement) return menu;
-
-  menu = document.createElement('div');
-  menu.id = 'neuStoryModalMenu';
-  menu.className = 'neu-story-modal-menu';
-  menu.hidden = true;
-  menu.innerHTML = `
-    <button class="neu-story-menu-toggle" data-neu-story-menu-toggle="1" type="button" aria-label="Opciones">&#x22ef;</button>
-    <div class="neu-story-menu-panel" hidden>
-      <button class="neu-story-menu-item neu-story-menu-item-danger" data-neu-story-action="delete" type="button">Eliminar</button>
-    </div>
-  `;
-  actions.prepend(menu);
-  return menu;
-}
-
-function neuModalStoryDescriptor() {
-  const modal = document.getElementById('storyModal');
-  if (!(modal instanceof HTMLElement) || modal.hidden) return null;
-
-  const titleRaw = String(document.getElementById('storyModalTitle')?.textContent || '').trim();
-  const author = titleRaw.includes('|') ? titleRaw.split('|')[0].trim() : titleRaw;
-  const mediaWrap = document.getElementById('storyModalMediaWrap');
-  const media = String(
-    mediaWrap?.querySelector('img')?.getAttribute('src') || mediaWrap?.querySelector('video')?.getAttribute('src') || '',
-  ).trim();
-  if (!author && !media) return null;
-  return { author, media };
+  return ensureStoryModalMenuUi();
 }
 
 function neuRefreshStoryModalMenu() {
-  if (isDisabled('decorators')) return;
-  const menu = neuEnsureStoryModalMenu();
-  if (!(menu instanceof HTMLElement)) return;
-
-  const descriptor = neuModalStoryDescriptor();
-  if (!descriptor) {
-    if (!menu.hidden) menu.hidden = true;
-    menu.dataset.neuStoryKey = '';
-    return;
-  }
-
-  const match = neuFindOwnStoryCandidate(descriptor);
-  if (!match) {
-    if (!menu.hidden) menu.hidden = true;
-    menu.dataset.neuStoryKey = '';
-    return;
-  }
-
-  const key = neuStoryCandidateKey(match);
-  if (menu.hidden) menu.hidden = false;
-  menu.dataset.neuStoryKey = key;
+  return refreshStoryModalMenuUi({
+    isDisabled,
+    findOwnStoryCandidate: neuFindOwnStoryCandidate,
+    storyCandidateKey: neuStoryCandidateKey,
+  });
 }
 
 function neuStoryCandidateByKey(key) {
@@ -11466,38 +11849,15 @@ function neuStoryCandidateByKey(key) {
 }
 
 function neuEnsureStoryDeleteModal() {
-  let modal = document.getElementById('neuStoryDeleteModal');
-  if (modal instanceof HTMLElement) return modal;
-
-  modal = document.createElement('div');
-  modal.id = 'neuStoryDeleteModal';
-  modal.className = 'neu-confirm-modal';
-  modal.hidden = true;
-  modal.innerHTML = `
-    <div class="neu-confirm-backdrop" data-neu-story-delete-close="1"></div>
-    <div class="neu-confirm-card" role="dialog" aria-modal="true" aria-labelledby="neuStoryDeleteTitle">
-      <h3 id="neuStoryDeleteTitle">Eliminar story</h3>
-      <p>Se eliminara de stories y del perfil.</p>
-      <div class="neu-confirm-actions">
-        <button class="btn-white-outline" id="neuStoryDeleteCancelBtn" type="button">Cancelar</button>
-        <button class="btn-yellow neu-danger-btn" id="neuStoryDeleteConfirmBtn" type="button">Eliminar</button>
-      </div>
-    </div>
-  `;
-  document.body.append(modal);
-  return modal;
+  return ensureStoryDeleteModalUi();
 }
 
 function neuOpenStoryDeleteModal(storyKey) {
-  const modal = neuEnsureStoryDeleteModal();
-  neuStoryCrudState.pendingDeleteKey = String(storyKey || '');
-  modal.hidden = false;
+  return openStoryDeleteModalUi(neuStoryCrudState, storyKey);
 }
 
 function neuCloseStoryDeleteModal() {
-  const modal = document.getElementById('neuStoryDeleteModal');
-  if (modal instanceof HTMLElement) modal.hidden = true;
-  neuStoryCrudState.pendingDeleteKey = '';
+  return closeStoryDeleteModalUi(neuStoryCrudState);
 }
 
 function neuResolveStoryStorageRef(item) {
@@ -11522,17 +11882,7 @@ function neuResolveStoryStorageRef(item) {
 }
 
 function neuRemoveDeletedStoryFromUi(storyKey) {
-  const key = String(storyKey || '').trim();
-  if (!key) return;
-  document.querySelectorAll(`[data-neu-story-key="${key}"]`).forEach((node) => node.remove());
-
-  const modalMenu = document.getElementById('neuStoryModalMenu');
-  if (modalMenu instanceof HTMLElement && String(modalMenu.dataset.neuStoryKey || '') === key) {
-    modalMenu.hidden = true;
-    modalMenu.dataset.neuStoryKey = '';
-    const closeBtn = document.getElementById('storyCloseBtn');
-    if (closeBtn instanceof HTMLElement) closeBtn.click();
-  }
+  return removeDeletedStoryFromUiUi(storyKey);
 }
 
 async function neuDeleteStoryByKey(storyKey) {
@@ -11618,122 +11968,14 @@ function neuScheduleStoryDecorate({ forceReload = false } = {}) {
   }, delay);
 }
 
-function neuGetStoryKeyFromActionTarget(node) {
-  const fromModal = node.closest('#neuStoryModalMenu');
-  if (fromModal instanceof HTMLElement) return String(fromModal.dataset.neuStoryKey || '').trim();
-
-  const fromTile = node.closest('.story-tile[data-neu-story-key], .story-pill[data-neu-story-key]');
-  if (fromTile instanceof HTMLElement) return String(fromTile.dataset.neuStoryKey || '').trim();
-  return '';
-}
-
 function neuWireStoryCrudEvents() {
-  if (neuStoryCrudState.wired) return;
-  neuStoryCrudState.wired = true;
-
-  if (!isDisabled('decorators')) neuEnsureStoryModalMenu();
-  neuEnsureStoryDeleteModal();
-  neuScheduleStoryDecorate({ forceReload: true });
-
-  const storiesGrid = document.getElementById('storiesGrid');
-  if (storiesGrid instanceof HTMLElement && !isDisabled('observers')) {
-    neuStoryCrudState.gridObserver = new MutationObserver(() => {
-      neuScheduleStoryDecorate();
-    });
-    // Root childList is enough because legacy renderer replaces tile list at root.
-    neuStoryCrudState.gridObserver.observe(storiesGrid, { childList: true });
-  }
-
-  const storiesStrip = document.getElementById('storiesStrip');
-  if (storiesStrip instanceof HTMLElement && !isDisabled('observers')) {
-    neuStoryCrudState.stripObserver = new MutationObserver(() => {
-      neuScheduleStoryDecorate();
-    });
-    neuStoryCrudState.stripObserver.observe(storiesStrip, { childList: true });
-  }
-
-  const storyModal = document.getElementById('storyModal');
-  if (storyModal instanceof HTMLElement && !isDisabled('observers')) {
-    neuStoryCrudState.modalObserver = new MutationObserver(() => {
-      neuRefreshStoryModalMenu();
-    });
-    // Observe only modal open/close; subtree watchers can trigger high-frequency loops.
-    neuStoryCrudState.modalObserver.observe(storyModal, {
-      attributes: true,
-      attributeFilter: ['hidden'],
-    });
-  }
-
-  document.addEventListener(
-    'click',
-    (event) => {
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-
-      const closeDelete = target.closest('[data-neu-story-delete-close], #neuStoryDeleteCancelBtn');
-      if (closeDelete) {
-        event.preventDefault();
-        neuCloseStoryDeleteModal();
-        return;
-      }
-
-      const confirmDelete = target.closest('#neuStoryDeleteConfirmBtn');
-      if (confirmDelete) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        neuDeleteStoryByKey(neuStoryCrudState.pendingDeleteKey).catch((error) => {
-          console.error('[neu-story] delete handler failed', error);
-          neuSetComposerInlineMsg('No se pudo eliminar la story.', true);
-        });
-        return;
-      }
-
-      const menuToggle = target.closest('.neu-story-menu-toggle');
-      if (menuToggle) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        const menu = menuToggle.closest('.neu-story-grid-menu, #neuStoryModalMenu');
-        neuToggleStoryMenu(menu);
-        return;
-      }
-
-      const menuAction = target.closest('[data-neu-story-action="delete"]');
-      if (menuAction) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        const key = neuGetStoryKeyFromActionTarget(menuAction);
-        neuCloseAllStoryMenus();
-        if (!key) return;
-        neuOpenStoryDeleteModal(key);
-        return;
-      }
-
-      if (!target.closest('.neu-story-grid-menu, #neuStoryModalMenu')) {
-        neuCloseAllStoryMenus();
-      }
-
-      const storyNavigationTrigger = target.closest(
-        '[data-story-open], #storyPrevBtn, #storyNextBtn, #storyCloseBtn, [data-story-close]',
-      );
-      if (storyNavigationTrigger && !isDisabled('decorators')) {
-        window.setTimeout(() => {
-          neuRefreshStoryModalMenu();
-        }, 0);
-      }
-    },
-    true,
-  );
-
-  document.addEventListener('keydown', (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-    const isToggle = target.matches('.neu-story-menu-toggle, [data-neu-story-action]');
-    if (!isToggle) return;
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  return wireStoryCrudEventsUi({
+    state: neuStoryCrudState,
+    isDisabled,
+    scheduleStoryDecorate: neuScheduleStoryDecorate,
+    deleteStoryByKey: neuDeleteStoryByKey,
+    setInlineMessage: neuSetComposerInlineMsg,
+    refreshStoryModalMenu: neuRefreshStoryModalMenu,
   });
 }
 

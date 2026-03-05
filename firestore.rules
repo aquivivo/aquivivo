@@ -7,10 +7,19 @@ service cloud.firestore {
     }
 
     function isParticipant(chatId) {
-      return signedIn()
-        && exists(/databases/$(database)/documents/neuChatConversations/$(chatId))
-        && request.auth.uid in
-           get(/databases/$(database)/documents/neuChatConversations/$(chatId)).data.participants;
+      return signedIn() && (
+        (
+          exists(/databases/$(database)/documents/neuChatConversations/$(chatId))
+          && (get(/databases/$(database)/documents/neuChatConversations/$(chatId)).data.participants is list)
+          && request.auth.uid in
+             get(/databases/$(database)/documents/neuChatConversations/$(chatId)).data.participants
+        )
+        || (
+          exists(/databases/$(database)/documents/neuConversations/$(chatId))
+          && (get(/databases/$(database)/documents/neuConversations/$(chatId)).data.members is list)
+          && get(/databases/$(database)/documents/neuConversations/$(chatId)).data.members.hasAny([request.auth.uid])
+        )
+      );
     }
 
     function userRef(uid) {
@@ -1014,9 +1023,6 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    match /{document=**} {
-      allow read, write: if false;
-
     /* =========================
        NEU CHAT (NEW) — aligned with neu-social-app-page.js
        Collections:
@@ -1039,13 +1045,29 @@ service cloud.firestore {
       return request.resource.data.members == resource.data.members;
     }
 
+    function neuSenderMatchesAuth(data) {
+      return (
+        ("senderUid" in data && data.senderUid == request.auth.uid)
+        || ("senderId" in data && data.senderId == request.auth.uid)
+      );
+    }
+
+    function neuIsMemberAfter(convId) {
+      return neuSignedIn()
+        && existsAfter(/databases/$(database)/documents/neuConversations/$(convId))
+        && getAfter(/databases/$(database)/documents/neuConversations/$(convId)).data.members.hasAny([request.auth.uid]);
+    }
+
     match /neuConversations/{convId} {
       allow read: if neuIsMember(convId);
 
       allow create: if neuSignedIn()
         && request.resource.data.members is list
-        && request.resource.data.members.hasAny([request.auth.uid])
-        && request.resource.data.members.size() == 2;
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members[0] is string
+        && request.resource.data.members[1] is string
+        && request.resource.data.members[0] != request.resource.data.members[1]
+        && request.resource.data.members.hasAny([request.auth.uid]);
 
       allow update: if neuIsMember(convId)
         && neuMembersUnchanged(convId);
@@ -1056,15 +1078,20 @@ service cloud.firestore {
         allow read: if neuIsMember(convId);
 
         allow create: if neuIsMember(convId)
-          && request.resource.data.senderId == request.auth.uid;
+          && neuSenderMatchesAuth(request.resource.data);
 
         // edits (optional)
         allow update: if neuIsMember(convId)
-          && resource.data.senderId == request.auth.uid;
+          && neuSenderMatchesAuth(resource.data);
 
         // "Eliminar para todos" — allow sender only
         allow delete: if neuIsMember(convId)
-          && resource.data.senderId == request.auth.uid;
+          && neuSenderMatchesAuth(resource.data);
+
+        match /reactions/{uid} {
+          allow read: if neuIsMember(convId);
+          allow write: if neuIsMember(convId) && request.auth.uid == uid;
+        }
       }
     }
 
@@ -1073,27 +1100,55 @@ service cloud.firestore {
       allow read: if neuSignedIn() && request.auth.uid == uid;
 
       // sender may update recipient summary doc (unreadCount etc.)
-      allow create, update: if neuIsMember(convId)
+      allow create: if (neuIsMember(convId) || neuIsMemberAfter(convId))
         && request.resource.data.keys().hasOnly([
           'conversationId',
           'otherUid',
+          'members',
+          'memberKey',
           'otherHandle',
           'otherName',
           'otherAvatarUrl',
           'lastMessageAt',
           'lastMessageText',
           'lastMessageSenderId',
+          'lastSenderUid',
           'unreadCount',
           'lastReadAt',
           'lastReadMessageId',
           'muted',
+          'pinned',
+          'updatedAt',
+          'createdAt'
+        ]);
+
+      allow update: if (neuIsMember(convId) || neuIsMemberAfter(convId))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'conversationId',
+          'otherUid',
+          'members',
+          'memberKey',
+          'otherHandle',
+          'otherName',
+          'otherAvatarUrl',
+          'lastMessageAt',
+          'lastMessageText',
+          'lastMessageSenderId',
+          'lastSenderUid',
+          'unreadCount',
+          'lastReadAt',
+          'lastReadMessageId',
+          'muted',
+          'pinned',
           'updatedAt',
           'createdAt'
         ]);
 
       allow delete: if neuSignedIn() && request.auth.uid == uid;
     }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
-

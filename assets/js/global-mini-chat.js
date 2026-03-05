@@ -34,6 +34,14 @@ let activeConversationId = '';
 let convUnsub = null;
 let msgUnsub = null;
 
+function shouldDisableOnNeuSocialPage() {
+  const path = String(location.pathname || '').toLowerCase();
+  if (path.includes('neu-social-app.html')) return true;
+  if (document.body?.classList?.contains('neu-social-app')) return true;
+  if (window.__NEU_DISABLE_MINI_CHAT__ === true) return true;
+  return false;
+}
+
 let outsideClickWired = false;
 let quickOpenWired = false;
 let syncWired = false;
@@ -1913,6 +1921,11 @@ export function destroyGlobalMiniChat() {
 }
 
 export function initGlobalMiniChat({ uid, displayName } = {}) {
+  if (shouldDisableOnNeuSocialPage()) {
+    destroyGlobalMiniChat();
+    return;
+  }
+
   if (!uid) {
     destroyGlobalMiniChat();
     return;

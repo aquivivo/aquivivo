@@ -55,13 +55,13 @@ const onboardingRepository = {
 
 const profileService = createProfileService({ context: neuAppContext, state: profileState, repository: profileRepository });
 const postService = createPostService({ state: postState, repository: postRepository });
-const storyService = createStoryService({ state: storyState, repository: storyRepository });
+const storyService = createStoryService({ state: storyState });
 const chatService = createChatService({ context: neuAppContext, state: chatState, repository: chatRepository });
 const onboardingService = createOnboardingService({ state: onboardingState, repository: onboardingRepository });
 
 const profileUi = createProfileUi({ repository: profileRepository });
 const postUi = createPostUi();
-const storyUi = createStoryUi();
+const storyUi = createStoryUi({ repository: storyRepository });
 const chatUi = createChatUi();
 const chatDock = createChatDock();
 const chatTyping = createChatTyping();
@@ -134,12 +134,12 @@ async function initPosts() {
 async function initStories() {
   diagnostics.domainInitCalls.stories += 1;
   await storyService.init();
-  storyUi.init();
+  await storyUi.init();
 }
 
-async function initChat() {
+async function initChat({ eager = true } = {}) {
   diagnostics.domainInitCalls.chat += 1;
-  await chatService.init({ eager: false });
+  await chatService.init({ eager });
   chatUi.init();
   chatDock.init();
   chatTyping.init();
@@ -230,7 +230,7 @@ export async function initNeuApp({ forceReinit = false } = {}) {
       await initProfile();
       await initPosts();
       await initStories();
-      await initChat();
+      await initChat({ eager: true });
       const mode = await initOnboarding();
       diagnostics.bootResolved += 1;
       markContext('boot-complete');
