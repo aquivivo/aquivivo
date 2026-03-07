@@ -12346,6 +12346,7 @@ function wireNeuBottomNavRouter() {
 
 let neuLogoutWired = false;
 function wireNeuDropdownLogout() {
+  if (typeof window !== 'undefined' && window.__NEU_LAYOUT_HANDLES_LOGOUT__ === true) return;
   if (neuLogoutWired) return;
   neuLogoutWired = true;
 
@@ -12400,8 +12401,7 @@ async function startNeuSocialApp() {
   neuStripQueryParams(['postOnboarding']);
   wireNeuLegacyProfileLinkBridge();
 
-  // Keep legacy profile fusion logic untouched; run it only after neu auth gate passed.
-  await import('../../pages/perfil-fusion-page.js');
+  // NEU keeps its own profile runtime; legacy page bootstrap is no longer imported here.
   await neuInitPublicProfile(user);
   neuWireQuickPostEvents();
   neuRewriteLegacyLinksInRoot(document);

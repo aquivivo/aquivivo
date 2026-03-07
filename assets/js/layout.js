@@ -1809,107 +1809,126 @@ import { buildProfileHref } from './profile-href.js';
   upgradeInfoCardsToAccordions();
   setupContactForm();
 
-  // Render immediately + re-render on auth changes
-  onAuthStateChanged(auth, async (user) => {
-    CURRENT_USER = user || null;
-    CURRENT_DOC = null;
-    let isAdmin = false;
-    if (user?.uid) {
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        const snap = await getDoc(userRef);
-
-        let data = snap.exists() ? snap.data() || {} : {};
-
-        // Ensure the user doc exists (needed by Firestore rules: notBlocked()/hasUserDoc()).
-        if (!snap.exists()) {
-          let email = String(user?.email || '').trim();
-          try {
-            const token = await user.getIdTokenResult?.();
-            const tokenEmail = String(token?.claims?.email || '').trim();
-            if (tokenEmail) email = tokenEmail;
-          } catch {}
-          if (email) {
-            const payload = {
-              email,
-              emailLower: email.toLowerCase(),
-              admin: false,
-              blocked: false,
-              createdAt: serverTimestamp(),
-              updatedAt: serverTimestamp(),
-              lastLoginAt: serverTimestamp(),
-            };
-            try {
-              await setDoc(userRef, payload, { merge: true });
-              data = payload;
-            } catch (e) {
-              console.warn('[layout] failed to create user doc', e);
-            }
-          }
-        }
-
-        CURRENT_DOC = data;
-        isAdmin =
-          String(data?.role || 'user') === 'admin' ||
-          data?.admin === true ||
-          String(user?.email || '').toLowerCase() === 'aquivivo.pl@gmail.com';
-      } catch (e) {
-        console.warn('[layout] admin check failed', e);
-      }
-    }
-
-    const profile = CURRENT_DOC || {};
-    if (user) {
-      await upsertEmailIndex(user, profile);
-    }
+  function renderChrome(user = null, isAdmin = false, profile = {}) {
     mount.innerHTML = buildHeader(user, isAdmin, profile);
     footerMount.innerHTML = buildFooter();
     wireHeader();
     injectSidePanel();
     setupAnchorScroll();
     setupContactForm();
+
     const contactEmailInput = document.getElementById('contactEmail');
     if (user?.email && contactEmailInput && !contactEmailInput.value) {
       contactEmailInput.value = user.email;
     }
+  }
 
-    if (user?.uid) startBadgeRefresh(user.uid);
-    else startBadgeRefresh(null);
+  // Render guest chrome immediately so header/footer do not depend on auth timing.
+  renderChrome();
 
-    if (user?.uid) {
-      initGlobalMiniChat({
-        uid: user.uid,
-        displayName:
-          profile?.displayName ||
-          profile?.name ||
-          user?.displayName ||
-          user?.email ||
-          'Usuario',
-      });
-    } else {
-      destroyGlobalMiniChat();
-    }
+  // Render immediately + re-render on auth changes
+  onAuthStateChanged(auth, async (user) => {
+    CURRENT_USER = user || null;
+    CURRENT_DOC = null;
+    let isAdmin = false;
+    try {
+      if (user?.uid) {
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          const snap = await getDoc(userRef);
 
-    idleEnabled = !!user && !isAdmin;
-    if (idleEnabled) {
-      bindIdleListeners();
-      startIdleTimer();
-    } else {
-      stopIdleTimer();
-    }
+          let data = snap.exists() ? snap.data() || {} : {};
 
-    setupTrialButton();
-    updateTrialUI();
+          // Ensure the user doc exists (needed by Firestore rules: notBlocked()/hasUserDoc()).
+          if (!snap.exists()) {
+            let email = String(user?.email || '').trim();
+            try {
+              const token = await user.getIdTokenResult?.();
+              const tokenEmail = String(token?.claims?.email || '').trim();
+              if (tokenEmail) email = tokenEmail;
+            } catch {}
+            if (email) {
+              const payload = {
+                email,
+                emailLower: email.toLowerCase(),
+                admin: false,
+                blocked: false,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+                lastLoginAt: serverTimestamp(),
+              };
+              try {
+                await setDoc(userRef, payload, { merge: true });
+                data = payload;
+              } catch (e) {
+                console.warn('[layout] failed to create user doc', e);
+              }
+            }
+          }
 
-    if (user && localStorage.getItem(TRIAL_INTENT_KEY) === '1') {
-      localStorage.removeItem(TRIAL_INTENT_KEY);
-      await activateTrial(user, CURRENT_DOC);
+          CURRENT_DOC = data;
+          isAdmin =
+            String(data?.role || 'user') === 'admin' ||
+            data?.admin === true ||
+            String(user?.email || '').toLowerCase() === 'aquivivo.pl@gmail.com';
+        } catch (e) {
+          console.warn('[layout] admin check failed', e);
+        }
+      }
+
+      const profile = CURRENT_DOC || {};
+      renderChrome(user, isAdmin, profile);
+
+      if (user) {
+        await upsertEmailIndex(user, profile);
+      }
+
+      if (user?.uid) startBadgeRefresh(user.uid);
+      else startBadgeRefresh(null);
+
+      if (user?.uid) {
+        initGlobalMiniChat({
+          uid: user.uid,
+          displayName:
+            profile?.displayName ||
+            profile?.name ||
+            user?.displayName ||
+            user?.email ||
+            'Usuario',
+        });
+      } else {
+        destroyGlobalMiniChat();
+      }
+
+      idleEnabled = !!user && !isAdmin;
+      if (idleEnabled) {
+        bindIdleListeners();
+        startIdleTimer();
+      } else {
+        stopIdleTimer();
+      }
+
+      setupTrialButton();
       updateTrialUI();
-    }
 
-    if (user) await loadPopupSettings(true);
-    await logPageView(user, isAdmin);
-    await trackDailyActivity(user, isAdmin);
+      if (user && localStorage.getItem(TRIAL_INTENT_KEY) === '1') {
+        localStorage.removeItem(TRIAL_INTENT_KEY);
+        await activateTrial(user, CURRENT_DOC);
+        updateTrialUI();
+      }
+
+      if (user) await loadPopupSettings(true);
+      await logPageView(user, isAdmin);
+      await trackDailyActivity(user, isAdmin);
+    } catch (e) {
+      console.error('[layout] auth render failed', e);
+      renderChrome(user, isAdmin, CURRENT_DOC || {});
+      if (!user?.uid) {
+        startBadgeRefresh(null);
+        destroyGlobalMiniChat();
+        stopIdleTimer();
+      }
+    }
   });
 
   const trialReady = () => {
