@@ -54,6 +54,8 @@ let hostMode = 'dock';
 let routeChatIntentKey = '';
 const profileCache = new Map();
 const profileLoading = new Map();
+let fallbackHydrationPromise = null;
+let fallbackHydratedUid = '';
 
 function isNeuSocialPage() {
   return document.body?.classList?.contains('neu-social-app') === true;
@@ -203,6 +205,127 @@ function mapUserChatRow(docSnap, uid) {
       [uid]: data.lastReadAt || null,
     },
   };
+}
+
+function sortConversationRows(rows = []) {
+  return [...rows].sort((a, b) => {
+    const aMs = maybeDate(a?.lastAt || a?.updatedAt)?.getTime() || 0;
+    const bMs = maybeDate(b?.lastAt || b?.updatedAt)?.getTime() || 0;
+    if (aMs !== bMs) return bMs - aMs;
+    return String(a?.id || '').localeCompare(String(b?.id || ''));
+  });
+}
+
+function mapConversationDoc(docSnap, uid) {
+  const data = docSnap.data() || {};
+  const conversationId = String(docSnap.id || '').trim();
+  const members = Array.isArray(data.members)
+    ? data.members.map((item) => String(item || '').trim()).filter(Boolean)
+    : [];
+  const otherUid = members.find((candidate) => candidate !== uid) || '';
+  const profile = getCachedProfile(otherUid);
+  const title = String(profile.displayName || '').trim() || 'Conversacion';
+
+  return {
+    id: conversationId,
+    type: members.length > 2 ? 'group' : 'direct',
+    participants: members,
+    participantNames: members.map((memberUid) => {
+      if (memberUid === uid) return currentName;
+      if (memberUid === otherUid) return title;
+      return memberUid.slice(0, 8) || 'Usuario';
+    }),
+    title,
+    otherUid,
+    otherName: title,
+    lastMessage: {
+      text: String(data.lastMessageText || '').trim(),
+      senderId: String(data.lastMessageSenderId || data.lastSenderUid || '').trim(),
+      senderName: '',
+    },
+    lastMessageText: String(data.lastMessageText || '').trim(),
+    lastAt: data.lastMessageAt || data.updatedAt || null,
+    updatedAt: data.updatedAt || data.lastMessageAt || null,
+    unreadCount: 0,
+    reads: {
+      [uid]: null,
+    },
+  };
+}
+
+function conversationMirrorPayload(row, uid) {
+  const convId = String(row?.id || '').trim();
+  const members = Array.isArray(row?.participants)
+    ? row.participants.map((item) => String(item || '').trim()).filter(Boolean)
+    : [];
+  if (!convId || !uid || !members.includes(uid)) return null;
+
+  const otherUid = String(row?.otherUid || members.find((candidate) => candidate !== uid) || '').trim();
+  const payload = {
+    otherUid,
+    members,
+    memberKey: members.length === 2 ? members.slice().sort().join('_') : convId,
+    updatedAt: row?.updatedAt || row?.lastAt || serverTimestamp(),
+    unreadCount: Number(row?.unreadCount || 0) || 0,
+  };
+
+  const lastMessageText = String(row?.lastMessageText || row?.lastMessage?.text || '').trim();
+  if (lastMessageText) payload.lastMessageText = lastMessageText;
+  if (row?.lastAt) payload.lastMessageAt = row.lastAt;
+  const lastMessageSenderId = String(row?.lastMessage?.senderId || '').trim();
+  if (lastMessageSenderId) {
+    payload.lastMessageSenderId = lastMessageSenderId;
+    payload.lastSenderUid = lastMessageSenderId;
+  }
+  const readAt = row?.reads?.[uid] || null;
+  if (readAt) payload.lastReadAt = readAt;
+  return payload;
+}
+
+async function hydrateConversationFallback(uid) {
+  const userId = String(uid || '').trim();
+  if (!userId) return [];
+  if (fallbackHydratedUid === userId) return conversations;
+  if (fallbackHydrationPromise) return fallbackHydrationPromise;
+
+  fallbackHydrationPromise = (async () => {
+    const snapshot = await getDocs(
+      query(
+        collection(db, 'neuConversations'),
+        where('members', 'array-contains', userId),
+        limit(120),
+      ),
+    );
+
+    const rows = sortConversationRows(
+      (snapshot.docs || []).map((docSnap) => mapConversationDoc(docSnap, userId)),
+    );
+
+    if (!rows.length) {
+      fallbackHydratedUid = userId;
+      return [];
+    }
+
+    conversations = rows;
+    renderConversationList();
+    warmConversationProfiles();
+    updateTypingIndicatorsFromConversations();
+
+    await Promise.allSettled(
+      rows.map((row) => {
+        const payload = conversationMirrorPayload(row, userId);
+        if (!payload) return Promise.resolve();
+        return setDoc(doc(db, 'neuUserChats', userId, 'chats', row.id), payload, { merge: true });
+      }),
+    );
+
+    fallbackHydratedUid = userId;
+    return rows;
+  })().finally(() => {
+    fallbackHydrationPromise = null;
+  });
+
+  return fallbackHydrationPromise;
 }
 
 function refreshConversationProfiles() {
@@ -1419,6 +1542,8 @@ export function destroyGlobalMiniChat() {
   currentName = 'Usuario';
   hostMode = 'dock';
   routeChatIntentKey = '';
+  fallbackHydrationPromise = null;
+  fallbackHydratedUid = '';
   profileCache.clear();
   profileLoading.clear();
 
@@ -1497,7 +1622,28 @@ export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
   convUnsub = onSnapshot(
     conversationQuery,
     (snapshot) => {
-      conversations = (snapshot.docs || []).map((docSnap) => mapUserChatRow(docSnap, uid));
+      conversations = sortConversationRows(
+        (snapshot.docs || []).map((docSnap) => mapUserChatRow(docSnap, uid)),
+      );
+
+      if (!conversations.length) {
+        hydrateConversationFallback(uid)
+          .then((rows) => {
+            if (!Array.isArray(rows) || !rows.length) {
+              renderConversationList();
+              updateTypingIndicatorsFromConversations();
+              return;
+            }
+            runRouteChatIntent().catch((error) => {
+              console.warn('[mini-chat-v4] fallback route intent failed', error);
+            });
+          })
+          .catch((error) => {
+            console.warn('[mini-chat-v4] conversation fallback failed', error);
+            renderConversationList();
+            updateTypingIndicatorsFromConversations();
+          });
+      }
 
       renderConversationList();
       warmConversationProfiles();
