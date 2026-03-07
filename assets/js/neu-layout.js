@@ -7,12 +7,17 @@ import {
 
 window.__NEU_LAYOUT_HANDLES_LOGOUT__ = true;
 
-const body = document.body;
 const headerMount = document.getElementById('appHeader');
 const footerMount = document.getElementById('appFooter');
-const isNeuLoginPage = body?.classList?.contains('neu-auth-page') === true;
-const isNeuAppPage = body?.classList?.contains('neu-social-app') === true;
 let profileGlobalsBound = false;
+
+function isNeuLoginPage() {
+  return document.body?.classList?.contains('neu-auth-page') === true;
+}
+
+function isNeuAppPage() {
+  return document.body?.classList?.contains('neu-social-app') === true;
+}
 
 function esc(value) {
   return String(value ?? '')
@@ -45,7 +50,7 @@ function handleFor(user) {
 }
 
 function currentPageHref() {
-  return isNeuLoginPage ? getNeuLoginPath() : getNeuSocialAppPath();
+  return isNeuLoginPage() ? getNeuLoginPath() : getNeuSocialAppPath();
 }
 
 function buildHeader(user) {
@@ -58,7 +63,7 @@ function buildHeader(user) {
   const loginPath = getNeuLoginPath();
   const pulseHref = withNeuQuery(socialAppPath, { portal: 'pulse' });
   const profileHref = withNeuQuery(socialAppPath, { profile: 'me' });
-  const navLinksHtml = isNeuAppPage
+  const navLinksHtml = isNeuAppPage()
     ? ''
     : `
         <nav class="neu-shell-links" aria-label="Neu navigation">

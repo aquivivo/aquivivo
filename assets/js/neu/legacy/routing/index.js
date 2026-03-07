@@ -54,15 +54,15 @@ export function createLegacyRoutingModule(deps) {
     const portal = String(portalName || '').trim().toLowerCase();
     if (!NEU_PORTAL_ALLOWED.has(portal)) return;
 
+    if (portal !== 'feed') {
+      updateNeuRouteParams({ portal, profileMode: false });
+      return;
+    }
+
     if (isProfileRouteActive()) {
       const meUid = neuCurrentUid();
       const profileUid = getProfileUidFromQuery(meUid) || NEU_PROFILE_ME;
       updateNeuRouteParams({ portal, profileMode: true, profileUid });
-      return;
-    }
-
-    if (portal !== 'feed') {
-      updateNeuRouteParams({ portal, profileMode: false });
       return;
     }
 
@@ -255,7 +255,10 @@ export function createLegacyRoutingModule(deps) {
       profileRoute: isProfileRouteActive(),
     });
 
-    if (isProfileRouteActive()) {
+    if (portalFromQuery && portalFromQuery !== 'feed') {
+      updateNeuRouteParams({ portal: portalFromQuery, profileMode: false });
+      activatePortal(portalFromQuery);
+    } else if (isProfileRouteActive()) {
       updateNeuRouteParams({ portal: 'feed', profileMode: true });
       activatePortal('feed');
       activateFeedSource('target');
@@ -365,7 +368,9 @@ export function createLegacyRoutingModule(deps) {
         profileRoute: isProfileRouteActive(),
       });
 
-      if (isProfileRouteActive()) {
+      if (portalFromQuery && portalFromQuery !== 'feed') {
+        activatePortal(portalFromQuery);
+      } else if (isProfileRouteActive()) {
         activatePortal('feed');
         activateFeedSource('target');
       } else {
