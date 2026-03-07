@@ -2985,6 +2985,75 @@ body.fusion-profile.neu-social-app .neu-chat-image-close {
   z-index: 2000;
 }
 
+body.fusion-profile.neu-social-app .neuDockBubbleTray {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  max-width: calc(100vw - 120px);
+  overflow: hidden;
+}
+
+body.fusion-profile.neu-social-app .neuDockBubbleBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #0e1d3a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+body.fusion-profile.neu-social-app .neuDockBubbleBtn:hover {
+  transform: scale(1.08);
+}
+
+body.fusion-profile.neu-social-app .neuDockBubbleAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+body.fusion-profile.neu-social-app .neuDockBubbleBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ff3b3b;
+  color: #fff;
+  font-size: 11px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+body.fusion-profile.neu-social-app .neuDockBubbleOverflow {
+  font-size: 14px;
+  padding: 0 6px;
+  color: #fff;
+  opacity: 0.7;
+}
+
 body.fusion-profile.neu-social-app .neu-chat-window {
   position: absolute;
   width: 360px;
@@ -2998,6 +3067,7 @@ body.fusion-profile.neu-social-app .neu-chat-window {
 
 body.fusion-profile.neu-social-app .neu-chat-window .neuChatBody {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -3011,6 +3081,21 @@ body.fusion-profile.neu-social-app .neu-chat-window .neuChatMessages {
 body.fusion-profile.neu-social-app .neu-chat-window.neu-chat-minimized {
   height: 42px !important;
   overflow: hidden;
+}
+
+body.fusion-profile.neu-social-app .neu-chat-window.neu-chat-minimized-anim {
+  animation: neuDockMinimize 0.18s ease forwards;
+}
+
+@keyframes neuDockMinimize {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.85);
+    opacity: 0.3;
+  }
 }
 
 body.fusion-profile.neu-social-app .neu-chat-window.neu-chat-minimized .neuDockThreadWindowBody,
@@ -3108,6 +3193,32 @@ body.fusion-profile.neu-social-app .neuDockThreadWindowBody {
   background: rgba(11, 31, 68, 0.34);
 }
 
+body.fusion-profile.neu-social-app .neuDockInboxList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+body.fusion-profile.neu-social-app .neuDockInboxItem {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--fusion-text);
+  cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .neuDockInboxItem small {
+  color: var(--fusion-text-soft);
+}
+
 body.fusion-profile.neu-social-app .neuDockThreadMessages {
   flex: 1 1 auto;
   min-height: 0;
@@ -3116,6 +3227,13 @@ body.fusion-profile.neu-social-app .neuDockThreadMessages {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+body.fusion-profile.neu-social-app .neuDockHistoryStatus {
+  text-align: center;
+  padding: 8px 0;
+  font-size: 12px;
+  opacity: 0.7;
 }
 
 body.fusion-profile.neu-social-app .neuDockThreadMsgRow {

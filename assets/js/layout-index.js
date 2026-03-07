@@ -1136,15 +1136,20 @@ import { buildProfileHref } from './profile-href.js';
         wireMiniMenu(navNotifWrap, navNotifBtn, navNotifMenu);
         wireMiniMenu(navMsgWrap, navMsgBtn, navMsgMenu);
         startBadgeRefresh(user.uid);
-        initGlobalMiniChat({
-          uid: user.uid,
-          displayName:
-            CURRENT_DOC?.displayName ||
-            CURRENT_DOC?.name ||
-            user?.displayName ||
-            user?.email ||
-            'Usuario',
-        });
+        const isNeuApp = document.body?.classList?.contains('neu-social-app') === true;
+        if (isNeuApp) {
+          destroyGlobalMiniChat();
+        } else {
+          initGlobalMiniChat({
+            uid: user.uid,
+            displayName:
+              CURRENT_DOC?.displayName ||
+              CURRENT_DOC?.name ||
+              user?.displayName ||
+              user?.email ||
+              'Usuario',
+          });
+        }
       } else {
         startBadgeRefresh(null);
         destroyGlobalMiniChat();

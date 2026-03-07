@@ -1877,15 +1877,21 @@ import { buildProfileHref } from './profile-href.js';
     else startBadgeRefresh(null);
 
     if (user?.uid) {
-      initGlobalMiniChat({
-        uid: user.uid,
-        displayName:
-          profile?.displayName ||
-          profile?.name ||
-          user?.displayName ||
-          user?.email ||
-          'Usuario',
-      });
+      const isNeuApp = document.body?.classList?.contains('neu-social-app') === true;
+
+      if (isNeuApp) {
+        destroyGlobalMiniChat();
+      } else {
+        initGlobalMiniChat({
+          uid: user.uid,
+          displayName:
+            profile?.displayName ||
+            profile?.name ||
+            user?.displayName ||
+            user?.email ||
+            'Usuario',
+        });
+      }
     } else {
       destroyGlobalMiniChat();
     }

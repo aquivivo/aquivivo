@@ -2812,6 +2812,8 @@ const NEU_CHAT_LAUNCHER_STORAGE_KEY = 'neu_chat_launcher_pos';
 const NEU_CHAT_FLOAT_STORAGE_KEY = 'neu_chat_float_pos';
 const NEU_CHAT_DOCK_OPEN_STORAGE_KEY = 'neu_chat_dock_open';
 const NEU_CHAT_HIDDEN_STORAGE_PREFIX = 'neuChatHidden:';
+const NEU_DOCK_POS_STORAGE_PREFIX = 'dock_pos_';
+const NEU_DOCK_MIN_STORAGE_PREFIX = 'dock_min_';
 const NEU_CHAT_UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
 const NEU_CHAT_UPLOAD_PREFIX = 'neuChatUploads/';
 const NEU_CHAT_TYPING_DEBOUNCE_MS = 400;
@@ -2834,12 +2836,17 @@ const NEU_CHAT_REACTION_EMOJI = {
   heart: '??',
   laugh: '??',
 };
-const NEU_DOCK_THREAD_MAX_WINDOWS = 3;
 const NEU_DOCK_THREAD_GAP = 12;
 const NEU_DOCK_THREAD_MARGIN = 16;
 const NEU_DOCK_THREAD_BOTTOM = 0;
 const NEU_DOCK_THREAD_STACK_STEP = 380;
 const NEU_DOCK_BUBBLE_BOTTOM = 24;
+const NEU_DOCK_THREAD_IDLE_UNSUBSCRIBE_MS = 2 * 60 * 1000;
+const NEU_DOCK_INBOX_WINDOW_ID = '__dock_inbox__';
+const NEU_DOCK_WINDOW_Z_RESET_THRESHOLD = 5000;
+const NEU_DOCK_WINDOW_Z_RESET_BASE = 1000;
+const NEU_DOCK_VIRTUAL_WINDOW = 120;
+const NEU_DOCK_VIRTUAL_STEP = 80;
 const neuChatFeatures = {
   typingEnabled: true,
   presenceEnabled: true,
@@ -2848,6 +2855,153 @@ const neuChatFeatures = {
 
 let neuChatScrollEl = null;
 let neuChatDockWindowZ = 100;
+
+function neuDisableLegacyMiniChatUi() {
+  const miniChatDock = document.getElementById('miniChatDock');
+  if (miniChatDock instanceof HTMLElement) miniChatDock.remove();
+  const miniChatTray = document.getElementById('miniChatTray');
+  if (miniChatTray instanceof HTMLElement) miniChatTray.remove();
+  const miniChatThreadRoot = document.getElementById('miniChatThreadRoot');
+  if (miniChatThreadRoot instanceof HTMLElement) miniChatThreadRoot.remove();
+  if (typeof window !== 'undefined' && window.__avMiniChatApi) {
+    delete window.__avMiniChatApi;
+  }
+}
+
+function neuDockPosStorageKey(conversationId) {
+  return `${NEU_DOCK_POS_STORAGE_PREFIX}${String(conversationId || '').trim()}`;
+}
+
+function neuDockMinStorageKey(conversationId) {
+  return `${NEU_DOCK_MIN_STORAGE_PREFIX}${String(conversationId || '').trim()}`;
+}
+
+function neuDockPersistWindowPosition(state) {
+  const convId = String(state?.conversationId || '').trim();
+  if (!convId || !(state?.windowEl instanceof HTMLElement)) return;
+  try {
+    localStorage.setItem(
+      neuDockPosStorageKey(convId),
+      JSON.stringify({
+        left: String(state.windowEl.style.left || ''),
+        top: String(state.windowEl.style.top || ''),
+        right: String(state.windowEl.style.right || ''),
+        bottom: String(state.windowEl.style.bottom || ''),
+        manualPosition: state.manualPosition === true,
+      }),
+    );
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function neuDockPersistMinimizedState(conversationId, minimized) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return;
+  try {
+    if (minimized === true) localStorage.setItem(neuDockMinStorageKey(convId), '1');
+    else localStorage.removeItem(neuDockMinStorageKey(convId));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function neuDockReadStoredPosition(conversationId) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return null;
+  try {
+    const raw = localStorage.getItem(neuDockPosStorageKey(convId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    return {
+      left: String(parsed.left || ''),
+      top: String(parsed.top || ''),
+      right: String(parsed.right || ''),
+      bottom: String(parsed.bottom || ''),
+      manualPosition: parsed.manualPosition === true,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function neuDockIsPersistedMinimized(conversationId) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return false;
+  try {
+    return localStorage.getItem(neuDockMinStorageKey(convId)) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function neuDockApplyPersistedWindowState(state) {
+  const convId = String(state?.conversationId || '').trim();
+  if (!convId || !(state?.windowEl instanceof HTMLElement)) return;
+  const savedPos = neuDockReadStoredPosition(convId);
+  if (savedPos) {
+    if (savedPos.manualPosition === true) {
+      Object.assign(state.windowEl.style, {
+        left: savedPos.left,
+        top: savedPos.top,
+        right: savedPos.right,
+        bottom: savedPos.bottom,
+      });
+      state.manualPosition = true;
+    } else {
+      state.manualPosition = false;
+    }
+  }
+
+  if (neuDockIsPersistedMinimized(convId) && !state.minimized) {
+    state.minimized = true;
+    state.windowEl.classList.add('neu-chat-minimized');
+    if (!neuDockThreadWindowsState.minimizedOrder.includes(convId)) {
+      neuDockThreadWindowsState.minimizedOrder.push(convId);
+    }
+  }
+}
+
+function neuDockClearPersistedState(conversationId) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return;
+  try {
+    localStorage.removeItem(neuDockPosStorageKey(convId));
+    localStorage.removeItem(neuDockMinStorageKey(convId));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function neuDockClearAllPersistedState() {
+  try {
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(NEU_DOCK_POS_STORAGE_PREFIX) || key.startsWith(NEU_DOCK_MIN_STORAGE_PREFIX))
+      .forEach((key) => {
+        localStorage.removeItem(key);
+      });
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function neuDockStoredConversationIds() {
+  const ids = [];
+  try {
+    const total = Number(localStorage.length || 0);
+    for (let i = 0; i < total; i += 1) {
+      const key = String(localStorage.key(i) || '');
+      if (!key.startsWith(NEU_DOCK_POS_STORAGE_PREFIX)) continue;
+      const convId = String(key.slice(NEU_DOCK_POS_STORAGE_PREFIX.length) || '').trim();
+      if (!convId) continue;
+      if (!ids.includes(convId)) ids.push(convId);
+    }
+  } catch {
+    return [];
+  }
+  return ids;
+}
 
 function neuUnreadValue(value) {
   const n = Number(value);
@@ -2960,6 +3114,7 @@ function neuSetConversationUnreadLocal(conversationId, unreadCount) {
   if (!changed) return;
   neuSyncUnreadUi();
   neuRenderChatList();
+  neuRenderDockBubbleTray();
 }
 
 function neuChatToastNode() {
@@ -4104,17 +4259,7 @@ function neuEnsureChatShellDom() {
   const existingCard = document.getElementById('neuChatModalRoot');
   if (existingCard instanceof HTMLElement) return;
 
-  if (typeof window !== 'undefined') window.__NEU_DISABLE_MINI_CHAT__ = true;
-
-  const legacyMiniDock = document.getElementById('miniChatDock');
-  if (legacyMiniDock instanceof HTMLElement) legacyMiniDock.remove();
-  const legacyMiniTray = document.getElementById('miniChatTray');
-  if (legacyMiniTray instanceof HTMLElement) legacyMiniTray.remove();
-  const legacyMiniThreadRoot = document.getElementById('miniChatThreadRoot');
-  if (legacyMiniThreadRoot instanceof HTMLElement) legacyMiniThreadRoot.remove();
-  if (typeof window !== 'undefined' && window.__avMiniChatApi) {
-    delete window.__avMiniChatApi;
-  }
+  neuDisableLegacyMiniChatUi();
 
   const root = neuChatRootNode();
   if (!(root instanceof HTMLElement)) return;
@@ -5091,88 +5236,117 @@ function neuDockThreadBaseRightOffset() {
   return NEU_DOCK_THREAD_MARGIN;
 }
 
+function neuDockThreadWindowZValue(state) {
+  const value = Number(state?.windowEl?.style?.zIndex || 0);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function neuNormalizeDockWindowZIndexes() {
+  const orderedStates = Array.from(neuDockThreadWindowsState.windows.values())
+    .filter((state) => state?.windowEl instanceof HTMLElement)
+    .sort((left, right) => neuDockThreadWindowZValue(left) - neuDockThreadWindowZValue(right));
+  let nextZ = NEU_DOCK_WINDOW_Z_RESET_BASE;
+  orderedStates.forEach((state) => {
+    state.windowEl.style.zIndex = `${nextZ}`;
+    nextZ += 1;
+  });
+  neuChatDockWindowZ = Math.max(NEU_DOCK_WINDOW_Z_RESET_BASE, nextZ);
+}
+
+function neuClampDockThreadWindowIntoViewport(state) {
+  if (!state?.windowEl || state.manualPosition !== true || state.minimized === true) return;
+  const rect = state.windowEl.getBoundingClientRect();
+  const maxX = Math.max(0, window.innerWidth - rect.width);
+  const maxY = Math.max(0, window.innerHeight - rect.height);
+  const left = neuClampNumber(rect.left, 0, maxX);
+  const top = neuClampNumber(rect.top, 0, maxY);
+  state.windowEl.style.left = `${Math.round(left)}px`;
+  state.windowEl.style.top = `${Math.round(top)}px`;
+  state.windowEl.style.right = 'auto';
+  state.windowEl.style.bottom = 'auto';
+  neuDockPersistWindowPosition(state);
+}
+
 function neuDockBubbleTrayNode() {
   let node = document.getElementById('neuDockBubbleTray');
   if (node instanceof HTMLElement) return node;
   node = document.createElement('div');
   node.id = 'neuDockBubbleTray';
-  node.className = 'neuDockBubbleTray hidden';
   document.body.append(node);
   return node;
 }
 
-function neuDockThreadUnreadForConversation(conversationId) {
-  const convId = String(conversationId || '').trim();
-  if (!convId || !Array.isArray(neuChatState.listRows)) return 0;
-  const row = neuChatState.listRows.find((item) => String(item?.conversationId || '').trim() === convId) || null;
-  return neuUnreadValue(row?.unreadCount);
-}
-
-function neuEnsureDockBubble(state) {
-  if (!state) return null;
-  if (state.bubbleEl instanceof HTMLButtonElement) return state.bubbleEl;
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'neuDockBubble';
-  button.setAttribute('aria-label', 'Abrir chat');
-  button.innerHTML = `
-    <span class="avatar-frame neuDockBubbleAvatar">
-      <img alt="avatar" />
-      <span>U</span>
-    </span>
-    <span class="neu-unread-badge neuDockBubbleUnread hidden"></span>
-  `;
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-    neuRestoreDockThreadWindow(state.conversationId, { focus: true });
-  });
-  state.bubbleEl = button;
-  return button;
-}
-
-function neuRenderDockBubble(state) {
-  if (!state) return;
-  const button = neuEnsureDockBubble(state);
-  if (!(button instanceof HTMLButtonElement)) return;
-  const profile = neuChatProfileCached(state.peerUid);
-  const displayName = String(profile.displayName || '').trim() || 'Usuario';
-  const avatarUrl = String(profile.avatarUrl || '').trim();
-  const avatarImg = button.querySelector('.neuDockBubbleAvatar img');
-  const avatarFallback = button.querySelector('.neuDockBubbleAvatar span');
-  neuSetAvatarElements(avatarImg, avatarFallback, avatarUrl, displayName);
-  button.title = displayName;
-  button.setAttribute('aria-label', `Abrir chat: ${displayName}`);
-  const unread = neuDockThreadUnreadForConversation(state.conversationId);
-  const badge = button.querySelector('.neuDockBubbleUnread');
-  if (badge instanceof HTMLElement) {
-    const label = neuUnreadBadgeLabel(unread);
-    badge.textContent = label;
-    badge.classList.toggle('hidden', !label);
-    if (label) badge.setAttribute('aria-label', `Sin leer: ${unread}`);
-  }
-}
-
 function neuRenderDockBubbleTray() {
-  const tray = document.getElementById('neuDockBubbleTray');
+  const tray = neuDockBubbleTrayNode();
   if (!(tray instanceof HTMLElement)) return;
-  tray.classList.add('hidden');
+  const states = neuDockThreadWindowsState;
+  const minimizedIds = (Array.isArray(states.minimizedOrder) ? states.minimizedOrder : []).filter((id) => {
+    const convId = String(id || '').trim();
+    if (!convId || convId === NEU_DOCK_INBOX_WINDOW_ID) return false;
+    const state = states.windows.get(convId);
+    return !!state && state.minimized === true;
+  });
+
   tray.innerHTML = '';
+  const maxVisibleRaw = Math.floor((window.innerWidth - 120) / 64);
+  const maxVisible = Math.max(0, Number.isFinite(maxVisibleRaw) ? maxVisibleRaw : 0);
+  const visible = maxVisible > 0 ? minimizedIds.slice(-maxVisible) : [];
+  const overflowCount = Math.max(0, minimizedIds.length - visible.length);
+
+  visible.forEach((conversationId) => {
+    const convId = String(conversationId || '').trim();
+    if (!convId) return;
+    const state = states.windows.get(convId);
+    if (!state) return;
+
+    const row = Array.isArray(neuChatState.listRows)
+      ? neuChatState.listRows.find((item) => String(item?.conversationId || '').trim() === convId) || null
+      : null;
+    const unread = neuUnreadValue(row?.unreadCount);
+    const profile = neuChatProfileCached(state.peerUid);
+    const displayName = String(profile.displayName || row?.otherName || row?.otherUid || 'Chat').trim() || 'Chat';
+    const avatarLetter = neuAvatarLetter(displayName);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'neuDockBubbleBtn';
+    button.setAttribute('data-conv', convId);
+    button.title = displayName;
+    button.setAttribute('aria-label', `Abrir chat: ${displayName}`);
+    button.innerHTML = `
+      <span class="neuDockBubbleAvatar">${esc(avatarLetter)}</span>
+      ${unread > 0 ? `<span class="neuDockBubbleBadge">${esc(unread > 9 ? '9+' : String(unread))}</span>` : ''}
+    `;
+    button.addEventListener('click', () => {
+      neuRestoreDockThreadWindow(convId, { focus: true });
+    });
+    tray.append(button);
+  });
+
+  if (overflowCount > 0) {
+    const more = document.createElement('div');
+    more.className = 'neuDockBubbleOverflow';
+    more.textContent = `+${overflowCount}`;
+    tray.append(more);
+  }
+
+  tray.classList.toggle('hidden', minimizedIds.length === 0);
 }
 
-function neuDockThreadIsNearBottom(bodyEl, threshold = NEU_CHAT_SCROLL_NEAR_BOTTOM) {
-  if (!(bodyEl instanceof HTMLElement)) return true;
-  return bodyEl.scrollHeight - (bodyEl.scrollTop + bodyEl.clientHeight) <= threshold;
+function neuDockThreadIsNearBottom(scrollEl, threshold = NEU_CHAT_SCROLL_NEAR_BOTTOM) {
+  if (!(scrollEl instanceof HTMLElement)) return true;
+  return scrollEl.scrollHeight - (scrollEl.scrollTop + scrollEl.clientHeight) <= threshold;
 }
 
 function neuDockThreadScrollBottom(state, behavior = 'auto') {
-  if (!state || !(state.bodyEl instanceof HTMLElement)) return;
-  state.bodyEl.scrollTo({ top: state.bodyEl.scrollHeight, behavior });
+  if (!state || !(state.messagesEl instanceof HTMLElement)) return;
+  state.messagesEl.scrollTo({ top: state.messagesEl.scrollHeight, behavior });
 }
 
 function neuDockThreadScrollBottomAfterPaint(state, behavior = 'auto') {
-  if (!state || !(state.bodyEl instanceof HTMLElement)) return;
+  if (!state || !(state.messagesEl instanceof HTMLElement)) return;
   const run = () => {
-    if (!state || !(state.bodyEl instanceof HTMLElement)) return;
+    if (!state || !(state.messagesEl instanceof HTMLElement)) return;
     neuDockThreadScrollBottom(state, behavior);
   };
   if (typeof window.requestAnimationFrame === 'function') {
@@ -5220,6 +5394,46 @@ function neuDockThreadStopTypingTimers(state) {
     window.clearTimeout(state.typingIdleTimer);
     state.typingIdleTimer = 0;
   }
+}
+
+function neuDockThreadClearMinimizeIdleTimer(state) {
+  if (!state) return;
+  if (state.minimizeIdleTimer) {
+    window.clearTimeout(state.minimizeIdleTimer);
+    state.minimizeIdleTimer = 0;
+  }
+}
+
+function neuDockThreadPauseListenersOnIdle(state) {
+  if (!state || state.minimized !== true) return;
+  if (typeof state.messageUnsub === 'function') {
+    try {
+      state.messageUnsub();
+    } catch {
+      // ignore unsubscribe errors
+    }
+  }
+  if (typeof state.typingUnsub === 'function') {
+    try {
+      state.typingUnsub();
+    } catch {
+      // ignore unsubscribe errors
+    }
+  }
+  state.messageUnsub = null;
+  state.typingUnsub = null;
+  state.listenersPaused = true;
+}
+
+function neuDockThreadScheduleIdlePause(state) {
+  if (!state) return;
+  neuDockThreadClearMinimizeIdleTimer(state);
+  if (state.minimized !== true) return;
+  state.minimizeIdleTimer = window.setTimeout(() => {
+    state.minimizeIdleTimer = 0;
+    if (!state || state.minimized !== true) return;
+    neuDockThreadPauseListenersOnIdle(state);
+  }, NEU_DOCK_THREAD_IDLE_UNSUBSCRIBE_MS);
 }
 
 async function neuDockThreadSetOwnTyping(state, typing, options = {}) {
@@ -5294,8 +5508,115 @@ function neuDockThreadRenderHeader(state) {
   if (state.handleEl instanceof HTMLElement) state.handleEl.textContent = handle;
 }
 
+function neuDockThreadSyncVirtualRange(state, total, options = {}) {
+  if (!state) return;
+  const maxTotal = Math.max(0, Number(total) || 0);
+  if (!maxTotal) {
+    state.visibleStart = 0;
+    state.visibleEnd = 0;
+    return;
+  }
+  if (options.resetVirtualWindow === true || options.forceBottom === true) {
+    state.visibleEnd = maxTotal;
+    state.visibleStart = Math.max(0, maxTotal - NEU_DOCK_VIRTUAL_WINDOW);
+    return;
+  }
+
+  let visibleEnd = Number(state.visibleEnd || 0);
+  let visibleStart = Number(state.visibleStart || 0);
+
+  if (!Number.isFinite(visibleEnd) || visibleEnd <= 0) {
+    visibleEnd = maxTotal;
+    visibleStart = Math.max(0, maxTotal - NEU_DOCK_VIRTUAL_WINDOW);
+  } else {
+    visibleEnd = neuClampNumber(visibleEnd, 0, maxTotal);
+    visibleStart = neuClampNumber(visibleStart, 0, visibleEnd);
+    if (visibleStart === visibleEnd) {
+      visibleStart = Math.max(0, visibleEnd - NEU_DOCK_VIRTUAL_WINDOW);
+    }
+  }
+
+  state.visibleStart = visibleStart;
+  state.visibleEnd = visibleEnd;
+}
+
+function neuDockThreadEnsureVirtualNodes(state) {
+  if (!state || !(state.messagesEl instanceof HTMLElement)) return null;
+  if (!(state.spacerTopEl instanceof HTMLElement)) {
+    state.spacerTopEl = state.messagesEl.querySelector('.neuDockSpacerTop');
+  }
+  if (!(state.historyStatusEl instanceof HTMLElement)) {
+    state.historyStatusEl = state.messagesEl.querySelector('.neuDockHistoryStatus');
+  }
+  if (!(state.virtualContentEl instanceof HTMLElement)) {
+    state.virtualContentEl = state.messagesEl.querySelector('.neuDockVirtualContent');
+  }
+  if (!(state.spacerBottomEl instanceof HTMLElement)) {
+    state.spacerBottomEl = state.messagesEl.querySelector('.neuDockSpacerBottom');
+  }
+  if (
+    state.spacerTopEl instanceof HTMLElement &&
+    state.historyStatusEl instanceof HTMLElement &&
+    state.virtualContentEl instanceof HTMLElement &&
+    state.spacerBottomEl instanceof HTMLElement
+  ) {
+    return state;
+  }
+
+  state.messagesEl.innerHTML = `
+    <div class="neuDockSpacerTop"></div>
+    <div class="neuDockHistoryStatus hidden"></div>
+    <div class="neuDockVirtualContent"></div>
+    <div class="neuDockSpacerBottom"></div>
+  `;
+  state.spacerTopEl = state.messagesEl.querySelector('.neuDockSpacerTop');
+  state.historyStatusEl = state.messagesEl.querySelector('.neuDockHistoryStatus');
+  state.virtualContentEl = state.messagesEl.querySelector('.neuDockVirtualContent');
+  state.spacerBottomEl = state.messagesEl.querySelector('.neuDockSpacerBottom');
+  return state;
+}
+
+function neuDockThreadSetHistoryStatus(state, text = '', visible = false) {
+  if (!(state?.historyStatusEl instanceof HTMLElement)) return;
+  state.historyStatusEl.textContent = visible ? String(text || '').trim() : '';
+  state.historyStatusEl.classList.toggle('hidden', visible !== true);
+}
+
+function neuDockThreadUpdateItemHeightEstimate(state, renderedCount) {
+  if (!state?.virtualContentEl || renderedCount <= 0) return;
+  const measuredHeight = Number(state.virtualContentEl.getBoundingClientRect().height || 0);
+  if (!Number.isFinite(measuredHeight) || measuredHeight <= 0) return;
+  const nextEstimate = measuredHeight / renderedCount;
+  if (!Number.isFinite(nextEstimate) || nextEstimate < 24 || nextEstimate > 320) return;
+  state.itemHeightEstimate = Math.round((state.itemHeightEstimate * 3 + nextEstimate) / 4);
+}
+
+function neuDockThreadRebuildMessages(state) {
+  if (!state) return [];
+  const older = Array.isArray(state.historyMessages) ? state.historyMessages : [];
+  const live = Array.isArray(state.liveMessages) ? state.liveMessages : [];
+  const map = new Map();
+  [...older, ...live].forEach((row) => {
+    const id = String(row?.id || '').trim();
+    if (!id) return;
+    map.set(id, row);
+  });
+  const combined = Array.from(map.values()).sort((left, right) => {
+    const tsLeft = neuTimeToMs(left?.createdAt);
+    const tsRight = neuTimeToMs(right?.createdAt);
+    if (tsLeft !== tsRight) return tsLeft - tsRight;
+    return String(left?.id || '').localeCompare(String(right?.id || ''));
+  });
+  state.messages = combined;
+  return combined;
+}
+
 function neuDockThreadRenderMessages(state, options = {}) {
-  if (!state || !(state.messagesEl instanceof HTMLElement) || !(state.bodyEl instanceof HTMLElement)) return;
+  if (!state || !(state.messagesEl instanceof HTMLElement)) return;
+  neuDockThreadEnsureVirtualNodes(state);
+  if (state.historyExhausted === true) neuDockThreadSetHistoryStatus(state, 'No more history', true);
+  else if (state.historyLoading === true) neuDockThreadSetHistoryStatus(state, 'Loading older messages...', true);
+  else neuDockThreadSetHistoryStatus(state, '', false);
   const allMessages = Array.isArray(state.messages) ? state.messages : [];
   const conversationId = String(state.conversationId || '').trim();
   const hiddenSet = neuChatHiddenSetForConversation(conversationId);
@@ -5305,20 +5626,32 @@ function neuDockThreadRenderMessages(state, options = {}) {
   });
   const meUid = neuCurrentUid();
   const shouldStickBottom = options.forceBottom === true || state.nearBottom === true;
+  state.virtualTotal = list.length;
+  neuDockThreadSyncVirtualRange(state, list.length, options);
 
   if (!list.length) {
+    if (state.spacerTopEl instanceof HTMLElement) state.spacerTopEl.style.height = '0px';
+    if (state.spacerBottomEl instanceof HTMLElement) state.spacerBottomEl.style.height = '0px';
     if (state.hasSnapshot !== true) {
-      state.messagesEl.innerHTML = neuDockThreadSkeletonRowsHtml(NEU_CHAT_OPEN_SKELETON_ROWS);
+      if (state.virtualContentEl instanceof HTMLElement) {
+        state.virtualContentEl.innerHTML = neuDockThreadSkeletonRowsHtml(NEU_CHAT_OPEN_SKELETON_ROWS);
+      }
     } else {
       const emptyText = allMessages.length ? 'No hay mensajes visibles' : 'Empieza la conversacion';
-      state.messagesEl.innerHTML = `<div class="neuDockThreadEmpty">${esc(emptyText)}</div>`;
+      if (state.virtualContentEl instanceof HTMLElement) {
+        state.virtualContentEl.innerHTML = `<div class="neuDockThreadEmpty">${esc(emptyText)}</div>`;
+      }
     }
     neuDockThreadSetJumpVisible(state, false);
     neuDockThreadUpdateTypingUi(state, state.peerTyping === true);
     return;
   }
 
-  const html = list
+  const total = list.length;
+  const start = Math.max(0, Math.min(total, Number(state.visibleStart || 0)));
+  const end = Math.max(start, Math.min(total, Number(state.visibleEnd || total)));
+  const slice = list.slice(start, end);
+  const html = slice
     .map((item) => {
       const senderUid = String(item?.senderUid || '').trim();
       const mine = !!meUid && senderUid === meUid;
@@ -5342,7 +5675,16 @@ function neuDockThreadRenderMessages(state, options = {}) {
     })
     .join('');
 
-  state.messagesEl.innerHTML = html;
+  if (state.spacerTopEl instanceof HTMLElement) {
+    state.spacerTopEl.style.height = `${Math.max(0, Math.round(start * state.itemHeightEstimate))}px`;
+  }
+  if (state.spacerBottomEl instanceof HTMLElement) {
+    state.spacerBottomEl.style.height = `${Math.max(0, Math.round((total - end) * state.itemHeightEstimate))}px`;
+  }
+  if (state.virtualContentEl instanceof HTMLElement) {
+    state.virtualContentEl.innerHTML = html;
+  }
+  neuDockThreadUpdateItemHeightEstimate(state, slice.length);
   neuDockThreadUpdateTypingUi(state, state.peerTyping === true);
   neuDockThreadSetJumpVisible(state, state.newMessageChipVisible === true && !state.nearBottom);
 
@@ -5353,10 +5695,12 @@ function neuDockThreadRenderMessages(state, options = {}) {
 
 function neuDockThreadStopListeners(state, options = {}) {
   if (!state) return;
+  neuDockThreadClearMinimizeIdleTimer(state);
   if (typeof state.messageUnsub === 'function') state.messageUnsub();
   if (typeof state.typingUnsub === 'function') state.typingUnsub();
   state.messageUnsub = null;
   state.typingUnsub = null;
+  state.listenersPaused = false;
   neuDockThreadStopTypingTimers(state);
   neuDockThreadSetOwnTyping(state, false, { bestEffort: true, force: true }).catch(() => null);
   if (!options.keepDom && state.windowEl instanceof HTMLElement) state.windowEl.remove();
@@ -5367,15 +5711,22 @@ function neuMinimizeDockThreadWindow(conversationId, options = {}) {
   if (!convId) return;
   const state = neuDockThreadWindowsState.windows.get(convId);
   if (!state) return;
-  if (state.bodyEl instanceof HTMLElement) {
-    state.savedScrollTop = state.bodyEl.scrollTop;
+  if (state.messagesEl instanceof HTMLElement) {
+    state.savedScrollTop = state.messagesEl.scrollTop;
   }
   state.minimized = true;
-  if (state.windowEl instanceof HTMLElement) state.windowEl.classList.add('neu-chat-minimized');
+  neuDockPersistMinimizedState(convId, true);
+  if (state.windowEl instanceof HTMLElement) {
+    state.windowEl.classList.add('neu-chat-minimized');
+    state.windowEl.classList.remove('neu-chat-minimized-anim');
+    void state.windowEl.offsetWidth;
+    state.windowEl.classList.add('neu-chat-minimized-anim');
+  }
   if (!neuDockThreadWindowsState.minimizedOrder.includes(convId)) {
     neuDockThreadWindowsState.minimizedOrder.push(convId);
   }
   neuDockThreadSetOwnTyping(state, false, { bestEffort: true }).catch(() => null);
+  if (convId !== NEU_DOCK_INBOX_WINDOW_ID) neuDockThreadScheduleIdlePause(state);
   if (!options.skipLayout) neuLayoutDockThreadWindows();
   neuRenderDockBubbleTray();
 }
@@ -5385,6 +5736,7 @@ function neuRestoreDockThreadWindow(conversationId, options = {}) {
   if (!convId) return;
   const state = neuDockThreadWindowsState.windows.get(convId);
   if (!state) return;
+  neuDockThreadClearMinimizeIdleTimer(state);
   if (!state.minimized) {
     neuFocusDockThreadWindow(state);
     if (options.focus !== false && state.inputEl instanceof HTMLTextAreaElement) {
@@ -5394,14 +5746,24 @@ function neuRestoreDockThreadWindow(conversationId, options = {}) {
   }
 
   state.minimized = false;
+  neuDockPersistMinimizedState(convId, false);
   neuDockThreadWindowsState.minimizedOrder = neuDockThreadWindowsState.minimizedOrder.filter((id) => id !== convId);
-  if (state.windowEl instanceof HTMLElement) state.windowEl.classList.remove('neu-chat-minimized');
+  if (state.windowEl instanceof HTMLElement) {
+    state.windowEl.classList.remove('neu-chat-minimized');
+    state.windowEl.classList.remove('neu-chat-minimized-anim');
+  }
   neuDockThreadRenderHeader(state);
+  if (state.listenersPaused === true && convId !== NEU_DOCK_INBOX_WINDOW_ID) {
+    neuStartDockThreadWindowListeners(state).catch((error) => {
+      const code = neuChatErrorCode(error) || 'unknown';
+      console.error('[neu-chat] dock restore listeners failed', convId, code, error?.message, error);
+    });
+  }
   neuDockThreadRenderMessages(state, { forceBottom: false, behavior: 'auto' });
-  if (state.bodyEl instanceof HTMLElement && Number.isFinite(state.savedScrollTop)) {
+  if (state.messagesEl instanceof HTMLElement && Number.isFinite(state.savedScrollTop)) {
     neuAfterNextPaint(() => {
-      if (!(state.bodyEl instanceof HTMLElement)) return;
-      state.bodyEl.scrollTop = Number(state.savedScrollTop || 0);
+      if (!(state.messagesEl instanceof HTMLElement)) return;
+      state.messagesEl.scrollTop = Number(state.savedScrollTop || 0);
     });
   }
   neuLayoutDockThreadWindows();
@@ -5415,18 +5777,62 @@ function neuRestoreDockThreadWindow(conversationId, options = {}) {
 function neuLayoutDockThreadWindows() {
   const states = neuDockThreadWindowsState;
   if (!states || !Array.isArray(states.order)) return;
-  states.order.forEach((conversationId, index) => {
+  const inboxState = states.windows.get(NEU_DOCK_INBOX_WINDOW_ID) || null;
+  const inboxPinned =
+    !!inboxState?.windowEl &&
+    inboxState.minimized !== true &&
+    inboxState.manualPosition !== true;
+
+  const openConversationIds = states.order.filter((conversationId) => {
+    const convId = String(conversationId || '').trim();
+    if (!convId || convId === NEU_DOCK_INBOX_WINDOW_ID) return false;
+    const state = states.windows.get(convId);
+    return !!state?.windowEl && state.minimized !== true;
+  });
+  const windowWidth = Math.max(240, neuDockThreadWindowWidth());
+  const unitWidth = Math.max(1, windowWidth + NEU_DOCK_THREAD_GAP);
+  const viewportWidth = Math.max(0, Math.round(Number(window.innerWidth || 0)));
+  const availableWidth = Math.max(0, viewportWidth - NEU_DOCK_THREAD_MARGIN * 2);
+  const conversationWidth = Math.max(0, availableWidth - (inboxPinned ? unitWidth : 0));
+  const visibleCap = Math.max(1, Math.floor(conversationWidth / unitWidth));
+
+  if (openConversationIds.length > visibleCap) {
+    const overflowCount = openConversationIds.length - visibleCap;
+    const toMinimize = openConversationIds.slice(0, overflowCount);
+    toMinimize.forEach((convId) => {
+      neuMinimizeDockThreadWindow(convId, { reason: 'limit', skipLayout: true });
+    });
+  }
+
+  if (inboxPinned && inboxState?.windowEl) {
+    inboxState.windowEl.classList.remove('neu-chat-minimized');
+    inboxState.windowEl.classList.remove('hidden');
+    inboxState.windowEl.style.left = 'auto';
+    inboxState.windowEl.style.top = 'auto';
+    inboxState.windowEl.style.right = `${Math.max(NEU_DOCK_THREAD_MARGIN, Math.round(neuDockThreadBaseRightOffset()))}px`;
+    inboxState.windowEl.style.bottom = `${NEU_DOCK_THREAD_BOTTOM}px`;
+  }
+
+  let stackIndex = 0;
+  states.order.forEach((conversationId) => {
     const state = states.windows.get(conversationId);
     if (!state?.windowEl) return;
+    if (conversationId === NEU_DOCK_INBOX_WINDOW_ID && inboxPinned) return;
+    const minimized = state.minimized === true;
+    state.windowEl.classList.toggle('neu-chat-minimized', minimized);
+    // Dock windows use only `neu-chat-minimized`; keep stale legacy `hidden` off.
     state.windowEl.classList.remove('hidden');
-    state.windowEl.classList.toggle('neu-chat-minimized', state.minimized === true);
+    if (minimized) return;
     if (state.manualPosition === true) return;
-    const right = neuDockThreadBaseRightOffset() + index * NEU_DOCK_THREAD_STACK_STEP;
+    const slotIndex = stackIndex + (inboxPinned ? 1 : 0);
+    const right = neuDockThreadBaseRightOffset() + slotIndex * NEU_DOCK_THREAD_STACK_STEP;
     state.windowEl.style.left = 'auto';
     state.windowEl.style.top = 'auto';
     state.windowEl.style.right = `${Math.max(NEU_DOCK_THREAD_MARGIN, Math.round(right))}px`;
     state.windowEl.style.bottom = `${NEU_DOCK_THREAD_BOTTOM}px`;
+    stackIndex += 1;
   });
+  neuRenderDockBubbleTray();
 }
 
 function neuFocusDockThreadWindow(target) {
@@ -5441,9 +5847,19 @@ function neuFocusDockThreadWindow(target) {
         : null;
   if (!state?.windowEl) return;
   const convId = String(state.conversationId || '').trim();
-  if (convId) neuChatState.lastConversationId = convId;
+  neuChatState.focusedConversationId = convId && convId !== NEU_DOCK_INBOX_WINDOW_ID ? convId : '';
+  if (convId) {
+    neuDockThreadWindowsState.order =
+      neuDockThreadWindowsState.order.filter((id) => id !== convId);
+    neuDockThreadWindowsState.order.push(convId);
+    neuLayoutDockThreadWindows();
+  }
+  if (convId && convId !== NEU_DOCK_INBOX_WINDOW_ID) neuChatState.lastConversationId = convId;
   const peerUid = String(state.peerUid || '').trim();
-  if (peerUid) neuChatState.lastPeerUid = peerUid;
+  if (peerUid && convId !== NEU_DOCK_INBOX_WINDOW_ID) neuChatState.lastPeerUid = peerUid;
+  if (neuChatDockWindowZ > NEU_DOCK_WINDOW_Z_RESET_THRESHOLD) {
+    neuNormalizeDockWindowZIndexes();
+  }
   neuChatDockWindowZ += 1;
   state.windowEl.style.zIndex = `${neuChatDockWindowZ}`;
 }
@@ -5469,6 +5885,7 @@ function neuMakeDockThreadWindowDraggable(state, headerEl) {
   const onUp = () => {
     if (!dragging) return;
     dragging = false;
+    neuDockPersistWindowPosition(state);
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onUp);
   };
@@ -5501,7 +5918,11 @@ function neuWireDockThreadWindowResize() {
   window.addEventListener(
     'resize',
     () => {
+      neuDockThreadWindowsState.windows.forEach((state) => {
+        neuClampDockThreadWindowIntoViewport(state);
+      });
       neuLayoutDockThreadWindows();
+      neuRenderDockBubbleTray();
     },
     { passive: true },
   );
@@ -5532,7 +5953,12 @@ function neuCreateDockThreadWindow(conversationId) {
         </span>
       </header>
       <div class="neuDockThreadWindowBody neuChatBody">
-        <div class="neuDockThreadMessages neuChatMessages"></div>
+        <div class="neuDockThreadMessages neuChatMessages">
+          <div class="neuDockSpacerTop"></div>
+          <div class="neuDockHistoryStatus hidden"></div>
+          <div class="neuDockVirtualContent"></div>
+          <div class="neuDockSpacerBottom"></div>
+        </div>
         <div class="neuDockThreadTyping hidden">Escribiendo...</div>
         <button class="neuDockThreadJump hidden" type="button">Nuevos mensajes</button>
       </div>
@@ -5553,6 +5979,10 @@ function neuCreateDockThreadWindow(conversationId) {
   const handleEl = wrap.querySelector('.neuDockThreadPeerCopy span');
   const bodyEl = wrap.querySelector('.neuChatBody');
   const messagesEl = wrap.querySelector('.neuChatMessages');
+  const spacerTopEl = wrap.querySelector('.neuDockSpacerTop');
+  const historyStatusEl = wrap.querySelector('.neuDockHistoryStatus');
+  const virtualContentEl = wrap.querySelector('.neuDockVirtualContent');
+  const spacerBottomEl = wrap.querySelector('.neuDockSpacerBottom');
   const typingEl = wrap.querySelector('.neuDockThreadTyping');
   const jumpEl = wrap.querySelector('.neuDockThreadJump');
   const formEl = wrap.querySelector('.neuDockThreadComposer');
@@ -5570,6 +6000,10 @@ function neuCreateDockThreadWindow(conversationId) {
     handleEl: handleEl instanceof HTMLElement ? handleEl : null,
     bodyEl: bodyEl instanceof HTMLElement ? bodyEl : null,
     messagesEl: messagesEl instanceof HTMLElement ? messagesEl : null,
+    spacerTopEl: spacerTopEl instanceof HTMLElement ? spacerTopEl : null,
+    historyStatusEl: historyStatusEl instanceof HTMLElement ? historyStatusEl : null,
+    virtualContentEl: virtualContentEl instanceof HTMLElement ? virtualContentEl : null,
+    spacerBottomEl: spacerBottomEl instanceof HTMLElement ? spacerBottomEl : null,
     typingEl: typingEl instanceof HTMLElement ? typingEl : null,
     jumpEl: jumpEl instanceof HTMLButtonElement ? jumpEl : null,
     formEl: formEl instanceof HTMLFormElement ? formEl : null,
@@ -5588,12 +6022,24 @@ function neuCreateDockThreadWindow(conversationId) {
     savedScrollTop: 0,
     bubbleEl: null,
     manualPosition: false,
+    visibleStart: 0,
+    visibleEnd: 0,
+    virtualTotal: 0,
+    itemHeightEstimate: 48,
+    liveMessages: [],
+    historyMessages: [],
+    oldestDocCursor: null,
+    historyExhausted: false,
+    historyLoading: false,
     typingActive: false,
     typingDebounceTimer: 0,
     typingIdleTimer: 0,
+    minimizeIdleTimer: 0,
+    listenersPaused: false,
     messageUnsub: null,
     typingUnsub: null,
   };
+  neuDockApplyPersistedWindowState(state);
 
   if (state.closeEl) {
     state.closeEl.addEventListener('click', (event) => {
@@ -5639,12 +6085,59 @@ function neuCreateDockThreadWindow(conversationId) {
       neuDockThreadSetOwnTyping(state, false, { bestEffort: true }).catch(() => null);
     });
   }
-  if (state.bodyEl) {
-    state.bodyEl.addEventListener(
+  if (state.messagesEl) {
+    state.messagesEl.addEventListener(
       'scroll',
       () => {
-        state.nearBottom = neuDockThreadIsNearBottom(state.bodyEl);
-        if (state.nearBottom) neuDockThreadSetJumpVisible(state, false);
+        state.nearBottom = neuDockThreadIsNearBottom(state.messagesEl);
+        if (
+          state.messagesEl.scrollTop < 80 &&
+          state.visibleStart === 0 &&
+          state.historyExhausted !== true &&
+          state.historyLoading !== true
+        ) {
+          const prevHeight = state.messagesEl.scrollHeight;
+          const prevTop = state.messagesEl.scrollTop;
+          const prevStart = state.visibleStart;
+          const prevEnd = state.visibleEnd;
+          neuDockLoadOlderMessages(state)
+            .then((prependedCount) => {
+              if (!(state.messagesEl instanceof HTMLElement) || prependedCount <= 0) return;
+              state.visibleStart = prevStart + prependedCount;
+              state.visibleEnd = prevEnd + prependedCount;
+              state.nearBottom = false;
+              neuDockThreadRenderMessages(state, { forceBottom: false });
+              window.requestAnimationFrame(() => {
+                if (!(state.messagesEl instanceof HTMLElement)) return;
+                const nextHeight = state.messagesEl.scrollHeight;
+                state.messagesEl.scrollTop = prevTop + (nextHeight - prevHeight);
+              });
+            })
+            .catch(() => null);
+        }
+        const total = Math.max(0, Number(state.virtualTotal || 0));
+        if (total > 0) {
+          let nextStart = state.visibleStart;
+          let nextEnd = state.visibleEnd;
+          if (state.nearBottom) {
+            nextEnd = total;
+            nextStart = Math.max(0, total - NEU_DOCK_VIRTUAL_WINDOW);
+          } else {
+            const estimate = Math.max(24, Number(state.itemHeightEstimate || 48));
+            const approxIndex = Math.floor(state.messagesEl.scrollTop / estimate);
+            nextStart = Math.max(0, approxIndex - 20);
+            nextEnd = Math.min(total, nextStart + NEU_DOCK_VIRTUAL_WINDOW);
+          }
+          if (nextStart !== state.visibleStart || nextEnd !== state.visibleEnd) {
+            state.visibleStart = nextStart;
+            state.visibleEnd = nextEnd;
+            neuDockThreadRenderMessages(state, { forceBottom: false });
+          }
+        }
+        if (state.nearBottom) {
+          neuDockThreadSetJumpVisible(state, false);
+          return;
+        }
       },
       { passive: true },
     );
@@ -5654,7 +6147,7 @@ function neuCreateDockThreadWindow(conversationId) {
       event.preventDefault();
       state.nearBottom = true;
       neuDockThreadSetJumpVisible(state, false);
-      neuDockThreadScrollBottomAfterPaint(state, 'smooth');
+      neuDockThreadRenderMessages(state, { forceBottom: true, behavior: 'smooth', resetVirtualWindow: true });
     });
   }
   if (state.headEl instanceof HTMLElement) {
@@ -5665,6 +6158,195 @@ function neuCreateDockThreadWindow(conversationId) {
   return state;
 }
 
+function neuRenderDockInboxList(state) {
+  if (!state?.windowEl) return;
+  const listEl = state.windowEl.querySelector('.neuDockInboxList');
+  if (!(listEl instanceof HTMLElement)) return;
+
+  const rows = neuSortChatRows(Array.isArray(neuChatState.listRows) ? neuChatState.listRows : []);
+  listEl.innerHTML = '';
+
+  if (!rows.length) {
+    const empty = document.createElement('div');
+    empty.className = 'neuDockInboxItem is-empty';
+    empty.textContent = 'Sin conversaciones.';
+    empty.style.opacity = '0.75';
+    listEl.append(empty);
+    return;
+  }
+
+  rows.forEach((row) => {
+    const conversationId = String(row?.conversationId || '').trim();
+    if (!conversationId) return;
+    const otherUid = String(row?.otherUid || '').trim();
+    const profile = neuChatProfileCached(otherUid);
+    const displayName = String(row?.otherName || profile?.displayName || otherUid || 'Chat').trim() || 'Chat';
+    const preview = String(row?.lastMessagePreview || row?.lastMessageText || '').trim();
+
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'neuDockInboxItem';
+    item.innerHTML = `
+      <strong>${esc(displayName)}</strong>
+      <small>${esc(preview || 'Sin mensajes todavia')}</small>
+    `;
+    item.addEventListener('click', () => {
+      neuOpenOrFocusDockThreadWindow(conversationId, { otherUid }).catch((error) => {
+        console.error('[neu-chat] dock inbox open failed', error);
+      });
+    });
+    listEl.append(item);
+  });
+}
+
+function neuOpenDockInboxWindow() {
+  const id = NEU_DOCK_INBOX_WINDOW_ID;
+  if (!neuCanUseDockHost()) {
+    neuOpenLastChatOrList().catch(() => null);
+    return;
+  }
+
+  const existing = neuDockThreadWindowsState.windows.get(id);
+  if (existing?.windowEl instanceof HTMLElement) {
+    neuRenderDockInboxList(existing);
+    if (existing.minimized === true) {
+      neuRestoreDockThreadWindow(id, { focus: true });
+      return;
+    }
+    neuBringDockThreadWindowToFront(id);
+    return;
+  }
+
+  if (existing) {
+    neuDockThreadWindowsState.windows.delete(id);
+    neuDockThreadWindowsState.order = neuDockThreadWindowsState.order.filter((convId) => convId !== id);
+    neuDockThreadWindowsState.minimizedOrder = neuDockThreadWindowsState.minimizedOrder.filter((convId) => convId !== id);
+  }
+
+  const staleWindow = document.getElementById(`neuChatWindow_${id}`);
+  if (staleWindow instanceof HTMLElement) staleWindow.remove();
+
+  const wrap = document.createElement('section');
+  wrap.className = 'neu-chat-window neuDockThreadWindow';
+  wrap.id = `neuChatWindow_${id}`;
+  wrap.setAttribute('data-neu-dock-conversation', id);
+  wrap.innerHTML = `
+    <div class="neuDockThreadWindowCard">
+      <header class="neuDockThreadWindowHead">
+        <strong>Chats</strong>
+        <span class="neuDockThreadHeadActions">
+          <button class="btn-white-outline neuDockThreadMinBtn" type="button" aria-label="Minimizar inbox">_</button>
+          <button class="btn-white-outline neuDockThreadCloseBtn" type="button" aria-label="Cerrar inbox">X</button>
+        </span>
+      </header>
+      <div class="neuDockThreadWindowBody neuChatBody">
+        <div class="neuDockInboxList"></div>
+      </div>
+    </div>
+  `;
+
+  neuChatWindowsLayerNode().append(wrap);
+
+  const headEl = wrap.querySelector('.neuDockThreadWindowHead');
+  const minimizeEl = wrap.querySelector('.neuDockThreadMinBtn');
+  const closeEl = wrap.querySelector('.neuDockThreadCloseBtn');
+  const state = {
+    conversationId: id,
+    windowEl: wrap,
+    headEl: headEl instanceof HTMLElement ? headEl : null,
+    minimizeEl: minimizeEl instanceof HTMLButtonElement ? minimizeEl : null,
+    closeEl: closeEl instanceof HTMLButtonElement ? closeEl : null,
+    minimized: false,
+    manualPosition: false,
+    minimizeIdleTimer: 0,
+    listenersPaused: false,
+    messageUnsub: null,
+    typingUnsub: null,
+    bubbleEl: null,
+  };
+  neuDockApplyPersistedWindowState(state);
+
+  if (state.headEl instanceof HTMLElement) {
+    neuMakeDockThreadWindowDraggable(state, state.headEl);
+  }
+  if (state.minimizeEl instanceof HTMLButtonElement) {
+    state.minimizeEl.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (state.minimized) {
+        neuRestoreDockThreadWindow(id, { focus: true });
+        return;
+      }
+      neuMinimizeDockThreadWindow(id, { reason: 'user' });
+    });
+  }
+  if (state.closeEl instanceof HTMLButtonElement) {
+    state.closeEl.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      neuCloseDockThreadWindow(id, { reason: 'user', destroy: true });
+    });
+  }
+  wrap.addEventListener('pointerdown', () => neuBringDockThreadWindowToFront(id), { passive: true });
+
+  neuDockThreadWindowsState.windows.set(id, state);
+  neuDockThreadWindowsState.order = neuDockThreadWindowsState.order.filter((convId) => convId !== id);
+  neuDockThreadWindowsState.order.push(id);
+  neuWireDockThreadWindowResize();
+  neuLayoutDockThreadWindows();
+  neuDockPersistWindowPosition(state);
+  neuBringDockThreadWindowToFront(id);
+  neuRenderDockInboxList(state);
+}
+
+async function neuDockLoadOlderMessages(state) {
+  if (!state || state.historyLoading === true || state.historyExhausted === true) return 0;
+  const convId = String(state.conversationId || '').trim();
+  if (!convId || !state.oldestDocCursor) return 0;
+
+  state.historyLoading = true;
+  neuDockThreadSetHistoryStatus(state, 'Loading older messages...', true);
+  try {
+    const olderQuery = query(
+      collection(db, 'neuConversations', convId, 'messages'),
+      orderBy('createdAt', 'desc'),
+      startAfter(state.oldestDocCursor),
+      limit(50),
+    );
+    const snap = await getDocs(olderQuery);
+    if (!snap || snap.empty) {
+      state.historyExhausted = true;
+      neuDockThreadSetHistoryStatus(state, 'No more history', true);
+      return 0;
+    }
+
+    const nextBatchAsc = neuMapChatMessagesFromDocs(snap.docs);
+    const existingIds = new Set(
+      [...(Array.isArray(state.historyMessages) ? state.historyMessages : []), ...(Array.isArray(state.liveMessages) ? state.liveMessages : [])]
+        .map((row) => String(row?.id || '').trim())
+        .filter(Boolean),
+    );
+    const filtered = nextBatchAsc.filter((row) => !existingIds.has(String(row?.id || '').trim()));
+    if (filtered.length) {
+      state.historyMessages = [...filtered, ...(Array.isArray(state.historyMessages) ? state.historyMessages : [])];
+      neuDockThreadRebuildMessages(state);
+    }
+
+    state.oldestDocCursor = snap.docs[snap.docs.length - 1] || null;
+    if (snap.docs.length < 50) state.historyExhausted = true;
+    return filtered.length;
+  } catch (error) {
+    const code = neuChatErrorCode(error) || 'unknown';
+    console.error('[neu-chat] dock older history failed', convId, code, error?.message, error);
+    return 0;
+  } finally {
+    state.historyLoading = false;
+    if (state.historyExhausted !== true) {
+      neuDockThreadSetHistoryStatus(state, '', false);
+    }
+  }
+}
+
 async function neuStartDockThreadWindowListeners(state) {
   if (!state) return;
   const convId = String(state.conversationId || '').trim();
@@ -5672,12 +6354,24 @@ async function neuStartDockThreadWindowListeners(state) {
   if (!convId || !meUid) return;
   const members = Array.isArray(state.members) ? state.members : [];
   if (!members.includes(meUid)) return;
+  neuDockThreadClearMinimizeIdleTimer(state);
+  state.listenersPaused = false;
 
   if (typeof state.messageUnsub === 'function') state.messageUnsub();
   if (typeof state.typingUnsub === 'function') state.typingUnsub();
   state.hasSnapshot = false;
   state.newMessageChipVisible = false;
-  state.messages = [];
+  state.visibleStart = 0;
+  state.visibleEnd = 0;
+  state.virtualTotal = 0;
+  state.liveMessages = [];
+  if (!Array.isArray(state.historyMessages)) state.historyMessages = [];
+  if (!state.historyMessages.length) {
+    state.oldestDocCursor = null;
+    state.historyExhausted = false;
+  }
+  state.historyLoading = false;
+  neuDockThreadRebuildMessages(state);
   if (!state.minimized) {
     neuDockThreadRenderMessages(state, { forceBottom: false });
   }
@@ -5686,15 +6380,28 @@ async function neuStartDockThreadWindowListeners(state) {
   state.messageUnsub = onSnapshot(
     messageQuery,
     (snap) => {
-      const wasNearBottom = state.bodyEl ? neuDockThreadIsNearBottom(state.bodyEl) : true;
-      const prevScrollHeight = state.bodyEl instanceof HTMLElement ? state.bodyEl.scrollHeight : 0;
+      const wasNearBottom = state.messagesEl ? neuDockThreadIsNearBottom(state.messagesEl) : true;
+      const prevScrollHeight = state.messagesEl instanceof HTMLElement ? state.messagesEl.scrollHeight : 0;
       const isFirstSnapshot = state.hasSnapshot !== true;
       const incomingAdded = snap.docChanges().some((change) => {
         if (change.type !== 'added') return false;
         const senderUid = String(change.doc.data()?.senderUid || '').trim();
         return !!senderUid && senderUid !== meUid;
       });
-      state.messages = neuMapChatMessagesFromDocs(snap.docs);
+      state.liveMessages = neuMapChatMessagesFromDocs(snap.docs);
+      if (Array.isArray(state.liveMessages) && state.liveMessages.length > 3000) {
+        state.liveMessages = state.liveMessages.slice(-1000);
+      }
+      if (!Array.isArray(state.historyMessages)) state.historyMessages = [];
+      if (!state.historyMessages.length) {
+        state.oldestDocCursor = snap.docs[snap.docs.length - 1] || null;
+        state.historyExhausted = snap.docs.length < 50;
+      }
+      state.messages = neuDockThreadRebuildMessages(state);
+      if (isFirstSnapshot || wasNearBottom) {
+        state.visibleEnd = state.messages.length;
+        state.visibleStart = Math.max(0, state.visibleEnd - NEU_DOCK_VIRTUAL_WINDOW);
+      }
       state.hasSnapshot = true;
       if (state.minimized) {
         state.newMessageChipVisible = false;
@@ -5706,10 +6413,10 @@ async function neuStartDockThreadWindowListeners(state) {
 
       neuDockThreadRenderMessages(state, { forceBottom: isFirstSnapshot || wasNearBottom, behavior: isFirstSnapshot ? 'auto' : 'smooth' });
 
-      if (!isFirstSnapshot && !wasNearBottom && state.bodyEl instanceof HTMLElement) {
-        const nextScrollHeight = state.bodyEl.scrollHeight;
+      if (!isFirstSnapshot && !wasNearBottom && state.messagesEl instanceof HTMLElement) {
+        const nextScrollHeight = state.messagesEl.scrollHeight;
         const delta = nextScrollHeight - prevScrollHeight;
-        if (delta > 0) state.bodyEl.scrollTop += delta;
+        if (delta > 0) state.messagesEl.scrollTop += delta;
       }
     },
     (error) => {
@@ -5834,45 +6541,91 @@ async function neuSendDockThreadWindowMessage(conversationId) {
 async function neuOpenOrFocusDockThreadWindow(conversationId, seed = {}) {
   const convId = String(conversationId || '').trim();
   const meUid = neuCurrentUid();
-  if (!convId || !meUid || !neuCanUseDockHost()) return;
+  const canUseDock = neuCanUseDockHost();
+  neuQaTrace('dock_open_start', { convId, meUid, canUseDock });
+  if (!convId || !meUid || !canUseDock) {
+    neuQaTrace('dock_open_guard_block', { convId, meUid, canUseDock });
+    return;
+  }
 
   const windowId = `neuChatWindow_${convId}`;
   const existingWin = document.getElementById(windowId);
   if (existingWin instanceof HTMLElement) {
     const existingState = neuDockThreadWindowsState.windows.get(convId);
     if (!existingState) {
+      neuQaTrace('dock_open_stale_window_removed', { convId, windowId });
       existingWin.remove();
     } else {
       if (existingState.minimized) {
+        neuQaTrace('dock_open_restore_existing', { convId });
         neuRestoreDockThreadWindow(convId, { focus: true });
         return;
       }
+      neuQaTrace('dock_open_focus_existing', { convId });
       neuFocusDockThreadWindow(existingWin);
       return;
     }
   }
 
   const snap = await getDoc(doc(db, 'neuConversations', convId));
-  if (!snap.exists()) return;
+  if (!snap.exists()) {
+    neuQaTrace('dock_open_missing_doc', { convId });
+    return;
+  }
   const data = snap.data() || {};
   const members = Array.isArray(data.members) ? data.members.map((uid) => String(uid || '').trim()).filter(Boolean) : [];
-  if (!members.includes(meUid)) return;
+  if (!members.includes(meUid)) {
+    neuQaTrace('dock_open_access_denied', { convId, meUid, members });
+    return;
+  }
+
+  const existingAfterFetch = document.getElementById(windowId);
+  if (existingAfterFetch instanceof HTMLElement) {
+    const stateAfterFetch = neuDockThreadWindowsState.windows.get(convId);
+    if (stateAfterFetch) {
+      neuQaTrace('dock_open_focus_existing_after_fetch', { convId });
+      if (stateAfterFetch.minimized) {
+        neuRestoreDockThreadWindow(convId, { focus: true });
+      } else {
+        neuFocusDockThreadWindow(existingAfterFetch);
+      }
+      return;
+    }
+    neuQaTrace('dock_open_stale_window_removed_after_fetch', { convId, windowId });
+    existingAfterFetch.remove();
+  }
 
   const windowState = neuCreateDockThreadWindow(convId);
   if (!windowState) return;
   windowState.members = members;
   windowState.memberKey = String(data.memberKey || seed.memberKey || neuChatMemberKey(members[0], members[1])).trim();
   windowState.peerUid = String(seed.otherUid || members.find((uid) => uid !== meUid) || '').trim();
-  if (windowState.peerUid) {
-    await neuEnsureChatProfile(windowState.peerUid);
-  }
-  neuDockThreadRenderHeader(windowState);
   neuDockThreadWindowsState.windows.set(convId, windowState);
+  neuDockThreadWindowsState.order = neuDockThreadWindowsState.order.filter((id) => id !== convId);
   neuDockThreadWindowsState.order.push(convId);
   neuWireDockThreadWindowResize();
-  await neuStartDockThreadWindowListeners(windowState);
-  neuBringDockThreadWindowToFront(convId);
   neuLayoutDockThreadWindows();
+  neuDockPersistWindowPosition(windowState);
+  neuBringDockThreadWindowToFront(convId);
+  neuQaTrace('dock_open_window_created', {
+    convId,
+    order: [...neuDockThreadWindowsState.order],
+    windowsSize: Number(neuDockThreadWindowsState.windows?.size || 0),
+    domWindows: document.querySelectorAll('.neu-chat-window').length,
+  });
+  neuDockThreadRenderHeader(windowState);
+  if (windowState.peerUid) {
+    neuEnsureChatProfile(windowState.peerUid)
+      .then(() => {
+        const activeState = neuDockThreadWindowsState.windows.get(convId);
+        if (activeState === windowState) neuDockThreadRenderHeader(windowState);
+      })
+      .catch(() => null);
+  }
+  await neuStartDockThreadWindowListeners(windowState);
+  if (windowState.minimized === true && convId !== NEU_DOCK_INBOX_WINDOW_ID) {
+    neuDockThreadScheduleIdlePause(windowState);
+  }
 }
 
 function neuCloseDockThreadWindow(conversationId, options = {}) {
@@ -5884,11 +6637,18 @@ function neuCloseDockThreadWindow(conversationId, options = {}) {
   if (destroy) {
     neuDockThreadStopListeners(state, { keepDom: false });
     if (state.bubbleEl instanceof HTMLElement) state.bubbleEl.remove();
+    neuDockClearPersistedState(convId);
     neuDockThreadWindowsState.windows.delete(convId);
     neuDockThreadWindowsState.order = neuDockThreadWindowsState.order.filter((id) => id !== convId);
     neuDockThreadWindowsState.minimizedOrder = neuDockThreadWindowsState.minimizedOrder.filter((id) => id !== convId);
     const nextActiveId = [...neuDockThreadWindowsState.order].reverse().find((id) => neuDockThreadWindowsState.windows.has(id));
-    if (nextActiveId) neuChatState.lastConversationId = nextActiveId;
+    if (nextActiveId && nextActiveId !== NEU_DOCK_INBOX_WINDOW_ID) neuChatState.lastConversationId = nextActiveId;
+    if (String(neuChatState.focusedConversationId || '').trim() === convId) {
+      const nextFocusedId = [...neuDockThreadWindowsState.order]
+        .reverse()
+        .find((id) => id && id !== NEU_DOCK_INBOX_WINDOW_ID && neuDockThreadWindowsState.windows.has(id));
+      neuChatState.focusedConversationId = String(nextFocusedId || '').trim();
+    }
     if (options.reason !== 'viewport' && options.reason !== 'limit') {
       neuChatSetHint('');
     }
@@ -5919,6 +6679,22 @@ function neuSyncChatHostSurface() {
   neuMountChatCardForMode('modal');
   neuSetInboxPanelOpen(false);
   neuSetChatDockOpen(false, { persist: false });
+}
+
+function neuRestorePersistedDockWindows() {
+  if (!neuCanUseDockHost()) return;
+  const conversationIds = neuDockStoredConversationIds();
+  if (!conversationIds.length) return;
+  conversationIds.forEach((conversationId) => {
+    const convId = String(conversationId || '').trim();
+    if (!convId) return;
+    if (neuDockThreadWindowsState.windows.has(convId)) return;
+    if (convId === NEU_DOCK_INBOX_WINDOW_ID) {
+      neuOpenDockInboxWindow();
+      return;
+    }
+    neuOpenOrFocusDockThreadWindow(convId).catch(() => null);
+  });
 }
 
 function neuChatRecomputeModalLock() {
@@ -7380,7 +8156,12 @@ function neuWireShareChatSearchInput() {
 function neuRenderChatList() {
   neuSyncChatHostSurface();
   const root = neuInboxListNode();
-  if (!(root instanceof HTMLElement)) return;
+  if (!(root instanceof HTMLElement)) {
+    const dockInboxState = neuDockThreadWindowsState.windows.get(NEU_DOCK_INBOX_WINDOW_ID);
+    if (dockInboxState) neuRenderDockInboxList(dockInboxState);
+    neuRenderDockBubbleTray();
+    return;
+  }
 
   const allRows = neuSortChatRows(Array.isArray(neuChatState.listRows) ? neuChatState.listRows : []);
   const searchQuery = String(neuChatState.chatSearchQuery || '').trim();
@@ -7400,6 +8181,9 @@ function neuRenderChatList() {
       </div>
     `;
     delete root.dataset.neuChatRendering;
+    const dockInboxState = neuDockThreadWindowsState.windows.get(NEU_DOCK_INBOX_WINDOW_ID);
+    if (dockInboxState) neuRenderDockInboxList(dockInboxState);
+    neuRenderDockBubbleTray();
     return;
   }
 
@@ -7474,6 +8258,10 @@ function neuRenderChatList() {
   rows.forEach((row) => {
     if (row.otherUid) neuEnsureChatProfile(row.otherUid).catch(() => null);
   });
+
+  const dockInboxState = neuDockThreadWindowsState.windows.get(NEU_DOCK_INBOX_WINDOW_ID);
+  if (dockInboxState) neuRenderDockInboxList(dockInboxState);
+  neuRenderDockBubbleTray();
 }
 
 function neuWireChatListGuard() {
@@ -7943,6 +8731,46 @@ function neuQaAssertState(reason = '') {
   }
 }
 
+function neuQaCollectDockState() {
+  const dockOrder = Array.isArray(neuDockThreadWindowsState.order) ? [...neuDockThreadWindowsState.order] : [];
+  const dockWindowsSize = neuDockThreadWindowsState?.windows instanceof Map ? neuDockThreadWindowsState.windows.size : 0;
+  const dockDomWindows = Array.from(document.querySelectorAll('.neu-chat-window'));
+  return {
+    currentConversationId: String(neuChatState.currentConversationId || '').trim(),
+    activeConversationId: String(neuChatState.activeConversationId || '').trim(),
+    openingConversationId: String(neuChatState.openingConversationId || '').trim(),
+    messageListenerToken: Number(neuChatState.messageListenerToken || 0),
+    dockOrder,
+    dockWindowsSize,
+    dockDomWindowsCount: dockDomWindows.length,
+    dockDomWindowIds: dockDomWindows.map((node) => String(node?.id || '').trim()).filter(Boolean),
+  };
+}
+
+function neuQaPushDockProbe(tag, data = {}) {
+  const qa = neuQaRuntime();
+  if (!qa) return;
+  if (!Array.isArray(qa.dockProbe)) qa.dockProbe = [];
+  const safeData = data && typeof data === 'object' ? { ...data } : { value: data };
+  const convId = String(safeData?.convId || safeData?.conversationId || '').trim();
+  const dockState = neuQaCollectDockState();
+  const entry = {
+    at: Date.now(),
+    tag: String(tag || '').trim(),
+    convId,
+    data: safeData,
+    state: dockState,
+    dockWindowsSize: Number(dockState.dockWindowsSize || 0),
+    dockDomWindowsCount: Number(dockState.dockDomWindowsCount || 0),
+    activeMessageListeners: Number(qa.activeMessageListeners || 0),
+  };
+  qa.dockProbe.push(entry);
+  if (qa.dockProbe.length > 120) {
+    qa.dockProbe.splice(0, qa.dockProbe.length - 120);
+  }
+  console.debug('[QA][dock-probe]', entry.tag, entry);
+}
+
 function neuQaTrace(tag, data = {}) {
   const qa = neuQaRuntime();
   if (!qa) return;
@@ -7957,6 +8785,9 @@ function neuQaTrace(tag, data = {}) {
     qa.chatTrace.splice(0, qa.chatTrace.length - 120);
   }
   console.debug('[QA][chat]', entry.tag, entry.data);
+  if (entry.tag.startsWith('dock_open_')) {
+    neuQaPushDockProbe(entry.tag, entry.data);
+  }
 }
 
 function neuQaMessageListenerAttach(convId, token) {
@@ -9137,12 +9968,12 @@ function neuFocusChatDockLauncherTarget() {
 
 async function neuToggleChatDockFromLauncher() {
   if (!neuCanUseDockHost()) {
-    await neuOpenLastChatOrList();
+    neuOpenDockInboxWindow();
     return;
   }
 
   if (!(neuChatModalCardNode() instanceof HTMLElement)) {
-    await neuOpenLastChatOrList();
+    neuOpenDockInboxWindow();
     return;
   }
 
@@ -9160,6 +9991,7 @@ async function neuToggleChatDockFromLauncher() {
 
   neuSetChatDockOpen(true);
   neuRenderChatList();
+  neuOpenDockInboxWindow();
   window.setTimeout(() => {
     neuFocusChatDockLauncherTarget();
     neuUpdateChatComposerOffsetVar();
@@ -9185,7 +10017,7 @@ function neuInitChatDockLauncher() {
       const flag = neuChatFloatNode();
       if (dock instanceof HTMLElement && dock.contains(target)) return;
       if (flag instanceof HTMLElement && (target === flag || flag.contains(target))) return;
-      if (target.closest('.neuDockThreadWindow, .neuDockBubbleTray, .neuDockBubble')) return;
+      if (target.closest('.neuDockThreadWindow, .neuDockBubbleTray, .neuDockBubble, .neuDockBubbleBtn')) return;
       neuSetChatDockOpen(false);
       neuSetTypingRowVisible(false);
     },
@@ -10027,8 +10859,16 @@ function neuWireChatEvents() {
 }
 
 async function neuInitChatMvp(user) {
+  neuDisableLegacyMiniChatUi();
+  const prevUid = String(neuChatState.meUid || '').trim();
   const meUid = String(user?.uid || auth.currentUser?.uid || '').trim();
-  if (!meUid) return;
+  if (!meUid) {
+    if (prevUid) neuDockClearAllPersistedState();
+    return;
+  }
+  if (prevUid && prevUid !== meUid) {
+    neuDockClearAllPersistedState();
+  }
 
   neuChatState.meUid = meUid;
   neuSyncChatHostSurface();
@@ -10056,6 +10896,9 @@ async function neuInitChatMvp(user) {
   neuUpdateChatComposerOffsetVar();
   neuSetChatSending(false);
   neuLayoutDockThreadWindows();
+  window.setTimeout(() => {
+    neuRestorePersistedDockWindows();
+  }, 0);
 }
 
 function getRouteChatUid() {
@@ -10117,16 +10960,43 @@ if (NEU_QA && typeof window !== 'undefined') {
   qaRoot.enabled = true;
   if (typeof qaRoot.activeMessageListeners !== 'number') qaRoot.activeMessageListeners = 0;
   if (!Array.isArray(qaRoot.chatTrace)) qaRoot.chatTrace = [];
+  if (!Array.isArray(qaRoot.dockProbe)) qaRoot.dockProbe = [];
   qaRoot.dumpState = function dumpState() {
+    const dockState = neuQaCollectDockState();
     const state = {
-      currentConversationId: String(neuChatState.currentConversationId || '').trim(),
-      activeConversationId: String(neuChatState.activeConversationId || '').trim(),
-      openingConversationId: String(neuChatState.openingConversationId || '').trim(),
-      messageListenerToken: Number(neuChatState.messageListenerToken || 0),
+      currentConversationId: dockState.currentConversationId,
+      activeConversationId: dockState.activeConversationId,
+      focusedConversationId: String(neuChatState.focusedConversationId || '').trim(),
+      openingConversationId: dockState.openingConversationId,
+      messageListenerToken: dockState.messageListenerToken,
       activeMessageListeners: Number(qaRoot.activeMessageListeners || 0),
+      dockOrder: dockState.dockOrder,
+      dockWindowsSize: dockState.dockWindowsSize,
+      dockDomWindowsCount: dockState.dockDomWindowsCount,
+      dockDomWindowIds: dockState.dockDomWindowIds,
     };
     console.debug('[QA] dumpState', state);
     return state;
+  };
+  qaRoot.getDockProbe = function getDockProbe() {
+    return Array.isArray(qaRoot.dockProbe) ? [...qaRoot.dockProbe] : [];
+  };
+  qaRoot.clearDockProbe = function clearDockProbe() {
+    qaRoot.dockProbe = [];
+    return true;
+  };
+  qaRoot.inspectDockRuntime = function inspectDockRuntime() {
+    const openSrc = String(neuOpenOrFocusDockThreadWindow || '');
+    const layoutSrc = String(neuLayoutDockThreadWindows || '');
+    return {
+      hasVisibleCapLogic: layoutSrc.includes('visibleCap') || layoutSrc.includes('NEU_DOCK_THREAD_MAX_WINDOWS'),
+      hasOrderedNewestFirst: layoutSrc.includes('orderedNewestFirst'),
+      layoutUsesManualPosition: layoutSrc.includes('manualPosition'),
+      openHasPostFetchExistingCheck: openSrc.includes('existingAfterFetch'),
+      openHasDockQaTrace: openSrc.includes('dock_open_start'),
+      openFnLength: openSrc.length,
+      layoutFnLength: layoutSrc.length,
+    };
   };
   qaRoot.assertState = function assertState(reason = 'manual') {
     const snapshot =
@@ -10285,6 +11155,57 @@ if (NEU_QA && typeof window !== 'undefined') {
     qaRoot.beforeUnloadWired = true;
   }
   window.__NEU_QA__ = qaRoot;
+
+  if (location.search.includes('qa=1')) {
+    window.setTimeout(() => {
+      try {
+        let panel = document.getElementById('neuQaDockProbePanel');
+        if (!(panel instanceof HTMLElement)) {
+          panel = document.createElement('div');
+          panel.id = 'neuQaDockProbePanel';
+          panel.style.position = 'fixed';
+          panel.style.left = '16px';
+          panel.style.bottom = '16px';
+          panel.style.zIndex = '999999';
+          panel.style.background = 'rgba(0,0,0,0.85)';
+          panel.style.color = '#0f0';
+          panel.style.fontSize = '12px';
+          panel.style.lineHeight = '1.35';
+          panel.style.padding = '12px';
+          panel.style.maxWidth = '420px';
+          panel.style.maxHeight = '300px';
+          panel.style.overflow = 'auto';
+          panel.style.borderRadius = '8px';
+          panel.style.whiteSpace = 'pre-wrap';
+          panel.style.fontFamily = 'ui-monospace,Consolas,monospace';
+          document.body.appendChild(panel);
+        }
+
+        const render = () => {
+          const state = window.__NEU_QA__?.inspectDockRuntime?.();
+          const probe = window.__NEU_QA__?.getDockProbe?.() || [];
+          panel.textContent =
+            'DOCK RUNTIME SNAPSHOT:\n\n' +
+            JSON.stringify(
+              {
+                state,
+                lastProbe: probe.slice(-10),
+              },
+              null,
+              2,
+            );
+        };
+
+        render();
+        if (panel.dataset.live !== '1') {
+          panel.dataset.live = '1';
+          window.setInterval(render, 1000);
+        }
+      } catch (e) {
+        console.error('QA panel error', e);
+      }
+    }, 1000);
+  }
 }
 const NEU_SAFE_MOD_ALLOWED = new Set(['portal_obs', 'flow_bridge', 'crud_posts', 'crud_stories']);
 const DISABLE = new Set(

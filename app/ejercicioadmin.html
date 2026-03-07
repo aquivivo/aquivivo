@@ -1,0 +1,835 @@
+﻿<!doctype html>
+<html lang="pl">
+  <head>
+  <base href='/' />
+    <meta charset="UTF-8" />
+    <title>Admin | Cwiczenia | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style id="coffeeFloatStyle">
+      /*  Floating coffee (global) */
+      #coffeeFloat {
+        position: absolute;
+        right: -40px;
+        top: 360px;
+        width: 420px;
+        height: 420px;
+        pointer-events: none;
+        opacity: 0.9;
+        filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.35));
+        animation: coffeeFloat 7s ease-in-out infinite;
+        transform-origin: 50% 60%;
+        z-index: 1;
+      }
+      #coffeeFloat svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      @keyframes coffeeFloat {
+        0% {
+          transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1);
+        }
+        50% {
+          transform: translateY(-18px) translateX(-6px) rotate(1deg) scale(1.02);
+        }
+        100% {
+          transform: translateY(0px) translateX(0px) rotate(-1deg) scale(1);
+        }
+      }
+      @media (max-width: 980px) {
+        #coffeeFloat {
+          display: none;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260214d" />
+    <script src="assets/js/layout.js?v=20260214d" type="module"></script>
+  </head>
+
+  <body data-page="ejercicioadmin">
+    <div id="appHeader"></div>
+    <div aria-hidden="true" id="coffeeFloat">
+      <svg
+        class="w-72 h-72 mx-auto drop-shadow-2xl"
+        viewbox="0 0 200 200"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <lineargradient id="cupGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+            <stop
+              offset="0%"
+              style="stop-color: #8b4513; stop-opacity: 1"
+            ></stop>
+            <stop
+              offset="100%"
+              style="stop-color: #654321; stop-opacity: 1"
+            ></stop>
+          </lineargradient>
+          <lineargradient id="coffeeGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+            <stop
+              offset="0%"
+              style="stop-color: #6f4e37; stop-opacity: 1"
+            ></stop>
+            <stop
+              offset="100%"
+              style="stop-color: #3e2723; stop-opacity: 1"
+            ></stop>
+          </lineargradient>
+        </defs>
+        <ellipse
+          cx="100"
+          cy="55"
+          fill="var(--yellow)"
+          opacity="0.3"
+          rx="70"
+          ry="15"
+        ></ellipse>
+        <ellipse
+          cx="100"
+          cy="55"
+          fill="var(--blue)"
+          opacity="0.3"
+          rx="60"
+          ry="12"
+        ></ellipse>
+        <ellipse
+          cx="100"
+          cy="55"
+          fill="var(--yellow)"
+          opacity="0.3"
+          rx="50"
+          ry="10"
+        ></ellipse>
+        <rect
+          fill="var(--yellow)"
+          height="25"
+          opacity="0.3"
+          rx="5"
+          width="30"
+          x="85"
+          y="55"
+        ></rect>
+        <path
+          d="M 60 120 L 65 160 Q 65 170 75 170 L 125 170 Q 135 170 135 160 L 140 120 Z"
+          fill="url(#cupGradient)"
+          stroke="#654321"
+          stroke-width="2"
+        ></path>
+        <ellipse
+          cx="100"
+          cy="120"
+          fill="url(#coffeeGradient)"
+          rx="35"
+          ry="8"
+        ></ellipse>
+        <path
+          d="M 140 130 Q 155 130 155 145 Q 155 160 140 160"
+          fill="none"
+          stroke="url(#cupGradient)"
+          stroke-linecap="round"
+          stroke-width="8"
+        ></path>
+        <rect
+          fill="var(--yellow)"
+          height="8"
+          opacity="0.6"
+          rx="2"
+          width="60"
+          x="70"
+          y="135"
+        ></rect>
+        <rect
+          fill="var(--blue)"
+          height="5"
+          opacity="0.6"
+          rx="1"
+          width="60"
+          x="70"
+          y="145"
+        ></rect>
+        <rect
+          fill="var(--red)"
+          height="5"
+          opacity="0.6"
+          rx="1"
+          width="60"
+          x="70"
+          y="152"
+        ></rect>
+        <path
+          d="M 85 110 Q 80 95 85 85"
+          fill="none"
+          opacity="0.7"
+          stroke="var(--yellow)"
+          stroke-linecap="round"
+          stroke-width="3"
+        >
+          <animate
+            attributename="opacity"
+            dur="2s"
+            repeatcount="indefinite"
+            values="0.7;0.3;0.7"
+          ></animate>
+          <animate
+            attributename="d"
+            dur="2s"
+            repeatcount="indefinite"
+            values="M 85 110 Q 80 95 85 85;M 85 110 Q 90 95 85 85;M 85 110 Q 80 95 85 85"
+          ></animate>
+        </path>
+        <path
+          d="M 100 108 Q 100 90 105 80"
+          fill="none"
+          opacity="0.8"
+          stroke="var(--yellow)"
+          stroke-linecap="round"
+          stroke-width="4"
+        >
+          <animate
+            attributename="opacity"
+            dur="2.5s"
+            repeatcount="indefinite"
+            values="0.8;0.4;0.8"
+          ></animate>
+          <animate
+            attributename="d"
+            dur="2.5s"
+            repeatcount="indefinite"
+            values="M 100 108 Q 100 90 105 80;M 100 108 Q 105 90 100 80;M 100 108 Q 100 90 105 80"
+          ></animate>
+        </path>
+        <path
+          d="M 115 110 Q 120 95 115 85"
+          fill="none"
+          opacity="0.7"
+          stroke="var(--yellow)"
+          stroke-linecap="round"
+          stroke-width="3"
+        >
+          <animate
+            attributename="opacity"
+            dur="2.2s"
+            repeatcount="indefinite"
+            values="0.7;0.3;0.7"
+          ></animate>
+          <animate
+            attributename="d"
+            dur="2.2s"
+            repeatcount="indefinite"
+            values="M 115 110 Q 120 95 115 85;M 115 110 Q 110 95 115 85;M 115 110 Q 120 95 115 85"
+          ></animate>
+        </path>
+        <ellipse
+          cx="50"
+          cy="140"
+          fill="#3E2723"
+          rx="8"
+          ry="10"
+          transform="rotate(-20 50 140)"
+        >
+          <animate
+            attributename="opacity"
+            dur="3s"
+            repeatcount="indefinite"
+            values="1;0.7;1"
+          ></animate>
+        </ellipse>
+        <path
+          d="M 50 135 Q 50 140 50 145"
+          stroke="#654321"
+          stroke-width="1.5"
+        ></path>
+        <ellipse
+          cx="150"
+          cy="135"
+          fill="#3E2723"
+          rx="8"
+          ry="10"
+          transform="rotate(20 150 135)"
+        >
+          <animate
+            attributename="opacity"
+            dur="3s"
+            repeatcount="indefinite"
+            values="0.7;1;0.7"
+          ></animate>
+        </ellipse>
+        <path
+          d="M 150 130 Q 150 135 150 140"
+          stroke="#654321"
+          stroke-width="1.5"
+        ></path>
+        <rect
+          fill="var(--yellow)"
+          height="8"
+          opacity="0.9"
+          rx="1"
+          width="60"
+          x="70"
+          y="175"
+        ></rect>
+        <rect
+          fill="#FFFFFF"
+          height="8"
+          opacity="0.8"
+          rx="1"
+          width="50"
+          x="75"
+          y="178"
+        ></rect>
+        <rect
+          fill="var(--yellow)"
+          height="8"
+          opacity="0.7"
+          rx="1"
+          width="40"
+          x="80"
+          y="181"
+        ></rect>
+        <path
+          d="M 100 100 L 95 95 Q 90 90 90 95 Q 90 100 95 105 L 100 110 L 105 105 Q 110 100 110 95 Q 110 90 105 95 Z"
+          fill="var(--red)"
+          opacity="0.8"
+        >
+          <animate
+            attributename="transform"
+            dur="1.5s"
+            repeatcount="indefinite"
+            values="translate(0,0) scale(1);translate(0,-3) scale(1.1);translate(0,0) scale(1)"
+          ></animate>
+        </path>
+      </svg>
+    </div>
+
+    <div class="sessionBar">
+      Aktywna sesja: <strong id="sessionEmail">Ladowanie...</strong>
+    </div>
+
+    <main class="page">
+      <div class="container">
+      <div id="toast"></div>
+
+      <div class="card">
+        <div class="metaRow">
+          <span id="pillLevel">Poziom: -</span>
+          <span id="pillType">Typ: -</span>
+          <span id="pillSlug">slug: -</span>
+          <span id="pillCount">Cwiczenia: 0</span><span>ADMIN</span>
+          <span id="pillProgress">Postep: 0%</span>
+        </div>
+        <div class="progressWrap" style="margin-top: 10px">
+          <div class="progressBar">
+            <div class="progressFill" id="progressFill" style="width: 0%"></div>
+          </div>
+          <div class="progressText" id="progressText">0 / 0 ukonczonych</div>
+        </div>
+
+        <h1 id="topicTitle">Ladowanie...</h1>
+        <p class="subtitle" id="topicDesc">Ladowanie...</p>
+
+        <div class="metaRow" id="taskChips"></div>
+      </div>
+
+      <!-- Lesson content (from course_meta docId: LEVEL__topicSlug) -->
+      <div
+        id="lessonContentCard"
+        class="lessonContentCard"
+        style="display: none"
+      >
+        <div class="lessonContentTitle">
+          <h3>Lekcja - materialy tematu</h3>
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              flex-wrap: wrap;
+              align-items: center;
+            "
+          >
+            <a class="btn" id="btnOpenLessonPage" href="#"
+              >Otworz lekcje (strona)</a
+            >
+          </div>
+        </div>
+
+        <div id="lessonContentBody" class="lessonText"></div>
+        <div id="lessonContentEmpty" class="lessonEmpty" style="display: none">
+          Brak tresci lekcji dla tego tematu.
+        </div>
+      </div>
+
+      <div class="sectionTitle">Cwiczenia</div>
+
+      <div
+        class="card"
+        id="filtersCard"
+        style="padding: 14px 14px 12px; margin-bottom: 14px"
+      >
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+          "
+        >
+          <div style="flex: 1; min-width: 220px">
+            <label style="display: block; font-weight: 700; margin-bottom: 6px"
+              >Szukaj</label
+            >
+            <input
+              id="filterSearch"
+              placeholder="Szukaj po tresci / odpowiedzi..."
+            />
+          </div>
+
+          <div style="min-width: 190px">
+            <label style="display: block; font-weight: 700; margin-bottom: 6px"
+              >Typ</label
+            >
+            <select id="filterType"></select>
+          </div>
+
+          <div style="min-width: 190px">
+            <label style="display: block; font-weight: 700; margin-bottom: 6px"
+              >Kategoria</label
+            >
+            <select id="filterCategory">
+              <option value="">Wszystko</option>
+              <option value="grammar">Gramatyka</option>
+              <option value="vocab">Slownictwo</option>
+              <option value="both">Gramatyka + slownictwo</option>
+            </select>
+          </div>
+          <div style="min-width: 190px">
+            <label style="display: block; font-weight: 700; margin-bottom: 6px"
+              >Sortuj</label
+            >
+            <select id="filterSort">
+              <option value="order_asc">Kolejnosc rosnaco</option>
+              <option value="order_desc">Kolejnosc malejaco</option>
+              <option value="prompt_asc">Tresc A-Z</option>
+              <option value="prompt_desc">Tresc Z-A</option>
+            </select>
+          </div>
+
+          <button class="btn" id="btnClearFilters" type="button">
+            Wyczysc
+          </button>
+
+          <div
+            style="
+              margin-left: auto;
+              display: flex;
+              gap: 10px;
+              align-items: center;
+              flex-wrap: wrap;
+            "
+          >
+            <label
+              style="
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                user-select: none;
+                font-weight: 700;
+              "
+            >
+              <input
+                id="toggleReorder"
+                type="checkbox"
+                style="transform: scale(1.15)"
+              />
+              Tryb sortowania (drag&drop)
+            </label>
+            <button
+              class="btn btn-yellow"
+              id="btnSaveOrder"
+              type="button"
+              style="display: none"
+            >
+              Zapisz kolejnosc
+            </button>
+          </div>
+        </div>
+
+        <div class="smallNote" style="margin-top: 8px; opacity: 0.95">
+          Wskazowka: w trybie sortowania przeciagaj kafelki. Zapis kolejnosci
+          aktualizuje pole <b>order</b> w Firestore.
+        </div>
+      </div>
+
+      <div id="exerciseList"></div>
+
+      <div
+        id="emptyExercises"
+        class="card"
+        style="display: none; opacity: 0.95"
+      >
+        <div class="muted">Brak cwiczen dla tego tematu.</div>
+        <div class="smallNote" style="margin-top: 10px">
+          Jesli jestes adminem, dodaj pierwsze ponizej.
+        </div>
+      </div>
+
+      <!-- Admin -->
+      <div id="noAdminCard" class="card" style="display: none">
+        <div class="sectionTitle">Brak dostepu</div>
+        <div class="muted">Ta strona jest tylko dla admina.</div>
+      </div>
+      <div id="adminWrap" class="card adminWrap">
+        <div class="sectionTitle">Admin - dodaj cwiczenie</div>
+
+        <div class="card" style="margin-top: 10px">
+          <div class="sectionTitle" style="margin-top: 0">Szybka produkcja</div>
+
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              flex-wrap: wrap;
+              align-items: center;
+            "
+          >
+            <button class="btn" id="btnTplFill" type="button">
+              + Szablon: uzupelnianie
+            </button>
+            <button class="btn" id="btnTplChoice" type="button">
+              + Szablon: wybor
+            </button>
+            <button class="btn" id="btnTplTF" type="button">
+              + Szablon: prawda/falsz
+            </button>
+            <button class="btn" id="btnTplScene" type="button">
+              + Szablon: mikro-scenka
+            </button>
+            <button class="btn" id="btnTplFindError" type="button">
+              + Szablon: znajdz blad
+            </button>
+          </div>
+
+          <div style="margin-top: 12px">
+            <label style="display: block; font-weight: 800; margin-bottom: 6px"
+              >Import JSON (tablica cwiczen)</label
+            >
+            <textarea
+              id="importJsonArea"
+              placeholder='[
+  {"type":"Wielokrotny wybor","prompt":"...","options":["A) ...","B) ..."],"answer":"A","category":"grammar","order":1},
+  {"type":"Uzupelnij luki","prompt":"...","answer":"...","category":"vocab"}
+]'
+            ></textarea>
+            <div class="smallNote" style="margin-top: 8px">
+              - Wklej <b>tablice</b> cwiczen. Jesli element nie ma <b>order</b>,
+              dostanie automatycznie kolejny numer.<br />
+              - Obslugiwane pola:
+              <b
+                >type, prompt, options[], answer, category, tags, notes,
+                imageUrl, order</b
+              >.
+            </div>
+
+            <div class="adminActions" style="margin-top: 10px">
+              <button class="btn btn-yellow" id="btnImportJson" type="button">
+                Importuj i zapisz
+              </button>
+              <button class="btn" id="btnClearImport" type="button">
+                Wyczysc
+              </button>
+              <span
+                class="smallNote"
+                id="importStatus"
+                style="margin-left: auto"
+              ></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 10px">
+          <div class="sectionTitle" style="margin-top: 0">
+            Biblioteka cwiczen (A1/A2/B1)
+          </div>
+          <div class="muted">
+            Gotowe zestawy cwiczen do szybkiego dodania.
+          </div>
+          <div class="metaRow" style="margin-top: 10px; gap: 10px; flex-wrap: wrap">
+            <select id="libLevel" class="select" style="min-width: 120px">
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+            </select>
+            <select id="libSet" class="select" style="min-width: 320px"></select>
+            <button class="btn btn-yellow" id="btnInsertLibrary" type="button">
+              Dodaj zestaw
+            </button>
+            <span class="smallNote" id="libStatus"></span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 10px">
+          <div class="sectionTitle" style="margin-top: 0">
+            Masowy import (CSV / TSV)
+          </div>
+          <textarea
+            id="bulkImportArea"
+            placeholder="Wklej wiersze z arkusza. Przyklad:\n\ntype\tprompt\tanswer\toptions\tcategory\ttags\tnotes\timageUrl\torder\nOpciÃ³n mÃºltiple\tElige la forma correcta...\tB\tA) ...||B) ...||C) ...\tgrammar\tczasowniki\t\t\t1\nRellenar los espacios\tYo ___ de EspaÃ±a.\tsoy\t\tgrammar\t\t\t\t\n\nSeparator kolumn: TAB (zalecane) lub srednik (;)."
+          ></textarea>
+          <div class="smallNote" style="margin-top: 8px">
+            - Naglowek jest opcjonalny. Jesli go nie ma, uzywamy: <b>prompt, answer, options, category, tags, notes, imageUrl, order</b>.<br />
+            - <b>options</b> rozdzielaj przez <b>||</b> (np. A) ... || B) ...).<br />
+            - Jesli brak <b>type</b>, uzyje aktualnego typu z formularza.
+          </div>
+          <div class="hr"></div>
+          <div class="smallNote" style="margin-top: 8px; font-weight: 800">
+            Mapowanie kolumn (opcjonalnie)
+          </div>
+          <label style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+            <input id="bulkMapUse" type="checkbox" />
+            Uzyj mapowania (kolumny liczone od 1)
+          </label>
+          <div class="metaRow" style="gap: 10px; flex-wrap: wrap; margin-top: 8px">
+            <select id="bulkMapType" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapPrompt" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapAnswer" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapOptions" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapCategory" class="select" style="min-width: 160px"></select>
+          </div>
+          <div class="metaRow" style="gap: 10px; flex-wrap: wrap; margin-top: 6px">
+            <select id="bulkMapTags" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapNotes" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapImage" class="select" style="min-width: 160px"></select>
+            <select id="bulkMapOrder" class="select" style="min-width: 160px"></select>
+          </div>
+          <div class="smallNote" style="margin-top: 8px">Drag & drop:</div>
+          <div id="bulkMapChips" class="metaRow" style="gap:8px; flex-wrap:wrap; margin-top:6px;"></div>
+          <div class="metaRow" style="gap:8px; flex-wrap:wrap; margin-top:6px;">
+            <div class="mapTarget" data-map="type">type: <span id="mapValType">-</span></div>
+            <div class="mapTarget" data-map="prompt">prompt: <span id="mapValPrompt">-</span></div>
+            <div class="mapTarget" data-map="answer">answer: <span id="mapValAnswer">-</span></div>
+            <div class="mapTarget" data-map="options">options: <span id="mapValOptions">-</span></div>
+            <div class="mapTarget" data-map="category">category: <span id="mapValCategory">-</span></div>
+            <div class="mapTarget" data-map="tags">tags: <span id="mapValTags">-</span></div>
+            <div class="mapTarget" data-map="notes">notes: <span id="mapValNotes">-</span></div>
+            <div class="mapTarget" data-map="imageUrl">image: <span id="mapValImage">-</span></div>
+            <div class="mapTarget" data-map="order">order: <span id="mapValOrder">-</span></div>
+          </div>
+          <div class="adminActions" style="margin-top: 10px">
+            <input id="bulkImportFile" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" />
+            <button class="btn" id="btnLoadBulkFile" type="button">
+              Wczytaj plik
+            </button>
+            <button class="btn btn-yellow" id="btnBulkImport" type="button">
+              Importuj masowo
+            </button>
+            <button class="btn" id="btnBulkClear" type="button">Wyczysc</button>
+            <span
+              class="smallNote"
+              id="bulkImportStatus"
+              style="margin-left: auto"
+            ></span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 10px">
+          <div class="sectionTitle" style="margin-top: 0">Fiszki (Quizlet)</div>
+          <textarea
+            id="flashImportArea"
+            placeholder="Wklej liste fiszek (np. PL<TAB>ES lub PL - ES)."
+          ></textarea>
+          <div class="smallNote" style="margin-top: 8px">
+            Format linii: <b>PL</b> + TAB + <b>ES</b> + (opcjonalnie) TAB + <b>EX</b>.<br />
+            Przyklad: <code>dzien dobry\tbuenos dÃ­as\tEX: Dzien dobry, jak sie masz?</code>
+          </div>
+          <div class="adminActions" style="margin-top: 10px">
+            <button class="btn btn-yellow" id="btnImportFlashcards" type="button">
+              Wgraj do opcji
+            </button>
+            <button class="btn" id="btnClearFlashcards" type="button">
+              Wyczysc
+            </button>
+            <span class="smallNote" id="flashImportStatus" style="margin-left: auto"></span>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="sectionTitle" style="margin-top: 0">Audio do fiszek</div>
+          <div class="metaRow" style="gap: 10px; flex-wrap: wrap; align-items: center">
+            <input id="flashAudioFile" type="file" accept="audio/*" />
+            <button class="btn btn-yellow" id="btnUploadFlashAudio" type="button">
+              Wgraj audio
+            </button>
+            <input id="flashAudioUrl" class="input" placeholder="URL audio..." readonly />
+            <button class="btn" id="btnCopyFlashAudio" type="button">Kopiuj</button>
+            <span class="smallNote" id="flashAudioStatus"></span>
+          </div>
+          <div class="smallNote" style="margin-top: 8px">
+            Wklej URL do linii: <b>AUDIO:</b> lub <b>EXAUDIO:</b>.
+          </div>
+        </div>
+
+        <div class="adminGrid">
+          <div>
+            <label>Typ cwiczenia</label>
+            <select id="exType"></select>
+          </div>
+
+          <div>
+            <label>Pytanie / tresc</label>
+            <input id="exPrompt" placeholder="Wpisz tresc..." />
+          </div>
+
+          <div>
+            <label>Obraz (URL) - opcjonalnie</label>
+            <input id="exImageUrl" placeholder="https://.../obraz.png" />
+            <div class="smallNote">
+              Jesli dodasz obrazek, pojawi sie nad odpowiedziami.
+            </div>
+          </div>
+
+          <div>
+            <label>Opcje (jesli dotyczy)</label>
+            <textarea
+              id="exOptions"
+              placeholder="Jedna opcja na linie&#10;np.:&#10;A) ...&#10;B) ...&#10;C) ..."
+            ></textarea>
+            <div class="smallNote">
+              Dla cwiczen wyboru dodaj co najmniej 2 opcje (po jednej na linie).
+              <br />Fiszki: <b>PL: ... | ES: ... | EX: ... | AUDIO: ... | EXAUDIO: ...</b>
+            </div>
+          </div>
+
+          <div>
+            <label>Poprawna odpowiedz</label>
+            <input
+              id="exAnswer"
+              placeholder="np. B   |   true   |   poprawna_odpowiedz"
+            />
+            <div class="smallNote">
+              - Wielokrotny wybor: litera (A/B/C/D) lub tekst dokladny.<br />
+              - Prawda czy falsz: <b>true</b> / <b>false</b>.<br />
+              - Otwarta odpowiedz: wpisz poprawne slowo/odpowiedz (dokladnie).
+            </div>
+          </div>
+
+          <div>
+            <label>Kategoria</label>
+            <select id="exCategory">
+              <option value="grammar">Gramatyka</option>
+              <option value="vocab">Slownictwo</option>
+              <option value="both">Gramatyka + slownictwo</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Tagi (opcjonalnie)</label>
+            <input
+              id="exTags"
+              placeholder="np. przypadki, czasowniki, kolokacje (oddziel przecinkami)"
+            />
+          </div>
+
+          <div>
+            <label>Kolejnosc</label>
+            <input id="exOrder" type="number" min="1" placeholder="np. 1" />
+          </div>
+
+          <div>
+            <label>Notatki (opcjonalnie)</label>
+            <input id="exNotes" placeholder="np. wskazowka / komentarz" />
+          </div>
+        </div>
+
+        <div class="adminActions">
+          <button class="btn btn-yellow" id="btnAddExercise" type="button">
+            Zapisz cwiczenie
+          </button>
+          <button class="btn" id="btnAutoOrder" type="button">
+            Ustaw kolejny numer
+          </button>
+          <button class="btn" id="btnCancelEdit" type="button">
+            Anuluj edycje
+          </button>
+
+          <label
+            class="smallNote"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-left: auto;
+            "
+          >
+            <input type="checkbox" id="tplOverwrite" />
+            <span>Nadpisz</span>
+          </label>
+          <button class="btn" id="btnApplyTemplate" type="button">
+            Szablon (Typ)
+          </button>
+        </div>
+
+        <div class="smallNote" style="margin-top: 10px">
+          Zapis trafia do kolekcji Firestore: <b>exercises</b> z polami: level,
+          topicSlug, order, type, prompt, options[], answer, notes.
+        </div>
+      </div>
+      </div>
+    </main>
+
+    <!-- Preview modal -->
+    <div id="previewModal" class="modal" style="display: none">
+      <div class="modalBackdrop" id="previewBackdrop"></div>
+      <div class="modalBox card">
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+          "
+        >
+          <div class="sectionTitle" style="margin: 0">Podglad (uczen)</div>
+          <button class="btn" id="btnClosePreview" type="button">X</button>
+        </div>
+
+        <div id="previewBody" style="margin-top: 10px"></div>
+
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            align-items: center;
+          "
+        >
+          <button class="btn btn-yellow" id="btnCheckPreview" type="button">
+            Sprawdz
+          </button>
+          <span id="previewResult" style="display: none"></span>
+        </div>
+
+        <div class="smallNote" style="margin-top: 10px; opacity: 0.95">
+          Ten podglad jest po to, zeby szybko sprawdzic czy tresc i odpowiedz sa
+          spojne.
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="assets/js/pages/courses/ejercicioadmin-page.js"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+

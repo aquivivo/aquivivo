@@ -35,10 +35,7 @@ let convUnsub = null;
 let msgUnsub = null;
 
 function shouldDisableOnNeuSocialPage() {
-  const path = String(location.pathname || '').toLowerCase();
-  if (path.includes('neu-social-app.html')) return true;
   if (document.body?.classList?.contains('neu-social-app')) return true;
-  if (window.__NEU_DISABLE_MINI_CHAT__ === true) return true;
   return false;
 }
 
@@ -1319,6 +1316,12 @@ function nextThreadZIndex() {
 }
 
 function ensureThreadRoot() {
+  if (document.body?.classList?.contains('neu-social-app')) {
+    const existingRoot = document.getElementById('miniChatThreadRoot');
+    if (existingRoot) existingRoot.remove();
+    return null;
+  }
+
   let root = document.getElementById('miniChatThreadRoot');
   if (root) return root;
 
@@ -1347,6 +1350,10 @@ function syncThreadActiveWindowClass(activeId = '') {
 }
 
 function createThreadWindow(conversationId) {
+  if (document.body?.classList?.contains('neu-social-app')) {
+    return;
+  }
+
   const convId = String(conversationId || '').trim();
   if (!convId) return;
 
@@ -1388,7 +1395,9 @@ function createThreadWindow(conversationId) {
     </div>
   `;
 
-  ensureThreadRoot().appendChild(container);
+  const threadRoot = ensureThreadRoot();
+  if (!(threadRoot instanceof HTMLElement)) return;
+  threadRoot.appendChild(container);
   wireReactionOutsideClick();
 
   const progressWrap = qs('.mini-chat-v4-upload-progress-wrap', container);
@@ -1560,6 +1569,12 @@ function restoreThread(conversationId) {
 }
 
 function renderTray() {
+  if (document.body?.classList?.contains('neu-social-app')) {
+    const existingTray = document.getElementById('miniChatTray');
+    if (existingTray) existingTray.remove();
+    return;
+  }
+
   let tray = document.getElementById('miniChatTray');
 
   if (!tray) {
@@ -1731,6 +1746,12 @@ function buildDockMarkup() {
 }
 
 function ensureDock() {
+  if (document.body?.classList?.contains('neu-social-app')) {
+    const existingDock = qs('#miniChatDock');
+    if (existingDock) existingDock.remove();
+    return null;
+  }
+
   let dock = qs('#miniChatDock');
   if (dock) return dock;
 
@@ -1921,6 +1942,11 @@ export function destroyGlobalMiniChat() {
 }
 
 export function initGlobalMiniChat({ uid, displayName } = {}) {
+  if (document.body?.classList?.contains('neu-social-app')) {
+    destroyGlobalMiniChat();
+    return;
+  }
+
   if (shouldDisableOnNeuSocialPage()) {
     destroyGlobalMiniChat();
     return;

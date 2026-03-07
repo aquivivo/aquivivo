@@ -15,6 +15,7 @@ export function createChatState() {
     unread: new Map(),
     typing: new Map(),
     activeConversationId: null,
+    focusedConversationId: '',
     wired: false,
     meUid: '',
     listRows: [],

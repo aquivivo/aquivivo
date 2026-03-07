@@ -1,0 +1,262 @@
+﻿<!doctype html>
+<html lang="es">
+  <head>
+  <base href='/' />
+    <meta charset="UTF-8" />
+    <title>Inicia sesiÃ³n | AquiVivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260208m" />
+    <style>
+      .auth-wrap {
+        max-width: 920px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 16px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .auth-wrap {
+          grid-template-columns: 1fr;
+        }
+      }
+      .form-card {
+        background: white;
+        color: var(--blue-main);
+        border-radius: 26px;
+        padding: 22px;
+        box-shadow: 0 18px 70px rgba(0, 0, 0, 0.22);
+      }
+      .form-title {
+        margin: 0 0 6px 0;
+        font-size: 22px;
+        font-weight: 900;
+      }
+      .form-sub {
+        margin: 0 0 16px 0;
+        color: var(--ink-muted);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      .field {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .field label {
+        font-weight: 900;
+        font-size: 13px;
+        color: var(--ink-blue);
+      }
+      .input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 16px;
+        border: 2px solid var(--border-light);
+        outline: none;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .input:focus {
+        border-color: rgba(252, 209, 22, 0.85);
+        box-shadow: 0 0 0 4px rgba(252, 209, 22, 0.18);
+      }
+      .form-card select {
+        background: #fff;
+        color: var(--ink-blue);
+      }
+      .form-card select option {
+        color: var(--ink-blue);
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .msg {
+        margin-top: 12px;
+        font-weight: 800;
+        font-size: 13px;
+        color: var(--ink-blue);
+      }
+      .msg.error {
+        color: var(--danger-ink);
+      }
+      .msg.ok {
+        color: var(--success-ink);
+      }
+      .hint {
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--ink-muted);
+        line-height: 1.35;
+      }
+      .quick-links {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .reset-link {
+        margin-top: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        background: transparent;
+        color: var(--blue);
+        font-weight: 900;
+        cursor: pointer;
+        text-decoration: underline;
+        padding: 0;
+      }
+      .reset-link:hover {
+        opacity: 0.9;
+      }
+    </style>
+    <script src="assets/js/layout.js?v=20260208m" type="module"></script>
+  </head>
+  <body data-page="login">
+    <div id="appHeader"></div>
+    <main class="page">
+      <div class="container">
+        <div class="auth-wrap">
+          <div class="hero-card">
+            <h1 class="hero-title glow-text">Inicia sesiÃ³n</h1>
+            <p class="hero-subtitle">
+              Accede a los cursos A1/A2 y tu panel de estudiante.
+            </p>
+            <div class="stats" style="margin-top: 16px"></div>
+            <div class="quick-links">
+              <a class="btn-white-outline" href="services.html#planes">Programa</a>
+              <a class="btn-white-outline" href="services.html#ebooks">E-books</a>
+              <a class="btn-white-outline" href="index.html#contact">Contacto</a>
+            </div>
+          </div>
+          <div class="form-card">
+            <div class="form-title">Inicia sesiÃ³n / RegÃ­strate</div>
+            <p class="form-sub">
+              El registro crea una cuenta. DespuÃ©s de iniciar sesiÃ³n, irÃ¡s a tu
+              panel de estudiante.
+            </p>
+            <div class="field">
+              <label for="name">Nombre (opcional)</label>
+              <input
+                class="input"
+                type="text"
+                id="name"
+                placeholder="Nombre (solo en registro)"
+              />
+            </div>
+            <div class="field">
+              <label for="handle">Usuario (login)</label>
+              <input
+                class="input"
+                type="text"
+                id="handle"
+                placeholder="tu_login (solo en registro)"
+              />
+              <div class="hint" style="margin: 0">
+                Usa 3-20 caracteres: letras, nÃºmeros, guion o punto.
+              </div>
+            </div>
+            <div class="field">
+              <label>GÃ©nero (registro)</label>
+              <div style="display: flex; gap: 14px; flex-wrap: wrap">
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-weight: 800;
+                  "
+                >
+                  <input type="radio" name="gender" value="papi" required />
+                  Papi
+                </label>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-weight: 800;
+                  "
+                >
+                  <input type="radio" name="gender" value="mami" required />
+                  Mami
+                </label>
+              </div>
+            </div>
+            <div class="field">
+              <label for="email">Correo o usuario</label>
+              <input
+                class="input"
+                type="text"
+                id="email"
+                placeholder="Correo o usuario"
+              />
+            </div>
+            <div class="field">
+              <label for="password">ContraseÃ±a</label>
+              <div style="position: relative">
+                <input
+                  class="input"
+                  type="password"
+                  id="password"
+                  placeholder="ContraseÃ±a"
+                  style="padding-right: 48px"
+                />
+                <button
+                  type="button"
+                  id="togglePassword"
+                  title="Mostrar / ocultar contraseÃ±a"
+                  style="
+                    position: absolute;
+                    right: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                    font-size: 18px;
+                    opacity: 0.75;
+                  "
+                >
+                  
+                </button>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn-yellow" id="loginBtn" type="button">
+                Inicia sesiÃ³n
+              </button>
+              <button class="btn-red" id="registerBtn" type="button">
+                RegÃ­strate
+              </button>
+              <button class="btn-white-outline" id="googleLoginBtn" type="button">
+                Inicia con Google
+              </button>
+            </div>
+            <button class="reset-link" type="button" id="resetPasswordBtn">
+              OlvidÃ© mi contraseÃ±a
+            </button>
+            <div id="message" class="msg"></div>
+            <div class="hint">
+              Al registrarte, aceptas nuestros
+              <a href="regulamin.html" target="_blank">TÃ©rminos de Servicio</a> y
+              <a href="polityka-prywatnosci.html" target="_blank">PolÃ­tica de Privacidad</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="assets/js/auth.js"></script>
+  </body>
+</html>
+
