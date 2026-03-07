@@ -7,6 +7,7 @@ function defaultNorm(value) {
 export function createMiniChatTypingController({
   db,
   doc,
+  setDoc,
   updateDoc,
   deleteField,
   serverTimestamp,
@@ -19,6 +20,7 @@ export function createMiniChatTypingController({
   maybeDate,
   norm = defaultNorm,
   qs,
+  typingCollection = 'neuChatTyping',
   windowRef = window,
 }) {
   const TYPING_DEBOUNCE_MS = 400;
@@ -51,9 +53,17 @@ export function createMiniChatTypingController({
     clearTypingTimer(typingState.idleTimers, convId);
   }
 
+  function typingStateRef(conversationId, uid) {
+    const convId = String(conversationId || '').trim();
+    const userId = String(uid || '').trim();
+    if (!convId || !userId) return null;
+    return doc(db, typingCollection, convId, 'users', userId);
+  }
+
   async function sendTypingHeartbeat(conversationId) {
     const convId = String(conversationId || '').trim();
     const currentUid = String(getCurrentUid() || '').trim();
+    const currentName = String(getCurrentName() || 'Usuario').trim() || 'Usuario';
     if (!convId || !currentUid) return;
     const now = Date.now();
     const lastSentAt = Number(typingState.lastSentAt.get(convId) || 0);
@@ -61,9 +71,18 @@ export function createMiniChatTypingController({
     typingState.lastSentAt.set(convId, now);
 
     try {
-      await updateDoc(doc(db, 'conversations', convId), {
-        [`typing.${currentUid}`]: serverTimestamp(),
-      });
+      const ref = typingStateRef(convId, currentUid);
+      if (!ref) return;
+      await setDoc(
+        ref,
+        {
+          uid: currentUid,
+          name: currentName,
+          typing: true,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
       typingState.activeConversations.add(convId);
     } catch (error) {
       console.warn('[mini-chat-v4] typing heartbeat failed', error);
@@ -73,14 +92,24 @@ export function createMiniChatTypingController({
   async function clearTypingPresence(conversationId, { force = false } = {}) {
     const convId = String(conversationId || '').trim();
     const currentUid = String(getCurrentUid() || '').trim();
+    const currentName = String(getCurrentName() || 'Usuario').trim() || 'Usuario';
     if (!convId || !currentUid) return;
     clearLocalTypingTimers(convId);
     if (!force && !typingState.activeConversations.has(convId)) return;
 
     try {
-      await updateDoc(doc(db, 'conversations', convId), {
-        [`typing.${currentUid}`]: deleteField(),
-      });
+      const ref = typingStateRef(convId, currentUid);
+      if (!ref) return;
+      await setDoc(
+        ref,
+        {
+          uid: currentUid,
+          name: currentName,
+          typing: false,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
     } catch (error) {
       console.warn('[mini-chat-v4] typing clear failed', error);
     } finally {

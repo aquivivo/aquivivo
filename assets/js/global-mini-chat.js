@@ -1,11 +1,12 @@
 import { db, storage } from './firebase-init.js';
 import {
-  addDoc,
   collection,
   deleteField,
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
+  increment,
   limit,
   onSnapshot,
   orderBy,
@@ -14,6 +15,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 import {
   getDownloadURL,
@@ -50,6 +52,8 @@ let activeConversationId = '';
 let convUnsub = null;
 let hostMode = 'dock';
 let routeChatIntentKey = '';
+const profileCache = new Map();
+const profileLoading = new Map();
 
 function isNeuSocialPage() {
   return document.body?.classList?.contains('neu-social-app') === true;
@@ -98,6 +102,143 @@ function esc(value) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function profileFallback(uid = '') {
+  const cleanUid = String(uid || '').trim();
+  return {
+    uid: cleanUid,
+    displayName: cleanUid ? `Usuario ${cleanUid.slice(0, 6)}` : 'Usuario',
+    handle: cleanUid ? `@${cleanUid.slice(0, 8)}` : '@usuario',
+    avatarUrl: '',
+  };
+}
+
+function normalizeProfile(uid, raw = {}) {
+  const fallback = profileFallback(uid);
+  const displayName = String(raw.displayName || raw.name || fallback.displayName).trim() || fallback.displayName;
+  const handleRaw = String(raw.handle || raw.username || '').replace(/^@+/, '').trim();
+  const safeHandle = handleRaw
+    ? `@${handleRaw}`
+    : fallback.handle;
+  const avatarUrl = String(raw.avatarUrl || raw.avatarURL || raw.photoURL || raw.photoUrl || '').trim();
+  return {
+    uid: String(uid || '').trim(),
+    displayName,
+    handle: safeHandle,
+    avatarUrl,
+  };
+}
+
+function getCachedProfile(uid) {
+  const cleanUid = String(uid || '').trim();
+  if (!cleanUid) return profileFallback('');
+  return profileCache.get(cleanUid) || profileFallback(cleanUid);
+}
+
+async function ensureProfile(uid) {
+  const cleanUid = String(uid || '').trim();
+  if (!cleanUid) return profileFallback('');
+  if (profileCache.has(cleanUid)) return profileCache.get(cleanUid);
+  if (profileLoading.has(cleanUid)) return profileLoading.get(cleanUid);
+
+  const loading = (async () => {
+    try {
+      const snap = await getDoc(doc(db, 'neuUsers', cleanUid));
+      const profile = snap.exists()
+        ? normalizeProfile(cleanUid, snap.data() || {})
+        : profileFallback(cleanUid);
+      profileCache.set(cleanUid, profile);
+      return profile;
+    } catch {
+      const profile = profileFallback(cleanUid);
+      profileCache.set(cleanUid, profile);
+      return profile;
+    }
+  })();
+
+  profileLoading.set(cleanUid, loading);
+  try {
+    return await loading;
+  } finally {
+    profileLoading.delete(cleanUid);
+  }
+}
+
+function mapUserChatRow(docSnap, uid) {
+  const data = docSnap.data() || {};
+  const conversationId = String(docSnap.id || '').trim();
+  const members = Array.isArray(data.members)
+    ? data.members.map((item) => String(item || '').trim()).filter(Boolean)
+    : [];
+  let otherUid = String(data.otherUid || '').trim();
+  if (!otherUid && members.length === 2) {
+    otherUid = members.find((candidate) => candidate !== uid) || '';
+  }
+  const profile = getCachedProfile(otherUid);
+  const title = String(profile.displayName || '').trim() || String(data.otherName || '').trim() || 'Conversacion';
+
+  return {
+    id: conversationId,
+    type: members.length > 2 ? 'group' : 'direct',
+    participants: members,
+    participantNames: members.map((memberUid) => {
+      if (memberUid === uid) return currentName;
+      if (memberUid === otherUid) return title;
+      return memberUid.slice(0, 8) || 'Usuario';
+    }),
+    title,
+    otherUid,
+    otherName: title,
+    lastMessage: {
+      text: String(data.lastMessageText || '').trim(),
+      senderId: String(data.lastMessageSenderId || data.lastSenderUid || '').trim(),
+      senderName: '',
+    },
+    lastMessageText: String(data.lastMessageText || '').trim(),
+    lastAt: data.lastMessageAt || data.updatedAt || null,
+    updatedAt: data.updatedAt || data.lastMessageAt || null,
+    unreadCount: Number(data.unreadCount || 0) || 0,
+    reads: {
+      [uid]: data.lastReadAt || null,
+    },
+  };
+}
+
+function refreshConversationProfiles() {
+  conversations = conversations.map((conversation) => {
+    const otherUid = String(conversation?.otherUid || '').trim();
+    if (!otherUid) return conversation;
+    const profile = getCachedProfile(otherUid);
+    const title = String(profile.displayName || '').trim() || conversation.title || conversation.otherName || 'Conversacion';
+    const participants = Array.isArray(conversation?.participants) ? conversation.participants : [];
+    return {
+      ...conversation,
+      title,
+      otherName: title,
+      participantNames: participants.map((memberUid) => {
+        if (memberUid === currentUid) return currentName;
+        if (memberUid === otherUid) return title;
+        return memberUid.slice(0, 8) || 'Usuario';
+      }),
+    };
+  });
+}
+
+function warmConversationProfiles() {
+  const targets = conversations
+    .map((conversation) => String(conversation?.otherUid || '').trim())
+    .filter(Boolean);
+
+  targets.forEach((uid) => {
+    ensureProfile(uid)
+      .then(() => {
+        refreshConversationProfiles();
+        renderConversationList();
+        if (activeConversationId) renderThreadMeta(activeConversationId);
+      })
+      .catch(() => null);
+  });
 }
 
 function pageShell() {
@@ -232,6 +373,7 @@ const {
 } = createMiniChatTypingController({
   db,
   doc,
+  setDoc,
   updateDoc,
   deleteField,
   serverTimestamp,
@@ -248,22 +390,29 @@ const {
 
 const firestoreController = createMiniChatFirestoreController({
   db,
-  addDoc,
   collection,
   doc,
+  getDoc,
+  getDocs,
+  increment,
   limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   uploadAttachmentToStorage,
+  where,
+  writeBatch,
   getCurrentUid: () => currentUid,
   getCurrentName: () => currentName,
   getActiveConversationId: () => activeConversationId,
   setActiveConversationId: (value) => {
     activeConversationId = String(value || '').trim();
   },
+  getConversationMeta: (conversationId) =>
+    conversations.find((item) => String(item?.id || '').trim() === String(conversationId || '').trim()) || null,
   panelReactionState,
   renderMessages,
   renderThreadWindowMessages,
@@ -714,12 +863,19 @@ function setOpenLinks(conversationId) {
   if (info) info.href = href;
 }
 
-function markConversationRead(conversationId) {
+function markConversationRead(conversationId, lastMessageId = '') {
   if (!conversationId || !currentUid) return;
 
-  updateDoc(doc(db, 'conversations', conversationId), {
-    [`reads.${currentUid}`]: serverTimestamp(),
+  const payload = {
+    unreadCount: 0,
+    lastReadAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
+  };
+  const safeMessageId = String(lastMessageId || '').trim();
+  if (safeMessageId) payload.lastReadMessageId = safeMessageId;
+
+  setDoc(doc(db, 'neuUserChats', currentUid, 'chats', conversationId), payload, {
+    merge: true,
   }).catch(() => null);
 }
 
@@ -1222,22 +1378,8 @@ async function ensureConversationWith(targetUid, targetName) {
     return;
   }
 
-  const docRef = await addDoc(collection(db, 'conversations'), {
-    type: 'direct',
-    participants: [currentUid, peerUid],
-    participantNames: [
-      currentName,
-      String(targetName || 'Usuario').trim() || 'Usuario',
-    ],
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    lastAt: serverTimestamp(),
-    reads: {
-      [currentUid]: serverTimestamp(),
-    },
-  });
-
-  openConversation(docRef.id);
+  const conversationId = await firestoreController.ensureDirectConversationWithUser(peerUid, targetName);
+  if (conversationId) openConversation(conversationId);
 }
 
 function wireQuickOpen() {
@@ -1277,6 +1419,8 @@ export function destroyGlobalMiniChat() {
   currentName = 'Usuario';
   hostMode = 'dock';
   routeChatIntentKey = '';
+  profileCache.clear();
+  profileLoading.clear();
 
   const dock = qs('#miniChatDock');
   if (dock) dock.remove();
@@ -1345,20 +1489,18 @@ export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
   };
 
   const conversationQuery = query(
-    collection(db, 'conversations'),
-    where('participants', 'array-contains', uid),
+    collection(db, 'neuUserChats', uid, 'chats'),
+    orderBy('lastMessageAt', 'desc'),
     limit(250),
   );
 
   convUnsub = onSnapshot(
     conversationQuery,
     (snapshot) => {
-      conversations = (snapshot.docs || []).map((docSnap) => ({
-        id: docSnap.id,
-        ...(docSnap.data() || {}),
-      }));
+      conversations = (snapshot.docs || []).map((docSnap) => mapUserChatRow(docSnap, uid));
 
       renderConversationList();
+      warmConversationProfiles();
       const existingIds = new Set(conversations.map((item) => item.id));
       Array.from(openThreads.entries()).forEach(([conversationId, thread]) => {
         if (!existingIds.has(conversationId)) {

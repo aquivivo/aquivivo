@@ -35,6 +35,8 @@ export function createMiniChatUploadController({
   function messageAttachmentType(message = {}) {
     const rawType = String(message?.type || '').trim().toLowerCase();
     if (rawType === 'image' || rawType === 'file' || rawType === 'text') return rawType;
+    const imageUrl = String(message?.imageUrl || '').trim();
+    if (imageUrl) return 'image';
     const fileUrl = String(message?.fileUrl || '').trim();
     if (fileUrl) return 'file';
     return 'text';
@@ -44,8 +46,9 @@ export function createMiniChatUploadController({
     const type = messageAttachmentType(message);
     const textRaw = String(message?.text || '').trim();
     const safeText = esc(textRaw).replace(/\n/g, '<br />');
-    const fileUrl = String(message?.fileUrl || '').trim();
-    const fileName = String(message?.fileName || '').trim() || 'archivo';
+    const imageUrl = String(message?.imageUrl || '').trim();
+    const fileUrl = String(message?.fileUrl || imageUrl).trim();
+    const fileName = String(message?.fileName || (imageUrl ? 'imagen' : '')).trim() || 'archivo';
     const fileSize = formatFileSize(message?.fileSize);
     const fileLabel = fileSize ? `${fileName} (${fileSize})` : fileName;
     const out = [];

@@ -540,6 +540,33 @@ body.fusion-profile.neu-social-app .profile-tabs {
   display: none;
 }
 
+body.fusion-profile.neu-social-app[data-portal='pulse'] .profile-compact,
+body.fusion-profile.neu-social-app[data-portal='pulse'] .stories-row,
+body.fusion-profile.neu-social-app[data-portal='pulse'] .quick-create,
+body.fusion-profile.neu-social-app[data-portal='pulse'] .fusion-right-mini,
+body.fusion-profile.neu-social-app[data-portal='reels'] .profile-compact,
+body.fusion-profile.neu-social-app[data-portal='reels'] .stories-row,
+body.fusion-profile.neu-social-app[data-portal='reels'] .quick-create,
+body.fusion-profile.neu-social-app[data-portal='reels'] .fusion-right-mini,
+body.fusion-profile.neu-social-app[data-portal='stories'] .profile-compact,
+body.fusion-profile.neu-social-app[data-portal='stories'] .stories-row,
+body.fusion-profile.neu-social-app[data-portal='stories'] .quick-create,
+body.fusion-profile.neu-social-app[data-portal='stories'] .fusion-right-mini,
+body.fusion-profile.neu-social-app[data-portal='network'] .profile-compact,
+body.fusion-profile.neu-social-app[data-portal='network'] .stories-row,
+body.fusion-profile.neu-social-app[data-portal='network'] .quick-create,
+body.fusion-profile.neu-social-app[data-portal='network'] .fusion-right-mini {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app[data-portal='pulse'] .fusion-main,
+body.fusion-profile.neu-social-app[data-portal='reels'] .fusion-main,
+body.fusion-profile.neu-social-app[data-portal='stories'] .fusion-main,
+body.fusion-profile.neu-social-app[data-portal='network'] .fusion-main {
+  width: min(1180px, 100%);
+  grid-template-columns: minmax(0, 1fr);
+}
+
 body.fusion-profile.neu-social-app .tab-btn,
 body.fusion-profile.neu-social-app .feed-source-btn,
 body.fusion-profile.neu-social-app .post-action-btn,
@@ -1560,6 +1587,7 @@ body.fusion-profile.neu-social-app .neu-chat-list {
 
 body.fusion-profile.neu-social-app .neu-chat-inbox-card {
   grid-column: span 2;
+  order: -10;
 }
 
 body.fusion-profile.neu-social-app .neuChatInbox {

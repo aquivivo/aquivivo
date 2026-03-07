@@ -1,19 +1,61 @@
+function normalizeUid(value) {
+  return String(value || '').trim();
+}
+
+function normalizeMembers(value = []) {
+  return Array.isArray(value)
+    ? value.map((item) => normalizeUid(item)).filter(Boolean)
+    : [];
+}
+
+function memberKeyFor(uidA, uidB) {
+  const members = [normalizeUid(uidA), normalizeUid(uidB)].filter(Boolean).sort();
+  return members.length === 2 ? `${members[0]}_${members[1]}` : '';
+}
+
+function normalizeMessage(docSnap) {
+  const data = docSnap.data() || {};
+  const imageUrl = String(data.imageUrl || '').trim();
+  const fileUrl = String(data.fileUrl || imageUrl).trim();
+  const explicitType = String(data.type || '').trim().toLowerCase();
+  const type = explicitType || (imageUrl ? 'image' : fileUrl ? 'file' : 'text');
+
+  return {
+    id: String(docSnap.id || '').trim(),
+    senderId: normalizeUid(data.senderId || data.senderUid),
+    senderName: String(data.senderName || '').trim(),
+    text: String(data.text || data.content || '').trim(),
+    type,
+    imageUrl,
+    fileUrl,
+    fileName: String(data.fileName || (imageUrl ? 'imagen' : '')).trim(),
+    fileSize: Number(data.fileSize || 0) || 0,
+    createdAt: data.createdAt || null,
+  };
+}
+
 export function createMiniChatFirestoreController({
   db,
-  addDoc,
   collection,
   doc,
+  getDoc,
+  getDocs,
+  increment,
   limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   uploadAttachmentToStorage,
+  where,
+  writeBatch,
   getCurrentUid,
   getCurrentName,
   getActiveConversationId,
   setActiveConversationId,
+  getConversationMeta,
   panelReactionState,
   renderMessages,
   renderThreadWindowMessages,
@@ -44,6 +86,29 @@ export function createMiniChatFirestoreController({
     panelReactionState.renderQueued = false;
   }
 
+  function messageIdFromRows(rows = []) {
+    if (!Array.isArray(rows) || !rows.length) return '';
+    return String(rows[rows.length - 1]?.id || '').trim();
+  }
+
+  function queuePanelReactionRender() {
+    if (panelReactionState.renderQueued) return;
+    panelReactionState.renderQueued = true;
+    const run = () => {
+      panelReactionState.renderQueued = false;
+      renderMessages(
+        panelReactionState.rows,
+        panelReactionState.conversationId,
+        panelReactionState.reactionData,
+      );
+    };
+    if (typeof windowRef.requestAnimationFrame === 'function') {
+      windowRef.requestAnimationFrame(run);
+    } else {
+      windowRef.setTimeout(run, 16);
+    }
+  }
+
   function attachMessageStream(conversationId) {
     stopMessageStream();
     const convId = String(conversationId || '').trim();
@@ -54,7 +119,7 @@ export function createMiniChatFirestoreController({
     panelReactionState.renderQueued = false;
 
     const messagesQuery = query(
-      collection(db, 'conversations', convId, 'messages'),
+      collection(db, 'neuConversations', convId, 'messages'),
       orderBy('createdAt', 'asc'),
       limit(120),
     );
@@ -62,10 +127,7 @@ export function createMiniChatFirestoreController({
     msgUnsub = onSnapshot(
       messagesQuery,
       (snapshot) => {
-        const rows = (snapshot.docs || []).map((docSnap) => ({
-          id: docSnap.id,
-          ...(docSnap.data() || {}),
-        }));
+        const rows = (snapshot.docs || []).map((docSnap) => normalizeMessage(docSnap));
 
         panelReactionState.rows = rows;
         syncReactionListeners({
@@ -73,26 +135,10 @@ export function createMiniChatFirestoreController({
           rows,
           reactionUnsubs: panelReactionState.reactionUnsubs,
           reactionData: panelReactionState.reactionData,
-          onChange: () => {
-            if (panelReactionState.renderQueued) return;
-            panelReactionState.renderQueued = true;
-            const run = () => {
-              panelReactionState.renderQueued = false;
-              renderMessages(
-                panelReactionState.rows,
-                panelReactionState.conversationId,
-                panelReactionState.reactionData,
-              );
-            };
-            if (typeof windowRef.requestAnimationFrame === 'function') {
-              windowRef.requestAnimationFrame(run);
-            } else {
-              windowRef.setTimeout(run, 16);
-            }
-          },
+          onChange: queuePanelReactionRender,
         });
         renderMessages(rows, convId, panelReactionState.reactionData);
-        markConversationRead(convId);
+        markConversationRead(convId, messageIdFromRows(rows));
       },
       () => {
         clearReactionListeners(panelReactionState.reactionUnsubs, panelReactionState.reactionData);
@@ -108,7 +154,7 @@ export function createMiniChatFirestoreController({
     let initialSnapshotHandled = false;
 
     const messagesQuery = query(
-      collection(db, 'conversations', convId, 'messages'),
+      collection(db, 'neuConversations', convId, 'messages'),
       orderBy('createdAt', 'asc'),
       limit(120),
     );
@@ -119,8 +165,8 @@ export function createMiniChatFirestoreController({
         if (initialSnapshotHandled) {
           const addedForUnread = snapshot.docChanges().reduce((sum, change) => {
             if (change.type !== 'added') return sum;
-            const senderId = String(change.doc.data()?.senderId || '').trim();
-            if (!senderId || senderId === String(getCurrentUid() || '').trim()) return sum;
+            const senderId = normalizeUid(change.doc.data()?.senderId || change.doc.data()?.senderUid);
+            if (!senderId || senderId === normalizeUid(getCurrentUid())) return sum;
             if (!isThreadMinimized(convId)) return sum;
             return sum + 1;
           }, 0);
@@ -134,10 +180,7 @@ export function createMiniChatFirestoreController({
           initialSnapshotHandled = true;
         }
 
-        const rows = (snapshot.docs || []).map((docSnap) => ({
-          id: docSnap.id,
-          ...(docSnap.data() || {}),
-        }));
+        const rows = (snapshot.docs || []).map((docSnap) => normalizeMessage(docSnap));
 
         if (threadState && typeof threadState === 'object') {
           threadState.rows = rows;
@@ -173,7 +216,7 @@ export function createMiniChatFirestoreController({
           convId,
           threadState?.reactionData instanceof Map ? threadState.reactionData : new Map(),
         );
-        markConversationRead(convId);
+        markConversationRead(convId, messageIdFromRows(rows));
       },
       () => {
         if (threadState && typeof threadState === 'object') {
@@ -213,69 +256,235 @@ export function createMiniChatFirestoreController({
     updateTypingIndicatorsFromConversations();
   }
 
+  async function resolveConversationMembers(conversationId) {
+    const convId = String(conversationId || '').trim();
+    if (!convId) return [];
+    const cached = typeof getConversationMeta === 'function' ? getConversationMeta(convId) : null;
+    const fromCache = normalizeMembers(cached?.participants || cached?.members);
+    if (fromCache.length) return fromCache;
+
+    try {
+      const snap = await getDoc(doc(db, 'neuConversations', convId));
+      if (!snap.exists()) return [];
+      return normalizeMembers(snap.data()?.members);
+    } catch {
+      return [];
+    }
+  }
+
+  async function updateUserChatRows({
+    conversationId,
+    members,
+    memberKey,
+    lastMessageText,
+    senderUid,
+    messageId = '',
+  }) {
+    const convId = String(conversationId || '').trim();
+    const normalizedMembers = normalizeMembers(members);
+    const currentUid = normalizeUid(senderUid);
+    if (!convId || !normalizedMembers.length || !currentUid) return;
+
+    const now = serverTimestamp();
+    const batch = writeBatch(db);
+    normalizedMembers.forEach((uid) => {
+      const otherUid = normalizedMembers.find((candidate) => candidate !== uid) || '';
+      const payload = {
+        otherUid,
+        members: normalizedMembers,
+        memberKey,
+        lastMessageText,
+        lastMessageAt: now,
+        lastMessageSenderId: currentUid,
+        updatedAt: now,
+      };
+
+      if (uid === currentUid) {
+        payload.unreadCount = 0;
+        payload.lastReadAt = now;
+        if (messageId) payload.lastReadMessageId = messageId;
+      } else {
+        payload.unreadCount = increment(1);
+      }
+
+      batch.set(doc(db, 'neuUserChats', uid, 'chats', convId), payload, { merge: true });
+    });
+
+    await batch.commit();
+  }
+
   async function sendMessageToConversation(conversationId, text) {
     const convId = String(conversationId || '').trim();
-    const safeText = String(text || '').trim();
-    const currentUid = String(getCurrentUid() || '').trim();
+    const safeText = String(text || '').trim().slice(0, 1000);
+    const currentUid = normalizeUid(getCurrentUid());
     const currentName = String(getCurrentName() || 'Usuario').trim() || 'Usuario';
     if (!convId || !safeText || !currentUid) return;
 
-    await addDoc(collection(db, 'conversations', convId, 'messages'), {
-      senderId: currentUid,
+    const members = await resolveConversationMembers(convId);
+    if (!members.includes(currentUid)) return;
+
+    const messageRef = doc(collection(db, 'neuConversations', convId, 'messages'));
+    const memberKey = memberKeyFor(members[0], members[1]) || convId;
+    const now = serverTimestamp();
+    const batch = writeBatch(db);
+
+    batch.set(messageRef, {
+      messageId: messageRef.id,
+      senderUid: currentUid,
       senderName: currentName,
-      type: 'text',
       text: safeText,
-      createdAt: serverTimestamp(),
+      content: safeText,
+      type: 'text',
+      createdAt: now,
     });
 
-    await updateDoc(doc(db, 'conversations', convId), {
-      lastMessage: {
-        text: safeText.slice(0, 180),
-        senderId: currentUid,
-        senderName: currentName,
+    batch.set(
+      doc(db, 'neuConversations', convId),
+      {
+        members,
+        memberKey,
+        lastMessageText: safeText.slice(0, 180),
+        lastMessageAt: now,
+        lastMessageSenderId: currentUid,
+        lastSenderUid: currentUid,
+        updatedAt: now,
       },
-      lastAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      [`reads.${currentUid}`]: serverTimestamp(),
+      { merge: true },
+    );
+
+    await batch.commit();
+    await updateUserChatRows({
+      conversationId: convId,
+      members,
+      memberKey,
+      lastMessageText: safeText.slice(0, 180),
+      senderUid: currentUid,
+      messageId: messageRef.id,
     });
     clearTypingPresence(convId, { force: true }).catch(() => null);
   }
 
   async function sendAttachmentToConversation(conversationId, file, onProgress = () => {}) {
     const convId = String(conversationId || '').trim();
-    const currentUid = String(getCurrentUid() || '').trim();
+    const currentUid = normalizeUid(getCurrentUid());
     const currentName = String(getCurrentName() || 'Usuario').trim() || 'Usuario';
     if (!convId || !(file instanceof File) || !currentUid) return;
 
+    const members = await resolveConversationMembers(convId);
+    if (!members.includes(currentUid)) return;
+
     const uploaded = await uploadAttachmentToStorage(convId, file, onProgress);
+    const memberKey = memberKeyFor(members[0], members[1]) || convId;
+    const now = serverTimestamp();
+    const messageRef = doc(collection(db, 'neuConversations', convId, 'messages'));
+    const batch = writeBatch(db);
     const payload = {
-      senderId: currentUid,
+      messageId: messageRef.id,
+      senderUid: currentUid,
       senderName: currentName,
       type: uploaded.type,
-      fileUrl: uploaded.fileUrl,
-      fileName: uploaded.fileName,
-      fileSize: uploaded.fileSize,
-      createdAt: serverTimestamp(),
+      text: '',
+      content: '',
+      createdAt: now,
     };
 
-    await addDoc(collection(db, 'conversations', convId, 'messages'), payload);
+    if (uploaded.type === 'image') {
+      payload.imageUrl = uploaded.fileUrl;
+      payload.fileUrl = uploaded.fileUrl;
+      payload.fileName = uploaded.fileName;
+      payload.fileSize = uploaded.fileSize;
+    } else {
+      payload.fileUrl = uploaded.fileUrl;
+      payload.fileName = uploaded.fileName;
+      payload.fileSize = uploaded.fileSize;
+    }
+
+    batch.set(messageRef, payload);
+
     const previewPrefix = uploaded.type === 'image' ? '[Imagen]' : '[Archivo]';
-    const preview = `${previewPrefix} ${uploaded.fileName}`.trim().slice(0, 180);
-    await updateDoc(doc(db, 'conversations', convId), {
-      lastMessage: {
-        text: preview,
-        senderId: currentUid,
-        senderName: currentName,
+    const previewText = `${previewPrefix} ${uploaded.fileName}`.trim().slice(0, 180);
+    batch.set(
+      doc(db, 'neuConversations', convId),
+      {
+        members,
+        memberKey,
+        lastMessageText: previewText,
+        lastMessageAt: now,
+        lastMessageSenderId: currentUid,
+        lastSenderUid: currentUid,
+        updatedAt: now,
       },
-      lastAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      [`reads.${currentUid}`]: serverTimestamp(),
+      { merge: true },
+    );
+
+    await batch.commit();
+    await updateUserChatRows({
+      conversationId: convId,
+      members,
+      memberKey,
+      lastMessageText: previewText,
+      senderUid: currentUid,
+      messageId: messageRef.id,
     });
     clearTypingPresence(convId, { force: true }).catch(() => null);
   }
 
+  async function ensureDirectConversationWithUser(targetUid) {
+    const currentUid = normalizeUid(getCurrentUid());
+    const otherUid = normalizeUid(targetUid);
+    if (!currentUid || !otherUid || currentUid === otherUid) return '';
+
+    const key = memberKeyFor(currentUid, otherUid);
+    if (!key) return '';
+
+    try {
+      const existing = await getDocs(
+        query(collection(db, 'neuConversations'), where('memberKey', '==', key), limit(1)),
+      );
+      if (!existing.empty) return String(existing.docs[0]?.id || '').trim();
+    } catch {
+      // fall through to deterministic id
+    }
+
+    const conversationId = key;
+    const now = serverTimestamp();
+    const members = [currentUid, otherUid].sort();
+    const batch = writeBatch(db);
+    batch.set(
+      doc(db, 'neuConversations', conversationId),
+      {
+        members,
+        memberKey: key,
+        createdAt: now,
+        updatedAt: now,
+        lastMessageAt: now,
+      },
+      { merge: true },
+    );
+
+    members.forEach((uid) => {
+      const other = members.find((candidate) => candidate !== uid) || '';
+      batch.set(
+        doc(db, 'neuUserChats', uid, 'chats', conversationId),
+        {
+          otherUid: other,
+          members,
+          memberKey: key,
+          unreadCount: 0,
+          lastReadAt: now,
+          updatedAt: now,
+        },
+        { merge: true },
+      );
+    });
+
+    await batch.commit();
+    return conversationId;
+  }
+
   return {
     attachMessageStreamForWindow,
+    ensureDirectConversationWithUser,
     sendAttachmentToConversation,
     sendMessageToConversation,
     setActiveConversation,

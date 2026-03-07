@@ -19,6 +19,7 @@ export function createMiniChatReactionController({
   esc,
   fmtTime,
   messageContentHtml,
+  reactionCollection = 'neuChatReactions',
   documentRef = document,
   windowRef = window,
 }) {
@@ -235,7 +236,7 @@ export function createMiniChatReactionController({
       if (reactionUnsubs.has(msgId)) return;
       const reactionsCol = collection(
         db,
-        'conversations',
+        reactionCollection,
         convId,
         'messages',
         msgId,
@@ -265,7 +266,7 @@ export function createMiniChatReactionController({
 
     const reactionRef = doc(
       db,
-      'conversations',
+      reactionCollection,
       convId,
       'messages',
       msgId,

@@ -78,6 +78,9 @@ export function getConversationTitle(
   const explicit = String(conversation.title || '').trim();
   if (explicit) return explicit;
 
+  const otherName = String(conversation.otherName || conversation.displayName || '').trim();
+  if (otherName) return otherName;
+
   if (conversation.type === 'group') return 'Grupo';
   if (conversation.type === 'support') return 'Soporte';
 
@@ -102,10 +105,15 @@ export function getConversationTitle(
 export function getConversationPreview(conversation) {
   const raw = String(conversation?.lastMessage?.text || '').trim();
   if (raw) return raw;
+  const fallback = String(conversation?.lastMessageText || '').trim();
+  if (fallback) return fallback;
   return 'Sin mensajes';
 }
 
 export function isUnread(conversation, currentUid = '') {
+  const unreadCount = Number(conversation?.unreadCount || 0);
+  if (Number.isFinite(unreadCount) && unreadCount > 0) return true;
+
   const uid = String(currentUid || '').trim();
   if (!conversation || !uid) return false;
   if (conversation.lastMessage?.senderId === uid) return false;
