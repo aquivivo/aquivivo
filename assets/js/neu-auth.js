@@ -1,4 +1,5 @@
 import { auth } from './neu-firebase-init.js';
+import { getNeuSocialAppPath } from './neu-paths.js';
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
@@ -8,7 +9,7 @@ import {
   signInWithPopup,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 
-const DEFAULT_NEXT = 'neu-social-app.html';
+const DEFAULT_NEXT = getNeuSocialAppPath();
 const state = { mode: 'login', busy: false, passwordVisible: false };
 
 const ui = {
@@ -301,4 +302,3 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
-

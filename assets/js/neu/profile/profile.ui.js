@@ -1,13 +1,10 @@
 let profileUiInitialized = false;
 
-export function createProfileUi({ repository }) {
+export function createProfileUi() {
   return {
     init() {
       if (profileUiInitialized) return;
       profileUiInitialized = true;
-      repository.rewriteLegacyLinks(document);
-      window.setTimeout(() => repository.rewriteLegacyLinks(document), 700);
-      window.setTimeout(() => repository.rewriteLegacyLinks(document), 1800);
     },
   };
 }

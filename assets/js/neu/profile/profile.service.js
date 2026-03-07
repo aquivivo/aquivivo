@@ -1,11 +1,10 @@
 import { setProfileUser } from '../context/neu-app-context.js';
 
-export function createProfileService({ context, state, repository }) {
+export function createProfileService({ context, state }) {
   return {
     async init() {
       if (state.initialized) return;
       state.initialized = true;
-      repository.wireLegacyProfileBridge();
       if (!context.profileUser && context.authUser?.uid) {
         setProfileUser(context, { uid: String(context.authUser.uid) });
       }

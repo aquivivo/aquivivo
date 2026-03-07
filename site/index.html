@@ -1,0 +1,344 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <base href='/' />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AquiVivo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260208m" />
+    <script src="assets/js/layout.js?v=20260208m" type="module"></script>
+</head>
+
+<body data-page="index">
+  <div id="appHeader"></div>
+
+  <main class="page">
+    <div class="container">
+
+      <!-- HERO -->
+      <section class="heroBanner hero-main" style="background: transparent; border: none; box-shadow: none; backdrop-filter: none;">
+        <div class="hero-grid">
+          <div>
+            <h1 class="glow-text" style="margin:0; font-family:'Playfair Display',serif; font-weight:900; font-size:clamp(40px,5vw,70px); line-height:1.02;">
+              Aprende Polaco<br>
+              <span style="color:var(--yellow);">con Alma Latina</span>
+            </h1>
+
+            <p class="subtitle" style="margin:14px 0 0; font-size:18px; line-height:1.6;">
+              Soy Magdalena â€” profesora de espaÃ±ol y polaco en Let's Talk Poznan. Te ayudo a descubrir que el polaco no es tan dificil como parece, que puede ser ligero, agradable y realmente "alcanzable" 
+            </p>
+
+            <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+              <button class="btn-yellow" id="btnTrialA1" type="button">
+                Activa A1 gratis 7 d&iacute;as
+              </button>
+              <a class="btn-white-outline" id="btnCursos" href="#cursos">Ver Servicios</a>
+              <a class="btn-white-outline" href="espanel.html">Libreta</a>
+            </div>
+            <div class="hintSmall" id="trialMsg" style="margin-top:8px; display:none;"></div>
+
+          </div>
+
+          <div style="display:flex; justify-content:center;">
+            <div style="width:min(420px,100%);">
+
+
+              <div style="margin-top:12px; display:flex; justify-content:center;">
+                <div class="coffee-hero-wrap">
+                  <img src="assets/img/coffee.png" alt="CafÃ©" class="coffee-hero" />
+                  <span class="coffee-steam coffee-steam--left"></span>
+                  <span class="coffee-steam coffee-steam--mid"></span>
+                  <span class="coffee-steam coffee-steam--right"></span>
+                  <span class="coffee-heart"></span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /container -->
+
+    <section class="section-wide stats-band">
+      <div class="section-wide-inner">
+        <div class="stat-grid">
+          <div class="card statCard">
+            <div style="font-weight:900; font-size:34px; color:var(--yellow);">100+</div>
+            <div class="muted">Estudiantes</div>
+          </div>
+          <div class="card statCard">
+            <div style="font-weight:900; font-size:34px; color:var(--pastel-blue);">10</div>
+            <div class="muted">aÃ±os</div>
+          </div>
+          <div class="card statCard">
+            <div style="font-weight:900; font-size:34px; color:var(--red);">4.9?</div>
+            <div class="muted">valoraciÃ³n</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+        <!-- WHY SECTION -->
+    <section class="section-wide why-section">
+      <div class="section-wide-inner">
+        <div class="why-grid">
+          <div class="why-text">
+            <h2>&iquest;Por qu&eacute; aprender <span class="accent-yellow">conmigo?</span></h2>
+            <p>
+              Desde muy peque&ntilde;a el espa&ntilde;ol estuvo cerca de mi coraz&oacute;n &mdash; y, especialmente, su
+              versi&oacute;n latinoamericana, llena de emoci&oacute;n, calidez y vida. Fue este espa&ntilde;ol el
+              que me hizo enamorarme de los idiomas. Hoy me especializo en espa&ntilde;ol latinoamericano, tal
+              como se habla de verdad &mdash; entre personas, en las relaciones, en la vida cotidiana.
+            </p>
+
+            <div class="why-join">
+              <div class="why-avatars" aria-hidden="true">
+                <span class="avatar avatar-yellow">&#x1F469;</span>
+                <span class="avatar avatar-red">&#x1F468;</span>
+                <span class="avatar avatar-white">&#x1F9D1;</span>
+              </div>
+              <div class="why-join-text">
+                &Uacute;nete a <span class="accent-yellow">100+ estudiantes</span> que ya dominan el polaco
+              </div>
+            </div>
+          </div>
+
+          <div class="why-cards">
+            <div class="card featureCard featureCard--yellow why-card">
+              <div class="why-card-icon">&#x1F5E3;</div>
+              <div class="why-card-title">Conversaci&oacute;n Natural</div>
+              <div class="why-card-text">Aprende a hablar como un nativo desde el primer d&iacute;a.</div>
+            </div>
+
+            <div class="card featureCard featureCard--red why-card">
+              <div class="why-card-icon">&#x26A1;</div>
+              <div class="why-card-title">Resultados R&aacute;pidos</div>
+              <div class="why-card-text">Ve tu progreso semana tras semana.</div>
+            </div>
+
+            <div class="card featureCard featureCard--blue why-card">
+              <div class="why-card-icon">&#x1F4DA;</div>
+              <div class="why-card-title">Material Exclusivo</div>
+              <div class="why-card-text">E-books y recursos creados por m&iacute; para ti.</div>
+            </div>
+
+            <div class="card featureCard featureCard--navy why-card">
+              <div class="why-card-icon">&#x1F91D;</div>
+              <div class="why-card-title">Apoyo Total</div>
+              <div class="why-card-text">Estoy aqu&iacute; para ayudarte en cada paso.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- METHOD SECTION -->
+    <section id="metodo-disenado-para-ti" class="section-wide method-section">
+      <div class="section-wide-inner">
+        <h2 class="method-title">M&eacute;todo Dise&ntilde;ado para Ti</h2>
+
+        <div class="method-grid">
+          <article class="method-card method-card--yellow">
+            <div class="method-badge">Precio de Lanzamiento</div>
+            <div class="method-level">NIVEL A1-A2</div>
+            <h3>Fundamentos de la vida en Polonia</h3>
+            <p class="method-lead">Ideal para empezar tu vida en Polonia PL</p>
+            <ul class="method-list">
+              <li><span class="check" aria-hidden="true"></span>Pronunciaci&oacute;n polaca para hispanohablantes</li>
+              <li><span class="check" aria-hidden="true"></span>Vocabulario esencial para la vida diaria</li>
+              <li><span class="check" aria-hidden="true"></span>Situaciones reales: trabajo, tienda, m&eacute;dico, transporte</li>
+              <li><span class="check" aria-hidden="true"></span>Gram&aacute;tica b&aacute;sica explicada paso a paso</li>
+              <li><span class="check" aria-hidden="true"></span>Audios y pr&aacute;ctica de conversaci&oacute;n desde el primer d&iacute;a</li>
+            </ul>
+          </article>
+
+          <article class="method-card method-card--white">
+            <div class="method-badge method-badge--red">Oferta Especial</div>
+            <div class="method-level">NIVEL B1</div>
+            <h3>Vida independiente en Polonia</h3>
+            <p class="method-sub">Para trabajar, comunicarte y vivir con confianza</p>
+            <ul class="method-list">
+              <li><span class="check" aria-hidden="true"></span>Conversaci&oacute;n fluida en situaciones cotidianas y profesionales</li>
+              <li><span class="check" aria-hidden="true"></span>Polaco para el trabajo, oficina y vida social</li>
+              <li><span class="check" aria-hidden="true"></span>Expresar opiniones, experiencias y emociones</li>
+              <li><span class="check" aria-hidden="true"></span>Vocabulario avanzado y estructuras naturales</li>
+              <li><span class="check" aria-hidden="true"></span>Preparaci&oacute;n pr&aacute;ctica para ex&aacute;menes y entrevistas</li>
+            </ul>
+          </article>
+
+          <article class="method-card method-card--red">
+            <div class="method-badge method-badge--white">Precio Promocional</div>
+            <div class="method-level">NIVEL B2</div>
+            <h3>Integraci&oacute;n total</h3>
+            <p class="method-sub">Para integrarte completamente y avanzar profesionalmente</p>
+            <ul class="method-list">
+              <li><span class="check" aria-hidden="true"></span>Perfeccionamiento de la comunicaci&oacute;n oral y escrita</li>
+              <li><span class="check" aria-hidden="true"></span>Polaco profesional y acad&eacute;mico especializado</li>
+              <li><span class="check" aria-hidden="true"></span>Expresiones idiom&aacute;ticas y lenguaje natural</li>
+              <li><span class="check" aria-hidden="true"></span>Debates, negociaciones y situaciones formales</li>
+              <li><span class="check" aria-hidden="true"></span>Preparaci&oacute;n para ciudadan&iacute;a, ex&aacute;menes oficiales y trabajo avanzado</li>
+            </ul>
+          </article>
+        </div>
+        <div class="method-cta">
+          <a class="btn-yellow" href="services.html#planes">Ver Planes</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES PLUS -->
+    <section id="mas-que-clases" class="section-wide services-plus">
+      <div class="section-wide-inner">
+        <div class="services-plus-head">
+          <h2>M&aacute;s que Clases de Idioma</h2>
+          <p>
+            Te acompa&ntilde;o en todo tu proceso de adaptaci&oacute;n a Polonia con servicios
+            dise&ntilde;ados para facilitar tu vida.
+          </p>
+        </div>
+
+        <div class="services-plus-grid">
+          <article class="services-plus-card sp-yellow">
+            <div class="sp-icon"></div>
+            <h3>Ayuda con Tr&aacute;mites</h3>
+            <p>Acompa&ntilde;amiento en oficinas, traducci&oacute;n de documentos oficiales.</p>
+            <div class="sp-price">Desde 100 PLN</div>
+            <button class="sp-btn sp-btn-red" id="btnServicesTramites" type="button">
+              Saber M&aacute;s
+            </button>
+          </article>
+
+          <article class="services-plus-card sp-blue">
+            <div class="sp-icon"></div>
+            <h3>Polaco Empresarial</h3>
+            <p>Clases para empresas con empleados hispanohablantes.</p>
+            <div class="sp-actions">
+              <div class="sp-pill">A consultar</div>
+              <button class="sp-btn sp-btn-yellow" id="btnServicesBusiness" type="button">
+                Saber M&aacute;s
+              </button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    
+
+    <section id="contact" class="contactSection">
+      <div class="container">
+        <div class="contactHead">
+          <h2>Â¿Listo para Empezar tu Aventura?</h2>
+          <p>Reserva tu primera clase gratis y descubre cÃ³mo puedo ayudarte a dominar el polaco y adaptarte a tu nueva vida en Polonia.</p>
+        </div>
+
+        <div class="contactGrid">
+          <div class="contactList">
+            <div class="contactRow">
+              <div class="contactIcon" aria-hidden="true">
+                <!-- Email icon -->
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 6.5C4 5.12 5.12 4 6.5 4H17.5C18.88 4 20 5.12 20 6.5V17.5C20 18.88 18.88 20 17.5 20H6.5C5.12 20 4 18.88 4 17.5V6.5Z" stroke="white" stroke-width="1.8" opacity="0.9"/>
+                  <path d="M6.5 7.5L12 11.3L17.5 7.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="contactMeta">
+                <div class="contactLabel">Email</div>
+                <div class="contactValue"><a href="mailto:aquivivo.pl@gmail.com" style="color:inherit; text-decoration:none;">aquivivo.pl@gmail.com</a></div>
+              </div>
+            </div>
+
+            <div class="contactRow">
+              <div class="contactIcon" aria-hidden="true">
+                <!-- WhatsApp icon (simple) -->
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4C7.58 4 4 7.46 4 11.73C4 13.25 4.5 14.67 5.35 15.83L4.5 20L8.82 19.09C9.82 19.6 10.94 19.88 12.13 19.88C16.55 19.88 20.13 16.42 20.13 12.15C20.13 7.88 16.55 4.42 12.13 4.42" stroke="white" stroke-width="1.8" opacity="0.9"/>
+                  <path d="M10 9.8C10.2 9.2 10.7 9 11.2 9.1C11.6 9.2 12 10 12.1 10.3C12.2 10.6 12.2 10.9 12 11.1C11.9 11.3 11.8 11.4 11.7 11.5C12.2 12.4 13 13.1 13.9 13.5C14.1 13.4 14.2 13.3 14.4 13.2C14.7 13 15 13 15.3 13.1C15.6 13.2 16.3 13.6 16.4 13.9C16.5 14.2 16.4 14.6 16.1 14.8C15.6 15.2 15.1 15.5 14.5 15.6C12.7 15.9 9.6 13.2 9.7 10.6C9.7 10.3 9.8 10 10 9.8Z" fill="white" opacity="0.92"/>
+                </svg>
+              </div>
+              <div class="contactMeta">
+                <div class="contactLabel">WhatsApp</div>
+                <div class="contactValue"><a href="https://wa.me/48669697151" target="_blank" rel="noopener" style="color:inherit; text-decoration:none;">+48 669 69 71 51</a></div>
+              </div>
+            </div>
+
+            <div class="contactRow">
+              <div class="contactIcon" aria-hidden="true">
+                <!-- Location icon -->
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 21s7-5.2 7-11.1C19 6.1 15.9 3 12 3S5 6.1 5 9.9C5 15.8 12 21 12 21Z" stroke="white" stroke-width="1.8" opacity="0.9"/>
+                  <circle cx="12" cy="10" r="2.6" fill="white" opacity="0.92"/>
+                </svg>
+              </div>
+              <div class="contactMeta">
+                <div class="contactLabel">UbicaciÃ³n</div>
+                <div class="contactValue">Poznan, Polonia</div>
+              </div>
+            </div>
+
+            <div class="contactRow">
+              <div class="contactIcon" aria-hidden="true">
+                <!-- Instagram icon -->
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="5" y="5" width="14" height="14" rx="4" stroke="white" stroke-width="1.8" opacity="0.9"/>
+                  <circle cx="12" cy="12" r="3.2" stroke="white" stroke-width="1.8"/>
+                  <circle cx="16.8" cy="7.2" r="1.1" fill="white"/>
+                </svg>
+              </div>
+              <div class="contactMeta">
+                <div class="contactLabel">Instagram</div>
+                <div class="contactValue"><a href="https://instagram.com/sacariooo" target="_blank" rel="noopener" style="color:inherit; text-decoration:none;">@sacariooo</a></div>
+              </div>
+            </div>
+
+            <div class="contactRow">
+              <div class="contactIcon" aria-hidden="true">
+                <!-- TikTok icon (simple) -->
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 4c.4 2.7 2.2 4.6 4.8 4.9V11c-1.9-.1-3.5-.8-4.8-2v6.3c0 2.9-2.4 5.2-5.3 5.2S3.4 18.2 3.4 15.3c0-3 2.5-5.3 5.5-5.2v2.7c-1.4-.1-2.6 1-2.7 2.4c-.1 1.4 1 2.6 2.4 2.7c1.5.1 2.8-1.1 2.8-2.6V4h2.6Z" fill="white" opacity="0.92"/>
+                </svg>
+              </div>
+              <div class="contactMeta">
+                <div class="contactLabel">TikTok</div>
+                <div class="contactValue"><a href="https://www.tiktok.com/@latip0l" target="_blank" rel="noopener" style="color:inherit; text-decoration:none;">@latip0l</a></div>
+              </div>
+            </div>
+          </div>
+
+          <form class="contactFormCard" action="#" method="post" autocomplete="on">
+            <h3>EnvÃ­ame un Mensaje</h3>
+
+            <label for="contactEmail">Email<span class="req">*</span></label>
+            <input id="contactEmail" name="email" class="input" type="email" placeholder="tu@email.com" required / autocomplete="email">
+
+            <label for="contactMsg">Mensaje<span class="req">*</span></label>
+            <textarea id="contactMsg" name="message" placeholder="Â¿En quÃ© puedo ayudarte?" required autocomplete="off"></textarea>
+
+            <div class="contactCheck">
+              <input id="contactPrivacy" type="checkbox" required / name="privacy" autocomplete="off">
+              <label for="contactPrivacy" style="margin:0; font-weight:800;">
+                Acepto la <a href="#" style="color:var(--blue); font-weight:900;">PolÃ­tica de Privacidad</a><span class="req">*</span>
+              </label>
+            </div>
+
+            <button class="contactBtn" type="submit">Enviar Mensaje</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+</main>
+</body>
+</html>
+
+
+
+
+
+

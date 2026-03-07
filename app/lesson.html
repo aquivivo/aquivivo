@@ -1,0 +1,34 @@
+﻿<!doctype html>
+<html lang="es">
+  <head>
+  <base href='/' />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Lección | AquiVivo</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260208m" />
+    <script src="assets/js/layout.js?v=20260307a" type="module"></script>
+  </head>
+  <body data-page="lesson">
+    <div id="appHeader"></div>
+
+    <main class="page">
+      <div class="container">
+        <section class="card" id="lessonCard">
+          <div class="metaRow" style="margin-top: 12px; gap: 8px; flex-wrap: wrap">
+            <a class="btn-white-outline" id="btnLessonBack" href="lessonpage.html">Tema</a>
+            <a class="btn-white-outline" id="btnLessonFlashcards" href="flashcards.html">Fichas</a>
+            <a class="btn-white-outline" id="btnLessonExercises" href="versions.html">Ejercicios</a>
+            <a class="btn-white-outline" id="btnLessonMiniTest" href="minitest.html">Mini test</a>
+          </div>
+          <div id="lessonEmpty" class="subtitle" style="margin-top: 14px; display: none"></div>
+          <article id="lessonContent" style="margin-top: 14px"></article>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="assets/js/content-protect.js"></script>
+    <script type="module" src="assets/js/pages/courses/lesson-page.js?v=20260215a"></script>
+  </body>
+</html>
+
+

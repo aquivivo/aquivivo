@@ -27,11 +27,6 @@ const onboardingState = {
   mode: 'app',
 };
 
-const profileRepository = {
-  wireLegacyProfileBridge: () => neuLegacyRuntime.routing.wireLegacyProfileLinkBridge(),
-  rewriteLegacyLinks: (root) => neuLegacyRuntime.routing.rewriteLegacyLinksInRoot(root),
-};
-
 const postRepository = {
   initQuickPost: () => neuLegacyRuntime.posts.initQuickPost(),
   initCrud: () => neuLegacyRuntime.posts.initCrud(),
@@ -46,20 +41,20 @@ const storyRepository = {
 };
 
 const chatRepository = {
-  initMvp: (authUser) => neuLegacyRuntime.chat.initMvp(authUser),
+  initMvp: async () => {},
 };
 
 const onboardingRepository = {
   runLegacyStart: () => neuLegacyRuntime.internal.start(),
 };
 
-const profileService = createProfileService({ context: neuAppContext, state: profileState, repository: profileRepository });
+const profileService = createProfileService({ context: neuAppContext, state: profileState });
 const postService = createPostService({ state: postState, repository: postRepository });
 const storyService = createStoryService({ state: storyState });
 const chatService = createChatService({ context: neuAppContext, state: chatState, repository: chatRepository });
 const onboardingService = createOnboardingService({ state: onboardingState, repository: onboardingRepository });
 
-const profileUi = createProfileUi({ repository: profileRepository });
+const profileUi = createProfileUi();
 const postUi = createPostUi();
 const storyUi = createStoryUi({ repository: storyRepository });
 const chatUi = createChatUi();

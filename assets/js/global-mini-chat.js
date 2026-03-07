@@ -20,6 +20,22 @@ import {
   ref as storageRef,
   uploadBytesResumable,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
+import {
+  buildConversationListHtml,
+  buildDockMarkup,
+  buildInboxThreadMarkup,
+  buildMessagesHtml,
+  buildThreadWindowMarkup,
+  fmtTime,
+  getConversationTitle,
+  initials,
+  maybeDate,
+} from './chat-dom.js';
+import { createMiniChatFirestoreController } from './chat-firestore.js';
+import { getNeuSocialAppPath, withNeuQuery } from './neu-paths.js';
+import { createMiniChatReactionController } from './chat-reactions.js';
+import { createMiniChatTypingController } from './chat-typing.js';
+import { createMiniChatUploadController } from './chat-upload.js';
 
 let currentUid = '';
 let currentName = 'Usuario';
@@ -32,41 +48,30 @@ const THREAD_BASE_Z_INDEX = 4000;
 let topZIndex = THREAD_BASE_Z_INDEX;
 let activeConversationId = '';
 let convUnsub = null;
-let msgUnsub = null;
+let hostMode = 'dock';
+let routeChatIntentKey = '';
 
-function shouldDisableOnNeuSocialPage() {
-  const path = String(location.pathname || '').toLowerCase();
-  if (path.includes('neu-social-app.html')) return true;
-  if (document.body?.classList?.contains('neu-social-app')) return true;
-  if (window.__NEU_DISABLE_MINI_CHAT__ === true) return true;
-  return false;
+function isNeuSocialPage() {
+  return document.body?.classList?.contains('neu-social-app') === true;
+}
+
+function isPageMode() {
+  return hostMode === 'page';
+}
+
+function shouldDisableOnNeuSocialPage(mode = hostMode) {
+  return isNeuSocialPage() && mode !== 'page';
 }
 
 let outsideClickWired = false;
 let quickOpenWired = false;
 let syncWired = false;
 let threadLayoutWired = false;
-let reactionOutsideClickWired = false;
-let typingRefreshTimer = 0;
 const THREAD_WINDOW_ANIM_MS = 180;
 const THREAD_WINDOW_MINIMIZED_TRANSFORM = 'translateY(12px) scale(0.96)';
-const MINI_CHAT_REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢'];
-let uploadInFlight = false;
-const TYPING_DEBOUNCE_MS = 400;
-const TYPING_IDLE_MS = 2000;
-const TYPING_THROTTLE_MS = 1500;
-const TYPING_STALE_MS = 5000;
-
 const panelUploadState = {
   uploading: false,
   progress: 0,
-};
-
-const typingState = {
-  debounceTimers: new Map(),
-  idleTimers: new Map(),
-  lastSentAt: new Map(),
-  activeConversations: new Set(),
 };
 
 const panelReactionState = {
@@ -95,184 +100,190 @@ function esc(value) {
     .replace(/"/g, '&quot;');
 }
 
-function runSafeUnsubscribe(unsub) {
-  if (typeof unsub !== 'function') return;
-  try {
-    unsub();
-  } catch {
-    // ignore unsubscribe failures
+function pageShell() {
+  return {
+    empty: qs('#neuInboxEmpty'),
+    host: qs('#neuInboxChatHost'),
+    list: qs('#neuInboxList'),
+    search: qs('#neuInboxSearch'),
+  };
+}
+
+function conversationListRoot() {
+  return isPageMode() ? pageShell().list : qs('#miniChatList');
+}
+
+function conversationSearchInput() {
+  return isPageMode() ? pageShell().search : qs('#miniChatSearch');
+}
+
+function buildFullViewHref(chat = '', chatKind = '') {
+  return withNeuQuery(getNeuSocialAppPath(), {
+    portal: 'pulse',
+    chat,
+    chatKind,
+  });
+}
+
+function syncNeuUnreadBadge(count) {
+  if (!isNeuSocialPage()) return;
+  const button = document.querySelector(
+    '.bottom-nav-btn[data-bottom-target="pulse"], .bottom-nav-btn[data-portal-target="pulse"]',
+  );
+  if (!(button instanceof HTMLElement)) return;
+
+  let badge = button.querySelector('.neu-bottom-unread-badge');
+  if (!(badge instanceof HTMLElement)) {
+    badge = document.createElement('span');
+    badge.className = 'neu-unread-badge neu-bottom-unread-badge';
+    button.appendChild(badge);
+  }
+
+  const total = Number(count || 0);
+  if (!total) {
+    badge.hidden = true;
+    badge.textContent = '';
+    return;
+  }
+
+  badge.hidden = false;
+  badge.textContent = total > 99 ? '99+' : String(total);
+  badge.setAttribute('aria-label', `Chats sin leer: ${total}`);
+}
+
+function setPageHostVisible(open) {
+  const { empty, host } = pageShell();
+  const active = open === true;
+  if (empty instanceof HTMLElement) empty.hidden = active;
+  if (host instanceof HTMLElement) {
+    host.hidden = !active;
+    host.classList.toggle('hidden', !active);
   }
 }
 
-function clearReactionListeners(unsubMap, dataMap) {
-  if (unsubMap instanceof Map) {
-    unsubMap.forEach((unsub) => runSafeUnsubscribe(unsub));
-    unsubMap.clear();
+function readRouteChatIntent() {
+  const params = new URLSearchParams(location.search);
+  const chat = String(params.get('chat') || '').trim();
+  const chatKind = String(params.get('chatKind') || '').trim().toLowerCase();
+  if (!chat) return null;
+  if (currentUid && chat === currentUid) return null;
+  return {
+    chat,
+    chatKind,
+    key: `${chatKind || 'auto'}:${chat}`,
+  };
+}
+
+function clearRouteChatIntent() {
+  const url = new URL(location.href);
+  if (!url.searchParams.has('chat') && !url.searchParams.has('chatKind')) return;
+  url.searchParams.delete('chat');
+  url.searchParams.delete('chatKind');
+  const nextHref = `${url.pathname}${url.search}${url.hash}`;
+  const currentHref = `${location.pathname}${location.search}${location.hash}`;
+  if (nextHref !== currentHref) {
+    history.replaceState(null, '', nextHref);
   }
-  if (dataMap instanceof Map) dataMap.clear();
 }
 
-function summarizeReactions(snapshot) {
-  const counts = new Map();
-  let myEmoji = '';
+const {
+  acquireUploadLock,
+  messageContentHtml,
+  releaseUploadLock,
+  uploadAttachmentToStorage,
+} = createMiniChatUploadController({
+  storage,
+  storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
+  esc,
+});
 
-  (snapshot?.docs || []).forEach((docSnap) => {
-    const data = docSnap.data() || {};
-    const emoji = String(data.emoji || '').trim();
-    const uid = String(data.uid || docSnap.id || '').trim();
-    if (!emoji || !uid) return;
-    counts.set(emoji, Number(counts.get(emoji) || 0) + 1);
-    if (uid === currentUid) myEmoji = emoji;
-  });
+const {
+  clearReactionListeners,
+  messageHtml,
+  runSafeUnsubscribe,
+  syncReactionListeners,
+  toggleReaction,
+  wireReactionInteractions,
+  wireReactionOutsideClick,
+} = createMiniChatReactionController({
+  db,
+  collection,
+  onSnapshot,
+  doc,
+  getDoc,
+  deleteDoc,
+  setDoc,
+  serverTimestamp,
+  getCurrentUid: () => currentUid,
+  esc,
+  fmtTime,
+  messageContentHtml,
+});
 
-  const pills = [];
-  MINI_CHAT_REACTION_EMOJIS.forEach((emoji) => {
-    const count = Number(counts.get(emoji) || 0);
-    if (count > 0) pills.push({ emoji, count });
-    counts.delete(emoji);
-  });
-  counts.forEach((count, emoji) => {
-    if (count > 0) pills.push({ emoji, count });
-  });
+const {
+  clearAllTypingPresenceBestEffort,
+  clearTypingPresence,
+  ensureTypingRefreshTimer,
+  scheduleTypingHeartbeat,
+  stopTypingRefreshTimer,
+  updateTypingIndicatorsFromConversations,
+} = createMiniChatTypingController({
+  db,
+  doc,
+  updateDoc,
+  deleteField,
+  serverTimestamp,
+  getCurrentUid: () => currentUid,
+  getCurrentName: () => currentName,
+  getConversations: () => conversations,
+  getActiveConversationId: () => activeConversationId,
+  getOpenThreads: () => openThreads,
+  getConversationTitle,
+  maybeDate,
+  norm,
+  qs,
+});
 
-  return { myEmoji, pills };
-}
-
-function reactionPillsHtml(summary) {
-  const pills = Array.isArray(summary?.pills) ? summary.pills : [];
-  if (!pills.length) return '';
-  const myEmoji = String(summary?.myEmoji || '').trim();
-  return pills
-    .map((item) => {
-      const emoji = String(item?.emoji || '').trim();
-      const count = Number(item?.count || 0);
-      if (!emoji || count <= 0) return '';
-      const active = myEmoji && myEmoji === emoji ? ' active-reaction' : '';
-      return `<button class="mini-chat-v4-reaction-pill${active}" type="button" data-reaction-emoji="${esc(emoji)}">${esc(emoji)} ${esc(count)}</button>`;
-    })
-    .join('');
-}
-
-function reactionPickerHtml(summary) {
-  const myEmoji = String(summary?.myEmoji || '').trim();
-  return MINI_CHAT_REACTION_EMOJIS.map((emoji) => {
-    const active = myEmoji && myEmoji === emoji ? ' active-reaction' : '';
-    return `<button class="mini-chat-v4-reaction-option${active}" type="button" data-reaction-pick="${esc(emoji)}" aria-label="Reaccionar ${esc(emoji)}">${esc(emoji)}</button>`;
-  }).join('');
-}
-
-function messageHtml(message, conversationId, reactionData = new Map()) {
-  const mine = String(message?.senderId || '').trim() === currentUid;
-  const bubbleClass = mine
-    ? 'mini-chat-v4-bubble mini-chat-v4-bubble--me'
-    : 'mini-chat-v4-bubble mini-chat-v4-bubble--other';
-  const rowClass = mine
-    ? 'mini-chat-v4-message-row is-me'
-    : 'mini-chat-v4-message-row is-other';
-  const msgId = String(message?.id || '').trim();
-  const convId = String(conversationId || '').trim();
-  const summary = reactionData instanceof Map ? reactionData.get(msgId) : null;
-  const reactionsHtml = reactionPillsHtml(summary);
-  const pickerHtml = reactionPickerHtml(summary);
-  const contentHtml = messageContentHtml(message);
-
-  return `
-    <div class="${rowClass}" data-conv-id="${esc(convId)}" data-msg-id="${esc(msgId)}">
-      <article class="${bubbleClass}">
-        ${contentHtml}
-        <div class="mini-chat-v4-bubble-meta">${esc(fmtTime(message?.createdAt))}</div>
-      </article>
-      <div class="mini-chat-v4-reactions">${reactionsHtml}</div>
-      <div class="mini-chat-v4-reaction-picker">${pickerHtml}</div>
-    </div>
-  `;
-}
-
-function closeAllReactionPickers(exceptRow = null) {
-  document
-    .querySelectorAll('.mini-chat-v4-message-row.is-picker-open')
-    .forEach((node) => {
-      if (!(node instanceof HTMLElement)) return;
-      if (exceptRow instanceof HTMLElement && node === exceptRow) return;
-      node.classList.remove('is-picker-open');
-    });
-}
-
-function wireReactionOutsideClick() {
-  if (reactionOutsideClickWired) return;
-  reactionOutsideClickWired = true;
-
-  document.addEventListener('click', (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) {
-      closeAllReactionPickers();
-      return;
-    }
-    if (
-      target.closest('.mini-chat-v4-reaction-picker') ||
-      target.closest('.mini-chat-v4-bubble') ||
-      target.closest('.mini-chat-v4-reaction-pill')
-    ) {
-      return;
-    }
-    closeAllReactionPickers();
-  });
-}
-
-function wireReactionInteractions(container) {
-  if (!(container instanceof HTMLElement)) return;
-  if (container.dataset.reactionWired === '1') return;
-  container.dataset.reactionWired = '1';
-
-  container.addEventListener('click', (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-    if (target.closest('.mini-chat-v4-file')) return;
-
-    const pickerBtn = target.closest('[data-reaction-pick]');
-    if (pickerBtn instanceof HTMLElement) {
-      const row = pickerBtn.closest('.mini-chat-v4-message-row');
-      if (!(row instanceof HTMLElement) || !container.contains(row)) return;
-      const convId = String(row.dataset.convId || '').trim();
-      const msgId = String(row.dataset.msgId || '').trim();
-      const emoji = String(pickerBtn.getAttribute('data-reaction-pick') || '').trim();
-      if (!convId || !msgId || !emoji) return;
-      event.preventDefault();
-      event.stopPropagation();
-      toggleReaction(convId, msgId, emoji).catch((error) => {
-        console.warn('[mini-chat-v4] toggle reaction failed', error);
-      });
-      row.classList.remove('is-picker-open');
-      return;
-    }
-
-    const reactionPill = target.closest('.mini-chat-v4-reaction-pill[data-reaction-emoji]');
-    if (reactionPill instanceof HTMLElement) {
-      const row = reactionPill.closest('.mini-chat-v4-message-row');
-      if (!(row instanceof HTMLElement) || !container.contains(row)) return;
-      const convId = String(row.dataset.convId || '').trim();
-      const msgId = String(row.dataset.msgId || '').trim();
-      const emoji = String(reactionPill.getAttribute('data-reaction-emoji') || '').trim();
-      if (!convId || !msgId || !emoji) return;
-      event.preventDefault();
-      event.stopPropagation();
-      toggleReaction(convId, msgId, emoji).catch((error) => {
-        console.warn('[mini-chat-v4] toggle reaction failed', error);
-      });
-      return;
-    }
-
-    const bubble = target.closest('.mini-chat-v4-bubble');
-    if (!(bubble instanceof HTMLElement)) return;
-    const row = bubble.closest('.mini-chat-v4-message-row');
-    if (!(row instanceof HTMLElement) || !container.contains(row)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const willOpen = !row.classList.contains('is-picker-open');
-    closeAllReactionPickers();
-    if (willOpen) row.classList.add('is-picker-open');
-  });
-}
+const firestoreController = createMiniChatFirestoreController({
+  db,
+  addDoc,
+  collection,
+  doc,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+  uploadAttachmentToStorage,
+  getCurrentUid: () => currentUid,
+  getCurrentName: () => currentName,
+  getActiveConversationId: () => activeConversationId,
+  setActiveConversationId: (value) => {
+    activeConversationId = String(value || '').trim();
+  },
+  panelReactionState,
+  renderMessages,
+  renderThreadWindowMessages,
+  renderConversationList,
+  renderThreadMeta,
+  setView,
+  setOpenLinks,
+  markConversationRead,
+  clearReactionListeners,
+  syncReactionListeners,
+  runSafeUnsubscribe,
+  clearTypingPresence,
+  updateTypingIndicatorsFromConversations,
+  getThreadUnread: (conversationId) => threadUnread.get(String(conversationId || '').trim()) || 0,
+  setThreadUnread: (conversationId, count) => {
+    threadUnread.set(String(conversationId || '').trim(), Math.max(0, Number(count || 0)));
+  },
+  isThreadMinimized: (conversationId) => minimizedThreads.has(String(conversationId || '').trim()),
+  renderTray,
+});
 
 function schedulePanelReactionRender() {
   if (panelReactionState.renderQueued) return;
@@ -290,113 +301,6 @@ function schedulePanelReactionRender() {
     return;
   }
   window.setTimeout(run, 16);
-}
-
-function syncReactionListeners({
-  conversationId,
-  rows = [],
-  reactionUnsubs = new Map(),
-  reactionData = new Map(),
-  onChange = () => {},
-} = {}) {
-  const convId = String(conversationId || '').trim();
-  if (!convId) {
-    clearReactionListeners(reactionUnsubs, reactionData);
-    return;
-  }
-
-  const messageIds = new Set(
-    rows
-      .map((row) => String(row?.id || '').trim())
-      .filter(Boolean),
-  );
-
-  reactionUnsubs.forEach((unsub, msgId) => {
-    if (messageIds.has(msgId)) return;
-    runSafeUnsubscribe(unsub);
-    reactionUnsubs.delete(msgId);
-    reactionData.delete(msgId);
-  });
-
-  messageIds.forEach((msgId) => {
-    if (reactionUnsubs.has(msgId)) return;
-    const reactionsCol = collection(
-      db,
-      'conversations',
-      convId,
-      'messages',
-      msgId,
-      'reactions',
-    );
-    const unsub = onSnapshot(
-      reactionsCol,
-      (snapshot) => {
-        reactionData.set(msgId, summarizeReactions(snapshot));
-        onChange();
-      },
-      () => {
-        reactionData.delete(msgId);
-        onChange();
-      },
-    );
-    reactionUnsubs.set(msgId, unsub);
-  });
-}
-
-function acquireUploadLock() {
-  if (uploadInFlight) return false;
-  uploadInFlight = true;
-  return true;
-}
-
-function releaseUploadLock() {
-  uploadInFlight = false;
-}
-
-function sanitizeFileName(fileName) {
-  return String(fileName || 'archivo').replace(/[^\w.\-]+/g, '_');
-}
-
-function formatFileSize(size) {
-  const bytes = Number(size || 0);
-  if (!Number.isFinite(bytes) || bytes <= 0) return '';
-  if (bytes < 1024) return `${bytes} B`;
-  const kb = bytes / 1024;
-  if (kb < 1024) return `${Math.round(kb)} KB`;
-  const mb = kb / 1024;
-  if (mb < 1024) return `${mb.toFixed(1)} MB`;
-  return `${(mb / 1024).toFixed(1)} GB`;
-}
-
-function messageAttachmentType(message = {}) {
-  const rawType = String(message?.type || '').trim().toLowerCase();
-  if (rawType === 'image' || rawType === 'file' || rawType === 'text') return rawType;
-  const fileUrl = String(message?.fileUrl || '').trim();
-  if (fileUrl) return 'file';
-  return 'text';
-}
-
-function messageContentHtml(message = {}) {
-  const type = messageAttachmentType(message);
-  const textRaw = String(message?.text || '').trim();
-  const safeText = esc(textRaw).replace(/\n/g, '<br />');
-  const fileUrl = String(message?.fileUrl || '').trim();
-  const fileName = String(message?.fileName || '').trim() || 'archivo';
-  const fileSize = formatFileSize(message?.fileSize);
-  const fileLabel = fileSize ? `${fileName} (${fileSize})` : fileName;
-  const out = [];
-
-  if (type === 'image' && fileUrl) {
-    out.push(`<img class="mini-chat-v4-image" src="${esc(fileUrl)}" alt="${esc(fileName)}" loading="lazy" />`);
-  } else if (type === 'file' && fileUrl) {
-    out.push(
-      `<a class="mini-chat-v4-file" href="${esc(fileUrl)}" download="${esc(fileName)}" target="_blank" rel="noopener">📎 ${esc(fileLabel)}</a>`,
-    );
-  }
-
-  if (safeText) out.push(`<div class="mini-chat-v4-bubble-text">${safeText}</div>`);
-  if (!out.length) out.push('<div class="mini-chat-v4-bubble-text">[Adjunto]</div>');
-  return out.join('');
 }
 
 function panelUploadUi() {
@@ -448,789 +352,72 @@ function setThreadUploading(thread, uploading = false, progress = 0) {
   );
 }
 
-function uploadAttachmentToStorage(convId, file, onProgress = () => {}) {
-  const safeConvId = String(convId || '').trim();
-  if (!safeConvId || !(file instanceof File)) {
-    return Promise.reject(new Error('invalid-upload-input'));
-  }
+function wirePageHostControls(host) {
+  if (!(host instanceof HTMLElement)) return;
+  if (host.dataset.miniChatWired === '1') return;
+  host.dataset.miniChatWired = '1';
 
-  const safeName = sanitizeFileName(file.name);
-  const path = `chat/${safeConvId}/${Date.now()}_${safeName}`;
-  const refObj = storageRef(storage, path);
-  const task = uploadBytesResumable(refObj, file);
+  const backBtn = qs('#miniChatBack', host);
+  const attachBtn = qs('#miniChatAttach', host);
+  const fileInput = qs('#miniChatFileInput', host);
+  const sendBtn = qs('#miniChatSend', host);
+  const textInput = qs('#miniChatInput', host);
+  const searchInput = conversationSearchInput();
 
-  return new Promise((resolve, reject) => {
-    task.on(
-      'state_changed',
-      (snapshot) => {
-        const total = Number(snapshot?.totalBytes || 0);
-        const transferred = Number(snapshot?.bytesTransferred || 0);
-        const progress = total > 0 ? (transferred / total) * 100 : 0;
-        onProgress(progress);
-      },
-      (error) => reject(error),
-      async () => {
-        try {
-          const fileUrl = await getDownloadURL(task.snapshot.ref);
-          resolve({
-            fileUrl,
-            fileName: file.name || safeName || 'archivo',
-            fileSize: file.size || 0,
-            type: String(file.type || '').toLowerCase().startsWith('image/')
-              ? 'image'
-              : 'file',
-          });
-        } catch (error) {
-          reject(error);
-        }
-      },
-    );
+  backBtn?.addEventListener('click', () => {
+    firestoreController.setActiveConversation('');
   });
-}
 
-function clearTypingTimer(timerMap, conversationId) {
-  if (!(timerMap instanceof Map)) return;
-  const convId = String(conversationId || '').trim();
-  if (!convId) return;
-  const timer = timerMap.get(convId);
-  if (!timer) return;
-  window.clearTimeout(timer);
-  timerMap.delete(convId);
-}
-
-function clearLocalTypingTimers(conversationId) {
-  const convId = String(conversationId || '').trim();
-  if (!convId) return;
-  clearTypingTimer(typingState.debounceTimers, convId);
-  clearTypingTimer(typingState.idleTimers, convId);
-}
-
-async function sendTypingHeartbeat(conversationId) {
-  const convId = String(conversationId || '').trim();
-  if (!convId || !currentUid) return;
-  const now = Date.now();
-  const lastSentAt = Number(typingState.lastSentAt.get(convId) || 0);
-  if (now - lastSentAt < TYPING_THROTTLE_MS) return;
-  typingState.lastSentAt.set(convId, now);
-
-  try {
-    await updateDoc(doc(db, 'conversations', convId), {
-      [`typing.${currentUid}`]: serverTimestamp(),
+  sendBtn?.addEventListener('click', () => sendMessage());
+  attachBtn?.addEventListener('click', () => {
+    if (panelUploadState.uploading || !(fileInput instanceof HTMLInputElement)) return;
+    fileInput.click();
+  });
+  fileInput?.addEventListener('change', () => {
+    handlePanelAttachmentUpload(fileInput).catch((error) => {
+      console.warn('[mini-chat-v4] page attachment failed', error);
     });
-    typingState.activeConversations.add(convId);
-  } catch (error) {
-    console.warn('[mini-chat-v4] typing heartbeat failed', error);
-  }
-}
-
-async function clearTypingPresence(conversationId, { force = false } = {}) {
-  const convId = String(conversationId || '').trim();
-  if (!convId || !currentUid) return;
-  clearLocalTypingTimers(convId);
-  if (!force && !typingState.activeConversations.has(convId)) return;
-
-  try {
-    await updateDoc(doc(db, 'conversations', convId), {
-      [`typing.${currentUid}`]: deleteField(),
-    });
-  } catch (error) {
-    console.warn('[mini-chat-v4] typing clear failed', error);
-  } finally {
-    typingState.activeConversations.delete(convId);
-    typingState.lastSentAt.delete(convId);
-  }
-}
-
-function clearAllTypingPresenceBestEffort() {
-  const conversationIds = Array.from(typingState.activeConversations);
-  conversationIds.forEach((convId) => {
-    clearTypingPresence(convId, { force: true }).catch(() => null);
   });
-  typingState.debounceTimers.forEach((timer) => window.clearTimeout(timer));
-  typingState.idleTimers.forEach((timer) => window.clearTimeout(timer));
-  typingState.debounceTimers.clear();
-  typingState.idleTimers.clear();
-  typingState.lastSentAt.clear();
-  typingState.activeConversations.clear();
-}
 
-function scheduleTypingHeartbeat(conversationId, rawValue = '') {
-  const convId = String(conversationId || '').trim();
-  if (!convId || !currentUid) return;
-  const text = String(rawValue || '').trim();
-
-  if (!text) {
-    clearTypingPresence(convId).catch(() => null);
-    return;
+  if (searchInput instanceof HTMLInputElement && searchInput.dataset.miniChatWired !== '1') {
+    searchInput.dataset.miniChatWired = '1';
+    searchInput.addEventListener('input', () => filterConversationList());
   }
 
-  clearTypingTimer(typingState.debounceTimers, convId);
-  typingState.debounceTimers.set(
-    convId,
-    window.setTimeout(() => {
-      typingState.debounceTimers.delete(convId);
-      sendTypingHeartbeat(convId).catch(() => null);
-    }, TYPING_DEBOUNCE_MS),
-  );
-
-  clearTypingTimer(typingState.idleTimers, convId);
-  typingState.idleTimers.set(
-    convId,
-    window.setTimeout(() => {
-      typingState.idleTimers.delete(convId);
-      clearTypingPresence(convId, { force: true }).catch(() => null);
-    }, TYPING_IDLE_MS),
-  );
-}
-
-function typingUidsForConversation(conversation, nowMs = Date.now()) {
-  const typingMap = conversation?.typing;
-  if (!typingMap || typeof typingMap !== 'object') return [];
-
-  const out = [];
-  Object.entries(typingMap).forEach(([uid, value]) => {
-    const cleanUid = String(uid || '').trim();
-    if (!cleanUid || cleanUid === currentUid) return;
-    const dt = maybeDate(value);
-    if (!dt) return;
-    const age = nowMs - dt.getTime();
-    if (age >= 0 && age <= TYPING_STALE_MS) out.push(cleanUid);
+  textInput?.addEventListener('input', () => {
+    resizeInput();
+    scheduleTypingHeartbeat(activeConversationId, textInput?.value || '');
   });
-  return out;
-}
-
-function typingNameForConversation(conversation, uid) {
-  const cleanUid = String(uid || '').trim();
-  if (!cleanUid) return 'Usuario';
-  const participants = Array.isArray(conversation?.participants)
-    ? conversation.participants.map((item) => String(item || '').trim())
-    : [];
-  const participantNames = Array.isArray(conversation?.participantNames)
-    ? conversation.participantNames.map((item) => String(item || '').trim())
-    : [];
-
-  const index = participants.findIndex((item) => item === cleanUid);
-  if (index >= 0 && participantNames[index]) {
-    return participantNames[index];
-  }
-
-  if (String(conversation?.type || '').trim() === 'direct') {
-    const title = String(getConversationTitle(conversation) || '').trim();
-    if (title && norm(title) !== norm(currentName) && norm(title) !== 'conversacion') {
-      return title;
+  textInput?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
     }
-  }
-
-  return 'Usuario';
-}
-
-function typingLabelForConversation(conversation) {
-  const uids = typingUidsForConversation(conversation);
-  if (!uids.length) return '';
-  if (uids.length > 1) return 'Varios estan escribiendo...';
-  const name = typingNameForConversation(conversation, uids[0]);
-  return `${name} esta escribiendo...`;
-}
-
-function setTypingNode(node, text = '') {
-  if (!(node instanceof HTMLElement)) return;
-  const label = String(text || '').trim();
-  node.textContent = label;
-  node.hidden = !label;
-}
-
-function updateTypingIndicatorsFromConversations() {
-  const activeConvId = String(activeConversationId || '').trim();
-  const panelConversation = activeConvId
-    ? conversations.find((item) => String(item?.id || '').trim() === activeConvId) || null
-    : null;
-  setTypingNode(qs('#miniChatTyping'), typingLabelForConversation(panelConversation));
-
-  openThreads.forEach((thread, id) => {
-    if (!(thread?.typingEl instanceof HTMLElement)) return;
-    const convId = String(id || '').trim();
-    const conversation =
-      conversations.find((item) => String(item?.id || '').trim() === convId) || null;
-    setTypingNode(thread.typingEl, typingLabelForConversation(conversation));
   });
-}
-
-function ensureTypingRefreshTimer() {
-  if (typingRefreshTimer) return;
-  typingRefreshTimer = window.setInterval(() => {
-    updateTypingIndicatorsFromConversations();
-  }, 1000);
-}
-
-function stopTypingRefreshTimer() {
-  if (!typingRefreshTimer) return;
-  window.clearInterval(typingRefreshTimer);
-  typingRefreshTimer = 0;
-}
-
-function maybeDate(value) {
-  if (!value) return null;
-  if (value instanceof Date) return value;
-  if (typeof value.toDate === 'function') return value.toDate();
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
-
-function fmtTime(value) {
-  const d = maybeDate(value);
-  if (!d) return '';
-  return new Intl.DateTimeFormat('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(d);
-}
-
-function initials(value) {
-  const text = String(value || '').trim();
-  if (!text) return 'AV';
-  const parts = text.split(/\s+/).slice(0, 2);
-  const joined = parts.map((part) => part[0] || '').join('');
-  return (joined || text.slice(0, 2)).toUpperCase();
-}
-
-function conversationLastMs(conversation) {
-  const d =
-    maybeDate(conversation?.lastAt) ||
-    maybeDate(conversation?.updatedAt) ||
-    maybeDate(conversation?.createdAt);
-  return d ? d.getTime() : 0;
-}
-
-function getConversationTitle(conversation) {
-  if (!conversation) return 'Conversacion';
-
-  const explicit = String(conversation.title || '').trim();
-  if (explicit) return explicit;
-
-  if (conversation.type === 'group') return 'Grupo';
-  if (conversation.type === 'support') return 'Soporte';
-
-  const participantNames = Array.isArray(conversation.participantNames)
-    ? conversation.participantNames
-        .map((v) => String(v || '').trim())
-        .filter(Boolean)
-    : [];
-
-  if (participantNames.length) {
-    const otherName = participantNames.find(
-      (name) => norm(name) !== norm(currentName),
-    );
-    if (otherName) return otherName;
-    return participantNames[0];
-  }
-
-  const lastSender = String(conversation.lastMessage?.senderName || '').trim();
-  if (lastSender && norm(lastSender) !== norm(currentName)) return lastSender;
-
-  return 'Conversacion';
-}
-
-function getConversationPreview(conversation) {
-  const raw = String(conversation?.lastMessage?.text || '').trim();
-  if (raw) return raw;
-  return 'Sin mensajes';
-}
-
-function isUnread(conversation) {
-  if (!conversation || !currentUid) return false;
-  if (conversation.lastMessage?.senderId === currentUid) return false;
-
-  const lastAt = maybeDate(conversation.lastAt);
-  if (!lastAt) return false;
-
-  const readAt = maybeDate(conversation.reads?.[currentUid]);
-  if (!readAt) return true;
-
-  return lastAt.getTime() > readAt.getTime();
-}
-
-function stopMessageStream() {
-  runSafeUnsubscribe(msgUnsub);
-  msgUnsub = null;
-  clearReactionListeners(panelReactionState.reactionUnsubs, panelReactionState.reactionData);
-  panelReactionState.rows = [];
-  panelReactionState.conversationId = '';
-  panelReactionState.renderQueued = false;
-}
-
-function stopConversationStream() {
-  runSafeUnsubscribe(convUnsub);
-  convUnsub = null;
-}
-
-function stopAllStreams() {
-  stopMessageStream();
-  stopConversationStream();
-}
-
-function setUnreadBadge(count) {
-  const badge = qs('#miniChatBadge');
-  if (!badge) return;
-
-  const n = Number(count || 0);
-  if (!n) {
-    badge.style.display = 'none';
-    badge.textContent = '0';
-    return;
-  }
-
-  badge.style.display = 'inline-flex';
-  badge.textContent = n > 99 ? '99+' : String(n);
-}
-
-function setOpenLinks(conversationId) {
-  const href = conversationId
-    ? `mensajes.html?conv=${encodeURIComponent(conversationId)}`
-    : 'mensajes.html';
-
-  const full = qs('#miniChatOpenFull');
-  const info = qs('#miniChatOpenThread');
-  if (full) full.href = href;
-  if (info) info.href = href;
-}
-
-function markConversationRead(conversationId) {
-  if (!conversationId || !currentUid) return;
-
-  updateDoc(doc(db, 'conversations', conversationId), {
-    [`reads.${currentUid}`]: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  }).catch(() => null);
-}
-
-function setDockOpen(open) {
-  const dock = qs('#miniChatDock');
-  const panel = qs('#miniChatPanel');
-  if (!dock || !panel) return;
-
-  if (open) {
-    dock.classList.add('is-open');
-    dock.classList.remove('is-minimized');
-    panel.hidden = false;
-    window.dispatchEvent(
-      new CustomEvent('av:quickchat-open', { detail: { open: true } }),
-    );
-    return;
-  }
-
-  dock.classList.remove('is-open');
-  panel.hidden = true;
-}
-
-function setDockMinimized() {
-  const dock = qs('#miniChatDock');
-  const panel = qs('#miniChatPanel');
-  if (!dock || !panel) return;
-
-  dock.classList.add('is-minimized');
-  dock.classList.remove('is-open');
-  panel.hidden = true;
-}
-
-function setView(view) {
-  const listView = qs('#miniChatListView');
-  const threadView = qs('#miniChatThreadView');
-
-  if (listView) listView.hidden = view !== 'list';
-  if (threadView) threadView.hidden = view !== 'thread';
-}
-
-function resizeInput() {
-  const input = qs('#miniChatInput');
-  if (!input) return;
-
-  input.style.height = '0px';
-  const h = Math.max(38, Math.min(98, input.scrollHeight));
-  input.style.height = `${h}px`;
-}
-
-function filterConversationList() {
-  const queryText = norm(qs('#miniChatSearch')?.value || '');
-  const list = qs('#miniChatList');
-  if (!list) return;
-
-  list.querySelectorAll('.mini-chat-v4-row').forEach((row) => {
-    const haystack = String(row.dataset.search || '');
-    row.style.display =
-      !queryText || haystack.includes(queryText) ? '' : 'none';
-  });
-}
-
-function renderConversationList() {
-  const list = qs('#miniChatList');
-  if (!list) return;
-
-  const sorted = [...conversations].sort(
-    (a, b) => conversationLastMs(b) - conversationLastMs(a),
-  );
-  setUnreadBadge(sorted.filter(isUnread).length);
-
-  if (!sorted.length) {
-    list.innerHTML =
-      '<div class="mini-chat-v4-empty">Sin conversaciones.</div>';
-    return;
-  }
-
-  list.innerHTML = sorted
-    .slice(0, 40)
-    .map((conversation) => {
-      const titleRaw = getConversationTitle(conversation);
-      const previewRaw = getConversationPreview(conversation);
-      const activeClass =
-        conversation.id === activeConversationId ? ' is-active' : '';
-      const unreadDot = isUnread(conversation)
-        ? '<span class="mini-chat-v4-row-unread"></span>'
-        : '';
-      const search = esc(`${titleRaw} ${previewRaw}`.toLowerCase());
-
-      return `
-        <button class="mini-chat-v4-row${activeClass}" type="button" data-open-conv="${esc(conversation.id)}" data-search="${search}">
-          <span class="mini-chat-v4-row-avatar">${esc(initials(titleRaw))}</span>
-          <span class="mini-chat-v4-row-main">
-            <span class="mini-chat-v4-row-top">
-              <span class="mini-chat-v4-row-title">${esc(titleRaw)}</span>
-              <span class="mini-chat-v4-row-time">${esc(fmtTime(conversation.lastAt))}</span>
-            </span>
-            <span class="mini-chat-v4-row-preview">${esc(previewRaw)}</span>
-          </span>
-          ${unreadDot}
-        </button>
-      `;
-    })
-    .join('');
-
-  list.querySelectorAll('[data-open-conv]').forEach((row) => {
-    row.addEventListener('click', (event) => {
-      event.stopPropagation();
-      const conversationId = String(
-        row.getAttribute('data-open-conv') || '',
-      ).trim();
-      if (!conversationId) return;
-      openConversation(conversationId);
-    });
+  textInput?.addEventListener('blur', () => {
+    clearTypingPresence(activeConversationId, { force: true }).catch(() => null);
   });
 
-  filterConversationList();
-}
-
-function renderThreadMeta(conversationId) {
-  const conversation =
-    conversations.find((item) => item.id === conversationId) || null;
-  const title = getConversationTitle(conversation);
-  const status =
-    conversation?.type === 'group'
-      ? 'Grupo'
-      : conversation?.type === 'support'
-        ? 'Soporte'
-        : 'Activo ahora';
-
-  const titleEl = qs('#miniChatThreadTitle');
-  const statusEl = qs('#miniChatThreadStatus');
-  const avatarEl = qs('#miniChatThreadAvatar');
-
-  if (titleEl) titleEl.textContent = title;
-  if (statusEl) statusEl.textContent = status;
-  if (avatarEl) avatarEl.textContent = initials(title);
-
-  setOpenLinks(conversationId);
-}
-
-function renderMessages(
-  rows,
-  conversationId = activeConversationId,
-  reactionData = panelReactionState.reactionData,
-) {
-  const body = qs('#miniChatMessages');
-  if (!body) return;
-  wireReactionInteractions(body);
-
-  if (!rows.length) {
-    body.innerHTML = '<div class="mini-chat-v4-empty">Sin mensajes.</div>';
-    return;
-  }
-
-  body.innerHTML = rows
-    .map((message) => messageHtml(message, conversationId, reactionData))
-    .join('');
-
-  body.scrollTop = body.scrollHeight;
-}
-
-function renderThreadWindowMessages(
-  container,
-  rows,
-  conversationId = '',
-  reactionData = new Map(),
-) {
-  if (!(container instanceof HTMLElement)) return;
-  const body = qs('.mini-chat-v4-thread-messages', container);
-  if (!body) return;
-  wireReactionInteractions(body);
-
-  if (!rows.length) {
-    body.innerHTML = '<div class="mini-chat-v4-empty">Sin mensajes.</div>';
-    return;
-  }
-
-  body.innerHTML = rows
-    .map((message) => messageHtml(message, conversationId, reactionData))
-    .join('');
-
-  body.scrollTop = body.scrollHeight;
-}
-
-function setThreadWindowMeta(conversationId, container) {
-  if (!(container instanceof HTMLElement)) return;
-  const conversation =
-    conversations.find((item) => item.id === conversationId) || null;
-  const title = getConversationTitle(conversation);
-  const titleEl = qs('.mini-chat-v4-thread-title', container);
-  if (titleEl) titleEl.textContent = title;
-}
-
-function attachMessageStream(conversationId) {
-  stopMessageStream();
-  if (!conversationId) return;
-  const convId = String(conversationId || '').trim();
-  if (!convId) return;
-  panelReactionState.conversationId = convId;
-  panelReactionState.rows = [];
-  panelReactionState.renderQueued = false;
-
-  const messagesQuery = query(
-    collection(db, 'conversations', convId, 'messages'),
-    orderBy('createdAt', 'asc'),
-    limit(120),
-  );
-
-  msgUnsub = onSnapshot(
-    messagesQuery,
-    (snapshot) => {
-      const rows = (snapshot.docs || []).map((docSnap) => ({
-        id: docSnap.id,
-        ...(docSnap.data() || {}),
-      }));
-
-      panelReactionState.rows = rows;
-      syncReactionListeners({
-        conversationId: convId,
-        rows,
-        reactionUnsubs: panelReactionState.reactionUnsubs,
-        reactionData: panelReactionState.reactionData,
-        onChange: schedulePanelReactionRender,
-      });
-      renderMessages(rows, convId, panelReactionState.reactionData);
-      markConversationRead(convId);
-    },
-    () => {
-      clearReactionListeners(panelReactionState.reactionUnsubs, panelReactionState.reactionData);
-      panelReactionState.rows = [];
-      renderMessages([]);
-    },
-  );
-}
-
-function attachMessageStreamForWindow(conversationId, container, threadState = null) {
-  const convId = String(conversationId || '').trim();
-  if (!convId || !(container instanceof HTMLElement)) return null;
-  let initialSnapshotHandled = false;
-
-  const messagesQuery = query(
-    collection(db, 'conversations', convId, 'messages'),
-    orderBy('createdAt', 'asc'),
-    limit(120),
-  );
-
-  const unsub = onSnapshot(
-    messagesQuery,
-    (snapshot) => {
-      if (initialSnapshotHandled) {
-        const addedForUnread = snapshot.docChanges().reduce((sum, change) => {
-          if (change.type !== 'added') return sum;
-          const senderId = String(change.doc.data()?.senderId || '').trim();
-          if (!senderId || senderId === currentUid) return sum;
-          if (!minimizedThreads.has(convId)) return sum;
-          return sum + 1;
-        }, 0);
-
-        if (addedForUnread > 0) {
-          const prev = Number(threadUnread.get(convId) || 0);
-          const next = Math.max(0, prev) + addedForUnread;
-          threadUnread.set(convId, next);
-          renderTray();
-        }
-      } else {
-        initialSnapshotHandled = true;
-      }
-
-      const rows = (snapshot.docs || []).map((docSnap) => ({
-        id: docSnap.id,
-        ...(docSnap.data() || {}),
-      }));
-
-      if (threadState && typeof threadState === 'object') {
-        threadState.rows = rows;
-        syncReactionListeners({
-          conversationId: convId,
-          rows,
-          reactionUnsubs: threadState.reactionUnsubs,
-          reactionData: threadState.reactionData,
-          onChange: () => {
-            if (threadState.renderQueued) return;
-            threadState.renderQueued = true;
-            const run = () => {
-              threadState.renderQueued = false;
-              renderThreadWindowMessages(
-                container,
-                Array.isArray(threadState.rows) ? threadState.rows : [],
-                convId,
-                threadState.reactionData,
-              );
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-              window.requestAnimationFrame(run);
-            } else {
-              window.setTimeout(run, 16);
-            }
-          },
-        });
-      }
-
-      renderThreadWindowMessages(
-        container,
-        rows,
-        convId,
-        threadState?.reactionData instanceof Map ? threadState.reactionData : new Map(),
-      );
-      markConversationRead(convId);
-    },
-    () => {
-      if (threadState && typeof threadState === 'object') {
-        clearReactionListeners(threadState.reactionUnsubs, threadState.reactionData);
-        threadState.rows = [];
-      }
-      renderThreadWindowMessages(container, []);
-    },
-  );
-
-  return unsub;
-}
-
-function setActiveConversation(conversationId) {
-  const previousConversationId = String(activeConversationId || '').trim();
-  activeConversationId = String(conversationId || '').trim();
-  const switchedConversation =
-    previousConversationId && previousConversationId !== activeConversationId;
-  if (switchedConversation) {
-    clearTypingPresence(previousConversationId, { force: true }).catch(() => null);
-  }
-
-  if (!activeConversationId) {
-    stopMessageStream();
-    setView('list');
-    setOpenLinks('');
-    updateTypingIndicatorsFromConversations();
-    return;
-  }
-
-  renderConversationList();
-  renderThreadMeta(activeConversationId);
-  setView('thread');
-  attachMessageStream(activeConversationId);
-  markConversationRead(activeConversationId);
+  resizeInput();
+  setPanelUploading(false, 0);
+  wireReactionOutsideClick();
+  ensureTypingRefreshTimer();
   updateTypingIndicatorsFromConversations();
 }
 
-async function sendMessageToConversation(conversationId, text) {
-  const convId = String(conversationId || '').trim();
-  const safeText = String(text || '').trim();
-  if (!convId || !safeText || !currentUid) return;
+function ensurePageHost() {
+  if (!isPageMode()) return null;
+  const { host } = pageShell();
+  if (!(host instanceof HTMLElement)) return null;
 
-  await addDoc(collection(db, 'conversations', convId, 'messages'), {
-    senderId: currentUid,
-    senderName: currentName,
-    type: 'text',
-    text: safeText,
-    createdAt: serverTimestamp(),
-  });
-
-  await updateDoc(doc(db, 'conversations', convId), {
-    lastMessage: {
-      text: safeText.slice(0, 180),
-      senderId: currentUid,
-      senderName: currentName,
-    },
-    lastAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    [`reads.${currentUid}`]: serverTimestamp(),
-  });
-  clearTypingPresence(convId, { force: true }).catch(() => null);
-}
-
-async function sendAttachmentToConversation(conversationId, file, onProgress = () => {}) {
-  const convId = String(conversationId || '').trim();
-  if (!convId || !(file instanceof File) || !currentUid) return;
-
-  const uploaded = await uploadAttachmentToStorage(convId, file, onProgress);
-  const payload = {
-    senderId: currentUid,
-    senderName: currentName,
-    type: uploaded.type,
-    fileUrl: uploaded.fileUrl,
-    fileName: uploaded.fileName,
-    fileSize: uploaded.fileSize,
-    createdAt: serverTimestamp(),
-  };
-
-  await addDoc(collection(db, 'conversations', convId, 'messages'), payload);
-  const previewPrefix = uploaded.type === 'image' ? '[Imagen]' : '[Archivo]';
-  const preview = `${previewPrefix} ${uploaded.fileName}`.trim().slice(0, 180);
-  await updateDoc(doc(db, 'conversations', convId), {
-    lastMessage: {
-      text: preview,
-      senderId: currentUid,
-      senderName: currentName,
-    },
-    lastAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    [`reads.${currentUid}`]: serverTimestamp(),
-  });
-  clearTypingPresence(convId, { force: true }).catch(() => null);
-}
-
-async function toggleReaction(conversationId, messageId, emoji) {
-  const convId = String(conversationId || '').trim();
-  const msgId = String(messageId || '').trim();
-  const safeEmoji = String(emoji || '').trim();
-  if (!convId || !msgId || !safeEmoji || !currentUid) return;
-
-  const reactionRef = doc(
-    db,
-    'conversations',
-    convId,
-    'messages',
-    msgId,
-    'reactions',
-    currentUid,
-  );
-
-  const snapshot = await getDoc(reactionRef);
-  const existingEmoji = String(snapshot.data()?.emoji || '').trim();
-  if (snapshot.exists() && existingEmoji === safeEmoji) {
-    await deleteDoc(reactionRef);
-    return;
+  if (host.dataset.miniChatMounted !== '1') {
+    host.innerHTML = buildInboxThreadMarkup();
+    host.dataset.miniChatMounted = '1';
   }
 
-  await setDoc(reactionRef, {
-    uid: currentUid,
-    emoji: safeEmoji,
-    createdAt: serverTimestamp(),
-  });
+  wirePageHostControls(host);
+  setPageHostVisible(Boolean(activeConversationId));
+  return host;
 }
 
 async function handlePanelAttachmentUpload(fileInput) {
@@ -1247,7 +434,7 @@ async function handlePanelAttachmentUpload(fileInput) {
 
   setPanelUploading(true, 0);
   try {
-    await sendAttachmentToConversation(convId, file, (progress) => {
+    await firestoreController.sendAttachmentToConversation(convId, file, (progress) => {
       setPanelUploading(true, progress);
     });
   } catch (error) {
@@ -1272,7 +459,7 @@ async function handleThreadAttachmentUpload(conversationId, thread, fileInput) {
 
   setThreadUploading(thread, true, 0);
   try {
-    await sendAttachmentToConversation(convId, file, (progress) => {
+    await firestoreController.sendAttachmentToConversation(convId, file, (progress) => {
       setThreadUploading(thread, true, progress);
     });
   } catch (error) {
@@ -1297,7 +484,7 @@ async function sendMessage() {
   }
 
   try {
-    await sendMessageToConversation(activeConversationId, text);
+    await firestoreController.sendMessageToConversation(activeConversationId, text);
   } catch (error) {
     console.warn('[mini-chat-v4] send failed', error);
   }
@@ -1319,6 +506,12 @@ function nextThreadZIndex() {
 }
 
 function ensureThreadRoot() {
+  if (isPageMode()) {
+    const existingRoot = document.getElementById('miniChatThreadRoot');
+    if (existingRoot) existingRoot.remove();
+    return null;
+  }
+
   let root = document.getElementById('miniChatThreadRoot');
   if (root) return root;
 
@@ -1347,6 +540,10 @@ function syncThreadActiveWindowClass(activeId = '') {
 }
 
 function createThreadWindow(conversationId) {
+  if (isPageMode()) {
+    return;
+  }
+
   const convId = String(conversationId || '').trim();
   if (!convId) return;
 
@@ -1364,31 +561,11 @@ function createThreadWindow(conversationId) {
   container.dataset.threadId = convId;
   container.style.zIndex = String(nextThreadZIndex());
   container.style.pointerEvents = 'auto';
+  container.innerHTML = buildThreadWindowMarkup();
 
-  container.innerHTML = `
-    <div class="mini-chat-v4-thread-container">
-      <div class="mini-chat-v4-thread-header">
-        <span class="mini-chat-v4-thread-title">Loading...</span>
-        <div class="mini-chat-v4-thread-actions">
-          <button class="mini-chat-v4-thread-min" type="button" aria-label="Minimizar">&minus;</button>
-          <button class="mini-chat-v4-thread-close" type="button" aria-label="Cerrar">&times;</button>
-        </div>
-      </div>
-      <div class="mini-chat-v4-typing" hidden></div>
-      <div class="mini-chat-v4-thread-messages"></div>
-      <div class="mini-chat-v4-upload-progress-wrap" hidden>
-        <div class="mini-chat-v4-upload-progress"></div>
-      </div>
-      <div class="mini-chat-v4-thread-compose">
-        <button class="mini-chat-v4-thread-attach" type="button" aria-label="Adjuntar">&#128206;</button>
-        <textarea placeholder="Escribe un mensaje..." rows="1"></textarea>
-        <button class="mini-chat-v4-thread-send" type="button" aria-label="Enviar">&#10148;</button>
-        <input class="mini-chat-v4-thread-file-input" type="file" hidden />
-      </div>
-    </div>
-  `;
-
-  ensureThreadRoot().appendChild(container);
+  const threadRoot = ensureThreadRoot();
+  if (!(threadRoot instanceof HTMLElement)) return;
+  threadRoot.appendChild(container);
   wireReactionOutsideClick();
 
   const progressWrap = qs('.mini-chat-v4-upload-progress-wrap', container);
@@ -1417,7 +594,11 @@ function createThreadWindow(conversationId) {
     attachBtn: attachBtn instanceof HTMLButtonElement ? attachBtn : null,
     fileInput: fileInput instanceof HTMLInputElement ? fileInput : null,
   };
-  threadState.unsub = attachMessageStreamForWindow(convId, container, threadState);
+  threadState.unsub = firestoreController.attachMessageStreamForWindow(
+    convId,
+    container,
+    threadState,
+  );
 
   openThreads.set(convId, threadState);
   threadUnread.set(convId, 0);
@@ -1439,7 +620,7 @@ function createThreadWindow(conversationId) {
       resizeThreadInput(input);
     }
     try {
-      await sendMessageToConversation(convId, text);
+      await firestoreController.sendMessageToConversation(convId, text);
     } catch (error) {
       console.warn('[mini-chat-v4] send thread failed', error);
     }
@@ -1477,6 +658,233 @@ function createThreadWindow(conversationId) {
   renderConversationList();
   positionThreads();
   updateTypingIndicatorsFromConversations();
+}
+
+function stopAllStreams() {
+  firestoreController.stopMessageStream();
+  runSafeUnsubscribe(convUnsub);
+  convUnsub = null;
+}
+
+async function runRouteChatIntent() {
+  if (!isPageMode() || !currentUid) return;
+  const intent = readRouteChatIntent();
+  if (!intent) return;
+  if (routeChatIntentKey === intent.key) return;
+
+  routeChatIntentKey = intent.key;
+  clearRouteChatIntent();
+
+  const conversationId =
+    intent.chatKind === 'conversation'
+      ? intent.chat
+      : conversations.find((item) => String(item?.id || '').trim() === intent.chat)?.id || '';
+
+  if (conversationId) {
+    openConversation(conversationId);
+    return;
+  }
+
+  await ensureConversationWith(intent.chat, '');
+}
+
+function setUnreadBadge(count) {
+  const badge = qs('#miniChatBadge');
+  const total = Number(count || 0);
+  if (badge instanceof HTMLElement) {
+    if (!total) {
+      badge.style.display = 'none';
+      badge.textContent = '0';
+    } else {
+      badge.style.display = 'inline-flex';
+      badge.textContent = total > 99 ? '99+' : String(total);
+    }
+  }
+  syncNeuUnreadBadge(total);
+}
+
+function setOpenLinks(conversationId) {
+  const href = conversationId
+    ? buildFullViewHref(conversationId, 'conversation')
+    : buildFullViewHref('', '');
+
+  const full = qs('#miniChatOpenFull');
+  const info = qs('#miniChatOpenThread');
+  if (full) full.href = href;
+  if (info) info.href = href;
+}
+
+function markConversationRead(conversationId) {
+  if (!conversationId || !currentUid) return;
+
+  updateDoc(doc(db, 'conversations', conversationId), {
+    [`reads.${currentUid}`]: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  }).catch(() => null);
+}
+
+function setDockOpen(open) {
+  if (isPageMode()) return;
+  const dock = qs('#miniChatDock');
+  const panel = qs('#miniChatPanel');
+  if (!dock || !panel) return;
+
+  if (open) {
+    dock.classList.add('is-open');
+    dock.classList.remove('is-minimized');
+    panel.hidden = false;
+    window.dispatchEvent(
+      new CustomEvent('av:quickchat-open', { detail: { open: true } }),
+    );
+    return;
+  }
+
+  dock.classList.remove('is-open');
+  panel.hidden = true;
+}
+
+function setDockMinimized() {
+  if (isPageMode()) return;
+  const dock = qs('#miniChatDock');
+  const panel = qs('#miniChatPanel');
+  if (!dock || !panel) return;
+
+  dock.classList.add('is-minimized');
+  dock.classList.remove('is-open');
+  panel.hidden = true;
+}
+
+function setView(view) {
+  if (isPageMode()) {
+    ensurePageHost();
+    const threadView = qs('#miniChatThreadView');
+    if (threadView) threadView.hidden = view !== 'thread';
+    setPageHostVisible(view === 'thread' && Boolean(activeConversationId));
+    return;
+  }
+
+  const listView = qs('#miniChatListView');
+  const threadView = qs('#miniChatThreadView');
+
+  if (listView) listView.hidden = view !== 'list';
+  if (threadView) threadView.hidden = view !== 'thread';
+}
+
+function resizeInput() {
+  const input = qs('#miniChatInput');
+  if (!input) return;
+
+  input.style.height = '0px';
+  const height = Math.max(38, Math.min(98, input.scrollHeight));
+  input.style.height = `${height}px`;
+}
+
+function filterConversationList() {
+  const queryText = norm(conversationSearchInput()?.value || '');
+  const list = conversationListRoot();
+  if (!list) return;
+
+  list.querySelectorAll('.mini-chat-v4-row').forEach((row) => {
+    const haystack = String(row.dataset.search || '');
+    row.style.display = !queryText || haystack.includes(queryText) ? '' : 'none';
+  });
+}
+
+function renderConversationList() {
+  const list = conversationListRoot();
+  if (!list) return;
+
+  const { html, unreadCount } = buildConversationListHtml({
+    conversations,
+    activeConversationId,
+    currentUid,
+    currentName,
+    esc,
+    norm,
+  });
+
+  setUnreadBadge(unreadCount);
+  list.innerHTML = html;
+
+  list.querySelectorAll('[data-open-conv]').forEach((row) => {
+    row.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const conversationId = String(row.getAttribute('data-open-conv') || '').trim();
+      if (!conversationId) return;
+      openConversation(conversationId);
+    });
+  });
+
+  filterConversationList();
+}
+
+function renderThreadMeta(conversationId) {
+  const conversation =
+    conversations.find((item) => item.id === conversationId) || null;
+  const title = getConversationTitle(conversation, currentName, norm);
+  const status =
+    conversation?.type === 'group'
+      ? 'Grupo'
+      : conversation?.type === 'support'
+        ? 'Soporte'
+        : 'Activo ahora';
+
+  const titleEl = qs('#miniChatThreadTitle');
+  const statusEl = qs('#miniChatThreadStatus');
+  const avatarEl = qs('#miniChatThreadAvatar');
+
+  if (titleEl) titleEl.textContent = title;
+  if (statusEl) statusEl.textContent = status;
+  if (avatarEl) avatarEl.textContent = initials(title);
+
+  setOpenLinks(conversationId);
+}
+
+function renderMessages(
+  rows,
+  conversationId = activeConversationId,
+  reactionData = panelReactionState.reactionData,
+) {
+  const body = qs('#miniChatMessages');
+  if (!body) return;
+  wireReactionInteractions(body);
+
+  body.innerHTML = buildMessagesHtml({
+    rows,
+    conversationId,
+    reactionData,
+    messageHtml,
+  });
+  body.scrollTop = body.scrollHeight;
+}
+
+function renderThreadWindowMessages(
+  container,
+  rows,
+  conversationId = '',
+  reactionData = new Map(),
+) {
+  if (!(container instanceof HTMLElement)) return;
+  const body = qs('.mini-chat-v4-thread-messages', container);
+  if (!body) return;
+  wireReactionInteractions(body);
+
+  body.innerHTML = buildMessagesHtml({
+    rows,
+    conversationId,
+    reactionData,
+    messageHtml,
+  });
+  body.scrollTop = body.scrollHeight;
+}
+
+function setThreadWindowMeta(conversationId, container) {
+  if (!(container instanceof HTMLElement)) return;
+  const conversation =
+    conversations.find((item) => item.id === conversationId) || null;
+  const title = getConversationTitle(conversation, currentName, norm);
+  const titleEl = qs('.mini-chat-v4-thread-title', container);
+  if (titleEl) titleEl.textContent = title;
 }
 
 function minimizeThread(conversationId) {
@@ -1560,6 +968,12 @@ function restoreThread(conversationId) {
 }
 
 function renderTray() {
+  if (isPageMode()) {
+    const existingTray = document.getElementById('miniChatTray');
+    if (existingTray) existingTray.remove();
+    return;
+  }
+
   let tray = document.getElementById('miniChatTray');
 
   if (!tray) {
@@ -1669,68 +1083,13 @@ function closeAllThreadWindows() {
   renderTray();
 }
 
-function buildDockMarkup() {
-  return `
-    <button class="mini-chat-v4-launcher" id="miniChatLauncher" type="button" aria-label="Mensajes">
-      <span class="mini-chat-v4-launcher-icon" aria-hidden="true">&#128172;</span>
-      <span class="mini-chat-v4-badge" id="miniChatBadge" style="display:none;">0</span>
-    </button>
-
-    <section class="mini-chat-v4-panel" id="miniChatPanel" hidden>
-      <div class="mini-chat-v4-list-view" id="miniChatListView">
-        <header class="mini-chat-v4-head">
-          <div class="mini-chat-v4-head-left">
-            <div class="mini-chat-v4-head-title">Mensajes</div>
-          </div>
-          <div class="mini-chat-v4-head-actions">
-            <button class="mini-chat-v4-icon" id="miniChatMinimize" type="button" aria-label="Minimizar">&#8722;</button>
-            <button class="mini-chat-v4-icon" id="miniChatClose" type="button" aria-label="Cerrar">&times;</button>
-          </div>
-        </header>
-
-        <div class="mini-chat-v4-search-wrap">
-          <input id="miniChatSearch" type="text" placeholder="Buscar" autocomplete="off" />
-        </div>
-
-        <div class="mini-chat-v4-list" id="miniChatList"></div>
-
-        <a class="mini-chat-v4-open-full" id="miniChatOpenFull" href="mensajes.html">Abrir vista completa</a>
-      </div>
-
-      <div class="mini-chat-v4-thread-view" id="miniChatThreadView" hidden>
-        <header class="mini-chat-v4-thread-head">
-          <button class="mini-chat-v4-icon" id="miniChatBack" type="button" aria-label="Volver">&#8592;</button>
-
-          <div class="mini-chat-v4-thread-user">
-            <div class="mini-chat-v4-thread-avatar" id="miniChatThreadAvatar">AV</div>
-            <div class="mini-chat-v4-thread-meta">
-              <div class="mini-chat-v4-thread-title" id="miniChatThreadTitle">Conversacion</div>
-              <div class="mini-chat-v4-thread-status" id="miniChatThreadStatus">Activo ahora</div>
-            </div>
-          </div>
-
-          <a class="mini-chat-v4-open-thread" id="miniChatOpenThread" href="mensajes.html" aria-label="Abrir detalles">&#8505;</a>
-        </header>
-
-        <div class="mini-chat-v4-typing" id="miniChatTyping" hidden></div>
-        <div class="mini-chat-v4-messages" id="miniChatMessages"></div>
-
-        <div class="mini-chat-v4-upload-progress-wrap" id="miniChatUploadProgressWrap" hidden>
-          <div class="mini-chat-v4-upload-progress" id="miniChatUploadProgress"></div>
-        </div>
-
-        <footer class="mini-chat-v4-compose">
-          <button class="mini-chat-v4-attach" id="miniChatAttach" type="button" aria-label="Adjuntar">&#128206;</button>
-          <textarea id="miniChatInput" rows="1" placeholder="Escribe un mensaje..."></textarea>
-          <button class="mini-chat-v4-send" id="miniChatSend" type="button" aria-label="Enviar">&#10148;</button>
-          <input id="miniChatFileInput" type="file" hidden />
-        </footer>
-      </div>
-    </section>
-  `;
-}
-
 function ensureDock() {
+  if (isPageMode()) {
+    const existingDock = qs('#miniChatDock');
+    if (existingDock) existingDock.remove();
+    return null;
+  }
+
   let dock = qs('#miniChatDock');
   if (dock) return dock;
 
@@ -1759,7 +1118,7 @@ function ensureDock() {
 
   closeBtn?.addEventListener('click', () => setDockOpen(false));
   minBtn?.addEventListener('click', () => setDockMinimized());
-  backBtn?.addEventListener('click', () => setActiveConversation(''));
+  backBtn?.addEventListener('click', () => firestoreController.setActiveConversation(''));
   sendBtn?.addEventListener('click', () => sendMessage());
   attachBtn?.addEventListener('click', () => {
     if (panelUploadState.uploading || !(fileInput instanceof HTMLInputElement)) return;
@@ -1831,9 +1190,18 @@ function ensureDock() {
 }
 
 function openConversation(conversationId) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return;
+
+  if (isPageMode()) {
+    ensurePageHost();
+    firestoreController.setActiveConversation(convId);
+    return;
+  }
+
   ensureDock();
   setDockOpen(true);
-  createThreadWindow(conversationId);
+  firestoreController.setActiveConversation(convId);
 }
 
 async function ensureConversationWith(targetUid, targetName) {
@@ -1907,6 +1275,8 @@ export function destroyGlobalMiniChat() {
   activeConversationId = '';
   currentUid = '';
   currentName = 'Usuario';
+  hostMode = 'dock';
+  routeChatIntentKey = '';
 
   const dock = qs('#miniChatDock');
   if (dock) dock.remove();
@@ -1914,14 +1284,27 @@ export function destroyGlobalMiniChat() {
   if (tray) tray.remove();
   const threadRoot = document.getElementById('miniChatThreadRoot');
   if (threadRoot) threadRoot.remove();
+  const { empty, host, list, search } = pageShell();
+  if (list instanceof HTMLElement) list.innerHTML = '';
+  if (search instanceof HTMLInputElement) search.value = '';
+  if (host instanceof HTMLElement) {
+    host.innerHTML = '';
+    host.hidden = true;
+    host.classList.add('hidden');
+    delete host.dataset.miniChatMounted;
+    delete host.dataset.miniChatWired;
+  }
+  if (empty instanceof HTMLElement) empty.hidden = false;
+  syncNeuUnreadBadge(0);
 
   if (window.__avMiniChatApi) {
     delete window.__avMiniChatApi;
   }
 }
 
-export function initGlobalMiniChat({ uid, displayName } = {}) {
-  if (shouldDisableOnNeuSocialPage()) {
+export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
+  const resolvedMode = isNeuSocialPage() ? 'page' : String(mode || 'dock').trim().toLowerCase();
+  if (shouldDisableOnNeuSocialPage(resolvedMode)) {
     destroyGlobalMiniChat();
     return;
   }
@@ -1932,20 +1315,33 @@ export function initGlobalMiniChat({ uid, displayName } = {}) {
   }
 
   currentName = String(displayName || 'Usuario').trim() || 'Usuario';
+  const shellReady =
+    resolvedMode === 'page'
+      ? pageShell().host instanceof HTMLElement
+      : qs('#miniChatDock') instanceof HTMLElement;
 
-  if (currentUid === uid && qs('#miniChatDock')) {
+  if (currentUid === uid && hostMode === resolvedMode && shellReady) {
+    if (resolvedMode === 'page') ensurePageHost();
     renderConversationList();
+    runRouteChatIntent().catch((error) => {
+      console.warn('[mini-chat-v4] route intent failed', error);
+    });
     return;
   }
 
   destroyGlobalMiniChat();
 
+  hostMode = resolvedMode === 'page' ? 'page' : 'dock';
+  routeChatIntentKey = '';
   currentUid = uid;
-  ensureDock();
+  if (isPageMode()) ensurePageHost();
+  else ensureDock();
   wireQuickOpen();
 
   window.__avMiniChatApi = {
     openConversation,
+    openDirectConversation: ensureConversationWith,
+    fullViewHref: buildFullViewHref,
   };
 
   const conversationQuery = query(
@@ -1981,19 +1377,25 @@ export function initGlobalMiniChat({ uid, displayName } = {}) {
           (item) => item.id === activeConversationId,
         );
         if (!stillExists) {
-          setActiveConversation('');
+          firestoreController.setActiveConversation('');
         } else {
           renderThreadMeta(activeConversationId);
         }
       }
+
+      runRouteChatIntent().catch((error) => {
+        console.warn('[mini-chat-v4] route intent failed', error);
+      });
     },
     () => {
       conversations = [];
       activeConversationId = '';
       closeAllThreadWindows();
       renderConversationList();
-      setActiveConversation('');
+      firestoreController.setActiveConversation('');
       updateTypingIndicatorsFromConversations();
     },
   );
 }
+
+

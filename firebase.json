@@ -28,6 +28,134 @@
     ],
     "rewrites": [
       {
+        "source": "/",
+        "destination": "/site/index.html"
+      },
+      {
+        "source": "/index.html",
+        "destination": "/site/index.html"
+      },
+      {
+        "source": "/kontakt.html",
+        "destination": "/site/kontakt.html"
+      },
+      {
+        "source": "/login.html",
+        "destination": "/site/login.html"
+      },
+      {
+        "source": "/services.html",
+        "destination": "/site/services.html"
+      },
+      {
+        "source": "/ayuda.html",
+        "destination": "/site/ayuda.html"
+      },
+      {
+        "source": "/polityka-prywatnosci.html",
+        "destination": "/site/polityka-prywatnosci.html"
+      },
+      {
+        "source": "/regulamin.html",
+        "destination": "/site/regulamin.html"
+      },
+      {
+        "source": "/zwroty.html",
+        "destination": "/site/zwroty.html"
+      },
+      {
+        "source": "/neu-login.html",
+        "destination": "/app/neu-login.html"
+      },
+      {
+        "source": "/neu-social-app.html",
+        "destination": "/app/neu-social-app.html"
+      },
+      {
+        "source": "/admin-select.html",
+        "destination": "/app/admin-select.html"
+      },
+      {
+        "source": "/admin-wizard.html",
+        "destination": "/app/admin-wizard.html"
+      },
+      {
+        "source": "/ajustes.html",
+        "destination": "/app/ajustes.html"
+      },
+      {
+        "source": "/buscar.html",
+        "destination": "/app/buscar.html"
+      },
+      {
+        "source": "/correccion.html",
+        "destination": "/app/correccion.html"
+      },
+      {
+        "source": "/correcciones.html",
+        "destination": "/app/correcciones.html"
+      },
+      {
+        "source": "/course.html",
+        "destination": "/app/course.html"
+      },
+      {
+        "source": "/ejercicio.html",
+        "destination": "/app/ejercicio.html"
+      },
+      {
+        "source": "/ejercicioadmin.html",
+        "destination": "/app/ejercicioadmin.html"
+      },
+      {
+        "source": "/esadmin.html",
+        "destination": "/app/esadmin.html"
+      },
+      {
+        "source": "/flashcards.html",
+        "destination": "/app/flashcards.html"
+      },
+      {
+        "source": "/lesson.html",
+        "destination": "/app/lesson.html"
+      },
+      {
+        "source": "/lessonadmin.html",
+        "destination": "/app/lessonadmin.html"
+      },
+      {
+        "source": "/lessonpage.html",
+        "destination": "/app/lessonpage.html"
+      },
+      {
+        "source": "/minitest.html",
+        "destination": "/app/minitest.html"
+      },
+      {
+        "source": "/notificaciones.html",
+        "destination": "/app/notificaciones.html"
+      },
+      {
+        "source": "/pagos.html",
+        "destination": "/app/pagos.html"
+      },
+      {
+        "source": "/recompensas.html",
+        "destination": "/app/recompensas.html"
+      },
+      {
+        "source": "/referidos.html",
+        "destination": "/app/referidos.html"
+      },
+      {
+        "source": "/review.html",
+        "destination": "/app/review.html"
+      },
+      {
+        "source": "/versions.html",
+        "destination": "/app/versions.html"
+      },
+      {
         "source": "/perfil/**",
         "destination": "/perfil.html"
       }

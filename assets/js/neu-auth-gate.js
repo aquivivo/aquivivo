@@ -1,8 +1,10 @@
 import { auth } from './neu-firebase-init.js';
+import { getNeuLoginPath, getNeuPath, getNeuSocialAppPath } from './neu-paths.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
 
-const NEU_LOGIN_PATH = 'neu-login.html';
-const NEU_DEFAULT_NEXT = 'neu-social-app.html';
+const NEU_DEFAULT_FILE = 'neu-social-app.html';
+const NEU_LOGIN_PATH = getNeuLoginPath();
+const NEU_DEFAULT_NEXT = getNeuSocialAppPath();
 const NEU_DEFAULT_REASON = 'auth';
 const NEU_AUTH_TIMEOUT_MS = 4500;
 
@@ -27,7 +29,7 @@ export function getNeuCurrentNext() {
     .split('/')
     .filter(Boolean)
     .pop();
-  const page = file || NEU_DEFAULT_NEXT;
+  const page = getNeuPath(file || NEU_DEFAULT_FILE);
   return sanitizeNextTarget(`${page}${location.search || ''}${location.hash || ''}`);
 }
 
@@ -37,7 +39,7 @@ export function buildNeuLoginUrl(
   { reason = NEU_DEFAULT_REASON } = {},
 ) {
   const safeNext = sanitizeNextTarget(next);
-  const safeLoginPath = sanitizeNextTarget(loginPath, NEU_LOGIN_PATH);
+  const safeLoginPath = sanitizeNextTarget(loginPath, getNeuLoginPath());
   const safeReason = sanitizeReason(reason);
   const qs = new URLSearchParams();
   qs.set('next', safeNext);

@@ -1,4 +1,5 @@
 import { auth } from './neu-firebase-init.js';
+import { getNeuLoginPath, getNeuSocialAppPath, withNeuQuery } from './neu-paths.js';
 import {
   onAuthStateChanged,
   signOut,
@@ -44,7 +45,7 @@ function handleFor(user) {
 }
 
 function currentPageHref() {
-  return isNeuLoginPage ? 'neu-login.html' : 'neu-social-app.html';
+  return isNeuLoginPage ? getNeuLoginPath() : getNeuSocialAppPath();
 }
 
 function buildHeader(user) {
@@ -53,19 +54,23 @@ function buildHeader(user) {
   const handle = handleFor(user);
   const letter = avatarLetter(displayName);
   const currentHref = currentPageHref();
+  const socialAppPath = getNeuSocialAppPath();
+  const loginPath = getNeuLoginPath();
+  const pulseHref = withNeuQuery(socialAppPath, { portal: 'pulse' });
+  const profileHref = withNeuQuery(socialAppPath, { profile: 'me' });
 
   return `
     <header class="neu-shell-header">
       <div class="neu-shell-bar container">
-        <a class="neu-shell-brand" href="neu-social-app.html" aria-label="NEU">
+        <a class="neu-shell-brand" href="${socialAppPath}" aria-label="NEU">
           <span class="neu-shell-brand-mark">NEU</span>
           <span class="neu-shell-brand-sub">Social App</span>
         </a>
 
         <nav class="neu-shell-links" aria-label="Neu navigation">
-          <a class="neu-shell-link" href="neu-social-app.html" ${currentHref === 'neu-social-app.html' ? 'aria-current="page"' : ''}>Feed</a>
-          <a class="neu-shell-link" href="neu-social-app.html?portal=pulse">Pulse</a>
-          <a class="neu-shell-link" href="neu-social-app.html?profile=me">Profile</a>
+          <a class="neu-shell-link" href="${socialAppPath}" ${currentHref === socialAppPath ? 'aria-current="page"' : ''}>Feed</a>
+          <a class="neu-shell-link" href="${pulseHref}">Pulse</a>
+          <a class="neu-shell-link" href="${profileHref}">Profile</a>
         </nav>
 
         <div class="neu-shell-actions">
@@ -85,15 +90,15 @@ function buildHeader(user) {
                       </div>
                     </div>
                     <div class="neu-shell-menu-list">
-                      <a class="neu-shell-menu-item" href="neu-social-app.html?profile=me" role="menuitem">My profile</a>
-                      <a class="neu-shell-menu-item" href="neu-social-app.html?portal=pulse" role="menuitem">Messages</a>
+                      <a class="neu-shell-menu-item" href="${profileHref}" role="menuitem">My profile</a>
+                      <a class="neu-shell-menu-item" href="${pulseHref}" role="menuitem">Messages</a>
                       <button class="neu-shell-menu-item neu-shell-menu-item--danger" id="navProfileLogout" type="button">Cerrar sesion</button>
                     </div>
                   </div>
                 </div>
               `
               : `
-                <a class="btn-white-outline" href="neu-login.html">Entrar</a>
+                <a class="btn-white-outline" href="${loginPath}">Entrar</a>
               `
           }
         </div>
@@ -169,7 +174,7 @@ function wireLogout() {
     event.preventDefault();
     try {
       await signOut(auth);
-      location.href = 'neu-login.html';
+      location.href = getNeuLoginPath();
     } catch (error) {
       console.error('[neu-layout] signOut failed', error);
       window.alert('No se pudo cerrar sesion. Intenta de nuevo.');

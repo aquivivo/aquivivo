@@ -92,13 +92,6 @@ export function createNeuSuggestedState() {
   };
 }
 
-export function createNeuLegacyLinkRewriteState() {
-  return {
-    observer: null,
-    tick: null,
-  };
-}
-
 export const profileState = createProfileState();
 export const neuProfileState = createNeuProfileState();
 export const neuProfileSyncState = createNeuProfileSyncState();
@@ -106,7 +99,6 @@ export const neuPublicProfileState = createNeuPublicProfileState();
 export const neuOnboardingState = createNeuOnboardingState();
 export const neuPostOnboardingState = createNeuPostOnboardingState();
 export const neuSuggestedState = createNeuSuggestedState();
-export const neuLegacyLinkRewriteState = createNeuLegacyLinkRewriteState();
 
 export function resetProfileState() {
   resetObject(profileState, createProfileState);
@@ -116,7 +108,6 @@ export function resetProfileState() {
   resetObject(neuOnboardingState, createNeuOnboardingState);
   resetObject(neuPostOnboardingState, createNeuPostOnboardingState);
   resetObject(neuSuggestedState, createNeuSuggestedState);
-  resetObject(neuLegacyLinkRewriteState, createNeuLegacyLinkRewriteState);
 }
 
 export function init() {
@@ -128,7 +119,6 @@ export function init() {
     neuOnboardingState,
     neuPostOnboardingState,
     neuSuggestedState,
-    neuLegacyLinkRewriteState,
     resetProfileState,
   };
 }
