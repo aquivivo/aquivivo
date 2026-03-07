@@ -10,7 +10,35 @@ function defaultNorm(value) {
 export function maybeDate(value) {
   if (!value) return null;
   if (value instanceof Date) return value;
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  if (typeof value?.toMillis === 'function') {
+    const parsed = new Date(value.toMillis());
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
   if (typeof value.toDate === 'function') return value.toDate();
+  const seconds = Number(value?.seconds ?? value?._seconds);
+  if (Number.isFinite(seconds) && seconds > 0) {
+    const nanoseconds = Number(value?.nanoseconds ?? value?._nanoseconds ?? 0);
+    const parsed = new Date(seconds * 1000 + Math.floor((Number.isFinite(nanoseconds) ? nanoseconds : 0) / 1e6));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    if (/^\d{10}$/.test(trimmed)) {
+      const parsed = new Date(Number(trimmed) * 1000);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    if (/^\d{12,}$/.test(trimmed)) {
+      const parsed = new Date(Number(trimmed));
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    const parsed = new Date(trimmed);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
