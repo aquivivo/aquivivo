@@ -58,6 +58,15 @@ function buildHeader(user) {
   const loginPath = getNeuLoginPath();
   const pulseHref = withNeuQuery(socialAppPath, { portal: 'pulse' });
   const profileHref = withNeuQuery(socialAppPath, { profile: 'me' });
+  const navLinksHtml = isNeuAppPage
+    ? ''
+    : `
+        <nav class="neu-shell-links" aria-label="Neu navigation">
+          <a class="neu-shell-link" href="${socialAppPath}" ${currentHref === socialAppPath ? 'aria-current="page"' : ''}>Feed</a>
+          <a class="neu-shell-link" href="${pulseHref}">Pulse</a>
+          <a class="neu-shell-link" href="${profileHref}">Profile</a>
+        </nav>
+      `;
 
   return `
     <header class="neu-shell-header">
@@ -67,11 +76,7 @@ function buildHeader(user) {
           <span class="neu-shell-brand-sub">Social App</span>
         </a>
 
-        <nav class="neu-shell-links" aria-label="Neu navigation">
-          <a class="neu-shell-link" href="${socialAppPath}" ${currentHref === socialAppPath ? 'aria-current="page"' : ''}>Feed</a>
-          <a class="neu-shell-link" href="${pulseHref}">Pulse</a>
-          <a class="neu-shell-link" href="${profileHref}">Profile</a>
-        </nav>
+        ${navLinksHtml}
 
         <div class="neu-shell-actions">
           ${

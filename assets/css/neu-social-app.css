@@ -524,6 +524,22 @@ body.fusion-profile.neu-social-app .profile-tabs {
   margin-top: 12px;
 }
 
+body.fusion-profile.neu-social-app #appHeader .neu-shell-links {
+  display: none;
+}
+
+body.fusion-profile.neu-social-app .portal-screen {
+  display: none;
+}
+
+body.fusion-profile.neu-social-app .portal-screen.is-active {
+  display: block;
+}
+
+body.fusion-profile.neu-social-app .profile-tabs {
+  display: none;
+}
+
 body.fusion-profile.neu-social-app .tab-btn,
 body.fusion-profile.neu-social-app .feed-source-btn,
 body.fusion-profile.neu-social-app .post-action-btn,

@@ -24,6 +24,32 @@ export function createLegacyRoutingModule(deps) {
   let neuBottomNavWired = false;
   let neuPortalProxyRoot = null;
 
+  function applyPortalUiState(portalName) {
+    const portal = String(portalName || '').trim().toLowerCase();
+    const nextPortal = NEU_PORTAL_ALLOWED.has(portal) ? portal : 'feed';
+
+    if (document.body) {
+      document.body.dataset.portal = nextPortal;
+    }
+
+    document.querySelectorAll('[data-portal-screen]').forEach((node) => {
+      if (!(node instanceof HTMLElement)) return;
+      const screen = String(node.getAttribute('data-portal-screen') || '').trim().toLowerCase();
+      const match = screen === nextPortal;
+      node.classList.toggle('is-active', match);
+      node.hidden = !match;
+    });
+
+    document.querySelectorAll('.profile-tabs [data-portal-target]').forEach((node) => {
+      if (!(node instanceof HTMLElement)) return;
+      const target = String(node.getAttribute('data-portal-target') || '').trim().toLowerCase();
+      const match = target === nextPortal;
+      node.classList.toggle('is-active', match);
+      if (match) node.setAttribute('aria-current', 'page');
+      else node.removeAttribute('aria-current');
+    });
+  }
+
   function syncRouteFromPortalState(portalName) {
     const portal = String(portalName || '').trim().toLowerCase();
     if (!NEU_PORTAL_ALLOWED.has(portal)) return;
@@ -75,9 +101,7 @@ export function createLegacyRoutingModule(deps) {
   }
 
   function activatePortal(portal) {
-    const trigger = ensurePortalProxyButton(portal);
-    if (!(trigger instanceof HTMLButtonElement)) return;
-    trigger.click();
+    applyPortalUiState(portal);
   }
 
   function openComposerModalFromBottom() {
@@ -238,6 +262,14 @@ export function createLegacyRoutingModule(deps) {
     } else if (portalFromQuery) {
       updateNeuRouteParams({ portal: portalFromQuery, profileMode: false });
       activatePortal(portalFromQuery);
+      if (portalFromQuery === 'feed' && (!getCurrentFeedSource() || getCurrentFeedSource() === 'target')) {
+        activateFeedSource('discover');
+      }
+    } else {
+      activatePortal('feed');
+      if (!getCurrentFeedSource() || getCurrentFeedSource() === 'target') {
+        activateFeedSource('discover');
+      }
     }
     window.setTimeout(syncBottomNavActiveState, 0);
   }
@@ -266,6 +298,46 @@ export function createLegacyRoutingModule(deps) {
       true,
     );
 
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const portalTrigger = target.closest('[data-portal-target]');
+      if (!(portalTrigger instanceof HTMLElement)) return;
+      if (portalTrigger.closest('.fusion-bottom-nav')) return;
+
+      const portal = String(portalTrigger.dataset.portalTarget || '').trim().toLowerCase();
+      if (!NEU_PORTAL_ALLOWED.has(portal)) return;
+
+      event.preventDefault();
+
+      const fromProfileTabs = portalTrigger.closest('.profile-tabs') instanceof HTMLElement;
+      if (portal === 'feed') {
+        if (fromProfileTabs && isProfileRouteActive()) {
+          const meUid = neuCurrentUid();
+          const profileUid = getProfileUidFromQuery(meUid) || NEU_PROFILE_ME;
+          updateNeuRouteParams({ portal: 'feed', profileMode: true, profileUid });
+          activatePortal('feed');
+          activateFeedSource('target');
+        } else {
+          updateNeuRouteParams({ portal: 'feed', profileMode: false });
+          activatePortal('feed');
+          if (!getCurrentFeedSource() || getCurrentFeedSource() === 'target') {
+            activateFeedSource('discover');
+          }
+        }
+      } else {
+        updateNeuRouteParams({ portal, profileMode: false });
+        activatePortal(portal);
+        if (portal === 'pulse') {
+          neuLoadSuggestedUsers({ force: false, focus: false }).catch(() => null);
+        }
+      }
+
+      scrollTopSmooth();
+      syncBottomNavActiveState();
+    });
+
     if (SAFE_ENABLE_PORTAL_OBS && !isDisabled('portal_obs') && !isDisabled('observers')) {
       let lastPortal = '';
       const observer = new MutationObserver(() => {
@@ -287,10 +359,22 @@ export function createLegacyRoutingModule(deps) {
     }
 
     window.addEventListener('popstate', () => {
+      const portalFromQuery = getPortalFromQuery();
       qaDebug('popstate', {
-        portalQuery: getPortalFromQuery() || '(none)',
+        portalQuery: portalFromQuery || '(none)',
         profileRoute: isProfileRouteActive(),
       });
+
+      if (isProfileRouteActive()) {
+        activatePortal('feed');
+        activateFeedSource('target');
+      } else {
+        activatePortal(portalFromQuery || 'feed');
+        if ((!portalFromQuery || portalFromQuery === 'feed') && (!getCurrentFeedSource() || getCurrentFeedSource() === 'target')) {
+          activateFeedSource('discover');
+        }
+      }
+
       syncBottomNavActiveState();
     });
 
