@@ -5678,6 +5678,9 @@ function ensureDock() {
   wireConversationMenu(dock, {
     getConversationId: () => ChatController.getActiveConversation(),
   });
+  wireIncomingCallBanner(dock, {
+    getConversationId: () => ChatController.getActiveConversation(),
+  });
   wireComposeContextInteractions(dock, { scope: 'panel' });
   resizeInput();
   setPanelUploading(false, 0);
