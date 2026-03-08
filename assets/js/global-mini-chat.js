@@ -2301,15 +2301,14 @@ function wireVoiceCallLifecycle() {
   if (callLifecycleWired) return;
   callLifecycleWired = true;
 
-  window.addEventListener('beforeunload', () => {
+  const safeHangup = () => {
     endActiveCall({ updateSignal: true }).catch(() => null);
-  });
+  };
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      endActiveCall({ updateSignal: true }).catch(() => null);
-    }
-  });
+  // Do not end calls when tab is hidden (multi-tab/account testing and real background usage).
+  // Only end on actual page teardown.
+  window.addEventListener('beforeunload', safeHangup);
+  window.addEventListener('pagehide', safeHangup);
 }
 
 function stopActiveReadReceiptListener() {
