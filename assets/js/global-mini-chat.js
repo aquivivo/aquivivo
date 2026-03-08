@@ -63,6 +63,17 @@ const CHAT_UI_TEXT = Object.freeze({
   replyTo: 'Responder a',
   confirmDeleteConversation: '¿Eliminar esta conversación de tu lista?',
   confirmDeleteMessage: '¿Eliminar este mensaje?',
+  archive: 'Archivar',
+  unarchive: 'Desarchivar',
+  incomingCall: 'Llamada entrante',
+  answerCall: 'Responder',
+  declineCall: 'Rechazar',
+  calling: 'Llamando…',
+  connectedCall: 'En llamada',
+  voiceRecordStart: 'Grabar voz',
+  voiceRecordStop: 'Detener grabación',
+  speechStart: 'Dictar mensaje',
+  speechStop: 'Detener voz a texto',
 });
 const ENCRYPTED_MESSAGE_PREVIEW = '[Encrypted message]';
 const E2EE_DB_NAME = 'neu-chat-e2ee';
@@ -143,6 +154,11 @@ const activeCallListenerState = {
   conversationId: '',
   otherUid: '',
   unsub: null,
+};
+const incomingCallState = {
+  conversationId: '',
+  conversationName: '',
+  data: null,
 };
 const callSessionState = {
   conversationId: '',
@@ -844,9 +860,9 @@ function setRecordButtonState(button, recording = false) {
   if (!(button instanceof HTMLButtonElement)) return;
   button.classList.toggle('is-recording', recording);
   button.setAttribute('aria-pressed', recording ? 'true' : 'false');
-  button.setAttribute('aria-label', recording ? 'Detener grabacion' : 'Grabar voz');
-  button.title = recording ? 'Detener grabacion' : 'Grabar voz';
-  button.textContent = recording ? '■' : '🎙';
+  button.setAttribute('aria-label', recording ? CHAT_UI_TEXT.voiceRecordStop : CHAT_UI_TEXT.voiceRecordStart);
+  button.title = recording ? CHAT_UI_TEXT.voiceRecordStop : CHAT_UI_TEXT.voiceRecordStart;
+  button.innerHTML = recording ? '&#9632;' : '&#127897;';
 }
 
 function panelRecordButtons() {
@@ -873,8 +889,8 @@ function setSpeechButtonState(button, listening = false) {
   if (!supported) return;
   button.classList.toggle('is-recording', listening);
   button.setAttribute('aria-pressed', listening ? 'true' : 'false');
-  button.setAttribute('aria-label', listening ? 'Detener voz a texto' : 'Dictar mensaje');
-  button.title = listening ? 'Detener voz a texto' : 'Dictar mensaje';
+  button.setAttribute('aria-label', listening ? CHAT_UI_TEXT.speechStop : CHAT_UI_TEXT.speechStart);
+  button.title = listening ? CHAT_UI_TEXT.speechStop : CHAT_UI_TEXT.speechStart;
   button.innerHTML = listening ? '&#9632;' : '&#127908;';
 }
 
@@ -1522,6 +1538,7 @@ function resetCallSessionState() {
   callSessionState.lastAnswerSdp = '';
   callSessionState.processedRemoteCandidates.clear();
   callSessionState.pendingRemoteCandidates = [];
+  resetIncomingCallState();
 
   if (pc instanceof RTCPeerConnection) {
     pc.onicecandidate = null;
@@ -1569,6 +1586,7 @@ function resetCallSessionState() {
 
 function stopActiveCallListener() {
   const unsub = activeCallListenerState.unsub;
+  resetIncomingCallState();
   activeCallListenerState.conversationId = '';
   activeCallListenerState.otherUid = '';
   activeCallListenerState.unsub = null;
@@ -1595,6 +1613,120 @@ function setCallControlState(callBtn, hangupBtn, { visible = false, active = fal
       hangupBtn.disabled = !supported || !active;
     }
   }
+}
+
+function resetIncomingCallState() {
+  incomingCallState.conversationId = '';
+  incomingCallState.conversationName = '';
+  incomingCallState.data = null;
+}
+
+function renderIncomingCallBanner(scopeRoot, conversationId) {
+  if (!(scopeRoot instanceof HTMLElement)) return;
+  const banner = qRole('call-banner', scopeRoot);
+  if (!(banner instanceof HTMLElement)) return;
+
+  const convId = String(conversationId || '').trim();
+  const isVisible =
+    supportsVoiceCalls() &&
+    convId &&
+    String(incomingCallState.conversationId || '').trim() === convId &&
+    incomingCallState.data &&
+    !callSessionState.conversationId;
+
+  if (!isVisible) {
+    banner.hidden = true;
+    banner.innerHTML = '';
+    return;
+  }
+
+  const title = esc(incomingCallState.conversationName || CHAT_UI_TEXT.conversationFallback);
+  banner.hidden = false;
+  banner.innerHTML = `
+    <div class="mini-chat-v4-call-banner-card">
+      <div class="mini-chat-v4-call-banner-copy">
+        <div class="mini-chat-v4-call-banner-title">${CHAT_UI_TEXT.incomingCall}</div>
+        <div class="mini-chat-v4-call-banner-text">${title}</div>
+      </div>
+      <div class="mini-chat-v4-call-banner-actions">
+        <button class="mini-chat-v4-call-banner-btn is-accept" type="button" data-mini-chat-call-action="accept">${CHAT_UI_TEXT.answerCall}</button>
+        <button class="mini-chat-v4-call-banner-btn is-decline" type="button" data-mini-chat-call-action="decline">${CHAT_UI_TEXT.declineCall}</button>
+      </div>
+    </div>
+  `;
+}
+
+function syncIncomingCallBanners() {
+  const activeConversationId = String(ChatController.getActiveConversation() || '').trim();
+  const { host } = pageShell();
+  const { dock } = dockShell();
+
+  [host, dock].forEach((scope) => {
+    if (scope instanceof HTMLElement) {
+      renderIncomingCallBanner(scope, activeConversationId);
+    }
+  });
+
+  openThreads.forEach((thread, conversationId) => {
+    if (thread?.element instanceof HTMLElement) {
+      renderIncomingCallBanner(thread.element, conversationId);
+    }
+  });
+}
+
+async function acceptIncomingCall(conversationId) {
+  const convId = String(conversationId || '').trim();
+  if (!convId || String(incomingCallState.conversationId || '').trim() !== convId) return;
+  const conversation = ChatController.getConversation(convId);
+  const data = incomingCallState.data;
+  resetIncomingCallState();
+  syncIncomingCallBanners();
+  if (!conversation || !data) return;
+  await answerIncomingCall(convId, conversation, data);
+}
+
+async function declineIncomingCall(conversationId) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return;
+  if (String(incomingCallState.conversationId || '').trim() === convId) {
+    resetIncomingCallState();
+    syncIncomingCallBanners();
+  }
+  await updateDoc(callDocRef(convId), {
+    status: 'ended',
+    updatedAt: serverTimestamp(),
+  }).catch(() => null);
+}
+
+function wireIncomingCallBanner(scopeRoot, { getConversationId, thread = null } = {}) {
+  if (!(scopeRoot instanceof HTMLElement)) return;
+  if (scopeRoot.dataset.callBannerWired === '1') return;
+  scopeRoot.dataset.callBannerWired = '1';
+
+  scopeRoot.addEventListener('click', (event) => {
+    const target = event.target instanceof Element
+      ? event.target.closest('[data-mini-chat-call-action]')
+      : null;
+    if (!(target instanceof HTMLElement)) return;
+    const convId = String(typeof getConversationId === 'function' ? getConversationId() : '').trim();
+    if (!convId) return;
+    const action = String(target.dataset.miniChatCallAction || '').trim();
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (action === 'accept') {
+      acceptIncomingCall(convId).catch((error) => {
+        console.warn('[mini-chat-v4] accept incoming call failed', error);
+      });
+      return;
+    }
+
+    if (action === 'decline') {
+      declineIncomingCall(convId).catch((error) => {
+        console.warn('[mini-chat-v4] decline incoming call failed', error);
+      });
+    }
+  });
 }
 
 function syncCallUi() {
@@ -1624,6 +1756,8 @@ function syncCallUi() {
       active: callSessionState.conversationId === convId,
     });
   });
+
+  syncIncomingCallBanners();
 }
 
 function callCandidateSignature(candidate) {
@@ -1884,6 +2018,9 @@ async function handleCallSnapshot(snapshot, conversationId) {
   const status = String(data.status || '').trim() || (data.answer ? 'connected' : 'calling');
 
   if (status === 'ended') {
+    if (String(incomingCallState.conversationId || '').trim() === convId) {
+      resetIncomingCallState();
+    }
     if (callSessionState.conversationId === convId) {
       resetCallSessionState();
     }
@@ -1892,7 +2029,19 @@ async function handleCallSnapshot(snapshot, conversationId) {
   }
 
   if (localRole === 'callee' && data.offer && !data.answer) {
-    await answerIncomingCall(convId, conversation, data);
+    if (
+      callSessionState.pc instanceof RTCPeerConnection &&
+      callSessionState.conversationId === convId &&
+      callSessionState.localRole === 'callee'
+    ) {
+      syncCallUi();
+      return;
+    }
+    incomingCallState.conversationId = convId;
+    incomingCallState.conversationName = getConversationTitle(conversation, currentName, norm);
+    incomingCallState.data = data;
+    syncCallUi();
+    return;
   }
 
   if (
@@ -1978,6 +2127,9 @@ async function startVoiceCall(conversationId) {
     await endActiveCall({ updateSignal: true });
   }
 
+  if (String(incomingCallState.conversationId || '').trim() === convId) {
+    resetIncomingCallState();
+  }
   syncActiveCallListener(convId, conversation);
 
   let pc;
@@ -4487,9 +4639,11 @@ function wirePageHostControls(host) {
   textInput?.addEventListener('blur', () => {
     clearTypingPresence(ChatController.getActiveConversation(), { force: true }).catch(() => null);
   });
-
   const threadView = qRole('thread-view', host);
   wireConversationMenu(host, {
+    getConversationId: () => ChatController.getActiveConversation(),
+  });
+  wireIncomingCallBanner(host, {
     getConversationId: () => ChatController.getActiveConversation(),
   });
   wireComposeContextInteractions(host, { scope: 'panel' });
@@ -4725,6 +4879,10 @@ function createThreadWindow(conversationId) {
   };
   openThreads.set(convId, threadState);
   wireConversationMenu(container, {
+    getConversationId: () => convId,
+    thread: threadState,
+  });
+  wireIncomingCallBanner(container, {
     getConversationId: () => convId,
     thread: threadState,
   });

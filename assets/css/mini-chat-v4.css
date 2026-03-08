@@ -665,6 +665,79 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-co
   padding: 0 14px 10px;
 }
 
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner {
+  padding: 12px 18px 0;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-call-banner,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-call-banner {
+  padding: 10px 14px 0;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(59, 130, 246, 0.12));
+  box-shadow: 0 16px 30px rgba(3, 9, 27, 0.24);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(230, 236, 255, 0.72);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner-text {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f4f7ff;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner-btn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f4f7ff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner-btn.is-accept {
+  background: rgba(52, 199, 89, 0.18);
+  border-color: rgba(52, 199, 89, 0.38);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call-banner-btn.is-decline {
+  background: rgba(255, 61, 95, 0.14);
+  border-color: rgba(255, 61, 95, 0.28);
+}
+
 body.fusion-profile.neu-social-app .mini-chat-v4-compose-context-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

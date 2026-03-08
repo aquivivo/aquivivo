@@ -1,5 +1,29 @@
-const EMPTY_CONVERSATIONS_HTML = '<div class="mini-chat-v4-empty">Sin conversaciones.</div>';
-const EMPTY_MESSAGES_HTML = '<div class="mini-chat-v4-empty">Sin mensajes.</div>';
+const CHAT_DOM_TEXT = Object.freeze({
+  emptyConversations: 'Sin conversaciones.',
+  emptyMessages: 'Sin mensajes.',
+  conversationFallback: 'Conversación',
+  noMessages: 'Sin mensajes',
+  archive: 'Archivar',
+  deleteConversation: 'Eliminar conversación',
+  call: 'Llamar',
+  hangup: 'Colgar',
+  options: 'Opciones',
+  minimize: 'Minimizar',
+  close: 'Cerrar',
+  recordVoice: 'Grabar voz',
+  dictateMessage: 'Dictar mensaje',
+  writeMessage: 'Escribe un mensaje...',
+  send: 'Enviar',
+  back: 'Volver',
+  openDetails: 'Abrir detalles',
+  activeNow: 'Activo ahora',
+  openFullView: 'Abrir vista completa',
+  answerCall: 'Responder',
+  declineCall: 'Rechazar',
+});
+
+const EMPTY_CONVERSATIONS_HTML = `<div class="mini-chat-v4-empty">${CHAT_DOM_TEXT.emptyConversations}</div>`;
+const EMPTY_MESSAGES_HTML = `<div class="mini-chat-v4-empty">${CHAT_DOM_TEXT.emptyMessages}</div>`;
 
 function defaultNorm(value) {
   return String(value || '')
@@ -93,7 +117,7 @@ export function getConversationTitle(
   currentName = '',
   norm = defaultNorm,
 ) {
-  if (!conversation) return 'Conversación';
+  if (!conversation) return CHAT_DOM_TEXT.conversationFallback;
 
   const explicit = String(conversation.title || '').trim();
   if (explicit) return explicit;
@@ -119,7 +143,7 @@ export function getConversationTitle(
   const lastSender = String(conversation.lastMessage?.senderName || '').trim();
   if (lastSender && norm(lastSender) !== norm(currentName)) return lastSender;
 
-  return 'Conversación';
+  return CHAT_DOM_TEXT.conversationFallback;
 }
 
 export function getConversationPreview(conversation) {
@@ -127,7 +151,7 @@ export function getConversationPreview(conversation) {
   if (raw) return raw;
   const fallback = String(conversation?.lastMessageText || '').trim();
   if (fallback) return fallback;
-  return 'Sin mensajes';
+  return CHAT_DOM_TEXT.noMessages;
 }
 
 export function isUnread(conversation, currentUid = '') {
@@ -238,13 +262,14 @@ export function buildThreadWindowMarkup() {
           <button class="mini-chat-v4-thread-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
           <button class="mini-chat-v4-thread-menu" data-mini-chat-role="conversation-menu-toggle" type="button" aria-label="Opciones">&#8942;</button>
           <div class="mini-chat-v4-conversation-menu" data-mini-chat-role="conversation-menu" hidden>
-            <button class="mini-chat-v4-conversation-menu-item" type="button" data-conversation-action="archive">Archivar</button>
-            <button class="mini-chat-v4-conversation-menu-item danger" type="button" data-conversation-action="delete">Eliminar conversación</button>
+            <button class="mini-chat-v4-conversation-menu-item" type="button" data-conversation-action="archive">${CHAT_DOM_TEXT.archive}</button>
+            <button class="mini-chat-v4-conversation-menu-item danger" type="button" data-conversation-action="delete">${CHAT_DOM_TEXT.deleteConversation}</button>
           </div>
-          <button class="mini-chat-v4-thread-min" type="button" aria-label="Minimizar">&minus;</button>
-          <button class="mini-chat-v4-thread-close" type="button" aria-label="Cerrar">&times;</button>
+          <button class="mini-chat-v4-thread-min" type="button" aria-label="${CHAT_DOM_TEXT.minimize}">&minus;</button>
+          <button class="mini-chat-v4-thread-close" type="button" aria-label="${CHAT_DOM_TEXT.close}">&times;</button>
         </div>
       </div>
+      <div class="mini-chat-v4-call-banner" data-mini-chat-role="call-banner" hidden></div>
       <div class="mini-chat-v4-typing" hidden></div>
       <div class="mini-chat-v4-thread-messages"></div>
       <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
@@ -254,10 +279,10 @@ export function buildThreadWindowMarkup() {
       </div>
       <div class="mini-chat-v4-thread-compose">
         <button class="mini-chat-v4-thread-attach" type="button" aria-label="Adjuntar">&#128206;</button>
-        <button class="mini-chat-v4-thread-record" type="button" aria-label="Grabar voz">&#127897;</button>
-        <button class="mini-chat-v4-thread-speech" data-mini-chat-role="speech" type="button" aria-label="Dictar mensaje">&#127908;</button>
-        <textarea placeholder="Escribe un mensaje..." rows="1"></textarea>
-        <button class="mini-chat-v4-thread-send" type="button" aria-label="Enviar">&#10148;</button>
+        <button class="mini-chat-v4-thread-record" type="button" aria-label="${CHAT_DOM_TEXT.recordVoice}">&#127897;</button>
+        <button class="mini-chat-v4-thread-speech" data-mini-chat-role="speech" type="button" aria-label="${CHAT_DOM_TEXT.dictateMessage}">&#127908;</button>
+        <textarea placeholder="${CHAT_DOM_TEXT.writeMessage}" rows="1"></textarea>
+        <button class="mini-chat-v4-thread-send" type="button" aria-label="${CHAT_DOM_TEXT.send}">&#10148;</button>
         <input class="mini-chat-v4-thread-file-input" type="file" hidden />
       </div>
     </div>
@@ -268,28 +293,29 @@ export function buildInboxThreadMarkup() {
   return `
     <section class="mini-chat-v4-thread-view mini-chat-v4-thread-view--page" data-mini-chat-role="thread-view">
       <header class="mini-chat-v4-thread-head">
-        <button class="mini-chat-v4-icon mini-chat-v4-page-back" data-mini-chat-role="back" type="button" aria-label="Volver">&#8592;</button>
+        <button class="mini-chat-v4-icon mini-chat-v4-page-back" data-mini-chat-role="back" type="button" aria-label="${CHAT_DOM_TEXT.back}">&#8592;</button>
 
         <div class="mini-chat-v4-thread-user">
           <div class="mini-chat-v4-thread-avatar" data-mini-chat-role="thread-avatar">AV</div>
           <div class="mini-chat-v4-thread-meta">
-            <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">Conversación</div>
-            <div class="mini-chat-v4-thread-status" data-mini-chat-role="thread-status">Activo ahora</div>
+            <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">${CHAT_DOM_TEXT.conversationFallback}</div>
+            <div class="mini-chat-v4-thread-status" data-mini-chat-role="thread-status">${CHAT_DOM_TEXT.activeNow}</div>
           </div>
         </div>
 
         <div class="mini-chat-v4-thread-head-actions">
-          <button class="mini-chat-v4-icon mini-chat-v4-call" data-mini-chat-role="call" type="button" aria-label="Llamar">&#128222;</button>
-          <button class="mini-chat-v4-icon mini-chat-v4-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
-          <button class="mini-chat-v4-icon mini-chat-v4-menu" data-mini-chat-role="conversation-menu-toggle" type="button" aria-label="Opciones">&#8942;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-call" data-mini-chat-role="call" type="button" aria-label="${CHAT_DOM_TEXT.call}">&#128222;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-hangup" data-mini-chat-role="hangup" type="button" aria-label="${CHAT_DOM_TEXT.hangup}" hidden>&#128222;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-menu" data-mini-chat-role="conversation-menu-toggle" type="button" aria-label="${CHAT_DOM_TEXT.options}">&#8942;</button>
           <div class="mini-chat-v4-conversation-menu" data-mini-chat-role="conversation-menu" hidden>
-            <button class="mini-chat-v4-conversation-menu-item" type="button" data-conversation-action="archive">Archivar</button>
-            <button class="mini-chat-v4-conversation-menu-item danger" type="button" data-conversation-action="delete">Eliminar conversación</button>
+            <button class="mini-chat-v4-conversation-menu-item" type="button" data-conversation-action="archive">${CHAT_DOM_TEXT.archive}</button>
+            <button class="mini-chat-v4-conversation-menu-item danger" type="button" data-conversation-action="delete">${CHAT_DOM_TEXT.deleteConversation}</button>
           </div>
-          <a class="mini-chat-v4-open-thread" data-mini-chat-role="open-thread" href="#" aria-label="Abrir detalles">&#8505;</a>
+          <a class="mini-chat-v4-open-thread" data-mini-chat-role="open-thread" href="#" aria-label="${CHAT_DOM_TEXT.openDetails}">&#8505;</a>
         </div>
       </header>
 
+      <div class="mini-chat-v4-call-banner" data-mini-chat-role="call-banner" hidden></div>
       <div class="mini-chat-v4-typing" data-mini-chat-role="typing" hidden></div>
       <div class="mini-chat-v4-messages" data-mini-chat-role="messages"></div>
       <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
@@ -301,10 +327,10 @@ export function buildInboxThreadMarkup() {
 
       <footer class="mini-chat-v4-compose">
         <button class="mini-chat-v4-attach" data-mini-chat-role="attach" type="button" aria-label="Adjuntar">&#128206;</button>
-        <button class="mini-chat-v4-record" data-mini-chat-role="record" type="button" aria-label="Grabar voz">&#127897;</button>
-        <button class="mini-chat-v4-speech" data-mini-chat-role="speech" type="button" aria-label="Dictar mensaje">&#127908;</button>
-        <textarea data-mini-chat-role="input" rows="1" placeholder="Escribe un mensaje..."></textarea>
-        <button class="mini-chat-v4-send" data-mini-chat-role="send" type="button" aria-label="Enviar">&#10148;</button>
+        <button class="mini-chat-v4-record" data-mini-chat-role="record" type="button" aria-label="${CHAT_DOM_TEXT.recordVoice}">&#127897;</button>
+        <button class="mini-chat-v4-speech" data-mini-chat-role="speech" type="button" aria-label="${CHAT_DOM_TEXT.dictateMessage}">&#127908;</button>
+        <textarea data-mini-chat-role="input" rows="1" placeholder="${CHAT_DOM_TEXT.writeMessage}"></textarea>
+        <button class="mini-chat-v4-send" data-mini-chat-role="send" type="button" aria-label="${CHAT_DOM_TEXT.send}">&#10148;</button>
         <input data-mini-chat-role="file-input" type="file" hidden />
       </footer>
     </section>
@@ -325,8 +351,8 @@ export function buildDockMarkup() {
           <div class="mini-chat-v4-head-title">Mensajes</div>
         </div>
         <div class="mini-chat-v4-head-actions">
-          <button class="mini-chat-v4-icon" id="miniChatMinimize" type="button" aria-label="Minimizar">&#8722;</button>
-          <button class="mini-chat-v4-icon" id="miniChatClose" type="button" aria-label="Cerrar">&times;</button>
+          <button class="mini-chat-v4-icon" id="miniChatMinimize" type="button" aria-label="${CHAT_DOM_TEXT.minimize}">&#8722;</button>
+          <button class="mini-chat-v4-icon" id="miniChatClose" type="button" aria-label="${CHAT_DOM_TEXT.close}">&times;</button>
           </div>
         </header>
 
@@ -336,33 +362,34 @@ export function buildDockMarkup() {
 
         <div class="mini-chat-v4-list" id="miniChatList"></div>
 
-        <a class="mini-chat-v4-open-full" id="miniChatOpenFull" href="mensajes.html">Abrir vista completa</a>
+        <a class="mini-chat-v4-open-full" id="miniChatOpenFull" href="mensajes.html">${CHAT_DOM_TEXT.openFullView}</a>
       </div>
 
       <div class="mini-chat-v4-thread-view" data-mini-chat-role="thread-view" hidden>
         <header class="mini-chat-v4-thread-head">
-          <button class="mini-chat-v4-icon" data-mini-chat-role="back" type="button" aria-label="Volver">&#8592;</button>
+          <button class="mini-chat-v4-icon" data-mini-chat-role="back" type="button" aria-label="${CHAT_DOM_TEXT.back}">&#8592;</button>
 
           <div class="mini-chat-v4-thread-user">
             <div class="mini-chat-v4-thread-avatar" data-mini-chat-role="thread-avatar">AV</div>
           <div class="mini-chat-v4-thread-meta">
-            <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">Conversación</div>
-            <div class="mini-chat-v4-thread-status" data-mini-chat-role="thread-status">Activo ahora</div>
+            <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">${CHAT_DOM_TEXT.conversationFallback}</div>
+            <div class="mini-chat-v4-thread-status" data-mini-chat-role="thread-status">${CHAT_DOM_TEXT.activeNow}</div>
           </div>
         </div>
 
         <div class="mini-chat-v4-thread-head-actions">
-          <button class="mini-chat-v4-icon mini-chat-v4-call" data-mini-chat-role="call" type="button" aria-label="Llamar">&#128222;</button>
-          <button class="mini-chat-v4-icon mini-chat-v4-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
-          <button class="mini-chat-v4-icon mini-chat-v4-menu" data-mini-chat-role="conversation-menu-toggle" type="button" aria-label="Opciones">&#8942;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-call" data-mini-chat-role="call" type="button" aria-label="${CHAT_DOM_TEXT.call}">&#128222;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-hangup" data-mini-chat-role="hangup" type="button" aria-label="${CHAT_DOM_TEXT.hangup}" hidden>&#128222;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-menu" data-mini-chat-role="conversation-menu-toggle" type="button" aria-label="${CHAT_DOM_TEXT.options}">&#8942;</button>
           <div class="mini-chat-v4-conversation-menu" data-mini-chat-role="conversation-menu" hidden>
-            <button class="mini-chat-v4-conversation-menu-item" type="button" data-conversation-action="archive">Archivar</button>
-            <button class="mini-chat-v4-conversation-menu-item danger" type="button" data-conversation-action="delete">Eliminar conversación</button>
+            <button class="mini-chat-v4-conversation-menu-item" type="button" data-conversation-action="archive">${CHAT_DOM_TEXT.archive}</button>
+            <button class="mini-chat-v4-conversation-menu-item danger" type="button" data-conversation-action="delete">${CHAT_DOM_TEXT.deleteConversation}</button>
           </div>
-          <a class="mini-chat-v4-open-thread" data-mini-chat-role="open-thread" href="mensajes.html" aria-label="Abrir detalles">&#8505;</a>
+          <a class="mini-chat-v4-open-thread" data-mini-chat-role="open-thread" href="mensajes.html" aria-label="${CHAT_DOM_TEXT.openDetails}">&#8505;</a>
         </div>
       </header>
 
+      <div class="mini-chat-v4-call-banner" data-mini-chat-role="call-banner" hidden></div>
       <div class="mini-chat-v4-typing" data-mini-chat-role="typing" hidden></div>
       <div class="mini-chat-v4-messages" data-mini-chat-role="messages"></div>
       <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
@@ -374,10 +401,10 @@ export function buildDockMarkup() {
 
         <footer class="mini-chat-v4-compose">
           <button class="mini-chat-v4-attach" data-mini-chat-role="attach" type="button" aria-label="Adjuntar">&#128206;</button>
-          <button class="mini-chat-v4-record" data-mini-chat-role="record" type="button" aria-label="Grabar voz">&#127897;</button>
-          <button class="mini-chat-v4-speech" data-mini-chat-role="speech" type="button" aria-label="Dictar mensaje">&#127908;</button>
-          <textarea data-mini-chat-role="input" rows="1" placeholder="Escribe un mensaje..."></textarea>
-          <button class="mini-chat-v4-send" data-mini-chat-role="send" type="button" aria-label="Enviar">&#10148;</button>
+          <button class="mini-chat-v4-record" data-mini-chat-role="record" type="button" aria-label="${CHAT_DOM_TEXT.recordVoice}">&#127897;</button>
+          <button class="mini-chat-v4-speech" data-mini-chat-role="speech" type="button" aria-label="${CHAT_DOM_TEXT.dictateMessage}">&#127908;</button>
+          <textarea data-mini-chat-role="input" rows="1" placeholder="${CHAT_DOM_TEXT.writeMessage}"></textarea>
+          <button class="mini-chat-v4-send" data-mini-chat-role="send" type="button" aria-label="${CHAT_DOM_TEXT.send}">&#10148;</button>
           <input data-mini-chat-role="file-input" type="file" hidden />
         </footer>
       </div>

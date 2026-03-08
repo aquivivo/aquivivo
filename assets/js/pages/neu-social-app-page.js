@@ -4,7 +4,7 @@ import {
   hardResetNeuApp,
   initNeuApp,
   logNeuRuntimeDiagnostics,
-} from '../neu/app/neu-app.boot.js?v=20260308audio2';
+} from '../neu/app/neu-app.boot.js?v=20260308callui1';
 import { normalizePortal } from '../neu/context/neu-app-context.js';
 import { chatState } from '../neu/state/chat.state.js';
 import { postState } from '../neu/state/post.state.js';

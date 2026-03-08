@@ -1,6 +1,6 @@
 // Compatibility bridge for neu-app.boot.js.
 // The actual chat runtime lives in ../../global-mini-chat.js and the hyphenated chat modules.
-import { destroyGlobalMiniChat, initGlobalMiniChat } from '../../global-mini-chat.js?v=20260308audio2';
+import { destroyGlobalMiniChat, initGlobalMiniChat } from '../../global-mini-chat.js?v=20260308callui1';
 
 function authDisplayName(authUser) {
   const displayName = String(authUser?.displayName || '').trim();
