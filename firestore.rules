@@ -1096,7 +1096,36 @@ service cloud.firestore {
     }
 
     match /neuCalls/{convId} {
-      allow read, write: if neuIsMember(convId);
+      // Read is required for:
+      // 1) active conversation listener by convId
+      // 2) global incoming listener query where callee == request.auth.uid
+      allow read: if neuSignedIn()
+        && (
+          neuIsMember(convId)
+          || (resource.data.callee is string && resource.data.callee == request.auth.uid)
+          || (resource.data.caller is string && resource.data.caller == request.auth.uid)
+        );
+
+      // Caller starts signaling document.
+      allow create: if neuSignedIn()
+        && neuIsMember(convId)
+        && request.resource.data.caller is string
+        && request.resource.data.callee is string
+        && request.resource.data.caller != request.resource.data.callee
+        && request.resource.data.caller == request.auth.uid
+        && get(/databases/$(database)/documents/neuConversations/$(convId)).data.members
+          .hasAll([request.resource.data.caller, request.resource.data.callee]);
+
+      // Caller/callee can update signaling payload, but caller/callee identities are immutable.
+      allow update: if neuSignedIn()
+        && neuIsMember(convId)
+        && resource.data.caller is string
+        && resource.data.callee is string
+        && request.resource.data.caller == resource.data.caller
+        && request.resource.data.callee == resource.data.callee
+        && (request.auth.uid == resource.data.caller || request.auth.uid == resource.data.callee);
+
+      allow delete: if false;
     }
 
     // Chat list items used for inbox sorting/unread counts.
