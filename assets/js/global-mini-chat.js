@@ -1507,6 +1507,52 @@ function getConversationCallPeerUid(conversation) {
   return getConversationPresenceUid(conversation);
 }
 
+function isConversationCallable(conversationId, conversation = null) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return false;
+  const row = conversation || ChatController.getConversation(convId);
+  if (!row) return true;
+  return row.type !== 'group' && row.type !== 'support';
+}
+
+async function resolveConversationCallPeerUid(conversationId, conversation = null) {
+  const convId = String(conversationId || '').trim();
+  const currentUserId = String(getChatState().currentUid || '').trim();
+  if (!convId || !currentUserId) return '';
+
+  const row = conversation || ChatController.getConversation(convId);
+  const directPeer = getConversationCallPeerUid(row);
+  if (directPeer) return directPeer;
+  if (row && !isConversationCallable(convId, row)) return '';
+
+  try {
+    const conversationSnap = await getDoc(doc(db, 'neuConversations', convId));
+    if (!conversationSnap.exists()) return '';
+
+    const data = conversationSnap.data() || {};
+    const members = Array.isArray(data.members)
+      ? data.members.map((item) => String(item || '').trim()).filter(Boolean)
+      : [];
+    const peerUid = members.find((candidate) => candidate !== currentUserId) || '';
+    if (!peerUid) return '';
+
+    const nextRows = conversations.map((item) => {
+      const itemId = String(item?.id || '').trim();
+      if (itemId !== convId) return item;
+      return {
+        ...item,
+        participants: members.length ? members : item.participants,
+        otherUid: peerUid,
+      };
+    });
+    ChatController.setConversations(nextRows);
+    return peerUid;
+  } catch (error) {
+    console.warn('[mini-chat-v4] resolve call peer failed', error);
+    return '';
+  }
+}
+
 function ensureCallRemoteAudioElement() {
   if (
     callSessionState.remoteAudioEl instanceof HTMLAudioElement &&
@@ -1762,13 +1808,14 @@ function syncCallUi() {
     : null;
   const panelPeerUid = getConversationCallPeerUid(panelConversation);
   const panelInCall = callSessionState.conversationId === panelConversationId;
+  const panelCallable = isConversationCallable(panelConversationId, panelConversation);
 
   const { host } = pageShell();
   const { dock } = dockShell();
   [host, dock].forEach((scope) => {
     if (!(scope instanceof HTMLElement)) return;
     setCallControlState(qRole('call', scope), qRole('hangup', scope), {
-      visible: !!panelConversationId && !!panelPeerUid,
+      visible: panelCallable,
       active: panelInCall,
     });
   });
@@ -1776,9 +1823,9 @@ function syncCallUi() {
   openThreads.forEach((thread, conversationId) => {
     const convId = String(conversationId || '').trim();
     const conversation = ChatController.getConversation(convId);
-    const peerUid = getConversationCallPeerUid(conversation);
+    const callable = isConversationCallable(convId, conversation);
     setCallControlState(thread?.callBtn, thread?.hangupBtn, {
-      visible: !!convId && !!peerUid,
+      visible: callable,
       active: callSessionState.conversationId === convId,
     });
   });
@@ -2210,8 +2257,12 @@ function syncActiveCallListener(conversationId, conversation = null) {
 async function startVoiceCall(conversationId) {
   const convId = String(conversationId || '').trim();
   const currentUserId = String(getChatState().currentUid || '').trim();
-  const conversation = ChatController.getConversation(convId);
-  const peerUid = getConversationCallPeerUid(conversation);
+  let conversation = ChatController.getConversation(convId);
+  let peerUid = getConversationCallPeerUid(conversation);
+  if (!peerUid) {
+    peerUid = await resolveConversationCallPeerUid(convId, conversation);
+    conversation = ChatController.getConversation(convId) || conversation;
+  }
   if (!supportsVoiceCalls() || !convId || !currentUserId || !peerUid) return;
 
   if (
