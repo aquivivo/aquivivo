@@ -155,6 +155,10 @@ const activeCallListenerState = {
   otherUid: '',
   unsub: null,
 };
+const globalIncomingCallListenerState = {
+  uid: '',
+  unsub: null,
+};
 const incomingCallState = {
   conversationId: '',
   conversationName: '',
@@ -1598,6 +1602,18 @@ function stopActiveCallListener() {
   }
 }
 
+function stopGlobalIncomingCallListener() {
+  const unsub = globalIncomingCallListenerState.unsub;
+  globalIncomingCallListenerState.uid = '';
+  globalIncomingCallListenerState.unsub = null;
+  if (typeof unsub !== 'function') return;
+  try {
+    unsub();
+  } catch {
+    // ignore unsubscribe failures
+  }
+}
+
 function setCallControlState(callBtn, hangupBtn, { visible = false, active = false } = {}) {
   const supported = supportsVoiceCalls();
   if (callBtn instanceof HTMLElement) {
@@ -1677,8 +1693,18 @@ function syncIncomingCallBanners() {
 async function acceptIncomingCall(conversationId) {
   const convId = String(conversationId || '').trim();
   if (!convId || String(incomingCallState.conversationId || '').trim() !== convId) return;
-  const conversation = ChatController.getConversation(convId);
   const data = incomingCallState.data;
+  const currentUserId = String(getChatState().currentUid || '').trim();
+  const callerUid = String(data?.caller || '').trim();
+  const conversation =
+    ChatController.getConversation(convId) ||
+    {
+      id: convId,
+      type: 'direct',
+      participants: [currentUserId, callerUid].filter(Boolean),
+      otherUid: callerUid,
+      memberKey: '',
+    };
   resetIncomingCallState();
   syncIncomingCallBanners();
   if (!conversation || !data) return;
@@ -2071,6 +2097,79 @@ async function handleCallSnapshot(snapshot, conversationId) {
     syncCallUi();
     await syncRemoteCallCandidates(data, remoteRole);
   }
+}
+
+async function handleGlobalIncomingCallsSnapshot(snapshot, uid) {
+  const currentUserId = String(uid || '').trim();
+  if (!currentUserId) return;
+
+  const candidates = (snapshot?.docs || [])
+    .map((docSnap) => ({ id: String(docSnap?.id || '').trim(), data: docSnap?.data?.() || {} }))
+    .filter((item) => item.id)
+    .filter((item) => String(item.data?.callee || '').trim() === currentUserId)
+    .filter((item) => String(item.data?.status || '').trim() !== 'ended')
+    .filter((item) => item.data?.offer && !item.data?.answer);
+
+  if (!candidates.length) {
+    if (incomingCallState.conversationId) {
+      resetIncomingCallState();
+      syncCallUi();
+    }
+    return;
+  }
+
+  candidates.sort((a, b) => {
+    const aMs = maybeDate(a.data?.updatedAt)?.getTime() || maybeDate(a.data?.createdAt)?.getTime() || 0;
+    const bMs = maybeDate(b.data?.updatedAt)?.getTime() || maybeDate(b.data?.createdAt)?.getTime() || 0;
+    return bMs - aMs;
+  });
+
+  const next = candidates[0];
+  const convId = String(next.id || '').trim();
+  if (!convId) return;
+  if (String(callSessionState.conversationId || '').trim() === convId) return;
+
+  const conversation = ChatController.getConversation(convId);
+  incomingCallState.conversationId = convId;
+  incomingCallState.conversationName = getConversationTitle(conversation, currentName, norm);
+  incomingCallState.data = next.data;
+  syncCallUi();
+
+  if (String(ChatController.getActiveConversation() || '').trim() === convId) return;
+  if (isMobile()) {
+    openConversationPage(convId);
+    return;
+  }
+  openConversationDock(convId);
+}
+
+function syncGlobalIncomingCallListener(uid) {
+  const currentUserId = String(uid || '').trim();
+  if (!supportsVoiceCalls() || !currentUserId) {
+    stopGlobalIncomingCallListener();
+    return;
+  }
+
+  if (
+    globalIncomingCallListenerState.uid === currentUserId &&
+    typeof globalIncomingCallListenerState.unsub === 'function'
+  ) {
+    return;
+  }
+
+  stopGlobalIncomingCallListener();
+  globalIncomingCallListenerState.uid = currentUserId;
+  globalIncomingCallListenerState.unsub = onSnapshot(
+    query(collection(db, 'neuCalls'), where('callee', '==', currentUserId), limit(20)),
+    (snapshot) => {
+      handleGlobalIncomingCallsSnapshot(snapshot, currentUserId).catch((error) => {
+        console.warn('[mini-chat-v4] global incoming call snapshot failed', error);
+      });
+    },
+    (error) => {
+      console.warn('[mini-chat-v4] global incoming call listener failed', error);
+    },
+  );
 }
 
 function syncActiveCallListener(conversationId, conversation = null) {
@@ -5002,6 +5101,7 @@ function createThreadWindow(conversationId) {
 function stopAllStreams() {
   endActiveCall({ updateSignal: true }).catch(() => null);
   stopActiveCallListener();
+  stopGlobalIncomingCallListener();
   stopVoiceRecording({ discard: true }).catch(() => null);
   stopSpeechRecognition();
   stopActiveDockThreadStream();
@@ -5931,6 +6031,7 @@ export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
     wireVoiceRecordingLifecycle();
     wireSpeechRecognitionLifecycle();
     wireVoiceCallLifecycle();
+    syncGlobalIncomingCallListener(uid);
     writeSelfPresence(true, { preferUpdate: false }).catch(() => null);
     if (isMobile()) {
       closeAllThreadWindows();
@@ -5956,6 +6057,7 @@ export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
   wireVoiceRecordingLifecycle();
   wireSpeechRecognitionLifecycle();
   wireVoiceCallLifecycle();
+  syncGlobalIncomingCallListener(uid);
   writeSelfPresence(true, { preferUpdate: false }).catch(() => null);
   if (isMobile()) {
     closeAllThreadWindows();
