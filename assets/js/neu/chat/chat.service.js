@@ -1,4 +1,4 @@
-import { destroyGlobalMiniChat, initGlobalMiniChat } from '../../global-mini-chat.js?v=20260308quiet1';
+import { destroyGlobalMiniChat, initGlobalMiniChat } from '../../global-mini-chat.js?v=20260308callfix1';
 
 function authDisplayName(authUser) {
   const displayName = String(authUser?.displayName || '').trim();

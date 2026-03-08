@@ -1622,7 +1622,25 @@ async function publishCallCandidate(conversationId, localRole, candidate) {
       updatedAt: serverTimestamp(),
     });
   } catch (error) {
-    console.warn('[mini-chat-v4] call candidate publish failed', error);
+    try {
+      await setDoc(
+        callDocRef(convId),
+        {
+          candidates: {
+            caller: [],
+            callee: [],
+          },
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      await updateDoc(callDocRef(convId), {
+        [`candidates.${role}`]: arrayUnion(candidate),
+        updatedAt: serverTimestamp(),
+      });
+    } catch (retryError) {
+      console.warn('[mini-chat-v4] call candidate publish failed', retryError);
+    }
   }
 }
 
@@ -1941,6 +1959,21 @@ async function startVoiceCall(conversationId) {
 
   let pc;
   try {
+    await setDoc(
+      callDocRef(convId),
+      {
+        caller: currentUserId,
+        callee: peerUid,
+        candidates: {
+          caller: [],
+          callee: [],
+        },
+        status: 'calling',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
     pc = await ensureCallPeerConnection(convId, peerUid, 'caller');
   } catch (error) {
     console.warn('[mini-chat-v4] call start failed', error);
