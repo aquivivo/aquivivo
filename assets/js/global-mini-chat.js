@@ -28,7 +28,6 @@ import {
   buildConversationListHtml,
   buildDockMarkup,
   buildInboxThreadMarkup,
-  buildMessagesHtml,
   buildThreadWindowMarkup,
   fmtTime,
   getConversationTitle,
@@ -42,6 +41,29 @@ import { createMiniChatTypingController } from './chat-typing.js';
 import { createMiniChatUploadController } from './chat-upload.js';
 
 const ORIGINAL_TITLE = document.title;
+const CHAT_UI_TEXT = Object.freeze({
+  sent: '&#10004; Enviado',
+  delivered: '&#10004;&#10004; Entregado',
+  seen: 'Visto',
+  now: 'justo ahora',
+  minuteSuffix: 'min',
+  hourSuffix: 'h',
+  daySuffix: 'd',
+  ago: 'hace',
+  group: 'Grupo',
+  support: 'Soporte',
+  offline: 'Desconectado',
+  activeNow: 'Activo ahora',
+  lastSeenPrefix: 'Visto',
+  unreadMessages: 'Nuevos mensajes',
+  deletedMessage: 'Mensaje eliminado',
+  userFallback: 'Usuario',
+  conversationFallback: 'Conversación',
+  editMessage: 'Editar mensaje',
+  replyTo: 'Responder a',
+  confirmDeleteConversation: '¿Eliminar esta conversación de tu lista?',
+  confirmDeleteMessage: '¿Eliminar este mensaje?',
+});
 const ENCRYPTED_MESSAGE_PREVIEW = '[Encrypted message]';
 const E2EE_DB_NAME = 'neu-chat-e2ee';
 const E2EE_STORE_NAME = 'keypairs';
@@ -91,6 +113,7 @@ let fallbackHydrationPromise = null;
 let fallbackHydratedUid = '';
 let chatStateSubscriptionsWired = false;
 let chatPopstateWired = false;
+let conversationMenuOutsideClickWired = false;
 let presenceLifecycleWired = false;
 let voiceRecordingLifecycleWired = false;
 let speechRecognitionLifecycleWired = false;
@@ -1179,7 +1202,7 @@ function ensureDropZoneOverlay(container) {
   overlay = document.createElement('div');
   overlay.className = 'mini-chat-drop-zone';
   overlay.hidden = true;
-  overlay.textContent = 'Drop files to send';
+  overlay.textContent = 'Suelta archivos para enviar';
   container.appendChild(overlay);
   return overlay;
 }
@@ -2105,7 +2128,7 @@ function getDeliveryStatus(rows = [], conversationId = '') {
   ) {
     return {
       messageId,
-      labelHtml: 'Seen',
+      labelHtml: CHAT_UI_TEXT.seen,
       className: 'is-seen',
     };
   }
@@ -2116,16 +2139,105 @@ function getDeliveryStatus(rows = [], conversationId = '') {
   ) {
     return {
       messageId,
-      labelHtml: '&#10004;&#10004; Delivered',
+      labelHtml: CHAT_UI_TEXT.delivered,
       className: 'is-delivered',
     };
   }
 
   return {
     messageId,
-    labelHtml: '&#10004; Sent',
+    labelHtml: CHAT_UI_TEXT.sent,
     className: 'is-sent',
   };
+}
+
+function formatMessageDayLabel(value) {
+  const date = maybeDate(value);
+  if (!date) return '';
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  const sameDay = (a, b) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+  if (sameDay(date, today)) return 'Hoy';
+  if (sameDay(date, yesterday)) return 'Ayer';
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+  }).format(date);
+}
+
+function unreadDividerMessageId(rows = [], conversationId = '') {
+  const conversation = ChatController.getConversation(conversationId);
+  const readMessageId = String(conversation?.lastReadMessageId || '').trim();
+  if (!Array.isArray(rows) || !rows.length) return '';
+  if (readMessageId) {
+    const readIndex = rows.findIndex((row) => String(row?.id || '').trim() === readMessageId);
+    if (readIndex >= 0 && readIndex < rows.length - 1) {
+      return String(rows[readIndex + 1]?.id || '').trim();
+    }
+  }
+
+  if (Number(conversation?.unreadCount || 0) > 0) {
+    const currentUserId = String(getChatState().currentUid || '').trim();
+    const firstIncoming = rows.find((row) => String(row?.senderId || '').trim() !== currentUserId);
+    return String(firstIncoming?.id || '').trim();
+  }
+  return '';
+}
+
+function buildMessageDecorationsHtml(message, deliveryStatus = null) {
+  const currentUserId = String(getChatState().currentUid || '').trim();
+  const msgId = String(message?.id || '').trim();
+  const senderId = String(message?.senderId || '').trim();
+  const mine = !!currentUserId && senderId === currentUserId;
+  const deleted = message?.deleted === true;
+  const actions = [];
+
+  if (!deleted) {
+    actions.push('<button class="mini-chat-v4-msg-action" type="button" data-msg-action="reply">Responder</button>');
+  }
+  if (mine && !deleted && String(message?.text || '').trim()) {
+    actions.push('<button class="mini-chat-v4-msg-action" type="button" data-msg-action="edit">Editar</button>');
+  }
+  if (mine && !deleted) {
+    actions.push('<button class="mini-chat-v4-msg-action danger" type="button" data-msg-action="delete">Eliminar</button>');
+  }
+
+  const actionsHtml = actions.length
+    ? `<div class="mini-chat-v4-message-actions">${actions.join('')}</div>`
+    : '';
+  return actionsHtml;
+}
+
+function buildMessageTimelineHtml(rows, conversationId, reactionData, deliveryStatus) {
+  if (!Array.isArray(rows) || !rows.length) {
+    return '<div class="mini-chat-v4-empty">Sin mensajes.</div>';
+  }
+
+  const unreadMessageId = unreadDividerMessageId(rows, conversationId);
+  const parts = [];
+  let previousLabel = '';
+  rows.forEach((message) => {
+    const currentLabel = formatMessageDayLabel(message?.createdAt);
+    if (currentLabel && currentLabel !== previousLabel) {
+      parts.push(`<div class="mini-chat-v4-day-divider"><span>${esc(currentLabel)}</span></div>`);
+      previousLabel = currentLabel;
+    }
+    if (unreadMessageId && String(message?.id || '').trim() === unreadMessageId) {
+      parts.push(`<div class="mini-chat-v4-unread-divider"><span>${CHAT_UI_TEXT.unreadMessages}</span></div>`);
+    }
+    const baseHtml = messageHtml(message, conversationId, reactionData, deliveryStatus);
+    parts.push(
+      baseHtml.replace(
+        '</article>',
+        `${buildMessageDecorationsHtml(message, deliveryStatus)}</article>`,
+      ),
+    );
+  });
+  return parts.join('');
 }
 
 function rerenderReceiptConversation(conversationId = '') {
@@ -2294,20 +2406,20 @@ function formatLastSeen(timestamp) {
 
   const diffMs = Math.max(0, Date.now() - date.getTime());
   const minutes = Math.floor(diffMs / 60000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 1) return CHAT_UI_TEXT.now;
+  if (minutes < 60) return `${CHAT_UI_TEXT.ago} ${minutes} ${CHAT_UI_TEXT.minuteSuffix}`;
 
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} h ago`;
+  if (hours < 24) return `${CHAT_UI_TEXT.ago} ${hours} ${CHAT_UI_TEXT.hourSuffix}`;
 
   const days = Math.floor(hours / 24);
-  return `${days} d ago`;
+  return `${CHAT_UI_TEXT.ago} ${days} ${CHAT_UI_TEXT.daySuffix}`;
 }
 
 function conversationStatusFallback(conversation) {
-  if (conversation?.type === 'group') return 'Group';
-  if (conversation?.type === 'support') return 'Support';
-  return 'Offline';
+  if (conversation?.type === 'group') return CHAT_UI_TEXT.group;
+  if (conversation?.type === 'support') return CHAT_UI_TEXT.support;
+  return CHAT_UI_TEXT.offline;
 }
 
 function buildPresenceStatusHtml({
@@ -2316,19 +2428,19 @@ function buildPresenceStatusHtml({
   fallback = '',
 } = {}) {
   if (online === true) {
-    return '<span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:#34c759;vertical-align:middle;margin-right:6px;"></span>Active now';
+    return `<span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:#34c759;vertical-align:middle;margin-right:6px;"></span>${CHAT_UI_TEXT.activeNow}`;
   }
 
-  if (fallback && fallback !== 'Offline') {
+  if (fallback && fallback !== CHAT_UI_TEXT.offline) {
     return esc(fallback);
   }
 
   const lastSeen = formatLastSeen(lastActiveAt);
   if (lastSeen) {
-    return `Last seen ${esc(lastSeen)}`;
+    return `${CHAT_UI_TEXT.lastSeenPrefix} ${esc(lastSeen)}`;
   }
 
-  return esc(fallback || 'Offline');
+  return esc(fallback || CHAT_UI_TEXT.offline);
 }
 
 function applyPresenceStatus(element, {
@@ -2761,6 +2873,14 @@ const panelUploadState = {
   progress: 0,
 };
 
+function createComposeState() {
+  return {
+    conversationId: '',
+    replyTo: null,
+    editTarget: null,
+  };
+}
+
 function createAiSuggestionState() {
   return {
     conversationId: '',
@@ -2779,6 +2899,7 @@ const panelReactionState = {
   streamToken: null,
 };
 const panelSuggestionState = createAiSuggestionState();
+const panelComposeState = createComposeState();
 
 function qs(selector, root = document) {
   return root.querySelector(selector);
@@ -2786,6 +2907,225 @@ function qs(selector, root = document) {
 
 function qRole(role, root = document) {
   return qs(`[data-mini-chat-role="${String(role || '').trim()}"]`, root);
+}
+
+function composeStateFor(scope = 'panel', thread = null) {
+  if (scope === 'thread' && thread && typeof thread === 'object') {
+    if (!thread.composeState) thread.composeState = createComposeState();
+    return thread.composeState;
+  }
+  return panelComposeState;
+}
+
+function clearComposeState(state) {
+  if (!state || typeof state !== 'object') return;
+  state.conversationId = '';
+  state.replyTo = null;
+  state.editTarget = null;
+}
+
+function truncatePreviewText(value, maxLength = 120) {
+  const safeValue = String(value || '').trim();
+  if (!safeValue) return '';
+  if (safeValue.length <= maxLength) return safeValue;
+  return `${safeValue.slice(0, maxLength - 1)}…`;
+}
+
+function truncateReplyText(value, maxLength = 120) {
+  const safeValue = String(value || '').trim();
+  if (!safeValue) return '';
+  if (safeValue.length <= maxLength) return safeValue;
+  return `${safeValue.slice(0, Math.max(0, maxLength - 3))}...`;
+}
+
+function replyPreviewText(message = {}) {
+  if (message?.deleted === true) return CHAT_UI_TEXT.deletedMessage;
+  const type = String(message?.type || '').trim().toLowerCase();
+  if (type === 'audio') return '[Audio]';
+  if (type === 'image') return '[Imagen]';
+  if (type === 'file') return '[Archivo]';
+  return truncateReplyText(message?.text || message?.content || '[Mensaje]');
+}
+
+function messageSummaryPayload(message = {}) {
+  return {
+    id: String(message?.id || '').trim(),
+    senderId: String(message?.senderId || '').trim(),
+    senderName: String(message?.senderName || '').trim() || CHAT_UI_TEXT.userFallback,
+    text: truncateReplyText(message?.text || message?.content || ''),
+    type: String(message?.type || 'text').trim().toLowerCase() || 'text',
+    deleted: message?.deleted === true,
+  };
+}
+
+function renderComposeContext(container, state) {
+  if (!(container instanceof HTMLElement)) return;
+  const root = qRole('compose-context', container);
+  if (!(root instanceof HTMLElement)) return;
+  const mode = state?.editTarget ? 'edit' : state?.replyTo ? 'reply' : '';
+  if (!mode) {
+    root.hidden = true;
+    root.innerHTML = '';
+    return;
+  }
+
+  const payload = mode === 'edit' ? state.editTarget : state.replyTo;
+  const title = mode === 'edit'
+    ? CHAT_UI_TEXT.editMessage
+    : `${CHAT_UI_TEXT.replyTo} ${esc(payload?.senderName || CHAT_UI_TEXT.userFallback)}`;
+  const text = replyPreviewText(payload);
+  root.hidden = false;
+  root.innerHTML = `
+    <div class="mini-chat-v4-compose-context-card is-${mode}">
+      <div class="mini-chat-v4-compose-context-copy">
+        <div class="mini-chat-v4-compose-context-title">${title}</div>
+        <div class="mini-chat-v4-compose-context-text">${esc(text || '[Mensaje]')}</div>
+      </div>
+      <button class="mini-chat-v4-compose-context-close" type="button" data-mini-chat-compose-cancel="1" aria-label="Cancelar">&times;</button>
+    </div>
+  `;
+}
+
+function formatAudioPlayerTime(seconds) {
+  const safeSeconds = Number(seconds);
+  if (!Number.isFinite(safeSeconds) || safeSeconds <= 0) return '0:00';
+  const total = Math.floor(safeSeconds);
+  const minutes = Math.floor(total / 60);
+  const remainder = total % 60;
+  return `${minutes}:${String(remainder).padStart(2, '0')}`;
+}
+
+function pauseOtherAudioPlayers(activeAudio) {
+  document.querySelectorAll('.mini-chat-v4-audio').forEach((node) => {
+    if (!(node instanceof HTMLAudioElement)) return;
+    if (activeAudio instanceof HTMLAudioElement && node === activeAudio) return;
+    if (!node.paused) node.pause();
+  });
+}
+
+function syncAudioPlayerUi(player) {
+  if (!(player instanceof HTMLElement)) return;
+  const audio = qs('.mini-chat-v4-audio', player);
+  const icon = qs('[data-mini-chat-audio-icon]', player);
+  const progress = qs('[data-mini-chat-audio-progress]', player);
+  const time = qs('[data-mini-chat-audio-time]', player);
+  if (!(audio instanceof HTMLAudioElement)) return;
+
+  const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+  const current = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+  const ratio = duration > 0 ? Math.max(0, Math.min(100, (current / duration) * 100)) : 0;
+
+  player.classList.toggle('is-playing', !audio.paused && !audio.ended);
+  if (icon instanceof HTMLElement) {
+    icon.innerHTML = audio.paused || audio.ended ? '&#9654;' : '&#10073;&#10073;';
+  }
+  if (progress instanceof HTMLElement) {
+    progress.style.width = `${ratio}%`;
+  }
+  if (time instanceof HTMLElement) {
+    time.textContent = formatAudioPlayerTime(audio.paused || audio.ended ? duration || current : current);
+  }
+}
+
+function wireAudioPlayerElement(player) {
+  if (!(player instanceof HTMLElement)) return;
+  if (player.dataset.audioWired === '1') {
+    syncAudioPlayerUi(player);
+    return;
+  }
+  player.dataset.audioWired = '1';
+
+  const audio = qs('.mini-chat-v4-audio', player);
+  const toggle = qs('[data-mini-chat-audio-toggle]', player);
+  const track = qs('[data-mini-chat-audio-track]', player);
+  if (!(audio instanceof HTMLAudioElement)) return;
+
+  const updateUi = () => syncAudioPlayerUi(player);
+
+  toggle?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (audio.paused || audio.ended) {
+      pauseOtherAudioPlayers(audio);
+      audio.play().catch(() => null);
+      return;
+    }
+    audio.pause();
+  });
+
+  track?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!(track instanceof HTMLElement)) return;
+    const rect = track.getBoundingClientRect();
+    const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+    if (!duration || rect.width <= 0) return;
+    const offsetX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+    audio.currentTime = (offsetX / rect.width) * duration;
+    updateUi();
+  });
+
+  ['loadedmetadata', 'timeupdate', 'play', 'pause', 'ended', 'durationchange'].forEach((eventName) => {
+    audio.addEventListener(eventName, updateUi);
+  });
+
+  updateUi();
+}
+
+function wireAudioPlayers(container) {
+  if (!(container instanceof HTMLElement)) return;
+  container.querySelectorAll('.mini-chat-v4-audio-player').forEach((player) => {
+    wireAudioPlayerElement(player);
+  });
+}
+
+function setComposeReply(scope, conversationId, message, thread = null) {
+  const state = composeStateFor(scope, thread);
+  state.conversationId = String(conversationId || '').trim();
+  state.editTarget = null;
+  state.replyTo = messageSummaryPayload(message);
+  if (scope === 'thread' && thread?.element instanceof HTMLElement) {
+    renderComposeContext(thread.element, state);
+    thread.inputEl?.focus();
+    return;
+  }
+  renderComposeContext(activePanelScope(), state);
+  qRole('input', activePanelScope())?.focus();
+}
+
+function setComposeEdit(scope, conversationId, message, thread = null) {
+  const state = composeStateFor(scope, thread);
+  state.conversationId = String(conversationId || '').trim();
+  state.replyTo = null;
+  state.editTarget = messageSummaryPayload(message);
+  const targetInput =
+    scope === 'thread' && thread?.inputEl instanceof HTMLTextAreaElement
+      ? thread.inputEl
+      : qRole('input', activePanelScope());
+  if (targetInput instanceof HTMLTextAreaElement) {
+    targetInput.value = String(message?.text || '').trim();
+    if (scope === 'thread') {
+      resizeThreadInput(targetInput);
+    } else {
+      resizeInput();
+    }
+    targetInput.focus();
+  }
+  if (scope === 'thread' && thread?.element instanceof HTMLElement) {
+    renderComposeContext(thread.element, state);
+    return;
+  }
+  renderComposeContext(activePanelScope(), state);
+}
+
+function clearComposeContext(scope = 'panel', thread = null) {
+  const state = composeStateFor(scope, thread);
+  clearComposeState(state);
+  if (scope === 'thread' && thread?.element instanceof HTMLElement) {
+    renderComposeContext(thread.element, state);
+    return;
+  }
+  renderComposeContext(activePanelScope(), state);
 }
 
 function generateSuggestions(text) {
@@ -3027,6 +3367,28 @@ function normalizeProfile(uid, raw = {}) {
   };
 }
 
+function setAvatarElement(element, title = '', avatarUrl = '') {
+  if (!(element instanceof HTMLElement)) return;
+  const safeUrl = String(avatarUrl || '').trim();
+  const safeTitle = String(title || '').trim() || 'Usuario';
+  if (!safeUrl) {
+    element.classList.remove('has-image');
+    element.innerHTML = '';
+    element.textContent = initials(safeTitle);
+    return;
+  }
+
+  element.classList.add('has-image');
+  element.innerHTML = `<img src="${esc(safeUrl)}" alt="${esc(safeTitle)}" loading="lazy" />`;
+}
+
+function syncConversationMenuLabels(scope, conversation = null) {
+  if (!(scope instanceof HTMLElement)) return;
+  const archiveBtn = scope.querySelector('[data-conversation-action="archive"]');
+  if (!(archiveBtn instanceof HTMLElement)) return;
+  archiveBtn.textContent = conversation?.archivedAt ? 'Desarchivar' : 'Archivar';
+}
+
 function getCachedProfile(uid) {
   const cleanUid = String(uid || '').trim();
   if (!cleanUid) return profileFallback('');
@@ -3073,7 +3435,7 @@ function mapUserChatRow(docSnap, uid) {
     otherUid = members.find((candidate) => candidate !== uid) || '';
   }
   const profile = getCachedProfile(otherUid);
-  const title = String(profile.displayName || '').trim() || String(data.otherName || '').trim() || 'Conversacion';
+    const title = String(profile.displayName || '').trim() || String(data.otherName || '').trim() || CHAT_UI_TEXT.conversationFallback;
 
   return {
     id: conversationId,
@@ -3085,6 +3447,7 @@ function mapUserChatRow(docSnap, uid) {
       return memberUid.slice(0, 8) || 'Usuario';
     }),
     title,
+    avatarUrl: profile.avatarUrl,
     otherUid,
     otherName: title,
     lastMessage: {
@@ -3096,6 +3459,9 @@ function mapUserChatRow(docSnap, uid) {
     lastAt: data.lastMessageAt || data.updatedAt || null,
     updatedAt: data.updatedAt || data.lastMessageAt || null,
     unreadCount: Number(data.unreadCount || 0) || 0,
+    archivedAt: data.archivedAt || null,
+    deletedAt: data.deletedAt || null,
+    lastReadMessageId: String(data.lastReadMessageId || '').trim(),
     reads: {
       [uid]: data.lastReadAt || null,
     },
@@ -3119,7 +3485,7 @@ function mapConversationDoc(docSnap, uid) {
     : [];
   const otherUid = members.find((candidate) => candidate !== uid) || '';
   const profile = getCachedProfile(otherUid);
-  const title = String(profile.displayName || '').trim() || 'Conversacion';
+  const title = String(profile.displayName || '').trim() || CHAT_UI_TEXT.conversationFallback;
 
   return {
     id: conversationId,
@@ -3131,6 +3497,7 @@ function mapConversationDoc(docSnap, uid) {
       return memberUid.slice(0, 8) || 'Usuario';
     }),
     title,
+    avatarUrl: profile.avatarUrl,
     otherUid,
     otherName: title,
     lastMessage: {
@@ -3142,6 +3509,9 @@ function mapConversationDoc(docSnap, uid) {
     lastAt: data.lastMessageAt || data.updatedAt || null,
     updatedAt: data.updatedAt || data.lastMessageAt || null,
     unreadCount: 0,
+    archivedAt: data.archivedAt || null,
+    deletedAt: data.deletedAt || null,
+    lastReadMessageId: '',
     reads: {
       [uid]: null,
     },
@@ -3228,11 +3598,12 @@ function refreshConversationProfiles() {
     const otherUid = String(conversation?.otherUid || '').trim();
     if (!otherUid) return conversation;
     const profile = getCachedProfile(otherUid);
-    const title = String(profile.displayName || '').trim() || conversation.title || conversation.otherName || 'Conversacion';
+    const title = String(profile.displayName || '').trim() || conversation.title || conversation.otherName || CHAT_UI_TEXT.conversationFallback;
     const participants = Array.isArray(conversation?.participants) ? conversation.participants : [];
     return {
       ...conversation,
       title,
+      avatarUrl: profile.avatarUrl,
       otherName: title,
       participantNames: participants.map((memberUid) => {
         if (memberUid === uid) return currentName;
@@ -3712,26 +4083,23 @@ const {
 
 function messageHtml(message, conversationId, reactionData = new Map(), deliveryStatus = null) {
   const html = baseMessageHtml(message, conversationId, reactionData);
+  const currentUserId = String(getChatState().currentUid || '').trim();
   const msgId = String(message?.id || '').trim();
   const senderId = String(message?.senderId || '').trim();
-  const currentUserId = String(getChatState().currentUid || '').trim();
-  const statusMessageId = String(deliveryStatus?.messageId || '').trim();
-  const statusLabelHtml = String(deliveryStatus?.labelHtml || '').trim();
-  const statusClassName = String(deliveryStatus?.className || '').trim();
+  const isMine = !!currentUserId && !!msgId && senderId === currentUserId;
+
   if (
-    !statusMessageId ||
-    !statusLabelHtml ||
-    !msgId ||
-    msgId !== statusMessageId ||
-    !currentUserId ||
-    senderId !== currentUserId
+    !isMine ||
+    !deliveryStatus ||
+    String(deliveryStatus.messageId || '').trim() !== msgId ||
+    !String(deliveryStatus.labelHtml || '').trim()
   ) {
     return html;
   }
 
   return html.replace(
     '</article>',
-    `</article><div class="mini-chat-v4-delivery-status${statusClassName ? ` ${statusClassName}` : ''}">${statusLabelHtml}</div>`,
+    `<div class="mini-chat-v4-delivery-status${deliveryStatus.className ? ` ${deliveryStatus.className}` : ''}">${deliveryStatus.labelHtml}</div></article>`,
   );
 }
 
@@ -3839,6 +4207,167 @@ function panelUploadUi() {
     input: qRole('input', scope),
     fileInput: qRole('file-input', scope),
   };
+}
+
+function rowsForScope(scope = 'panel', thread = null) {
+  if (scope === 'thread' && thread && Array.isArray(thread.rows)) {
+    return thread.rows;
+  }
+  return Array.isArray(panelReactionState.rows) ? panelReactionState.rows : [];
+}
+
+function findMessageForScope(scope = 'panel', conversationId = '', messageId = '', thread = null) {
+  const convId = String(conversationId || '').trim();
+  const msgId = String(messageId || '').trim();
+  if (!convId || !msgId) return null;
+  return rowsForScope(scope, thread).find(
+    (message) =>
+      String(message?.id || '').trim() === msgId &&
+      String(conversationId || '').trim() === convId,
+  ) || null;
+}
+
+function closeConversationMenus(except = null) {
+  document.querySelectorAll('[data-mini-chat-role="conversation-menu"]').forEach((menu) => {
+    if (!(menu instanceof HTMLElement)) return;
+    if (except instanceof HTMLElement && menu === except) return;
+    menu.hidden = true;
+  });
+}
+
+function wireConversationMenuOutsideClick() {
+  if (conversationMenuOutsideClickWired) return;
+  conversationMenuOutsideClickWired = true;
+
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      closeConversationMenus();
+      return;
+    }
+    if (
+      target.closest('[data-mini-chat-role="conversation-menu"]') ||
+      target.closest('[data-mini-chat-role="conversation-menu-toggle"]')
+    ) {
+      return;
+    }
+    closeConversationMenus();
+  });
+}
+
+function wireConversationMenu(scopeRoot, { getConversationId, thread = null } = {}) {
+  if (!(scopeRoot instanceof HTMLElement)) return;
+  if (scopeRoot.dataset.conversationMenuWired === '1') return;
+  scopeRoot.dataset.conversationMenuWired = '1';
+
+  const toggle = qRole('conversation-menu-toggle', scopeRoot);
+  const menu = qRole('conversation-menu', scopeRoot);
+  if (!(toggle instanceof HTMLElement) || !(menu instanceof HTMLElement)) return;
+  wireConversationMenuOutsideClick();
+
+  toggle.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const willOpen = menu.hidden;
+    closeConversationMenus();
+    menu.hidden = !willOpen;
+  });
+
+  menu.addEventListener('click', async (event) => {
+    const actionTarget = event.target instanceof Element
+      ? event.target.closest('[data-conversation-action]')
+      : null;
+    if (!(actionTarget instanceof HTMLElement)) return;
+    const action = String(actionTarget.dataset.conversationAction || '').trim();
+    const convId = String(typeof getConversationId === 'function' ? getConversationId() : '').trim();
+    if (!convId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    menu.hidden = true;
+
+    if (action === 'archive') {
+      const conversation = ChatController.getConversation(convId);
+      await firestoreController.setConversationArchived(convId, !conversation?.archivedAt).catch((error) => {
+        console.warn('[mini-chat-v4] archive conversation failed', error);
+      });
+      return;
+    }
+
+    if (action === 'delete') {
+      const confirmed = window.confirm(CHAT_UI_TEXT.confirmDeleteConversation);
+      if (!confirmed) return;
+      await firestoreController.deleteConversationForCurrentUser(convId).catch((error) => {
+        console.warn('[mini-chat-v4] delete conversation failed', error);
+      });
+      if (scopeRoot === activePanelScope()) {
+        navigateToConversation('', { replace: true });
+      }
+      if (thread && openThreads.has(convId)) {
+        closeThread(convId);
+      }
+    }
+  });
+}
+
+function wireMessageActionInteractions(container, { scope = 'panel', thread = null } = {}) {
+  if (!(container instanceof HTMLElement)) return;
+  if (container.dataset.messageActionWired === '1') return;
+  container.dataset.messageActionWired = '1';
+
+  container.addEventListener('click', async (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const actionButton = target.closest('[data-msg-action]');
+    if (!(actionButton instanceof HTMLElement)) return;
+
+    const row = actionButton.closest('.mini-chat-v4-message-row');
+    if (!(row instanceof HTMLElement)) return;
+    const convId = String(row.dataset.convId || '').trim();
+    const msgId = String(row.dataset.msgId || '').trim();
+    const action = String(actionButton.dataset.msgAction || '').trim();
+    const message = findMessageForScope(scope, convId, msgId, thread);
+    if (!message) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (action === 'reply') {
+      setComposeReply(scope, convId, message, thread);
+      return;
+    }
+
+    if (action === 'edit') {
+      setComposeEdit(scope, convId, message, thread);
+      return;
+    }
+
+    if (action === 'delete') {
+      const confirmed = window.confirm(CHAT_UI_TEXT.confirmDeleteMessage);
+      if (!confirmed) return;
+      await firestoreController.deleteMessage(convId, msgId).catch((error) => {
+        console.warn('[mini-chat-v4] delete message failed', error);
+      });
+      const state = composeStateFor(scope, thread);
+      if (String(state?.editTarget?.id || '').trim() === msgId || String(state?.replyTo?.id || '').trim() === msgId) {
+        clearComposeContext(scope, thread);
+      }
+    }
+  });
+}
+
+function wireComposeContextInteractions(scopeRoot, { scope = 'panel', thread = null } = {}) {
+  if (!(scopeRoot instanceof HTMLElement)) return;
+  if (scopeRoot.dataset.composeContextWired === '1') return;
+  scopeRoot.dataset.composeContextWired = '1';
+
+  scopeRoot.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const cancelButton = target.closest('[data-mini-chat-compose-cancel]');
+    if (!(cancelButton instanceof HTMLElement)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    clearComposeContext(scope, thread);
+  });
 }
 
 function setUploadUi({ wrap, bar, attachBtn, recordBtn, speechBtn, sendBtn, input, fileInput }, uploading = false, progress = 0) {
@@ -3960,6 +4489,10 @@ function wirePageHostControls(host) {
   });
 
   const threadView = qRole('thread-view', host);
+  wireConversationMenu(host, {
+    getConversationId: () => ChatController.getActiveConversation(),
+  });
+  wireComposeContextInteractions(host, { scope: 'panel' });
   wireConversationDropZone(
     threadView instanceof HTMLElement ? threadView : host,
     {
@@ -3970,6 +4503,7 @@ function wirePageHostControls(host) {
 
   resizeInput();
   setPanelUploading(false, 0);
+  renderComposeContext(host, panelComposeState);
   syncVoiceRecordingUi();
   syncSpeechRecognitionUi();
   syncCallUi();
@@ -4054,15 +4588,22 @@ async function sendMessage() {
 
   const input = qRole('input', activePanelScope());
   const text = String(input?.value || '').trim();
+  const composeState = panelComposeState;
   if (!text) return;
 
-  if (input) {
-    input.value = '';
-    resizeInput();
-  }
-
   try {
-    await firestoreController.sendMessageToConversation(activeId, text);
+    if (composeState.editTarget?.id) {
+      await firestoreController.editMessage(activeId, composeState.editTarget.id, text);
+    } else {
+      await firestoreController.sendMessageToConversation(activeId, text, {
+        replyTo: composeState.replyTo || null,
+      });
+    }
+    if (input) {
+      input.value = '';
+      resizeInput();
+    }
+    clearComposeContext('panel');
   } catch (error) {
     console.warn('[mini-chat-v4] send failed', error);
   }
@@ -4162,6 +4703,7 @@ function createThreadWindow(conversationId) {
     presenceUid: '',
     minimizeTimer: 0,
     aiSuggestionState: createAiSuggestionState(),
+    composeState: createComposeState(),
     reactionUnsubs: new Map(),
     reactionData: new Map(),
     rows: [],
@@ -4182,6 +4724,14 @@ function createThreadWindow(conversationId) {
     submitMessage: null,
   };
   openThreads.set(convId, threadState);
+  wireConversationMenu(container, {
+    getConversationId: () => convId,
+    thread: threadState,
+  });
+  wireComposeContextInteractions(container, {
+    scope: 'thread',
+    thread: threadState,
+  });
 
   const cachedRows = getCachedMessages(convId, { consumePreloaded: true });
   if (cachedRows.length) {
@@ -4203,6 +4753,7 @@ function createThreadWindow(conversationId) {
   });
 
   setThreadWindowMeta(convId, container);
+  renderComposeContext(container, threadState.composeState);
 
   const closeBtn = qs('.mini-chat-v4-thread-close', container);
   closeBtn?.addEventListener('click', () => closeThread(convId));
@@ -4222,13 +4773,21 @@ function createThreadWindow(conversationId) {
   const submit = async () => {
     if (threadState.uploading) return;
     const text = String(input?.value || '').trim();
+    const composeState = composeStateFor('thread', threadState);
     if (!text) return;
-    if (input) {
-      input.value = '';
-      resizeThreadInput(input);
-    }
     try {
-      await firestoreController.sendMessageToConversation(convId, text);
+      if (composeState.editTarget?.id) {
+        await firestoreController.editMessage(convId, composeState.editTarget.id, text);
+      } else {
+        await firestoreController.sendMessageToConversation(convId, text, {
+          replyTo: composeState.replyTo || null,
+        });
+      }
+      if (input) {
+        input.value = '';
+        resizeThreadInput(input);
+      }
+      clearComposeContext('thread', threadState);
     } catch (error) {
       console.warn('[mini-chat-v4] send thread failed', error);
     }
@@ -4418,6 +4977,7 @@ function setView(view) {
   const { host } = pageShell();
   const { listView, threadView } = dockShell();
   if (view !== 'thread') {
+    clearComposeContext('panel');
     stopVoiceRecordingForConversation(voiceRecorderState.conversationId, {
       discard: true,
       scope: 'panel',
@@ -4517,6 +5077,7 @@ function renderThreadMeta(conversationId, nextConversations = null) {
     conversationRows.find((item) => item.id === conversationId) || null;
   const title = getConversationTitle(conversation, currentName, norm);
   const fallback = conversationStatusFallback(conversation);
+  const avatarUrl = String(conversation?.avatarUrl || '').trim();
   const scopes = [];
   const { host } = pageShell();
   const { dock } = dockShell();
@@ -4531,7 +5092,8 @@ function renderThreadMeta(conversationId, nextConversations = null) {
 
     if (titleEl) titleEl.textContent = title;
     if (statusEl) applyPresenceStatus(statusEl, { fallback });
-    if (avatarEl) avatarEl.textContent = initials(title);
+    setAvatarElement(avatarEl, title, avatarUrl);
+    syncConversationMenuLabels(scope, conversation);
   });
 
   setOpenLinks(conversationId);
@@ -4547,15 +5109,17 @@ function renderMessages(
   const body = qRole('messages', activePanelScope());
   if (!(body instanceof HTMLElement)) return;
   wireReactionInteractions(body);
+  wireMessageActionInteractions(body, { scope: 'panel' });
   const deliveryStatus = getDeliveryStatus(rows, conversationId);
-
-  body.innerHTML = buildMessagesHtml({
-    rows,
-    conversationId,
-    reactionData,
-    messageHtml: (message, convId, reactions) =>
-      messageHtml(message, convId, reactions, deliveryStatus),
-  });
+  if (
+    panelComposeState.conversationId &&
+    panelComposeState.conversationId !== String(conversationId || '').trim()
+  ) {
+    clearComposeState(panelComposeState);
+  }
+  body.innerHTML = buildMessageTimelineHtml(rows, conversationId, reactionData, deliveryStatus);
+  wireAudioPlayers(body);
+  renderComposeContext(activePanelScope(), panelComposeState);
   renderPanelAiSuggestions(rows, conversationId);
   body.scrollTop = body.scrollHeight;
 }
@@ -4569,16 +5133,19 @@ function renderThreadWindowMessages(
   if (!(container instanceof HTMLElement)) return;
   const body = qs('.mini-chat-v4-thread-messages', container);
   if (!body) return;
+  const threadState = openThreads.get(String(conversationId || '').trim()) || null;
   wireReactionInteractions(body);
-  const deliveryStatus = getDeliveryStatus(rows, conversationId);
-
-  body.innerHTML = buildMessagesHtml({
-    rows,
-    conversationId,
-    reactionData,
-    messageHtml: (message, convId, reactions) =>
-      messageHtml(message, convId, reactions, deliveryStatus),
+  wireMessageActionInteractions(body, {
+    scope: 'thread',
+    thread: threadState,
   });
+  const deliveryStatus = getDeliveryStatus(rows, conversationId);
+  body.innerHTML = buildMessageTimelineHtml(rows, conversationId, reactionData, deliveryStatus);
+  wireAudioPlayers(body);
+  renderComposeContext(
+    container,
+    threadState?.composeState || createComposeState(),
+  );
   renderThreadAiSuggestions(
     container,
     rows,
@@ -4592,6 +5159,7 @@ function setThreadWindowMeta(conversationId, container) {
   if (!(container instanceof HTMLElement)) return;
   const conversation = ChatController.getConversation(conversationId);
   const title = getConversationTitle(conversation, currentName, norm);
+  const avatarUrl = String(conversation?.avatarUrl || '').trim();
   const { titleEl, statusEl } = ensureThreadWindowMetaNodes(container);
   if (titleEl) titleEl.textContent = title;
   if (statusEl) {
@@ -4599,6 +5167,8 @@ function setThreadWindowMeta(conversationId, container) {
       fallback: conversationStatusFallback(conversation),
     });
   }
+  setAvatarElement(qs('.mini-chat-v4-thread-avatar', container), title, avatarUrl);
+  syncConversationMenuLabels(container, conversation);
   syncCallUi();
 }
 
@@ -4714,6 +5284,7 @@ function renderTray() {
     const convId = String(id || '').trim();
     const conversation = ChatController.getConversation(convId);
     const title = getConversationTitle(conversation);
+    const avatarUrl = String(conversation?.avatarUrl || '').trim();
     const bubble = document.createElement('button');
     bubble.className = 'mini-chat-v4-tray-bubble';
     bubble.type = 'button';
@@ -4724,7 +5295,7 @@ function renderTray() {
     );
     const badgeText = unreadCount > 99 ? '99+' : String(unreadCount);
     bubble.innerHTML = `
-      <span class="mini-chat-v4-tray-avatar">${esc(initials(title))}</span>
+      <span class="mini-chat-v4-tray-avatar${avatarUrl ? ' has-image' : ''}">${avatarUrl ? `<img src="${esc(avatarUrl)}" alt="${esc(title)}" loading="lazy" />` : esc(initials(title))}</span>
       ${
         unreadCount > 0
           ? `<span class="mini-chat-v4-tray-badge">${esc(badgeText)}</span>`
@@ -4748,6 +5319,7 @@ function closeThread(conversationId) {
   const convId = String(conversationId || '').trim();
   const thread = openThreads.get(convId);
   if (!thread) return;
+  clearComposeContext('thread', thread);
   if (callSessionState.conversationId === convId) {
     endActiveCall({ updateSignal: true }).catch(() => null);
   }
@@ -4945,8 +5517,13 @@ function ensureDock() {
     clearTypingPresence(ChatController.getActiveConversation(), { force: true }).catch(() => null);
   });
 
+  wireConversationMenu(dock, {
+    getConversationId: () => ChatController.getActiveConversation(),
+  });
+  wireComposeContextInteractions(dock, { scope: 'panel' });
   resizeInput();
   setPanelUploading(false, 0);
+  renderComposeContext(dock, panelComposeState);
   syncVoiceRecordingUi();
   syncSpeechRecognitionUi();
   syncCallUi();
@@ -5254,7 +5831,9 @@ export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
     conversationQuery,
     (snapshot) => {
       const nextRows = sortConversationRows(
-        (snapshot.docs || []).map((docSnap) => mapUserChatRow(docSnap, uid)),
+        (snapshot.docs || [])
+          .map((docSnap) => mapUserChatRow(docSnap, uid))
+          .filter((row) => !row?.deletedAt),
       );
       ChatController.setConversations(nextRows);
       preloadTopConversationMessages(nextRows);

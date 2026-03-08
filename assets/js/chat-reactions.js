@@ -245,12 +245,13 @@ export function createMiniChatReactionController({
   function messageHtml(message, conversationId, reactionData = new Map()) {
     const currentUid = String(getCurrentUid() || '').trim();
     const mine = String(message?.senderId || '').trim() === currentUid;
+    const deleted = message?.deleted === true;
     const bubbleClass = mine
       ? 'mini-chat-v4-bubble mini-chat-v4-bubble--me'
       : 'mini-chat-v4-bubble mini-chat-v4-bubble--other';
     const rowClass = mine
-      ? 'mini-chat-v4-message-row is-me'
-      : 'mini-chat-v4-message-row is-other';
+      ? `mini-chat-v4-message-row is-me${deleted ? ' is-deleted' : ''}`
+      : `mini-chat-v4-message-row is-other${deleted ? ' is-deleted' : ''}`;
     const msgId = String(message?.id || '').trim();
     const convId = String(conversationId || '').trim();
     const summary = reactionData instanceof Map ? reactionData.get(msgId) : null;
@@ -259,7 +260,7 @@ export function createMiniChatReactionController({
     const contentHtml = messageContentHtml(message);
 
     return `
-      <div class="${rowClass}" data-conv-id="${esc(convId)}" data-msg-id="${esc(msgId)}">
+      <div class="${rowClass}" data-conv-id="${esc(convId)}" data-msg-id="${esc(msgId)}" data-sender-id="${esc(message?.senderId || '')}" data-msg-type="${esc(message?.type || 'text')}">
         <article class="${bubbleClass}">
           ${contentHtml}
           <div class="mini-chat-v4-bubble-meta">${esc(fmtTime(message?.createdAt))}</div>

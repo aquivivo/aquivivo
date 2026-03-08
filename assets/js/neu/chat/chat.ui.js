@@ -1,3 +1,5 @@
+// Compatibility adapter kept for neu-app.boot.js.
+// Core UI wiring happens inside global-mini-chat.js when the chat shell is mounted.
 let chatUiInitialized = false;
 
 export function createChatUi() {

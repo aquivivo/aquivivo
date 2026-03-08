@@ -5,6 +5,17 @@ export function createMiniChatUploadController({
   getDownloadURL,
   esc,
 }) {
+  const CHAT_UPLOAD_TEXT = Object.freeze({
+    userFallback: 'Usuario',
+    replyMessage: '[Mensaje]',
+    replyImage: '[Imagen]',
+    replyFile: '[Archivo]',
+    replyAudio: '[Audio]',
+    deletedMessage: 'Mensaje eliminado',
+    attachmentFallback: '[Adjunto]',
+    edited: 'editado',
+  });
+
   let uploadInFlight = false;
 
   function acquireUploadLock() {
@@ -52,23 +63,68 @@ export function createMiniChatUploadController({
   }
 
   function messageContentHtml(message = {}) {
+    const deleted = message?.deleted === true;
     const type = messageAttachmentType(message);
     const textRaw = String(message?.text || '').trim();
     const safeText = esc(textRaw).replace(/\n/g, '<br />');
+    const replyToMessageId = String(message?.replyToMessageId || '').trim();
+    const replyToTextRaw = String(message?.replyToText || '').trim();
+    const replyToSenderName = String(message?.replyToSenderName || '').trim() || CHAT_UPLOAD_TEXT.userFallback;
+    const safeReplyText = esc(replyToTextRaw).replace(/\n/g, '<br />');
+    const replyType = String(message?.replyToType || '').trim().toLowerCase();
     const imageUrl = String(message?.imageUrl || '').trim();
     const fileUrl = String(message?.fileUrl || imageUrl).trim();
     const fileName = String(message?.fileName || (imageUrl ? 'imagen' : '')).trim() || 'archivo';
     const fileSize = formatFileSize(message?.fileSize);
     const fileLabel = fileSize ? `${fileName} (${fileSize})` : fileName;
     const out = [];
+    const hasReplyMetadata = Boolean(
+      replyToMessageId ||
+      replyToTextRaw ||
+      replyType === 'audio' ||
+      replyType === 'image' ||
+      replyType === 'file',
+    );
+
+    if (hasReplyMetadata) {
+      const replyLabel = replyType === 'audio'
+        ? CHAT_UPLOAD_TEXT.replyAudio
+        : replyType === 'image'
+          ? CHAT_UPLOAD_TEXT.replyImage
+          : replyType === 'file'
+            ? CHAT_UPLOAD_TEXT.replyFile
+            : safeReplyText || CHAT_UPLOAD_TEXT.replyMessage;
+      out.push(`
+        <div class="mini-chat-v4-reply-snippet">
+          <div class="mini-chat-v4-reply-author">${esc(replyToSenderName)}</div>
+          <div class="mini-chat-v4-reply-text">${replyLabel}</div>
+        </div>
+      `);
+    }
+
+    if (deleted) {
+      out.push(`<div class="mini-chat-v4-bubble-text mini-chat-v4-bubble-text--deleted">${CHAT_UPLOAD_TEXT.deletedMessage}</div>`);
+      return out.join('');
+    }
 
     if (type === 'image' && fileUrl) {
       out.push(`<img class="mini-chat-v4-image" src="${esc(fileUrl)}" alt="${esc(fileName)}" loading="lazy" />`);
     } else if (type === 'audio' && fileUrl) {
       const mimeType = String(message?.mimeType || 'audio/webm').trim() || 'audio/webm';
-      out.push(
-        `<audio class="mini-chat-v4-audio" controls preload="metadata"><source src="${esc(fileUrl)}" type="${esc(mimeType)}" /></audio>`,
-      );
+      out.push(`
+        <div class="mini-chat-v4-audio-player" data-mini-chat-audio-player="1">
+          <button class="mini-chat-v4-audio-toggle" type="button" data-mini-chat-audio-toggle="1" aria-label="Reproducir audio">
+            <span class="mini-chat-v4-audio-toggle-icon" data-mini-chat-audio-icon="1">&#9654;</span>
+          </button>
+          <button class="mini-chat-v4-audio-track" type="button" data-mini-chat-audio-track="1" aria-label="Mover reproducción">
+            <span class="mini-chat-v4-audio-progress" data-mini-chat-audio-progress="1"></span>
+          </button>
+          <span class="mini-chat-v4-audio-time" data-mini-chat-audio-time="1">0:00</span>
+          <audio class="mini-chat-v4-audio" preload="metadata">
+            <source src="${esc(fileUrl)}" type="${esc(mimeType)}" />
+          </audio>
+        </div>
+      `);
     } else if (type === 'file' && fileUrl) {
       out.push(
         `<a class="mini-chat-v4-file" href="${esc(fileUrl)}" download="${esc(fileName)}" target="_blank" rel="noopener">&#128206; ${esc(fileLabel)}</a>`,
@@ -76,7 +132,8 @@ export function createMiniChatUploadController({
     }
 
     if (safeText) out.push(`<div class="mini-chat-v4-bubble-text">${safeText}</div>`);
-    if (!out.length) out.push('<div class="mini-chat-v4-bubble-text">[Adjunto]</div>');
+    if (message?.editedAt) out.push(`<div class="mini-chat-v4-edited-label">${CHAT_UPLOAD_TEXT.edited}</div>`);
+    if (!out.length) out.push(`<div class="mini-chat-v4-bubble-text">${CHAT_UPLOAD_TEXT.attachmentFallback}</div>`);
     return out.join('');
   }
 

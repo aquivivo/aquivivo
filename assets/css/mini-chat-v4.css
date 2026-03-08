@@ -44,6 +44,24 @@ body.fusion-profile.neu-social-app .mini-chat-v4-thread-avatar {
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
+body.fusion-profile.neu-social-app .mini-chat-v4-row-avatar.has-image,
+body.fusion-profile.neu-social-app .mini-chat-v4-thread-avatar.has-image,
+body.fusion-profile.neu-social-app .mini-chat-v4-tray-avatar.has-image {
+  overflow: hidden;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.1);
+  color: transparent;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-row-avatar.has-image img,
+body.fusion-profile.neu-social-app .mini-chat-v4-thread-avatar.has-image img,
+body.fusion-profile.neu-social-app .mini-chat-v4-tray-avatar.has-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
 body.fusion-profile.neu-social-app .neuInboxList .mini-chat-v4-row-main,
 body.fusion-profile.neu-social-app .mini-chat-v4-thread-meta {
   min-width: 0;
@@ -56,6 +74,29 @@ body.fusion-profile.neu-social-app .neuInboxList .mini-chat-v4-row-top {
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-row-title-wrap {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-row-badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(230, 236, 255, 0.84);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-row.is-archived {
+  opacity: 0.82;
 }
 
 body.fusion-profile.neu-social-app .neuInboxList .mini-chat-v4-row-title,
@@ -124,10 +165,12 @@ body.fusion-profile.neu-social-app .mini-chat-v4-thread-head-actions {
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
+  position: relative;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-icon,
 body.fusion-profile.neu-social-app .mini-chat-v4-open-thread,
+body.fusion-profile.neu-social-app .mini-chat-v4-menu,
 body.fusion-profile.neu-social-app .mini-chat-v4-attach,
 body.fusion-profile.neu-social-app .mini-chat-v4-record,
 body.fusion-profile.neu-social-app .mini-chat-v4-speech,
@@ -148,6 +191,7 @@ body.fusion-profile.neu-social-app .mini-chat-v4-send {
 
 body.fusion-profile.neu-social-app .mini-chat-v4-icon:hover,
 body.fusion-profile.neu-social-app .mini-chat-v4-open-thread:hover,
+body.fusion-profile.neu-social-app .mini-chat-v4-menu:hover,
 body.fusion-profile.neu-social-app .mini-chat-v4-attach:hover,
 body.fusion-profile.neu-social-app .mini-chat-v4-record:hover,
 body.fusion-profile.neu-social-app .mini-chat-v4-speech:hover,
@@ -215,6 +259,7 @@ body.fusion-profile.neu-social-app .mini-chat-v4-message-row {
   flex-direction: column;
   gap: 6px;
   max-width: min(82%, 560px);
+  position: relative;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-message-row.is-other {
@@ -248,6 +293,43 @@ body.fusion-profile.neu-social-app .mini-chat-v4-bubble-text {
   word-break: break-word;
 }
 
+body.fusion-profile.neu-social-app .mini-chat-v4-bubble-text--deleted {
+  color: rgba(230, 236, 255, 0.68);
+  font-style: italic;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-reply-snippet {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  border-left: 3px solid rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-bubble--me .mini-chat-v4-reply-snippet {
+  background: rgba(16, 41, 93, 0.08);
+  border-left-color: rgba(16, 41, 93, 0.38);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-reply-author {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-reply-text,
+body.fusion-profile.neu-social-app .mini-chat-v4-edited-label {
+  font-size: 11px;
+  color: rgba(230, 236, 255, 0.72);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-bubble--me .mini-chat-v4-edited-label,
+body.fusion-profile.neu-social-app .mini-chat-v4-bubble--me .mini-chat-v4-reply-text {
+  color: rgba(16, 41, 93, 0.74);
+}
+
 body.fusion-profile.neu-social-app .mini-chat-v4-image {
   width: 100%;
   max-width: 280px;
@@ -268,17 +350,86 @@ body.fusion-profile.neu-social-app .mini-chat-v4-file {
   margin-bottom: 8px;
 }
 
-body.fusion-profile.neu-social-app .mini-chat-v4-audio {
+body.fusion-profile.neu-social-app .mini-chat-v4-audio-player {
   width: min(280px, 100%);
-  display: block;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
   margin-bottom: 8px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(8, 19, 54, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-bubble--me .mini-chat-v4-audio-player {
+  background: rgba(16, 41, 93, 0.12);
+  border-color: rgba(16, 41, 93, 0.14);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-audio-toggle,
+body.fusion-profile.neu-social-app .mini-chat-v4-audio-track {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-audio-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-audio-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-audio-progress {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(252, 209, 22, 0.95), rgba(59, 130, 246, 0.86));
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-audio-time {
+  min-width: 36px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(230, 236, 255, 0.8);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-bubble--me .mini-chat-v4-audio-time {
+  color: rgba(16, 41, 93, 0.78);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-audio {
+  display: none;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-image {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-reactions {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  margin-top: 2px;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-reaction-pill,
@@ -290,6 +441,7 @@ body.fusion-profile.neu-social-app .mini-chat-v4-reaction-option {
   padding: 4px 8px;
   font-size: 12px;
   cursor: pointer;
+  backdrop-filter: blur(8px);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-reaction-pill.mini-chat-reaction-animated {
@@ -442,6 +594,162 @@ body.fusion-profile.neu-social-app .mini-chat-v4-compose textarea:focus {
   box-shadow: 0 0 0 2px rgba(143, 179, 255, 0.12);
 }
 
+body.fusion-profile.neu-social-app .mini-chat-v4-day-divider,
+body.fusion-profile.neu-social-app .mini-chat-v4-unread-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-day-divider span,
+body.fusion-profile.neu-social-app .mini-chat-v4-unread-divider span {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(230, 236, 255, 0.7);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-unread-divider span {
+  border-color: rgba(252, 209, 22, 0.28);
+  background: rgba(252, 209, 22, 0.12);
+  color: #fff2ba;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-message-row.is-me .mini-chat-v4-message-actions {
+  justify-content: flex-end;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-msg-action {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(230, 236, 255, 0.88);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease, transform 0.14s ease;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-msg-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-msg-action.danger {
+  color: #ffd5dd;
+  border-color: rgba(255, 61, 95, 0.28);
+  background: rgba(255, 61, 95, 0.1);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-compose-context {
+  padding: 0 18px 12px;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-compose-context,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-compose-context {
+  padding: 0 14px 10px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-compose-context-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-compose-context-card.is-edit {
+  border-color: rgba(143, 179, 255, 0.26);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-compose-context-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-compose-context-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #f4f7ff;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-compose-context-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: rgba(230, 236, 255, 0.72);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-compose-context-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(230, 236, 255, 0.88);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-conversation-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 190px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(27, 45, 91, 0.98), rgba(9, 20, 47, 0.99));
+  box-shadow: 0 22px 44px rgba(3, 9, 27, 0.44);
+  backdrop-filter: blur(16px);
+  z-index: 25;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-conversation-menu-item {
+  width: 100%;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #f4f7ff;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-conversation-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-conversation-menu-item.danger {
+  color: #ffd3dc;
+}
+
 @media (max-width: 900px) {
   body.fusion-profile.neu-social-app .neuChatInbox {
     flex-direction: column;
@@ -547,6 +855,7 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-acti
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  position: relative;
 }
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-title {
@@ -564,6 +873,7 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-min,
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-close,
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-call,
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-hangup,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-menu,
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-send,
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-record,
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-speech,
@@ -868,6 +1178,7 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-he
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-icon,
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-open-thread,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-menu,
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-attach,
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-record,
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-speech,
@@ -1015,6 +1326,14 @@ body.fusion-profile.neu-social-app .mini-chat-v4-delivery-status {
   font-weight: 700;
   letter-spacing: 0.01em;
   color: rgba(230, 236, 255, 0.76);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-delivery-status.is-sent {
+  color: rgba(230, 236, 255, 0.68);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-delivery-status.is-delivered {
+  color: rgba(198, 224, 255, 0.82);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-delivery-status.is-seen {

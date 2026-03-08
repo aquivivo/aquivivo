@@ -60,6 +60,26 @@ export function initials(value) {
   return (joined || text.slice(0, 2)).toUpperCase();
 }
 
+function avatarMarkup({
+  title = '',
+  avatarUrl = '',
+  className = 'mini-chat-v4-row-avatar',
+  fallback = '',
+  esc = (value) => String(value || ''),
+} = {}) {
+  const safeUrl = String(avatarUrl || '').trim();
+  const safeFallback = String(fallback || initials(title)).trim() || 'AV';
+  if (!safeUrl) {
+    return `<span class="${className}">${esc(safeFallback)}</span>`;
+  }
+
+  return `
+    <span class="${className} has-image" aria-label="${esc(title)}">
+      <img src="${esc(safeUrl)}" alt="${esc(title)}" loading="lazy" />
+    </span>
+  `;
+}
+
 export function conversationLastMs(conversation) {
   const date =
     maybeDate(conversation?.lastAt) ||
@@ -73,7 +93,7 @@ export function getConversationTitle(
   currentName = '',
   norm = defaultNorm,
 ) {
-  if (!conversation) return 'Conversacion';
+  if (!conversation) return 'Conversación';
 
   const explicit = String(conversation.title || '').trim();
   if (explicit) return explicit;
@@ -99,7 +119,7 @@ export function getConversationTitle(
   const lastSender = String(conversation.lastMessage?.senderName || '').trim();
   if (lastSender && norm(lastSender) !== norm(currentName)) return lastSender;
 
-  return 'Conversacion';
+  return 'Conversación';
 }
 
 export function getConversationPreview(conversation) {
@@ -135,9 +155,14 @@ export function buildConversationListHtml({
   esc = (value) => String(value || ''),
   norm = defaultNorm,
 } = {}) {
-  const sorted = [...conversations].sort(
-    (a, b) => conversationLastMs(b) - conversationLastMs(a),
-  );
+  const sorted = [...conversations]
+    .filter((conversation) => !conversation?.deletedAt)
+    .sort((a, b) => {
+      const aArchived = a?.archivedAt ? 1 : 0;
+      const bArchived = b?.archivedAt ? 1 : 0;
+      if (aArchived !== bArchived) return aArchived - bArchived;
+      return conversationLastMs(b) - conversationLastMs(a);
+    });
   const unreadCount = sorted.filter((conversation) => isUnread(conversation, currentUid)).length;
 
   if (!sorted.length) {
@@ -153,17 +178,30 @@ export function buildConversationListHtml({
       const titleRaw = getConversationTitle(conversation, currentName, norm);
       const previewRaw = getConversationPreview(conversation);
       const activeClass = conversation.id === activeConversationId ? ' is-active' : '';
+      const archivedClass = conversation?.archivedAt ? ' is-archived' : '';
       const unreadDot = isUnread(conversation, currentUid)
         ? '<span class="mini-chat-v4-row-unread"></span>'
         : '';
+      const archivedBadge = conversation?.archivedAt
+        ? '<span class="mini-chat-v4-row-badge">Archivada</span>'
+        : '';
       const search = esc(`${titleRaw} ${previewRaw}`.toLowerCase());
+      const avatarHtml = avatarMarkup({
+        title: titleRaw,
+        avatarUrl: conversation?.avatarUrl,
+        className: 'mini-chat-v4-row-avatar',
+        esc,
+      });
 
       return `
-        <button class="mini-chat-v4-row${activeClass}" type="button" data-open-conv="${esc(conversation.id)}" data-search="${search}">
-          <span class="mini-chat-v4-row-avatar">${esc(initials(titleRaw))}</span>
+        <button class="mini-chat-v4-row${activeClass}${archivedClass}" type="button" data-open-conv="${esc(conversation.id)}" data-search="${search}">
+          ${avatarHtml}
           <span class="mini-chat-v4-row-main">
             <span class="mini-chat-v4-row-top">
-              <span class="mini-chat-v4-row-title">${esc(titleRaw)}</span>
+              <span class="mini-chat-v4-row-title-wrap">
+                <span class="mini-chat-v4-row-title">${esc(titleRaw)}</span>
+                ${archivedBadge}
+              </span>
               <span class="mini-chat-v4-row-time">${esc(fmtTime(conversation.lastAt))}</span>
             </span>
             <span class="mini-chat-v4-row-preview">${esc(previewRaw)}</span>
@@ -198,6 +236,11 @@ export function buildThreadWindowMarkup() {
         <div class="mini-chat-v4-thread-actions">
           <button class="mini-chat-v4-thread-call" data-mini-chat-role="call" type="button" aria-label="Llamar">&#128222;</button>
           <button class="mini-chat-v4-thread-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
+          <button class="mini-chat-v4-thread-menu" data-mini-chat-role="conversation-menu-toggle" type="button" aria-label="Opciones">&#8942;</button>
+          <div class="mini-chat-v4-conversation-menu" data-mini-chat-role="conversation-menu" hidden>
+            <button class="mini-chat-v4-conversation-menu-item" type="button" data-conversation-action="archive">Archivar</button>
+            <button class="mini-chat-v4-conversation-menu-item danger" type="button" data-conversation-action="delete">Eliminar conversación</button>
+          </div>
           <button class="mini-chat-v4-thread-min" type="button" aria-label="Minimizar">&minus;</button>
           <button class="mini-chat-v4-thread-close" type="button" aria-label="Cerrar">&times;</button>
         </div>
@@ -205,6 +248,7 @@ export function buildThreadWindowMarkup() {
       <div class="mini-chat-v4-typing" hidden></div>
       <div class="mini-chat-v4-thread-messages"></div>
       <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
+      <div class="mini-chat-v4-compose-context" data-mini-chat-role="compose-context" hidden></div>
       <div class="mini-chat-v4-upload-progress-wrap" hidden>
         <div class="mini-chat-v4-upload-progress"></div>
       </div>
@@ -229,7 +273,7 @@ export function buildInboxThreadMarkup() {
         <div class="mini-chat-v4-thread-user">
           <div class="mini-chat-v4-thread-avatar" data-mini-chat-role="thread-avatar">AV</div>
           <div class="mini-chat-v4-thread-meta">
-            <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">Conversacion</div>
+            <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">Conversación</div>
             <div class="mini-chat-v4-thread-status" data-mini-chat-role="thread-status">Activo ahora</div>
           </div>
         </div>
@@ -237,6 +281,11 @@ export function buildInboxThreadMarkup() {
         <div class="mini-chat-v4-thread-head-actions">
           <button class="mini-chat-v4-icon mini-chat-v4-call" data-mini-chat-role="call" type="button" aria-label="Llamar">&#128222;</button>
           <button class="mini-chat-v4-icon mini-chat-v4-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-menu" data-mini-chat-role="conversation-menu-toggle" type="button" aria-label="Opciones">&#8942;</button>
+          <div class="mini-chat-v4-conversation-menu" data-mini-chat-role="conversation-menu" hidden>
+            <button class="mini-chat-v4-conversation-menu-item" type="button" data-conversation-action="archive">Archivar</button>
+            <button class="mini-chat-v4-conversation-menu-item danger" type="button" data-conversation-action="delete">Eliminar conversación</button>
+          </div>
           <a class="mini-chat-v4-open-thread" data-mini-chat-role="open-thread" href="#" aria-label="Abrir detalles">&#8505;</a>
         </div>
       </header>
@@ -244,6 +293,7 @@ export function buildInboxThreadMarkup() {
       <div class="mini-chat-v4-typing" data-mini-chat-role="typing" hidden></div>
       <div class="mini-chat-v4-messages" data-mini-chat-role="messages"></div>
       <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
+      <div class="mini-chat-v4-compose-context" data-mini-chat-role="compose-context" hidden></div>
 
       <div class="mini-chat-v4-upload-progress-wrap" data-mini-chat-role="upload-wrap" hidden>
         <div class="mini-chat-v4-upload-progress" data-mini-chat-role="upload-bar"></div>
@@ -272,11 +322,11 @@ export function buildDockMarkup() {
       <div class="mini-chat-v4-list-view" id="miniChatListView">
         <header class="mini-chat-v4-head">
           <div class="mini-chat-v4-head-left">
-            <div class="mini-chat-v4-head-title">Mensajes</div>
-          </div>
-          <div class="mini-chat-v4-head-actions">
-            <button class="mini-chat-v4-icon" id="miniChatMinimize" type="button" aria-label="Minimizar">&#8722;</button>
-            <button class="mini-chat-v4-icon" id="miniChatClose" type="button" aria-label="Cerrar">&times;</button>
+          <div class="mini-chat-v4-head-title">Mensajes</div>
+        </div>
+        <div class="mini-chat-v4-head-actions">
+          <button class="mini-chat-v4-icon" id="miniChatMinimize" type="button" aria-label="Minimizar">&#8722;</button>
+          <button class="mini-chat-v4-icon" id="miniChatClose" type="button" aria-label="Cerrar">&times;</button>
           </div>
         </header>
 
@@ -295,25 +345,31 @@ export function buildDockMarkup() {
 
           <div class="mini-chat-v4-thread-user">
             <div class="mini-chat-v4-thread-avatar" data-mini-chat-role="thread-avatar">AV</div>
-            <div class="mini-chat-v4-thread-meta">
-              <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">Conversacion</div>
-              <div class="mini-chat-v4-thread-status" data-mini-chat-role="thread-status">Activo ahora</div>
-            </div>
+          <div class="mini-chat-v4-thread-meta">
+            <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">Conversación</div>
+            <div class="mini-chat-v4-thread-status" data-mini-chat-role="thread-status">Activo ahora</div>
           </div>
+        </div>
 
-          <div class="mini-chat-v4-thread-head-actions">
-            <button class="mini-chat-v4-icon mini-chat-v4-call" data-mini-chat-role="call" type="button" aria-label="Llamar">&#128222;</button>
-            <button class="mini-chat-v4-icon mini-chat-v4-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
-            <a class="mini-chat-v4-open-thread" data-mini-chat-role="open-thread" href="mensajes.html" aria-label="Abrir detalles">&#8505;</a>
+        <div class="mini-chat-v4-thread-head-actions">
+          <button class="mini-chat-v4-icon mini-chat-v4-call" data-mini-chat-role="call" type="button" aria-label="Llamar">&#128222;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-menu" data-mini-chat-role="conversation-menu-toggle" type="button" aria-label="Opciones">&#8942;</button>
+          <div class="mini-chat-v4-conversation-menu" data-mini-chat-role="conversation-menu" hidden>
+            <button class="mini-chat-v4-conversation-menu-item" type="button" data-conversation-action="archive">Archivar</button>
+            <button class="mini-chat-v4-conversation-menu-item danger" type="button" data-conversation-action="delete">Eliminar conversación</button>
           </div>
-        </header>
+          <a class="mini-chat-v4-open-thread" data-mini-chat-role="open-thread" href="mensajes.html" aria-label="Abrir detalles">&#8505;</a>
+        </div>
+      </header>
 
-        <div class="mini-chat-v4-typing" data-mini-chat-role="typing" hidden></div>
-        <div class="mini-chat-v4-messages" data-mini-chat-role="messages"></div>
-        <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
+      <div class="mini-chat-v4-typing" data-mini-chat-role="typing" hidden></div>
+      <div class="mini-chat-v4-messages" data-mini-chat-role="messages"></div>
+      <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
+      <div class="mini-chat-v4-compose-context" data-mini-chat-role="compose-context" hidden></div>
 
-        <div class="mini-chat-v4-upload-progress-wrap" data-mini-chat-role="upload-wrap" hidden>
-          <div class="mini-chat-v4-upload-progress" data-mini-chat-role="upload-bar"></div>
+      <div class="mini-chat-v4-upload-progress-wrap" data-mini-chat-role="upload-wrap" hidden>
+        <div class="mini-chat-v4-upload-progress" data-mini-chat-role="upload-bar"></div>
         </div>
 
         <footer class="mini-chat-v4-compose">

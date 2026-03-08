@@ -1,3 +1,5 @@
+// Compatibility adapter kept for neu-app.boot.js.
+// Dock behavior is implemented by global-mini-chat.js; this file only preserves the boot contract.
 let chatDockInitialized = false;
 
 export function createChatDock() {

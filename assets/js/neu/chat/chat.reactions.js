@@ -1,3 +1,5 @@
+// Compatibility adapter kept for neu-app.boot.js.
+// Live reaction logic is implemented in ../../chat-reactions.js and orchestrated by global-mini-chat.js.
 let chatReactionsInitialized = false;
 
 export function createChatReactions() {

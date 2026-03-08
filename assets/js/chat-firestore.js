@@ -62,6 +62,15 @@ export function normalizeMessage(docSnap) {
     fileName: String(data.fileName || (imageUrl ? 'imagen' : '')).trim(),
     fileSize: Number(data.fileSize || 0) || 0,
     mimeType: String(data.mimeType || '').trim(),
+    deleted: data.deleted === true,
+    deletedAt: data.deletedAt || null,
+    deletedBy: normalizeUid(data.deletedBy),
+    editedAt: data.editedAt || null,
+    replyToMessageId: String(data.replyToMessageId || '').trim(),
+    replyToSenderId: normalizeUid(data.replyToSenderId),
+    replyToSenderName: String(data.replyToSenderName || '').trim(),
+    replyToText: String(data.replyToText || '').trim(),
+    replyToType: String(data.replyToType || '').trim().toLowerCase(),
     createdAt: data.createdAt || null,
   };
 }
@@ -92,6 +101,7 @@ export function createMiniChatFirestoreController({
   resolveMessageRows = async (rows) => rows,
   encryptTextMessageForConversation = null,
   ensureConversationEncryption = async () => {},
+  resolveConversationRow = () => null,
   panelReactionState,
   renderMessages,
   renderThreadWindowMessages,
@@ -402,7 +412,78 @@ export function createMiniChatFirestoreController({
     await batch.commit();
   }
 
-  async function sendMessageToConversation(conversationId, text) {
+  function previewTextFromMessage(message = {}) {
+    if (message?.deleted === true) return '[Mensaje eliminado]';
+    const type = String(message?.type || '').trim().toLowerCase();
+    if (type === 'image') return '[Imagen]';
+    if (type === 'audio') return '[Audio]';
+    if (type === 'file') return '[Archivo]';
+    const text = String(message?.text || '').trim();
+    if (text) return text.slice(0, 180);
+    return 'Sin mensajes';
+  }
+
+  async function syncConversationPreviewFromLatestMessage(conversationId, members = []) {
+    const convId = String(conversationId || '').trim();
+    if (!convId) return;
+    const conversationMembers = normalizeMembers(
+      Array.isArray(members) && members.length
+        ? members
+        : await resolveConversationMembers(convId),
+    );
+    if (!conversationMembers.length) return;
+
+    const latestSnapshot = await getDocs(
+      query(
+        collection(db, 'neuConversations', convId, 'messages'),
+        orderBy('createdAt', 'desc'),
+        limit(1),
+      ),
+    );
+
+    let latestMessage = null;
+    if (!latestSnapshot.empty) {
+      const rawRows = latestSnapshot.docs.map((docSnap) => normalizeMessage(docSnap));
+      const resolvedRows = await resolveMessageRows(rawRows, convId).catch(() => rawRows);
+      latestMessage = Array.isArray(resolvedRows) && resolvedRows.length ? resolvedRows[0] : null;
+    }
+
+    const previewText = latestMessage ? previewTextFromMessage(latestMessage) : '';
+    const lastMessageAt = latestMessage?.createdAt || serverTimestamp();
+    const lastMessageSenderId = normalizeUid(latestMessage?.senderId || '');
+    const memberKey = memberKeyFor(conversationMembers[0], conversationMembers[1]) || convId;
+    const basePayload = {
+      updatedAt: serverTimestamp(),
+      lastMessageAt,
+      lastMessageText: previewText,
+    };
+    if (lastMessageSenderId) {
+      basePayload.lastMessageSenderId = lastMessageSenderId;
+      basePayload.lastSenderUid = lastMessageSenderId;
+    } else {
+      basePayload.lastMessageSenderId = '';
+      basePayload.lastSenderUid = '';
+    }
+
+    await setDoc(doc(db, 'neuConversations', convId), {
+      members: conversationMembers,
+      memberKey,
+      ...basePayload,
+    }, { merge: true });
+
+    const batch = writeBatch(db);
+    conversationMembers.forEach((uid) => {
+      batch.set(doc(db, 'neuUserChats', uid, 'chats', convId), {
+        members: conversationMembers,
+        otherUid: conversationMembers.find((candidate) => candidate !== uid) || '',
+        memberKey,
+        ...basePayload,
+      }, { merge: true });
+    });
+    await batch.commit();
+  }
+
+  async function sendMessageToConversation(conversationId, text, options = {}) {
     const convId = String(conversationId || '').trim();
     const safeText = String(text || '').trim().slice(0, 1000);
     const currentUid = normalizeUid(getCurrentUid());
@@ -439,6 +520,11 @@ export function createMiniChatFirestoreController({
       senderUid: currentUid,
       senderName: currentName,
       ...messageFields,
+      replyToMessageId: String(options?.replyTo?.id || '').trim(),
+      replyToSenderId: normalizeUid(options?.replyTo?.senderId),
+      replyToSenderName: String(options?.replyTo?.senderName || '').trim(),
+      replyToText: String(options?.replyTo?.text || '').trim().slice(0, 220),
+      replyToType: String(options?.replyTo?.type || 'text').trim().toLowerCase(),
       createdAt: now,
     });
 
@@ -538,6 +624,96 @@ export function createMiniChatFirestoreController({
     clearTypingPresence(convId, { force: true }).catch(() => null);
   }
 
+  async function editMessage(conversationId, messageId, text) {
+    const convId = String(conversationId || '').trim();
+    const msgId = String(messageId || '').trim();
+    const safeText = String(text || '').trim().slice(0, 1000);
+    const currentUid = normalizeUid(getCurrentUid());
+    if (!convId || !msgId || !safeText || !currentUid) return;
+
+    const messageRef = doc(db, 'neuConversations', convId, 'messages', msgId);
+    const messageSnap = await getDoc(messageRef);
+    if (!messageSnap.exists()) return;
+
+    const messageData = messageSnap.data() || {};
+    const senderUid = normalizeUid(messageData.senderUid || messageData.senderId);
+    if (senderUid !== currentUid) return;
+
+    const members = await resolveConversationMembers(convId);
+    let encryptedPayload = null;
+    try {
+      encryptedPayload = await encryptTextMessageForConversation(convId, safeText, members);
+    } catch (error) {
+      if (!isRecoverableE2eeSendError(error)) {
+        throw error;
+      }
+      encryptedPayload = createPlainTextMessagePayload(safeText);
+    }
+    const messageFields = encryptedPayload?.messageFields || createPlainTextMessagePayload(safeText).messageFields;
+
+    await updateDoc(messageRef, {
+      ...messageFields,
+      editedAt: serverTimestamp(),
+      deleted: false,
+      deletedAt: null,
+      deletedBy: '',
+    });
+    await syncConversationPreviewFromLatestMessage(convId, members);
+  }
+
+  async function deleteMessage(conversationId, messageId) {
+    const convId = String(conversationId || '').trim();
+    const msgId = String(messageId || '').trim();
+    const currentUid = normalizeUid(getCurrentUid());
+    if (!convId || !msgId || !currentUid) return;
+
+    const messageRef = doc(db, 'neuConversations', convId, 'messages', msgId);
+    const messageSnap = await getDoc(messageRef);
+    if (!messageSnap.exists()) return;
+
+    const messageData = messageSnap.data() || {};
+    const senderUid = normalizeUid(messageData.senderUid || messageData.senderId);
+    if (senderUid !== currentUid) return;
+
+    await updateDoc(messageRef, {
+      type: 'text',
+      encrypted: false,
+      text: '',
+      content: '',
+      imageUrl: '',
+      fileUrl: '',
+      fileName: '',
+      fileSize: 0,
+      mimeType: '',
+      deleted: true,
+      deletedAt: serverTimestamp(),
+      deletedBy: currentUid,
+      editedAt: serverTimestamp(),
+    });
+    await syncConversationPreviewFromLatestMessage(convId);
+  }
+
+  async function setConversationArchived(conversationId, archived = true) {
+    const convId = String(conversationId || '').trim();
+    const currentUid = normalizeUid(getCurrentUid());
+    if (!convId || !currentUid) return;
+    await setDoc(doc(db, 'neuUserChats', currentUid, 'chats', convId), {
+      archivedAt: archived ? serverTimestamp() : null,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }
+
+  async function deleteConversationForCurrentUser(conversationId) {
+    const convId = String(conversationId || '').trim();
+    const currentUid = normalizeUid(getCurrentUid());
+    if (!convId || !currentUid) return;
+    await setDoc(doc(db, 'neuUserChats', currentUid, 'chats', convId), {
+      deletedAt: serverTimestamp(),
+      unreadCount: 0,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }
+
   async function ensureDirectConversationWithUser(targetUid) {
     const currentUid = normalizeUid(getCurrentUid());
     const otherUid = normalizeUid(targetUid);
@@ -594,7 +770,11 @@ export function createMiniChatFirestoreController({
 
   return {
     attachMessageStreamForWindow,
+    deleteConversationForCurrentUser,
+    deleteMessage,
+    editMessage,
     ensureDirectConversationWithUser,
+    setConversationArchived,
     sendAttachmentToConversation,
     sendMessageToConversation,
     setActiveConversation,

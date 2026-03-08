@@ -236,7 +236,7 @@ const NEU_PROFILE_PRESENCE_MODES = {
     label: 'Abierta a conversar',
     description: 'Ideal para mensajes nuevos y conexiones espontaneas.',
     messageCta: 'Romper hielo',
-    messageHint: 'Ideal para empezar la conversacion ahora.',
+    messageHint: 'Ideal para empezar la conversación ahora.',
   },
   city: {
     label: 'Busco plan local',
@@ -246,9 +246,9 @@ const NEU_PROFILE_PRESENCE_MODES = {
   },
   chill: {
     label: 'Hoy chill',
-    description: 'Modo ligero para responder sin prisa y sin presion.',
+    description: 'Modo ligero para responder sin prisa y sin presión.',
     messageCta: 'Escribir suave',
-    messageHint: 'Funciona mejor un mensaje corto y sin presion.',
+    messageHint: 'Funciona mejor un mensaje corto y sin presión.',
   },
 };
 

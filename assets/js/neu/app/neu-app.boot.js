@@ -5,7 +5,7 @@ import { syncContextFromUrl, wirePopstate } from '../core/routing.js';
 import { neuAppContext, setAuthUser, setPortal, setProfileUser } from '../context/neu-app-context.js';
 import { createChatDock } from '../chat/chat.dock.js';
 import { createChatReactions } from '../chat/chat.reactions.js';
-import { createChatService } from '../chat/chat.service.js?v=20260308speech3';
+import { createChatService } from '../chat/chat.service.js?v=20260308audio2';
 import { createChatTyping } from '../chat/chat.typing.js';
 import { createChatUi } from '../chat/chat.ui.js';
 import { createOnboardingService } from '../onboarding/onboarding.service.js';
