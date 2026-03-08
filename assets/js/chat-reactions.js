@@ -25,6 +25,14 @@ export function createMiniChatReactionController({
 }) {
   let reactionOutsideClickWired = false;
 
+  function selectorEscape(value) {
+    const raw = String(value || '');
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+      return CSS.escape(raw);
+    }
+    return raw.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  }
+
   function runSafeUnsubscribe(unsub) {
     if (typeof unsub !== 'function') return;
     try {
@@ -69,17 +77,64 @@ export function createMiniChatReactionController({
     return { myEmoji, pills };
   }
 
+  function reactionPillClassName(summary, emoji, {
+    animated = false,
+    removing = false,
+  } = {}) {
+    const myEmoji = String(summary?.myEmoji || '').trim();
+    const classes = ['mini-chat-v4-reaction-pill'];
+    if (myEmoji && myEmoji === emoji) classes.push('active-reaction');
+    if (animated) classes.push('mini-chat-reaction-animated');
+    if (removing) classes.push('mini-chat-reaction-remove');
+    return classes.join(' ');
+  }
+
+  function diffReactionSummary(previousSummary, nextSummary) {
+    const previousPills = new Map(
+      (Array.isArray(previousSummary?.pills) ? previousSummary.pills : [])
+        .map((item) => [String(item?.emoji || '').trim(), Number(item?.count || 0)]),
+    );
+    const nextPills = new Map(
+      (Array.isArray(nextSummary?.pills) ? nextSummary.pills : [])
+        .map((item) => [String(item?.emoji || '').trim(), Number(item?.count || 0)]),
+    );
+
+    const added = new Set();
+    const updated = new Set();
+    const removed = new Set();
+    const emojis = new Set([...previousPills.keys(), ...nextPills.keys()]);
+
+    emojis.forEach((emoji) => {
+      const prevCount = Number(previousPills.get(emoji) || 0);
+      const nextCount = Number(nextPills.get(emoji) || 0);
+      if (!prevCount && nextCount > 0) {
+        added.add(emoji);
+        return;
+      }
+      if (prevCount > 0 && !nextCount) {
+        removed.add(emoji);
+        return;
+      }
+      if (prevCount !== nextCount) {
+        updated.add(emoji);
+      }
+    });
+
+    return { added, updated, removed };
+  }
+
   function reactionPillsHtml(summary) {
     const pills = Array.isArray(summary?.pills) ? summary.pills : [];
     if (!pills.length) return '';
-    const myEmoji = String(summary?.myEmoji || '').trim();
+    const animated = summary?.animated instanceof Set ? summary.animated : new Set();
     return pills
       .map((item) => {
         const emoji = String(item?.emoji || '').trim();
         const count = Number(item?.count || 0);
         if (!emoji || count <= 0) return '';
-        const active = myEmoji && myEmoji === emoji ? ' active-reaction' : '';
-        return `<button class="mini-chat-v4-reaction-pill${active}" type="button" data-reaction-emoji="${esc(emoji)}">${esc(emoji)} ${esc(count)}</button>`;
+        return `<button class="${reactionPillClassName(summary, emoji, {
+          animated: animated.has(emoji),
+        })}" type="button" data-reaction-emoji="${esc(emoji)}">${esc(emoji)} ${esc(count)}</button>`;
       })
       .join('');
   }
@@ -90,6 +145,101 @@ export function createMiniChatReactionController({
       const active = myEmoji && myEmoji === emoji ? ' active-reaction' : '';
       return `<button class="mini-chat-v4-reaction-option${active}" type="button" data-reaction-pick="${esc(emoji)}" aria-label="Reaccionar ${esc(emoji)}">${esc(emoji)}</button>`;
     }).join('');
+  }
+
+  function animateReactionAppearance(element) {
+    if (!(element instanceof HTMLElement)) return;
+    element.classList.remove('mini-chat-reaction-animated');
+    void element.offsetWidth;
+    element.classList.add('mini-chat-reaction-animated');
+    element.addEventListener(
+      'animationend',
+      () => {
+        element.classList.remove('mini-chat-reaction-animated');
+      },
+      { once: true },
+    );
+  }
+
+  function animateReactionRemoval(element) {
+    if (!(element instanceof HTMLElement)) return;
+    if (element.classList.contains('mini-chat-reaction-remove')) return;
+    element.classList.add('mini-chat-reaction-remove');
+    element.addEventListener(
+      'animationend',
+      () => {
+        element.remove();
+      },
+      { once: true },
+    );
+  }
+
+  function patchReactionPills(container, summary, diff) {
+    if (!(container instanceof HTMLElement)) return;
+    const pills = Array.isArray(summary?.pills) ? summary.pills : [];
+    const existingButtons = new Map();
+    container
+      .querySelectorAll('.mini-chat-v4-reaction-pill[data-reaction-emoji]')
+      .forEach((node) => {
+        if (!(node instanceof HTMLButtonElement)) return;
+        existingButtons.set(String(node.dataset.reactionEmoji || '').trim(), node);
+      });
+
+    pills.forEach((item) => {
+      const emoji = String(item?.emoji || '').trim();
+      const count = Number(item?.count || 0);
+      if (!emoji || count <= 0) return;
+
+      let button = existingButtons.get(emoji) || null;
+      if (!(button instanceof HTMLButtonElement)) {
+        button = documentRef.createElement('button');
+        button.type = 'button';
+        button.dataset.reactionEmoji = emoji;
+      } else {
+        existingButtons.delete(emoji);
+      }
+
+      button.className = reactionPillClassName(summary, emoji);
+      button.textContent = `${emoji} ${count}`;
+      container.appendChild(button);
+
+      if (diff.added.has(emoji) || diff.updated.has(emoji)) {
+        animateReactionAppearance(button);
+      }
+    });
+
+    existingButtons.forEach((button, emoji) => {
+      if (!diff.removed.has(emoji)) {
+        button.className = reactionPillClassName(summary, emoji);
+        return;
+      }
+      animateReactionRemoval(button);
+    });
+  }
+
+  function patchReactionPicker(container, summary) {
+    if (!(container instanceof HTMLElement)) return;
+    const nextHtml = reactionPickerHtml(summary);
+    if (container.innerHTML === nextHtml) return;
+    container.innerHTML = nextHtml;
+  }
+
+  function applyReactionSummaryToDom(conversationId, messageId, summary, diff) {
+    const convId = String(conversationId || '').trim();
+    const msgId = String(messageId || '').trim();
+    if (!convId || !msgId) return false;
+
+    const rows = documentRef.querySelectorAll(
+      `.mini-chat-v4-message-row[data-conv-id="${selectorEscape(convId)}"][data-msg-id="${selectorEscape(msgId)}"]`,
+    );
+    if (!rows.length) return false;
+
+    rows.forEach((row) => {
+      if (!(row instanceof HTMLElement)) return;
+      patchReactionPills(row.querySelector('.mini-chat-v4-reactions'), summary, diff);
+      patchReactionPicker(row.querySelector('.mini-chat-v4-reaction-picker'), summary);
+    });
+    return true;
   }
 
   function messageHtml(message, conversationId, reactionData = new Map()) {
@@ -245,12 +395,23 @@ export function createMiniChatReactionController({
       const unsub = onSnapshot(
         reactionsCol,
         (snapshot) => {
-          reactionData.set(msgId, summarizeReactions(snapshot));
-          onChange();
+          const previousSummary = reactionData.get(msgId) || null;
+          const nextSummary = summarizeReactions(snapshot);
+          reactionData.set(msgId, nextSummary);
+          const diff = diffReactionSummary(previousSummary, nextSummary);
+          const patched = applyReactionSummaryToDom(convId, msgId, nextSummary, diff);
+          if (!patched) onChange();
         },
         () => {
+          const previousSummary = reactionData.get(msgId) || null;
           reactionData.delete(msgId);
-          onChange();
+          const patched = applyReactionSummaryToDom(
+            convId,
+            msgId,
+            { myEmoji: '', pills: [] },
+            diffReactionSummary(previousSummary, { myEmoji: '', pills: [] }),
+          );
+          if (!patched) onChange();
         },
       );
       reactionUnsubs.set(msgId, unsub);

@@ -13,23 +13,30 @@ function memberKeyFor(uidA, uidB) {
   return members.length === 2 ? `${members[0]}_${members[1]}` : '';
 }
 
-function normalizeMessage(docSnap) {
+export function normalizeMessage(docSnap) {
   const data = docSnap.data() || {};
   const imageUrl = String(data.imageUrl || '').trim();
   const fileUrl = String(data.fileUrl || imageUrl).trim();
   const explicitType = String(data.type || '').trim().toLowerCase();
   const type = explicitType || (imageUrl ? 'image' : fileUrl ? 'file' : 'text');
+  const encrypted = data.encrypted === true;
+  const rawContent = String(data.content || '').trim();
 
   return {
     id: String(docSnap.id || '').trim(),
     senderId: normalizeUid(data.senderId || data.senderUid),
     senderName: String(data.senderName || '').trim(),
-    text: String(data.text || data.content || '').trim(),
+    text: encrypted ? '' : String(data.text || rawContent).trim(),
+    content: rawContent,
+    encrypted,
+    encryptionVersion: Number(data.encryptionVersion || 0) || 0,
+    iv: String(data.iv || '').trim(),
     type,
     imageUrl,
     fileUrl,
     fileName: String(data.fileName || (imageUrl ? 'imagen' : '')).trim(),
     fileSize: Number(data.fileSize || 0) || 0,
+    mimeType: String(data.mimeType || '').trim(),
     createdAt: data.createdAt || null,
   };
 }
@@ -56,6 +63,10 @@ export function createMiniChatFirestoreController({
   getActiveConversationId,
   setActiveConversationId,
   getConversationMeta,
+  getCachedMessages = () => [],
+  resolveMessageRows = async (rows) => rows,
+  encryptTextMessageForConversation = null,
+  ensureConversationEncryption = async () => {},
   panelReactionState,
   renderMessages,
   renderThreadWindowMessages,
@@ -64,6 +75,7 @@ export function createMiniChatFirestoreController({
   setView,
   setOpenLinks,
   markConversationRead,
+  markConversationDelivered = () => {},
   clearReactionListeners,
   syncReactionListeners,
   runSafeUnsubscribe,
@@ -73,6 +85,7 @@ export function createMiniChatFirestoreController({
   setThreadUnread,
   isThreadMinimized,
   renderTray,
+  updateMessageCache = () => {},
   windowRef = window,
 }) {
   let msgUnsub = null;
@@ -84,6 +97,7 @@ export function createMiniChatFirestoreController({
     panelReactionState.rows = [];
     panelReactionState.conversationId = '';
     panelReactionState.renderQueued = false;
+    panelReactionState.streamToken = null;
   }
 
   function messageIdFromRows(rows = []) {
@@ -110,13 +124,17 @@ export function createMiniChatFirestoreController({
   }
 
   function attachMessageStream(conversationId) {
-    stopMessageStream();
     const convId = String(conversationId || '').trim();
     if (!convId) return;
+    if (String(panelReactionState.conversationId || '').trim() === convId) return;
+
+    stopMessageStream();
 
     panelReactionState.conversationId = convId;
     panelReactionState.rows = [];
     panelReactionState.renderQueued = false;
+    const streamToken = Symbol(`panel:${convId}`);
+    panelReactionState.streamToken = streamToken;
 
     const messagesQuery = query(
       collection(db, 'neuConversations', convId, 'messages'),
@@ -126,9 +144,17 @@ export function createMiniChatFirestoreController({
 
     msgUnsub = onSnapshot(
       messagesQuery,
-      (snapshot) => {
-        const rows = (snapshot.docs || []).map((docSnap) => normalizeMessage(docSnap));
+      async (snapshot) => {
+        const rawRows = (snapshot.docs || []).map((docSnap) => normalizeMessage(docSnap));
+        const rows = await resolveMessageRows(rawRows, convId).catch(() => rawRows);
+        if (
+          panelReactionState.streamToken !== streamToken ||
+          String(panelReactionState.conversationId || '').trim() !== convId
+        ) {
+          return;
+        }
 
+        updateMessageCache(convId, rows);
         panelReactionState.rows = rows;
         syncReactionListeners({
           conversationId: convId,
@@ -139,6 +165,7 @@ export function createMiniChatFirestoreController({
         });
         renderMessages(rows, convId, panelReactionState.reactionData);
         markConversationRead(convId, messageIdFromRows(rows));
+        markConversationDelivered(convId, messageIdFromRows(rows));
       },
       () => {
         clearReactionListeners(panelReactionState.reactionUnsubs, panelReactionState.reactionData);
@@ -151,7 +178,19 @@ export function createMiniChatFirestoreController({
   function attachMessageStreamForWindow(conversationId, container, threadState = null) {
     const convId = String(conversationId || '').trim();
     if (!convId || !(container instanceof HTMLElement)) return null;
+    if (
+      threadState &&
+      typeof threadState === 'object' &&
+      typeof threadState.unsub === 'function' &&
+      String(threadState.liveConversationId || '').trim() === convId
+    ) {
+      return threadState.unsub;
+    }
     let initialSnapshotHandled = false;
+    const streamToken = Symbol(`thread:${convId}`);
+    if (threadState && typeof threadState === 'object') {
+      threadState.streamToken = streamToken;
+    }
 
     const messagesQuery = query(
       collection(db, 'neuConversations', convId, 'messages'),
@@ -161,7 +200,7 @@ export function createMiniChatFirestoreController({
 
     return onSnapshot(
       messagesQuery,
-      (snapshot) => {
+      async (snapshot) => {
         if (initialSnapshotHandled) {
           const addedForUnread = snapshot.docChanges().reduce((sum, change) => {
             if (change.type !== 'added') return sum;
@@ -180,9 +219,19 @@ export function createMiniChatFirestoreController({
           initialSnapshotHandled = true;
         }
 
-        const rows = (snapshot.docs || []).map((docSnap) => normalizeMessage(docSnap));
+        const rawRows = (snapshot.docs || []).map((docSnap) => normalizeMessage(docSnap));
+        const rows = await resolveMessageRows(rawRows, convId).catch(() => rawRows);
+        if (
+          threadState &&
+          typeof threadState === 'object' &&
+          threadState.streamToken !== streamToken
+        ) {
+          return;
+        }
+        updateMessageCache(convId, rows);
 
         if (threadState && typeof threadState === 'object') {
+          threadState.liveConversationId = convId;
           threadState.rows = rows;
           syncReactionListeners({
             conversationId: convId,
@@ -217,9 +266,12 @@ export function createMiniChatFirestoreController({
           threadState?.reactionData instanceof Map ? threadState.reactionData : new Map(),
         );
         markConversationRead(convId, messageIdFromRows(rows));
+        markConversationDelivered(convId, messageIdFromRows(rows));
       },
       () => {
         if (threadState && typeof threadState === 'object') {
+          threadState.liveConversationId = '';
+          threadState.streamToken = null;
           clearReactionListeners(threadState.reactionUnsubs, threadState.reactionData);
           threadState.rows = [];
         }
@@ -229,9 +281,8 @@ export function createMiniChatFirestoreController({
   }
 
   function setActiveConversation(conversationId) {
-    const previousConversationId = String(getActiveConversationId() || '').trim();
+    const previousConversationId = String(panelReactionState.conversationId || '').trim();
     const nextConversationId = String(conversationId || '').trim();
-    setActiveConversationId(nextConversationId);
 
     const switchedConversation =
       previousConversationId && previousConversationId !== nextConversationId;
@@ -248,9 +299,22 @@ export function createMiniChatFirestoreController({
       return;
     }
 
+    if (previousConversationId === nextConversationId) {
+      renderConversationList();
+      renderThreadMeta(nextConversationId);
+      setView('thread');
+      updateTypingIndicatorsFromConversations();
+      return;
+    }
+
     renderConversationList();
     renderThreadMeta(nextConversationId);
     setView('thread');
+    const cachedRows = getCachedMessages(nextConversationId, { consumePreloaded: true });
+    if (Array.isArray(cachedRows) && cachedRows.length) {
+      panelReactionState.rows = cachedRows;
+      renderMessages(cachedRows, nextConversationId, panelReactionState.reactionData);
+    }
     attachMessageStream(nextConversationId);
     markConversationRead(nextConversationId);
     updateTypingIndicatorsFromConversations();
@@ -327,14 +391,21 @@ export function createMiniChatFirestoreController({
     const memberKey = memberKeyFor(members[0], members[1]) || convId;
     const now = serverTimestamp();
     const batch = writeBatch(db);
+    if (typeof encryptTextMessageForConversation !== 'function') {
+      throw new Error('missing-e2ee-message-encryptor');
+    }
+    const encryptedPayload = await encryptTextMessageForConversation(convId, safeText, members);
+    const messageFields = encryptedPayload?.messageFields || null;
+    const previewText = String(encryptedPayload?.previewText || '').trim() || '[Encrypted message]';
+    if (!messageFields || typeof messageFields !== 'object') {
+      throw new Error('invalid-e2ee-message-payload');
+    }
 
     batch.set(messageRef, {
       messageId: messageRef.id,
       senderUid: currentUid,
       senderName: currentName,
-      text: safeText,
-      content: safeText,
-      type: 'text',
+      ...messageFields,
       createdAt: now,
     });
 
@@ -343,7 +414,7 @@ export function createMiniChatFirestoreController({
       {
         members,
         memberKey,
-        lastMessageText: safeText.slice(0, 180),
+        lastMessageText: previewText,
         lastMessageAt: now,
         lastMessageSenderId: currentUid,
         lastSenderUid: currentUid,
@@ -357,7 +428,7 @@ export function createMiniChatFirestoreController({
       conversationId: convId,
       members,
       memberKey,
-      lastMessageText: safeText.slice(0, 180),
+      lastMessageText: previewText,
       senderUid: currentUid,
       messageId: messageRef.id,
     });
@@ -397,11 +468,16 @@ export function createMiniChatFirestoreController({
       payload.fileUrl = uploaded.fileUrl;
       payload.fileName = uploaded.fileName;
       payload.fileSize = uploaded.fileSize;
+      if (uploaded.mimeType) payload.mimeType = uploaded.mimeType;
     }
 
     batch.set(messageRef, payload);
 
-    const previewPrefix = uploaded.type === 'image' ? '[Imagen]' : '[Archivo]';
+    const previewPrefix = uploaded.type === 'image'
+      ? '[Imagen]'
+      : uploaded.type === 'audio'
+        ? '[Audio]'
+        : '[Archivo]';
     const previewText = `${previewPrefix} ${uploaded.fileName}`.trim().slice(0, 180);
     batch.set(
       doc(db, 'neuConversations', convId),
@@ -479,6 +555,7 @@ export function createMiniChatFirestoreController({
     });
 
     await batch.commit();
+    await ensureConversationEncryption(conversationId, members).catch(() => null);
     return conversationId;
   }
 

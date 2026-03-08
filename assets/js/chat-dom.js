@@ -196,17 +196,22 @@ export function buildThreadWindowMarkup() {
       <div class="mini-chat-v4-thread-header">
         <span class="mini-chat-v4-thread-title">Loading...</span>
         <div class="mini-chat-v4-thread-actions">
+          <button class="mini-chat-v4-thread-call" data-mini-chat-role="call" type="button" aria-label="Llamar">&#128222;</button>
+          <button class="mini-chat-v4-thread-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
           <button class="mini-chat-v4-thread-min" type="button" aria-label="Minimizar">&minus;</button>
           <button class="mini-chat-v4-thread-close" type="button" aria-label="Cerrar">&times;</button>
         </div>
       </div>
       <div class="mini-chat-v4-typing" hidden></div>
       <div class="mini-chat-v4-thread-messages"></div>
+      <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
       <div class="mini-chat-v4-upload-progress-wrap" hidden>
         <div class="mini-chat-v4-upload-progress"></div>
       </div>
       <div class="mini-chat-v4-thread-compose">
         <button class="mini-chat-v4-thread-attach" type="button" aria-label="Adjuntar">&#128206;</button>
+        <button class="mini-chat-v4-thread-record" type="button" aria-label="Grabar voz">&#127897;</button>
+        <button class="mini-chat-v4-thread-speech" data-mini-chat-role="speech" type="button" aria-label="Dictar mensaje">&#127908;</button>
         <textarea placeholder="Escribe un mensaje..." rows="1"></textarea>
         <button class="mini-chat-v4-thread-send" type="button" aria-label="Enviar">&#10148;</button>
         <input class="mini-chat-v4-thread-file-input" type="file" hidden />
@@ -217,33 +222,40 @@ export function buildThreadWindowMarkup() {
 
 export function buildInboxThreadMarkup() {
   return `
-    <section class="mini-chat-v4-thread-view mini-chat-v4-thread-view--page" id="miniChatThreadView">
+    <section class="mini-chat-v4-thread-view mini-chat-v4-thread-view--page" data-mini-chat-role="thread-view">
       <header class="mini-chat-v4-thread-head">
-        <button class="mini-chat-v4-icon mini-chat-v4-page-back" id="miniChatBack" type="button" aria-label="Volver">&#8592;</button>
+        <button class="mini-chat-v4-icon mini-chat-v4-page-back" data-mini-chat-role="back" type="button" aria-label="Volver">&#8592;</button>
 
         <div class="mini-chat-v4-thread-user">
-          <div class="mini-chat-v4-thread-avatar" id="miniChatThreadAvatar">AV</div>
+          <div class="mini-chat-v4-thread-avatar" data-mini-chat-role="thread-avatar">AV</div>
           <div class="mini-chat-v4-thread-meta">
-            <div class="mini-chat-v4-thread-title" id="miniChatThreadTitle">Conversacion</div>
-            <div class="mini-chat-v4-thread-status" id="miniChatThreadStatus">Activo ahora</div>
+            <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">Conversacion</div>
+            <div class="mini-chat-v4-thread-status" data-mini-chat-role="thread-status">Activo ahora</div>
           </div>
         </div>
 
-        <a class="mini-chat-v4-open-thread" id="miniChatOpenThread" href="#" aria-label="Abrir detalles">&#8505;</a>
+        <div class="mini-chat-v4-thread-head-actions">
+          <button class="mini-chat-v4-icon mini-chat-v4-call" data-mini-chat-role="call" type="button" aria-label="Llamar">&#128222;</button>
+          <button class="mini-chat-v4-icon mini-chat-v4-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
+          <a class="mini-chat-v4-open-thread" data-mini-chat-role="open-thread" href="#" aria-label="Abrir detalles">&#8505;</a>
+        </div>
       </header>
 
-      <div class="mini-chat-v4-typing" id="miniChatTyping" hidden></div>
-      <div class="mini-chat-v4-messages" id="miniChatMessages"></div>
+      <div class="mini-chat-v4-typing" data-mini-chat-role="typing" hidden></div>
+      <div class="mini-chat-v4-messages" data-mini-chat-role="messages"></div>
+      <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
 
-      <div class="mini-chat-v4-upload-progress-wrap" id="miniChatUploadProgressWrap" hidden>
-        <div class="mini-chat-v4-upload-progress" id="miniChatUploadProgress"></div>
+      <div class="mini-chat-v4-upload-progress-wrap" data-mini-chat-role="upload-wrap" hidden>
+        <div class="mini-chat-v4-upload-progress" data-mini-chat-role="upload-bar"></div>
       </div>
 
       <footer class="mini-chat-v4-compose">
-        <button class="mini-chat-v4-attach" id="miniChatAttach" type="button" aria-label="Adjuntar">&#128206;</button>
-        <textarea id="miniChatInput" rows="1" placeholder="Escribe un mensaje..."></textarea>
-        <button class="mini-chat-v4-send" id="miniChatSend" type="button" aria-label="Enviar">&#10148;</button>
-        <input id="miniChatFileInput" type="file" hidden />
+        <button class="mini-chat-v4-attach" data-mini-chat-role="attach" type="button" aria-label="Adjuntar">&#128206;</button>
+        <button class="mini-chat-v4-record" data-mini-chat-role="record" type="button" aria-label="Grabar voz">&#127897;</button>
+        <button class="mini-chat-v4-speech" data-mini-chat-role="speech" type="button" aria-label="Dictar mensaje">&#127908;</button>
+        <textarea data-mini-chat-role="input" rows="1" placeholder="Escribe un mensaje..."></textarea>
+        <button class="mini-chat-v4-send" data-mini-chat-role="send" type="button" aria-label="Enviar">&#10148;</button>
+        <input data-mini-chat-role="file-input" type="file" hidden />
       </footer>
     </section>
   `;
@@ -277,33 +289,40 @@ export function buildDockMarkup() {
         <a class="mini-chat-v4-open-full" id="miniChatOpenFull" href="mensajes.html">Abrir vista completa</a>
       </div>
 
-      <div class="mini-chat-v4-thread-view" id="miniChatThreadView" hidden>
+      <div class="mini-chat-v4-thread-view" data-mini-chat-role="thread-view" hidden>
         <header class="mini-chat-v4-thread-head">
-          <button class="mini-chat-v4-icon" id="miniChatBack" type="button" aria-label="Volver">&#8592;</button>
+          <button class="mini-chat-v4-icon" data-mini-chat-role="back" type="button" aria-label="Volver">&#8592;</button>
 
           <div class="mini-chat-v4-thread-user">
-            <div class="mini-chat-v4-thread-avatar" id="miniChatThreadAvatar">AV</div>
+            <div class="mini-chat-v4-thread-avatar" data-mini-chat-role="thread-avatar">AV</div>
             <div class="mini-chat-v4-thread-meta">
-              <div class="mini-chat-v4-thread-title" id="miniChatThreadTitle">Conversacion</div>
-              <div class="mini-chat-v4-thread-status" id="miniChatThreadStatus">Activo ahora</div>
+              <div class="mini-chat-v4-thread-title" data-mini-chat-role="thread-title">Conversacion</div>
+              <div class="mini-chat-v4-thread-status" data-mini-chat-role="thread-status">Activo ahora</div>
             </div>
           </div>
 
-          <a class="mini-chat-v4-open-thread" id="miniChatOpenThread" href="mensajes.html" aria-label="Abrir detalles">&#8505;</a>
+          <div class="mini-chat-v4-thread-head-actions">
+            <button class="mini-chat-v4-icon mini-chat-v4-call" data-mini-chat-role="call" type="button" aria-label="Llamar">&#128222;</button>
+            <button class="mini-chat-v4-icon mini-chat-v4-hangup" data-mini-chat-role="hangup" type="button" aria-label="Colgar" hidden>&#128222;</button>
+            <a class="mini-chat-v4-open-thread" data-mini-chat-role="open-thread" href="mensajes.html" aria-label="Abrir detalles">&#8505;</a>
+          </div>
         </header>
 
-        <div class="mini-chat-v4-typing" id="miniChatTyping" hidden></div>
-        <div class="mini-chat-v4-messages" id="miniChatMessages"></div>
+        <div class="mini-chat-v4-typing" data-mini-chat-role="typing" hidden></div>
+        <div class="mini-chat-v4-messages" data-mini-chat-role="messages"></div>
+        <div class="mini-chat-ai-suggestions" data-mini-chat-role="ai-suggestions" hidden></div>
 
-        <div class="mini-chat-v4-upload-progress-wrap" id="miniChatUploadProgressWrap" hidden>
-          <div class="mini-chat-v4-upload-progress" id="miniChatUploadProgress"></div>
+        <div class="mini-chat-v4-upload-progress-wrap" data-mini-chat-role="upload-wrap" hidden>
+          <div class="mini-chat-v4-upload-progress" data-mini-chat-role="upload-bar"></div>
         </div>
 
         <footer class="mini-chat-v4-compose">
-          <button class="mini-chat-v4-attach" id="miniChatAttach" type="button" aria-label="Adjuntar">&#128206;</button>
-          <textarea id="miniChatInput" rows="1" placeholder="Escribe un mensaje..."></textarea>
-          <button class="mini-chat-v4-send" id="miniChatSend" type="button" aria-label="Enviar">&#10148;</button>
-          <input id="miniChatFileInput" type="file" hidden />
+          <button class="mini-chat-v4-attach" data-mini-chat-role="attach" type="button" aria-label="Adjuntar">&#128206;</button>
+          <button class="mini-chat-v4-record" data-mini-chat-role="record" type="button" aria-label="Grabar voz">&#127897;</button>
+          <button class="mini-chat-v4-speech" data-mini-chat-role="speech" type="button" aria-label="Dictar mensaje">&#127908;</button>
+          <textarea data-mini-chat-role="input" rows="1" placeholder="Escribe un mensaje..."></textarea>
+          <button class="mini-chat-v4-send" data-mini-chat-role="send" type="button" aria-label="Enviar">&#10148;</button>
+          <input data-mini-chat-role="file-input" type="file" hidden />
         </footer>
       </div>
     </section>

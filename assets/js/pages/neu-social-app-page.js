@@ -4,7 +4,7 @@ import {
   hardResetNeuApp,
   initNeuApp,
   logNeuRuntimeDiagnostics,
-} from '../neu/app/neu-app.boot.js';
+} from '../neu/app/neu-app.boot.js?v=20260308onb2';
 import { normalizePortal } from '../neu/context/neu-app-context.js';
 import { chatState } from '../neu/state/chat.state.js';
 import { postState } from '../neu/state/post.state.js';
@@ -13,6 +13,7 @@ import { storyState } from '../neu/state/story.state.js';
 
 let booted = false;
 let globalsExposed = false;
+let hashFocusWired = false;
 
 function exposeRuntimeGlobals() {
   if (globalsExposed) return;
@@ -50,11 +51,37 @@ function exposeRuntimeGlobals() {
   };
 }
 
+function focusHashTarget({ smooth = true } = {}) {
+  const targetId = String(location.hash || '').trim().replace(/^#/, '');
+  if (!targetId) return;
+
+  const target = document.getElementById(targetId);
+  if (!(target instanceof HTMLElement)) return;
+
+  window.setTimeout(() => {
+    target.scrollIntoView({
+      behavior: smooth ? 'smooth' : 'auto',
+      block: 'start',
+    });
+  }, 180);
+}
+
+function wireHashFocus() {
+  if (hashFocusWired) return;
+  hashFocusWired = true;
+
+  window.addEventListener('hashchange', () => {
+    focusHashTarget();
+  });
+}
+
 async function boot() {
   exposeRuntimeGlobals();
   if (booted) return;
   booted = true;
   await initNeuApp();
+  wireHashFocus();
+  focusHashTarget({ smooth: false });
 }
 
 if (document.readyState === 'loading') {

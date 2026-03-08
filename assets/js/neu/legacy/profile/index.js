@@ -31,9 +31,11 @@ export function createLegacyProfileModule(deps) {
     neuGetProfileForActiveRoute,
     neuInitProfileEditor,
     neuIsPermissionDenied,
+    neuProfilePresenceMeta,
     neuIsVideoUrl,
     neuLoadOrCreateProfile,
     neuNormalizeProfile,
+    neuOpenQuickPostModal,
     neuOpenProfileMessage,
     neuProfileDocRef,
     neuProfileHref,
@@ -55,6 +57,7 @@ export function createLegacyProfileModule(deps) {
     updateNeuRouteParams,
     where,
   } = deps;
+  let profileShareResetTimer = 0;
 
   function neuProfileFallback(uid) {
     const cleanUid = String(uid || '').trim();
@@ -142,22 +145,163 @@ export function createLegacyProfileModule(deps) {
 
     const followers = Math.max(0, Number(neuPublicProfileState.followersCount || 0));
     const following = Math.max(0, Number(neuPublicProfileState.followingCount || 0));
+    const posts = Math.max(0, Array.isArray(neuPublicProfileState.posts) ? neuPublicProfileState.posts.length : 0);
 
     const followersEl = document.getElementById('countFollowers');
     const friendsEl = document.getElementById('countFriends');
+    const postsEl = document.getElementById('countPosts');
     const followingEl = document.getElementById('countFollowing');
 
     if (followersEl instanceof HTMLElement) followersEl.textContent = String(followers);
     if (friendsEl instanceof HTMLElement) friendsEl.textContent = String(following);
+    if (postsEl instanceof HTMLElement) postsEl.textContent = String(posts);
     if (followingEl instanceof HTMLElement) {
       followingEl.textContent = String(following);
-      followingEl.classList.remove('is-hidden');
+      followingEl.classList.add('is-hidden');
+      followingEl.hidden = true;
     }
+    neuRenderProfileRadarUi();
+  }
+
+  function neuCollectProfileTopics(profile) {
+    const seen = new Set();
+    const items = [];
+    const addTopic = (rawValue) => {
+      const clean = String(rawValue || '').replace(/^#/, '').trim();
+      if (!clean) return;
+      const key = clean.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      items.push(`#${clean}`);
+    };
+
+    const bio = String(profile?.bio || '').trim();
+    const bioMatches = bio.match(/#[\p{L}\p{N}_-]+/gu) || [];
+    bioMatches.forEach((match) => addTopic(match));
+
+    const posts = Array.isArray(neuPublicProfileState.posts) ? neuPublicProfileState.posts : [];
+    posts.forEach((post) => {
+      if (!Array.isArray(post?.tags)) return;
+      post.tags.forEach((tag) => addTopic(tag));
+    });
+
+    return items.slice(0, 2);
+  }
+
+  function neuProfilePresenceLabel(profile) {
+    const value = String(profile?.presenceMode || '').trim().toLowerCase();
+    if (value === 'city') return 'Busco plan local';
+    if (value === 'chill') return 'Hoy chill';
+    return 'Abierta a conversar';
+  }
+
+  function neuRenderProfileRadarUi() {
+    if (!neuPublicProfileState.profileMode) return;
+
+    const copyEl = document.getElementById('profileRadarCopy');
+    const chipsEl = document.getElementById('profileRadarChips');
+    if (!(copyEl instanceof HTMLElement) || !(chipsEl instanceof HTMLElement)) return;
+
+    const profile =
+      neuGetProfileForActiveRoute() ||
+      neuPublicProfileState.viewedProfile ||
+      neuProfileState.profile ||
+      neuProfileFallback(neuPublicProfileState.targetUid || neuCurrentUid());
+    const city = String(profile?.city || '').trim();
+    const bio = String(profile?.bio || '').trim();
+    const followers = Math.max(0, Number(neuPublicProfileState.followersCount || 0));
+    const posts = Math.max(0, Array.isArray(neuPublicProfileState.posts) ? neuPublicProfileState.posts.length : 0);
+    const topics = neuCollectProfileTopics(profile);
+    const chips = [];
+
+    chips.push(neuProfilePresenceLabel(profile));
+    if (city) chips.push(city);
+    topics.forEach((topic) => chips.push(topic));
+    if (posts > 0) chips.push(`${posts} posts`);
+    if (followers > 0) chips.push(`${followers} seguidores`);
+    if (!chips.length) chips.push(neuPublicProfileState.isOwn ? 'Perfil nuevo' : 'Perfil activo');
+
+    if (neuPublicProfileState.isOwn) {
+      copyEl.textContent = bio
+        ? 'Tu perfil ya tiene tono. Lo que le da vida ahora no son mas bloques, sino posts cortos y temas claros.'
+        : 'Truco simple: una frase corta en la bio y un primer post bastan para que el perfil empiece a sentirse vivo.';
+    } else if (topics.length) {
+      copyEl.textContent = 'La mejor primera impresion aqui no es un "hola", sino una referencia a uno de sus temas.';
+    } else if (city) {
+      copyEl.textContent = 'Buen inicio de conversacion: apoyate en la ciudad o en algo concreto del perfil.';
+    } else {
+      copyEl.textContent = 'Perfil limpio y directo. Mejor entrar con un mensaje corto y muy concreto.';
+    }
+
+    chipsEl.innerHTML = chips
+      .slice(0, 4)
+      .map((chip) => `<span class="profile-radar-chip">${esc(chip)}</span>`)
+      .join('');
+  }
+
+  async function neuWriteClipboardText(value) {
+    const text = String(value || '').trim();
+    if (!text) return false;
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', 'readonly');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    const copied = document.execCommand('copy');
+    area.remove();
+    return copied;
+  }
+
+  function neuProfileShareHref() {
+    const meUid = String(neuCurrentUid() || '').trim();
+    const routeUid = String(getProfileUidFromQuery(meUid) || '').trim();
+    const targetUid = routeUid || meUid;
+    return new URL(neuProfileHref(targetUid), location.origin).toString();
+  }
+
+  function neuFlashProfileShareState(button, label, isError = false) {
+    if (!(button instanceof HTMLButtonElement)) return;
+    if (profileShareResetTimer) window.clearTimeout(profileShareResetTimer);
+    button.textContent = label;
+    button.classList.toggle('is-error', isError);
+    profileShareResetTimer = window.setTimeout(() => {
+      profileShareResetTimer = 0;
+      button.textContent = 'Copiar perfil';
+      button.classList.remove('is-error');
+    }, 1600);
+  }
+
+  async function neuCopyProfileLink(button) {
+    const href = neuProfileShareHref();
+    try {
+      const copied = await neuWriteClipboardText(href);
+      neuFlashProfileShareState(button, copied ? 'Copiado' : 'No listo', !copied);
+    } catch {
+      neuFlashProfileShareState(button, 'No listo', true);
+    }
+  }
+
+  function neuProfileMessageCta(profile) {
+    const meta = neuProfilePresenceMeta(profile?.presenceMode);
+    return {
+      label: String(meta?.messageCta || 'Mensaje').trim() || 'Mensaje',
+      hint: String(meta?.messageHint || '').trim(),
+      mode: String(meta?.value || '').trim(),
+    };
   }
 
   function neuSyncProfileActionsUi() {
     const followBtn = document.getElementById('btnFusionFollow');
     const editBtn = document.getElementById('btnNeuEditProfile');
+    const newPostBtn = document.getElementById('btnNeuNewPost');
     const friendBtn = document.getElementById('btnFusionFriend');
     const shareBtn = document.getElementById('btnFusionShare');
     const messageBtn = document.getElementById('btnFusionMessage');
@@ -168,7 +312,12 @@ export function createLegacyProfileModule(deps) {
 
     if (sourceSwitch instanceof HTMLElement) sourceSwitch.style.display = isProfileMode ? 'none' : '';
     if (friendBtn instanceof HTMLElement) friendBtn.classList.add('is-hidden');
-    if (shareBtn instanceof HTMLElement) shareBtn.classList.add('is-hidden');
+    if (shareBtn instanceof HTMLElement) {
+      shareBtn.classList.toggle('is-hidden', !isProfileMode);
+      shareBtn.textContent = 'Copiar perfil';
+    }
+    if (newPostBtn instanceof HTMLElement) newPostBtn.classList.toggle('is-hidden', !(isProfileMode && isOwn));
+    if (messageBtn instanceof HTMLElement) messageBtn.classList.toggle('is-hidden', !(isProfileMode && !isOwn));
 
     const meUid = neuCurrentUid();
     const routeProfileUid = getProfileUidFromQuery(meUid);
@@ -176,10 +325,21 @@ export function createLegacyProfileModule(deps) {
     const messageTargetUid = isProfileMode && !isOwn
       ? String(neuPublicProfileState.targetUid || routeTargetUid || '').trim()
       : '';
+    const messageProfile = neuGetProfileForActiveRoute();
+    const messageCta = neuProfileMessageCta(messageProfile);
     if (messageBtn instanceof HTMLElement) {
       messageBtn.setAttribute('data-chat-uid', messageTargetUid);
       messageBtn.removeAttribute('data-open-chat');
       messageBtn.removeAttribute('data-open-chat-name');
+      messageBtn.dataset.presenceMode = messageCta.mode;
+      messageBtn.textContent = isProfileMode && !isOwn ? messageCta.label : 'Mensaje';
+      if (messageCta.hint && isProfileMode && !isOwn) {
+        messageBtn.title = messageCta.hint;
+        messageBtn.setAttribute('aria-label', messageCta.hint);
+      } else {
+        messageBtn.removeAttribute('title');
+        messageBtn.setAttribute('aria-label', 'Mensaje');
+      }
     }
     if (messageBtn instanceof HTMLAnchorElement) {
       messageBtn.href = neuSocialAppHref({ portal: 'pulse' });
@@ -190,18 +350,25 @@ export function createLegacyProfileModule(deps) {
 
     if (!isProfileMode) {
       editBtn.classList.add('is-hidden');
+      if (newPostBtn instanceof HTMLElement) newPostBtn.classList.add('is-hidden');
       followBtn.classList.remove('is-hidden');
+      if (shareBtn instanceof HTMLElement) shareBtn.classList.add('is-hidden');
       return;
     }
 
     if (isOwn) {
       editBtn.classList.remove('is-hidden');
+      if (newPostBtn instanceof HTMLElement) newPostBtn.classList.remove('is-hidden');
       followBtn.classList.add('is-hidden');
+      if (messageBtn instanceof HTMLElement) messageBtn.classList.add('is-hidden');
+      neuRenderProfileRadarUi();
       return;
     }
 
     editBtn.classList.add('is-hidden');
+    if (newPostBtn instanceof HTMLElement) newPostBtn.classList.add('is-hidden');
     followBtn.classList.remove('is-hidden');
+    if (messageBtn instanceof HTMLElement) messageBtn.classList.remove('is-hidden');
     followBtn.disabled = neuPublicProfileState.followLoading;
     followBtn.textContent = neuPublicProfileState.followLoading
       ? 'Cargando...'
@@ -210,6 +377,7 @@ export function createLegacyProfileModule(deps) {
         : 'Seguir';
     followBtn.classList.toggle('btn-yellow', !neuPublicProfileState.isFollowing);
     followBtn.classList.toggle('btn-white-outline', neuPublicProfileState.isFollowing);
+    neuRenderProfileRadarUi();
   }
 
   async function neuRefreshFollowUiState() {
@@ -298,12 +466,30 @@ export function createLegacyProfileModule(deps) {
     const text = neuPublicProfileState.isOwn
       ? 'Aun no has publicado nada'
       : 'Este usuario aun no ha publicado nada';
+    const ctaHtml = neuPublicProfileState.isOwn
+      ? '<button class="btn-yellow empty-feed-cta" id="btnNeuEmptyCreatePost" type="button">Crear primer post</button>'
+      : '';
     feed.innerHTML = `
       <div class="empty-feed-state">
         <p class="empty-feed-title">${esc(text)}</p>
         <p class="empty-feed-sub">${esc(neuPublicProfileState.isOwn ? 'Comparte tu primera publicacion' : 'Vuelve pronto para ver novedades')}</p>
+        ${ctaHtml}
       </div>
     `;
+
+    const emptyCreateBtn = document.getElementById('btnNeuEmptyCreatePost');
+    emptyCreateBtn?.addEventListener('click', () => {
+      neuOpenQuickPostModal();
+    });
+  }
+
+  function syncProfileRouteBodyState() {
+    if (!(document.body instanceof HTMLElement)) return;
+    const profileMode = neuPublicProfileState.profileMode === true;
+    const own = profileMode && neuPublicProfileState.isOwn === true;
+    document.body.classList.toggle('neu-profile-route-active', profileMode);
+    document.body.classList.toggle('neu-own-profile', own);
+    document.body.classList.toggle('neu-public-profile', profileMode && !own);
   }
 
   function neuFilterProfilePosts(posts, queryText) {
@@ -412,6 +598,7 @@ export function createLegacyProfileModule(deps) {
     const queryText = String(document.getElementById('feedSearchInput')?.value || '').trim();
     const filtered = neuFilterProfilePosts(neuPublicProfileState.posts, queryText);
     neuRenderProfileFeedPosts(filtered);
+    neuSyncProfileCountsUi();
 
     if (!isDisabled('decorators')) {
       window.setTimeout(() => {
@@ -743,6 +930,26 @@ export function createLegacyProfileModule(deps) {
           return;
         }
 
+        const newPostBtn = target.closest('#btnNeuNewPost, #btnNeuEmptyCreatePost');
+        if (newPostBtn instanceof HTMLButtonElement) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          neuOpenQuickPostModal();
+          return;
+        }
+
+        const shareBtn = target.closest('#btnFusionShare');
+        if (shareBtn instanceof HTMLButtonElement && neuPublicProfileState.profileMode) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          neuCopyProfileLink(shareBtn).catch(() => {
+            neuFlashProfileShareState(shareBtn, 'No listo', true);
+          });
+          return;
+        }
+
         const feedSourceBtn = target.closest('[data-feed-source]');
         if (feedSourceBtn && neuPublicProfileState.profileMode) {
           const source = String(feedSourceBtn.getAttribute('data-feed-source') || '')
@@ -796,6 +1003,8 @@ export function createLegacyProfileModule(deps) {
       if (!profileMode) {
         neuPublicProfileState.profileMode = false;
         neuPublicProfileState.viewedProfile = null;
+        neuPublicProfileState.isOwn = true;
+        syncProfileRouteBodyState();
         if (neuProfileState.profile) neuApplyProfileToUi(neuProfileState.profile);
         neuSyncProfileActionsUi();
         neuWirePublicProfileEvents();
@@ -808,6 +1017,7 @@ export function createLegacyProfileModule(deps) {
         neuPublicProfileState.targetUid = '';
         neuPublicProfileState.viewedProfile = null;
         neuPublicProfileState.isOwn = true;
+        syncProfileRouteBodyState();
         if (neuProfileState.profile) neuApplyProfileToUi(neuProfileState.profile);
         neuSyncProfileActionsUi();
         neuWirePublicProfileEvents();
@@ -819,6 +1029,7 @@ export function createLegacyProfileModule(deps) {
       neuPublicProfileState.targetUid = targetUid;
       neuPublicProfileState.profileMode = true;
       neuPublicProfileState.isOwn = isOwn;
+      syncProfileRouteBodyState();
       if (changedTarget) {
         neuPublicProfileState.viewedProfile = null;
         neuPublicProfileState.posts = [];

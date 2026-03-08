@@ -34,11 +34,20 @@ export function createMiniChatUploadController({
 
   function messageAttachmentType(message = {}) {
     const rawType = String(message?.type || '').trim().toLowerCase();
-    if (rawType === 'image' || rawType === 'file' || rawType === 'text') return rawType;
+    if (rawType === 'audio' || rawType === 'image' || rawType === 'file' || rawType === 'text') {
+      return rawType;
+    }
     const imageUrl = String(message?.imageUrl || '').trim();
     if (imageUrl) return 'image';
     const fileUrl = String(message?.fileUrl || '').trim();
-    if (fileUrl) return 'file';
+    if (fileUrl) {
+      const fileName = String(message?.fileName || '').trim().toLowerCase();
+      if (String(message?.mimeType || '').trim().toLowerCase().startsWith('audio/')) return 'audio';
+      if (fileName.endsWith('.webm') || fileName.endsWith('.ogg') || fileName.endsWith('.mp3') || fileName.endsWith('.wav')) {
+        return 'audio';
+      }
+      return 'file';
+    }
     return 'text';
   }
 
@@ -55,6 +64,11 @@ export function createMiniChatUploadController({
 
     if (type === 'image' && fileUrl) {
       out.push(`<img class="mini-chat-v4-image" src="${esc(fileUrl)}" alt="${esc(fileName)}" loading="lazy" />`);
+    } else if (type === 'audio' && fileUrl) {
+      const mimeType = String(message?.mimeType || 'audio/webm').trim() || 'audio/webm';
+      out.push(
+        `<audio class="mini-chat-v4-audio" controls preload="metadata"><source src="${esc(fileUrl)}" type="${esc(mimeType)}" /></audio>`,
+      );
     } else if (type === 'file' && fileUrl) {
       out.push(
         `<a class="mini-chat-v4-file" href="${esc(fileUrl)}" download="${esc(fileName)}" target="_blank" rel="noopener">&#128206; ${esc(fileLabel)}</a>`,
@@ -72,8 +86,12 @@ export function createMiniChatUploadController({
       return Promise.reject(new Error('invalid-upload-input'));
     }
 
+    const fileType = String(file.type || '').toLowerCase();
+    const isAudio = fileType.startsWith('audio/');
     const safeName = sanitizeFileName(file.name);
-    const path = `chat/${safeConvId}/${Date.now()}_${safeName}`;
+    const path = isAudio
+      ? `chat/${safeConvId}/audio/${Date.now()}.webm`
+      : `chat/${safeConvId}/${Date.now()}_${safeName}`;
     const refObj = storageRef(storage, path);
     const task = uploadBytesResumable(refObj, file);
 
@@ -92,11 +110,16 @@ export function createMiniChatUploadController({
             const fileUrl = await getDownloadURL(task.snapshot.ref);
             resolve({
               fileUrl,
-              fileName: file.name || safeName || 'archivo',
+              fileName: isAudio
+                ? (file.name || 'voice-message.webm')
+                : (file.name || safeName || 'archivo'),
               fileSize: file.size || 0,
-              type: String(file.type || '').toLowerCase().startsWith('image/')
-                ? 'image'
-                : 'file',
+              mimeType: file.type || (isAudio ? 'audio/webm' : ''),
+              type: isAudio
+                ? 'audio'
+                : String(file.type || '').toLowerCase().startsWith('image/')
+                  ? 'image'
+                  : 'file',
             });
           } catch (error) {
             reject(error);

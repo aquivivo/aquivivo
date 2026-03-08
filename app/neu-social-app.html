@@ -9,11 +9,11 @@
       href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Bebas+Neue&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/neu-shell.css?v=20260307d" />
+    <link rel="stylesheet" href="assets/css/neu-shell.css?v=20260307g" />
     <link rel="stylesheet" href="assets/css/neu-theme.css?v=20260226fix" />
-    <link rel="stylesheet" href="assets/css/mini-chat-v4.css?v=20260307chat" />
-    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260307e" />
-    <script src="assets/js/neu-layout.js?v=20260307d" type="module"></script>
+    <link rel="stylesheet" href="assets/css/mini-chat-v4.css?v=20260307chatc" />
+    <link rel="stylesheet" href="assets/css/neu-social-app.css?v=20260307j" />
+    <script src="assets/js/neu-layout.js?v=20260307g" type="module"></script>
   </head>
   <body data-page="profile" data-no-side-panel="1" class="fusion-profile neu-social-app no-side-panel" data-portal="feed">
     <div id="appHeader"></div>
@@ -188,35 +188,62 @@
     <main class="fusion-main">
       <section class="fusion-feed-column">
         <section class="fusion-block profile-compact">
-          <div class="profile-main">
-            <div class="avatar-frame profile-avatar">
-              <img id="leftAvatarImg" alt="avatar" />
-              <span id="leftAvatarFallback">U</span>
-            </div>
+          <div class="profile-hero-shell">
+            <div class="profile-main">
+              <div class="avatar-frame profile-avatar">
+                <img id="leftAvatarImg" alt="avatar" />
+                <span id="leftAvatarFallback">U</span>
+              </div>
 
-            <div class="profile-copy">
-              <h1 id="leftName">Usuario</h1>
-              <div class="profile-meta-line">
-                <span id="leftHandle">@usuario</span>
-                <span class="meta-dot">&bull;</span>
-                <span id="profileCity">Gdansk</span>
+              <div class="profile-copy">
+                <h1 id="leftName">Usuario</h1>
+                <div class="profile-meta-line">
+                  <span id="leftHandle">@usuario</span>
+                  <span class="meta-dot">&bull;</span>
+                  <span id="profileCity">Gdansk</span>
+                </div>
               </div>
             </div>
+
+            <div class="profile-actions">
+              <button class="btn-yellow" id="btnFusionFollow" type="button">Agregar</button>
+              <button class="btn-white-outline" id="btnFusionMessage" type="button" data-chat-uid="">Mensaje</button>
+              <button class="btn-yellow is-hidden" id="btnNeuNewPost" type="button">Nuevo post</button>
+              <button class="btn-white-outline is-hidden" id="btnNeuEditProfile" type="button">Editar perfil</button>
+              <button class="btn-white-outline is-hidden" id="btnFusionFriend" type="button">Seguir</button>
+              <button class="btn-white-outline is-hidden" id="btnFusionShare" type="button">Compartir</button>
+            </div>
           </div>
 
-          <div class="profile-actions">
-            <button class="btn-yellow" id="btnFusionFollow" type="button">Agregar</button>
-            <button class="btn-white-outline" id="btnFusionMessage" type="button" data-chat-uid="">Mensaje</button>
-            <button class="btn-white-outline is-hidden" id="btnNeuEditProfile" type="button">Editar perfil</button>
-            <button class="btn-white-outline is-hidden" id="btnFusionFriend" type="button">Seguir</button>
-            <button class="btn-white-outline is-hidden" id="btnFusionShare" type="button">Compartir</button>
+          <p class="profile-status-pill is-hidden" id="leftStatus"></p>
+
+          <div class="profile-presence-row" id="profilePresenceRow" data-presence-mode="open">
+            <span class="profile-presence-badge" id="profilePresenceBadge">Abierta a conversar</span>
+            <p class="profile-presence-copy" id="profilePresenceCopy">
+              Ideal para mensajes nuevos y conexiones espontaneas.
+            </p>
           </div>
 
-          <div class="profile-stats-line">
-            <span id="countFollowers">0</span> Seguidores &middot; <span id="countFriends">0</span> Amigos
-            <span id="countFollowing" class="is-hidden">0</span>
-            <span id="leftStatus" class="is-hidden"></span>
+          <div class="profile-stats-grid" aria-label="Estadisticas del perfil">
+            <article class="profile-stat-card">
+              <span class="profile-stat-value" id="countFollowers">0</span>
+              <span class="profile-stat-label">Seguidores</span>
+            </article>
+            <article class="profile-stat-card">
+              <span class="profile-stat-value" id="countFriends">0</span>
+              <span class="profile-stat-label">Siguiendo</span>
+            </article>
+            <article class="profile-stat-card">
+              <span class="profile-stat-value" id="countPosts">0</span>
+              <span class="profile-stat-label">Posts</span>
+            </article>
           </div>
+          <span id="countFollowing" class="is-hidden" hidden>0</span>
+
+          <section class="profile-radar-shell" aria-label="Radar del perfil">
+            <p class="profile-radar-copy" id="profileRadarCopy"></p>
+            <div class="profile-radar-chips" id="profileRadarChips"></div>
+          </section>
 
           <nav class="profile-tabs" aria-label="Tabs de perfil">
             <button class="tab-btn is-active" data-profile-tab="feed" data-portal-target="feed" type="button">
@@ -390,11 +417,11 @@
         Inicio
       </button>
       <button class="bottom-nav-btn" data-bottom-target="reels" data-portal-target="reels" type="button">
-        Mapa
+        Reels
       </button>
       <button class="bottom-nav-btn bottom-nav-btn-primary" id="btnBottomCreate" type="button">Crear</button>
       <button class="bottom-nav-btn" data-bottom-target="pulse" data-portal-target="pulse" type="button">
-        Chats
+        Pulse
       </button>
       <button class="bottom-nav-btn" id="btnBottomProfile" type="button">Perfil</button>
     </nav>
@@ -548,6 +575,27 @@
             </label>
           </div>
 
+          <section class="neu-profile-presence-group" aria-label="Modo del perfil">
+            <div class="neu-profile-presence-head">
+              <strong>Modo del perfil</strong>
+              <span>Una senal ligera para orientar mensajes y planes.</span>
+            </div>
+            <div class="neu-profile-presence-options" id="neuProfilePresencePicker" data-selected-mode="open">
+              <button class="neu-profile-presence-option" data-neu-presence-mode="open" type="button">
+                <strong>Abierta a conversar</strong>
+                <span>Ideal para mensajes nuevos y conexiones rapidas.</span>
+              </button>
+              <button class="neu-profile-presence-option" data-neu-presence-mode="city" type="button">
+                <strong>Busco plan local</strong>
+                <span>Perfecto para gente de tu ciudad y planes cercanos.</span>
+              </button>
+              <button class="neu-profile-presence-option" data-neu-presence-mode="chill" type="button">
+                <strong>Hoy chill</strong>
+                <span>Modo tranquilo, sin prisa y sin presion.</span>
+              </button>
+            </div>
+          </section>
+
           <label class="composer-text-wrap neu-profile-bio-wrap">
             Bio
             <textarea id="neuProfileBioInput" rows="3" maxlength="160" placeholder="Cuéntanos algo sobre ti"></textarea>
@@ -568,7 +616,7 @@
     <script type="module">
       console.log('[NEU BOOT] html module loader start');
 
-      import('./assets/js/pages/neu-social-app-page.js?v=20260307e')
+      import('./assets/js/pages/neu-social-app-page.js?v=20260308onb2')
         .then(() => console.log('[NEU BOOT] module imported OK'))
         .catch((err) => {
           console.error('[NEU BOOT] module import FAILED:', err);

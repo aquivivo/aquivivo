@@ -98,6 +98,7 @@ body.fusion-profile.neu-social-app .mini-chat-v4-thread-view--page {
   flex-direction: column;
   min-height: 0;
   height: 100%;
+  position: relative;
   background: transparent;
 }
 
@@ -118,9 +119,18 @@ body.fusion-profile.neu-social-app .mini-chat-v4-thread-user {
   flex: 1 1 auto;
 }
 
+body.fusion-profile.neu-social-app .mini-chat-v4-thread-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
 body.fusion-profile.neu-social-app .mini-chat-v4-icon,
 body.fusion-profile.neu-social-app .mini-chat-v4-open-thread,
 body.fusion-profile.neu-social-app .mini-chat-v4-attach,
+body.fusion-profile.neu-social-app .mini-chat-v4-record,
+body.fusion-profile.neu-social-app .mini-chat-v4-speech,
 body.fusion-profile.neu-social-app .mini-chat-v4-send {
   width: 36px;
   height: 36px;
@@ -139,6 +149,8 @@ body.fusion-profile.neu-social-app .mini-chat-v4-send {
 body.fusion-profile.neu-social-app .mini-chat-v4-icon:hover,
 body.fusion-profile.neu-social-app .mini-chat-v4-open-thread:hover,
 body.fusion-profile.neu-social-app .mini-chat-v4-attach:hover,
+body.fusion-profile.neu-social-app .mini-chat-v4-record:hover,
+body.fusion-profile.neu-social-app .mini-chat-v4-speech:hover,
 body.fusion-profile.neu-social-app .mini-chat-v4-send:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.22);
@@ -150,6 +162,18 @@ body.fusion-profile.neu-social-app .mini-chat-v4-send {
   border-color: rgba(252, 209, 22, 0.94);
   color: #10295d;
   font-weight: 800;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-call.is-active {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.48);
+  color: #dcfce7;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-hangup {
+  background: rgba(255, 61, 95, 0.18);
+  border-color: rgba(255, 61, 95, 0.5);
+  color: #ffd6dd;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-typing {
@@ -169,6 +193,21 @@ body.fusion-profile.neu-social-app .mini-chat-v4-messages {
   padding: 16px 18px;
   display: grid;
   gap: 10px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-ai-suggestions[hidden] {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 18px 12px;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-ai-suggestions {
+  padding: 0 14px 10px;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-message-row {
@@ -229,6 +268,13 @@ body.fusion-profile.neu-social-app .mini-chat-v4-file {
   margin-bottom: 8px;
 }
 
+body.fusion-profile.neu-social-app .mini-chat-v4-audio {
+  width: min(280px, 100%);
+  display: block;
+  margin-bottom: 8px;
+  border-radius: 14px;
+}
+
 body.fusion-profile.neu-social-app .mini-chat-v4-reactions {
   display: flex;
   gap: 6px;
@@ -244,6 +290,55 @@ body.fusion-profile.neu-social-app .mini-chat-v4-reaction-option {
   padding: 4px 8px;
   font-size: 12px;
   cursor: pointer;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-reaction-pill.mini-chat-reaction-animated {
+  animation: reactionPop 0.25s ease-out;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-ai-chip {
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--fusion-text);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-ai-chip:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-reaction-pill.mini-chat-reaction-remove {
+  animation: reactionFadeOut 0.2s ease forwards;
+}
+
+@keyframes reactionPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes reactionFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.7);
+  }
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-reaction-pill.active-reaction,
@@ -263,6 +358,34 @@ body.fusion-profile.neu-social-app .mini-chat-v4-message-row:hover .mini-chat-v4
   display: flex;
 }
 
+body.fusion-profile.neu-social-app .mini-chat-drop-zone {
+  position: absolute;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-drop-zone[hidden] {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-thread-view--page.is-dragging,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window.is-dragging {
+  box-shadow: 0 0 0 2px rgba(143, 179, 255, 0.28);
+}
+
 body.fusion-profile.neu-social-app .mini-chat-v4-upload-progress-wrap {
   height: 4px;
   background: rgba(255, 255, 255, 0.06);
@@ -277,12 +400,24 @@ body.fusion-profile.neu-social-app .mini-chat-v4-upload-progress {
 
 body.fusion-profile.neu-social-app .mini-chat-v4-compose {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto auto auto minmax(0, 1fr) auto;
   gap: 10px;
   align-items: end;
   padding: 14px 18px 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(10, 16, 28, 0.94);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-record.is-recording {
+  background: rgba(255, 61, 95, 0.16);
+  border-color: rgba(255, 61, 95, 0.5);
+  color: #ffd6dd;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-speech.is-recording {
+  background: rgba(255, 61, 95, 0.16);
+  border-color: rgba(255, 61, 95, 0.5);
+  color: #ffd6dd;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-v4-compose textarea {
@@ -321,5 +456,664 @@ body.fusion-profile.neu-social-app .mini-chat-v4-compose textarea:focus {
 
   body.fusion-profile.neu-social-app .mini-chat-v4-message-row {
     max-width: 92%;
+  }
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 {
+  --mini-chat-v4-panel-z: 3000;
+  position: fixed;
+  right: 20px;
+  bottom: 92px;
+  z-index: var(--mini-chat-v4-panel-z, 3000);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-height: 0;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4000;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window {
+  pointer-events: auto;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window {
+  position: fixed;
+  width: 360px;
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(180deg, rgba(17, 32, 66, 0.98), rgba(9, 20, 47, 0.99));
+  box-shadow: 0 26px 56px rgba(5, 12, 35, 0.56);
+  opacity: 1;
+  transform: none;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window.is-minimizing {
+  transform: translateY(12px) scale(0.96);
+  opacity: 0;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window.is-active {
+  box-shadow:
+    0 30px 64px rgba(5, 12, 35, 0.62),
+    0 0 0 1px rgba(143, 179, 255, 0.18);
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  position: relative;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-min,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-close,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-call,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-hangup,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-send,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-record,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-speech,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-attach {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-send {
+  background: #ffd94a;
+  border-color: rgba(255, 217, 74, 0.72);
+  color: #10327f;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-call.is-active {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.48);
+  color: #dcfce7;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-hangup {
+  background: rgba(255, 61, 95, 0.18);
+  border-color: rgba(255, 61, 95, 0.5);
+  color: #ffd6dd;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  background: rgba(8, 19, 52, 0.22);
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-bubble {
+  max-width: 100%;
+  border-radius: 18px;
+  padding: 12px 14px;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-bubble--other {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-bubble--me {
+  background: linear-gradient(135deg, rgba(252, 209, 22, 0.94), rgba(255, 172, 28, 0.92));
+  color: #10295d;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-bubble-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-bubble-meta,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-empty,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-thread-status,
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-typing {
+  color: rgba(230, 236, 255, 0.72);
+  font-size: 11px;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 11px;
+  text-align: center;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-compose {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-record.is-recording {
+  background: rgba(255, 61, 95, 0.16);
+  border-color: rgba(255, 61, 95, 0.5);
+  color: #ffd6dd;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-speech.is-recording {
+  background: rgba(255, 61, 95, 0.16);
+  border-color: rgba(255, 61, 95, 0.5);
+  color: #ffd6dd;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-compose textarea {
+  min-height: 38px;
+  max-height: 98px;
+  resize: none;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+  font: inherit;
+  line-height: 1.3;
+  padding: 8px 12px;
+  outline: none;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-compose textarea::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-upload-progress-wrap {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-upload-progress {
+  height: 3px;
+  width: 0;
+  background: linear-gradient(90deg, rgba(252, 209, 22, 0.95), rgba(59, 130, 246, 0.86));
+  transition: width 0.2s ease;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-tray {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 3900;
+  pointer-events: none;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-tray:empty {
+  display: none;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-tray-bubble {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: linear-gradient(180deg, #2c66d8, #1f4db4);
+  box-shadow: 0 16px 34px rgba(6, 17, 49, 0.48);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-tray-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(252, 209, 22, 0.95), rgba(59, 130, 246, 0.82));
+  color: #10295d;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-tray-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 2px solid #0f317f;
+  background: #ffd94a;
+  color: #10327f;
+  font-size: 10px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 [hidden] {
+  display: none !important;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher {
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: linear-gradient(180deg, #2c66d8, #1f4db4);
+  box-shadow: 0 16px 34px rgba(6, 17, 49, 0.48);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  pointer-events: auto;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #0f317f;
+  background: #ffd94a;
+  color: #10337f;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 162px;
+  z-index: var(--mini-chat-v4-panel-z, 3000);
+  width: 360px;
+  height: min(520px, calc(100vh - 190px));
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(180deg, rgba(17, 32, 66, 0.98), rgba(9, 20, 47, 0.99));
+  box-shadow: 0 26px 56px rgba(5, 12, 35, 0.56);
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-list-view,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-head-title {
+  font-size: 18px;
+  line-height: 1.1;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-icon,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-open-thread,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-attach,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-record,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-speech,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-send {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  flex: 0 0 auto;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-send {
+  background: #ffd94a;
+  border-color: rgba(255, 217, 74, 0.72);
+  color: #10327f;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-search-wrap {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-search-wrap input {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  padding: 10px 13px;
+  font: inherit;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-search-wrap input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #ffffff;
+  cursor: pointer;
+  text-align: left;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row:hover,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row.is-active {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(143, 179, 255, 0.34);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-avatar,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(252, 209, 22, 0.95), rgba(59, 130, 246, 0.82));
+  color: #10295d;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-main,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-meta {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-title,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-time,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-status,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-bubble-meta,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-delivery-status,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-empty {
+  color: rgba(230, 236, 255, 0.64);
+  font-size: 11px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-delivery-status {
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: rgba(230, 236, 255, 0.76);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-v4-delivery-status.is-seen {
+  color: rgba(230, 236, 255, 0.88);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-preview {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: rgba(230, 236, 255, 0.76);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-unread {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #ff3d5f;
+  box-shadow: 0 0 0 4px rgba(255, 61, 95, 0.16);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-user {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-typing {
+  padding: 10px 14px 0;
+  color: rgba(230, 236, 255, 0.74);
+  font-size: 12px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-bubble {
+  border-radius: 18px;
+  padding: 12px 14px;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-bubble--other {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-bubble--me {
+  background: linear-gradient(135deg, rgba(252, 209, 22, 0.94), rgba(255, 172, 28, 0.92));
+  color: #10295d;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-compose {
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-record.is-recording {
+  background: rgba(255, 61, 95, 0.16);
+  border-color: rgba(255, 61, 95, 0.5);
+  color: #ffd6dd;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-speech.is-recording {
+  background: rgba(255, 61, 95, 0.16);
+  border-color: rgba(255, 61, 95, 0.5);
+  color: #ffd6dd;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-compose textarea {
+  min-height: 42px;
+  max-height: 120px;
+  resize: none;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  padding: 10px 14px;
+  font: inherit;
+  outline: none;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-compose textarea::placeholder {
+  color: rgba(230, 236, 255, 0.64);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-upload-progress-wrap {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-upload-progress {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(252, 209, 22, 0.95), rgba(59, 130, 246, 0.86));
+  transition: width 120ms ease;
+}
+
+@media (max-width: 900px) {
+  body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 {
+    right: 14px;
+    bottom: 84px;
+  }
+
+  body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-panel {
+    right: 14px;
+    left: 14px;
+    width: auto;
+    bottom: 154px;
+    height: min(460px, calc(100vh - 190px));
+  }
+
+  body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window {
+    width: min(360px, calc(100vw - 28px));
+    height: min(520px, calc(100vh - 120px));
+  }
+
+  body.fusion-profile.neu-social-app .mini-chat-v4-tray {
+    right: 14px;
+    bottom: 16px;
   }
 }

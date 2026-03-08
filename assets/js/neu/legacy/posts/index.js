@@ -152,12 +152,6 @@ export function createLegacyPostsModule(deps) {
   }
 
   function neuOpenComposer() {
-    const trigger = document.getElementById('btnOpenComposer') || document.querySelector('[data-open-composer]');
-    if (trigger instanceof HTMLElement) {
-      trigger.click();
-      return;
-    }
-
     const modal = document.getElementById('composerModal');
     if (modal instanceof HTMLElement) {
       modal.hidden = false;
@@ -827,6 +821,20 @@ export function createLegacyPostsModule(deps) {
       (event) => {
         const target = event.target;
         if (!(target instanceof Element)) return;
+
+        const quickPostTrigger = target.closest('#btnOpenComposer, [data-neu-open-quick-post]');
+        if (quickPostTrigger) {
+          event.preventDefault();
+          neuOpenQuickPostModal();
+          return;
+        }
+
+        const closeComposer = target.closest('[data-composer-close], #btnComposerToggle');
+        if (closeComposer) {
+          event.preventDefault();
+          neuCloseComposer();
+          return;
+        }
 
         const publishBtn = target.closest('#btnComposerPublish');
         if (publishBtn && neuPostCrudState.editing) {

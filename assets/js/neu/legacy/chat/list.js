@@ -41,6 +41,21 @@ export function createLegacyChatListModule(deps) {
     query,
   } = deps;
 
+  function miniChatOwnsInbox() {
+    const inbox = document.getElementById('neuInboxList');
+    if (!(inbox instanceof HTMLElement)) return false;
+    if (inbox.dataset.miniChatManaged === '1') return true;
+    const host = document.getElementById('neuInboxChatHost');
+    if (host instanceof HTMLElement && host.dataset.miniChatManaged === '1') return true;
+    return typeof window !== 'undefined' && typeof window.__avMiniChatApi?.inspect === 'function';
+  }
+
+  function disconnectLegacyListObserver() {
+    if (!(neuChatState.listObserver instanceof MutationObserver)) return;
+    neuChatState.listObserver.disconnect();
+    neuChatState.listObserver = null;
+  }
+
   function neuApplyChatSearchQuery(rawValue) {
     if (neuChatState.chatSearchDebounceTimer) {
       window.clearTimeout(neuChatState.chatSearchDebounceTimer);
@@ -66,6 +81,7 @@ export function createLegacyChatListModule(deps) {
   }
 
   function neuChatSearchInputNodes() {
+    if (miniChatOwnsInbox()) return [];
     const nodes = [neuDockInboxSearchNode(), document.getElementById('neuInboxSearch'), document.getElementById('pulseChatSearchInput')];
     const uniq = [];
     nodes.forEach((node) => {
@@ -84,6 +100,7 @@ export function createLegacyChatListModule(deps) {
   }
 
   function neuWireChatSearchInput() {
+    if (miniChatOwnsInbox()) return;
     const inputs = neuChatSearchInputNodes();
     if (!inputs.length) return;
     inputs.forEach((input) => {
@@ -108,6 +125,10 @@ export function createLegacyChatListModule(deps) {
   }
 
   function neuRenderChatList() {
+    if (miniChatOwnsInbox()) {
+      disconnectLegacyListObserver();
+      return;
+    }
     neuSyncChatHostSurface();
     const root = neuInboxListNode();
     if (!(root instanceof HTMLElement)) {
@@ -219,6 +240,10 @@ export function createLegacyChatListModule(deps) {
   }
 
   function neuWireChatListGuard() {
+    if (miniChatOwnsInbox()) {
+      disconnectLegacyListObserver();
+      return;
+    }
     if (isDisabled('observers')) return;
     if (neuChatState.listObserver instanceof MutationObserver) return;
     const root = neuInboxListNode();
@@ -236,6 +261,10 @@ export function createLegacyChatListModule(deps) {
   }
 
   function neuStartChatListListener(meUid) {
+    if (miniChatOwnsInbox()) {
+      neuStopChatListListener();
+      return;
+    }
     const uid = String(meUid || '').trim();
     if (!uid) return;
     if (neuChatState.listUid === uid && typeof neuChatState.listUnsub === 'function') return;

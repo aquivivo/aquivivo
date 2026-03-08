@@ -94,6 +94,16 @@ export function createLegacyChatModule(deps) {
 
   let neuChatOnDemandInitPromise = null;
 
+  async function waitForMiniChatApi(timeoutMs = 1200) {
+    const deadline = Date.now() + Math.max(120, Number(timeoutMs || 0));
+    while (Date.now() < deadline) {
+      const api = typeof window !== 'undefined' ? window.__avMiniChatApi : null;
+      if (api && typeof api === 'object') return api;
+      await new Promise((resolve) => window.setTimeout(resolve, 40));
+    }
+    return null;
+  }
+
   async function neuOpenOrStartDirectChat(otherUid, options = {}) {
     const meUid = neuCurrentUid();
     const targetUid = String(otherUid || '').trim();
@@ -172,23 +182,40 @@ export function createLegacyChatModule(deps) {
     try {
       const params = new URLSearchParams(location.search);
       const activePortal = String(params.get('portal') || 'feed').trim().toLowerCase();
-      const api = typeof window !== 'undefined' ? window.__avMiniChatApi : null;
+      const api =
+        (typeof window !== 'undefined' ? window.__avMiniChatApi : null) ||
+        (await waitForMiniChatApi());
       if (
-        activePortal === 'pulse' &&
         api &&
-        typeof api.openDirectConversation === 'function'
+        (
+          (activePortal === 'pulse' && typeof api.openDirectConversationPage === 'function') ||
+          (activePortal !== 'pulse' && typeof api.openDirectConversationDock === 'function')
+        )
       ) {
         neuQaTrace('open_profile_message_ready', {
           targetUid,
           meUid,
-          mode: 'mini-chat-api',
+          mode: activePortal === 'pulse' ? 'mini-chat-api-page' : 'mini-chat-api-dock',
         });
-        await api.openDirectConversation(targetUid, targetName);
+        if (activePortal === 'pulse') {
+          await api.openDirectConversationPage(targetUid, targetName);
+        } else {
+          await api.openDirectConversationDock(targetUid, targetName);
+        }
         neuQaTrace('open_profile_message_done', {
           targetUid,
           routeHref,
-          mode: 'mini-chat-api',
+          mode: activePortal === 'pulse' ? 'mini-chat-api-page' : 'mini-chat-api-dock',
         });
+        return;
+      }
+
+      if (activePortal !== 'pulse') {
+        neuQaTrace('open_profile_message_api_missing', {
+          targetUid,
+          activePortal,
+        });
+        neuChatSetHint('Chat jeszcze sie laduje. Sprobuj ponownie za chwile.', true);
         return;
       }
 

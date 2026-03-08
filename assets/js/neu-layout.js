@@ -10,13 +10,15 @@ window.__NEU_LAYOUT_HANDLES_LOGOUT__ = true;
 const headerMount = document.getElementById('appHeader');
 const footerMount = document.getElementById('appFooter');
 let profileGlobalsBound = false;
+let headerBadgeBridgeBound = false;
+let notificationBadgeObserver = null;
+const headerBadgeState = {
+  messages: 0,
+  notifications: 0,
+};
 
 function isNeuLoginPage() {
   return document.body?.classList?.contains('neu-auth-page') === true;
-}
-
-function isNeuAppPage() {
-  return document.body?.classList?.contains('neu-social-app') === true;
 }
 
 function esc(value) {
@@ -49,8 +51,70 @@ function handleFor(user) {
   return safe ? `@${safe}` : '@neu';
 }
 
-function currentPageHref() {
-  return isNeuLoginPage() ? getNeuLoginPath() : getNeuSocialAppPath();
+function photoUrlFor(user) {
+  return String(user?.photoURL || '').trim();
+}
+
+function safeBadgeCount(value) {
+  return Math.max(0, Number(value || 0) || 0);
+}
+
+function badgeLabel(value) {
+  const count = safeBadgeCount(value);
+  if (!count) return '';
+  return count > 99 ? '99+' : String(count);
+}
+
+function buildHeaderBadge(kind, count, ariaLabel) {
+  const total = safeBadgeCount(count);
+  const label = badgeLabel(total);
+  const hiddenAttr = total > 0 ? '' : ' hidden aria-hidden="true"';
+  const ariaAttr = total > 0 ? ` aria-label="${esc(`${ariaLabel}: ${total}`)}"` : '';
+  return `<span class="neu-shell-icon-badge" data-neu-header-badge="${esc(kind)}"${hiddenAttr}${ariaAttr}>${esc(label)}</span>`;
+}
+
+function currentRoute() {
+  const params = new URLSearchParams(location.search);
+  return {
+    portal: String(params.get('portal') || 'feed').trim().toLowerCase() || 'feed',
+    profile: String(params.get('profile') || '').trim().toLowerCase(),
+    hash: String(location.hash || '').trim().replace(/^#/, '').toLowerCase(),
+  };
+}
+
+function appHref(params = {}) {
+  return withNeuQuery(getNeuSocialAppPath(), params);
+}
+
+function isRouteActive({ portal = '', profile = '' } = {}) {
+  if (isNeuLoginPage()) return false;
+  const route = currentRoute();
+  const targetPortal = String(portal || '').trim().toLowerCase();
+  const targetProfile = String(profile || '').trim().toLowerCase();
+
+  if (targetProfile) {
+    return route.profile === targetProfile;
+  }
+
+  if (!targetPortal) {
+    return route.portal === 'feed' && !route.profile;
+  }
+
+  return route.portal === targetPortal && !route.profile;
+}
+
+function activeAttr(active) {
+  return active ? 'aria-current="page"' : '';
+}
+
+function isPulseMessagesActive() {
+  const route = currentRoute();
+  return route.portal === 'pulse' && route.hash !== 'pulsenotifications';
+}
+
+function isPulseNotificationsActive() {
+  const route = currentRoute();
+  return route.portal === 'pulse' && route.hash === 'pulsenotifications';
 }
 
 function buildHeader(user) {
@@ -58,89 +122,164 @@ function buildHeader(user) {
   const displayName = displayNameFor(user);
   const handle = handleFor(user);
   const letter = avatarLetter(displayName);
-  const currentHref = currentPageHref();
-  const socialAppPath = getNeuSocialAppPath();
+  const photoUrl = photoUrlFor(user);
   const loginPath = getNeuLoginPath();
-  const pulseHref = withNeuQuery(socialAppPath, { portal: 'pulse' });
-  const profileHref = withNeuQuery(socialAppPath, { profile: 'me' });
-  const navLinksHtml = isNeuAppPage()
-    ? ''
-    : `
-        <nav class="neu-shell-links" aria-label="Neu navigation">
-          <a class="neu-shell-link" href="${socialAppPath}" ${currentHref === socialAppPath ? 'aria-current="page"' : ''}>Feed</a>
-          <a class="neu-shell-link" href="${pulseHref}">Pulse</a>
-          <a class="neu-shell-link" href="${profileHref}">Profile</a>
-        </nav>
-      `;
+  const feedHref = appHref({ portal: 'feed' });
+  const pulseHref = appHref({ portal: 'pulse' });
+  const pulseMessagesHref = `${pulseHref}#neuInboxList`;
+  const pulseNotificationsHref = `${pulseHref}#pulseNotifications`;
+  const profileHref = appHref({ profile: 'me' });
+  const networkHref = appHref({ portal: 'network' });
+  const storiesHref = appHref({ portal: 'stories' });
+  const reelsHref = appHref({ portal: 'reels' });
+
+  if (isNeuLoginPage()) {
+    return `
+      <header class="topbar nav-glass neu-shell-header">
+        <div class="nav-inner container">
+          <a class="brand neu-brand" href="${feedHref}" aria-label="NEU Social App">
+            <img src="assets/img/logo.png" alt="AquiVivo" />
+            <span class="neu-brand-copy">
+              <strong>NEU</strong>
+              <small>Social App</small>
+            </span>
+          </a>
+
+          <div class="nav-actions" aria-label="Neu navigation">
+            <a class="btn-white-outline" href="${feedHref}">Inicio</a>
+            <a class="btn-yellow" href="${loginPath}" ${activeAttr(true)}>Iniciar sesion</a>
+          </div>
+        </div>
+
+        <div class="nav-line nav-line-below"></div>
+      </header>
+    `;
+  }
 
   return `
-    <header class="neu-shell-header">
-      <div class="neu-shell-bar container">
-        <a class="neu-shell-brand" href="${socialAppPath}" aria-label="NEU">
-          <span class="neu-shell-brand-mark">NEU</span>
-          <span class="neu-shell-brand-sub">Social App</span>
+    <header class="topbar nav-glass neu-shell-header">
+      <div class="nav-inner container">
+        <a class="brand neu-brand" href="${feedHref}" aria-label="NEU Social App">
+          <img src="assets/img/logo.png" alt="AquiVivo" />
+          <span class="neu-brand-copy">
+            <strong>NEU</strong>
+            <small>Social App</small>
+          </span>
         </a>
 
-        ${navLinksHtml}
-
-        <div class="neu-shell-actions">
+        <div class="nav-actions" aria-label="Neu navigation">
+          <div class="nav-icon-wrap">
+            <a
+              class="nav-icon-btn${isPulseNotificationsActive() ? ' is-active' : ''}"
+              href="${pulseNotificationsHref}"
+              ${activeAttr(isPulseNotificationsActive())}
+              aria-label="Powiadomienia"
+              title="Powiadomienia"
+            >
+              <span aria-hidden="true">&#x1F514;</span>
+            </a>
+            ${buildHeaderBadge('notifications', headerBadgeState.notifications, 'Powiadomienia')}
+          </div>
+          <div class="nav-icon-wrap">
+            <a
+              class="nav-icon-btn${isPulseMessagesActive() ? ' is-active' : ''}"
+              href="${pulseMessagesHref}"
+              ${activeAttr(isPulseMessagesActive())}
+              aria-label="Wiadomosci"
+              title="Wiadomosci"
+            >
+              <span aria-hidden="true">&#x1F4AC;</span>
+            </a>
+            ${buildHeaderBadge('messages', headerBadgeState.messages, 'Wiadomosci')}
+          </div>
           ${
             loggedIn
               ? `
-                <div class="neu-shell-profile" id="navProfile">
+                <div class="nav-profile neu-shell-profile" id="navProfile">
                   <button id="navProfileToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Open profile menu">
-                    <span>${esc(letter)}</span>
+                    ${
+                      photoUrl
+                        ? `<img src="${esc(photoUrl)}" alt="${esc(displayName)}" />`
+                        : `<span>${esc(letter)}</span>`
+                    }
                   </button>
-                  <div id="navProfileMenu" role="menu" hidden>
-                    <div class="neu-shell-menu-head">
-                      <div class="nav-avatar"><span>${esc(letter)}</span></div>
+                  <div class="nav-profile-menu" id="navProfileMenu" role="menu" hidden>
+                    <div class="nav-profile-head">
+                      <div class="nav-avatar nav-avatar--small ${photoUrl ? 'nav-avatar--img' : ''}">
+                        ${photoUrl ? `<img src="${esc(photoUrl)}" alt="${esc(displayName)}" />` : ''}
+                        <span>${esc(letter)}</span>
+                      </div>
                       <div>
                         <div class="nav-profile-name">${esc(displayName)}</div>
                         <div class="nav-profile-handle">${esc(handle)}</div>
                       </div>
                     </div>
-                    <div class="neu-shell-menu-list">
-                      <a class="neu-shell-menu-item" href="${profileHref}" role="menuitem">My profile</a>
-                      <a class="neu-shell-menu-item" href="${pulseHref}" role="menuitem">Messages</a>
-                      <button class="neu-shell-menu-item neu-shell-menu-item--danger" id="navProfileLogout" type="button">Cerrar sesion</button>
+                    <div class="nav-profile-list">
+                      <a class="nav-profile-item" href="${feedHref}" role="menuitem"><span aria-hidden="true">&#x1F3E0;</span><span>Inicio</span></a>
+                      <a class="nav-profile-item" href="${profileHref}" role="menuitem"><span aria-hidden="true">&#x1F464;</span><span>Mi perfil</span></a>
+                      <a class="nav-profile-item" href="${pulseMessagesHref}" role="menuitem"><span aria-hidden="true">&#x1F4AC;</span><span>Mensajes</span></a>
+                      <a class="nav-profile-item" href="${pulseNotificationsHref}" role="menuitem"><span aria-hidden="true">&#x1F514;</span><span>Powiadomienia</span></a>
+                      <a class="nav-profile-item" href="${networkHref}" role="menuitem"><span aria-hidden="true">&#x1F91D;</span><span>Red</span></a>
+                      <a class="nav-profile-item" href="${storiesHref}" role="menuitem"><span aria-hidden="true">&#x1F4F8;</span><span>Stories</span></a>
+                      <a class="nav-profile-item" href="${reelsHref}" role="menuitem"><span aria-hidden="true">&#x1F3AC;</span><span>Reels</span></a>
+                      <div class="nav-profile-sep" aria-hidden="true"></div>
+                      <button class="nav-profile-item nav-profile-item--danger" id="navProfileLogout" type="button">Cerrar sesion</button>
                     </div>
                   </div>
                 </div>
               `
               : `
-                <a class="btn-white-outline" href="${loginPath}">Entrar</a>
+                <a class="btn-yellow" href="${loginPath}">Entrar</a>
               `
           }
         </div>
+
       </div>
+
+      <div class="nav-line nav-line-below"></div>
     </header>
   `;
 }
 
 function buildFooter() {
+  const feedHref = appHref({ portal: 'feed' });
+  const pulseHref = appHref({ portal: 'pulse' });
+  const networkHref = appHref({ portal: 'network' });
+  const profileHref = appHref({ profile: 'me' });
   return `
-    <footer class="neu-shell-footer">
-      <div class="neu-shell-footer-inner container">
-        <div class="neu-shell-footer-copy">NEU runs as an independent app shell inside this repo.</div>
-        <div class="neu-shell-footer-badge">NEU only</div>
+    <footer class="site-footer neu-shell-footer">
+      <div class="nav-line nav-line-above"></div>
+      <div class="footer-inner container">
+        <div class="footer-left">&copy; 2026 AquiVivo / NEU</div>
+        <div class="footer-center">Conecta, comparte y conversa en un solo lugar.</div>
+        <nav class="footer-nav" aria-label="Enlaces de la app">
+          <a href="${feedHref}">Feed</a>
+          <a href="${pulseHref}">Pulse</a>
+          <a href="${networkHref}">Red</a>
+          <a href="${profileHref}">Perfil</a>
+        </nav>
       </div>
     </footer>
   `;
 }
 
 function closeProfileMenu() {
+  const wrapper = document.getElementById('navProfile');
   const toggle = document.getElementById('navProfileToggle');
   const menu = document.getElementById('navProfileMenu');
   if (!(toggle instanceof HTMLElement) || !(menu instanceof HTMLElement)) return;
   toggle.setAttribute('aria-expanded', 'false');
+  if (wrapper instanceof HTMLElement) wrapper.classList.remove('open');
   menu.hidden = true;
 }
 
 function openProfileMenu() {
+  const wrapper = document.getElementById('navProfile');
   const toggle = document.getElementById('navProfileToggle');
   const menu = document.getElementById('navProfileMenu');
   if (!(toggle instanceof HTMLElement) || !(menu instanceof HTMLElement)) return;
   toggle.setAttribute('aria-expanded', 'true');
+  if (wrapper instanceof HTMLElement) wrapper.classList.add('open');
   menu.hidden = false;
 }
 
@@ -192,11 +331,127 @@ function wireLogout() {
   });
 }
 
+function syncHeaderBadgeDom(kind) {
+  const badge = document.querySelector(`[data-neu-header-badge="${kind}"]`);
+  if (!(badge instanceof HTMLElement)) return;
+
+  const total = safeBadgeCount(headerBadgeState[kind]);
+  const label = badgeLabel(total);
+  if (!total) {
+    badge.hidden = true;
+    badge.textContent = '';
+    badge.setAttribute('aria-hidden', 'true');
+    badge.removeAttribute('aria-label');
+    return;
+  }
+
+  const ariaBase = kind === 'notifications' ? 'Powiadomienia' : 'Wiadomosci';
+  badge.hidden = false;
+  badge.textContent = label;
+  badge.removeAttribute('aria-hidden');
+  badge.setAttribute('aria-label', `${ariaBase}: ${total}`);
+}
+
+function syncHeaderBadges() {
+  syncHeaderBadgeDom('messages');
+  syncHeaderBadgeDom('notifications');
+}
+
+function setHeaderBadge(kind, count) {
+  if (!(kind in headerBadgeState)) return;
+  headerBadgeState[kind] = safeBadgeCount(count);
+  syncHeaderBadgeDom(kind);
+}
+
+function countNotificationItems(container) {
+  if (!(container instanceof HTMLElement)) return 0;
+
+  const unreadSelectors = [
+    '[data-notification-unread="1"]',
+    '[data-unread="1"]',
+    '[aria-unread="true"]',
+    '.is-unread',
+  ];
+  const unreadMatches = container.querySelectorAll(unreadSelectors.join(',')).length;
+  if (unreadMatches > 0) return unreadMatches;
+
+  return Array.from(container.children).filter((node) => {
+    return (
+      node instanceof HTMLElement &&
+      !node.hidden &&
+      !node.classList.contains('hidden')
+    );
+  }).length;
+}
+
+function syncNotificationBadgeFromDom() {
+  const container = document.getElementById('pulseNotifications');
+  setHeaderBadge('notifications', countNotificationItems(container));
+}
+
+function wireNotificationBadgeObserver() {
+  const container = document.getElementById('pulseNotifications');
+  if (!(container instanceof HTMLElement)) {
+    if (notificationBadgeObserver) {
+      notificationBadgeObserver.disconnect();
+      notificationBadgeObserver = null;
+    }
+    setHeaderBadge('notifications', 0);
+    return;
+  }
+
+  syncNotificationBadgeFromDom();
+
+  if (notificationBadgeObserver) {
+    notificationBadgeObserver.disconnect();
+  }
+
+  notificationBadgeObserver = new MutationObserver(() => {
+    syncNotificationBadgeFromDom();
+  });
+  notificationBadgeObserver.observe(container, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['hidden', 'class', 'data-unread', 'data-notification-unread', 'aria-unread'],
+  });
+}
+
+function wireHeaderBadgeBridge() {
+  if (headerBadgeBridgeBound) return;
+  headerBadgeBridgeBound = true;
+
+  window.__neuHeaderBadges = {
+    setMessages(count) {
+      setHeaderBadge('messages', count);
+    },
+    setNotifications(count) {
+      setHeaderBadge('notifications', count);
+    },
+    getState() {
+      return { ...headerBadgeState };
+    },
+    syncNotificationsFromDom() {
+      syncNotificationBadgeFromDom();
+    },
+  };
+
+  window.addEventListener('neu:header-badge', (event) => {
+    const kind = String(event?.detail?.kind || '').trim().toLowerCase();
+    const count = event?.detail?.count;
+    if (!kind) return;
+    setHeaderBadge(kind, count);
+  });
+}
+
 function render(user) {
   if (headerMount) headerMount.innerHTML = buildHeader(user);
   if (footerMount) footerMount.innerHTML = buildFooter();
+  syncHeaderBadges();
   wireHeaderInteractions();
   wireLogout();
+  wireHeaderBadgeBridge();
+  wireNotificationBadgeObserver();
 }
 
 function init() {

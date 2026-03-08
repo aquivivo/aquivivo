@@ -20,7 +20,7 @@ import { chatState, resetChatState } from '../state/chat.state.js';
 import { storyState, resetStoryState } from '../state/story.state.js';
 import { createStoryService } from '../stories/story.service.js';
 import { createStoryUi } from '../stories/story.ui.js';
-import { initLegacyRuntimeEnvironment, neuLegacyRuntime } from './neu-app.legacy.js';
+import { initLegacyRuntimeEnvironment, neuLegacyRuntime } from './neu-app.legacy.js?v=20260308onb2';
 
 const onboardingState = {
   initialized: false,

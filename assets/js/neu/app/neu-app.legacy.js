@@ -230,6 +230,27 @@ const NEU_ONBOARDING_MIN_NAME = 2;
 const NEU_ONBOARDING_MIN_USERNAME = 3;
 const NEU_ONBOARDING_MAX_USERNAME = 24;
 const NEU_ONBOARDING_STEP_TOTAL = 2;
+const NEU_PROFILE_PRESENCE_DEFAULT = 'open';
+const NEU_PROFILE_PRESENCE_MODES = {
+  open: {
+    label: 'Abierta a conversar',
+    description: 'Ideal para mensajes nuevos y conexiones espontaneas.',
+    messageCta: 'Romper hielo',
+    messageHint: 'Ideal para empezar la conversacion ahora.',
+  },
+  city: {
+    label: 'Busco plan local',
+    description: 'Perfecta para gente de tu ciudad y planes cercanos.',
+    messageCta: 'Proponer plan',
+    messageHint: 'Mejor entrar con una idea local o un plan cercano.',
+  },
+  chill: {
+    label: 'Hoy chill',
+    description: 'Modo ligero para responder sin prisa y sin presion.',
+    messageCta: 'Escribir suave',
+    messageHint: 'Funciona mejor un mensaje corto y sin presion.',
+  },
+};
 
 const NEU_ONBOARDING_STEP_FIELDS = {
   1: ['firstName', 'lastName', 'username', 'countryOfOrigin', 'countryOfOriginOther', 'gender', 'language', 'birthYear'],
@@ -238,6 +259,21 @@ const NEU_ONBOARDING_STEP_FIELDS = {
 
 function neuProfileDocRef(uid) {
   return doc(db, NEU_USERS_COLLECTION, uid);
+}
+
+function neuNormalizePresenceMode(rawValue) {
+  const value = String(rawValue || '').trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(NEU_PROFILE_PRESENCE_MODES, value)
+    ? value
+    : NEU_PROFILE_PRESENCE_DEFAULT;
+}
+
+function neuProfilePresenceMeta(rawValue) {
+  const value = neuNormalizePresenceMode(rawValue);
+  return {
+    value,
+    ...(NEU_PROFILE_PRESENCE_MODES[value] || NEU_PROFILE_PRESENCE_MODES[NEU_PROFILE_PRESENCE_DEFAULT]),
+  };
 }
 
 function neuEmailLocalPart(email) {
@@ -283,6 +319,7 @@ function neuDefaultProfile(uid) {
     handle: neuEnsureHandle('', displayName, uid),
     city: fallbackCity,
     bio: '',
+    presenceMode: NEU_PROFILE_PRESENCE_DEFAULT,
     avatarUrl: String(user.photoURL || '').trim(),
     avatarStoragePath: '',
   };
@@ -308,6 +345,7 @@ function neuNormalizeProfile(raw = {}, uid = '') {
     handle,
     city,
     bio: String(raw.bio || '').trim().slice(0, NEU_PROFILE_BIO_MAX),
+    presenceMode: neuNormalizePresenceMode(raw.presenceMode || raw.mode || raw.vibe || ''),
     avatarUrl,
     avatarStoragePath,
   };
@@ -330,6 +368,7 @@ function neuProfileFromUi(uid) {
     handle: neuEnsureHandle(handleRaw, displayName, uid),
     city: neuCleanCity(city),
     bio: '',
+    presenceMode: neuNormalizePresenceMode(document.getElementById('profilePresenceRow')?.dataset?.presenceMode || ''),
     avatarUrl: avatarFromUi || base.avatarUrl,
     avatarStoragePath: '',
   };
@@ -984,16 +1023,113 @@ function neuWireOnboardingEvents() {
   });
 }
 
-async function neuNeedsOnboarding(uid) {
+async function neuNeedsOnboarding(uid, profileSeed = null) {
   const targetUid = String(uid || '').trim();
   if (!targetUid) return { needed: false, profile: null };
+  const seededProfile =
+    profileSeed && typeof profileSeed === 'object'
+      ? profileSeed.profile && typeof profileSeed.profile === 'object'
+        ? profileSeed.profile
+        : profileSeed
+      : null;
+  const evaluateProfile = (rawProfile = {}) => {
+    const data = rawProfile && typeof rawProfile === 'object' ? rawProfile : {};
+    const normalizedUsername = neuOnboardingNormalizeUsername(
+      data.username || String(data.handle || '').replace(/^@/, ''),
+    );
+    const normalizedCity = neuOnboardingNormalizeCity(data.cityPl || data.city || '');
+    const displayName = String(
+      data.displayName ||
+      [data.firstName, data.lastName].filter(Boolean).join(' ') ||
+      '',
+    ).trim();
+    const hasHandle =
+      String(data.handle || '')
+        .trim()
+        .replace(/^@+/, '').length >= NEU_ONBOARDING_MIN_USERNAME;
+    const hasNameParts =
+      String(data.firstName || '').trim().length >= NEU_ONBOARDING_MIN_NAME ||
+      String(data.lastName || '').trim().length >= NEU_ONBOARDING_MIN_NAME;
+    const hasBioOrAvatar =
+      String(data.bio || '').trim().length > 0 ||
+      String(
+        data.avatarUrl || data.avatarURL || data.photoURL || data.photoUrl || '',
+      ).trim().length > 0;
+    const hasCoreProfile =
+      !!displayName &&
+      normalizedUsername.length >= NEU_ONBOARDING_MIN_USERNAME &&
+      normalizedCity.length >= NEU_ONBOARDING_MIN_CITY;
+    const hasLegacyProfile =
+      !!displayName &&
+      (normalizedUsername.length >= NEU_ONBOARDING_MIN_USERNAME || hasHandle) &&
+      (normalizedCity.length >= NEU_ONBOARDING_MIN_CITY || hasNameParts || hasBioOrAvatar);
+    const inferredComplete =
+      data.onboardingCompleted === true ||
+      data.postOnboardingDone === true ||
+      (hasCoreProfile && data.termsAccepted === true) ||
+      hasLegacyProfile;
+    return {
+      data,
+      inferredComplete,
+    };
+  };
   try {
     const snap = await getDoc(neuProfileDocRef(targetUid));
-    if (!snap.exists()) return { needed: true, profile: null };
-    const data = snap.data() || {};
-    return { needed: data.onboardingCompleted !== true, profile: data };
+    if (!snap.exists()) {
+      if (!seededProfile) return { needed: true, profile: null };
+      const seededEval = evaluateProfile(seededProfile);
+      return {
+        needed: seededEval.inferredComplete !== true,
+        profile: seededEval.inferredComplete
+          ? { ...seededEval.data, onboardingCompleted: true }
+          : seededEval.data,
+      };
+    }
+    const rawData = snap.data() || {};
+    const data = seededProfile ? { ...rawData, ...seededProfile } : rawData;
+    const { inferredComplete } = evaluateProfile(data);
+
+    if (inferredComplete && data.onboardingCompleted !== true) {
+      setDoc(
+        neuProfileDocRef(targetUid),
+        {
+          onboardingCompleted: true,
+          onboardingCompletedAt: data.onboardingCompletedAt || serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      ).catch(() => null);
+    }
+
+    return {
+      needed: inferredComplete !== true,
+      profile: inferredComplete ? { ...data, onboardingCompleted: true } : data,
+    };
   } catch (error) {
     if (NEU_QA) console.warn('[neu-onboarding] gate read failed', error);
+    if (neuIsPermissionDenied(error)) {
+      const fallbackProfile = seededProfile || neuDefaultProfile(targetUid);
+      return {
+        needed: false,
+        profile: {
+          ...fallbackProfile,
+          onboardingCompleted: true,
+          postOnboardingDone: true,
+        },
+      };
+    }
+    if (seededProfile) {
+      const seededEval = evaluateProfile(seededProfile);
+      if (seededEval.inferredComplete) {
+        return {
+          needed: false,
+          profile: {
+            ...seededEval.data,
+            onboardingCompleted: true,
+          },
+        };
+      }
+    }
     return { needed: true, profile: null };
   }
 }
@@ -1073,9 +1209,31 @@ async function neuNeedsPostOnboarding(uid, profileSeed = null) {
   if (!profile || profile.onboardingCompleted !== true) return { needed: false, profile };
 
   const done = profile.postOnboardingDone === true;
-  if (!done) return { needed: true, profile };
-  if (fromQuery) neuStripQueryParams(['postOnboarding']);
-  return { needed: false, profile };
+  if (done) {
+    if (fromQuery) neuStripQueryParams(['postOnboarding']);
+    return { needed: false, profile };
+  }
+
+  if (!fromQuery) {
+    setDoc(
+      neuProfileDocRef(cleanUid),
+      {
+        postOnboardingDone: true,
+        postOnboardingDoneAt: profile.postOnboardingDoneAt || serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    ).catch(() => null);
+    return {
+      needed: false,
+      profile: {
+        ...profile,
+        postOnboardingDone: true,
+      },
+    };
+  }
+
+  return { needed: true, profile };
 }
 
 async function neuSeedUserSettings(uid, language = '') {
@@ -1229,6 +1387,7 @@ function neuApplyProfileToUi(profile) {
   const city = neuCleanCity(profile.city) || neuCleanCity(readCity()) || 'Online';
   const avatarUrl = String(profile.avatarUrl || '').trim();
   const bio = String(profile.bio || '').trim();
+  const presence = neuProfilePresenceMeta(profile.presenceMode);
   const foreignProfileActive = neuIsViewingForeignProfile();
 
   const leftName = document.getElementById('leftName');
@@ -1278,6 +1437,19 @@ function neuApplyProfileToUi(profile) {
     leftStatus.textContent = bio;
     leftStatus.classList.toggle('is-hidden', !bio);
   }
+
+  const presenceRow = document.getElementById('profilePresenceRow');
+  if (presenceRow instanceof HTMLElement) {
+    presenceRow.dataset.presenceMode = presence.value;
+  }
+  const presenceBadge = document.getElementById('profilePresenceBadge');
+  if (presenceBadge instanceof HTMLElement) {
+    presenceBadge.textContent = presence.label;
+  }
+  const presenceCopy = document.getElementById('profilePresenceCopy');
+  if (presenceCopy instanceof HTMLElement) {
+    presenceCopy.textContent = presence.description;
+  }
 }
 
 function neuSyncChatProfileAvatarUi(uid, profile) {
@@ -1308,12 +1480,16 @@ function neuNeedsProfileUiSync(profile = neuGetProfileForActiveRoute()) {
   const handle = neuEnsureHandle(profile.handle, displayName, neuGetProfileHandleUid(profile));
   const city = neuCleanCity(profile.city) || neuCleanCity(readCity()) || 'Online';
   const avatarUrl = String(profile.avatarUrl || '').trim();
+  const presence = neuProfilePresenceMeta(profile.presenceMode);
   const foreignProfileActive = neuIsViewingForeignProfile();
 
   const leftName = String(document.getElementById('leftName')?.textContent || '').trim();
   const leftHandle = String(document.getElementById('leftHandle')?.textContent || '').trim();
   const leftCity = String(document.getElementById('profileCity')?.textContent || '').trim();
   if (leftName !== displayName || leftHandle !== handle || leftCity !== city) return true;
+
+  const leftPresenceMode = String(document.getElementById('profilePresenceRow')?.dataset?.presenceMode || '').trim();
+  if (leftPresenceMode !== presence.value) return true;
 
   const leftAvatarAttr = String(document.getElementById('leftAvatarImg')?.getAttribute('src') || '').trim();
   const composerAvatarAttr = String(document.getElementById('composerInlineAvatarImg')?.getAttribute('src') || '').trim();
@@ -1451,6 +1627,26 @@ function neuUpdateProfileBioCount() {
   count.textContent = `${len}/${NEU_PROFILE_BIO_MAX}`;
 }
 
+function neuSetProfilePresenceModeUi(mode) {
+  const normalized = neuNormalizePresenceMode(mode);
+  const picker = document.getElementById('neuProfilePresencePicker');
+  if (picker instanceof HTMLElement) {
+    picker.dataset.selectedMode = normalized;
+  }
+
+  document.querySelectorAll('[data-neu-presence-mode]').forEach((node) => {
+    if (!(node instanceof HTMLButtonElement)) return;
+    const active = String(node.getAttribute('data-neu-presence-mode') || '').trim() === normalized;
+    node.classList.toggle('is-active', active);
+    node.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+}
+
+function neuProfilePresenceModeFromUi() {
+  const picker = document.getElementById('neuProfilePresencePicker');
+  return neuNormalizePresenceMode(picker instanceof HTMLElement ? picker.dataset.selectedMode : '');
+}
+
 function neuRenderProfileAvatarPreview() {
   const name = String(document.getElementById('neuProfileNameInput')?.value || neuProfileState.profile?.displayName || 'Usuario').trim();
   neuSetAvatarElements(
@@ -1474,6 +1670,7 @@ function neuHydrateProfileForm(profile) {
   if (cityInput instanceof HTMLInputElement) cityInput.value = String(data.city || '').trim();
   if (bioInput instanceof HTMLTextAreaElement) bioInput.value = String(data.bio || '').trim().slice(0, NEU_PROFILE_BIO_MAX);
   if (avatarUrlInput instanceof HTMLInputElement) avatarUrlInput.value = currentAvatarUrl;
+  neuSetProfilePresenceModeUi(data.presenceMode);
   neuUpdateProfileBioCount();
   neuRenderProfileAvatarPreview();
 }
@@ -1532,6 +1729,7 @@ async function neuLoadOrCreateProfile(uid) {
     const patch = {};
     if (!String(raw.displayName || '').trim()) patch.displayName = profile.displayName;
     if (!String(raw.handle || '').trim()) patch.handle = profile.handle;
+    if (!String(raw.presenceMode || '').trim()) patch.presenceMode = profile.presenceMode;
     if (Object.keys(patch).length) {
       patch.updatedAt = serverTimestamp();
       await setDoc(ref, patch, { merge: true });
@@ -1556,6 +1754,7 @@ function neuSetProfileSaving(saving) {
   const nameInput = document.getElementById('neuProfileNameInput');
   const cityInput = document.getElementById('neuProfileCityInput');
   const bioInput = document.getElementById('neuProfileBioInput');
+  const presenceButtons = document.querySelectorAll('[data-neu-presence-mode]');
   const disabled = on || neuProfileState.readOnly;
   if (saveBtn instanceof HTMLButtonElement) {
     saveBtn.disabled = disabled;
@@ -1569,6 +1768,9 @@ function neuSetProfileSaving(saving) {
   if (nameInput instanceof HTMLInputElement) nameInput.disabled = neuProfileState.readOnly;
   if (cityInput instanceof HTMLInputElement) cityInput.disabled = neuProfileState.readOnly;
   if (bioInput instanceof HTMLTextAreaElement) bioInput.disabled = neuProfileState.readOnly;
+  presenceButtons.forEach((node) => {
+    if (node instanceof HTMLButtonElement) node.disabled = disabled;
+  });
 }
 
 function neuSetProfileReadOnly(readOnly, message = '') {
@@ -1610,6 +1812,7 @@ async function neuSaveProfileChanges() {
   const bio = String(bioInput instanceof HTMLTextAreaElement ? bioInput.value : '')
     .trim()
     .slice(0, NEU_PROFILE_BIO_MAX);
+  const presenceMode = neuProfilePresenceModeFromUi();
   const handle = neuEnsureHandle(neuProfileState.profile?.handle || '', displayName, uid);
 
   let avatarUrl = String(neuProfileState.profile?.avatarUrl || '').trim();
@@ -1646,6 +1849,7 @@ async function neuSaveProfileChanges() {
         handle,
         city,
         bio,
+        presenceMode,
         avatarUrl,
         avatarStoragePath,
         updatedAt: serverTimestamp(),
@@ -1659,6 +1863,7 @@ async function neuSaveProfileChanges() {
       handle,
       city,
       bio,
+      presenceMode,
       avatarUrl,
       avatarStoragePath,
     };
@@ -1724,6 +1929,14 @@ function neuWireProfileEditorEvents() {
         const avatarUrlInput = document.getElementById('neuProfileAvatarUrlInput');
         if (avatarUrlInput instanceof HTMLInputElement) avatarUrlInput.value = '';
         neuRenderProfileAvatarPreview();
+        return;
+      }
+
+      const presenceBtn = target.closest('[data-neu-presence-mode]');
+      if (presenceBtn instanceof HTMLButtonElement) {
+        event.preventDefault();
+        if (presenceBtn.disabled) return;
+        neuSetProfilePresenceModeUi(presenceBtn.getAttribute('data-neu-presence-mode'));
         return;
       }
 
@@ -10076,6 +10289,12 @@ function updateNeuRouteParams({ portal, profileMode, profileUid } = {}) {
   }
   if (profileMode === false) url.searchParams.delete(NEU_PROFILE_PARAM);
 
+  const nextPortal = String(url.searchParams.get('portal') || '').trim().toLowerCase();
+  if (profileMode === true || (nextPortal && nextPortal !== 'pulse')) {
+    url.searchParams.delete('chat');
+    url.searchParams.delete('chatKind');
+  }
+
   const nextHref = `${url.pathname}${url.search}${url.hash}`;
   const currentHref = `${location.pathname}${location.search}${location.hash}`;
   if (nextHref !== currentHref) history.replaceState(null, '', nextHref);
@@ -10124,10 +10343,10 @@ function neuDecorateFeedPostMenusProxy(...args) {
 
 function neuProfileHref(uid) {
   const clean = String(uid || '').trim();
-  if (!clean) return neuSocialAppHref({ profile: 'me' });
+  if (!clean) return neuSocialAppHref({ portal: 'feed', profile: 'me' });
   const meUid = String(neuPublicProfileState.meUid || neuCurrentUid() || '').trim();
   const value = clean === meUid ? NEU_PROFILE_ME : clean;
-  return neuSocialAppHref({ profile: value });
+  return neuSocialAppHref({ portal: 'feed', profile: value });
 }
 
 ({
@@ -10292,9 +10511,14 @@ function neuProfileHref(uid) {
   neuGetProfileForActiveRoute,
   neuInitProfileEditor,
   neuIsPermissionDenied,
+  neuProfilePresenceMeta,
   neuIsVideoUrl,
   neuLoadOrCreateProfile,
   neuNormalizeProfile,
+  neuOpenQuickPostModal: (...args) => {
+    if (typeof neuOpenQuickPostModal === 'function') return neuOpenQuickPostModal(...args);
+    return undefined;
+  },
   neuOpenProfileMessage,
   neuProfileDocRef,
   neuProfileHref,
@@ -10421,15 +10645,23 @@ async function startNeuSocialApp() {
     email: String(user?.email || ''),
   });
   wireNeuDropdownLogout();
-  const onboardingGate = await neuNeedsOnboarding(user?.uid || '');
+  let profileSeedResult = null;
+  try {
+    profileSeedResult = await neuLoadOrCreateProfile(user?.uid || '');
+  } catch (error) {
+    if (NEU_QA) console.warn('[neu-boot] profile seed failed', error);
+  }
+  const profileSeed = profileSeedResult?.profile || null;
+  const onboardingGate = await neuNeedsOnboarding(user?.uid || '', profileSeedResult || profileSeed || null);
+  const gateProfile = onboardingGate.profile || profileSeed || null;
   if (onboardingGate.needed) {
-    await neuInitOnboarding(user, onboardingGate.profile || {});
+    await neuInitOnboarding(user, gateProfile || {});
     return 'onboarding';
   }
   neuOnboardingSetActive(false);
-  const postOnboardingGate = await neuNeedsPostOnboarding(user?.uid || '', onboardingGate.profile || null);
+  const postOnboardingGate = await neuNeedsPostOnboarding(user?.uid || '', gateProfile);
   if (postOnboardingGate.needed) {
-    await neuInitPostOnboarding(user, postOnboardingGate.profile || onboardingGate.profile || {});
+    await neuInitPostOnboarding(user, postOnboardingGate.profile || gateProfile || {});
     return 'post_onboarding';
   }
   neuPostOnboardingSetActive(false);

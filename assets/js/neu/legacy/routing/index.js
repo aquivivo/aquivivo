@@ -105,6 +105,11 @@ export function createLegacyRoutingModule(deps) {
   }
 
   function openComposerModalFromBottom() {
+    if (typeof neuOpenQuickPostModal === 'function') {
+      neuOpenQuickPostModal();
+      return;
+    }
+
     const trigger = document.getElementById('btnOpenComposer') || document.querySelector('[data-open-composer]');
     if (trigger instanceof HTMLElement) {
       trigger.click();

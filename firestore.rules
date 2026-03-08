@@ -1095,6 +1095,10 @@ service cloud.firestore {
       }
     }
 
+    match /neuCalls/{convId} {
+      allow read, write: if neuIsMember(convId);
+    }
+
     // Chat list items used for inbox sorting/unread counts.
     match /neuUserChats/{uid}/chats/{convId} {
       allow read: if neuSignedIn() && request.auth.uid == uid;
