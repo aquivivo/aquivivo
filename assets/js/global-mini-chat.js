@@ -35,7 +35,7 @@ import {
   initials,
   maybeDate,
 } from './chat-dom.js';
-import { createMiniChatFirestoreController, normalizeMessage } from './chat-firestore.js?v=20260308sendfix';
+import { createMiniChatFirestoreController, normalizeMessage } from './chat-firestore.js?v=20260308quiet1';
 import { getNeuSocialAppPath, withNeuQuery } from './neu-paths.js';
 import { createMiniChatReactionController } from './chat-reactions.js';
 import { createMiniChatTypingController } from './chat-typing.js';
@@ -1030,14 +1030,7 @@ async function startSpeechRecognition(conversationId, { scope = 'panel', thread 
   speechRecognitionState.scope = scope === 'thread' ? 'thread' : 'panel';
   speechRecognitionState.thread = scope === 'thread' ? thread : null;
   speechRecognitionState.baseValue = String(target.input.value || '');
-
-  recognition.onstart = () => {
-    console.info('[mini-chat-v4] speech recognition started', {
-      conversationId: convId,
-      scope: speechRecognitionState.scope,
-      lang: recognition.lang,
-    });
-  };
+  recognition.onstart = () => {};
 
   recognition.onresult = (event) => {
     let transcript = '';
@@ -1049,10 +1042,6 @@ async function startSpeechRecognition(conversationId, { scope = 'panel', thread 
   };
 
   recognition.onend = () => {
-    console.info('[mini-chat-v4] speech recognition ended', {
-      conversationId: convId,
-      scope: speechRecognitionState.scope,
-    });
     clearSpeechRecognitionState();
   };
 
@@ -1069,10 +1058,6 @@ async function startSpeechRecognition(conversationId, { scope = 'panel', thread 
   syncSpeechRecognitionUi();
 
   try {
-    console.info('[mini-chat-v4] speech recognition start clicked', {
-      conversationId: convId,
-      scope: speechRecognitionState.scope,
-    });
     recognition.start();
   } catch (error) {
     console.warn('[mini-chat-v4] speech recognition failed to start', error);

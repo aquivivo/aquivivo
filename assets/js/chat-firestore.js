@@ -426,10 +426,6 @@ export function createMiniChatFirestoreController({
       if (!isRecoverableE2eeSendError(error)) {
         throw error;
       }
-      console.warn('[mini-chat-v4] e2ee send fallback', {
-        conversationId: convId,
-        reason: String(error?.message || error || '').trim(),
-      });
       encryptedPayload = createPlainTextMessagePayload(safeText);
     }
     const messageFields = encryptedPayload?.messageFields || null;
