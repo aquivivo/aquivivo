@@ -460,6 +460,13 @@ body.fusion-profile.neu-social-app .mini-chat-v4-compose textarea:focus {
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 {
+  --mini-chat-v4-shell-bg:
+    linear-gradient(180deg, rgba(25, 45, 92, 0.96), rgba(8, 19, 54, 0.985));
+  --mini-chat-v4-shell-border: rgba(148, 177, 255, 0.18);
+  --mini-chat-v4-shell-shadow: 0 34px 80px rgba(3, 9, 27, 0.56);
+  --mini-chat-v4-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025));
+  --mini-chat-v4-card-border: rgba(255, 255, 255, 0.09);
+  --mini-chat-v4-card-border-strong: rgba(144, 180, 255, 0.36);
   --mini-chat-v4-panel-z: 3000;
   position: fixed;
   right: 20px;
@@ -485,15 +492,16 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-wind
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window {
   position: fixed;
-  width: 360px;
-  height: 520px;
+  width: 372px;
+  height: 548px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: linear-gradient(180deg, rgba(17, 32, 66, 0.98), rgba(9, 20, 47, 0.99));
-  box-shadow: 0 26px 56px rgba(5, 12, 35, 0.56);
+  border-radius: 24px;
+  border: 1px solid var(--mini-chat-v4-shell-border, rgba(148, 177, 255, 0.18));
+  background: var(--mini-chat-v4-shell-bg, linear-gradient(180deg, rgba(17, 32, 66, 0.98), rgba(9, 20, 47, 0.99)));
+  box-shadow: var(--mini-chat-v4-shell-shadow, 0 34px 80px rgba(3, 9, 27, 0.56));
+  backdrop-filter: blur(18px);
   opacity: 1;
   transform: none;
   transition:
@@ -509,8 +517,8 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-wind
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window.is-active {
   box-shadow:
-    0 30px 64px rgba(5, 12, 35, 0.62),
-    0 0 0 1px rgba(143, 179, 255, 0.18);
+    0 40px 88px rgba(3, 9, 27, 0.64),
+    0 0 0 1px rgba(143, 179, 255, 0.22);
 }
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-container {
@@ -519,6 +527,9 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-cont
   height: 100%;
   min-height: 0;
   position: relative;
+  background:
+    radial-gradient(circle at top left, rgba(82, 129, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(20, 37, 79, 0.96), rgba(6, 16, 44, 0.985));
 }
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-header {
@@ -526,9 +537,10 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-head
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  padding: 14px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.035));
+  backdrop-filter: blur(14px);
 }
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-actions {
@@ -543,7 +555,8 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-titl
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   color: #ffffff;
 }
 
@@ -555,8 +568,8 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-send
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-record,
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-speech,
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-attach {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.08);
@@ -590,25 +603,29 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-mess
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 14px;
+  padding: 16px 14px 12px;
   display: grid;
-  gap: 10px;
-  background: rgba(8, 19, 52, 0.22);
+  gap: 12px;
+  background:
+    linear-gradient(180deg, rgba(6, 16, 44, 0.16), rgba(6, 16, 44, 0.04)),
+    radial-gradient(circle at bottom right, rgba(55, 98, 208, 0.14), transparent 34%);
 }
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-bubble {
   max-width: 100%;
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 12px 14px;
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.16);
 }
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-bubble--other {
-  background: rgba(255, 255, 255, 0.08);
+  border-bottom-left-radius: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
   color: #ffffff;
 }
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window .mini-chat-v4-bubble--me {
+  border-bottom-right-radius: 10px;
   background: linear-gradient(135deg, rgba(252, 209, 22, 0.94), rgba(255, 172, 28, 0.92));
   color: #10295d;
 }
@@ -640,9 +657,10 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-comp
   grid-template-columns: auto auto auto minmax(0, 1fr) auto;
   gap: 8px;
   align-items: end;
-  padding: 12px 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  padding: 12px 14px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(11, 22, 57, 0.94));
+  backdrop-filter: blur(14px);
 }
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-record.is-recording {
@@ -658,16 +676,16 @@ body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-spee
 }
 
 body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-compose textarea {
-  min-height: 38px;
-  max-height: 98px;
+  min-height: 42px;
+  max-height: 110px;
   resize: none;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   font: inherit;
-  line-height: 1.3;
-  padding: 8px 12px;
+  line-height: 1.35;
+  padding: 10px 13px;
   outline: none;
 }
 
@@ -754,12 +772,12 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 [hidden] {
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher {
-  width: 58px;
-  height: 58px;
+  width: 62px;
+  height: 62px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.24);
-  background: linear-gradient(180deg, #2c66d8, #1f4db4);
-  box-shadow: 0 16px 34px rgba(6, 17, 49, 0.48);
+  background: linear-gradient(180deg, #2f6be5, #224fb9);
+  box-shadow: 0 22px 40px rgba(6, 17, 49, 0.54);
   color: #ffffff;
   display: inline-flex;
   align-items: center;
@@ -797,16 +815,17 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-pa
   right: 20px;
   bottom: 162px;
   z-index: var(--mini-chat-v4-panel-z, 3000);
-  width: 360px;
-  height: min(520px, calc(100vh - 190px));
+  width: 378px;
+  height: min(578px, calc(100vh - 164px));
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: linear-gradient(180deg, rgba(17, 32, 66, 0.98), rgba(9, 20, 47, 0.99));
-  box-shadow: 0 26px 56px rgba(5, 12, 35, 0.56);
+  border-radius: 24px;
+  border: 1px solid var(--mini-chat-v4-shell-border, rgba(148, 177, 255, 0.18));
+  background: var(--mini-chat-v4-shell-bg, linear-gradient(180deg, rgba(17, 32, 66, 0.98), rgba(9, 20, 47, 0.99)));
+  box-shadow: var(--mini-chat-v4-shell-shadow, 0 34px 80px rgba(3, 9, 27, 0.56));
+  backdrop-filter: blur(18px);
   overflow: hidden;
   pointer-events: auto;
 }
@@ -817,6 +836,9 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-th
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
+  background:
+    radial-gradient(circle at top left, rgba(82, 129, 255, 0.16), transparent 32%),
+    linear-gradient(180deg, rgba(20, 37, 79, 0.96), rgba(6, 16, 44, 0.985));
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-head {
@@ -824,15 +846,17 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-he
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.035));
+  backdrop-filter: blur(14px);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-head-title {
-  font-size: 18px;
+  font-size: 19px;
   line-height: 1.1;
   font-weight: 800;
+  letter-spacing: -0.02em;
   color: #ffffff;
 }
 
@@ -848,8 +872,8 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-at
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-record,
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-speech,
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-send {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.08);
@@ -869,18 +893,19 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-se
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-search-wrap {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 12px 14px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-search-wrap input {
   width: 100%;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.055));
   color: #ffffff;
-  padding: 10px 13px;
+  padding: 12px 16px;
   font: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-search-wrap input::placeholder {
@@ -891,44 +916,62 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-li
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 10px;
+  padding: 12px 14px 8px;
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row {
   width: 100%;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
-  gap: 10px;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 12px;
   align-items: center;
-  padding: 10px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  align-content: center;
+  min-height: 78px;
+  padding: 14px 16px;
+  border: 1px solid var(--mini-chat-v4-card-border, rgba(255, 255, 255, 0.09));
+  border-radius: 18px;
+  background: var(--mini-chat-v4-card-bg, linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 18px 34px rgba(3, 9, 27, 0.14);
   color: #ffffff;
   cursor: pointer;
   text-align: left;
+  appearance: none;
+  font: inherit;
+  line-height: 1.2;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row:hover,
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row.is-active {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(143, 179, 255, 0.34);
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, rgba(57, 102, 225, 0.18), rgba(31, 56, 123, 0.16));
+  border-color: var(--mini-chat-v4-card-border-strong, rgba(144, 180, 255, 0.36));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 24px 40px rgba(3, 9, 27, 0.2);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-avatar,
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-avatar {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, rgba(252, 209, 22, 0.95), rgba(59, 130, 246, 0.82));
   color: #10295d;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 800;
+  box-shadow: 0 12px 26px rgba(4, 10, 28, 0.22);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-main,
@@ -951,8 +994,9 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-th
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   color: #ffffff;
 }
 
@@ -980,10 +1024,13 @@ body.fusion-profile.neu-social-app .mini-chat-v4-delivery-status.is-seen {
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-preview {
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   font-size: 12px;
-  color: rgba(230, 236, 255, 0.76);
+  line-height: 1.35;
+  color: rgba(230, 236, 255, 0.8);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-unread {
@@ -998,9 +1045,10 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-th
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  padding: 14px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.035));
+  backdrop-filter: blur(14px);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-user {
@@ -1021,23 +1069,28 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-me
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 14px;
+  padding: 16px 14px 12px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
+  background:
+    linear-gradient(180deg, rgba(6, 16, 44, 0.14), rgba(6, 16, 44, 0.04)),
+    radial-gradient(circle at bottom right, rgba(55, 98, 208, 0.14), transparent 34%);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-bubble {
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 12px 14px;
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.16);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-bubble--other {
-  background: rgba(255, 255, 255, 0.08);
+  border-bottom-left-radius: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
   color: #ffffff;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-bubble--me {
+  border-bottom-right-radius: 10px;
   background: linear-gradient(135deg, rgba(252, 209, 22, 0.94), rgba(255, 172, 28, 0.92));
   color: #10295d;
 }
@@ -1047,9 +1100,10 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-co
   grid-template-columns: auto auto auto minmax(0, 1fr) auto;
   gap: 10px;
   align-items: end;
-  padding: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  padding: 12px 14px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(11, 22, 57, 0.94));
+  backdrop-filter: blur(14px);
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-record.is-recording {
@@ -1068,9 +1122,9 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-co
   min-height: 42px;
   max-height: 120px;
   resize: none;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   padding: 10px 14px;
   font: inherit;
@@ -1093,6 +1147,29 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-up
   transition: width 120ms ease;
 }
 
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-open-full {
+  margin: 2px 14px 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04));
+  color: #f4f7ff;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-open-full:hover {
+  transform: translateY(-1px);
+  border-color: rgba(144, 180, 255, 0.32);
+  background: linear-gradient(180deg, rgba(65, 108, 230, 0.18), rgba(28, 50, 112, 0.14));
+}
+
 @media (max-width: 900px) {
   body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 {
     right: 14px;
@@ -1104,11 +1181,11 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-up
     left: 14px;
     width: auto;
     bottom: 154px;
-    height: min(460px, calc(100vh - 190px));
+    height: min(500px, calc(100vh - 176px));
   }
 
   body.fusion-profile.neu-social-app #miniChatThreadRoot .mini-chat-v4-thread-window {
-    width: min(360px, calc(100vw - 28px));
+    width: min(372px, calc(100vw - 28px));
     height: min(520px, calc(100vh - 120px));
   }
 

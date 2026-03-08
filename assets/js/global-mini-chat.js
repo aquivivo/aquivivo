@@ -4817,11 +4817,22 @@ function bringThreadToFront(conversationId) {
 function positionThreads() {
   if (isMobile()) return;
 
+  const dock = qs('#miniChatDock');
+  const panel = dock ? qs('#miniChatPanel', dock) : null;
+  const panelVisible = panel instanceof HTMLElement && !panel.hidden;
+  const panelWidth = panelVisible
+    ? Math.round(panel.getBoundingClientRect().width || panel.offsetWidth || 0)
+    : 0;
+  const baseRight = panelVisible ? panelWidth + 42 : 26;
+  const gap = 18;
   let index = 0;
   openThreads.forEach((thread, id) => {
     if (!(thread?.element instanceof HTMLElement)) return;
     if (minimizedThreads.has(String(id || '').trim())) return;
-    thread.element.style.right = `${40 + index * 380}px`;
+    const width = Math.round(
+      thread.element.getBoundingClientRect().width || thread.element.offsetWidth || 372,
+    );
+    thread.element.style.right = `${baseRight + index * (width + gap)}px`;
     thread.element.style.bottom = '20px';
     index += 1;
   });
