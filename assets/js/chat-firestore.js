@@ -13,6 +13,31 @@ function memberKeyFor(uidA, uidB) {
   return members.length === 2 ? `${members[0]}_${members[1]}` : '';
 }
 
+function isRecoverableE2eeSendError(error) {
+  const message = String(error?.message || error || '').trim().toLowerCase();
+  if (!message) return false;
+  return (
+    message.startsWith('missing-public-key:') ||
+    message === 'conversation-key-missing' ||
+    message === 'conversation-key-missing-for-user' ||
+    message === 'e2ee-unavailable'
+  );
+}
+
+function createPlainTextMessagePayload(text) {
+  const safeText = String(text || '').trim();
+  return {
+    messageFields: {
+      type: 'text',
+      encrypted: false,
+      text: safeText,
+      content: '',
+    },
+    previewText: safeText,
+    mode: 'plaintext',
+  };
+}
+
 export function normalizeMessage(docSnap) {
   const data = docSnap.data() || {};
   const imageUrl = String(data.imageUrl || '').trim();
@@ -394,9 +419,21 @@ export function createMiniChatFirestoreController({
     if (typeof encryptTextMessageForConversation !== 'function') {
       throw new Error('missing-e2ee-message-encryptor');
     }
-    const encryptedPayload = await encryptTextMessageForConversation(convId, safeText, members);
+    let encryptedPayload = null;
+    try {
+      encryptedPayload = await encryptTextMessageForConversation(convId, safeText, members);
+    } catch (error) {
+      if (!isRecoverableE2eeSendError(error)) {
+        throw error;
+      }
+      console.warn('[mini-chat-v4] e2ee send fallback', {
+        conversationId: convId,
+        reason: String(error?.message || error || '').trim(),
+      });
+      encryptedPayload = createPlainTextMessagePayload(safeText);
+    }
     const messageFields = encryptedPayload?.messageFields || null;
-    const previewText = String(encryptedPayload?.previewText || '').trim() || '[Encrypted message]';
+    const previewText = String(encryptedPayload?.previewText || '').trim() || safeText;
     if (!messageFields || typeof messageFields !== 'object') {
       throw new Error('invalid-e2ee-message-payload');
     }

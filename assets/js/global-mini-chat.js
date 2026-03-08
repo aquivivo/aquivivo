@@ -35,7 +35,7 @@ import {
   initials,
   maybeDate,
 } from './chat-dom.js';
-import { createMiniChatFirestoreController, normalizeMessage } from './chat-firestore.js';
+import { createMiniChatFirestoreController, normalizeMessage } from './chat-firestore.js?v=20260308sendfix';
 import { getNeuSocialAppPath, withNeuQuery } from './neu-paths.js';
 import { createMiniChatReactionController } from './chat-reactions.js';
 import { createMiniChatTypingController } from './chat-typing.js';
