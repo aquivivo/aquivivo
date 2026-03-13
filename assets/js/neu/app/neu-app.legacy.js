@@ -2540,6 +2540,15 @@ function neuChatErrorCodeLower(error) {
   return neuChatErrorCode(error).toLowerCase();
 }
 
+function neuChatShouldRetryWithoutReply(error) {
+  const code = neuChatErrorCodeLower(error);
+  if (code.includes('permission-denied') || code.includes('invalid-argument') || code.includes('failed-precondition')) {
+    return true;
+  }
+  const message = String(error?.message || '').toLowerCase();
+  return message.includes('reply');
+}
+
 function neuChatIsUploadPermissionError(error) {
   const code = neuChatErrorCodeLower(error);
   return code.includes('storage/unauthorized') || code.endsWith('unauthorized') || code.includes('permission-denied');
@@ -8340,55 +8349,65 @@ async function neuSendChatMessage(options = {}) {
 
     lastFailStage = 'writeDoc';
     const previewText = neuChatLastMessageText(safeText || (imageUrl ? '?? Foto' : ''));
-    const batch = writeBatch(db);
     const incrementRecipients = await neuResolveRecipientsForUnreadIncrement(conversationId, members, meUid);
     const conversationRef = doc(db, 'neuConversations', conversationId);
-    batch.set(messageRef, {
-      messageId: messageRef.id,
-      senderUid: meUid,
-      text: safeText,
-      content: safeText,
-      ...(imageUrl ? { imageUrl, imageStoragePath } : {}),
-      ...(replyTo ? { replyTo } : {}),
-      createdAt: now,
-    });
-    batch.set(
-      conversationRef,
-      {
-        members,
-        memberKey,
-        lastMessageText: previewText,
-        lastMessageAt: now,
-        lastMessageSenderId: meUid,
-        lastSenderUid: meUid,
-        updatedAt: now,
-      },
-      { merge: true },
-    );
+    const commitMessage = async (includeReply = false) => {
+      const batch = writeBatch(db);
+      batch.set(messageRef, {
+        messageId: messageRef.id,
+        senderUid: meUid,
+        text: safeText,
+        content: safeText,
+        ...(imageUrl ? { imageUrl, imageStoragePath } : {}),
+        ...(includeReply && replyTo ? { replyTo } : {}),
+        createdAt: now,
+      });
+      batch.set(
+        conversationRef,
+        {
+          members,
+          memberKey,
+          lastMessageText: previewText,
+          lastMessageAt: now,
+          lastMessageSenderId: meUid,
+          lastSenderUid: meUid,
+          updatedAt: now,
+        },
+        { merge: true },
+      );
 
-    members.forEach((uid) => {
-      const otherUid = members.find((candidate) => candidate !== uid) || '';
-      const isSender = uid === meUid;
-      const payload = {
-        otherUid,
-        members,
-        memberKey,
-        lastMessageText: previewText,
-        lastMessageAt: now,
-        lastMessageSenderId: meUid,
-        updatedAt: now,
-      };
-      if (isSender) {
-        payload.unreadCount = 0;
-        payload.lastReadAt = now;
-        payload.lastReadMessageId = messageRef.id;
-      } else if (incrementRecipients.has(uid)) {
-        payload.unreadCount = increment(1);
-      }
-      batch.set(doc(db, 'neuUserChats', uid, 'chats', conversationId), payload, { merge: true });
-    });
+      members.forEach((uid) => {
+        const otherUid = members.find((candidate) => candidate !== uid) || '';
+        const isSender = uid === meUid;
+        const payload = {
+          otherUid,
+          members,
+          memberKey,
+          lastMessageText: previewText,
+          lastMessageAt: now,
+          lastMessageSenderId: meUid,
+          updatedAt: now,
+        };
+        if (isSender) {
+          payload.unreadCount = 0;
+          payload.lastReadAt = now;
+          payload.lastReadMessageId = messageRef.id;
+        } else if (incrementRecipients.has(uid)) {
+          payload.unreadCount = increment(1);
+        }
+        batch.set(doc(db, 'neuUserChats', uid, 'chats', conversationId), payload, { merge: true });
+      });
 
-    await batch.commit();
+      await batch.commit();
+    };
+
+    try {
+      await commitMessage(!!replyTo);
+    } catch (error) {
+      if (!replyTo || !neuChatShouldRetryWithoutReply(error)) throw error;
+      await commitMessage(false);
+    }
+
     neuChatStopTypingAndTimers();
     neuSetConversationUnreadLocal(conversationId, 0);
     if (textInput instanceof HTMLInputElement || textInput instanceof HTMLTextAreaElement) {
@@ -9590,6 +9609,22 @@ function formatFatalLines(errorLike) {
     .slice(0, 10);
 }
 
+function isExtensionNoise(source, errorLike) {
+  const src = String(source || '').trim().toLowerCase();
+  const message = String(errorLike?.message || errorLike || '').trim().toLowerCase();
+  const stack = String(errorLike?.stack || '').trim().toLowerCase();
+  return (
+    src.startsWith('chrome-extension://') ||
+    src.startsWith('moz-extension://') ||
+    src.includes('chrome-extension://') ||
+    src.includes('moz-extension://') ||
+    message.includes('chrome-extension://') ||
+    message.includes('moz-extension://') ||
+    stack.includes('chrome-extension://') ||
+    stack.includes('moz-extension://')
+  );
+}
+
 function showFatalOverlay(errorLike, { source = 'runtime' } = {}) {
   if (neuFatalShown) return;
   neuFatalShown = true;
@@ -9629,7 +9664,9 @@ function installFatalHooks() {
   installFatalHooks._wired = true;
 
   window.onerror = function onFatal(message, source, lineno, colno, error) {
-    showFatalOverlay(error || `${message || 'Error'} @ ${source || '-'}:${lineno || 0}:${colno || 0}`, {
+    const details = error || `${message || 'Error'} @ ${source || '-'}:${lineno || 0}:${colno || 0}`;
+    if (isExtensionNoise(source, details)) return false;
+    showFatalOverlay(details, {
       source: 'window.onerror',
     });
     return false;
@@ -9637,6 +9674,10 @@ function installFatalHooks() {
 
   window.onunhandledrejection = function onFatalRejection(event) {
     const reason = event?.reason;
+    if (isExtensionNoise('', reason)) {
+      if (typeof event?.preventDefault === 'function') event.preventDefault();
+      return;
+    }
     showFatalOverlay(reason || 'Unhandled Promise rejection', {
       source: 'window.onunhandledrejection',
     });
@@ -10632,17 +10673,21 @@ function wireNeuDropdownLogout() {
   );
 }
 
-async function startNeuSocialApp() {
+async function startNeuSocialApp({ preAuthUser = null } = {}) {
   wireQaLongTaskProbe();
+  const preAuthUid = String(preAuthUser?.uid || '').trim();
   qaDebug('auth-check-start', {
     cachedUid: String(auth.currentUser?.uid || ''),
     safeMode: SAFE_MODE,
+    preAuthUid,
+    authSource: preAuthUid ? 'preauth' : 'gate',
   });
-  const user = await requireNeuAuth();
+  const user = preAuthUid ? preAuthUser : await requireNeuAuth();
   qaDebug('auth-state', {
     authenticated: !!user,
     uid: String(user?.uid || ''),
     email: String(user?.email || ''),
+    source: preAuthUid ? 'preauth' : 'gate',
   });
   wireNeuDropdownLogout();
   let profileSeedResult = null;

@@ -1,9 +1,9 @@
 export function createOnboardingService({ state, repository }) {
   return {
-    async init() {
+    async init({ authUser = null } = {}) {
       if (state.initialized) return state.mode || 'app';
       state.initialized = true;
-      const mode = await repository.runLegacyStart();
+      const mode = await repository.runLegacyStart({ authUser });
       state.mode = mode || 'app';
       return state.mode;
     },

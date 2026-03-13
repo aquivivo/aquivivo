@@ -14,13 +14,46 @@ function memberKeyFor(uidA, uidB) {
 }
 
 function isRecoverableE2eeSendError(error) {
-  const message = String(error?.message || error || '').trim().toLowerCase();
-  if (!message) return false;
+  const name = String(error?.name || '').trim().toLowerCase();
+  const message = String(error?.message || '').trim().toLowerCase();
+  const raw = String(error || '').trim().toLowerCase();
+
+  // WebCrypto DOMException cases should not block sending in MVP mode.
+  if (
+    name === 'operationerror' ||
+    name === 'dataerror' ||
+    name === 'invalidaccesserror' ||
+    name === 'invalidstateerror' ||
+    name === 'notsupportederror' ||
+    name === 'notallowederror'
+  ) {
+    return true;
+  }
+  if (
+    message.includes('operationerror') ||
+    message.includes('dataerror') ||
+    raw.includes('operationerror') ||
+    raw.includes('dataerror')
+  ) {
+    return true;
+  }
+
+  // Missing or not-wired encryptor should degrade to plaintext.
+  if (message === 'missing-e2ee-message-encryptor') return true;
+  if (
+    name === 'typeerror' &&
+    (message.includes('encrypttextmessageforconversation') || raw.includes('encrypttextmessageforconversation')) &&
+    raw.includes('not a function')
+  ) {
+    return true;
+  }
+
+  const hint = message || raw;
   return (
-    message.startsWith('missing-public-key:') ||
-    message === 'conversation-key-missing' ||
-    message === 'conversation-key-missing-for-user' ||
-    message === 'e2ee-unavailable'
+    hint.startsWith('missing-public-key:') ||
+    hint === 'conversation-key-missing' ||
+    hint === 'conversation-key-missing-for-user' ||
+    hint === 'e2ee-unavailable'
   );
 }
 
@@ -36,6 +69,48 @@ function createPlainTextMessagePayload(text) {
     previewText: safeText,
     mode: 'plaintext',
   };
+}
+
+const E2EE_FALLBACK_EVENT = 'neu-chat:e2ee-fallback';
+const e2eeFallbackLogAt = new Map();
+
+function e2eeFallbackReason(error) {
+  const name = String(error?.name || '').trim();
+  const message = String(error?.message || error || '').trim();
+  if (name && message) return `${name}: ${message}`.slice(0, 240);
+  return (name || message || 'unknown-e2ee-error').slice(0, 240);
+}
+
+function reportE2eeFallback(windowRef, detail = {}) {
+  const payload = {
+    reason: String(detail?.reason || 'unknown-e2ee-error').trim().slice(0, 240),
+    stage: String(detail?.stage || 'send').trim().slice(0, 80) || 'send',
+    conversationId: String(detail?.conversationId || '').trim().slice(0, 160),
+    at: Date.now(),
+  };
+  const key = `${payload.stage}|${payload.reason}`;
+  const now = payload.at;
+  const lastAt = Number(e2eeFallbackLogAt.get(key) || 0);
+  if (!lastAt || now - lastAt >= 30_000) {
+    e2eeFallbackLogAt.set(key, now);
+    if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+      console.warn('[mini-chat-v4] E2EE fallback used', payload);
+    }
+  }
+
+  const target = windowRef && typeof windowRef.dispatchEvent === 'function' ? windowRef : null;
+  if (!target || typeof CustomEvent !== 'function') return;
+  try {
+    target.dispatchEvent(new CustomEvent(E2EE_FALLBACK_EVENT, { detail: payload }));
+  } catch {
+    // ignore unsupported environments
+  }
+}
+
+function rowsFromSnapshot(snapshot, { descending = false } = {}) {
+  const rows = (snapshot?.docs || []).map((docSnap) => normalizeMessage(docSnap));
+  if (descending) rows.reverse();
+  return rows;
 }
 
 export function normalizeMessage(docSnap) {
@@ -78,6 +153,7 @@ export function normalizeMessage(docSnap) {
 export function createMiniChatFirestoreController({
   db,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -140,6 +216,45 @@ export function createMiniChatFirestoreController({
     return String(rows[rows.length - 1]?.id || '').trim();
   }
 
+  async function resolveTextMessagePayload(conversationId, text, members = []) {
+    const safeText = String(text || '').trim();
+    const plainPayload = createPlainTextMessagePayload(safeText);
+    if (typeof encryptTextMessageForConversation !== 'function') {
+      reportE2eeFallback(windowRef, {
+        stage: 'encryptor-missing',
+        reason: 'missing-e2ee-message-encryptor',
+        conversationId,
+      });
+      return plainPayload;
+    }
+
+    try {
+      const encryptedPayload = await encryptTextMessageForConversation(conversationId, safeText, members);
+      const messageFields = encryptedPayload?.messageFields;
+      if (!messageFields || typeof messageFields !== 'object') {
+        reportE2eeFallback(windowRef, {
+          stage: 'invalid-payload',
+          reason: 'invalid-e2ee-message-payload',
+          conversationId,
+        });
+        return plainPayload;
+      }
+      return {
+        messageFields,
+        previewText: String(encryptedPayload?.previewText || '').trim() || plainPayload.previewText,
+        mode: String(encryptedPayload?.mode || '').trim() || 'encrypted',
+      };
+    } catch (error) {
+      if (!isRecoverableE2eeSendError(error)) throw error;
+      reportE2eeFallback(windowRef, {
+        stage: 'recoverable-error',
+        reason: e2eeFallbackReason(error),
+        conversationId,
+      });
+      return plainPayload;
+    }
+  }
+
   function queuePanelReactionRender() {
     if (panelReactionState.renderQueued) return;
     panelReactionState.renderQueued = true;
@@ -173,14 +288,14 @@ export function createMiniChatFirestoreController({
 
     const messagesQuery = query(
       collection(db, 'neuConversations', convId, 'messages'),
-      orderBy('createdAt', 'asc'),
+      orderBy('createdAt', 'desc'),
       limit(120),
     );
 
     msgUnsub = onSnapshot(
       messagesQuery,
       async (snapshot) => {
-        const rawRows = (snapshot.docs || []).map((docSnap) => normalizeMessage(docSnap));
+        const rawRows = rowsFromSnapshot(snapshot, { descending: true });
         const rows = await resolveMessageRows(rawRows, convId).catch(() => rawRows);
         if (
           panelReactionState.streamToken !== streamToken ||
@@ -229,7 +344,7 @@ export function createMiniChatFirestoreController({
 
     const messagesQuery = query(
       collection(db, 'neuConversations', convId, 'messages'),
-      orderBy('createdAt', 'asc'),
+      orderBy('createdAt', 'desc'),
       limit(120),
     );
 
@@ -254,7 +369,7 @@ export function createMiniChatFirestoreController({
           initialSnapshotHandled = true;
         }
 
-        const rawRows = (snapshot.docs || []).map((docSnap) => normalizeMessage(docSnap));
+        const rawRows = rowsFromSnapshot(snapshot, { descending: true });
         const rows = await resolveMessageRows(rawRows, convId).catch(() => rawRows);
         if (
           threadState &&
@@ -483,6 +598,15 @@ export function createMiniChatFirestoreController({
     await batch.commit();
   }
 
+  function shouldRetrySendWithoutReply(error) {
+    const code = String(error?.code || '').trim().toLowerCase();
+    if (code === 'permission-denied' || code === 'invalid-argument' || code === 'failed-precondition') {
+      return true;
+    }
+    const message = String(error?.message || '').trim().toLowerCase();
+    return message.includes('reply');
+  }
+
   async function sendMessageToConversation(conversationId, text, options = {}) {
     const convId = String(conversationId || '').trim();
     const safeText = String(text || '').trim().slice(0, 1000);
@@ -496,53 +620,66 @@ export function createMiniChatFirestoreController({
     const messageRef = doc(collection(db, 'neuConversations', convId, 'messages'));
     const memberKey = memberKeyFor(members[0], members[1]) || convId;
     const now = serverTimestamp();
-    const batch = writeBatch(db);
-    if (typeof encryptTextMessageForConversation !== 'function') {
-      throw new Error('missing-e2ee-message-encryptor');
-    }
-    let encryptedPayload = null;
-    try {
-      encryptedPayload = await encryptTextMessageForConversation(convId, safeText, members);
-    } catch (error) {
-      if (!isRecoverableE2eeSendError(error)) {
-        throw error;
-      }
-      encryptedPayload = createPlainTextMessagePayload(safeText);
-    }
-    const messageFields = encryptedPayload?.messageFields || null;
+    const encryptedPayload = await resolveTextMessagePayload(convId, safeText, members);
+    const messageFields = encryptedPayload?.messageFields || createPlainTextMessagePayload(safeText).messageFields;
     const previewText = String(encryptedPayload?.previewText || '').trim() || safeText;
-    if (!messageFields || typeof messageFields !== 'object') {
-      throw new Error('invalid-e2ee-message-payload');
-    }
 
-    batch.set(messageRef, {
-      messageId: messageRef.id,
-      senderUid: currentUid,
-      senderName: currentName,
-      ...messageFields,
-      replyToMessageId: String(options?.replyTo?.id || '').trim(),
-      replyToSenderId: normalizeUid(options?.replyTo?.senderId),
-      replyToSenderName: String(options?.replyTo?.senderName || '').trim(),
-      replyToText: String(options?.replyTo?.text || '').trim().slice(0, 220),
-      replyToType: String(options?.replyTo?.type || 'text').trim().toLowerCase(),
-      createdAt: now,
-    });
-
-    batch.set(
-      doc(db, 'neuConversations', convId),
-      {
-        members,
-        memberKey,
-        lastMessageText: previewText,
-        lastMessageAt: now,
-        lastMessageSenderId: currentUid,
-        lastSenderUid: currentUid,
-        updatedAt: now,
-      },
-      { merge: true },
+    const replyPayload = options?.replyTo && typeof options.replyTo === 'object'
+      ? {
+          replyToMessageId: String(options.replyTo.id || '').trim(),
+          replyToSenderId: normalizeUid(options.replyTo.senderId),
+          replyToSenderName: String(options.replyTo.senderName || '').trim(),
+          replyToText: String(options.replyTo.text || '').trim().slice(0, 220),
+          replyToType: String(options.replyTo.type || 'text').trim().toLowerCase() || 'text',
+        }
+      : null;
+    const hasReplyPayload = !!(
+      replyPayload &&
+      (
+        replyPayload.replyToMessageId ||
+        replyPayload.replyToSenderId ||
+        replyPayload.replyToSenderName ||
+        replyPayload.replyToText
+      )
     );
 
-    await batch.commit();
+    const commitMessage = async (includeReply = false) => {
+      const batch = writeBatch(db);
+      batch.set(messageRef, {
+        messageId: messageRef.id,
+        senderUid: currentUid,
+        senderName: currentName,
+        ...messageFields,
+        ...(includeReply && replyPayload ? replyPayload : {}),
+        createdAt: now,
+      });
+
+      batch.set(
+        doc(db, 'neuConversations', convId),
+        {
+          members,
+          memberKey,
+          lastMessageText: previewText,
+          lastMessageAt: now,
+          lastMessageSenderId: currentUid,
+          lastSenderUid: currentUid,
+          updatedAt: now,
+        },
+        { merge: true },
+      );
+
+      await batch.commit();
+    };
+
+    try {
+      await commitMessage(hasReplyPayload);
+    } catch (error) {
+      if (!hasReplyPayload || !shouldRetrySendWithoutReply(error)) {
+        throw error;
+      }
+      await commitMessage(false);
+    }
+
     await updateUserChatRows({
       conversationId: convId,
       members,
@@ -640,15 +777,7 @@ export function createMiniChatFirestoreController({
     if (senderUid !== currentUid) return;
 
     const members = await resolveConversationMembers(convId);
-    let encryptedPayload = null;
-    try {
-      encryptedPayload = await encryptTextMessageForConversation(convId, safeText, members);
-    } catch (error) {
-      if (!isRecoverableE2eeSendError(error)) {
-        throw error;
-      }
-      encryptedPayload = createPlainTextMessagePayload(safeText);
-    }
+    const encryptedPayload = await resolveTextMessagePayload(convId, safeText, members);
     const messageFields = encryptedPayload?.messageFields || createPlainTextMessagePayload(safeText).messageFields;
 
     await updateDoc(messageRef, {
@@ -707,11 +836,7 @@ export function createMiniChatFirestoreController({
     const convId = String(conversationId || '').trim();
     const currentUid = normalizeUid(getCurrentUid());
     if (!convId || !currentUid) return;
-    await setDoc(doc(db, 'neuUserChats', currentUid, 'chats', convId), {
-      deletedAt: serverTimestamp(),
-      unreadCount: 0,
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
+    await deleteDoc(doc(db, 'neuUserChats', currentUid, 'chats', convId));
   }
 
   async function ensureDirectConversationWithUser(targetUid) {

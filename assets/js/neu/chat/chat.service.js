@@ -1,6 +1,21 @@
 // Compatibility bridge for neu-app.boot.js.
 // The actual chat runtime lives in ../../global-mini-chat.js and the hyphenated chat modules.
-import { destroyGlobalMiniChat, initGlobalMiniChat } from '../../global-mini-chat.js?v=20260308callui1';
+const GLOBAL_MINI_CHAT_MODULE = '../../global-mini-chat.js?v=20260313chatfix5';
+
+async function loadGlobalMiniChat() {
+  try {
+    const mod = await import(GLOBAL_MINI_CHAT_MODULE);
+    return {
+      initGlobalMiniChat: typeof mod?.initGlobalMiniChat === 'function' ? mod.initGlobalMiniChat : null,
+      destroyGlobalMiniChat: typeof mod?.destroyGlobalMiniChat === 'function' ? mod.destroyGlobalMiniChat : null,
+    };
+  } catch (error) {
+    if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+      console.warn('[neu-chat] global-mini-chat.js failed to load', error);
+    }
+    return { initGlobalMiniChat: null, destroyGlobalMiniChat: null };
+  }
+}
 
 function authDisplayName(authUser) {
   const displayName = String(authUser?.displayName || '').trim();
@@ -16,13 +31,15 @@ export function createChatService({ context, state, repository }) {
 
       if (!eager) return;
 
+      const { initGlobalMiniChat, destroyGlobalMiniChat } = await loadGlobalMiniChat();
+
       const uid = String(context.authUser?.uid || '').trim();
       if (!uid) {
-        destroyGlobalMiniChat();
+        destroyGlobalMiniChat?.();
         return;
       }
 
-      initGlobalMiniChat({
+      initGlobalMiniChat?.({
         uid,
         displayName: authDisplayName(context.authUser),
         mode: document.body?.classList?.contains('neu-social-app') ? 'page' : 'dock',

@@ -34,11 +34,11 @@ import {
   initials,
   maybeDate,
 } from './chat-dom.js';
-import { createMiniChatFirestoreController, normalizeMessage } from './chat-firestore.js?v=20260308quiet1';
+import { createMiniChatFirestoreController, normalizeMessage } from './chat-firestore.js?v=20260313chatfix5';
 import { getNeuSocialAppPath, withNeuQuery } from './neu-paths.js';
-import { createMiniChatReactionController } from './chat-reactions.js';
-import { createMiniChatTypingController } from './chat-typing.js';
-import { createMiniChatUploadController } from './chat-upload.js';
+import { createMiniChatReactionController } from './chat-reactions.js?v=20260313chatfix5';
+import { createMiniChatTypingController } from './chat-typing.js?v=20260313chatfix5';
+import { createMiniChatUploadController } from './chat-upload.js?v=20260313chatfix5';
 
 const ORIGINAL_TITLE = document.title;
 const CHAT_UI_TEXT = Object.freeze({
@@ -122,6 +122,7 @@ const profileLoading = new Map();
 const presenceWatchers = new Map();
 let fallbackHydrationPromise = null;
 let fallbackHydratedUid = '';
+let hasSeenUserChatRows = false;
 let chatStateSubscriptionsWired = false;
 let chatPopstateWired = false;
 let conversationMenuOutsideClickWired = false;
@@ -1379,10 +1380,27 @@ async function startVoiceRecording(conversationId, { scope = 'panel', thread = n
     const blob = new Blob(chunks, { type: mimeType || 'audio/webm' });
     if (!blob.size) return;
 
+    const baseType = String(mimeType || '').split(';')[0].trim().toLowerCase();
+    const ext = (() => {
+      const map = {
+        'audio/webm': '.webm',
+        'audio/ogg': '.ogg',
+        'audio/mpeg': '.mp3',
+        'audio/mp3': '.mp3',
+        'audio/wav': '.wav',
+        'audio/x-wav': '.wav',
+        'audio/aac': '.aac',
+        'audio/mp4': '.m4a',
+        'audio/x-m4a': '.m4a',
+      };
+      return map[baseType] || '.webm';
+    })();
+    const fileType = baseType || 'audio/webm';
+
     const file = new File(
       [blob],
-      `voice-message-${Date.now()}.webm`,
-      { type: 'audio/webm' },
+      `voice-message-${Date.now()}${ext}`,
+      { type: fileType },
     );
     sendRecordedAudio(targetConversationId, file, {
       scope: targetScope,
@@ -1511,8 +1529,13 @@ function isConversationCallable(conversationId, conversation = null) {
   const convId = String(conversationId || '').trim();
   if (!convId) return false;
   const row = conversation || ChatController.getConversation(convId);
-  if (!row) return true;
-  return row.type !== 'group' && row.type !== 'support';
+  if (!row || row.type === 'group' || row.type === 'support') return false;
+  if (getConversationCallPeerUid(row)) return true;
+  const { currentUid } = getChatState();
+  const members = Array.isArray(row?.participants)
+    ? row.participants.map((item) => String(item || '').trim()).filter(Boolean)
+    : [];
+  return members.some((uid) => uid && uid !== String(currentUid || '').trim());
 }
 
 async function resolveConversationCallPeerUid(conversationId, conversation = null) {
@@ -4413,6 +4436,8 @@ const {
   updateTypingIndicatorsFromConversations,
 } = createMiniChatTypingController({
   db,
+  collection,
+  onSnapshot,
   doc,
   setDoc,
   updateDoc,
@@ -4427,11 +4452,26 @@ const {
   maybeDate,
   norm,
   qs,
+  getPanelTypingNodes: () => {
+    const nodes = [];
+    const { host } = pageShell();
+    if (host instanceof HTMLElement) {
+      const pageTyping = qRole('typing', host);
+      if (pageTyping instanceof HTMLElement) nodes.push(pageTyping);
+    }
+    const { dock } = dockShell();
+    if (dock instanceof HTMLElement) {
+      const dockTyping = qRole('typing', dock);
+      if (dockTyping instanceof HTMLElement) nodes.push(dockTyping);
+    }
+    return nodes;
+  },
 });
 
 const firestoreController = createMiniChatFirestoreController({
   db,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -4561,30 +4601,39 @@ function wireConversationMenu(scopeRoot, { getConversationId, thread = null } = 
   if (scopeRoot.dataset.conversationMenuWired === '1') return;
   scopeRoot.dataset.conversationMenuWired = '1';
 
-  const toggle = qRole('conversation-menu-toggle', scopeRoot);
-  const menu = qRole('conversation-menu', scopeRoot);
-  if (!(toggle instanceof HTMLElement) || !(menu instanceof HTMLElement)) return;
   wireConversationMenuOutsideClick();
 
-  toggle.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const willOpen = menu.hidden;
-    closeConversationMenus();
-    menu.hidden = !willOpen;
-  });
+  scopeRoot.addEventListener('click', async (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
 
-  menu.addEventListener('click', async (event) => {
-    const actionTarget = event.target instanceof Element
-      ? event.target.closest('[data-conversation-action]')
-      : null;
+    const toggle = target.closest('[data-mini-chat-role="conversation-menu-toggle"]');
+    if (toggle instanceof HTMLElement && scopeRoot.contains(toggle)) {
+      const menuContainer = toggle.closest('.mini-chat-v4-thread-head-actions, .mini-chat-v4-thread-actions');
+      const menu = (
+        menuContainer instanceof HTMLElement
+          ? qRole('conversation-menu', menuContainer)
+          : null
+      ) || qRole('conversation-menu', scopeRoot);
+      if (!(menu instanceof HTMLElement)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const willOpen = menu.hidden;
+      closeConversationMenus(menu);
+      menu.hidden = !willOpen;
+      return;
+    }
+
+    const actionTarget = target.closest('[data-conversation-action]');
     if (!(actionTarget instanceof HTMLElement)) return;
+    const menu = actionTarget.closest('[data-mini-chat-role="conversation-menu"]');
+    if (!(menu instanceof HTMLElement) || !scopeRoot.contains(menu)) return;
     const action = String(actionTarget.dataset.conversationAction || '').trim();
     const convId = String(typeof getConversationId === 'function' ? getConversationId() : '').trim();
-    if (!convId) return;
     event.preventDefault();
     event.stopPropagation();
     menu.hidden = true;
+    if (!convId) return;
 
     if (action === 'archive') {
       const conversation = ChatController.getConversation(convId);
@@ -4597,9 +4646,11 @@ function wireConversationMenu(scopeRoot, { getConversationId, thread = null } = 
     if (action === 'delete') {
       const confirmed = window.confirm(CHAT_UI_TEXT.confirmDeleteConversation);
       if (!confirmed) return;
-      await firestoreController.deleteConversationForCurrentUser(convId).catch((error) => {
+      const deleted = await firestoreController.deleteConversationForCurrentUser(convId).then(() => true).catch((error) => {
         console.warn('[mini-chat-v4] delete conversation failed', error);
+        return false;
       });
+      if (!deleted) return;
       if (scopeRoot === activePanelScope()) {
         navigateToConversation('', { replace: true });
       }
@@ -6028,6 +6079,7 @@ export function destroyGlobalMiniChat() {
   preferredHostMode = 'dock';
   fallbackHydrationPromise = null;
   fallbackHydratedUid = '';
+  hasSeenUserChatRows = false;
   profileCache.clear();
   profileLoading.clear();
   setMiniChatManagedNodes(false);
@@ -6066,6 +6118,7 @@ export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
   }
 
   currentName = String(displayName || 'Usuario').trim() || 'Usuario';
+  hasSeenUserChatRows = false;
   const pageReady = resolvedMode !== 'page' || pageShell().host instanceof HTMLElement;
   const dockReady = qs('#miniChatDock') instanceof HTMLElement;
   const shellReady =
@@ -6143,6 +6196,10 @@ export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
   convUnsub = onSnapshot(
     conversationQuery,
     (snapshot) => {
+      const userChatDocCount = Array.isArray(snapshot?.docs) ? snapshot.docs.length : 0;
+      if (userChatDocCount > 0) {
+        hasSeenUserChatRows = true;
+      }
       const nextRows = sortConversationRows(
         (snapshot.docs || [])
           .map((docSnap) => mapUserChatRow(docSnap, uid))
@@ -6151,7 +6208,8 @@ export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
       ChatController.setConversations(nextRows);
       preloadTopConversationMessages(nextRows);
 
-      if (!nextRows.length) {
+      const shouldUseFallback = !nextRows.length && !hasSeenUserChatRows;
+      if (shouldUseFallback) {
         hydrateConversationFallback(uid)
           .then((rows) => {
             if (!Array.isArray(rows) || !rows.length) {
@@ -6184,5 +6242,3 @@ export function initGlobalMiniChat({ uid, displayName, mode = 'dock' } = {}) {
     },
   );
 }
-
-

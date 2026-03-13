@@ -32,6 +32,36 @@ export function createMiniChatUploadController({
     return String(fileName || 'archivo').replace(/[^\w.\-]+/g, '_');
   }
 
+  function sanitizeHeaderFileName(fileName) {
+    return String(fileName || 'archivo')
+      .replace(/[\r\n"]/g, '')
+      .trim() || 'archivo';
+  }
+
+  function forceDownloadHref(fileUrl, fileName = '') {
+    const rawUrl = String(fileUrl || '').trim();
+    if (!rawUrl) return '';
+    try {
+      const parsed = new URL(rawUrl, window.location.origin);
+      const host = String(parsed.hostname || '').toLowerCase();
+      const isFirebaseStorageHost =
+        host.includes('firebasestorage.googleapis.com') ||
+        host.endsWith('.firebasestorage.app') ||
+        host.includes('storage.googleapis.com');
+      if (!isFirebaseStorageHost) return rawUrl;
+
+      const safeHeaderName = sanitizeHeaderFileName(fileName);
+      const encodedName = encodeURIComponent(safeHeaderName);
+      parsed.searchParams.set(
+        'response-content-disposition',
+        `attachment; filename*=UTF-8''${encodedName}`,
+      );
+      return parsed.toString();
+    } catch {
+      return rawUrl;
+    }
+  }
+
   function formatFileSize(size) {
     const bytes = Number(size || 0);
     if (!Number.isFinite(bytes) || bytes <= 0) return '';
@@ -126,8 +156,9 @@ export function createMiniChatUploadController({
         </div>
       `);
     } else if (type === 'file' && fileUrl) {
+      const downloadHref = forceDownloadHref(fileUrl, fileName) || fileUrl;
       out.push(
-        `<a class="mini-chat-v4-file" href="${esc(fileUrl)}" download="${esc(fileName)}" target="_blank" rel="noopener">&#128206; ${esc(fileLabel)}</a>`,
+        `<a class="mini-chat-v4-file" href="${esc(downloadHref)}" download="${esc(fileName)}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">&#128206; ${esc(fileLabel)}</a>`,
       );
     }
 
@@ -144,13 +175,39 @@ export function createMiniChatUploadController({
     }
 
     const fileType = String(file.type || '').toLowerCase();
+    const baseType = fileType.split(';')[0] || '';
     const isAudio = fileType.startsWith('audio/');
     const safeName = sanitizeFileName(file.name);
+
+    const audioExt = (() => {
+      const name = String(file.name || '').trim();
+      const match = name.match(/\.[a-z0-9]+$/i);
+      if (match) return match[0].toLowerCase();
+      const map = {
+        'audio/webm': '.webm',
+        'audio/ogg': '.ogg',
+        'audio/mpeg': '.mp3',
+        'audio/mp3': '.mp3',
+        'audio/wav': '.wav',
+        'audio/x-wav': '.wav',
+        'audio/aac': '.aac',
+        'audio/mp4': '.m4a',
+        'audio/x-m4a': '.m4a',
+      };
+      return map[baseType] || '.webm';
+    })();
+
     const path = isAudio
-      ? `chat/${safeConvId}/audio/${Date.now()}.webm`
+      ? `chat/${safeConvId}/audio/${Date.now()}${audioExt}`
       : `chat/${safeConvId}/${Date.now()}_${safeName}`;
     const refObj = storageRef(storage, path);
-    const task = uploadBytesResumable(refObj, file);
+    const uploadFileName = sanitizeHeaderFileName(file.name || safeName || 'archivo');
+    const contentType = String(file.type || '').trim();
+    const uploadMetadata = {
+      contentDisposition: `attachment; filename="${uploadFileName}"`,
+      ...(contentType ? { contentType } : {}),
+    };
+    const task = uploadBytesResumable(refObj, file, uploadMetadata);
 
     return new Promise((resolve, reject) => {
       task.on(
@@ -168,10 +225,10 @@ export function createMiniChatUploadController({
             resolve({
               fileUrl,
               fileName: isAudio
-                ? (file.name || 'voice-message.webm')
+                ? (file.name || `voice-message${audioExt}`)
                 : (file.name || safeName || 'archivo'),
               fileSize: file.size || 0,
-              mimeType: file.type || (isAudio ? 'audio/webm' : ''),
+              mimeType: file.type || (isAudio ? baseType || 'audio/webm' : ''),
               type: isAudio
                 ? 'audio'
                 : String(file.type || '').toLowerCase().startsWith('image/')

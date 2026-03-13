@@ -6,6 +6,21 @@ const MINI_CHAT_REACTION_EMOJIS = [
   '\u{1F622}',
 ];
 
+const LEGACY_REACTION_TO_EMOJI = Object.freeze({
+  like: '\u{1F44D}',
+  heart: '\u{2764}\u{FE0F}',
+  laugh: '\u{1F602}',
+  wow: '\u{1F62E}',
+  sad: '\u{1F622}',
+});
+
+const EMOJI_TO_LEGACY_REACTION = Object.freeze(
+  Object.entries(LEGACY_REACTION_TO_EMOJI).reduce((acc, [type, emoji]) => {
+    acc[String(emoji || '').trim()] = String(type || '').trim();
+    return acc;
+  }, {}),
+);
+
 export function createMiniChatReactionController({
   db,
   collection,
@@ -19,7 +34,8 @@ export function createMiniChatReactionController({
   esc,
   fmtTime,
   messageContentHtml,
-  reactionCollection = 'neuChatReactions',
+  reactionCollectionLegacy = 'neuChatReactions',
+  reactionCollectionModern = 'neuConversations',
   documentRef = document,
   windowRef = window,
 }) {
@@ -34,11 +50,20 @@ export function createMiniChatReactionController({
   }
 
   function runSafeUnsubscribe(unsub) {
-    if (typeof unsub !== 'function') return;
-    try {
-      unsub();
-    } catch {
-      // ignore unsubscribe failures
+    if (typeof unsub === 'function') {
+      try {
+        unsub();
+      } catch {
+        // ignore unsubscribe failures
+      }
+      return;
+    }
+    if (Array.isArray(unsub)) {
+      unsub.forEach((item) => runSafeUnsubscribe(item));
+      return;
+    }
+    if (unsub && typeof unsub === 'object') {
+      Object.values(unsub).forEach((item) => runSafeUnsubscribe(item));
     }
   }
 
@@ -50,15 +75,86 @@ export function createMiniChatReactionController({
     if (dataMap instanceof Map) dataMap.clear();
   }
 
-  function summarizeReactions(snapshot) {
+  function timestampToMs(value) {
+    if (!value) return 0;
+    if (value instanceof Date) {
+      const ms = value.getTime();
+      return Number.isFinite(ms) ? ms : 0;
+    }
+    if (typeof value?.toMillis === 'function') {
+      const ms = Number(value.toMillis());
+      return Number.isFinite(ms) ? ms : 0;
+    }
+    if (typeof value?.toDate === 'function') {
+      const date = value.toDate();
+      const ms = date instanceof Date ? date.getTime() : NaN;
+      return Number.isFinite(ms) ? ms : 0;
+    }
+    const seconds = Number(value?.seconds ?? value?._seconds);
+    if (Number.isFinite(seconds) && seconds > 0) {
+      const nanoseconds = Number(value?.nanoseconds ?? value?._nanoseconds ?? 0);
+      return Math.floor(seconds * 1000 + (Number.isFinite(nanoseconds) ? nanoseconds / 1e6 : 0));
+    }
+    const parsed = Number(new Date(value).getTime());
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function normalizeReactionEmoji(data = {}) {
+    const directEmoji = String(data?.emoji || '').trim();
+    if (directEmoji) return directEmoji;
+    const legacyType = String(data?.type || '').trim().toLowerCase();
+    if (legacyType && LEGACY_REACTION_TO_EMOJI[legacyType]) {
+      return LEGACY_REACTION_TO_EMOJI[legacyType];
+    }
+    return '';
+  }
+
+  function legacyReactionTypeFromEmoji(emoji) {
+    return String(EMOJI_TO_LEGACY_REACTION[String(emoji || '').trim()] || '').trim();
+  }
+
+  function summarizeSnapshotByUid(snapshot) {
+    const byUid = new Map();
+    (snapshot?.docs || []).forEach((docSnap) => {
+      const data = docSnap.data() || {};
+      const uid = String(data.uid || docSnap.id || '').trim();
+      const emoji = normalizeReactionEmoji(data);
+      if (!uid || !emoji) return;
+      byUid.set(uid, {
+        uid,
+        emoji,
+        updatedAtMs: Math.max(
+          timestampToMs(data.updatedAt),
+          timestampToMs(data.createdAt),
+        ),
+      });
+    });
+    return byUid;
+  }
+
+  function mergeReactionSourceByUid(...sourceMaps) {
+    const merged = new Map();
+    sourceMaps
+      .filter((source) => source instanceof Map)
+      .forEach((source) => {
+        source.forEach((entry, uid) => {
+          if (!entry || !uid) return;
+          const previous = merged.get(uid) || null;
+          if (!previous || Number(entry.updatedAtMs || 0) >= Number(previous.updatedAtMs || 0)) {
+            merged.set(uid, entry);
+          }
+        });
+      });
+    return merged;
+  }
+
+  function summarizeReactionsByUid(reactionByUid) {
     const counts = new Map();
     let myEmoji = '';
     const currentUid = String(getCurrentUid() || '').trim();
 
-    (snapshot?.docs || []).forEach((docSnap) => {
-      const data = docSnap.data() || {};
-      const emoji = String(data.emoji || '').trim();
-      const uid = String(data.uid || docSnap.id || '').trim();
+    (reactionByUid instanceof Map ? reactionByUid : new Map()).forEach((entry, uid) => {
+      const emoji = String(entry?.emoji || '').trim();
       if (!emoji || !uid) return;
       counts.set(emoji, Number(counts.get(emoji) || 0) + 1);
       if (uid === currentUid) myEmoji = emoji;
@@ -310,7 +406,11 @@ export function createMiniChatReactionController({
     container.addEventListener('click', (event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
-      if (target.closest('.mini-chat-v4-file')) return;
+      if (target.closest('.mini-chat-v4-file')) {
+        // Keep native browser download/open behavior, but block global click interceptors.
+        event.stopPropagation();
+        return;
+      }
 
       const pickerBtn = target.closest('[data-reaction-pick]');
       if (pickerBtn instanceof HTMLElement) {
@@ -342,6 +442,12 @@ export function createMiniChatReactionController({
         toggleReaction(convId, msgId, emoji).catch((error) => {
           console.warn('[mini-chat-v4] toggle reaction failed', error);
         });
+        return;
+      }
+
+      // Message action buttons (reply/edit/delete) are wired by a dedicated controller.
+      // Do not swallow these clicks in the reaction handler.
+      if (target.closest('[data-msg-action]')) {
         return;
       }
 
@@ -385,38 +491,83 @@ export function createMiniChatReactionController({
 
     messageIds.forEach((msgId) => {
       if (reactionUnsubs.has(msgId)) return;
-      const reactionsCol = collection(
+      const sourceState = {
+        legacy: new Map(),
+        modern: new Map(),
+      };
+      const applyMergedSummary = () => {
+        const merged = mergeReactionSourceByUid(
+          sourceState.legacy,
+          sourceState.modern,
+        );
+        const previousSummary = reactionData.get(msgId) || null;
+        const nextSummary = summarizeReactionsByUid(merged);
+        reactionData.set(msgId, nextSummary);
+        const diff = diffReactionSummary(previousSummary, nextSummary);
+        const patched = applyReactionSummaryToDom(convId, msgId, nextSummary, diff);
+        if (!patched) onChange();
+      };
+
+      const legacyCol = collection(
         db,
-        reactionCollection,
+        reactionCollectionLegacy,
         convId,
         'messages',
         msgId,
         'reactions',
       );
-      const unsub = onSnapshot(
-        reactionsCol,
+
+      const modernCol = collection(
+        db,
+        reactionCollectionModern,
+        convId,
+        'messages',
+        msgId,
+        'reactions',
+      );
+
+      const legacyUnsub = onSnapshot(
+        legacyCol,
         (snapshot) => {
-          const previousSummary = reactionData.get(msgId) || null;
-          const nextSummary = summarizeReactions(snapshot);
-          reactionData.set(msgId, nextSummary);
-          const diff = diffReactionSummary(previousSummary, nextSummary);
-          const patched = applyReactionSummaryToDom(convId, msgId, nextSummary, diff);
-          if (!patched) onChange();
+          sourceState.legacy = summarizeSnapshotByUid(snapshot);
+          applyMergedSummary();
         },
         () => {
-          const previousSummary = reactionData.get(msgId) || null;
-          reactionData.delete(msgId);
-          const patched = applyReactionSummaryToDom(
-            convId,
-            msgId,
-            { myEmoji: '', pills: [] },
-            diffReactionSummary(previousSummary, { myEmoji: '', pills: [] }),
-          );
-          if (!patched) onChange();
+          sourceState.legacy = new Map();
+          applyMergedSummary();
         },
       );
-      reactionUnsubs.set(msgId, unsub);
+
+      const modernUnsub = onSnapshot(
+        modernCol,
+        (snapshot) => {
+          sourceState.modern = summarizeSnapshotByUid(snapshot);
+          applyMergedSummary();
+        },
+        () => {
+          sourceState.modern = new Map();
+          applyMergedSummary();
+        },
+      );
+      reactionUnsubs.set(msgId, () => {
+        runSafeUnsubscribe(legacyUnsub);
+        runSafeUnsubscribe(modernUnsub);
+      });
     });
+  }
+
+  function firstSnapshotEmoji(snapshotResult) {
+    if (snapshotResult?.status !== 'fulfilled') return '';
+    const snapshot = snapshotResult.value;
+    if (!snapshot?.exists || !snapshot.exists()) return '';
+    return normalizeReactionEmoji(snapshot.data() || {});
+  }
+
+  async function settleWithOneSuccess(tasks = []) {
+    const results = await Promise.allSettled(Array.isArray(tasks) ? tasks : []);
+    if (results.some((item) => item.status === 'fulfilled')) return;
+    const firstError = results.find((item) => item.status === 'rejected');
+    throw firstError?.reason || new Error('reaction-write-failed');
   }
 
   async function toggleReaction(conversationId, messageId, emoji) {
@@ -426,9 +577,9 @@ export function createMiniChatReactionController({
     const currentUid = String(getCurrentUid() || '').trim();
     if (!convId || !msgId || !safeEmoji || !currentUid) return;
 
-    const reactionRef = doc(
+    const legacyReactionRef = doc(
       db,
-      reactionCollection,
+      reactionCollectionLegacy,
       convId,
       'messages',
       msgId,
@@ -436,18 +587,53 @@ export function createMiniChatReactionController({
       currentUid,
     );
 
-    const snapshot = await getDoc(reactionRef);
-    const existingEmoji = String(snapshot.data()?.emoji || '').trim();
-    if (snapshot.exists() && existingEmoji === safeEmoji) {
-      await deleteDoc(reactionRef);
+    const modernReactionRef = doc(
+      db,
+      reactionCollectionModern,
+      convId,
+      'messages',
+      msgId,
+      'reactions',
+      currentUid,
+    );
+
+    const snapshots = await Promise.allSettled([
+      getDoc(legacyReactionRef),
+      getDoc(modernReactionRef),
+    ]);
+    const existingEmoji = firstSnapshotEmoji(snapshots[1]) || firstSnapshotEmoji(snapshots[0]);
+    if (existingEmoji && existingEmoji === safeEmoji) {
+      await settleWithOneSuccess([
+        deleteDoc(legacyReactionRef),
+        deleteDoc(modernReactionRef),
+      ]);
       return;
     }
 
-    await setDoc(reactionRef, {
-      uid: currentUid,
-      emoji: safeEmoji,
-      createdAt: serverTimestamp(),
-    });
+    const legacyType = legacyReactionTypeFromEmoji(safeEmoji);
+    await settleWithOneSuccess([
+      setDoc(
+        legacyReactionRef,
+        {
+          uid: currentUid,
+          emoji: safeEmoji,
+          ...(legacyType ? { type: legacyType } : {}),
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+        },
+        { merge: true },
+      ),
+      setDoc(
+        modernReactionRef,
+        {
+          uid: currentUid,
+          emoji: safeEmoji,
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+        },
+        { merge: true },
+      ),
+    ]);
   }
 
   return {

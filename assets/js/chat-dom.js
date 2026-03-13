@@ -107,6 +107,7 @@ function avatarMarkup({
 export function conversationLastMs(conversation) {
   const date =
     maybeDate(conversation?.lastAt) ||
+    maybeDate(conversation?.lastMessageAt) ||
     maybeDate(conversation?.updatedAt) ||
     maybeDate(conversation?.createdAt);
   return date ? date.getTime() : 0;
@@ -162,7 +163,9 @@ export function isUnread(conversation, currentUid = '') {
   if (!conversation || !uid) return false;
   if (conversation.lastMessage?.senderId === uid) return false;
 
-  const lastAt = maybeDate(conversation.lastAt);
+  const lastAt =
+    maybeDate(conversation.lastAt) ||
+    maybeDate(conversation.lastMessageAt);
   if (!lastAt) return false;
 
   const readAt = maybeDate(conversation.reads?.[uid]);
@@ -226,7 +229,7 @@ export function buildConversationListHtml({
                 <span class="mini-chat-v4-row-title">${esc(titleRaw)}</span>
                 ${archivedBadge}
               </span>
-              <span class="mini-chat-v4-row-time">${esc(fmtTime(conversation.lastAt))}</span>
+              <span class="mini-chat-v4-row-time">${esc(fmtTime(conversation.lastAt || conversation.lastMessageAt || conversation.updatedAt || conversation.createdAt))}</span>
             </span>
             <span class="mini-chat-v4-row-preview">${esc(previewRaw)}</span>
           </span>

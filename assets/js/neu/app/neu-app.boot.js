@@ -5,7 +5,7 @@ import { syncContextFromUrl, wirePopstate } from '../core/routing.js';
 import { neuAppContext, setAuthUser, setPortal, setProfileUser } from '../context/neu-app-context.js';
 import { createChatDock } from '../chat/chat.dock.js';
 import { createChatReactions } from '../chat/chat.reactions.js';
-import { createChatService } from '../chat/chat.service.js?v=20260308callui1';
+import { createChatService } from '../chat/chat.service.js?v=20260313chatfix5';
 import { createChatTyping } from '../chat/chat.typing.js';
 import { createChatUi } from '../chat/chat.ui.js';
 import { createOnboardingService } from '../onboarding/onboarding.service.js';
@@ -20,7 +20,7 @@ import { chatState, resetChatState } from '../state/chat.state.js';
 import { storyState, resetStoryState } from '../state/story.state.js';
 import { createStoryService } from '../stories/story.service.js';
 import { createStoryUi } from '../stories/story.ui.js';
-import { initLegacyRuntimeEnvironment, neuLegacyRuntime } from './neu-app.legacy.js?v=20260308onb3';
+import { initLegacyRuntimeEnvironment, neuLegacyRuntime } from './neu-app.legacy.js?v=20260313chatfix5';
 
 const onboardingState = {
   initialized: false,
@@ -45,7 +45,8 @@ const chatRepository = {
 };
 
 const onboardingRepository = {
-  runLegacyStart: () => neuLegacyRuntime.internal.start(),
+  runLegacyStart: ({ authUser = null } = {}) =>
+    neuLegacyRuntime.internal.start({ preAuthUser: authUser }),
 };
 
 const profileService = createProfileService({ context: neuAppContext, state: profileState });
@@ -144,7 +145,7 @@ async function initChat({ eager = true } = {}) {
 async function initOnboarding() {
   diagnostics.domainInitCalls.onboarding += 1;
   onboardingUi.init();
-  return onboardingService.init();
+  return onboardingService.init({ authUser: neuAppContext.authUser });
 }
 
 export function getNeuRuntimeDiagnostics() {

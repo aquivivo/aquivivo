@@ -6,6 +6,8 @@ function defaultNorm(value) {
 
 export function createMiniChatTypingController({
   db,
+  collection,
+  onSnapshot,
   doc,
   setDoc,
   updateDoc,
@@ -20,6 +22,7 @@ export function createMiniChatTypingController({
   maybeDate,
   norm = defaultNorm,
   qs,
+  getPanelTypingNodes,
   typingCollection = 'neuChatTyping',
   windowRef = window,
 }) {
@@ -35,6 +38,100 @@ export function createMiniChatTypingController({
     lastSentAt: new Map(),
     activeConversations: new Set(),
   };
+
+  const remoteTypingByConversation = new Map();
+  const remoteTypingUnsubs = new Map();
+  const remoteTypingBlocked = new Set();
+
+  function runSafeUnsubscribe(unsub) {
+    if (typeof unsub !== 'function') return;
+    try {
+      unsub();
+    } catch {
+      // ignore unsubscribe failures
+    }
+  }
+
+  function stopRemoteTypingListeners() {
+    remoteTypingUnsubs.forEach((unsub) => runSafeUnsubscribe(unsub));
+    remoteTypingUnsubs.clear();
+    remoteTypingByConversation.clear();
+    remoteTypingBlocked.clear();
+  }
+
+  function stopRemoteTypingListener(conversationId, { clearBlocked = false } = {}) {
+    const convId = String(conversationId || '').trim();
+    if (!convId) return;
+    const unsub = remoteTypingUnsubs.get(convId);
+    if (typeof unsub === 'function') {
+      runSafeUnsubscribe(unsub);
+    }
+    remoteTypingUnsubs.delete(convId);
+    remoteTypingByConversation.delete(convId);
+    if (clearBlocked) remoteTypingBlocked.delete(convId);
+  }
+
+  function ensureRemoteTypingListener(conversationId) {
+    const convId = String(conversationId || '').trim();
+    if (!convId) return;
+    if (remoteTypingUnsubs.has(convId)) return;
+    if (remoteTypingBlocked.has(convId)) return;
+    if (typeof collection !== 'function' || typeof onSnapshot !== 'function') return;
+
+    const usersCol = collection(db, typingCollection, convId, 'users');
+    const unsub = onSnapshot(
+      usersCol,
+      (snapshot) => {
+        const next = new Map();
+        const nowMs = Date.now();
+        (snapshot?.docs || []).forEach((docSnap) => {
+          const data = docSnap.data() || {};
+          const uid = String(data.uid || docSnap.id || '').trim();
+          if (!uid) return;
+          if (data.typing !== true) return;
+          const updatedAt = maybeDate(data.updatedAt);
+          if (!updatedAt) return;
+          const age = nowMs - updatedAt.getTime();
+          if (age < 0 || age > TYPING_STALE_MS) return;
+          next.set(uid, {
+            updatedAt: data.updatedAt || null,
+            name: String(data.name || '').trim(),
+          });
+        });
+        remoteTypingByConversation.set(convId, next);
+        remoteTypingBlocked.delete(convId);
+        updateTypingIndicatorsFromConversations();
+      },
+      () => {
+        // Most common reason: Firestore rules deny listing users typing docs.
+        // Keep legacy/fallback typing path alive instead of forcing an empty remote map.
+        stopRemoteTypingListener(convId);
+        remoteTypingBlocked.add(convId);
+        updateTypingIndicatorsFromConversations();
+      },
+    );
+    remoteTypingUnsubs.set(convId, unsub);
+  }
+
+  function syncRemoteTypingListeners() {
+    const desired = new Set();
+    const activeConvId = String(getActiveConversationId() || '').trim();
+    if (activeConvId) desired.add(activeConvId);
+
+    const openThreads = getOpenThreads();
+    if (openThreads instanceof Map) {
+      openThreads.forEach((_thread, id) => {
+        const convId = String(id || '').trim();
+        if (convId) desired.add(convId);
+      });
+    }
+
+    desired.forEach((convId) => ensureRemoteTypingListener(convId));
+    remoteTypingUnsubs.forEach((_unsub, convId) => {
+      if (desired.has(convId)) return;
+      stopRemoteTypingListener(convId, { clearBlocked: true });
+    });
+  }
 
   function clearTypingTimer(timerMap, conversationId) {
     if (!(timerMap instanceof Map)) return;
@@ -129,6 +226,8 @@ export function createMiniChatTypingController({
     typingState.idleTimers.clear();
     typingState.lastSentAt.clear();
     typingState.activeConversations.clear();
+
+    stopRemoteTypingListeners();
   }
 
   function scheduleTypingHeartbeat(conversationId, rawValue = '') {
@@ -162,10 +261,26 @@ export function createMiniChatTypingController({
   }
 
   function typingUidsForConversation(conversation, nowMs = Date.now()) {
+    const convId = String(conversation?.id || '').trim();
+    const remoteTyping = convId ? remoteTypingByConversation.get(convId) : null;
+    const currentUid = String(getCurrentUid() || '').trim();
+
+    if (remoteTyping instanceof Map) {
+      const out = [];
+      remoteTyping.forEach((entry, uid) => {
+        const cleanUid = String(uid || '').trim();
+        if (!cleanUid || cleanUid === currentUid) return;
+        const date = maybeDate(entry?.updatedAt);
+        if (!date) return;
+        const age = nowMs - date.getTime();
+        if (age >= 0 && age <= TYPING_STALE_MS) out.push(cleanUid);
+      });
+      return out;
+    }
+
     const typingMap = conversation?.typing;
     if (!typingMap || typeof typingMap !== 'object') return [];
 
-    const currentUid = String(getCurrentUid() || '').trim();
     const out = [];
     Object.entries(typingMap).forEach(([uid, value]) => {
       const cleanUid = String(uid || '').trim();
@@ -181,6 +296,12 @@ export function createMiniChatTypingController({
   function typingNameForConversation(conversation, uid) {
     const cleanUid = String(uid || '').trim();
     if (!cleanUid) return 'Usuario';
+
+    const convId = String(conversation?.id || '').trim();
+    const remote = convId ? remoteTypingByConversation.get(convId) : null;
+    const remoteName =
+      remote instanceof Map ? String(remote.get(cleanUid)?.name || '').trim() : '';
+    if (remoteName) return remoteName;
     const participants = Array.isArray(conversation?.participants)
       ? conversation.participants.map((item) => String(item || '').trim())
       : [];
@@ -207,9 +328,22 @@ export function createMiniChatTypingController({
   function typingLabelForConversation(conversation) {
     const uids = typingUidsForConversation(conversation);
     if (!uids.length) return '';
-    if (uids.length > 1) return 'Varios estan escribiendo...';
+    if (uids.length > 1) return 'Varios están escribiendo…';
     const name = typingNameForConversation(conversation, uids[0]);
-    return `${name} esta escribiendo...`;
+    return `${name} está escribiendo…`;
+  }
+
+  function resolvePanelTypingNodes() {
+    if (typeof getPanelTypingNodes === 'function') {
+      const nodes = getPanelTypingNodes();
+      if (Array.isArray(nodes)) {
+        return nodes.filter((node) => node instanceof HTMLElement);
+      }
+      if (nodes instanceof HTMLElement) return [nodes];
+    }
+
+    const node = typeof qs === 'function' ? qs('[data-mini-chat-role="typing"]') : null;
+    return node instanceof HTMLElement ? [node] : [];
   }
 
   function setTypingNode(node, text = '') {
@@ -220,12 +354,15 @@ export function createMiniChatTypingController({
   }
 
   function updateTypingIndicatorsFromConversations() {
+    syncRemoteTypingListeners();
+
     const activeConvId = String(getActiveConversationId() || '').trim();
     const conversations = Array.isArray(getConversations()) ? getConversations() : [];
     const panelConversation = activeConvId
-      ? conversations.find((item) => String(item?.id || '').trim() === activeConvId) || null
+      ? conversations.find((item) => String(item?.id || '').trim() === activeConvId) || { id: activeConvId }
       : null;
-    setTypingNode(qs('#miniChatTyping'), typingLabelForConversation(panelConversation));
+    const panelLabel = typingLabelForConversation(panelConversation);
+    resolvePanelTypingNodes().forEach((node) => setTypingNode(node, panelLabel));
 
     const openThreads = getOpenThreads();
     if (!(openThreads instanceof Map)) return;
@@ -233,7 +370,7 @@ export function createMiniChatTypingController({
       if (!(thread?.typingEl instanceof HTMLElement)) return;
       const convId = String(id || '').trim();
       const conversation =
-        conversations.find((item) => String(item?.id || '').trim() === convId) || null;
+        conversations.find((item) => String(item?.id || '').trim() === convId) || (convId ? { id: convId } : null);
       setTypingNode(thread.typingEl, typingLabelForConversation(conversation));
     });
   }
@@ -246,9 +383,12 @@ export function createMiniChatTypingController({
   }
 
   function stopTypingRefreshTimer() {
-    if (!typingRefreshTimer) return;
-    windowRef.clearInterval(typingRefreshTimer);
-    typingRefreshTimer = 0;
+    if (typingRefreshTimer) {
+      windowRef.clearInterval(typingRefreshTimer);
+      typingRefreshTimer = 0;
+    }
+
+    stopRemoteTypingListeners();
   }
 
   return {
