@@ -1,4 +1,127 @@
-/* App-style bridge for public pages in /site */
+/* App-style bridge for all non-NEU pages in /app */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@400;500;600;700;800&display=swap');
+
+body:not(.neu-auth-page):not(.neu-social-app) {
+  font-family:
+    var(--neu-font-main, 'Sora'),
+    'Segoe UI Emoji',
+    'Noto Color Emoji',
+    'Apple Color Emoji',
+    system-ui,
+    sans-serif;
+  color: var(--neu-text, #e6ecff);
+  background:
+    radial-gradient(
+      1100px 560px at 16% -8%,
+      rgba(0, 56, 147, 0.34),
+      transparent 62%
+    ),
+    radial-gradient(
+      900px 520px at 92% 10%,
+      rgba(252, 209, 22, 0.14),
+      transparent 58%
+    ),
+    linear-gradient(180deg, #08193a, #0a214d 55%, #08193a);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .container {
+  width: min(var(--neu-shell-max-width, 1180px), calc(100% - 32px));
+  max-width: none;
+  margin: 0 auto;
+  padding: 0;
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) main.page {
+  padding: 36px 0 84px;
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) h1,
+body:not(.neu-auth-page):not(.neu-social-app) h2,
+body:not(.neu-auth-page):not(.neu-social-app) h3,
+body:not(.neu-auth-page):not(.neu-social-app) .sectionTitle,
+body:not(.neu-auth-page):not(.neu-social-app) .glow-text {
+  color: var(--neu-text, #e6ecff);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .subtitle,
+body:not(.neu-auth-page):not(.neu-social-app) .muted,
+body:not(.neu-auth-page):not(.neu-social-app) .hintSmall {
+  color: var(--neu-text-soft, rgba(230, 236, 255, 0.82));
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) a {
+  color: inherit;
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .heroBanner,
+body:not(.neu-auth-page):not(.neu-social-app) .card,
+body:not(.neu-auth-page):not(.neu-social-app) .contactFormCard,
+body:not(.neu-auth-page):not(.neu-social-app) .modalCard,
+body:not(.neu-auth-page):not(.neu-social-app) details.card {
+  border: 1px solid var(--neu-glass-border, rgba(255, 255, 255, 0.2));
+  background: linear-gradient(
+    160deg,
+    rgba(16, 42, 92, 0.74),
+    rgba(8, 24, 57, 0.9)
+  );
+  box-shadow: var(--neu-shadow, 0 16px 38px rgba(2, 12, 33, 0.34));
+  border-radius: var(--neu-radius-card, 20px);
+  backdrop-filter: blur(var(--glass-blur, 14px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 14px));
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .btn-yellow {
+  border: 1px solid rgba(252, 209, 22, 0.6);
+  background: linear-gradient(
+    180deg,
+    rgba(252, 209, 22, 0.98),
+    rgba(231, 186, 0, 0.96)
+  );
+  color: #102a5c;
+  box-shadow: 0 10px 22px rgba(252, 209, 22, 0.22);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .btn-white-outline {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--neu-text, #e6ecff);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .btn-red {
+  border: 1px solid rgba(206, 17, 38, 0.58);
+  background: linear-gradient(180deg, rgba(206, 17, 38, 0.96), rgba(158, 12, 30, 0.96));
+  color: #fff4f6;
+  box-shadow: 0 10px 22px rgba(206, 17, 38, 0.26);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .btn-yellow:hover,
+body:not(.neu-auth-page):not(.neu-social-app) .btn-white-outline:hover,
+body:not(.neu-auth-page):not(.neu-social-app) .btn-red:hover {
+  transform: translateY(-1px);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .input,
+body:not(.neu-auth-page):not(.neu-social-app) .select,
+body:not(.neu-auth-page):not(.neu-social-app) textarea {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--neu-text, #e6ecff);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .input::placeholder,
+body:not(.neu-auth-page):not(.neu-social-app) textarea::placeholder {
+  color: rgba(230, 236, 255, 0.64);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .input:focus,
+body:not(.neu-auth-page):not(.neu-social-app) .select:focus,
+body:not(.neu-auth-page):not(.neu-social-app) textarea:focus {
+  border-color: rgba(143, 179, 255, 0.62);
+  box-shadow: 0 0 0 3px rgba(143, 179, 255, 0.16);
+  outline: 0;
+}
 
 body[data-page='index'],
 body[data-page='services'],
@@ -326,4 +449,3 @@ body[data-page='login'] input[type='radio'] {
     width: min(var(--neu-shell-max-width, 1180px), calc(100% - 20px));
   }
 }
-
