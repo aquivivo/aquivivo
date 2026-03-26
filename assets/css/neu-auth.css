@@ -10,11 +10,7 @@ body.neu-auth-page {
   flex-direction: column;
   font-family: var(--neu-font-main);
   color: var(--neu-text);
-  background:
-    radial-gradient(980px 540px at -6% -12%, rgba(252, 209, 22, 0.11), transparent 62%),
-    radial-gradient(860px 560px at 104% -8%, rgba(143, 179, 255, 0.16), transparent 66%),
-    radial-gradient(760px 480px at 50% 120%, rgba(22, 52, 111, 0.2), transparent 72%),
-    linear-gradient(180deg, #091a3a 0%, #0b1f44 52%, #091a3a 100%);
+  background: var(--neu-page-bg, linear-gradient(180deg, #0a1f44, #003893, #0a1f44)) !important;
 }
 
 body.neu-auth-page .page.neu-auth-main {

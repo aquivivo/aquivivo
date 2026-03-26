@@ -12,7 +12,7 @@ body.fusion-profile.neu-social-app {
   --fusion-text-soft: var(--neu-text-soft);
   --fusion-shadow: var(--neu-shadow);
   --neu-chat-layer: 20;
-  background: var(--fusion-bg);
+  background: var(--neu-page-bg, linear-gradient(180deg, #0a1f44, #003893, #0a1f44)) !important;
   color: var(--fusion-text);
   font-size: 14px;
   font-weight: 400;

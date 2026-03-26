@@ -1,8 +1,20 @@
-/* App-style bridge for all non-NEU pages in /app */
+/* NEU-first visual unification for all non-NEU pages in app/ */
 
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@400;500;600;700;800&display=swap');
 
 body:not(.neu-auth-page):not(.neu-social-app) {
+  --yellow: var(--neu-accent-yellow, #fcd116);
+  --blue: var(--neu-accent-blue, #003893);
+  --red: var(--neu-accent-red, #ce1126);
+  --pastel-blue: #8fb3ff;
+
+  --text: var(--neu-text, #e6ecff);
+  --muted: var(--neu-text-soft, rgba(230, 236, 255, 0.82));
+  --line: rgba(255, 255, 255, 0.14);
+  --card: rgba(16, 42, 92, 0.62);
+  --card2: rgba(8, 24, 57, 0.88);
+  --shadow: var(--neu-shadow, 0 16px 38px rgba(2, 12, 33, 0.34));
+
   font-family:
     var(--neu-font-main, 'Sora'),
     'Segoe UI Emoji',
@@ -10,19 +22,12 @@ body:not(.neu-auth-page):not(.neu-social-app) {
     'Apple Color Emoji',
     system-ui,
     sans-serif;
-  color: var(--neu-text, #e6ecff);
-  background:
-    radial-gradient(
-      1100px 560px at 16% -8%,
-      rgba(0, 56, 147, 0.34),
-      transparent 62%
-    ),
-    radial-gradient(
-      900px 520px at 92% 10%,
-      rgba(252, 209, 22, 0.14),
-      transparent 58%
-    ),
-    linear-gradient(180deg, #08193a, #0a214d 55%, #08193a);
+  color: var(--text);
+  background: var(--neu-page-bg, linear-gradient(180deg, #0a1f44, #003893, #0a1f44)) !important;
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) main.page {
+  padding: 34px 0 82px;
 }
 
 body:not(.neu-auth-page):not(.neu-social-app) .container {
@@ -32,22 +37,25 @@ body:not(.neu-auth-page):not(.neu-social-app) .container {
   padding: 0;
 }
 
-body:not(.neu-auth-page):not(.neu-social-app) main.page {
-  padding: 36px 0 84px;
-}
-
 body:not(.neu-auth-page):not(.neu-social-app) h1,
 body:not(.neu-auth-page):not(.neu-social-app) h2,
 body:not(.neu-auth-page):not(.neu-social-app) h3,
-body:not(.neu-auth-page):not(.neu-social-app) .sectionTitle,
+body:not(.neu-auth-page):not(.neu-social-app) .glow-text,
+body:not(.neu-auth-page):not(.neu-social-app) .sectionTitle {
+  color: var(--text);
+}
+
 body:not(.neu-auth-page):not(.neu-social-app) .glow-text {
-  color: var(--neu-text, #e6ecff);
+  font-family: var(--neu-font-display, 'Bebas Neue', sans-serif) !important;
+  letter-spacing: 0.03em;
+  text-shadow: 0 6px 22px rgba(6, 20, 52, 0.44);
 }
 
 body:not(.neu-auth-page):not(.neu-social-app) .subtitle,
 body:not(.neu-auth-page):not(.neu-social-app) .muted,
-body:not(.neu-auth-page):not(.neu-social-app) .hintSmall {
-  color: var(--neu-text-soft, rgba(230, 236, 255, 0.82));
+body:not(.neu-auth-page):not(.neu-social-app) .hintSmall,
+body:not(.neu-auth-page):not(.neu-social-app) .hint {
+  color: var(--muted) !important;
 }
 
 body:not(.neu-auth-page):not(.neu-social-app) a {
@@ -56,22 +64,39 @@ body:not(.neu-auth-page):not(.neu-social-app) a {
 
 body:not(.neu-auth-page):not(.neu-social-app) .heroBanner,
 body:not(.neu-auth-page):not(.neu-social-app) .card,
-body:not(.neu-auth-page):not(.neu-social-app) .contactFormCard,
+body:not(.neu-auth-page):not(.neu-social-app) details.card,
+body:not(.neu-auth-page):not(.neu-social-app) .listItem,
 body:not(.neu-auth-page):not(.neu-social-app) .modalCard,
-body:not(.neu-auth-page):not(.neu-social-app) details.card {
+body:not(.neu-auth-page):not(.neu-social-app) .contactFormCard,
+body:not(.neu-auth-page):not(.neu-social-app) .featureCard,
+body:not(.neu-auth-page):not(.neu-social-app) .method-card,
+body:not(.neu-auth-page):not(.neu-social-app) .services-plus-card {
   border: 1px solid var(--neu-glass-border, rgba(255, 255, 255, 0.2));
-  background: linear-gradient(
-    160deg,
-    rgba(16, 42, 92, 0.74),
-    rgba(8, 24, 57, 0.9)
-  );
-  box-shadow: var(--neu-shadow, 0 16px 38px rgba(2, 12, 33, 0.34));
+  background: linear-gradient(160deg, var(--card), var(--card2));
+  box-shadow: var(--shadow);
   border-radius: var(--neu-radius-card, 20px);
   backdrop-filter: blur(var(--glass-blur, 14px));
   -webkit-backdrop-filter: blur(var(--glass-blur, 14px));
 }
 
-body:not(.neu-auth-page):not(.neu-social-app) .btn-yellow {
+body:not(.neu-auth-page):not(.neu-social-app) .sectionTitle {
+  font-weight: 800;
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .hr {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.22),
+    transparent
+  );
+  margin: 16px 0;
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .btn-yellow,
+body:not(.neu-auth-page):not(.neu-social-app) .contactBtn {
   border: 1px solid rgba(252, 209, 22, 0.6);
   background: linear-gradient(
     180deg,
@@ -85,7 +110,7 @@ body:not(.neu-auth-page):not(.neu-social-app) .btn-yellow {
 body:not(.neu-auth-page):not(.neu-social-app) .btn-white-outline {
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(255, 255, 255, 0.06);
-  color: var(--neu-text, #e6ecff);
+  color: var(--text);
 }
 
 body:not(.neu-auth-page):not(.neu-social-app) .btn-red {
@@ -97,17 +122,22 @@ body:not(.neu-auth-page):not(.neu-social-app) .btn-red {
 
 body:not(.neu-auth-page):not(.neu-social-app) .btn-yellow:hover,
 body:not(.neu-auth-page):not(.neu-social-app) .btn-white-outline:hover,
-body:not(.neu-auth-page):not(.neu-social-app) .btn-red:hover {
+body:not(.neu-auth-page):not(.neu-social-app) .btn-red:hover,
+body:not(.neu-auth-page):not(.neu-social-app) .contactBtn:hover {
   transform: translateY(-1px);
 }
 
 body:not(.neu-auth-page):not(.neu-social-app) .input,
 body:not(.neu-auth-page):not(.neu-social-app) .select,
-body:not(.neu-auth-page):not(.neu-social-app) textarea {
+body:not(.neu-auth-page):not(.neu-social-app) textarea,
+body:not(.neu-auth-page):not(.neu-social-app) input[type='text'],
+body:not(.neu-auth-page):not(.neu-social-app) input[type='email'],
+body:not(.neu-auth-page):not(.neu-social-app) input[type='password'],
+body:not(.neu-auth-page):not(.neu-social-app) input[type='number'] {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.06);
-  color: var(--neu-text, #e6ecff);
+  color: var(--text);
 }
 
 body:not(.neu-auth-page):not(.neu-social-app) .input::placeholder,
@@ -117,248 +147,201 @@ body:not(.neu-auth-page):not(.neu-social-app) textarea::placeholder {
 
 body:not(.neu-auth-page):not(.neu-social-app) .input:focus,
 body:not(.neu-auth-page):not(.neu-social-app) .select:focus,
-body:not(.neu-auth-page):not(.neu-social-app) textarea:focus {
+body:not(.neu-auth-page):not(.neu-social-app) textarea:focus,
+body:not(.neu-auth-page):not(.neu-social-app) input:focus {
   border-color: rgba(143, 179, 255, 0.62);
   box-shadow: 0 0 0 3px rgba(143, 179, 255, 0.16);
   outline: 0;
 }
 
-body[data-page='index'],
-body[data-page='services'],
-body[data-page='ayuda'],
-body[data-page='contacto'],
-body[data-page='login'],
-body[data-page='privacy'],
-body[data-page='terms'],
-body[data-page='returns'] {
-  font-family:
-    var(--neu-font-main, 'Sora'),
-    'Segoe UI Emoji',
-    'Noto Color Emoji',
-    'Apple Color Emoji',
-    system-ui,
-    sans-serif;
-  color: var(--neu-text, #e6ecff);
-  background:
-    radial-gradient(
-      1100px 560px at 16% -8%,
-      rgba(0, 56, 147, 0.34),
-      transparent 62%
-    ),
-    radial-gradient(
-      900px 520px at 92% 10%,
-      rgba(252, 209, 22, 0.14),
-      transparent 58%
-    ),
-    linear-gradient(180deg, #08193a, #0a214d 55%, #08193a);
+body:not(.neu-auth-page):not(.neu-social-app) input[type='checkbox'],
+body:not(.neu-auth-page):not(.neu-social-app) input[type='radio'] {
+  accent-color: var(--yellow);
 }
 
-body[data-page='index'] .container,
-body[data-page='services'] .container,
-body[data-page='ayuda'] .container,
-body[data-page='contacto'] .container,
-body[data-page='login'] .container,
-body[data-page='privacy'] .container,
-body[data-page='terms'] .container,
-body[data-page='returns'] .container {
-  width: min(var(--neu-shell-max-width, 1180px), calc(100% - 32px));
-  max-width: none;
-  margin: 0 auto;
-  padding: 0;
-}
-
-body[data-page='index'] main.page,
-body[data-page='services'] main.page,
-body[data-page='ayuda'] main.page,
-body[data-page='contacto'] main.page,
-body[data-page='login'] main.page,
-body[data-page='privacy'] main.page,
-body[data-page='terms'] main.page,
-body[data-page='returns'] main.page {
-  padding: 36px 0 84px;
-}
-
-body[data-page='index'] h1,
-body[data-page='index'] h2,
-body[data-page='index'] h3,
-body[data-page='services'] h1,
-body[data-page='services'] h2,
-body[data-page='services'] h3,
-body[data-page='ayuda'] h1,
-body[data-page='ayuda'] h2,
-body[data-page='ayuda'] h3,
-body[data-page='contacto'] h1,
-body[data-page='contacto'] h2,
-body[data-page='contacto'] h3,
-body[data-page='login'] h1,
-body[data-page='login'] h2,
-body[data-page='login'] h3,
-body[data-page='privacy'] h1,
-body[data-page='privacy'] h2,
-body[data-page='privacy'] h3,
-body[data-page='terms'] h1,
-body[data-page='terms'] h2,
-body[data-page='terms'] h3,
-body[data-page='returns'] h1,
-body[data-page='returns'] h2,
-body[data-page='returns'] h3,
-body[data-page='index'] .sectionTitle,
-body[data-page='services'] .sectionTitle,
-body[data-page='ayuda'] .sectionTitle,
-body[data-page='contacto'] .sectionTitle,
-body[data-page='privacy'] .sectionTitle,
-body[data-page='terms'] .sectionTitle,
-body[data-page='returns'] .sectionTitle,
-body[data-page='index'] .glow-text,
-body[data-page='services'] .glow-text,
-body[data-page='ayuda'] .glow-text,
-body[data-page='contacto'] .glow-text,
-body[data-page='login'] .glow-text,
-body[data-page='privacy'] .glow-text,
-body[data-page='terms'] .glow-text,
-body[data-page='returns'] .glow-text {
-  color: var(--neu-text, #e6ecff);
-}
-
-body[data-page='index'] .subtitle,
-body[data-page='services'] .subtitle,
-body[data-page='ayuda'] .subtitle,
-body[data-page='contacto'] .subtitle,
-body[data-page='login'] .subtitle,
-body[data-page='privacy'] .subtitle,
-body[data-page='terms'] .subtitle,
-body[data-page='returns'] .subtitle,
-body[data-page='index'] .muted,
-body[data-page='services'] .muted,
-body[data-page='ayuda'] .muted,
-body[data-page='contacto'] .muted,
-body[data-page='login'] .muted,
-body[data-page='privacy'] .muted,
-body[data-page='terms'] .muted,
-body[data-page='returns'] .muted,
-body[data-page='index'] .hintSmall,
-body[data-page='services'] .hintSmall,
-body[data-page='ayuda'] .hintSmall,
-body[data-page='contacto'] .hintSmall,
-body[data-page='login'] .hintSmall,
-body[data-page='privacy'] .hintSmall,
-body[data-page='terms'] .hintSmall,
-body[data-page='returns'] .hintSmall {
-  color: var(--neu-text-soft, rgba(230, 236, 255, 0.82));
-}
-
-body[data-page='index'] a,
-body[data-page='services'] a,
-body[data-page='ayuda'] a,
-body[data-page='contacto'] a,
-body[data-page='login'] a,
-body[data-page='privacy'] a,
-body[data-page='terms'] a,
-body[data-page='returns'] a {
-  color: inherit;
-}
-
-body[data-page='index'] .card,
-body[data-page='services'] .card,
-body[data-page='ayuda'] .card,
-body[data-page='contacto'] .card,
-body[data-page='privacy'] .card,
-body[data-page='terms'] .card,
-body[data-page='returns'] .card,
-body[data-page='index'] .contactFormCard,
-body[data-page='login'] .hero-card,
-body[data-page='login'] .form-card {
-  border: 1px solid var(--neu-glass-border, rgba(255, 255, 255, 0.2));
-  background: linear-gradient(160deg, rgba(16, 42, 92, 0.74), rgba(8, 24, 57, 0.9));
-  box-shadow: var(--neu-shadow, 0 16px 38px rgba(2, 12, 33, 0.34));
-  border-radius: var(--neu-radius-card, 20px);
-  backdrop-filter: blur(var(--glass-blur, 14px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 14px));
-}
-
-body[data-page='index'] .featureCard,
-body[data-page='index'] .method-card,
-body[data-page='index'] .services-plus-card {
-  border-radius: var(--neu-radius-card, 20px);
-  box-shadow: var(--neu-shadow, 0 16px 38px rgba(2, 12, 33, 0.34));
-}
-
-body[data-page='index'] .btn-yellow,
-body[data-page='services'] .btn-yellow,
-body[data-page='ayuda'] .btn-yellow,
-body[data-page='contacto'] .btn-yellow,
-body[data-page='login'] .btn-yellow,
-body[data-page='privacy'] .btn-yellow,
-body[data-page='terms'] .btn-yellow,
-body[data-page='returns'] .btn-yellow,
-body[data-page='index'] .contactBtn,
-body[data-page='index'] .sp-btn.sp-btn-yellow {
-  border: 1px solid rgba(252, 209, 22, 0.6);
-  background: linear-gradient(180deg, rgba(252, 209, 22, 0.98), rgba(231, 186, 0, 0.96));
-  color: #102a5c;
-  box-shadow: 0 10px 22px rgba(252, 209, 22, 0.22);
-}
-
-body[data-page='index'] .btn-white-outline,
-body[data-page='services'] .btn-white-outline,
-body[data-page='ayuda'] .btn-white-outline,
-body[data-page='contacto'] .btn-white-outline,
-body[data-page='login'] .btn-white-outline,
-body[data-page='privacy'] .btn-white-outline,
-body[data-page='terms'] .btn-white-outline,
-body[data-page='returns'] .btn-white-outline,
-body[data-page='index'] .sp-btn.sp-btn-red {
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--neu-text, #e6ecff);
-}
-
-body[data-page='index'] .btn-yellow:hover,
-body[data-page='services'] .btn-yellow:hover,
-body[data-page='ayuda'] .btn-yellow:hover,
-body[data-page='contacto'] .btn-yellow:hover,
-body[data-page='login'] .btn-yellow:hover,
-body[data-page='privacy'] .btn-yellow:hover,
-body[data-page='terms'] .btn-yellow:hover,
-body[data-page='returns'] .btn-yellow:hover,
-body[data-page='index'] .btn-white-outline:hover,
-body[data-page='services'] .btn-white-outline:hover,
-body[data-page='ayuda'] .btn-white-outline:hover,
-body[data-page='contacto'] .btn-white-outline:hover,
-body[data-page='login'] .btn-white-outline:hover,
-body[data-page='privacy'] .btn-white-outline:hover,
-body[data-page='terms'] .btn-white-outline:hover,
-body[data-page='returns'] .btn-white-outline:hover,
-body[data-page='index'] .contactBtn:hover,
-body[data-page='index'] .sp-btn:hover {
-  transform: translateY(-1px);
-}
-
-body[data-page='index'] .contactFormCard input,
-body[data-page='index'] .contactFormCard textarea,
-body[data-page='login'] .input {
-  border-radius: 12px;
+body:not(.neu-auth-page):not(.neu-social-app) .pill,
+body:not(.neu-auth-page):not(.neu-social-app) .sp-pill {
   border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--neu-text, #e6ecff);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
 }
 
-body[data-page='index'] .contactFormCard input::placeholder,
-body[data-page='index'] .contactFormCard textarea::placeholder,
-body[data-page='login'] .input::placeholder {
-  color: rgba(230, 236, 255, 0.64);
+body:not(.neu-auth-page):not(.neu-social-app) table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-body[data-page='index'] .contactFormCard input:focus,
-body[data-page='index'] .contactFormCard textarea:focus,
-body[data-page='login'] .input:focus {
-  border-color: rgba(143, 179, 255, 0.62);
-  box-shadow: 0 0 0 3px rgba(143, 179, 255, 0.16);
-  outline: 0;
+body:not(.neu-auth-page):not(.neu-social-app) th,
+body:not(.neu-auth-page):not(.neu-social-app) td {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
 }
 
-body[data-page='index'] .section-wide-inner {
-  width: min(var(--neu-shell-max-width, 1180px), calc(100% - 32px));
+body:not(.neu-auth-page):not(.neu-social-app) .side-panel {
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(9, 26, 60, 0.95), rgba(7, 20, 48, 0.98));
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .modalOverlay {
+  background: rgba(2, 10, 26, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .modalCard {
+  border-radius: 18px;
+}
+
+/* Match public header geometry to neu-login header */
+body:not(.neu-auth-page):not(.neu-social-app) .topbar.nav-glass,
+body:not(.neu-auth-page):not(.neu-social-app) .neu-shell-header.nav-glass {
+  background: rgba(16, 42, 92, 0.84);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .nav-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  min-height: 64px;
+  padding: 8px 14px;
+}
+
+body:not(.neu-auth-page):not(.neu-social-app) .nav-line {
+  height: 3px;
+  opacity: 0.75;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+body[data-page='index'] .hero-main {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body[data-page='index'] .hero-title {
+  margin: 0;
+  font-family: var(--neu-font-display, 'Bebas Neue', sans-serif) !important;
+  font-weight: 400;
+  font-size: clamp(42px, 5.2vw, 74px);
+  line-height: 0.98;
+  letter-spacing: 0.03em;
+}
+
+body[data-page='index'] .hero-subtitle {
+  margin: 14px 0 0;
+  font-size: 18px;
+  line-height: 1.62;
+  max-width: 58ch;
+}
+
+body[data-page='index'] .hero-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+body[data-page='index'] .hero-art-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+body[data-page='index'] .hero-art-inner {
+  width: min(420px, 100%);
+}
+
+body[data-page='index'] .hero-art-center {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+body[data-page='index'] .section-wide.stats-band {
+  margin-top: 24px !important;
+}
+
+body[data-page='index'] .stats-band .section-wide-inner {
+  display: flex;
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+body[data-page='index'] .stats-band .stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 180px));
+  gap: 16px;
+}
+
+body[data-page='index'] .stats-band .statCard {
+  width: auto !important;
+  height: auto !important;
+  min-height: 120px;
+  padding: 18px !important;
+  background: linear-gradient(160deg, var(--card), var(--card2)) !important;
+  border: 1px solid var(--neu-glass-border, rgba(255, 255, 255, 0.2)) !important;
+  box-shadow: var(--shadow) !important;
+  color: var(--text);
+}
+
+body[data-page='index'] .stat-number {
+  font-weight: 900;
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+body[data-page='index'] .stat-number--yellow {
+  color: var(--yellow);
+}
+
+body[data-page='index'] .stat-number--blue {
+  color: var(--pastel-blue);
+}
+
+body[data-page='index'] .stat-number--red {
+  color: var(--red);
+}
+
+body[data-page='index'] .stats-band .statCard .muted {
+  color: var(--muted) !important;
+  font-weight: 700 !important;
+}
+
+body[data-page='index'] .why-text h2,
+body[data-page='index'] .method-title,
+body[data-page='index'] .services-plus-head h2,
+body[data-page='index'] .contactHead h2,
+body[data-page='index'] .method-card h3,
+body[data-page='index'] .contactFormCard h3 {
+  font-family: var(--neu-font-display, 'Bebas Neue', sans-serif) !important;
+  letter-spacing: 0.03em;
+  line-height: 1.02;
+}
+
+body[data-page='index'] #mas-que-clases.section-wide {
+  padding: 56px 0 !important;
+  min-height: auto !important;
+  display: block !important;
+}
+
+body[data-page='index'] .contact-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+body[data-page='index'] .contact-check-label {
+  margin: 0;
+  font-weight: 800;
+}
+
+body[data-page='index'] .privacy-link {
+  color: var(--pastel-blue);
+  font-weight: 900;
 }
 
 body[data-page='services'] .servicesTopGrid {
@@ -369,83 +352,16 @@ body[data-page='services'] .services-section {
   margin-top: 20px;
 }
 
-body[data-page='services'] .services-grid > .card,
-body[data-page='services'] .service-card,
-body[data-page='services'] .plan-card {
-  border-radius: var(--neu-radius-card, 20px);
-}
-
-body[data-page='services'] .consentDetails {
-  margin-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  padding-top: 10px;
-}
-
-body[data-page='privacy'] .card ul,
-body[data-page='terms'] .card ul,
-body[data-page='returns'] .card ul {
-  margin-top: 10px;
-  margin-bottom: 0;
-  padding-left: 20px;
-}
-
-body[data-page='privacy'] .card li,
-body[data-page='terms'] .card li,
-body[data-page='returns'] .card li {
-  margin-bottom: 8px;
-}
-
-body[data-page='returns'] .detailsCard summary {
-  cursor: pointer;
-}
-
-body[data-page='login'] .hero-card,
-body[data-page='login'] .form-card {
-  color: var(--neu-text, #e6ecff) !important;
-}
-
-body[data-page='login'] .form-sub,
-body[data-page='login'] .hint,
-body[data-page='login'] .msg {
-  color: var(--neu-text-soft, rgba(230, 236, 255, 0.82)) !important;
-}
-
-body[data-page='login'] .field label {
-  color: var(--neu-text, #e6ecff) !important;
-}
-
-body[data-page='login'] .reset-link {
-  color: var(--neu-accent-yellow, #fcd116) !important;
-}
-
-body[data-page='services'] input[type='checkbox'],
-body[data-page='index'] input[type='checkbox'],
-body[data-page='login'] input[type='checkbox'],
-body[data-page='login'] input[type='radio'] {
-  accent-color: var(--neu-accent-yellow, #fcd116);
-}
-
 @media (max-width: 900px) {
-  body[data-page='index'] main.page,
-  body[data-page='services'] main.page,
-  body[data-page='ayuda'] main.page,
-  body[data-page='contacto'] main.page,
-  body[data-page='login'] main.page,
-  body[data-page='privacy'] main.page,
-  body[data-page='terms'] main.page,
-  body[data-page='returns'] main.page {
-    padding: 26px 0 64px;
+  body:not(.neu-auth-page):not(.neu-social-app) .container {
+    width: min(var(--neu-shell-max-width, 1180px), calc(100% - 20px));
   }
 
-  body[data-page='index'] .container,
-  body[data-page='services'] .container,
-  body[data-page='ayuda'] .container,
-  body[data-page='contacto'] .container,
-  body[data-page='login'] .container,
-  body[data-page='privacy'] .container,
-  body[data-page='terms'] .container,
-  body[data-page='returns'] .container,
-  body[data-page='index'] .section-wide-inner {
-    width: min(var(--neu-shell-max-width, 1180px), calc(100% - 20px));
+  body:not(.neu-auth-page):not(.neu-social-app) main.page {
+    padding: 24px 0 62px;
+  }
+
+  body[data-page='index'] .stats-band .stat-grid {
+    grid-template-columns: 1fr;
   }
 }

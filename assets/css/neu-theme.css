@@ -32,6 +32,7 @@
   --neu-glass-border: var(--glass-border);
   --neu-glass-bg: var(--glass-bg);
   --neu-glass-bg-strong: rgba(11, 31, 68, 0.52);
+  --neu-page-bg: linear-gradient(180deg, #0a1f44, #003893, #0a1f44);
 
   --neu-radius-card: 20px;
   --neu-radius-pill: 999px;
@@ -45,7 +46,7 @@ body.neu-auth-page,
 body.neu-social-app {
   font-family: var(--neu-font-main);
   color: var(--neu-text);
-  background: var(--neu-bg);
+  background: var(--neu-page-bg, var(--neu-bg));
   min-height: 100vh;
 }
 
@@ -75,5 +76,11 @@ body.neu-social-app {
     --neu-glass-border: var(--glass-border);
     --neu-glass-bg: var(--glass-bg);
     --neu-glass-bg-strong: rgba(246, 250, 255, 0.7);
+    --neu-page-bg: linear-gradient(180deg, #0a1f44, #003893, #0a1f44);
   }
+}
+
+html,
+body {
+  background: var(--neu-page-bg, linear-gradient(180deg, #0a1f44, #003893, #0a1f44)) !important;
 }

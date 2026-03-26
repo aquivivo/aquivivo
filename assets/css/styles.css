@@ -1,5 +1,5 @@
 /* ================================
-   AquiVivo Ã¢â‚¬â€ Unified UI (Ã°Å¸â€¡Â¨Ã°Å¸â€¡Â´)
+   AquiVivo ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Unified UI (ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¨ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â´)
    One stylesheet for all pages
    ================================ */
 
@@ -2015,7 +2015,7 @@ body[data-page='recompensas'] .passportStep {
   padding-left: 40px;
 }
 body[data-page='recompensas'] .passportStep::before {
-  content: 'ðŸ‘£';
+  content: '\1F463';
   position: absolute;
   left: 4px;
   top: 18px;
@@ -3523,7 +3523,7 @@ a:hover {
   opacity: 0.9;
 }
 .refDetails[open] summary::after {
-  content: 'Ã¢â€“Â´';
+  content: '^';
 }
 @media (max-width: 980px) {
   .panelHeroGrid {
@@ -3560,12 +3560,12 @@ a:hover {
 .nav-glass {
   overflow: visible;
 }
-.nav-glass .nav-line {
+.nav-glass .nav-line.nav-line-below {
   position: absolute;
   left: 0;
   right: 0;
-  top: 0; /* align to the very top of header */
-  bottom: auto;
+  top: auto;
+  bottom: 0;
   z-index: 5;
 }
 .nav-inner {
@@ -3817,7 +3817,7 @@ a:hover {
 }
 
 /* ================================
-   INDEX Ã¢â‚¬â€ Contacto (landing)
+   INDEX ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Contacto (landing)
    Fix: icon sizes + responsive grid
    ================================ */
 
@@ -4213,7 +4213,7 @@ body:not([data-page='index']) .services-card {
   }
 }
 
-/* ===== Header dropdown (Servicios) Ã¢â‚¬â€ CSS-only (hover/focus-within) ===== */
+/* ===== Header dropdown (Servicios) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â CSS-only (hover/focus-within) ===== */
 .nav-actions {
   display: flex;
   gap: 12px;
@@ -4300,12 +4300,7 @@ body:not([data-page='index']) .services-card {
 /* ===== Final background override (last-wins) ===== */
 html,
 body {
-  background: linear-gradient(
-    180deg,
-    var(--av-blue-deeper),
-    var(--av-blue),
-    var(--av-blue-deeper)
-  ) !important;
+  background: var(--neu-page-bg, linear-gradient(180deg, #0a1f44, #003893, #0a1f44)) !important;
   overflow-x: hidden;
 }
 
@@ -4371,7 +4366,7 @@ body[data-page*='admin'] details > div {
 }
 
 /* =====================================================
-   AQUIVIVO Ã¢â‚¬â€ Brand Rules Patch (v1.0.1)
+   AQUIVIVO ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Brand Rules Patch (v1.0.1)
    PURPOSE: Apply Colombia palette (blue/yellow/red) across UI
    WITHOUT changing the page background you already have.
    - Strong, readable accents (not pastel/minimal)
@@ -4412,7 +4407,7 @@ body {
   color: #eaf0ff;
 }
 
-/* --- Typography emphasis (autorytet + czytelnoÃ…â€ºÃ„â€¡) --- */
+/* --- Typography emphasis (autorytet + czytelnoÃƒâ€¦Ã¢â‚¬ÂºÃƒâ€žÃ¢â‚¬Â¡) --- */
 h1,
 h2,
 h3 {
@@ -4714,7 +4709,7 @@ h3 {
   position: relative;
 }
 .method-list .check::before {
-  content: 'âœ“';
+  content: '\2714';
 }
 .method-card--yellow {
   background: #fcd116;
@@ -5132,7 +5127,7 @@ h3 {
   color: var(--av-blue-ink);
 }
 
-/* Slight Ã¢â‚¬Å“glassÃ¢â‚¬Â cards on blue backgrounds (for feature rows etc.) */
+/* Slight ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œglassÃƒÂ¢Ã¢â€šÂ¬Ã‚Â cards on blue backgrounds (for feature rows etc.) */
 .featureCard,
 .hero-card {
   border-radius: var(--av-radius-xl);
@@ -5280,7 +5275,7 @@ select:focus {
 }
 
 /* =====================================================
-   COURSE TILES (espanel) Ã¢â‚¬â€ STRONG level colors
+   COURSE TILES (espanel) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â STRONG level colors
    uses: data-levels="A1,A2" / "B1" / "B2"
    ===================================================== */
 .courseCard {
@@ -7604,7 +7599,7 @@ body.with-side-panel[data-page='ejercicio'] .side-panel {
   z-index: 35;
 }
 
-/* Narrower content blocks (prevents â€œfull width stretchedâ€ look) */
+/* Narrower content blocks (prevents Ã¢â‚¬Å“full width stretchedÃ¢â‚¬Â look) */
 @media (min-width: 981px) {
   body.with-side-panel[data-page='profile'] .profile-main {
     max-width: 1120px;
