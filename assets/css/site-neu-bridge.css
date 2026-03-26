@@ -1,0 +1,329 @@
+/* App-style bridge for public pages in /site */
+
+body[data-page='index'],
+body[data-page='services'],
+body[data-page='ayuda'],
+body[data-page='contacto'],
+body[data-page='login'],
+body[data-page='privacy'],
+body[data-page='terms'],
+body[data-page='returns'] {
+  font-family:
+    var(--neu-font-main, 'Sora'),
+    'Segoe UI Emoji',
+    'Noto Color Emoji',
+    'Apple Color Emoji',
+    system-ui,
+    sans-serif;
+  color: var(--neu-text, #e6ecff);
+  background:
+    radial-gradient(
+      1100px 560px at 16% -8%,
+      rgba(0, 56, 147, 0.34),
+      transparent 62%
+    ),
+    radial-gradient(
+      900px 520px at 92% 10%,
+      rgba(252, 209, 22, 0.14),
+      transparent 58%
+    ),
+    linear-gradient(180deg, #08193a, #0a214d 55%, #08193a);
+}
+
+body[data-page='index'] .container,
+body[data-page='services'] .container,
+body[data-page='ayuda'] .container,
+body[data-page='contacto'] .container,
+body[data-page='login'] .container,
+body[data-page='privacy'] .container,
+body[data-page='terms'] .container,
+body[data-page='returns'] .container {
+  width: min(var(--neu-shell-max-width, 1180px), calc(100% - 32px));
+  max-width: none;
+  margin: 0 auto;
+  padding: 0;
+}
+
+body[data-page='index'] main.page,
+body[data-page='services'] main.page,
+body[data-page='ayuda'] main.page,
+body[data-page='contacto'] main.page,
+body[data-page='login'] main.page,
+body[data-page='privacy'] main.page,
+body[data-page='terms'] main.page,
+body[data-page='returns'] main.page {
+  padding: 36px 0 84px;
+}
+
+body[data-page='index'] h1,
+body[data-page='index'] h2,
+body[data-page='index'] h3,
+body[data-page='services'] h1,
+body[data-page='services'] h2,
+body[data-page='services'] h3,
+body[data-page='ayuda'] h1,
+body[data-page='ayuda'] h2,
+body[data-page='ayuda'] h3,
+body[data-page='contacto'] h1,
+body[data-page='contacto'] h2,
+body[data-page='contacto'] h3,
+body[data-page='login'] h1,
+body[data-page='login'] h2,
+body[data-page='login'] h3,
+body[data-page='privacy'] h1,
+body[data-page='privacy'] h2,
+body[data-page='privacy'] h3,
+body[data-page='terms'] h1,
+body[data-page='terms'] h2,
+body[data-page='terms'] h3,
+body[data-page='returns'] h1,
+body[data-page='returns'] h2,
+body[data-page='returns'] h3,
+body[data-page='index'] .sectionTitle,
+body[data-page='services'] .sectionTitle,
+body[data-page='ayuda'] .sectionTitle,
+body[data-page='contacto'] .sectionTitle,
+body[data-page='privacy'] .sectionTitle,
+body[data-page='terms'] .sectionTitle,
+body[data-page='returns'] .sectionTitle,
+body[data-page='index'] .glow-text,
+body[data-page='services'] .glow-text,
+body[data-page='ayuda'] .glow-text,
+body[data-page='contacto'] .glow-text,
+body[data-page='login'] .glow-text,
+body[data-page='privacy'] .glow-text,
+body[data-page='terms'] .glow-text,
+body[data-page='returns'] .glow-text {
+  color: var(--neu-text, #e6ecff);
+}
+
+body[data-page='index'] .subtitle,
+body[data-page='services'] .subtitle,
+body[data-page='ayuda'] .subtitle,
+body[data-page='contacto'] .subtitle,
+body[data-page='login'] .subtitle,
+body[data-page='privacy'] .subtitle,
+body[data-page='terms'] .subtitle,
+body[data-page='returns'] .subtitle,
+body[data-page='index'] .muted,
+body[data-page='services'] .muted,
+body[data-page='ayuda'] .muted,
+body[data-page='contacto'] .muted,
+body[data-page='login'] .muted,
+body[data-page='privacy'] .muted,
+body[data-page='terms'] .muted,
+body[data-page='returns'] .muted,
+body[data-page='index'] .hintSmall,
+body[data-page='services'] .hintSmall,
+body[data-page='ayuda'] .hintSmall,
+body[data-page='contacto'] .hintSmall,
+body[data-page='login'] .hintSmall,
+body[data-page='privacy'] .hintSmall,
+body[data-page='terms'] .hintSmall,
+body[data-page='returns'] .hintSmall {
+  color: var(--neu-text-soft, rgba(230, 236, 255, 0.82));
+}
+
+body[data-page='index'] a,
+body[data-page='services'] a,
+body[data-page='ayuda'] a,
+body[data-page='contacto'] a,
+body[data-page='login'] a,
+body[data-page='privacy'] a,
+body[data-page='terms'] a,
+body[data-page='returns'] a {
+  color: inherit;
+}
+
+body[data-page='index'] .card,
+body[data-page='services'] .card,
+body[data-page='ayuda'] .card,
+body[data-page='contacto'] .card,
+body[data-page='privacy'] .card,
+body[data-page='terms'] .card,
+body[data-page='returns'] .card,
+body[data-page='index'] .contactFormCard,
+body[data-page='login'] .hero-card,
+body[data-page='login'] .form-card {
+  border: 1px solid var(--neu-glass-border, rgba(255, 255, 255, 0.2));
+  background: linear-gradient(160deg, rgba(16, 42, 92, 0.74), rgba(8, 24, 57, 0.9));
+  box-shadow: var(--neu-shadow, 0 16px 38px rgba(2, 12, 33, 0.34));
+  border-radius: var(--neu-radius-card, 20px);
+  backdrop-filter: blur(var(--glass-blur, 14px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 14px));
+}
+
+body[data-page='index'] .featureCard,
+body[data-page='index'] .method-card,
+body[data-page='index'] .services-plus-card {
+  border-radius: var(--neu-radius-card, 20px);
+  box-shadow: var(--neu-shadow, 0 16px 38px rgba(2, 12, 33, 0.34));
+}
+
+body[data-page='index'] .btn-yellow,
+body[data-page='services'] .btn-yellow,
+body[data-page='ayuda'] .btn-yellow,
+body[data-page='contacto'] .btn-yellow,
+body[data-page='login'] .btn-yellow,
+body[data-page='privacy'] .btn-yellow,
+body[data-page='terms'] .btn-yellow,
+body[data-page='returns'] .btn-yellow,
+body[data-page='index'] .contactBtn,
+body[data-page='index'] .sp-btn.sp-btn-yellow {
+  border: 1px solid rgba(252, 209, 22, 0.6);
+  background: linear-gradient(180deg, rgba(252, 209, 22, 0.98), rgba(231, 186, 0, 0.96));
+  color: #102a5c;
+  box-shadow: 0 10px 22px rgba(252, 209, 22, 0.22);
+}
+
+body[data-page='index'] .btn-white-outline,
+body[data-page='services'] .btn-white-outline,
+body[data-page='ayuda'] .btn-white-outline,
+body[data-page='contacto'] .btn-white-outline,
+body[data-page='login'] .btn-white-outline,
+body[data-page='privacy'] .btn-white-outline,
+body[data-page='terms'] .btn-white-outline,
+body[data-page='returns'] .btn-white-outline,
+body[data-page='index'] .sp-btn.sp-btn-red {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--neu-text, #e6ecff);
+}
+
+body[data-page='index'] .btn-yellow:hover,
+body[data-page='services'] .btn-yellow:hover,
+body[data-page='ayuda'] .btn-yellow:hover,
+body[data-page='contacto'] .btn-yellow:hover,
+body[data-page='login'] .btn-yellow:hover,
+body[data-page='privacy'] .btn-yellow:hover,
+body[data-page='terms'] .btn-yellow:hover,
+body[data-page='returns'] .btn-yellow:hover,
+body[data-page='index'] .btn-white-outline:hover,
+body[data-page='services'] .btn-white-outline:hover,
+body[data-page='ayuda'] .btn-white-outline:hover,
+body[data-page='contacto'] .btn-white-outline:hover,
+body[data-page='login'] .btn-white-outline:hover,
+body[data-page='privacy'] .btn-white-outline:hover,
+body[data-page='terms'] .btn-white-outline:hover,
+body[data-page='returns'] .btn-white-outline:hover,
+body[data-page='index'] .contactBtn:hover,
+body[data-page='index'] .sp-btn:hover {
+  transform: translateY(-1px);
+}
+
+body[data-page='index'] .contactFormCard input,
+body[data-page='index'] .contactFormCard textarea,
+body[data-page='login'] .input {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--neu-text, #e6ecff);
+}
+
+body[data-page='index'] .contactFormCard input::placeholder,
+body[data-page='index'] .contactFormCard textarea::placeholder,
+body[data-page='login'] .input::placeholder {
+  color: rgba(230, 236, 255, 0.64);
+}
+
+body[data-page='index'] .contactFormCard input:focus,
+body[data-page='index'] .contactFormCard textarea:focus,
+body[data-page='login'] .input:focus {
+  border-color: rgba(143, 179, 255, 0.62);
+  box-shadow: 0 0 0 3px rgba(143, 179, 255, 0.16);
+  outline: 0;
+}
+
+body[data-page='index'] .section-wide-inner {
+  width: min(var(--neu-shell-max-width, 1180px), calc(100% - 32px));
+}
+
+body[data-page='services'] .servicesTopGrid {
+  gap: 16px;
+}
+
+body[data-page='services'] .services-section {
+  margin-top: 20px;
+}
+
+body[data-page='services'] .services-grid > .card,
+body[data-page='services'] .service-card,
+body[data-page='services'] .plan-card {
+  border-radius: var(--neu-radius-card, 20px);
+}
+
+body[data-page='services'] .consentDetails {
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 10px;
+}
+
+body[data-page='privacy'] .card ul,
+body[data-page='terms'] .card ul,
+body[data-page='returns'] .card ul {
+  margin-top: 10px;
+  margin-bottom: 0;
+  padding-left: 20px;
+}
+
+body[data-page='privacy'] .card li,
+body[data-page='terms'] .card li,
+body[data-page='returns'] .card li {
+  margin-bottom: 8px;
+}
+
+body[data-page='returns'] .detailsCard summary {
+  cursor: pointer;
+}
+
+body[data-page='login'] .hero-card,
+body[data-page='login'] .form-card {
+  color: var(--neu-text, #e6ecff) !important;
+}
+
+body[data-page='login'] .form-sub,
+body[data-page='login'] .hint,
+body[data-page='login'] .msg {
+  color: var(--neu-text-soft, rgba(230, 236, 255, 0.82)) !important;
+}
+
+body[data-page='login'] .field label {
+  color: var(--neu-text, #e6ecff) !important;
+}
+
+body[data-page='login'] .reset-link {
+  color: var(--neu-accent-yellow, #fcd116) !important;
+}
+
+body[data-page='services'] input[type='checkbox'],
+body[data-page='index'] input[type='checkbox'],
+body[data-page='login'] input[type='checkbox'],
+body[data-page='login'] input[type='radio'] {
+  accent-color: var(--neu-accent-yellow, #fcd116);
+}
+
+@media (max-width: 900px) {
+  body[data-page='index'] main.page,
+  body[data-page='services'] main.page,
+  body[data-page='ayuda'] main.page,
+  body[data-page='contacto'] main.page,
+  body[data-page='login'] main.page,
+  body[data-page='privacy'] main.page,
+  body[data-page='terms'] main.page,
+  body[data-page='returns'] main.page {
+    padding: 26px 0 64px;
+  }
+
+  body[data-page='index'] .container,
+  body[data-page='services'] .container,
+  body[data-page='ayuda'] .container,
+  body[data-page='contacto'] .container,
+  body[data-page='login'] .container,
+  body[data-page='privacy'] .container,
+  body[data-page='terms'] .container,
+  body[data-page='returns'] .container,
+  body[data-page='index'] .section-wide-inner {
+    width: min(var(--neu-shell-max-width, 1180px), calc(100% - 20px));
+  }
+}
+
