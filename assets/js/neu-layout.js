@@ -1,10 +1,10 @@
 import { auth, db } from './neu-firebase-init.js';
 import { getNeuLoginPath, getNeuSocialAppPath, withNeuQuery } from './neu-paths.js';
+import './mini-chat-bootstrap.js?v=20260326h1';
 import {
   onAuthStateChanged,
   signOut,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 window.__NEU_LAYOUT_HANDLES_LOGOUT__ = true;
 
@@ -41,6 +41,22 @@ const headerProfileSnapshot = {
 };
 const headerProfileCache = new Map();
 let headerProfileFetchToken = 0;
+let firestoreHelpersPromise = null;
+
+async function loadFirestoreHelpers() {
+  if (!firestoreHelpersPromise) {
+    firestoreHelpersPromise = import('https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js')
+      .then((mod) => ({
+        doc: mod?.doc,
+        getDoc: mod?.getDoc,
+      }))
+      .catch((error) => {
+        console.warn('[neu-layout] firestore helper import failed', error);
+        return null;
+      });
+  }
+  return firestoreHelpersPromise;
+}
 
 function isNeuLoginPage() {
   return document.body?.classList?.contains('neu-auth-page') === true;
@@ -186,8 +202,13 @@ async function readHeaderProfileSnapshot(user) {
   if (!uid) return null;
   if (headerProfileCache.has(uid)) return headerProfileCache.get(uid);
 
+  const firestoreHelpers = await loadFirestoreHelpers();
+  const docRef = firestoreHelpers?.doc;
+  const getDocRef = firestoreHelpers?.getDoc;
+  if (typeof docRef !== 'function' || typeof getDocRef !== 'function') return null;
+
   try {
-    const profileSnap = await getDoc(doc(db, NEU_USERS_COLLECTION, uid));
+    const profileSnap = await getDocRef(docRef(db, NEU_USERS_COLLECTION, uid));
     if (!profileSnap.exists()) {
       headerProfileCache.set(uid, null);
       return null;
@@ -237,6 +258,7 @@ function currentRoute() {
   return {
     portal: String(params.get('portal') || 'feed').trim().toLowerCase() || 'feed',
     profile: String(params.get('profile') || '').trim().toLowerCase(),
+    tab: String(params.get('tab') || '').trim().toLowerCase(),
     hash: String(location.hash || '').trim().replace(/^#/, '').toLowerCase(),
   };
 }
@@ -268,12 +290,16 @@ function activeAttr(active) {
 
 function isPulseMessagesActive() {
   const route = currentRoute();
-  return route.portal === 'pulse' && route.hash !== 'pulsenotifications';
+  if (route.portal !== 'pulse') return false;
+  if (route.tab) return route.tab !== 'notifications';
+  return route.hash !== 'pulsenotifications';
 }
 
 function isPulseNotificationsActive() {
   const route = currentRoute();
-  return route.portal === 'pulse' && route.hash === 'pulsenotifications';
+  if (route.portal !== 'pulse') return false;
+  if (route.tab) return route.tab === 'notifications';
+  return route.hash === 'pulsenotifications';
 }
 
 function buildHeader(user) {
@@ -294,8 +320,8 @@ function buildHeader(user) {
   const loginPath = getNeuLoginPath();
   const feedHref = appHref({ portal: 'feed' });
   const pulseHref = appHref({ portal: 'pulse' });
-  const pulseMessagesHref = `${pulseHref}#neuInboxList`;
-  const pulseNotificationsHref = `${pulseHref}#pulseNotifications`;
+  const pulseMessagesHref = appHref({ portal: 'pulse', tab: 'messages' });
+  const pulseNotificationsHref = appHref({ portal: 'pulse', tab: 'notifications' });
   const profileHref = appHref({ profile: 'me' });
   const networkHref = appHref({ portal: 'network' });
   const storiesHref = appHref({ portal: 'stories' });
@@ -435,25 +461,49 @@ function buildHeader(user) {
 }
 
 function buildFooter() {
-  const feedHref = appHref({ portal: 'feed' });
-  const pulseHref = appHref({ portal: 'pulse' });
-  const networkHref = appHref({ portal: 'network' });
-  const profileHref = appHref({ profile: 'me' });
+  const privacyHref = '/app/legal/polityka-prywatnosci.html';
+  const termsHref = '/app/legal/regulamin.html';
+  const returnsHref = '/app/legal/zwroty.html';
+  const helpHref = '/app/legal/ayuda.html';
   return `
     <footer class="site-footer neu-shell-footer">
       <div class="nav-line nav-line-above"></div>
       <div class="footer-inner container">
         <div class="footer-left">&copy; 2026 AquiVivo / NEU</div>
         <div class="footer-center">Conecta, comparte y conversa en un solo lugar.</div>
-        <nav class="footer-nav" aria-label="Enlaces de la app">
-          <a href="${feedHref}">Feed</a>
-          <a href="${pulseHref}">Pulse</a>
-          <a href="${networkHref}">Red</a>
-          <a href="${profileHref}">Perfil</a>
+        <nav class="footer-nav" aria-label="Enlaces legales">
+          <a href="${privacyHref}">Privacidad</a>
+          <a href="${termsHref}">Terminos</a>
+          <a href="${returnsHref}">Devoluciones</a>
+          <a href="${helpHref}">Ayuda</a>
         </nav>
       </div>
     </footer>
   `;
+}
+
+function enforceLegalFooterLinks() {
+  const nav = document.querySelector('#appFooter .footer-nav');
+  if (!(nav instanceof HTMLElement)) return;
+
+  const legalLinks = [
+    { label: 'Privacidad', href: '/app/legal/polityka-prywatnosci.html' },
+    { label: 'Terminos', href: '/app/legal/regulamin.html' },
+    { label: 'Devoluciones', href: '/app/legal/zwroty.html' },
+    { label: 'Ayuda', href: '/app/legal/ayuda.html' },
+  ];
+  const legacyLabels = new Set(['feed', 'pulse', 'red', 'perfil']);
+  const existingLinks = Array.from(nav.querySelectorAll('a'));
+  const hasLegacy =
+    existingLinks.length !== legalLinks.length ||
+    existingLinks.some((anchor) => legacyLabels.has(String(anchor.textContent || '').trim().toLowerCase()));
+
+  if (!hasLegacy) return;
+
+  nav.setAttribute('aria-label', 'Enlaces legales');
+  nav.innerHTML = legalLinks
+    .map(({ label, href }) => `<a href="${href}">${label}</a>`)
+    .join('');
 }
 
 function closeProfileMenu() {
@@ -639,13 +689,46 @@ function wireHeaderBadgeBridge() {
 
 function render(user) {
   ensureLayoutMounts();
-  if (headerMount) headerMount.innerHTML = buildHeader(user);
-  if (footerMount) footerMount.innerHTML = buildFooter();
+  if (headerMount) {
+    try {
+      headerMount.innerHTML = buildHeader(user);
+    } catch (error) {
+      console.error('[neu-layout] header render failed', error);
+      headerMount.innerHTML = `
+        <header class="topbar nav-glass neu-shell-header">
+          <div class="nav-inner container">
+            <a class="brand neu-brand" href="/app/index.html" aria-label="NEU Social App">
+              <img src="assets/img/logo.png" alt="AquiVivo" />
+              <span class="neu-brand-copy">
+                <strong>NEU</strong>
+                <small>Social App</small>
+              </span>
+            </a>
+            <div class="nav-actions">
+              <a class="btn-yellow" href="${getNeuLoginPath()}">Entrar</a>
+            </div>
+          </div>
+          <div class="nav-line nav-line-below"></div>
+        </header>
+      `;
+    }
+  }
+  if (footerMount) {
+    try {
+      footerMount.innerHTML = buildFooter();
+    } catch (error) {
+      console.error('[neu-layout] footer render failed', error);
+      footerMount.innerHTML = '';
+    }
+  }
   syncHeaderBadges();
   wireHeaderInteractions();
   wireLogout();
   wireHeaderBadgeBridge();
   wireNotificationBadgeObserver();
+  enforceLegalFooterLinks();
+  window.setTimeout(enforceLegalFooterLinks, 0);
+  window.setTimeout(enforceLegalFooterLinks, 260);
 }
 
 function init() {

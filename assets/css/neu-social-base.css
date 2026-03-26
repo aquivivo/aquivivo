@@ -1023,10 +1023,6 @@ body.fusion-profile .is-hidden {
   body.fusion-profile .fusion-main {
     grid-template-columns: minmax(0, 640px);
   }
-
-  body.fusion-profile .fusion-right-mini {
-    display: none;
-  }
 }
 
 @media (max-width: 760px) {

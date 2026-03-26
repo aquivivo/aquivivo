@@ -50,6 +50,23 @@ body.neu-social-app textarea {
   flex: 0 0 auto;
 }
 
+#appHeader {
+  z-index: 999;
+}
+
+body.neu-social-app #appHeader {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1200;
+}
+
+body.neu-social-app #appHeader .neu-shell-header {
+  position: relative;
+  top: auto;
+}
+
 .page {
   width: 100%;
   flex: 1 0 auto;

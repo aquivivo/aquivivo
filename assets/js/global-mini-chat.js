@@ -33,7 +33,7 @@ import {
   getConversationTitle,
   initials,
   maybeDate,
-} from './chat-dom.js';
+} from './chat-dom.js?v=20260326h1';
 import { createMiniChatFirestoreController, normalizeMessage } from './chat-firestore.js?v=20260313chatfix5';
 import { getNeuSocialAppPath, withNeuQuery } from './neu-paths.js';
 import { createMiniChatReactionController } from './chat-reactions.js?v=20260313chatfix5';

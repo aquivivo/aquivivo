@@ -14,6 +14,7 @@ import { storyState } from '../neu/state/story.state.js';
 let booted = false;
 let globalsExposed = false;
 let hashFocusWired = false;
+const LEGACY_SCROLL_HASHES = new Set(['neuinboxlist', 'pulsenotifications']);
 
 function exposeRuntimeGlobals() {
   if (globalsExposed) return;
@@ -54,6 +55,7 @@ function exposeRuntimeGlobals() {
 function focusHashTarget({ smooth = true } = {}) {
   const targetId = String(location.hash || '').trim().replace(/^#/, '');
   if (!targetId) return;
+  if (LEGACY_SCROLL_HASHES.has(targetId.toLowerCase())) return;
 
   const target = document.getElementById(targetId);
   if (!(target instanceof HTMLElement)) return;
@@ -75,10 +77,21 @@ function wireHashFocus() {
   });
 }
 
+function sanitizeLegacyScrollHash() {
+  const targetId = String(location.hash || '').trim().replace(/^#/, '').toLowerCase();
+  if (!LEGACY_SCROLL_HASHES.has(targetId)) return;
+
+  const url = new URL(location.href);
+  url.hash = '';
+  history.replaceState(null, '', `${url.pathname}${url.search}`);
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
 async function boot() {
   exposeRuntimeGlobals();
   if (booted) return;
   booted = true;
+  sanitizeLegacyScrollHash();
   await initNeuApp();
   wireHashFocus();
   focusHashTarget({ smooth: false });

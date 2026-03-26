@@ -1,3 +1,8 @@
+/* Disable legacy floating NEU chat launcher; mini-chat-v4 is the single source. */
+#neuChatFloatFlag {
+  display: none !important;
+}
+
 body.fusion-profile.neu-social-app .neuInboxList .mini-chat-v4-empty,
 body.fusion-profile.neu-social-app .mini-chat-v4-thread-view--page .mini-chat-v4-empty {
   padding: 18px;
@@ -851,7 +856,7 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 {
   --mini-chat-v4-panel-z: 3000;
   position: fixed;
   right: 20px;
-  bottom: 92px;
+  bottom: 20px;
   z-index: var(--mini-chat-v4-panel-z, 3000);
   pointer-events: none;
   display: flex;
@@ -1155,13 +1160,13 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 [hidden] {
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher {
-  width: 62px;
-  height: 62px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: linear-gradient(180deg, #2f6be5, #224fb9);
-  box-shadow: 0 22px 40px rgba(6, 17, 49, 0.54);
-  color: #ffffff;
+  width: 86px;
+  height: 86px;
+  border-radius: 20px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1171,14 +1176,29 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-la
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher-icon {
-  font-size: 22px;
-  line-height: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 16px 26px rgba(6, 17, 49, 0.54));
+  transform-origin: 50% 70%;
+  transition: transform 140ms ease;
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:hover .mini-chat-v4-launcher-icon,
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:focus-visible .mini-chat-v4-launcher-icon {
+  transform: translateY(-1px) scale(1.03);
+}
+
+body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:focus-visible {
+  outline: 2px solid rgba(252, 209, 22, 0.64);
+  outline-offset: 2px;
 }
 
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 6px;
+  right: 6px;
   min-width: 20px;
   height: 20px;
   border-radius: 999px;
@@ -1196,7 +1216,7 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-ba
 body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-panel {
   position: fixed;
   right: 20px;
-  bottom: 162px;
+  bottom: 108px;
   z-index: var(--mini-chat-v4-panel-z, 3000);
   width: 378px;
   height: min(578px, calc(100vh - 164px));
@@ -1565,14 +1585,14 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-op
 @media (max-width: 900px) {
   body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 {
     right: 14px;
-    bottom: 84px;
+    bottom: 16px;
   }
 
   body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-panel {
     right: 14px;
     left: 14px;
     width: auto;
-    bottom: 154px;
+    bottom: 108px;
     height: min(500px, calc(100vh - 176px));
   }
 
@@ -1584,5 +1604,34 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-op
   body.fusion-profile.neu-social-app .mini-chat-v4-tray {
     right: 14px;
     bottom: 16px;
+  }
+}
+
+/* Unified anchor: enforce identical mini-chat position across pages. */
+:root {
+  --mini-chat-anchor-right: 20px;
+  --mini-chat-anchor-bottom: 20px;
+  --mini-chat-panel-bottom: 108px;
+}
+
+#miniChatDock.mini-chat-dock.mini-chat-v4 {
+  right: var(--mini-chat-anchor-right) !important;
+  bottom: var(--mini-chat-anchor-bottom) !important;
+}
+
+#miniChatDock.mini-chat-dock.mini-chat-v4 #miniChatPanel.mini-chat-v4-panel {
+  right: var(--mini-chat-anchor-right) !important;
+  bottom: var(--mini-chat-panel-bottom) !important;
+}
+
+#miniChatTray.mini-chat-v4-tray {
+  right: var(--mini-chat-anchor-right) !important;
+  bottom: var(--mini-chat-anchor-bottom) !important;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --mini-chat-anchor-right: 14px;
+    --mini-chat-anchor-bottom: 16px;
   }
 }

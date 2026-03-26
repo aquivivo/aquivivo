@@ -1,6 +1,6 @@
 // Compatibility bridge for neu-app.boot.js.
 // The actual chat runtime lives in ../../global-mini-chat.js and the hyphenated chat modules.
-const GLOBAL_MINI_CHAT_MODULE = '../../global-mini-chat.js?v=20260313chatfix5';
+const GLOBAL_MINI_CHAT_MODULE = '../../global-mini-chat.js?v=20260326h1';
 
 async function loadGlobalMiniChat() {
   try {

@@ -1,0 +1,178 @@
+/* Fallback dock styling for pages outside the social-app shell. */
+#neuChatFloatFlag {
+  display: none !important;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 3600;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 [hidden] {
+  display: none !important;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: none;
+  position: relative;
+  padding: 0;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 14px 22px rgba(6, 17, 49, 0.42));
+  transform-origin: 50% 70%;
+  transition: transform 140ms ease;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:hover .mini-chat-v4-launcher-icon,
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:focus-visible .mini-chat-v4-launcher-icon {
+  transform: translateY(-1px) scale(1.03);
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:focus-visible {
+  outline: 2px solid rgba(252, 209, 22, 0.64);
+  outline-offset: 2px;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 2px solid #0f317f;
+  background: #ffd94a;
+  color: #10327f;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 108px;
+  width: min(380px, calc(100vw - 24px));
+  height: min(560px, calc(100vh - 120px));
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(82, 129, 255, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(17, 32, 66, 0.98), rgba(9, 20, 47, 0.99));
+  color: #fff;
+  box-shadow: 0 26px 54px rgba(3, 9, 27, 0.5);
+  overflow: hidden;
+  pointer-events: auto;
+  z-index: 3600;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-list-view,
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-head,
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-search-wrap,
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-list,
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-messages {
+  padding: 10px 12px;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-list,
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-avatar,
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(252, 209, 22, 0.95), rgba(59, 130, 246, 0.82));
+  color: #10295d;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-avatar.has-image,
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-avatar.has-image {
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-row-avatar.has-image img,
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-thread-avatar.has-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) #miniChatThreadRoot {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3650;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) #miniChatThreadRoot .mini-chat-v4-thread-window {
+  pointer-events: auto;
+}

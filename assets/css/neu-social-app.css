@@ -1,4 +1,4 @@
-@import url('./neu-social-base.css');
+@import url('./neu-social-base.css?v=20260326h2');
 
 body.fusion-profile.neu-social-app {
   --fusion-blue: #8fb3ff;
@@ -686,29 +686,12 @@ body.fusion-profile.neu-social-app .portal-screen.is-active {
 }
 
 body.fusion-profile.neu-social-app .profile-tabs {
-  display: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
 }
 
 body.fusion-profile.neu-social-app.neu-profile-route-active .quick-create {
-  display: none !important;
-}
-
-body.fusion-profile.neu-social-app[data-portal='pulse'] .profile-compact,
-body.fusion-profile.neu-social-app[data-portal='pulse'] .stories-row,
-body.fusion-profile.neu-social-app[data-portal='pulse'] .quick-create,
-body.fusion-profile.neu-social-app[data-portal='pulse'] .fusion-right-mini,
-body.fusion-profile.neu-social-app[data-portal='reels'] .profile-compact,
-body.fusion-profile.neu-social-app[data-portal='reels'] .stories-row,
-body.fusion-profile.neu-social-app[data-portal='reels'] .quick-create,
-body.fusion-profile.neu-social-app[data-portal='reels'] .fusion-right-mini,
-body.fusion-profile.neu-social-app[data-portal='stories'] .profile-compact,
-body.fusion-profile.neu-social-app[data-portal='stories'] .stories-row,
-body.fusion-profile.neu-social-app[data-portal='stories'] .quick-create,
-body.fusion-profile.neu-social-app[data-portal='stories'] .fusion-right-mini,
-body.fusion-profile.neu-social-app[data-portal='network'] .profile-compact,
-body.fusion-profile.neu-social-app[data-portal='network'] .stories-row,
-body.fusion-profile.neu-social-app[data-portal='network'] .quick-create,
-body.fusion-profile.neu-social-app[data-portal='network'] .fusion-right-mini {
   display: none !important;
 }
 
@@ -3753,29 +3736,40 @@ body.fusion-profile.neu-social-app .neuDockThreadEmpty {
   position: fixed;
   right: 20px;
   bottom: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: linear-gradient(165deg, rgba(26, 72, 156, 0.98), rgba(18, 52, 116, 0.96));
-  color: #fff;
-  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.42);
+  width: 84px;
+  height: 84px;
+  border-radius: 20px;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  box-shadow: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 18;
-  transition: transform 120ms ease, box-shadow 140ms ease;
+  transition: transform 120ms ease;
+  padding: 0;
 }
 
 #neuChatFloatFlag.hidden {
   display: none;
 }
 
+/* Legacy NEU floating chat button disabled: mini-chat-v4 is the single launcher. */
+body.fusion-profile.neu-social-app #neuChatFloatFlag {
+  display: none !important;
+}
+
 #neuChatFloatFlag::before {
-  content: '??';
-  font-size: 22px;
-  line-height: 1;
+  content: '';
+  width: 100%;
+  height: 100%;
+  background-image: url('/assets/img/coffee.png');
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  filter: drop-shadow(0 16px 26px rgba(6, 17, 49, 0.48));
 }
 
 #neuChatFloatFlag .neu-chat-float-label {
@@ -3783,8 +3777,7 @@ body.fusion-profile.neu-social-app .neuDockThreadEmpty {
 }
 
 #neuChatFloatFlag:hover {
-  transform: scale(1.04);
-  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.5);
+  transform: translateY(-1px) scale(1.03);
 }
 
 #neuChatFloatFlag:active {
@@ -3793,8 +3786,8 @@ body.fusion-profile.neu-social-app .neuDockThreadEmpty {
 
 #neuChatFloatBadge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 6px;
+  right: 6px;
   min-width: 20px;
   height: 20px;
   padding: 0 6px;

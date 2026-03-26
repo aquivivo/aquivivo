@@ -343,7 +343,13 @@ export function buildInboxThreadMarkup() {
 export function buildDockMarkup() {
   return `
     <button class="mini-chat-v4-launcher" id="miniChatLauncher" type="button" aria-label="Mensajes">
-      <span class="mini-chat-v4-launcher-icon" aria-hidden="true">&#128172;</span>
+      <img
+        class="mini-chat-v4-launcher-icon mini-chat-v4-launcher-icon--cup"
+        src="/assets/img/coffee.png"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+      />
       <span class="mini-chat-v4-badge" id="miniChatBadge" style="display:none;">0</span>
     </button>
 
