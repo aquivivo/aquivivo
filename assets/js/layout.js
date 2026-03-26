@@ -1,5 +1,4 @@
 const PUBLIC_PAGES = new Set([
-  'index',
   'services',
   'ayuda',
   'contacto',
@@ -7,6 +6,33 @@ const PUBLIC_PAGES = new Set([
   'terms',
   'returns',
 ]);
+const PAGE_ALIASES = {
+  kontakt: 'contacto',
+  'polityka-prywatnosci': 'privacy',
+  regulamin: 'terms',
+  zwroty: 'returns',
+};
+
+function pageFromPathname() {
+  const raw = String(location.pathname || '').trim().toLowerCase();
+  const file = raw.split('/').pop() || '';
+  if (!file) return '';
+  return file.replace(/\.html$/, '');
+}
+
+function normalizePageKey(value) {
+  const key = String(value || '').trim().toLowerCase();
+  if (!key) return '';
+  return PAGE_ALIASES[key] || key;
+}
+
+function currentPageKey() {
+  const fromDataset = normalizePageKey(document.body?.dataset?.page || '');
+  if (fromDataset) return fromDataset;
+  const fromPath = normalizePageKey(pageFromPathname());
+  if (fromPath) return fromPath;
+  return '';
+}
 
 function esc(value) {
   return String(value ?? '')
@@ -64,18 +90,17 @@ function renderPublicFooter() {
 
 async function bootstrapLayout() {
   const body = document.body;
-  const page = String(body?.dataset?.page || '').trim().toLowerCase();
+  const page = currentPageKey();
   const isNeuPage =
     body?.classList?.contains('neu-social-app') ||
     body?.classList?.contains('neu-auth-page');
 
   if (!isNeuPage && PUBLIC_PAGES.has(page)) {
-    renderPublicHeader(page);
-    renderPublicFooter();
+    await import('./neu-layout.js?v=20260326x');
     return;
   }
 
-  await import('./neu-layout.js');
+  await import('./neu-layout.js?v=20260326x');
 }
 
 bootstrapLayout();

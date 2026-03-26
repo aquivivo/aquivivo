@@ -259,6 +259,7 @@ textarea:focus {
   font-weight: 800;
   cursor: pointer;
   padding: 0;
+  overflow: hidden;
 }
 
 #navProfileToggle img,
@@ -267,6 +268,7 @@ textarea:focus {
   height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: inherit;
 }
 
 #navProfileToggle span,
@@ -434,6 +436,51 @@ textarea:focus {
   gap: 14px;
   padding: 12px 0;
   flex-wrap: wrap;
+}
+
+/* Single source of truth for shell geometry on every app page */
+.neu-shell-header.topbar.nav-glass {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: rgba(8, 25, 58, 0.72);
+  box-shadow: 0 16px 34px rgba(2, 12, 33, 0.2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: none;
+}
+
+.neu-shell-header .nav-inner {
+  min-height: 76px;
+  padding: 12px 0;
+  gap: 14px;
+}
+
+.neu-shell-header .brand.neu-brand img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.neu-shell-header .nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.neu-shell-header .nav-line {
+  height: 5px;
+  opacity: 0.95;
+}
+
+.neu-shell-header .nav-line.nav-line-below {
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
 }
 
 .brand.neu-brand {

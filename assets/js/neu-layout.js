@@ -1,14 +1,15 @@
-import { auth } from './neu-firebase-init.js';
+import { auth, db } from './neu-firebase-init.js';
 import { getNeuLoginPath, getNeuSocialAppPath, withNeuQuery } from './neu-paths.js';
 import {
   onAuthStateChanged,
   signOut,
 } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
 window.__NEU_LAYOUT_HANDLES_LOGOUT__ = true;
 
-const headerMount = document.getElementById('appHeader');
-const footerMount = document.getElementById('appFooter');
+let headerMount = document.getElementById('appHeader');
+let footerMount = document.getElementById('appFooter');
 let profileGlobalsBound = false;
 let headerBadgeBridgeBound = false;
 let notificationBadgeObserver = null;
@@ -16,9 +17,58 @@ const headerBadgeState = {
   messages: 0,
   notifications: 0,
 };
+const PUBLIC_MARKETING_PAGES = new Set([
+  'index',
+  'services',
+  'ayuda',
+  'contacto',
+  'privacy',
+  'terms',
+  'returns',
+]);
+const PAGE_ALIASES = {
+  kontakt: 'contacto',
+  'polityka-prywatnosci': 'privacy',
+  regulamin: 'terms',
+  zwroty: 'returns',
+};
+const NEU_USERS_COLLECTION = 'neuUsers';
+const headerProfileSnapshot = {
+  uid: '',
+  avatarUrl: '',
+  displayName: '',
+  handle: '',
+};
+const headerProfileCache = new Map();
+let headerProfileFetchToken = 0;
 
 function isNeuLoginPage() {
   return document.body?.classList?.contains('neu-auth-page') === true;
+}
+
+function pageFromPathname() {
+  const raw = String(location.pathname || '').trim().toLowerCase();
+  const file = raw.split('/').pop() || '';
+  if (!file) return '';
+  return file.replace(/\.html$/, '');
+}
+
+function normalizePageKey(value) {
+  const key = String(value || '').trim().toLowerCase();
+  if (!key) return '';
+  return PAGE_ALIASES[key] || key;
+}
+
+function currentPageKey() {
+  const fromDataset = normalizePageKey(document.body?.dataset?.page || '');
+  if (fromDataset) return fromDataset;
+  const fromPath = normalizePageKey(pageFromPathname());
+  if (fromPath) return fromPath;
+  return '';
+}
+
+function isPublicMarketingPage() {
+  return PUBLIC_MARKETING_PAGES.has(currentPageKey());
 }
 
 function esc(value) {
@@ -28,6 +78,30 @@ function esc(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function ensureLayoutMount(id, position = 'append') {
+  const existing = document.getElementById(id);
+  if (existing instanceof HTMLElement) return existing;
+
+  const body = document.body;
+  if (!(body instanceof HTMLElement)) return null;
+
+  const mount = document.createElement('div');
+  mount.id = id;
+
+  if (position === 'prepend') {
+    body.prepend(mount);
+  } else {
+    body.append(mount);
+  }
+
+  return mount;
+}
+
+function ensureLayoutMounts() {
+  headerMount = ensureLayoutMount('appHeader', 'prepend');
+  footerMount = ensureLayoutMount('appFooter', 'append');
 }
 
 function avatarLetter(label) {
@@ -53,6 +127,91 @@ function handleFor(user) {
 
 function photoUrlFor(user) {
   return String(user?.photoURL || '').trim();
+}
+
+function normalizeProfileHandle(value, fallback = '') {
+  const raw = String(value || '').trim();
+  if (raw) return raw.startsWith('@') ? raw : `@${raw}`;
+  const fallbackRaw = String(fallback || '').trim();
+  if (!fallbackRaw) return '';
+  return fallbackRaw.startsWith('@') ? fallbackRaw : `@${fallbackRaw}`;
+}
+
+function resetHeaderProfileSnapshot() {
+  const hadAnyValue =
+    !!headerProfileSnapshot.uid ||
+    !!headerProfileSnapshot.avatarUrl ||
+    !!headerProfileSnapshot.displayName ||
+    !!headerProfileSnapshot.handle;
+
+  headerProfileSnapshot.uid = '';
+  headerProfileSnapshot.avatarUrl = '';
+  headerProfileSnapshot.displayName = '';
+  headerProfileSnapshot.handle = '';
+  return hadAnyValue;
+}
+
+function applyHeaderProfileSnapshot(user, profileData) {
+  const uid = String(user?.uid || '').trim();
+  if (!uid) return false;
+
+  const nextAvatar = String(
+    profileData?.avatarUrl ||
+    profileData?.avatarURL ||
+    profileData?.photoURL ||
+    profileData?.photoUrl ||
+    profileData?.avatar ||
+    '',
+  ).trim();
+  const nextDisplayName = String(profileData?.displayName || profileData?.name || '').trim();
+  const nextHandle = normalizeProfileHandle(profileData?.handle || profileData?.username || '');
+
+  const changed =
+    headerProfileSnapshot.uid !== uid ||
+    headerProfileSnapshot.avatarUrl !== nextAvatar ||
+    headerProfileSnapshot.displayName !== nextDisplayName ||
+    headerProfileSnapshot.handle !== nextHandle;
+
+  if (!changed) return false;
+
+  headerProfileSnapshot.uid = uid;
+  headerProfileSnapshot.avatarUrl = nextAvatar;
+  headerProfileSnapshot.displayName = nextDisplayName;
+  headerProfileSnapshot.handle = nextHandle;
+  return true;
+}
+
+async function readHeaderProfileSnapshot(user) {
+  const uid = String(user?.uid || '').trim();
+  if (!uid) return null;
+  if (headerProfileCache.has(uid)) return headerProfileCache.get(uid);
+
+  try {
+    const profileSnap = await getDoc(doc(db, NEU_USERS_COLLECTION, uid));
+    if (!profileSnap.exists()) {
+      headerProfileCache.set(uid, null);
+      return null;
+    }
+
+    const data = profileSnap.data() || null;
+    headerProfileCache.set(uid, data);
+    return data;
+  } catch (error) {
+    console.warn('[neu-layout] profile snapshot fetch failed', error);
+    return null;
+  }
+}
+
+async function syncHeaderProfile(user) {
+  const uid = String(user?.uid || '').trim();
+  if (!uid) return;
+
+  const token = ++headerProfileFetchToken;
+  const profileData = await readHeaderProfileSnapshot(user);
+  if (token !== headerProfileFetchToken) return;
+
+  const changed = applyHeaderProfileSnapshot(user, profileData);
+  if (changed) render(user);
 }
 
 function safeBadgeCount(value) {
@@ -119,10 +278,19 @@ function isPulseNotificationsActive() {
 
 function buildHeader(user) {
   const loggedIn = !!user;
-  const displayName = displayNameFor(user);
-  const handle = handleFor(user);
+  const pageKey = currentPageKey();
+  const uid = String(user?.uid || '').trim();
+  const hasProfileSnapshot = !!uid && headerProfileSnapshot.uid === uid;
+  const displayName = hasProfileSnapshot && headerProfileSnapshot.displayName
+    ? headerProfileSnapshot.displayName
+    : displayNameFor(user);
+  const handle = hasProfileSnapshot && headerProfileSnapshot.handle
+    ? normalizeProfileHandle(headerProfileSnapshot.handle)
+    : handleFor(user);
   const letter = avatarLetter(displayName);
-  const photoUrl = photoUrlFor(user);
+  const photoUrl = hasProfileSnapshot && headerProfileSnapshot.avatarUrl
+    ? headerProfileSnapshot.avatarUrl
+    : photoUrlFor(user);
   const loginPath = getNeuLoginPath();
   const feedHref = appHref({ portal: 'feed' });
   const pulseHref = appHref({ portal: 'pulse' });
@@ -132,12 +300,37 @@ function buildHeader(user) {
   const networkHref = appHref({ portal: 'network' });
   const storiesHref = appHref({ portal: 'stories' });
   const reelsHref = appHref({ portal: 'reels' });
+  const publicHomeHref = '/app/index.html';
+
+  if (isPublicMarketingPage() && !loggedIn) {
+    const isHome = pageKey === 'index';
+    return `
+      <header class="topbar nav-glass neu-shell-header">
+        <div class="nav-inner container">
+          <a class="brand neu-brand" href="${publicHomeHref}" aria-label="NEU Social App">
+            <img src="assets/img/logo.png" alt="AquiVivo" />
+            <span class="neu-brand-copy">
+              <strong>NEU</strong>
+              <small>Social App</small>
+            </span>
+          </a>
+
+          <div class="nav-actions" aria-label="Public navigation">
+            <a class="btn-white-outline" href="${publicHomeHref}" ${activeAttr(isHome)}>Inicio</a>
+            <a class="btn-yellow" href="${loginPath}">Iniciar sesion</a>
+          </div>
+        </div>
+
+        <div class="nav-line nav-line-below"></div>
+      </header>
+    `;
+  }
 
   if (isNeuLoginPage()) {
     return `
       <header class="topbar nav-glass neu-shell-header">
         <div class="nav-inner container">
-          <a class="brand neu-brand" href="${feedHref}" aria-label="NEU Social App">
+          <a class="brand neu-brand" href="${publicHomeHref}" aria-label="NEU Social App">
             <img src="assets/img/logo.png" alt="AquiVivo" />
             <span class="neu-brand-copy">
               <strong>NEU</strong>
@@ -159,7 +352,7 @@ function buildHeader(user) {
   return `
     <header class="topbar nav-glass neu-shell-header">
       <div class="nav-inner container">
-        <a class="brand neu-brand" href="${feedHref}" aria-label="NEU Social App">
+        <a class="brand neu-brand" href="${publicHomeHref}" aria-label="NEU Social App">
           <img src="assets/img/logo.png" alt="AquiVivo" />
           <span class="neu-brand-copy">
             <strong>NEU</strong>
@@ -445,6 +638,7 @@ function wireHeaderBadgeBridge() {
 }
 
 function render(user) {
+  ensureLayoutMounts();
   if (headerMount) headerMount.innerHTML = buildHeader(user);
   if (footerMount) footerMount.innerHTML = buildFooter();
   syncHeaderBadges();
@@ -455,9 +649,32 @@ function render(user) {
 }
 
 function init() {
-  render(auth.currentUser || null);
+  const initialUser = auth.currentUser || null;
+  if (!initialUser) {
+    resetHeaderProfileSnapshot();
+  } else if (headerProfileSnapshot.uid && headerProfileSnapshot.uid !== String(initialUser.uid || '').trim()) {
+    resetHeaderProfileSnapshot();
+  }
+  render(initialUser);
+  if (initialUser) {
+    void syncHeaderProfile(initialUser);
+  }
+
   onAuthStateChanged(auth, (user) => {
-    render(user || null);
+    const authUser = user || null;
+    if (!authUser) {
+      headerProfileFetchToken += 1;
+      resetHeaderProfileSnapshot();
+      render(null);
+      return;
+    }
+
+    if (headerProfileSnapshot.uid && headerProfileSnapshot.uid !== String(authUser.uid || '').trim()) {
+      resetHeaderProfileSnapshot();
+    }
+
+    render(authUser);
+    void syncHeaderProfile(authUser);
   });
 }
 
