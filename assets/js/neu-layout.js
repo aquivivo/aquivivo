@@ -1,6 +1,6 @@
 import { auth, db } from './neu-firebase-init.js';
 import { getNeuLoginPath, getNeuSocialAppPath, withNeuQuery } from './neu-paths.js';
-import './mini-chat-bootstrap.js?v=20260326h1';
+import './mini-chat-bootstrap.js?v=20260327b1';
 import {
   onAuthStateChanged,
   signOut,
@@ -766,3 +766,4 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+

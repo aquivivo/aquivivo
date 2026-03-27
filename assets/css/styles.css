@@ -11582,3 +11582,51 @@ body.modal-open {
   }
 }
 
+/* Unified mini-chat anchor and launcher shape across all app pages. */
+:root {
+  --mini-chat-anchor-right: 20px;
+  --mini-chat-anchor-bottom: 20px;
+  --mini-chat-panel-bottom: 108px;
+}
+
+#miniChatDock.mini-chat-dock.mini-chat-v4 {
+  right: var(--mini-chat-anchor-right) !important;
+  bottom: var(--mini-chat-anchor-bottom) !important;
+  align-items: flex-end !important;
+}
+
+#miniChatDock.mini-chat-dock.mini-chat-v4 #miniChatPanel.mini-chat-v4-panel {
+  right: var(--mini-chat-anchor-right) !important;
+  bottom: var(--mini-chat-panel-bottom) !important;
+}
+
+#miniChatTray.mini-chat-v4-tray {
+  right: var(--mini-chat-anchor-right) !important;
+  bottom: var(--mini-chat-anchor-bottom) !important;
+  left: auto !important;
+}
+
+#miniChatDock.mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher {
+  width: 86px !important;
+  height: 86px !important;
+  border-radius: 20px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+#miniChatDock.mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher-icon {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  font-size: inherit !important;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --mini-chat-anchor-right: 14px;
+    --mini-chat-anchor-bottom: 16px;
+  }
+}
+

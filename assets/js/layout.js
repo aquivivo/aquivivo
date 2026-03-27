@@ -96,11 +96,12 @@ async function bootstrapLayout() {
     body?.classList?.contains('neu-auth-page');
 
   if (!isNeuPage && PUBLIC_PAGES.has(page)) {
-    await import('./neu-layout.js?v=20260327a1');
+    await import('./neu-layout.js?v=20260327b1');
     return;
   }
 
-  await import('./neu-layout.js?v=20260327a1');
+  await import('./neu-layout.js?v=20260327b1');
 }
 
 bootstrapLayout();
+
