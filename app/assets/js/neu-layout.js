@@ -272,6 +272,12 @@ function rootedNeuPath(fileName) {
   return `/${String(resolved || '').replace(/^\/+/, '')}`;
 }
 
+function absolutePath(path) {
+  const raw = String(path || '').trim();
+  if (!raw) return '/';
+  return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
+}
+
 function isRouteActive({ portal = '', profile = '' } = {}) {
   if (isNeuLoginPage()) return false;
   const route = currentRoute();
@@ -322,7 +328,7 @@ function buildHeader(user) {
   const photoUrl = hasProfileSnapshot && headerProfileSnapshot.avatarUrl
     ? headerProfileSnapshot.avatarUrl
     : photoUrlFor(user);
-  const loginPath = getNeuLoginPath();
+  const loginPath = absolutePath(getNeuLoginPath());
   const feedHref = appHref({ portal: 'feed' });
   const pulseHref = appHref({ portal: 'pulse' });
   const pulseMessagesHref = appHref({ portal: 'pulse', tab: 'messages' });
@@ -572,7 +578,7 @@ function wireLogout() {
     event.preventDefault();
     try {
       await signOut(auth);
-      location.href = getNeuLoginPath();
+      location.href = absolutePath(getNeuLoginPath());
     } catch (error) {
       console.error('[neu-layout] signOut failed', error);
       window.alert('No se pudo cerrar sesion. Intenta de nuevo.');
@@ -711,7 +717,7 @@ function render(user) {
               </span>
             </a>
             <div class="nav-actions">
-              <a class="btn-yellow" href="${getNeuLoginPath()}">Entrar</a>
+              <a class="btn-yellow" href="${absolutePath(getNeuLoginPath())}">Entrar</a>
             </div>
           </div>
           <div class="nav-line nav-line-below"></div>

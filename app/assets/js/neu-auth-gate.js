@@ -14,7 +14,7 @@ function sanitizeNextTarget(raw, fallback = NEU_DEFAULT_NEXT) {
   if (value.startsWith('http://') || value.startsWith('https://')) return fallback;
   if (value.startsWith('//')) return fallback;
   if (value.includes('..')) return fallback;
-  return value.startsWith('/') ? value.slice(1) : value;
+  return value.startsWith('/') ? value : `/${value}`;
 }
 
 function sanitizeReason(raw, fallback = NEU_DEFAULT_REASON) {

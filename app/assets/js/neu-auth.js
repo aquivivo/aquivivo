@@ -36,7 +36,7 @@ function sanitizeNextTarget(raw) {
   if (value.startsWith('http://') || value.startsWith('https://')) return DEFAULT_NEXT;
   if (value.startsWith('//')) return DEFAULT_NEXT;
   if (value.includes('..')) return DEFAULT_NEXT;
-  return value.startsWith('/') ? value.slice(1) : value;
+  return value.startsWith('/') ? value : `/${value}`;
 }
 
 function getNextTarget() {
@@ -46,6 +46,12 @@ function getNextTarget() {
   } catch {
     return DEFAULT_NEXT;
   }
+}
+
+function getAbsoluteNextTarget() {
+  const target = String(getNextTarget() || '').trim();
+  if (!target) return DEFAULT_NEXT;
+  return target.startsWith('/') ? target : `/${target.replace(/^\/+/, '')}`;
 }
 
 function getReason() {
@@ -206,7 +212,7 @@ async function submitAuth(event) {
     } else {
       await signInWithEmailAndPassword(auth, email, password);
     }
-    location.href = getNextTarget();
+    window.location.href = getAbsoluteNextTarget();
   } catch (error) {
     console.error('[neu-auth] submit failed', error);
     setMessage(mapAuthError(error, state.mode), 'error');
@@ -223,7 +229,7 @@ async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     await signInWithPopup(auth, provider);
-    location.href = getNextTarget();
+    window.location.href = getAbsoluteNextTarget();
   } catch (error) {
     console.error('[neu-auth] google login failed', error);
     setMessage(mapAuthError(error, 'google'), 'error');
@@ -287,7 +293,7 @@ function init() {
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      location.replace(getNextTarget());
+      window.location.replace(getAbsoluteNextTarget());
       return;
     }
     if (getReason() === 'auth') {

@@ -6,6 +6,12 @@ function normalizePathname(pathname = '') {
   return raw.startsWith('/') ? raw : `/${raw}`;
 }
 
+function normalizeAbsolutePath(path = '') {
+  const raw = String(path || '').trim();
+  if (!raw) return '';
+  return `/${raw.replace(/^\/+/, '')}`;
+}
+
 export function isNeuMountedUnderApp(pathname = location.pathname) {
   const normalized = normalizePathname(pathname);
   return normalized === `/${NEU_APP_DIR}` || normalized.startsWith(`/${NEU_APP_DIR}/`);
@@ -14,7 +20,10 @@ export function isNeuMountedUnderApp(pathname = location.pathname) {
 export function getNeuPath(fileName, pathname = location.pathname) {
   const cleanFile = String(fileName || '').trim().replace(/^\/+/, '');
   if (!cleanFile) return '';
-  return isNeuMountedUnderApp(pathname) ? `${NEU_APP_DIR}/${cleanFile}` : cleanFile;
+  const nextPath = isNeuMountedUnderApp(pathname)
+    ? `${NEU_APP_DIR}/${cleanFile}`
+    : cleanFile;
+  return normalizeAbsolutePath(nextPath);
 }
 
 export function getNeuLoginPath(pathname = location.pathname) {
@@ -26,7 +35,7 @@ export function getNeuSocialAppPath(pathname = location.pathname) {
 }
 
 export function withNeuQuery(path, params = {}) {
-  const safePath = String(path || '').trim();
+  const safePath = normalizeAbsolutePath(path);
   if (!safePath) return '';
 
   const qs = new URLSearchParams();
