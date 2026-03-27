@@ -1,4 +1,4 @@
-# Full Site Research – Hard Cleanup Pass (2026-02-20)
+# Full Site Research - Hard Cleanup Pass (2026-02-20)
 
 ## Executed
 1. Removed legacy mini-chat CSS stacks and kept only `v4`.

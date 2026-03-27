@@ -1,4 +1,4 @@
-# Full Site Research – 2026-02-20
+# Full Site Research - 2026-02-20
 
 ## Scope
 - Global QA (links, JS syntax, encoding)
@@ -20,7 +20,7 @@
 
 3. Normalized key user-facing strings to Spanish in runtime pages:
    - `Mensajes/Buscar/Escribe un mensaje...` in mini chat
-   - `Lección`, `Todavía`, `módulo` strings in lesson/exercise/versions/review pages
+   - `Leccion`, `Todavia`, `modulo` strings in lesson/exercise/versions/review pages
    - files:
      - `assets/js/global-mini-chat.js`
      - `assets/js/pages/lessonpage-page.js`

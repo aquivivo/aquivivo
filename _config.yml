@@ -1,0 +1,9 @@
+exclude:
+  - import/
+  - .tmp_codegen/
+  - functions/
+  - .firebase/
+  - firebase-debug.log
+  - tmp-neu-after.png
+  - tmp-neu-safe.png
+  - tmp-neu.png
