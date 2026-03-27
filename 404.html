@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Redirecting...</title>
-    <meta http-equiv="refresh" content="3; url=index.html" />
+    <meta http-equiv="refresh" content="3; url=app/index.html" />
     <style>
       body {
         margin: 0;
@@ -47,24 +47,7 @@
         var path = window.location.pathname || '';
         var base = '';
         if (path.indexOf('/aquivivo/') !== -1) base = '/aquivivo';
-
-        var rel = path;
-        if (base && rel.indexOf(base) === 0) {
-          rel = rel.slice(base.length);
-        }
-
-        var parts = rel.split('/').filter(Boolean);
-        if (parts.length >= 2 && parts[0].toLowerCase() === 'perfil') {
-          var handle = decodeURIComponent(parts[1] || '');
-          if (handle) {
-            var target =
-              base + '/perfil.html?u=' + encodeURIComponent(handle);
-            window.location.replace(target);
-            return;
-          }
-        }
-
-        window.location.replace(base + '/index.html');
+        window.location.replace(base + '/app/index.html');
       })();
     </script>
   </body>
