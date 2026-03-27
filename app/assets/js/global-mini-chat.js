@@ -3233,6 +3233,15 @@ function qRole(role, root = document) {
   return qs(`[data-mini-chat-role="${String(role || '').trim()}"]`, root);
 }
 
+function ensureMountedOnBody(node) {
+  if (!(node instanceof HTMLElement)) return null;
+  if (!(document.body instanceof HTMLBodyElement)) return node;
+  if (node.parentElement !== document.body) {
+    document.body.appendChild(node);
+  }
+  return node;
+}
+
 function composeStateFor(scope = 'panel', thread = null) {
   if (scope === 'thread' && thread && typeof thread === 'object') {
     if (!thread.composeState) thread.composeState = createComposeState();
@@ -4984,7 +4993,7 @@ function ensureThreadRoot() {
   }
 
   let root = document.getElementById('miniChatThreadRoot');
-  if (root) return root;
+  if (root) return ensureMountedOnBody(root);
 
   root = document.createElement('div');
   root.id = 'miniChatThreadRoot';
@@ -4992,7 +5001,7 @@ function ensureThreadRoot() {
   root.style.inset = '0';
   root.style.pointerEvents = 'none';
   root.style.zIndex = '4000';
-  document.body.appendChild(root);
+  ensureMountedOnBody(root);
 
   return root;
 }
@@ -5634,8 +5643,9 @@ function renderTray() {
     tray = document.createElement('div');
     tray.id = 'miniChatTray';
     tray.className = 'mini-chat-v4-tray';
-    document.body.appendChild(tray);
   }
+  tray = ensureMountedOnBody(tray);
+  if (!(tray instanceof HTMLElement)) return;
 
   tray.innerHTML = '';
 
@@ -5786,14 +5796,15 @@ function ensureDock() {
   }
 
   let dock = qs('#miniChatDock');
-  if (dock) return dock;
+  if (dock) return ensureMountedOnBody(dock);
 
   dock = document.createElement('div');
   dock.id = 'miniChatDock';
   dock.className = 'mini-chat-dock mini-chat-v4';
   dock.dataset.miniChatManaged = '1';
   dock.innerHTML = buildDockMarkup();
-  document.body.appendChild(dock);
+  dock = ensureMountedOnBody(dock);
+  if (!(dock instanceof HTMLElement)) return null;
   const panel = qs('#miniChatPanel', dock);
   if (panel instanceof HTMLElement) panel.style.zIndex = String(PANEL_BASE_Z_INDEX);
 

@@ -1,8 +1,8 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>Sample A2 lessons → Firestore (AquiVivo)</title>
+    <title>Sample A2 lessons â†’ Firestore (AquiVivo)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../styles/styles.css?v=20260209" />
     <style>
@@ -38,6 +38,7 @@
         color: var(--ink-muted);
       }
     </style>
+      <link rel="stylesheet" href="../styles/global-chat.css?v=20260327a" />
   </head>
   <body>
     <div
@@ -51,15 +52,15 @@
         margin-bottom: 14px;
       "
     >
-      Sesión activa:
+      SesiÃ³n activa:
       <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
         >Cargando...</strong
       >
     </div>
 
-    <h2>🔧 Sample: 2 lecciones A2 (gramática + ejercicios + fichas)</h2>
+    <h2>ðŸ”§ Sample: 2 lecciones A2 (gramÃ¡tica + ejercicios + fichas)</h2>
     <p>
-      Crea 2 temas demo en <code>courses</code>, su lección en
+      Crea 2 temas demo en <code>courses</code>, su lecciÃ³n en
       <code>course_meta</code> y ejercicios en <code>exercises</code>.
     </p>
     <p class="muted">
@@ -115,13 +116,13 @@
       let IS_ADMIN = false;
 
       onAuthStateChanged(auth, (user) => {
-        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesión)';
+        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesiÃ³n)';
         IS_ADMIN =
           !!user &&
           String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
         if (!IS_ADMIN) {
           log(
-            `❌ Zaloguj się jako admin (${esc(ADMIN_EMAIL)}), potem wróć na tę stronę.`,
+            `âŒ Zaloguj siÄ™ jako admin (${esc(ADMIN_EMAIL)}), potem wrÃ³Ä‡ na tÄ™ stronÄ™.`,
             'err',
           );
         }
@@ -129,51 +130,51 @@
 
       const HTML_CAFE = `
         <h2>Objetivo</h2>
-        <p>Hoy vas a pedir en una cafetería en Polonia con frases naturales.</p>
+        <p>Hoy vas a pedir en una cafeterÃ­a en Polonia con frases naturales.</p>
 
-        <h2>Gramática rápida: <i>Poproszę + biernik</i></h2>
-        <p><b>Poproszę</b> + objeto en <b>biernik</b> (accusativo):</p>
+        <h2>GramÃ¡tica rÃ¡pida: <i>PoproszÄ™ + biernik</i></h2>
+        <p><b>PoproszÄ™</b> + objeto en <b>biernik</b> (accusativo):</p>
         <ul>
-          <li>kawa → <b>kawę</b></li>
-          <li>herbata → <b>herbatę</b></li>
-          <li>woda → <b>wodę</b></li>
+          <li>kawa â†’ <b>kawÄ™</b></li>
+          <li>herbata â†’ <b>herbatÄ™</b></li>
+          <li>woda â†’ <b>wodÄ™</b></li>
         </ul>
 
         <div class="card" style="padding:12px; margin:12px 0;">
           <div style="font-weight:900;">Ejemplo</div>
           <div style="margin-top:6px; line-height:1.6;">
-            <b>PL:</b> Poproszę czarną kawę i sernik.<br/>
-            <b>ES:</b> Quisiera un café solo y un pastel de queso.
+            <b>PL:</b> PoproszÄ™ czarnÄ… kawÄ™ i sernik.<br/>
+            <b>ES:</b> Quisiera un cafÃ© solo y un pastel de queso.
           </div>
         </div>
 
         <h2>Vocabulario clave</h2>
         <ul>
-          <li><b>kawa</b> — café</li>
-          <li><b>herbata</b> — té</li>
-          <li><b>woda niegazowana</b> — agua sin gas</li>
-          <li><b>ciasto</b> — pastel</li>
+          <li><b>kawa</b> â€” cafÃ©</li>
+          <li><b>herbata</b> â€” tÃ©</li>
+          <li><b>woda niegazowana</b> â€” agua sin gas</li>
+          <li><b>ciasto</b> â€” pastel</li>
         </ul>
 
-        <h2>Mini diálogo</h2>
+        <h2>Mini diÃ¡logo</h2>
         <p>
-          <b>A:</b> Dzień dobry. Co podać?<br/>
-          <b>B:</b> Poproszę czarną kawę. I wodę niegazowaną, proszę.<br/>
-          <b>A:</b> Jasne. Coś jeszcze?<br/>
-          <b>B:</b> To wszystko. Dziękuję.
+          <b>A:</b> DzieÅ„ dobry. Co podaÄ‡?<br/>
+          <b>B:</b> PoproszÄ™ czarnÄ… kawÄ™. I wodÄ™ niegazowanÄ…, proszÄ™.<br/>
+          <b>A:</b> Jasne. CoÅ› jeszcze?<br/>
+          <b>B:</b> To wszystko. DziÄ™kujÄ™.
         </p>
         <div class="hintSmall" style="margin-top:12px;">
-          Dalej: zrób <b>Ejercicios</b>, potem przejdź do <b>Fichas</b>.
+          Dalej: zrÃ³b <b>Ejercicios</b>, potem przejdÅº do <b>Fichas</b>.
         </div>
       `;
 
       const HTML_TRANSPORTE = `
         <h2>Objetivo</h2>
-        <p>Vas a moverte por la ciudad: metro, tranvía y billetes.</p>
+        <p>Vas a moverte por la ciudad: metro, tranvÃ­a y billetes.</p>
 
-        <h2>Gramática rápida: <i>na + miejscownik</i></h2>
+        <h2>GramÃ¡tica rÃ¡pida: <i>na + miejscownik</i></h2>
         <p>
-          Para hablar de ubicación en lugares “de superficie” usamos <b>na</b> +
+          Para hablar de ubicaciÃ³n en lugares â€œde superficieâ€ usamos <b>na</b> +
           <b>miejscownik</b>:
         </p>
         <ul>
@@ -185,21 +186,21 @@
         <div class="card" style="padding:12px; margin:12px 0;">
           <div style="font-weight:900;">Ejemplo</div>
           <div style="margin-top:6px; line-height:1.6;">
-            <b>PL:</b> Jestem na przystanku. Poproszę bilet.<br/>
+            <b>PL:</b> Jestem na przystanku. PoproszÄ™ bilet.<br/>
             <b>ES:</b> Estoy en la parada. Quisiera un billete.
           </div>
         </div>
 
         <h2>Vocabulario clave</h2>
         <ul>
-          <li><b>przystanek</b> — parada</li>
-          <li><b>bilet</b> — billete</li>
-          <li><b>tramwaj</b> — tranvía</li>
-          <li><b>metro</b> — metro</li>
+          <li><b>przystanek</b> â€” parada</li>
+          <li><b>bilet</b> â€” billete</li>
+          <li><b>tramwaj</b> â€” tranvÃ­a</li>
+          <li><b>metro</b> â€” metro</li>
         </ul>
 
         <h2>Tip</h2>
-        <p>En Polonia: <b>Poproszę bilet</b> es una frase súper útil.</p>
+        <p>En Polonia: <b>PoproszÄ™ bilet</b> es una frase sÃºper Ãºtil.</p>
       `;
 
       const DEMOS = [
@@ -207,54 +208,54 @@
           id: 'A2_DEMO_CAFE_KRAKOW',
           level: 'A2',
           type: 'both',
-          title: 'Kraków: En la cafetería (DEMO)',
-          desc: 'Biernik + pedir en una cafetería. Ejercicios + fichas + voz.',
+          title: 'KrakÃ³w: En la cafeterÃ­a (DEMO)',
+          desc: 'Biernik + pedir en una cafeterÃ­a. Ejercicios + fichas + voz.',
           slug: 'demo-cafe-krakow',
-          icon: '☕',
+          icon: 'â˜•',
           order: 980,
           meta: {
             published: true,
-            titleEs: 'Kraków: En la cafetería',
-            descriptionEs: 'Pedir con “Poproszę” + biernik, con mini práctica.',
+            titleEs: 'KrakÃ³w: En la cafeterÃ­a',
+            descriptionEs: 'Pedir con â€œPoproszÄ™â€ + biernik, con mini prÃ¡ctica.',
             durationMin: 10,
             html: HTML_CAFE,
             summary:
-              'Aprendes a pedir en una cafetería: formas en biernik + frases de cortesía.',
+              'Aprendes a pedir en una cafeterÃ­a: formas en biernik + frases de cortesÃ­a.',
             vocab: [
-              'Poproszę…',
-              'kawa / herbatę / wodę',
-              'czarna → czarną',
+              'PoproszÄ™â€¦',
+              'kawa / herbatÄ™ / wodÄ™',
+              'czarna â†’ czarnÄ…',
               'To wszystko.',
             ],
             homework:
-              'Nagraj 1 minuto: co pides en una cafetería (PL). Luego pide corrección en la comunidad.',
+              'Nagraj 1 minuto: co pides en una cafeterÃ­a (PL). Luego pide correcciÃ³n en la comunidad.',
           },
           exercises: [
             {
               id: 'A2__DEMO_CAFE__001',
               order: 1,
               type: 'Rellenar los espacios',
-              prompt: 'Poproszę ___ kawę.',
-              answer: 'czarną',
-              notes: 'kawa → kawę; czarna → czarną (biernik, rodzaj żeński)',
+              prompt: 'PoproszÄ™ ___ kawÄ™.',
+              answer: 'czarnÄ…',
+              notes: 'kawa â†’ kawÄ™; czarna â†’ czarnÄ… (biernik, rodzaj Å¼eÅ„ski)',
               tags: ['demo', 'a2', 'grammar'],
             },
             {
               id: 'A2__DEMO_CAFE__002',
               order: 2,
-              type: 'Opción múltiple',
-              prompt: 'Elige la forma correcta: Poproszę ___ herbatę.',
-              options: ['A) dobra', 'B) dobrą', 'C) dobry'],
+              type: 'OpciÃ³n mÃºltiple',
+              prompt: 'Elige la forma correcta: PoproszÄ™ ___ herbatÄ™.',
+              options: ['A) dobra', 'B) dobrÄ…', 'C) dobry'],
               answer: 'B',
-              notes: 'herbata (f) → herbatę; dobra → dobrą',
+              notes: 'herbata (f) â†’ herbatÄ™; dobra â†’ dobrÄ…',
               tags: ['demo', 'a2', 'grammar'],
             },
             {
               id: 'A2__DEMO_CAFE__003',
               order: 3,
               type: 'Escuchar y completar los espacios',
-              prompt: 'W Krakowie ___ dobrą kawę.',
-              answer: 'piję',
+              prompt: 'W Krakowie ___ dobrÄ… kawÄ™.',
+              answer: 'pijÄ™',
               notes: 'Escucha (TTS) y completa.',
               tags: ['demo', 'a2', 'listening'],
             },
@@ -262,7 +263,7 @@
               id: 'A2__DEMO_CAFE__004',
               order: 4,
               type: 'Escuchar y repetir',
-              prompt: 'Powtórz: Poproszę jeszcze jedną herbatę, proszę.',
+              prompt: 'PowtÃ³rz: PoproszÄ™ jeszcze jednÄ… herbatÄ™, proszÄ™.',
               answer: '',
               notes: 'Escucha (TTS) y graba tu voz.',
               tags: ['demo', 'a2', 'speaking'],
@@ -273,21 +274,21 @@
               type: 'Tarjetas interactivas',
               prompt: 'Fichas del tema',
               options: [
-                '1) PL: kawa | ES: café | EX: Poproszę kawę.',
-                '2) PL: herbata | ES: té | EX: Poproszę herbatę.',
+                '1) PL: kawa | ES: cafÃ© | EX: PoproszÄ™ kawÄ™.',
+                '2) PL: herbata | ES: tÃ© | EX: PoproszÄ™ herbatÄ™.',
                 '3) PL: ciasto | ES: pastel | EX: To ciasto jest dobre.',
-                '4) PL: woda niegazowana | ES: agua sin gas | EX: Poproszę wodę niegazowaną.',
+                '4) PL: woda niegazowana | ES: agua sin gas | EX: PoproszÄ™ wodÄ™ niegazowanÄ….',
               ],
               answer: '',
-              notes: 'Abre “Fichas” para practicar tipo Quizlet.',
+              notes: 'Abre â€œFichasâ€ para practicar tipo Quizlet.',
               tags: ['demo', 'a2', 'flashcards'],
             },
             {
               id: 'A2__DEMO_CAFE__006',
               order: 6,
               type: 'Test final del tema',
-              prompt: 'Elige: Poproszę ___ wodę.',
-              options: ['A) zimna', 'B) zimną', 'C) zimny'],
+              prompt: 'Elige: PoproszÄ™ ___ wodÄ™.',
+              options: ['A) zimna', 'B) zimnÄ…', 'C) zimny'],
               answer: 'B',
               notes: 'Test: biernik + przymiotnik (f).',
               tags: ['demo', 'a2', 'test'],
@@ -298,20 +299,20 @@
           id: 'A2_DEMO_TRANSPORTE_WARSZAWA',
           level: 'A2',
           type: 'both',
-          title: 'Warszawa: Transporte público (DEMO)',
+          title: 'Warszawa: Transporte pÃºblico (DEMO)',
           desc: 'na + miejscownik. Billetes, parada, metro. Ejercicios + voz.',
           slug: 'demo-transporte-warszawa',
-          icon: '🚋',
+          icon: 'ðŸš‹',
           order: 990,
           meta: {
             published: true,
-            titleEs: 'Varsovia: Transporte público',
-            descriptionEs: 'Frases útiles: na przystanku, poproszę bilet, etc.',
+            titleEs: 'Varsovia: Transporte pÃºblico',
+            descriptionEs: 'Frases Ãºtiles: na przystanku, poproszÄ™ bilet, etc.',
             durationMin: 10,
             html: HTML_TRANSPORTE,
             summary:
-              'Aprendes frases básicas para moverte por la ciudad y usar “na + miejscownik”.',
-            vocab: ['przystanek', 'bilet', 'tramwaj', 'metro', 'poproszę'],
+              'Aprendes frases bÃ¡sicas para moverte por la ciudad y usar â€œna + miejscownikâ€.',
+            vocab: ['przystanek', 'bilet', 'tramwaj', 'metro', 'poproszÄ™'],
             homework:
               'Nagraj: 5 frases (PL) para ir al metro y comprar un billete.',
           },
@@ -328,18 +329,18 @@
             {
               id: 'A2__DEMO_TRAN__002',
               order: 2,
-              type: 'Opción múltiple',
-              prompt: 'Elige: Idę ___ metro.',
+              type: 'OpciÃ³n mÃºltiple',
+              prompt: 'Elige: IdÄ™ ___ metro.',
               options: ['A) do', 'B) na', 'C) w'],
               answer: 'B',
-              notes: 'Frase natural: iść na metro.',
+              notes: 'Frase natural: iÅ›Ä‡ na metro.',
               tags: ['demo', 'a2', 'grammar'],
             },
             {
               id: 'A2__DEMO_TRAN__003',
               order: 3,
               type: 'Escuchar y completar los espacios',
-              prompt: 'Bilet kosztuje ___ złote.',
+              prompt: 'Bilet kosztuje ___ zÅ‚ote.',
               answer: 'cztery',
               notes: 'Escucha (TTS) y completa.',
               tags: ['demo', 'a2', 'listening'],
@@ -348,7 +349,7 @@
               id: 'A2__DEMO_TRAN__004',
               order: 4,
               type: 'Escuchar y repetir',
-              prompt: 'Powtórz: Poproszę bilet ulgowy, proszę.',
+              prompt: 'PowtÃ³rz: PoproszÄ™ bilet ulgowy, proszÄ™.',
               answer: '',
               notes: 'Escucha (TTS) y graba tu voz.',
               tags: ['demo', 'a2', 'speaking'],
@@ -360,12 +361,12 @@
               prompt: 'Fichas del tema',
               options: [
                 '1) PL: przystanek | ES: parada | EX: Jestem na przystanku.',
-                '2) PL: bilet | ES: billete | EX: Poproszę bilet.',
-                '3) PL: tramwaj | ES: tranvía | EX: Jadę tramwajem.',
-                '4) PL: metro | ES: metro | EX: Idę na metro.',
+                '2) PL: bilet | ES: billete | EX: PoproszÄ™ bilet.',
+                '3) PL: tramwaj | ES: tranvÃ­a | EX: JadÄ™ tramwajem.',
+                '4) PL: metro | ES: metro | EX: IdÄ™ na metro.',
               ],
               answer: '',
-              notes: 'Abre “Fichas” para practicar.',
+              notes: 'Abre â€œFichasâ€ para practicar.',
               tags: ['demo', 'a2', 'flashcards'],
             },
             {
@@ -450,24 +451,26 @@
 
       document.getElementById('importBtn').onclick = async () => {
         if (!IS_ADMIN) {
-          alert('Nie jesteś adminem.');
+          alert('Nie jesteÅ› adminem.');
           return;
         }
         try {
-          log('⏳ Importuję demo A2...', '');
+          log('â³ ImportujÄ™ demo A2...', '');
           for (const demo of DEMOS) {
             await upsertTopic(demo);
           }
           log(
-            '✅ Gotowe. Otwórz: <code>course.html?level=A2</code> i znajdziesz 2 tematy (DEMO).',
+            'âœ… Gotowe. OtwÃ³rz: <code>course.html?level=A2</code> i znajdziesz 2 tematy (DEMO).',
             'ok',
           );
         } catch (e) {
           console.error(e);
-          log('❌ Błąd importu. Sprawdź konsolę.', 'err');
+          log('âŒ BÅ‚Ä…d importu. SprawdÅº konsolÄ™.', 'err');
         }
       };
     </script>
   </body>
 </html>
+
+
 

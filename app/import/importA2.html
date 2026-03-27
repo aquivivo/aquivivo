@@ -1,8 +1,8 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>Import A2 → Firestore (AquiVivo)</title>
+    <title>Import A2 â†’ Firestore (AquiVivo)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../styles/styles.css" />
     <style>
@@ -38,6 +38,7 @@
         color: var(--ink-muted);
       }
     </style>
+      <link rel="stylesheet" href="../styles/global-chat.css?v=20260327a" />
   </head>
   <body>
     <div
@@ -51,22 +52,22 @@
         margin-bottom: 14px;
       "
     >
-      Sesión activa:
+      SesiÃ³n activa:
       <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
         >Cargando...</strong
       >
     </div>
 
-    <h2>🔥 Import A2 → Firestore</h2>
+    <h2>ðŸ”¥ Import A2 â†’ Firestore</h2>
     <p>
-      Dodaje tematy <b>A2</b> do kolekcji <code>courses</code> bez duplikatów.
+      Dodaje tematy <b>A2</b> do kolekcji <code>courses</code> bez duplikatÃ³w.
       Ustawia <code>free=false</code>.
     </p>
     <p class="muted">
       Wymaga zalogowania jako admin: <code>aquivivo.pl@gmail.com</code>
     </p>
 
-    <button id="importBtn">IMPORT A2 (bez duplikatów)</button>
+    <button id="importBtn">IMPORT A2 (bez duplikatÃ³w)</button>
     <div id="log" class="box">Status: gotowe.</div>
 
     <script type="module">
@@ -84,7 +85,7 @@
         where,
       } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-      /* 🔥 FIREBASE CONFIG */
+      /* ðŸ”¥ FIREBASE CONFIG */
       const firebaseConfig = {
         apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
         authDomain: 'aquivivo-platform.firebaseapp.com',
@@ -104,63 +105,63 @@
         logEl.innerHTML = `<div class="${type}">${msg}</div>`;
       }
 
-      /* 🔐 CHECK ADMIN */
+      /* ðŸ” CHECK ADMIN */
       onAuthStateChanged(auth, (user) => {
         if (
           !user ||
           (user.email || '').toLowerCase() !== ADMIN_EMAIL.toLowerCase()
         ) {
           alert(
-            '❌ Nie jesteś adminem (albo nie jesteś zalogowana na tej domenie).',
+            'âŒ Nie jesteÅ› adminem (albo nie jesteÅ› zalogowana na tej domenie).',
           );
           window.location.href = '../login.html';
         }
       });
 
       /* ===================== A2 DATA ===================== */
-      /* Format: ["Tytuł", "Opis"] */
+      /* Format: ["TytuÅ‚", "Opis"] */
       const A2_GRAMMAR = [
         [
-          'Tiempo pasado (pretérito)',
-          'Opanować mówienie o przeszłości: co robiłam/robiłeś, gdzie byłam/byłeś, kiedy i z kim',
+          'Tiempo pasado (pretÃ©rito)',
+          'OpanowaÄ‡ mÃ³wienie o przeszÅ‚oÅ›ci: co robiÅ‚am/robiÅ‚eÅ›, gdzie byÅ‚am/byÅ‚eÅ›, kiedy i z kim',
         ],
         [
           'Tiempo futuro simple',
-          'Nauczyć się mówić o planach i przyszłości: co zrobię, dokąd pójdę, kiedy to będzie',
+          'NauczyÄ‡ siÄ™ mÃ³wiÄ‡ o planach i przyszÅ‚oÅ›ci: co zrobiÄ™, dokÄ…d pÃ³jdÄ™, kiedy to bÄ™dzie',
         ],
         [
-          'Verbos reflexivos (się)',
-          'Zrozumieć i stosować czasowniki zwrotne: myję się, uczę się, ubieram się',
+          'Verbos reflexivos (siÄ™)',
+          'ZrozumieÄ‡ i stosowaÄ‡ czasowniki zwrotne: myjÄ™ siÄ™, uczÄ™ siÄ™, ubieram siÄ™',
         ],
         [
-          'Verbos modales (móc, musieć, chcieć)',
-          'Mówić o możliwości, konieczności i chęci: mogę, muszę, chcę',
+          'Verbos modales (mÃ³c, musieÄ‡, chcieÄ‡)',
+          'MÃ³wiÄ‡ o moÅ¼liwoÅ›ci, koniecznoÅ›ci i chÄ™ci: mogÄ™, muszÄ™, chcÄ™',
         ],
         [
-          'Caso genitivo (dopełniacz)',
-          'Używać dopełniacza w praktyce: nie ma…, potrzebuję…, szukam…, do/od/bez',
+          'Caso genitivo (dopeÅ‚niacz)',
+          'UÅ¼ywaÄ‡ dopeÅ‚niacza w praktyce: nie maâ€¦, potrzebujÄ™â€¦, szukamâ€¦, do/od/bez',
         ],
         [
           'Caso locativo (miejscownik)',
-          'Mówić o miejscu: w Polsce, na uczelni, o temacie, po (po pracy)',
+          'MÃ³wiÄ‡ o miejscu: w Polsce, na uczelni, o temacie, po (po pracy)',
         ],
         [
-          'Caso instrumental (narzędnik)',
-          'Opanować narzędnik: z kim? z czym? jestem nauczycielką, interesuję się…',
+          'Caso instrumental (narzÄ™dnik)',
+          'OpanowaÄ‡ narzÄ™dnik: z kim? z czym? jestem nauczycielkÄ…, interesujÄ™ siÄ™â€¦',
         ],
         [
-          'Comparación de adjetivos (comparativo y superlativo)',
-          'Porównywać: lepszy, gorszy, większy, najmniejszy itd.',
+          'ComparaciÃ³n de adjetivos (comparativo y superlativo)',
+          'PorÃ³wnywaÄ‡: lepszy, gorszy, wiÄ™kszy, najmniejszy itd.',
         ],
         [
           'Adverbios de frecuencia y tiempo',
-          'Mówić jak często i kiedy: zawsze, często, rzadko, wczoraj, jutro, niedawno',
+          'MÃ³wiÄ‡ jak czÄ™sto i kiedy: zawsze, czÄ™sto, rzadko, wczoraj, jutro, niedawno',
         ],
       ];
       const A2_VOCAB = [
         [
-          '(Uzupełnij)',
-          'Wklej listę słownictwa tutaj w formacie: ["Temat","Opis"]',
+          '(UzupeÅ‚nij)',
+          'Wklej listÄ™ sÅ‚ownictwa tutaj w formacie: ["Temat","Opis"]',
         ],
       ];
 
@@ -195,7 +196,7 @@
       /* ===================== IMPORT ===================== */
       document.getElementById('importBtn').onclick = async () => {
         try {
-          log('⏳ Importuję…', '');
+          log('â³ ImportujÄ™â€¦', '');
 
           const col = collection(db, 'courses');
           const existing = await fetchExistingKeysForLevel('A2');
@@ -249,16 +250,16 @@
           }
 
           log(
-            `✅ Gotowe! Dodano: ${added} • Pominięto (duplikaty): ${skipped}`,
+            `âœ… Gotowe! Dodano: ${added} â€¢ PominiÄ™to (duplikaty): ${skipped}`,
             'ok',
           );
           alert(
-            `✅ Import zakończony!\nDodano: ${added}\nPominięto (duplikaty): ${skipped}`,
+            `âœ… Import zakoÅ„czony!\nDodano: ${added}\nPominiÄ™to (duplikaty): ${skipped}`,
           );
         } catch (e) {
           console.error(e);
-          log('❌ Błąd importu: ' + (e?.message || e), 'err');
-          alert('❌ Błąd importu: ' + (e?.message || e));
+          log('âŒ BÅ‚Ä…d importu: ' + (e?.message || e), 'err');
+          alert('âŒ BÅ‚Ä…d importu: ' + (e?.message || e));
         }
       };
 
@@ -274,5 +275,7 @@
     </script>
   </body>
 </html>
+
+
 
 

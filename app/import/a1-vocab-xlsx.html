@@ -1,8 +1,8 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>A1 vocab .xlsx → Firestore (AquiVivo)</title>
+    <title>A1 vocab .xlsx â†’ Firestore (AquiVivo)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../styles/styles.css?v=20260209a" />
     <style>
@@ -106,6 +106,7 @@
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+      <link rel="stylesheet" href="../styles/global-chat.css?v=20260327a" />
   </head>
   <body>
     <div
@@ -119,16 +120,16 @@
         margin-bottom: 14px;
       "
     >
-      Sesión activa:
+      SesiÃ³n activa:
       <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
         >Cargando...</strong
       >
     </div>
 
-    <h2>📚 Import: A1 vocab .xlsx → lekcje + ćwiczenia (A1)</h2>
+    <h2>ðŸ“š Import: A1 vocab .xlsx â†’ lekcje + Ä‡wiczenia (A1)</h2>
     <p class="muted">
-      Wgra: słownictwo do <code>course_meta.vocab</code> + ćwiczenia do
-      <code>exercises</code> (fiszki, luki, wybór, listening, speaking, test).
+      Wgra: sÅ‚ownictwo do <code>course_meta.vocab</code> + Ä‡wiczenia do
+      <code>exercises</code> (fiszki, luki, wybÃ³r, listening, speaking, test).
       Wymaga admin: <code>aquivivo.pl@gmail.com</code>.
     </p>
 
@@ -143,7 +144,7 @@
           <span id="fileStatus" class="muted small"></span>
         </div>
         <div class="muted small" style="margin-top: 10px">
-          Wykryję zakładki i pokażę mapowanie na tematy A1.
+          WykryjÄ™ zakÅ‚adki i pokaÅ¼Ä™ mapowanie na tematy A1.
         </div>
       </div>
 
@@ -156,7 +157,7 @@
           <span id="topicsStatus" class="muted small"></span>
         </div>
         <div class="muted small" style="margin-top: 10px">
-          Jeśli coś się nie dopasuje po nazwie — zmienisz ręcznie w tabeli.
+          JeÅ›li coÅ› siÄ™ nie dopasuje po nazwie â€” zmienisz rÄ™cznie w tabeli.
         </div>
       </div>
     </div>
@@ -170,8 +171,8 @@
           <code>course_meta.vocab</code></label
         >
         <label
-          ><input id="optCleanup" type="checkbox" checked /> Usuń poprzednie
-          ćwiczenia z tego importu</label
+          ><input id="optCleanup" type="checkbox" checked /> UsuÅ„ poprzednie
+          Ä‡wiczenia z tego importu</label
         >
       </div>
 
@@ -183,22 +184,22 @@
           ><input id="optFill" type="checkbox" checked /> Luki (pisanie)</label
         >
         <label
-          ><input id="optChoice" type="checkbox" checked /> Wybór (quiz)</label
+          ><input id="optChoice" type="checkbox" checked /> WybÃ³r (quiz)</label
         >
         <label
           ><input id="optListenFill" type="checkbox" checked /> Listening + luki</label
         >
         <label
-          ><input id="optListenChoice" type="checkbox" checked /> Listening + wybór</label
+          ><input id="optListenChoice" type="checkbox" checked /> Listening + wybÃ³r</label
         >
         <label
           ><input id="optSpeak" type="checkbox" checked /> Speaking (nagrywanie)</label
         >
         <label
-          ><input id="optTF" type="checkbox" /> Prawda / fałsz</label
+          ><input id="optTF" type="checkbox" /> Prawda / faÅ‚sz</label
         >
         <label
-          ><input id="optTest" type="checkbox" checked /> Test końcowy</label
+          ><input id="optTest" type="checkbox" checked /> Test koÅ„cowy</label
         >
       </div>
 
@@ -214,7 +215,7 @@
             min="0"
         /></label>
         <label class="small"
-          >Pytania w teście:
+          >Pytania w teÅ›cie:
           <input
             id="optTestN"
             class="input"
@@ -238,13 +239,13 @@
       </div>
 
       <div class="muted small" style="margin-top: 10px">
-        Tip: Jeśli chcesz „wszystko”, ustaw limit na <code>0</code>. Przy dużych
-        setach może to chwilę potrwać.
+        Tip: JeÅ›li chcesz â€žwszystkoâ€, ustaw limit na <code>0</code>. Przy duÅ¼ych
+        setach moÅ¼e to chwilÄ™ potrwaÄ‡.
       </div>
     </div>
 
     <div class="box" style="margin-top: 12px">
-      <div style="font-weight: 900">4) Mapowanie: zakładka XLSX → temat A1</div>
+      <div style="font-weight: 900">4) Mapowanie: zakÅ‚adka XLSX â†’ temat A1</div>
       <div id="mappingWrap" class="muted small" style="margin-top: 10px">
         (najpierw wczytaj XLSX i tematy A1)
       </div>
@@ -331,9 +332,9 @@
       function stripSheetName(name) {
         let s = String(name || '').trim();
         s = s.replace(/^[^A-Za-z0-9]+\s*/g, '');
-        s = s.replace(/^a1\s*[-—:]+?\s*/i, '');
-        s = s.replace(/^vocabulario\s*a1\s*[-—:]+?\s*/i, '');
-        s = s.replace(/^vocabulario\s*[-—:]+?\s*/i, '');
+        s = s.replace(/^a1\s*[-â€”:]+?\s*/i, '');
+        s = s.replace(/^vocabulario\s*a1\s*[-â€”:]+?\s*/i, '');
+        s = s.replace(/^vocabulario\s*[-â€”:]+?\s*/i, '');
         return s.trim();
       }
 
@@ -467,13 +468,13 @@
       let mapping = new Map(); // sheetName -> topicId
 
       onAuthStateChanged(auth, (user) => {
-        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesión)';
+        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesiÃ³n)';
         IS_ADMIN =
           !!user &&
           String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
         if (!IS_ADMIN) {
           log(
-            `❌ Zaloguj się jako admin (${esc(ADMIN_EMAIL)}), potem wróć na tę stronę.`,
+            `âŒ Zaloguj siÄ™ jako admin (${esc(ADMIN_EMAIL)}), potem wrÃ³Ä‡ na tÄ™ stronÄ™.`,
             'err',
           );
         }
@@ -487,7 +488,7 @@
         }
 
         const optionsHtml = [
-          `<option value="">-- (pomiń) --</option>`,
+          `<option value="">-- (pomiÅ„) --</option>`,
           ...topics.map((t) => {
             const label = `${Number(t.order || 0)}. ${t.title || t.name || t.slug || t.id} (${t.type || 'grammar'})`;
             return `<option value="${esc(t.id)}">${esc(label)}</option>`;
@@ -502,7 +503,7 @@
                   <div style="font-weight:900;">${esc(s.name)}</div>
                   <div class="muted small">
                     ${esc(stripSheetName(s.name)) || '-'}
-                    <span class="pillMini">${Number(s.rows?.length || 0)} słów</span>
+                    <span class="pillMini">${Number(s.rows?.length || 0)} sÅ‚Ã³w</span>
                   </div>
                 </td>
                 <td>
@@ -519,14 +520,14 @@
           <table class="mapTable">
             <thead>
               <tr>
-                <th>Zakładka (XLSX)</th>
+                <th>ZakÅ‚adka (XLSX)</th>
                 <th>Temat (A1)</th>
               </tr>
             </thead>
             <tbody>${rowsHtml}</tbody>
           </table>
           <div class="muted small" style="margin-top:10px;">
-            Jeśli chcesz przypisać zakładkę do innego tematu — zmień select.
+            JeÅ›li chcesz przypisaÄ‡ zakÅ‚adkÄ™ do innego tematu â€” zmieÅ„ select.
           </div>
         `;
 
@@ -572,28 +573,28 @@
             .map((row) => {
               const pl = pickRowValue(row, ['Polski', 'PL', 'Polaco']);
               const es = pickRowValue(row, [
-                'Español (LATAM)',
+                'EspaÃ±ol (LATAM)',
                 'Espanol (LATAM)',
-                'Español',
+                'EspaÃ±ol',
                 'Espanol',
                 'ES',
-                'Español (ES)',
+                'EspaÃ±ol (ES)',
               ]);
               const phon = pickRowValue(row, [
                 'Fonetyka',
-                'Fonetyka (para latinos – lectura del polaco)',
+                'Fonetyka (para latinos â€“ lectura del polaco)',
                 'Fonetyka (para latinos - lectura del polaco)',
               ]);
-              const section = pickRowValue(row, ['Sección', 'Seccion', 'Sekcja']);
+              const section = pickRowValue(row, ['SecciÃ³n', 'Seccion', 'Sekcja']);
               const exPl = pickRowValue(row, [
                 'Ejemplo de uso (PL)',
                 'Ejemplo (PL)',
-                'Przykład (PL)',
+                'PrzykÅ‚ad (PL)',
               ]);
               const exEs = pickRowValue(row, [
                 'Ejemplo de uso (ES)',
                 'Ejemplo (ES)',
-                'Przykład (ES)',
+                'PrzykÅ‚ad (ES)',
               ]);
 
               return {
@@ -636,7 +637,7 @@
 
       $('btnParse').addEventListener('click', async () => {
         if (!IS_ADMIN) {
-          alert('Nie jesteś adminem.');
+          alert('Nie jesteÅ› adminem.');
           return;
         }
         const file = $('xlsxFile')?.files?.[0] || null;
@@ -644,7 +645,7 @@
           alert('Wybierz plik .xlsx.');
           return;
         }
-        if (fileStatus) fileStatus.textContent = '⏳ Wczytuję...';
+        if (fileStatus) fileStatus.textContent = 'â³ WczytujÄ™...';
         try {
           const wb = await parseXlsxFile(file);
           const sheets = sheetRowsFromWorkbook(wb);
@@ -652,9 +653,9 @@
             (s) => !normalizeText(s.name).includes('rodzaje zadan'),
           );
           if (fileStatus)
-            fileStatus.textContent = `✅ OK (${parsedSheets.length} zakładek)`;
+            fileStatus.textContent = `âœ… OK (${parsedSheets.length} zakÅ‚adek)`;
           log(
-            `✅ XLSX wczytany. Zakładki: <code>${esc(parsedSheets.map((s) => s.name).join(' | '))}</code>`,
+            `âœ… XLSX wczytany. ZakÅ‚adki: <code>${esc(parsedSheets.map((s) => s.name).join(' | '))}</code>`,
             'ok',
           );
           if (topics.length) {
@@ -663,27 +664,27 @@
           }
         } catch (e) {
           console.error(e);
-          if (fileStatus) fileStatus.textContent = '❌ Błąd';
-          log('❌ Nie mogę wczytać XLSX. Sprawdź konsolę.', 'err');
+          if (fileStatus) fileStatus.textContent = 'âŒ BÅ‚Ä…d';
+          log('âŒ Nie mogÄ™ wczytaÄ‡ XLSX. SprawdÅº konsolÄ™.', 'err');
         }
       });
 
       $('btnLoadTopics').addEventListener('click', async () => {
         if (!IS_ADMIN) {
-          alert('Nie jesteś adminem.');
+          alert('Nie jesteÅ› adminem.');
           return;
         }
-        if (topicsStatus) topicsStatus.textContent = '⏳ Wczytuję...';
+        if (topicsStatus) topicsStatus.textContent = 'â³ WczytujÄ™...';
         try {
           topics = await loadTopicsA1();
-          if (topicsStatus) topicsStatus.textContent = `✅ OK (${topics.length})`;
-          log(`✅ Wczytano tematy A1 z Firestore: <code>${topics.length}</code>`, 'ok');
+          if (topicsStatus) topicsStatus.textContent = `âœ… OK (${topics.length})`;
+          log(`âœ… Wczytano tematy A1 z Firestore: <code>${topics.length}</code>`, 'ok');
           if (parsedSheets.length) computeDefaultMapping();
           rebuildMappingUI();
         } catch (e) {
           console.error(e);
-          if (topicsStatus) topicsStatus.textContent = '❌ Błąd';
-          log('❌ Nie mogę wczytać tematów A1. Sprawdź konsolę.', 'err');
+          if (topicsStatus) topicsStatus.textContent = 'âŒ BÅ‚Ä…d';
+          log('âŒ Nie mogÄ™ wczytaÄ‡ tematÃ³w A1. SprawdÅº konsolÄ™.', 'err');
         }
       });
 
@@ -726,7 +727,7 @@
           const pl = String(r.pl || '').trim();
           const es = String(r.es || '').trim();
           if (!pl && !es) return;
-          const line = pl && es ? `${pl} — ${es}` : pl || es;
+          const line = pl && es ? `${pl} â€” ${es}` : pl || es;
           const key = normalizeText(line);
           if (!key || seen.has(key)) return;
           seen.add(key);
@@ -765,7 +766,7 @@
             const exEs = String(r.exEs || '').trim();
             const blank =
               blankExample(exPl, pl) ||
-              (es ? `Traduce al polaco: ${es} → ___` : 'Completa: ___');
+              (es ? `Traduce al polaco: ${es} â†’ ___` : 'Completa: ___');
             const notes = [
               r.phon ? `Pron: ${sanitizeCardText(r.phon)}` : '',
               exEs ? `ES: ${sanitizeCardText(exEs)}` : '',
@@ -804,8 +805,8 @@
               data: makeExerciseDoc({
                 topic,
                 order: order++,
-                type: 'Opción múltiple',
-                prompt: `¿Cómo se dice en polaco: "${es}"?`,
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: `Â¿CÃ³mo se dice en polaco: "${es}"?`,
                 options,
                 answer: pl,
                 notes,
@@ -868,7 +869,7 @@
                 topic,
                 order: order++,
                 type: 'Escuchar y elegir la respuesta',
-                prompt: 'Escucha (PL) y elige la traducción en español.',
+                prompt: 'Escucha (PL) y elige la traducciÃ³n en espaÃ±ol.',
                 options,
                 answer: es,
                 notes,
@@ -899,7 +900,7 @@
                 topic,
                 order: order++,
                 type: 'Escuchar y repetir (voz)',
-                prompt: `Powtórz: ${tts}`,
+                prompt: `PowtÃ³rz: ${tts}`,
                 options: [],
                 answer: '',
                 notes,
@@ -944,7 +945,7 @@
           const lines = all.map((r) => {
             const pl = sanitizeCardText(r.pl);
             const es = sanitizeCardText(r.es);
-            const phon = r.phon ? `Pron: ${sanitizeCardText(r.phon)} · ` : '';
+            const phon = r.phon ? `Pron: ${sanitizeCardText(r.phon)} Â· ` : '';
             const exPl = r.exPl ? sanitizeCardText(r.exPl) : '';
             const exEs = r.exEs ? sanitizeCardText(r.exEs) : '';
             const ex = `${phon}${exPl}${exEs ? ` / ES: ${exEs}` : ''}`.trim();
@@ -969,7 +970,7 @@
                     : 'Fichas del tema',
                 options: opts,
                 answer: '',
-                notes: 'Abre “Fichas” para practicar tipo Quizlet.',
+                notes: 'Abre â€œFichasâ€ para practicar tipo Quizlet.',
                 tags: [...tagBase, 'type:cards'],
               }),
             });
@@ -990,7 +991,7 @@
                 topic,
                 order: order++,
                 type: 'Test final del tema',
-                prompt: `Test: ¿Cómo se dice en polaco: "${es}"?`,
+                prompt: `Test: Â¿CÃ³mo se dice en polaco: "${es}"?`,
                 options,
                 answer: pl,
                 notes: '',
@@ -1005,7 +1006,7 @@
 
       $('btnImportAll').addEventListener('click', async () => {
         if (!IS_ADMIN) {
-          alert('Nie jesteś adminem.');
+          alert('Nie jesteÅ› adminem.');
           return;
         }
         if (!parsedSheets.length) {
@@ -1042,8 +1043,8 @@
           return;
         }
 
-        log('—', '');
-        log(`⏳ Start importu. Tematy: <code>${active.length}</code>`, '');
+        log('â€”', '');
+        log(`â³ Start importu. Tematy: <code>${active.length}</code>`, '');
 
         try {
           for (const entry of active) {
@@ -1051,13 +1052,13 @@
             if (!topic) continue;
 
             log(
-              `⏳ Temat: <b>${esc(topic.title || topic.name || topic.id)}</b> (zakładka: <code>${esc(entry.sheet.name)}</code>)`,
+              `â³ Temat: <b>${esc(topic.title || topic.name || topic.id)}</b> (zakÅ‚adka: <code>${esc(entry.sheet.name)}</code>)`,
               '',
             );
 
             if (opt.cleanup) {
               const deleted = await deleteOldSeededExercisesForTopic(topic.id);
-              log(`🧹 Usunięto stare ćwiczenia importu: <code>${deleted}</code>`, 'muted');
+              log(`ðŸ§¹ UsuniÄ™to stare Ä‡wiczenia importu: <code>${deleted}</code>`, 'muted');
             }
 
             const vocabItems = buildVocabItems(entry.sheet.rows);
@@ -1077,7 +1078,7 @@
                 },
                 { merge: true },
               );
-              log(`✅ course_meta.vocab: <code>${vocabItems.length}</code>`, 'ok');
+              log(`âœ… course_meta.vocab: <code>${vocabItems.length}</code>`, 'ok');
             }
 
             const exList = buildExercisesForTopic(
@@ -1091,18 +1092,20 @@
               data: x.data,
             }));
             const written = await commitSetDocs(pairs);
-            log(`✅ exercises zapisane: <code>${written}</code>`, 'ok');
+            log(`âœ… exercises zapisane: <code>${written}</code>`, 'ok');
           }
 
           log(
-            `✅ Gotowe. Sprawdź: <code>course.html?level=A1</code> → temat → <b>Ejercicios</b> + <b>Fichas</b>.`,
+            `âœ… Gotowe. SprawdÅº: <code>course.html?level=A1</code> â†’ temat â†’ <b>Ejercicios</b> + <b>Fichas</b>.`,
             'ok',
           );
         } catch (e) {
           console.error(e);
-          log('❌ Błąd importu. Sprawdź konsolę.', 'err');
+          log('âŒ BÅ‚Ä…d importu. SprawdÅº konsolÄ™.', 'err');
         }
       });
     </script>
   </body>
 </html>
+
+

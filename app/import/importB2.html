@@ -1,8 +1,8 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>Import B2 → Firestore (AquiVivo)</title>
+    <title>Import B2 â†’ Firestore (AquiVivo)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../styles/styles.css" />
     <style>
@@ -38,6 +38,7 @@
         color: var(--ink-muted);
       }
     </style>
+      <link rel="stylesheet" href="../styles/global-chat.css?v=20260327a" />
   </head>
   <body>
     <div
@@ -51,22 +52,22 @@
         margin-bottom: 14px;
       "
     >
-      Sesión activa:
+      SesiÃ³n activa:
       <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
         >Cargando...</strong
       >
     </div>
 
-    <h2>🔥 Import B2 → Firestore</h2>
+    <h2>ðŸ”¥ Import B2 â†’ Firestore</h2>
     <p>
-      Dodaje tematy <b>B2</b> do kolekcji <code>courses</code> bez duplikatów.
+      Dodaje tematy <b>B2</b> do kolekcji <code>courses</code> bez duplikatÃ³w.
       Ustawia <code>free=false</code>.
     </p>
     <p class="muted">
       Wymaga zalogowania jako admin: <code>aquivivo.pl@gmail.com</code>
     </p>
 
-    <button id="importBtn">IMPORT B2 (bez duplikatów)</button>
+    <button id="importBtn">IMPORT B2 (bez duplikatÃ³w)</button>
     <div id="log" class="box">Status: gotowe.</div>
 
     <script type="module">
@@ -84,7 +85,7 @@
         where,
       } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-      /* 🔥 FIREBASE CONFIG */
+      /* ðŸ”¥ FIREBASE CONFIG */
       const firebaseConfig = {
         apiKey: 'AIzaSyBoa3Yf82CDW6k1FSwdeoQg-gBTjh9kVZM',
         authDomain: 'aquivivo-platform.firebaseapp.com',
@@ -104,29 +105,29 @@
         logEl.innerHTML = `<div class="${type}">${msg}</div>`;
       }
 
-      /* 🔐 CHECK ADMIN */
+      /* ðŸ” CHECK ADMIN */
       onAuthStateChanged(auth, (user) => {
         if (
           !user ||
           (user.email || '').toLowerCase() !== ADMIN_EMAIL.toLowerCase()
         ) {
           alert(
-            '❌ Nie jesteś adminem (albo nie jesteś zalogowana na tej domenie).',
+            'âŒ Nie jesteÅ› adminem (albo nie jesteÅ› zalogowana na tej domenie).',
           );
           window.location.href = '../login.html';
         }
       });
 
       /* ===================== B2 DATA ===================== */
-      /* Format: ["Tytuł", "Opis"] */
+      /* Format: ["TytuÅ‚", "Opis"] */
       const B2_GRAMMAR = [
         [
-          '(Uzupełnij)',
-          'Wklej listę GRAMMAR tutaj w formacie: ["Tytuł","Opis"]',
+          '(UzupeÅ‚nij)',
+          'Wklej listÄ™ GRAMMAR tutaj w formacie: ["TytuÅ‚","Opis"]',
         ],
       ];
       const B2_VOCAB = [
-        ['(Uzupełnij)', 'Wklej listę VOCAB tutaj w formacie: ["Temat","Opis"]'],
+        ['(UzupeÅ‚nij)', 'Wklej listÄ™ VOCAB tutaj w formacie: ["Temat","Opis"]'],
       ];
 
       /* ===================== HELPERS ===================== */
@@ -160,7 +161,7 @@
       /* ===================== IMPORT ===================== */
       document.getElementById('importBtn').onclick = async () => {
         try {
-          log('⏳ Importuję…', '');
+          log('â³ ImportujÄ™â€¦', '');
 
           const col = collection(db, 'courses');
           const existing = await fetchExistingKeysForLevel('B2');
@@ -214,16 +215,16 @@
           }
 
           log(
-            `✅ Gotowe! Dodano: ${added} • Pominięto (duplikaty): ${skipped}`,
+            `âœ… Gotowe! Dodano: ${added} â€¢ PominiÄ™to (duplikaty): ${skipped}`,
             'ok',
           );
           alert(
-            `✅ Import zakończony!\nDodano: ${added}\nPominięto (duplikaty): ${skipped}`,
+            `âœ… Import zakoÅ„czony!\nDodano: ${added}\nPominiÄ™to (duplikaty): ${skipped}`,
           );
         } catch (e) {
           console.error(e);
-          log('❌ Błąd importu: ' + (e?.message || e), 'err');
-          alert('❌ Błąd importu: ' + (e?.message || e));
+          log('âŒ BÅ‚Ä…d importu: ' + (e?.message || e), 'err');
+          alert('âŒ BÅ‚Ä…d importu: ' + (e?.message || e));
         }
       };
 
@@ -239,5 +240,7 @@
     </script>
   </body>
 </html>
+
+
 
 

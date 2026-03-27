@@ -1,8 +1,8 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>A1 Official (2 pierwsze tematy) → Firestore (AquiVivo)</title>
+    <title>A1 Official (2 pierwsze tematy) â†’ Firestore (AquiVivo)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../styles/styles.css?v=20260209a" />
     <style>
@@ -42,6 +42,7 @@
         line-height: 1.55;
       }
     </style>
+      <link rel="stylesheet" href="../styles/global-chat.css?v=20260327a" />
   </head>
   <body>
     <div
@@ -55,17 +56,17 @@
         margin-bottom: 14px;
       "
     >
-      Sesión activa:
+      SesiÃ³n activa:
       <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
         >Cargando...</strong
       >
     </div>
 
-    <h2>🧩 Oficjalne: 2 pierwsze tematy A1 (pełna lekcja + ćwiczenia + fiszki)</h2>
+    <h2>ðŸ§© Oficjalne: 2 pierwsze tematy A1 (peÅ‚na lekcja + Ä‡wiczenia + fiszki)</h2>
     <p>
-      Ta strona uzupełnia Firestore: <code>course_meta</code> (treść lekcji) i
-      <code>exercises</code> (zadania) dla <b>pierwszych 2 tematów</b> w trasie A1
-      (gramatyka + słownictwo przeplatane jak w Duolingo/Busuu).
+      Ta strona uzupeÅ‚nia Firestore: <code>course_meta</code> (treÅ›Ä‡ lekcji) i
+      <code>exercises</code> (zadania) dla <b>pierwszych 2 tematÃ³w</b> w trasie A1
+      (gramatyka + sÅ‚ownictwo przeplatane jak w Duolingo/Busuu).
     </p>
     <p class="muted">
       Wymaga admin: <code>aquivivo.pl@gmail.com</code>. Import jest idempotentny
@@ -130,13 +131,13 @@
       let IS_ADMIN = false;
 
       onAuthStateChanged(auth, (user) => {
-        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesión)';
+        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesiÃ³n)';
         IS_ADMIN =
           !!user &&
           String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
         if (!IS_ADMIN) {
           log(
-            `❌ Zaloguj się jako admin (${esc(ADMIN_EMAIL)}), potem wróć na tę stronę.`,
+            `âŒ Zaloguj siÄ™ jako admin (${esc(ADMIN_EMAIL)}), potem wrÃ³Ä‡ na tÄ™ stronÄ™.`,
             'err',
           );
         }
@@ -153,7 +154,7 @@
           raw === 'vocabulary' ||
           raw === 'vocabulario' ||
           raw === 'slownictwo' ||
-          raw === 'słownictwo'
+          raw === 'sÅ‚ownictwo'
         )
           return 'vocabulary';
 
@@ -161,7 +162,7 @@
           raw === 'grammar' ||
           raw === 'gramatyka' ||
           raw === 'gramatica' ||
-          raw === 'gramática'
+          raw === 'gramÃ¡tica'
         )
           return 'grammar';
 
@@ -213,81 +214,81 @@
       }
 
       const HTML_A1_PRESENTACION = `
-        <h2>🎯 Objetivo</h2>
-        <p>Vas a presentarte en polaco y decir de dónde eres con frases naturales.</p>
+        <h2>ðŸŽ¯ Objetivo</h2>
+        <p>Vas a presentarte en polaco y decir de dÃ³nde eres con frases naturales.</p>
 
-        <h2>🧠 Gramática rápida: <i>być</i> (ser/estar) en presente</h2>
+        <h2>ðŸ§  GramÃ¡tica rÃ¡pida: <i>byÄ‡</i> (ser/estar) en presente</h2>
         <div class="card" style="padding:12px; margin:12px 0;">
-          <div style="font-weight:900;">Formas básicas</div>
+          <div style="font-weight:900;">Formas bÃ¡sicas</div>
           <div style="margin-top:8px; line-height:1.75;">
-            <b>ja</b> — <b>jestem</b> (yo soy/estoy)<br/>
-            <b>ty</b> — <b>jesteś</b> (tú eres/estás)<br/>
-            <b>on/ona</b> — <b>jest</b> (él/ella es/está)
+            <b>ja</b> â€” <b>jestem</b> (yo soy/estoy)<br/>
+            <b>ty</b> â€” <b>jesteÅ›</b> (tÃº eres/estÃ¡s)<br/>
+            <b>on/ona</b> â€” <b>jest</b> (Ã©l/ella es/estÃ¡)
           </div>
         </div>
 
-        <h2>🧩 Frases listas (chunking)</h2>
+        <h2>ðŸ§© Frases listas (chunking)</h2>
         <ul>
-          <li><b>Dzień dobry!</b> — ¡Buenos días!</li>
-          <li><b>Cześć!</b> — ¡Hola! (informal)</li>
-          <li><b>Mam na imię…</b> — Me llamo…</li>
-          <li><b>Jestem z Hiszpanii.</b> — Soy de España.</li>
-          <li><b>A ty?</b> — ¿Y tú?</li>
+          <li><b>DzieÅ„ dobry!</b> â€” Â¡Buenos dÃ­as!</li>
+          <li><b>CzeÅ›Ä‡!</b> â€” Â¡Hola! (informal)</li>
+          <li><b>Mam na imiÄ™â€¦</b> â€” Me llamoâ€¦</li>
+          <li><b>Jestem z Hiszpanii.</b> â€” Soy de EspaÃ±a.</li>
+          <li><b>A ty?</b> â€” Â¿Y tÃº?</li>
         </ul>
 
-        <h2>📚 Vocabulario clave</h2>
+        <h2>ðŸ“š Vocabulario clave</h2>
         <ul>
-          <li><b>proszę</b> — por favor / de nada</li>
-          <li><b>dziękuję</b> — gracias</li>
-          <li><b>przepraszam</b> — perdón</li>
-          <li><b>Polska</b> — Polonia</li>
-          <li><b>Hiszpania</b> — España</li>
+          <li><b>proszÄ™</b> â€” por favor / de nada</li>
+          <li><b>dziÄ™kujÄ™</b> â€” gracias</li>
+          <li><b>przepraszam</b> â€” perdÃ³n</li>
+          <li><b>Polska</b> â€” Polonia</li>
+          <li><b>Hiszpania</b> â€” EspaÃ±a</li>
         </ul>
 
-        <h2>💬 Mini diálogo</h2>
+        <h2>ðŸ’¬ Mini diÃ¡logo</h2>
         <p style="line-height:1.7;">
-          <b>A:</b> Dzień dobry! Jak masz na imię?<br/>
-          <b>B:</b> Mam na imię Juan. A ty?<br/>
-          <b>A:</b> Mam na imię Ania. Skąd jesteś?<br/>
+          <b>A:</b> DzieÅ„ dobry! Jak masz na imiÄ™?<br/>
+          <b>B:</b> Mam na imiÄ™ Juan. A ty?<br/>
+          <b>A:</b> Mam na imiÄ™ Ania. SkÄ…d jesteÅ›?<br/>
           <b>B:</b> Jestem z Hiszpanii.
         </p>
 
         <div class="hintSmall" style="margin-top:12px;">
-          Dalej: zrób <b>Ejercicios</b>, potem przejdź do <b>Fichas</b>. Na ćwiczeniach z ikoną 🎙️ możesz nagrać głos.
+          Dalej: zrÃ³b <b>Ejercicios</b>, potem przejdÅº do <b>Fichas</b>. Na Ä‡wiczeniach z ikonÄ… ðŸŽ™ï¸ moÅ¼esz nagraÄ‡ gÅ‚os.
         </div>
       `;
 
       const HTML_A1_CAFE_NUMEROS = `
-        <h2>🎯 Objetivo</h2>
-        <p>Vas a pedir algo en una cafetería y entender precios sencillos.</p>
+        <h2>ðŸŽ¯ Objetivo</h2>
+        <p>Vas a pedir algo en una cafeterÃ­a y entender precios sencillos.</p>
 
-        <h2>🧠 Gramática rápida: <i>Poproszę…</i> (quisiera…)</h2>
+        <h2>ðŸ§  GramÃ¡tica rÃ¡pida: <i>PoproszÄ™â€¦</i> (quisieraâ€¦)</h2>
         <p>
-          En A1 lo tratamos como <b>frase lista</b>. Úsala para pedir con educación:
-          <b>Poproszę kawę</b>, <b>Poproszę wodę</b>, <b>Poproszę herbatę</b>.
+          En A1 lo tratamos como <b>frase lista</b>. Ãšsala para pedir con educaciÃ³n:
+          <b>PoproszÄ™ kawÄ™</b>, <b>PoproszÄ™ wodÄ™</b>, <b>PoproszÄ™ herbatÄ™</b>.
         </p>
 
-        <h2>🔢 Números (1–10)</h2>
+        <h2>ðŸ”¢ NÃºmeros (1â€“10)</h2>
         <div class="card" style="padding:12px; margin:12px 0; line-height:1.7;">
-          1 <b>jeden</b>, 2 <b>dwa</b>, 3 <b>trzy</b>, 4 <b>cztery</b>, 5 <b>pięć</b><br/>
-          6 <b>sześć</b>, 7 <b>siedem</b>, 8 <b>osiem</b>, 9 <b>dziewięć</b>, 10 <b>dziesięć</b>
+          1 <b>jeden</b>, 2 <b>dwa</b>, 3 <b>trzy</b>, 4 <b>cztery</b>, 5 <b>piÄ™Ä‡</b><br/>
+          6 <b>szeÅ›Ä‡</b>, 7 <b>siedem</b>, 8 <b>osiem</b>, 9 <b>dziewiÄ™Ä‡</b>, 10 <b>dziesiÄ™Ä‡</b>
         </div>
 
-        <h2>📚 Vocabulario clave</h2>
+        <h2>ðŸ“š Vocabulario clave</h2>
         <ul>
-          <li><b>kawa</b> — café</li>
-          <li><b>herbata</b> — té</li>
-          <li><b>woda</b> — agua</li>
-          <li><b>ile kosztuje?</b> — ¿cuánto cuesta?</li>
-          <li><b>rachunek, proszę</b> — la cuenta, por favor</li>
+          <li><b>kawa</b> â€” cafÃ©</li>
+          <li><b>herbata</b> â€” tÃ©</li>
+          <li><b>woda</b> â€” agua</li>
+          <li><b>ile kosztuje?</b> â€” Â¿cuÃ¡nto cuesta?</li>
+          <li><b>rachunek, proszÄ™</b> â€” la cuenta, por favor</li>
         </ul>
 
-        <h2>💬 Mini diálogo</h2>
+        <h2>ðŸ’¬ Mini diÃ¡logo</h2>
         <p style="line-height:1.7;">
-          <b>A:</b> Dzień dobry. Co podać?<br/>
-          <b>B:</b> Poproszę kawę i wodę, proszę.<br/>
-          <b>A:</b> Jasne. To kosztuje cztery złote.<br/>
-          <b>B:</b> Dziękuję!
+          <b>A:</b> DzieÅ„ dobry. Co podaÄ‡?<br/>
+          <b>B:</b> PoproszÄ™ kawÄ™ i wodÄ™, proszÄ™.<br/>
+          <b>A:</b> Jasne. To kosztuje cztery zÅ‚ote.<br/>
+          <b>B:</b> DziÄ™kujÄ™!
         </p>
 
         <div class="hintSmall" style="margin-top:12px;">
@@ -313,15 +314,15 @@
               ...base,
               level: LEVEL,
               courseId: topic.id,
-              titleEs: 'A1 — Saludos y presentación',
+              titleEs: 'A1 â€” Saludos y presentaciÃ³n',
               descriptionEs:
-                'Frases clave + być (jestem/jesteś) + mini diálogo + voz.',
+                'Frases clave + byÄ‡ (jestem/jesteÅ›) + mini diÃ¡logo + voz.',
               html: HTML_A1_PRESENTACION,
               summary:
-                'Te presentas y dices de dónde eres. Practicas “być” en presente con audio y grabación.',
-              vocab: ['dzień dobry', 'cześć', 'mam na imię', 'jestem', 'proszę', 'dziękuję', 'Polska', 'Hiszpania'],
+                'Te presentas y dices de dÃ³nde eres. Practicas â€œbyÄ‡â€ en presente con audio y grabaciÃ³n.',
+              vocab: ['dzieÅ„ dobry', 'czeÅ›Ä‡', 'mam na imiÄ™', 'jestem', 'proszÄ™', 'dziÄ™kujÄ™', 'Polska', 'Hiszpania'],
               homework:
-                'Nagraj 3 frases: “Dzień dobry”, “Mam na imię…”, “Jestem z …”.',
+                'Nagraj 3 frases: â€œDzieÅ„ dobryâ€, â€œMam na imiÄ™â€¦â€, â€œJestem z â€¦â€.',
             },
             exercises: [
               {
@@ -329,40 +330,40 @@
                 type: 'Rellenar los espacios',
                 prompt: 'Ja ___ z Hiszpanii.',
                 answer: 'jestem',
-                notes: 'być (ja) = jestem',
+                notes: 'byÄ‡ (ja) = jestem',
                 tags: ['a1', 'official', 'grammar'],
               },
               {
                 order: 2,
-                type: 'Opción múltiple',
+                type: 'OpciÃ³n mÃºltiple',
                 prompt: 'Elige: Ty ___ z Meksyku.',
-                options: ['A) jestem', 'B) jesteś', 'C) jest'],
+                options: ['A) jestem', 'B) jesteÅ›', 'C) jest'],
                 answer: 'B',
-                notes: 'być (ty) = jesteś',
+                notes: 'byÄ‡ (ty) = jesteÅ›',
                 tags: ['a1', 'official', 'grammar'],
               },
               {
                 order: 3,
                 type: 'Escuchar y completar los espacios',
-                prompt: 'Dzień ___!',
+                prompt: 'DzieÅ„ ___!',
                 answer: 'dobry',
-                notes: 'TTS_PL: Dzień dobry!',
+                notes: 'TTS_PL: DzieÅ„ dobry!',
                 tags: ['a1', 'official', 'listening'],
               },
               {
                 order: 4,
                 type: 'Rellenar los espacios',
-                prompt: 'Mam na ___…',
-                answer: 'imię',
-                notes: 'Frase lista: Mam na imię…',
+                prompt: 'Mam na ___â€¦',
+                answer: 'imiÄ™',
+                notes: 'Frase lista: Mam na imiÄ™â€¦',
                 tags: ['a1', 'official', 'grammar'],
               },
               {
                 order: 5,
                 type: 'Escuchar y repetir (voz)',
-                prompt: 'Powtórz: Mam na imię Juan. Jestem z Hiszpanii.',
+                prompt: 'PowtÃ³rz: Mam na imiÄ™ Juan. Jestem z Hiszpanii.',
                 answer: '',
-                notes: 'TTS_PL: Mam na imię Juan. Jestem z Hiszpanii.',
+                notes: 'TTS_PL: Mam na imiÄ™ Juan. Jestem z Hiszpanii.',
                 tags: ['a1', 'official', 'speaking'],
               },
               {
@@ -370,21 +371,21 @@
                 type: 'Tarjetas interactivas',
                 prompt: 'Fichas del tema',
                 options: [
-                  '1) PL: dzień dobry | ES: buenos días | EX: Dzień dobry! Jak się masz?',
-                  '2) PL: cześć | ES: hola (informal) | EX: Cześć! Co słychać?',
-                  '3) PL: proszę | ES: por favor / de nada | EX: Proszę, usiądź.',
-                  '4) PL: dziękuję | ES: gracias | EX: Dziękuję bardzo!',
-                  '5) PL: przepraszam | ES: perdón | EX: Przepraszam, gdzie jest toaleta?',
+                  '1) PL: dzieÅ„ dobry | ES: buenos dÃ­as | EX: DzieÅ„ dobry! Jak siÄ™ masz?',
+                  '2) PL: czeÅ›Ä‡ | ES: hola (informal) | EX: CzeÅ›Ä‡! Co sÅ‚ychaÄ‡?',
+                  '3) PL: proszÄ™ | ES: por favor / de nada | EX: ProszÄ™, usiÄ…dÅº.',
+                  '4) PL: dziÄ™kujÄ™ | ES: gracias | EX: DziÄ™kujÄ™ bardzo!',
+                  '5) PL: przepraszam | ES: perdÃ³n | EX: Przepraszam, gdzie jest toaleta?',
                 ],
                 answer: '',
-                notes: 'Abre “Fichas” para practicar tipo Quizlet.',
+                notes: 'Abre â€œFichasâ€ para practicar tipo Quizlet.',
                 tags: ['a1', 'official', 'flashcards'],
               },
               {
                 order: 7,
                 type: 'Test final del tema',
-                prompt: 'Elige la frase correcta: “I am from Spain.”',
-                options: ['A) Jestem z Hiszpanii.', 'B) Jesteś z Hiszpanii.', 'C) Jest z Hiszpanii.'],
+                prompt: 'Elige la frase correcta: â€œI am from Spain.â€',
+                options: ['A) Jestem z Hiszpanii.', 'B) JesteÅ› z Hiszpanii.', 'C) Jest z Hiszpanii.'],
                 answer: 'A',
                 notes: 'Test: jestem (yo).',
                 tags: ['a1', 'official', 'test'],
@@ -398,48 +399,48 @@
             ...base,
             level: LEVEL,
             courseId: topic.id,
-            titleEs: 'A1 — En la cafetería (pedir + precios)',
+            titleEs: 'A1 â€” En la cafeterÃ­a (pedir + precios)',
             descriptionEs:
-              'Poproszę… + números 1–10 + Ile kosztuje? + audio + voz.',
+              'PoproszÄ™â€¦ + nÃºmeros 1â€“10 + Ile kosztuje? + audio + voz.',
             html: HTML_A1_CAFE_NUMEROS,
             summary:
-              'Pides en una cafetería y practicas números y precios con audio y grabación.',
-            vocab: ['poproszę', 'kawa', 'herbata', 'woda', 'ile kosztuje', 'rachunek', 'złoty'],
+              'Pides en una cafeterÃ­a y practicas nÃºmeros y precios con audio y grabaciÃ³n.',
+            vocab: ['poproszÄ™', 'kawa', 'herbata', 'woda', 'ile kosztuje', 'rachunek', 'zÅ‚oty'],
             homework:
-              'Nagraj: “Poproszę kawę”, “Poproszę wodę”, “Rachunek, proszę”.',
+              'Nagraj: â€œPoproszÄ™ kawÄ™â€, â€œPoproszÄ™ wodÄ™â€, â€œRachunek, proszÄ™â€.',
           },
           exercises: [
             {
               order: 1,
-              type: 'Opción múltiple',
-              prompt: 'Elige: Poproszę ___.',
-              options: ['A) kawę', 'B) kawa', 'C) kawy'],
+              type: 'OpciÃ³n mÃºltiple',
+              prompt: 'Elige: PoproszÄ™ ___.',
+              options: ['A) kawÄ™', 'B) kawa', 'C) kawy'],
               answer: 'A',
-              notes: 'Frase lista (A1): Poproszę kawę.',
+              notes: 'Frase lista (A1): PoproszÄ™ kawÄ™.',
               tags: ['a1', 'official', 'vocab'],
             },
             {
               order: 2,
               type: 'Rellenar los espacios',
-              prompt: 'To kosztuje ___ złote.',
+              prompt: 'To kosztuje ___ zÅ‚ote.',
               answer: 'cztery|4',
-              notes: 'Números: 4 = cztery',
+              notes: 'NÃºmeros: 4 = cztery',
               tags: ['a1', 'official', 'grammar'],
             },
             {
               order: 3,
               type: 'Escuchar y completar los espacios',
-              prompt: 'Dzień dobry. Poproszę ___ i ___, proszę.',
-              answer: 'kawę||wodę',
-              notes: 'TTS_PL: Dzień dobry. Poproszę kawę i wodę, proszę.',
+              prompt: 'DzieÅ„ dobry. PoproszÄ™ ___ i ___, proszÄ™.',
+              answer: 'kawÄ™||wodÄ™',
+              notes: 'TTS_PL: DzieÅ„ dobry. PoproszÄ™ kawÄ™ i wodÄ™, proszÄ™.',
               tags: ['a1', 'official', 'listening'],
             },
             {
               order: 4,
               type: 'Escuchar y repetir (voz)',
-              prompt: 'Powtórz: Rachunek, proszę.',
+              prompt: 'PowtÃ³rz: Rachunek, proszÄ™.',
               answer: '',
-              notes: 'TTS_PL: Rachunek, proszę.',
+              notes: 'TTS_PL: Rachunek, proszÄ™.',
               tags: ['a1', 'official', 'speaking'],
             },
             {
@@ -447,22 +448,22 @@
               type: 'Tarjetas interactivas',
               prompt: 'Fichas del tema',
               options: [
-                '1) PL: poproszę | ES: quisiera | EX: Poproszę kawę.',
-                '2) PL: kawa | ES: café | EX: Poproszę kawę, proszę.',
-                '3) PL: herbata | ES: té | EX: Poproszę herbatę.',
-                '4) PL: woda | ES: agua | EX: Poproszę wodę.',
-                '5) PL: ile kosztuje? | ES: ¿cuánto cuesta? | EX: Ile kosztuje kawa?',
-                '6) PL: rachunek, proszę | ES: la cuenta, por favor | EX: Rachunek, proszę.',
+                '1) PL: poproszÄ™ | ES: quisiera | EX: PoproszÄ™ kawÄ™.',
+                '2) PL: kawa | ES: cafÃ© | EX: PoproszÄ™ kawÄ™, proszÄ™.',
+                '3) PL: herbata | ES: tÃ© | EX: PoproszÄ™ herbatÄ™.',
+                '4) PL: woda | ES: agua | EX: PoproszÄ™ wodÄ™.',
+                '5) PL: ile kosztuje? | ES: Â¿cuÃ¡nto cuesta? | EX: Ile kosztuje kawa?',
+                '6) PL: rachunek, proszÄ™ | ES: la cuenta, por favor | EX: Rachunek, proszÄ™.',
               ],
               answer: '',
-              notes: 'Abre “Fichas” para practicar tipo Quizlet.',
+              notes: 'Abre â€œFichasâ€ para practicar tipo Quizlet.',
               tags: ['a1', 'official', 'flashcards'],
             },
             {
               order: 6,
               type: 'Test final del tema',
-              prompt: 'Elige: ¿Cómo preguntas por el precio?',
-              options: ['A) Ile kosztuje?', 'B) Skąd jesteś?', 'C) Jak masz na imię?'],
+              prompt: 'Elige: Â¿CÃ³mo preguntas por el precio?',
+              options: ['A) Ile kosztuje?', 'B) SkÄ…d jesteÅ›?', 'C) Jak masz na imiÄ™?'],
               answer: 'A',
               notes: 'Test: frase clave',
               tags: ['a1', 'official', 'test'],
@@ -490,15 +491,15 @@
           return;
         }
         previewEl.innerHTML = `
-          <div style="font-weight:900;">Wykryte tematy (ruta A1 → pierwsze 2):</div>
+          <div style="font-weight:900;">Wykryte tematy (ruta A1 â†’ pierwsze 2):</div>
           ${selected
             .map((t, i) => {
-              const tt = esc(t?.title || t?.name || '(bez tytułu)');
+              const tt = esc(t?.title || t?.name || '(bez tytuÅ‚u)');
               const ty = esc(String(t?.type || ''));
               const sl = esc(String(t?.slug || ''));
               return `<div class="topicLine">
                 <b>#${i + 1}</b> ${tt}
-                <div class="muted">id: <code>${esc(t.id)}</code> · type: <code>${ty || '-'}</code> · slug: <code>${sl || '-'}</code></div>
+                <div class="muted">id: <code>${esc(t.id)}</code> Â· type: <code>${ty || '-'}</code> Â· slug: <code>${sl || '-'}</code></div>
               </div>`;
             })
             .join('')}
@@ -560,15 +561,15 @@
 
       document.getElementById('importBtn').onclick = async () => {
         if (!IS_ADMIN) {
-          alert('Nie jesteś adminem.');
+          alert('Nie jesteÅ› adminem.');
           return;
         }
         try {
-          log('⏳ Wczytuję tematy A1...', '');
+          log('â³ WczytujÄ™ tematy A1...', '');
           const all = await loadA1Topics();
           if (!all.length) {
             renderPreview([]);
-            log('❌ Brak tematów A1 w collection courses.', 'err');
+            log('âŒ Brak tematÃ³w A1 w collection courses.', 'err');
             return;
           }
 
@@ -577,25 +578,27 @@
           renderPreview(selected);
 
           if (selected.length < 2) {
-            log('❌ Potrzebuję minimum 2 tematy A1.', 'err');
+            log('âŒ PotrzebujÄ™ minimum 2 tematy A1.', 'err');
             return;
           }
 
-          log('⏳ Wgrywam 2 oficjalne lekcje A1...', '');
+          log('â³ Wgrywam 2 oficjalne lekcje A1...', '');
           for (let i = 0; i < selected.length; i += 1) {
             await upsertTopicMetaAndExercises(selected[i], i);
           }
 
           log(
-            '✅ Gotowe. Otwórz: <code>course.html?level=A1</code> → wybierz temat #1/#2 → potem <code>Ejercicios</code> i <code>Fichas</code>.',
+            'âœ… Gotowe. OtwÃ³rz: <code>course.html?level=A1</code> â†’ wybierz temat #1/#2 â†’ potem <code>Ejercicios</code> i <code>Fichas</code>.',
             'ok',
           );
         } catch (e) {
           console.error(e);
-          log('❌ Błąd importu. Sprawdź konsolę.', 'err');
+          log('âŒ BÅ‚Ä…d importu. SprawdÅº konsolÄ™.', 'err');
         }
       };
     </script>
   </body>
 </html>
+
+
 

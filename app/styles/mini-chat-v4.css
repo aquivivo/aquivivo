@@ -1606,32 +1606,3 @@ body.fusion-profile.neu-social-app .mini-chat-dock.mini-chat-v4 .mini-chat-v4-op
     bottom: 16px;
   }
 }
-
-/* Unified anchor: enforce identical mini-chat position across pages. */
-:root {
-  --mini-chat-anchor-right: 20px;
-  --mini-chat-anchor-bottom: 20px;
-  --mini-chat-panel-bottom: 108px;
-}
-
-#miniChatDock.mini-chat-dock.mini-chat-v4 {
-  right: var(--mini-chat-anchor-right) !important;
-  bottom: var(--mini-chat-anchor-bottom) !important;
-}
-
-#miniChatDock.mini-chat-dock.mini-chat-v4 #miniChatPanel.mini-chat-v4-panel {
-  right: var(--mini-chat-anchor-right) !important;
-  bottom: var(--mini-chat-panel-bottom) !important;
-}
-
-#miniChatTray.mini-chat-v4-tray {
-  right: var(--mini-chat-anchor-right) !important;
-  bottom: var(--mini-chat-anchor-bottom) !important;
-}
-
-@media (max-width: 900px) {
-  :root {
-    --mini-chat-anchor-right: 14px;
-    --mini-chat-anchor-bottom: 16px;
-  }
-}

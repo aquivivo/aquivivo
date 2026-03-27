@@ -4,7 +4,7 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.8.0/fi
 
 const MINI_CHAT_MODULE_PATH = './global-mini-chat.js?v=20260327b1';
 const MINI_CHAT_STYLE_HREF = `/${String(getNeuPath('styles/mini-chat-v4.css') || '').replace(/^\/+/, '')}?v=20260327b1`;
-const MINI_CHAT_GLOBAL_STYLE_HREF = `/${String(getNeuPath('styles/mini-chat-global.css') || '').replace(/^\/+/, '')}?v=20260327b1`;
+const MINI_CHAT_GLOBAL_STYLE_HREF = `/${String(getNeuPath('styles/global-chat.css') || '').replace(/^\/+/, '')}?v=20260327b2`;
 const MINI_CHAT_BOOTSTRAP_FLAG = '__AV_MINI_CHAT_BOOTSTRAP_WIRED__';
 
 let miniChatModulePromise = null;

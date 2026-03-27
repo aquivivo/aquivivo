@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="styles/mini-chat-v4.css?v=20260327b1" />
     <link rel="stylesheet" href="styles/neu-social-app.css?v=20260326h3" />
     <script src="assets/js/neu-layout.js?v=20260327b1" type="module"></script>
+      <link rel="stylesheet" href="styles/global-chat.css?v=20260327a" />
   </head>
   <body data-page="profile" data-no-side-panel="1" class="fusion-profile neu-social-app no-side-panel" data-portal="feed">
     <div id="appHeader"></div>
@@ -23,7 +24,7 @@
         <header class="neu-onboarding-head">
           <p class="neu-onboarding-kicker">NEU onboarding</p>
           <h1>Completa tu perfil</h1>
-          <p class="neu-onboarding-sub">Dos pasos rÃƒÂ¡pidos para activar tu experiencia social.</p>
+          <p class="neu-onboarding-sub">Dos pasos rÃƒÆ’Ã‚Â¡pidos para activar tu experiencia social.</p>
         </header>
 
         <div class="neu-onboarding-progress-wrap" aria-hidden="true">
@@ -52,11 +53,11 @@
               <label>
                 Username
                 <input id="onbUsername" class="input" type="text" maxlength="24" autocapitalize="none" />
-                <p class="neu-onboarding-hint">@ min. 3 caracteres, minÃƒÂºsculas, sin espacios.</p>
+                <p class="neu-onboarding-hint">@ min. 3 caracteres, minÃƒÆ’Ã‚Âºsculas, sin espacios.</p>
                 <p class="neu-onboarding-error" id="onbError-username"></p>
               </label>
               <label>
-                PaÃƒÂ­s de origen
+                PaÃƒÆ’Ã‚Â­s de origen
                 <select id="onbCountry" class="select">
                   <option value="">Selecciona</option>
                   <option value="Argentina">Argentina</option>
@@ -85,12 +86,12 @@
                 <p class="neu-onboarding-error" id="onbError-countryOfOrigin"></p>
               </label>
               <label id="onbCountryOtherWrap" hidden>
-                Escribe tu paÃƒÂ­s
+                Escribe tu paÃƒÆ’Ã‚Â­s
                 <input id="onbCountryOther" class="input" type="text" maxlength="80" />
                 <p class="neu-onboarding-error" id="onbError-countryOfOriginOther"></p>
               </label>
               <label>
-                GÃƒÂ©nero
+                GÃƒÆ’Ã‚Â©nero
                 <select id="onbGender" class="select">
                   <option value="">Selecciona</option>
                   <option value="female">female</option>
@@ -112,7 +113,7 @@
                 <p class="neu-onboarding-error" id="onbError-language"></p>
               </label>
               <label>
-                AÃƒÂ±o de nacimiento (opcional)
+                AÃƒÆ’Ã‚Â±o de nacimiento (opcional)
                 <input id="onbBirthYear" class="input" type="number" inputmode="numeric" min="1900" max="2100" />
                 <p class="neu-onboarding-error" id="onbError-birthYear"></p>
               </label>
@@ -122,7 +123,7 @@
           <section class="neu-onboarding-step" data-onboarding-step="2">
             <div class="neu-onboarding-grid">
               <label>
-                TelÃƒÂ©fono
+                TelÃƒÆ’Ã‚Â©fono
                 <input id="onbPhone" class="input" type="tel" autocomplete="tel" placeholder="+48 600 700 800" />
                 <p class="neu-onboarding-hint">Formato E.164. Si no pones +, usamos prefijo PL (+48).</p>
                 <p class="neu-onboarding-error" id="onbError-phone"></p>
@@ -138,7 +139,7 @@
               </label>
               <label class="neu-onboarding-check">
                 <input id="onbTermsAccepted" type="checkbox" />
-                <span>Acepto tÃƒÂ©rminos y polÃƒÂ­tica de privacidad.</span>
+                <span>Acepto tÃƒÆ’Ã‚Â©rminos y polÃƒÆ’Ã‚Â­tica de privacidad.</span>
               </label>
               <p class="neu-onboarding-error neu-onboarding-check-error" id="onbError-termsAccepted"></p>
             </div>
@@ -160,27 +161,27 @@
         <header class="neu-post-onboarding-head">
           <p class="neu-post-onboarding-kicker">NEU start</p>
           <h1>Wszystko gotowe</h1>
-          <p>ZrÃƒÂ³b jeden szybki krok, Ã…Â¼eby zaczÃ„â€¦Ã„â€¡ aktywnie korzystaÃ„â€¡ z aplikacji.</p>
+          <p>ZrÃƒÆ’Ã‚Â³b jeden szybki krok, Ãƒâ€¦Ã‚Â¼eby zaczÃƒâ€žÃ¢â‚¬Â¦Ãƒâ€žÃ¢â‚¬Â¡ aktywnie korzystaÃƒâ€žÃ¢â‚¬Â¡ z aplikacji.</p>
         </header>
 
         <div class="neu-post-onboarding-grid">
           <button class="neu-post-action-card" type="button" data-post-onb-action="avatar">
-            <strong>Dodaj zdjÃ„â„¢cie profilowe</strong>
-            <span>UzupeÃ…â€šnij avatar i dokoÃ…â€žcz profil.</span>
+            <strong>Dodaj zdjÃƒâ€žÃ¢â€žÂ¢cie profilowe</strong>
+            <span>UzupeÃƒâ€¦Ã¢â‚¬Å¡nij avatar i dokoÃƒâ€¦Ã¢â‚¬Å¾cz profil.</span>
           </button>
           <button class="neu-post-action-card" type="button" data-post-onb-action="suggested">
-            <strong>ZnajdÃ…Âº osoby do obserwowania</strong>
-            <span>PrzejdÃ…Âº do Pulse i zobacz sekcjÃ„â„¢ Sugerowani.</span>
+            <strong>ZnajdÃƒâ€¦Ã‚Âº osoby do obserwowania</strong>
+            <span>PrzejdÃƒâ€¦Ã‚Âº do Pulse i zobacz sekcjÃƒâ€žÃ¢â€žÂ¢ Sugerowani.</span>
           </button>
           <button class="neu-post-action-card" type="button" data-post-onb-action="post">
             <strong>Napisz pierwszy post</strong>
-            <span>OtwÃƒÂ³rz szybki modal i opublikuj pierwszy wpis.</span>
+            <span>OtwÃƒÆ’Ã‚Â³rz szybki modal i opublikuj pierwszy wpis.</span>
           </button>
         </div>
 
         <p class="neu-post-onboarding-msg" id="postOnboardingMsg"></p>
         <div class="neu-post-onboarding-actions">
-          <button class="text-link" id="postOnboardingSkipBtn" type="button">PomiÃ…â€ž</button>
+          <button class="text-link" id="postOnboardingSkipBtn" type="button">PomiÃƒâ€¦Ã¢â‚¬Å¾</button>
         </div>
       </div>
     </section>
@@ -374,7 +375,7 @@
 
                 <section class="neuChatInboxPanel">
                   <div id="neuInboxEmpty" class="neuInboxEmpty">
-                    <p>Selecciona una conversaciÃƒÂ³n</p>
+                    <p>Selecciona una conversaciÃƒÆ’Ã‚Â³n</p>
                   </div>
                   <div id="neuInboxChatHost" class="neuInboxChatHost hidden"></div>
                 </section>
@@ -562,7 +563,7 @@
             Avatar URL
             <input id="neuProfileAvatarUrlInput" class="input" type="url" placeholder="https://..." />
           </label>
-          <p class="hintSmall neu-profile-avatar-url-hint">MoÃ…Â¼esz wkleiÃ„â€¡ URL obrazka albo uÃ…Â¼yÃ„â€¡ uploadu pliku.</p>
+          <p class="hintSmall neu-profile-avatar-url-hint">MoÃƒâ€¦Ã‚Â¼esz wkleiÃƒâ€žÃ¢â‚¬Â¡ URL obrazka albo uÃƒâ€¦Ã‚Â¼yÃƒâ€žÃ¢â‚¬Â¡ uploadu pliku.</p>
 
           <div class="composer-grid neu-profile-grid">
             <label>
@@ -578,12 +579,12 @@
           <section class="neu-profile-presence-group" aria-label="Modo del perfil">
             <div class="neu-profile-presence-head">
               <strong>Modo del perfil</strong>
-              <span>Una seÃƒÂ±al ligera para orientar mensajes y planes.</span>
+              <span>Una seÃƒÆ’Ã‚Â±al ligera para orientar mensajes y planes.</span>
             </div>
             <div class="neu-profile-presence-options" id="neuProfilePresencePicker" data-selected-mode="open">
               <button class="neu-profile-presence-option" data-neu-presence-mode="open" type="button">
                 <strong>Abierta a conversar</strong>
-                <span>Ideal para mensajes nuevos y conexiones rÃƒÂ¡pidas.</span>
+                <span>Ideal para mensajes nuevos y conexiones rÃƒÆ’Ã‚Â¡pidas.</span>
               </button>
               <button class="neu-profile-presence-option" data-neu-presence-mode="city" type="button">
                 <strong>Busco plan local</strong>
@@ -591,14 +592,14 @@
               </button>
               <button class="neu-profile-presence-option" data-neu-presence-mode="chill" type="button">
                 <strong>Hoy chill</strong>
-                <span>Modo tranquilo, sin prisa y sin presiÃƒÂ³n.</span>
+                <span>Modo tranquilo, sin prisa y sin presiÃƒÆ’Ã‚Â³n.</span>
               </button>
             </div>
           </section>
 
           <label class="composer-text-wrap neu-profile-bio-wrap">
             Bio
-            <textarea id="neuProfileBioInput" rows="3" maxlength="160" placeholder="CuÃƒÂ©ntanos algo sobre ti"></textarea>
+            <textarea id="neuProfileBioInput" rows="3" maxlength="160" placeholder="CuÃƒÆ’Ã‚Â©ntanos algo sobre ti"></textarea>
           </label>
           <p class="hintSmall neu-profile-bio-count" id="neuProfileBioCount">0/160</p>
           <p class="hintSmall" id="neuProfileMsg"></p>
@@ -636,3 +637,5 @@
     </script>
   </body>
 </html>
+
+

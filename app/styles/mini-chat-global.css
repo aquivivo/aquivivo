@@ -1,3 +1,84 @@
+/* Shared chat anchor across global + neu + legacy implementations. */
+:root {
+  --global-chat-right: 20px;
+  --global-chat-bottom: 20px;
+  --global-chat-panel-bottom: 108px;
+  --global-chat-z-dock: 2147483000;
+  --global-chat-z-tray: 2147483010;
+  --global-chat-z-panel: 2147483020;
+  --global-chat-z-thread: 2147483030;
+}
+
+#miniChatDock,
+#miniChatDock.mini-chat-dock,
+#miniChatDock.mini-chat-dock.mini-chat-v4,
+#mini-chat,
+#mini-chat.mini-chat,
+.mini-chat-dock,
+.mini-chat-dock.mini-chat-v4,
+.mini-chat,
+.chat-dock,
+#neuChatFloatFlag {
+  position: fixed !important;
+  right: var(--global-chat-right) !important;
+  bottom: var(--global-chat-bottom) !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: var(--global-chat-z-dock) !important;
+  transform: none !important;
+}
+
+#miniChatDock,
+#mini-chat,
+.mini-chat-dock,
+.mini-chat,
+.chat-dock {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+}
+
+#miniChatTray,
+#miniChatTray.mini-chat-v4-tray,
+.mini-chat-v4-tray {
+  position: fixed !important;
+  right: var(--global-chat-right) !important;
+  bottom: var(--global-chat-bottom) !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: var(--global-chat-z-tray) !important;
+  transform: none !important;
+}
+
+#miniChatPanel,
+#miniChatPanel.mini-chat-v4-panel,
+.mini-chat-dock .mini-chat-v4-panel,
+.mini-chat-dock.mini-chat-v4 .mini-chat-v4-panel,
+.neu-chat-window.neuDockThreadWindow {
+  position: fixed !important;
+  right: var(--global-chat-right) !important;
+  bottom: var(--global-chat-panel-bottom) !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: var(--global-chat-z-panel) !important;
+  transform: none !important;
+}
+
+#miniChatThreadRoot {
+  position: fixed !important;
+  inset: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: var(--global-chat-z-thread) !important;
+  pointer-events: none;
+  transform: none !important;
+}
+
+#miniChatThreadRoot .mini-chat-v4-thread-window,
+.neu-chat-window.neuDockThreadWindow {
+  pointer-events: auto;
+}
+
 /* Fallback dock styling for pages outside the social-app shell. */
 #neuChatFloatFlag {
   display: none !important;

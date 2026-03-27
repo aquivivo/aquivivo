@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
@@ -42,6 +42,7 @@
         line-height: 1.55;
       }
     </style>
+      <link rel="stylesheet" href="../styles/global-chat.css?v=20260327a" />
   </head>
   <body>
     <div
@@ -248,7 +249,7 @@
               const sl = esc(String(t?.slug || ''));
               return `<div class="topicLine">
                 <b>#${i + 1}</b> ${tt}
-                <div class="muted">id: <code>${esc(t.id)}</code> · type: <code>${ty || '-'}</code> · slug: <code>${sl || '-'}</code></div>
+                <div class="muted">id: <code>${esc(t.id)}</code> Â· type: <code>${ty || '-'}</code> Â· slug: <code>${sl || '-'}</code></div>
               </div>`;
             })
             .join('')}
@@ -644,3 +645,5 @@
     </script>
   </body>
 </html>
+
+

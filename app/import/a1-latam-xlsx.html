@@ -1,8 +1,8 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>A1 (LATAM) vocab .xlsx → Firestore (AquiVivo)</title>
+    <title>A1 (LATAM) vocab .xlsx â†’ Firestore (AquiVivo)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../styles/styles.css?v=20260209a" />
     <style>
@@ -106,6 +106,7 @@
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+      <link rel="stylesheet" href="../styles/global-chat.css?v=20260327a" />
   </head>
   <body>
     <div
@@ -119,18 +120,18 @@
         margin-bottom: 14px;
       "
     >
-      Sesión activa:
+      SesiÃ³n activa:
       <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
         >Cargando...</strong
       >
     </div>
 
-    <h2>📚 Import: A1 vocab .xlsx → Ruta LATAM (A1)</h2>
+    <h2>ðŸ“š Import: A1 vocab .xlsx â†’ Ruta LATAM (A1)</h2>
     <p class="muted">
       Tworzy automatycznie tematy (<code>courses</code>) z <code>track=latam</code>,
-      wgrywa słownictwo do <code>course_meta.vocab</code> (+ <code>published=true</code>)
-      i generuje ćwiczenia w <code>exercises</code> (fiszki, luki, wybór, listening,
-      speaking, prawda/fałsz, matching, ordering, pisanie, test). Wymaga admin:
+      wgrywa sÅ‚ownictwo do <code>course_meta.vocab</code> (+ <code>published=true</code>)
+      i generuje Ä‡wiczenia w <code>exercises</code> (fiszki, luki, wybÃ³r, listening,
+      speaking, prawda/faÅ‚sz, matching, ordering, pisanie, test). Wymaga admin:
       <code>aquivivo.pl@gmail.com</code>.
     </p>
 
@@ -145,7 +146,7 @@
           <span id="fileStatus" class="muted small"></span>
         </div>
         <div class="muted small" style="margin-top: 10px">
-          Wykryję zakładki i przygotuję plan lekcji (auto-split większych tematów).
+          WykryjÄ™ zakÅ‚adki i przygotujÄ™ plan lekcji (auto-split wiÄ™kszych tematÃ³w).
         </div>
       </div>
 
@@ -166,8 +167,8 @@
           <code>course_meta.vocab</code></label
         >
         <label
-          ><input id="optCleanup" type="checkbox" checked /> Usuń poprzednie
-          ćwiczenia z tego importu</label
+          ><input id="optCleanup" type="checkbox" checked /> UsuÅ„ poprzednie
+          Ä‡wiczenia z tego importu</label
         >
       </div>
 
@@ -177,7 +178,7 @@
           <input id="optTrack" class="input" style="width: 120px" value="latam" />
         </label>
         <label class="small"
-          >Max słów na lekcję:
+          >Max sÅ‚Ã³w na lekcjÄ™:
           <input
             id="optMaxRows"
             class="input"
@@ -197,31 +198,31 @@
           ><input id="optFill" type="checkbox" checked /> Luki (pisanie)</label
         >
         <label
-          ><input id="optChoice" type="checkbox" checked /> Wybór (quiz)</label
+          ><input id="optChoice" type="checkbox" checked /> WybÃ³r (quiz)</label
         >
         <label
           ><input id="optListenFill" type="checkbox" checked /> Listening + luki</label
         >
         <label
-          ><input id="optListenChoice" type="checkbox" checked /> Listening + wybór</label
+          ><input id="optListenChoice" type="checkbox" checked /> Listening + wybÃ³r</label
         >
         <label
           ><input id="optSpeak" type="checkbox" checked /> Speaking (nagrywanie)</label
         >
         <label
-          ><input id="optTF" type="checkbox" checked /> Prawda / fałsz</label
+          ><input id="optTF" type="checkbox" checked /> Prawda / faÅ‚sz</label
         >
         <label
           ><input id="optMatch" type="checkbox" checked /> Dopasuj pary (matching)</label
         >
         <label
-          ><input id="optOrder" type="checkbox" checked /> Ułóż zdanie (ordering)</label
+          ><input id="optOrder" type="checkbox" checked /> UÅ‚Ã³Å¼ zdanie (ordering)</label
         >
         <label
           ><input id="optWrite" type="checkbox" checked /> Pisanie (writing)</label
         >
         <label
-          ><input id="optTest" type="checkbox" checked /> Test końcowy</label
+          ><input id="optTest" type="checkbox" checked /> Test koÅ„cowy</label
         >
       </div>
 
@@ -237,7 +238,7 @@
             min="0"
         /></label>
         <label class="small"
-          >Pytania w teście:
+          >Pytania w teÅ›cie:
           <input
             id="optTestN"
             class="input"
@@ -261,20 +262,20 @@
       </div>
 
       <div class="muted small" style="margin-top: 10px">
-        Tip: Jeśli chcesz „wszystko”, ustaw limit na <code>0</code>. Przy dużych
-        setach może to chwilę potrwać.
+        Tip: JeÅ›li chcesz â€žwszystkoâ€, ustaw limit na <code>0</code>. Przy duÅ¼ych
+        setach moÅ¼e to chwilÄ™ potrwaÄ‡.
       </div>
     </div>
 
     <div class="box" style="margin-top: 12px">
-      <div style="font-weight: 900">4) Podgląd: zakładka XLSX → temat (LATAM)</div>
+      <div style="font-weight: 900">4) PodglÄ…d: zakÅ‚adka XLSX â†’ temat (LATAM)</div>
       <div id="mappingWrap" class="muted small" style="margin-top: 10px">
         (najpierw wczytaj XLSX)
       </div>
     </div>
 
     <button id="btnImportAll" class="btn-yellow" style="margin-top: 12px">
-      IMPORTUJ WSZYSTKO (A1 · LATAM)
+      IMPORTUJ WSZYSTKO (A1 Â· LATAM)
     </button>
 
     <div id="log" class="box">
@@ -353,9 +354,9 @@
       function stripSheetName(name) {
         let s = String(name || '').trim();
         s = s.replace(/^[^A-Za-z0-9]+\s*/g, '');
-        s = s.replace(/^a1\s*[-—:]+?\s*/i, '');
-        s = s.replace(/^vocabulario\s*a1\s*[-—:]+?\s*/i, '');
-        s = s.replace(/^vocabulario\s*[-—:]+?\s*/i, '');
+        s = s.replace(/^a1\s*[-â€”:]+?\s*/i, '');
+        s = s.replace(/^vocabulario\s*a1\s*[-â€”:]+?\s*/i, '');
+        s = s.replace(/^vocabulario\s*[-â€”:]+?\s*/i, '');
         return s.trim();
       }
 
@@ -488,13 +489,13 @@
       let plannedLessons = []; // [{sheetName, partIdx, partCount, rows, topic}]
 
       onAuthStateChanged(auth, (user) => {
-        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesión)';
+        if (sessionEl) sessionEl.textContent = user?.email || '(sin sesiÃ³n)';
         IS_ADMIN =
           !!user &&
           String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
         if (!IS_ADMIN) {
           log(
-            `❌ Zaloguj się jako admin (${esc(ADMIN_EMAIL)}), potem wróć na tę stronę.`,
+            `âŒ Zaloguj siÄ™ jako admin (${esc(ADMIN_EMAIL)}), potem wrÃ³Ä‡ na tÄ™ stronÄ™.`,
             'err',
           );
         }
@@ -512,7 +513,7 @@
             const topic = l.topic || {};
             const sheetLabel =
               l.partCount > 1
-                ? `${l.sheetName} (część ${Number(l.partIdx) + 1}/${Number(l.partCount)})`
+                ? `${l.sheetName} (czÄ™Å›Ä‡ ${Number(l.partIdx) + 1}/${Number(l.partCount)})`
                 : l.sheetName;
             return `
               <tr>
@@ -520,7 +521,7 @@
                   <div style="font-weight:900;">${esc(sheetLabel)}</div>
                   <div class="muted small">
                     ${esc(stripSheetName(l.sheetName)) || '-'}
-                    <span class="pillMini">${Number(l.rows?.length || 0)} słów</span>
+                    <span class="pillMini">${Number(l.rows?.length || 0)} sÅ‚Ã³w</span>
                   </div>
                 </td>
                 <td>
@@ -539,14 +540,14 @@
           <table class="mapTable">
             <thead>
               <tr>
-                <th>Zakładka (XLSX)</th>
+                <th>ZakÅ‚adka (XLSX)</th>
                 <th>Temat (LATAM)</th>
               </tr>
             </thead>
             <tbody>${rowsHtml}</tbody>
           </table>
           <div class="muted small" style="margin-top:10px;">
-            Import tworzy tematy automatycznie. Po imporcie otwórz:
+            Import tworzy tematy automatycznie. Po imporcie otwÃ³rz:
             <code>curso-latam.html?level=A1</code>.
           </div>
         `;
@@ -584,28 +585,28 @@
             .map((row) => {
               const pl = pickRowValue(row, ['Polski', 'PL', 'Polaco']);
               const es = pickRowValue(row, [
-                'Español (LATAM)',
+                'EspaÃ±ol (LATAM)',
                 'Espanol (LATAM)',
-                'Español',
+                'EspaÃ±ol',
                 'Espanol',
                 'ES',
-                'Español (ES)',
+                'EspaÃ±ol (ES)',
               ]);
               const phon = pickRowValue(row, [
                 'Fonetyka',
-                'Fonetyka (para latinos – lectura del polaco)',
+                'Fonetyka (para latinos â€“ lectura del polaco)',
                 'Fonetyka (para latinos - lectura del polaco)',
               ]);
-              const section = pickRowValue(row, ['Sección', 'Seccion', 'Sekcja']);
+              const section = pickRowValue(row, ['SecciÃ³n', 'Seccion', 'Sekcja']);
               const exPl = pickRowValue(row, [
                 'Ejemplo de uso (PL)',
                 'Ejemplo (PL)',
-                'Przykład (PL)',
+                'PrzykÅ‚ad (PL)',
               ]);
               const exEs = pickRowValue(row, [
                 'Ejemplo de uso (ES)',
                 'Ejemplo (ES)',
-                'Przykład (ES)',
+                'PrzykÅ‚ad (ES)',
               ]);
 
               return {
@@ -644,34 +645,34 @@
         const base = stripSheetName(sheetName);
         const key = normalizeText(base);
         let icon = null;
-        if (key.includes('saludos') || key.includes('presentacion')) icon = '👋';
-        else if (key.includes('paises') || key.includes('nacionalidades')) icon = '🌍';
-        else if (key.includes('informacion')) icon = '🧾';
-        else if (key.includes('famil')) icon = '👪';
+        if (key.includes('saludos') || key.includes('presentacion')) icon = 'ðŸ‘‹';
+        else if (key.includes('paises') || key.includes('nacionalidades')) icon = 'ðŸŒ';
+        else if (key.includes('informacion')) icon = 'ðŸ§¾';
+        else if (key.includes('famil')) icon = 'ðŸ‘ª';
         else if (key.includes('casa') || key.includes('vivienda') || key.includes('dom') || key.includes('mieszkan'))
-          icon = '🏠';
+          icon = 'ðŸ ';
         else if (key.includes('comida') || key.includes('bebida') || key.includes('jedzen'))
-          icon = '🍽️';
+          icon = 'ðŸ½ï¸';
         else if (key.includes('compr') || key.includes('tienda') || key.includes('sklep') || key.includes('zakup'))
-          icon = '🛒';
+          icon = 'ðŸ›’';
         else if (key.includes('ciudad') || key.includes('lugar') || key.includes('miasto'))
-          icon = '🏙️';
+          icon = 'ðŸ™ï¸';
         else if (key.includes('rutina') || key.includes('diaria') || key.includes('czas') || key.includes('tiempo'))
-          icon = '⏰';
-        else if (key.includes('descripcion') || key.includes('opis')) icon = '📝';
+          icon = 'â°';
+        else if (key.includes('descripcion') || key.includes('opis')) icon = 'ðŸ“';
 
         const trackKey = slugify(track);
         const idPart = slugify(base) || `tema-${order}`;
         const partKey = partCount > 1 ? `${idPart}-p${partIdx + 1}` : idPart;
         const id = trackKey ? `${trackKey}-a1-${partKey}` : `a1-${partKey}`;
-        const partSuffix = partCount > 1 ? ` — Parte ${partIdx + 1}` : '';
+        const partSuffix = partCount > 1 ? ` â€” Parte ${partIdx + 1}` : '';
         return {
           id,
           slug: id,
           level: LEVEL,
           title: `${base}${partSuffix}`,
-          subtitle: 'Vocabulario y práctica comunicativa.',
-          desc: 'Vocabulario y práctica comunicativa.',
+          subtitle: 'Vocabulario y prÃ¡ctica comunicativa.',
+          desc: 'Vocabulario y prÃ¡ctica comunicativa.',
           type: 'vocab',
           order: Number(order || 0),
           track: trackKey || null,
@@ -709,7 +710,7 @@
 
       $('btnParse').addEventListener('click', async () => {
         if (!IS_ADMIN) {
-          alert('Nie jesteś adminem.');
+          alert('Nie jesteÅ› adminem.');
           return;
         }
         const file = $('xlsxFile')?.files?.[0] || null;
@@ -717,23 +718,23 @@
           alert('Wybierz plik .xlsx.');
           return;
         }
-        if (fileStatus) fileStatus.textContent = '⏳ Wczytuję...';
+        if (fileStatus) fileStatus.textContent = 'â³ WczytujÄ™...';
         try {
           const wb = await parseXlsxFile(file);
           const sheets = sheetRowsFromWorkbook(wb);
           rawSheets = sheets.filter((s) => !normalizeText(s.name).includes('rodzaje zadan'));
           rebuildPlan();
           if (fileStatus)
-            fileStatus.textContent = `✅ OK (${rawSheets.length} zakładek)`;
+            fileStatus.textContent = `âœ… OK (${rawSheets.length} zakÅ‚adek)`;
           log(
-            `✅ XLSX wczytany. Zakładki: <code>${esc(rawSheets.map((s) => s.name).join(' | '))}</code>`,
+            `âœ… XLSX wczytany. ZakÅ‚adki: <code>${esc(rawSheets.map((s) => s.name).join(' | '))}</code>`,
             'ok',
           );
           rebuildMappingUI();
         } catch (e) {
           console.error(e);
-          if (fileStatus) fileStatus.textContent = '❌ Błąd';
-          log('❌ Nie mogę wczytać XLSX. Sprawdź konsolę.', 'err');
+          if (fileStatus) fileStatus.textContent = 'âŒ BÅ‚Ä…d';
+          log('âŒ Nie mogÄ™ wczytaÄ‡ XLSX. SprawdÅº konsolÄ™.', 'err');
         }
       });
 
@@ -790,7 +791,7 @@
           const pl = String(r.pl || '').trim();
           const es = String(r.es || '').trim();
           if (!pl && !es) return;
-          const line = pl && es ? `${pl} — ${es}` : pl || es;
+          const line = pl && es ? `${pl} â€” ${es}` : pl || es;
           const key = normalizeText(line);
           if (!key || seen.has(key)) return;
           seen.add(key);
@@ -830,7 +831,7 @@
             const exEs = String(r.exEs || '').trim();
             const blank =
               blankExample(exPl, pl) ||
-              (es ? `Traduce al polaco: ${es} → ___` : 'Completa: ___');
+              (es ? `Traduce al polaco: ${es} â†’ ___` : 'Completa: ___');
             const notes = [
               r.phon ? `Pron: ${sanitizeCardText(r.phon)}` : '',
               exEs ? `ES: ${sanitizeCardText(exEs)}` : '',
@@ -869,8 +870,8 @@
               data: makeExerciseDoc({
                 topic,
                 order: order++,
-                type: 'Opción múltiple',
-                prompt: `¿Cómo se dice en polaco: "${es}"?`,
+                type: 'OpciÃ³n mÃºltiple',
+                prompt: `Â¿CÃ³mo se dice en polaco: "${es}"?`,
                 options,
                 answer: pl,
                 notes,
@@ -933,7 +934,7 @@
                 topic,
                 order: order++,
                 type: 'Escuchar y elegir la respuesta',
-                prompt: 'Escucha (PL) y elige la traducción en español.',
+                prompt: 'Escucha (PL) y elige la traducciÃ³n en espaÃ±ol.',
                 options,
                 answer: es,
                 notes,
@@ -964,7 +965,7 @@
                 topic,
                 order: order++,
                 type: 'Escuchar y repetir (voz)',
-                prompt: `Powtórz: ${tts}`,
+                prompt: `PowtÃ³rz: ${tts}`,
                 options: [],
                 answer: '',
                 notes,
@@ -1020,7 +1021,7 @@
                 topic,
                 order: order++,
                 type: 'Relacionar (pares)',
-                prompt: 'Relaciona el polaco con el español.',
+                prompt: 'Relaciona el polaco con el espaÃ±ol.',
                 options,
                 answer: '',
                 notes: '',
@@ -1065,8 +1066,8 @@
             .filter(Boolean)
             .slice(0, 4);
           const prompts = [
-            `Escribe 4–6 frases sobre: ${base}.`,
-            `Escribe un mini-diálogo (4 líneas) sobre: ${base}.`,
+            `Escribe 4â€“6 frases sobre: ${base}.`,
+            `Escribe un mini-diÃ¡logo (4 lÃ­neas) sobre: ${base}.`,
             hints.length ? `Escribe 3 frases usando: ${hints.join(', ')}.` : 'Escribe 3 frases usando el vocabulario del tema.',
           ];
           prompts.forEach((p, idx) => {
@@ -1075,7 +1076,7 @@
               data: makeExerciseDoc({
                 topic,
                 order: order++,
-                type: 'Escribir (producción)',
+                type: 'Escribir (producciÃ³n)',
                 prompt: p,
                 options: [],
                 answer: '',
@@ -1091,7 +1092,7 @@
           const lines = all.map((r) => {
             const pl = sanitizeCardText(r.pl);
             const es = sanitizeCardText(r.es);
-            const phon = r.phon ? `Pron: ${sanitizeCardText(r.phon)} · ` : '';
+            const phon = r.phon ? `Pron: ${sanitizeCardText(r.phon)} Â· ` : '';
             const exPl = r.exPl ? sanitizeCardText(r.exPl) : '';
             const exEs = r.exEs ? sanitizeCardText(r.exEs) : '';
             const ex = `${phon}${exPl}${exEs ? ` / ES: ${exEs}` : ''}`.trim();
@@ -1116,7 +1117,7 @@
                     : 'Fichas del tema',
                 options: opts,
                 answer: '',
-                notes: 'Abre “Fichas” para practicar tipo Quizlet.',
+                notes: 'Abre â€œFichasâ€ para practicar tipo Quizlet.',
                 tags: [...tagBase, 'type:cards'],
               }),
             });
@@ -1137,7 +1138,7 @@
                 topic,
                 order: order++,
                 type: 'Test final del tema',
-                prompt: `Test: ¿Cómo se dice en polaco: "${es}"?`,
+                prompt: `Test: Â¿CÃ³mo se dice en polaco: "${es}"?`,
                 options,
                 answer: pl,
                 notes: '',
@@ -1151,7 +1152,7 @@
       }
 
       function buildLessonHtml(topic, vocabItems) {
-        const title = String(topic?.title || topic?.name || '').trim() || 'Lección';
+        const title = String(topic?.title || topic?.name || '').trim() || 'LecciÃ³n';
         const desc = String(topic?.desc || topic?.subtitle || '').trim();
         const preview = Array.isArray(vocabItems) ? vocabItems.slice(0, 14) : [];
         return `
@@ -1162,16 +1163,16 @@
             <h2 class="sectionTitle" style="margin-top:14px;">Objetivo</h2>
             <ul>
               <li>Aprender vocabulario clave en contexto.</li>
-              <li>Practicar comprensión y producción (hablar/escribir).</li>
+              <li>Practicar comprensiÃ³n y producciÃ³n (hablar/escribir).</li>
               <li>Consolidar con fichas y repaso (SRS).</li>
             </ul>
 
             <h2 class="sectionTitle" style="margin-top:14px;">Vocabulario clave</h2>
-            ${preview.length ? `<ul>${preview.map((v) => `<li>${esc(v)}</li>`).join('')}</ul>` : '<div class="muted">—</div>'}
+            ${preview.length ? `<ul>${preview.map((v) => `<li>${esc(v)}</li>`).join('')}</ul>` : '<div class="muted">â€”</div>'}
 
             <h2 class="sectionTitle" style="margin-top:14px;">Tarea comunicativa</h2>
             <div class="muted" style="line-height:1.6;">
-              Escribe 4–6 frases usando el vocabulario del tema.
+              Escribe 4â€“6 frases usando el vocabulario del tema.
             </div>
           </div>
         `;
@@ -1179,7 +1180,7 @@
 
       $('btnImportAll').addEventListener('click', async () => {
         if (!IS_ADMIN) {
-          alert('Nie jesteś adminem.');
+          alert('Nie jesteÅ› adminem.');
           return;
         }
         if (!rawSheets.length) {
@@ -1189,7 +1190,7 @@
         rebuildPlan();
         rebuildMappingUI();
         if (!plannedLessons.length) {
-          alert('Brak tematów do importu.');
+          alert('Brak tematÃ³w do importu.');
           return;
         }
 
@@ -1214,9 +1215,9 @@
           cardsChunk: Number($('optCardsChunk').value || 40),
         };
 
-        log('—', '');
+        log('â€”', '');
         log(
-          `⏳ Start importu. Tematy: <code>${plannedLessons.length}</code> · track: <code>${esc(opt.track)}</code> · seed: <code>${esc(SEED_VERSION)}</code>`,
+          `â³ Start importu. Tematy: <code>${plannedLessons.length}</code> Â· track: <code>${esc(opt.track)}</code> Â· seed: <code>${esc(SEED_VERSION)}</code>`,
           '',
         );
 
@@ -1224,7 +1225,7 @@
           for (const lesson of plannedLessons) {
             const topic = lesson.topic;
             log(
-              `⏳ Temat: <b>${esc(topic.title || topic.name || topic.id)}</b> (zakładka: <code>${esc(lesson.sheetName)}</code>)`,
+              `â³ Temat: <b>${esc(topic.title || topic.name || topic.id)}</b> (zakÅ‚adka: <code>${esc(lesson.sheetName)}</code>)`,
               '',
             );
 
@@ -1251,7 +1252,7 @@
 
             if (opt.cleanup) {
               const deleted = await deleteOldSeededExercisesForTopic(topic.id);
-              log(`🧹 Usunięto stare ćwiczenia importu: <code>${deleted}</code>`, 'muted');
+              log(`ðŸ§¹ UsuniÄ™to stare Ä‡wiczenia importu: <code>${deleted}</code>`, 'muted');
             }
 
             const vocabItems = buildVocabItems(lesson.rows);
@@ -1279,7 +1280,7 @@
                 },
                 { merge: true },
               );
-              log(`✅ course_meta.vocab: <code>${vocabItems.length}</code>`, 'ok');
+              log(`âœ… course_meta.vocab: <code>${vocabItems.length}</code>`, 'ok');
             }
 
             const exList = buildExercisesForTopic(
@@ -1293,18 +1294,20 @@
               data: x.data,
             }));
             const written = await commitSetDocs(pairs);
-            log(`✅ exercises zapisane: <code>${written}</code>`, 'ok');
+            log(`âœ… exercises zapisane: <code>${written}</code>`, 'ok');
           }
 
           log(
-            `✅ Gotowe. Sprawdź: <code>curso-latam.html?level=A1</code> → temat → <b>Ejercicios</b> + <b>Fichas</b>.`,
+            `âœ… Gotowe. SprawdÅº: <code>curso-latam.html?level=A1</code> â†’ temat â†’ <b>Ejercicios</b> + <b>Fichas</b>.`,
             'ok',
           );
         } catch (e) {
           console.error(e);
-          log('❌ Błąd importu. Sprawdź konsolę.', 'err');
+          log('âŒ BÅ‚Ä…d importu. SprawdÅº konsolÄ™.', 'err');
         }
       });
     </script>
   </body>
 </html>
+
+

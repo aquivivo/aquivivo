@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -99,6 +99,7 @@
         color: white;
       }
     </style>
+      <link rel="stylesheet" href="../styles/global-chat.css?v=20260327a" />
   </head>
   <body>
     <div
@@ -112,14 +113,14 @@
         letter-spacing: 0.2px;
       "
     >
-      Sesión activa:
+      SesiÃ³n activa:
       <strong id="sessionEmail" style="color: var(--blue); font-weight: 900"
         >Cargando...</strong
       >
     </div>
 
     <div class="topbar">
-      <button onclick="logout()">Cerrar sesión</button>
+      <button onclick="logout()">Cerrar sesiÃ³n</button>
     </div>
 
     <div class="wrap">
@@ -132,12 +133,12 @@
           margin-bottom: 14px;
         "
         href="../esadmin.html"
-        >← Volver a Admin</a
+        >â† Volver a Admin</a
       >
 
-      <h1>📥 Importar Temas de Cursos</h1>
+      <h1>ðŸ“¥ Importar Temas de Cursos</h1>
       <p class="sub">
-        Copia y pega los temas en el formato de abajo. El sistema los añadirá a
+        Copia y pega los temas en el formato de abajo. El sistema los aÃ±adirÃ¡ a
         Firestore.
       </p>
 
@@ -163,23 +164,23 @@ Tema A
 Tema B</pre
         >
 
-        <h3 style="margin-top: 20px">Pega los temas aquí:</h3>
+        <h3 style="margin-top: 20px">Pega los temas aquÃ­:</h3>
         <textarea
           id="importData"
           placeholder="NIVEL:A2&#10;TIPO:grammar&#10;Presente: verbos irregulares&#10;Verbos reflexivos&#10;..."
         ></textarea>
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap">
-          <button onclick="importTopics()">✅ Importar Ahora</button>
+          <button onclick="importTopics()">âœ… Importar Ahora</button>
           <button onclick="cleanAndImport()" style="background: var(--red)">
-            🧹 Limpiar A2 + Importar
+            ðŸ§¹ Limpiar A2 + Importar
           </button>
         </div>
         <div id="status"></div>
       </div>
 
       <div class="card">
-        <h3>📋 Datos de ejemplo para A2:</h3>
+        <h3>ðŸ“‹ Datos de ejemplo para A2:</h3>
         <textarea
           id="exampleA2"
           readonly
@@ -191,35 +192,35 @@ Presente: verbos irregulares
 Verbos reflexivos
 Pasado simple
 Futuro simple
-Verbos modales: móc, musieć, chcieć
-Casos del polaco: visión general
+Verbos modales: mÃ³c, musieÄ‡, chcieÄ‡
+Casos del polaco: visiÃ³n general
 Caso genitivo
 Caso locativo
 Caso instrumental
 Preposiciones con casos
 Comparativos y superlativos
 Adverbios de tiempo y frecuencia
-Conectores básicos
+Conectores bÃ¡sicos
 
 TIPO:vocabulary
-Presentación y small talk
+PresentaciÃ³n y small talk
 Trabajo y responsabilidades
 Vivienda y alquiler
 Comida y restaurante
 Tienda y devoluciones
-Médico y farmacia
-Oficina pública y trámites
-Transporte público
+MÃ©dico y farmacia
+Oficina pÃºblica y trÃ¡mites
+Transporte pÃºblico
 Tiempo libre
-Emociones y estado de ánimo</textarea
+Emociones y estado de Ã¡nimo</textarea
         >
-        <button onclick="copyExample('exampleA2')">📋 Copiar para A2</button>
+        <button onclick="copyExample('exampleA2')">ðŸ“‹ Copiar para A2</button>
       </div>
 
       <div class="card">
-        <h3>⚙️ Editar Descripciones de Niveles</h3>
+        <h3>âš™ï¸ Editar Descripciones de Niveles</h3>
         <p style="font-size: 13px; color: var(--ink-muted)">
-          Estos textos aparecerán en la parte superior de cada página de curso.
+          Estos textos aparecerÃ¡n en la parte superior de cada pÃ¡gina de curso.
         </p>
 
         <div
@@ -238,12 +239,12 @@ Emociones y estado de ánimo</textarea
             "
           >
             <h4 style="margin: 0 0 10px 0; color: var(--blue)">
-              📚 Nivel A1-A2
+              ðŸ“š Nivel A1-A2
             </h4>
             <input
               type="text"
               id="meta_a1_title"
-              placeholder="Título (ej: 📚 Nivel A1-A2)"
+              placeholder="TÃ­tulo (ej: ðŸ“š Nivel A1-A2)"
               style="
                 width: 100%;
                 padding: 8px;
@@ -255,7 +256,7 @@ Emociones y estado de ánimo</textarea
             />
             <textarea
               id="meta_a1_subtitle"
-              placeholder="Subtítulo..."
+              placeholder="SubtÃ­tulo..."
               style="
                 width: 100%;
                 padding: 8px;
@@ -299,11 +300,11 @@ Emociones y estado de ánimo</textarea
               padding: 14px;
             "
           >
-            <h4 style="margin: 0 0 10px 0; color: var(--blue)">📖 Nivel B1</h4>
+            <h4 style="margin: 0 0 10px 0; color: var(--blue)">ðŸ“– Nivel B1</h4>
             <input
               type="text"
               id="meta_b1_title"
-              placeholder="Título"
+              placeholder="TÃ­tulo"
               style="
                 width: 100%;
                 padding: 8px;
@@ -315,7 +316,7 @@ Emociones y estado de ánimo</textarea
             />
             <textarea
               id="meta_b1_subtitle"
-              placeholder="Subtítulo..."
+              placeholder="SubtÃ­tulo..."
               style="
                 width: 100%;
                 padding: 8px;
@@ -347,11 +348,11 @@ Emociones y estado de ánimo</textarea
               padding: 14px;
             "
           >
-            <h4 style="margin: 0 0 10px 0; color: var(--red)">📖 Nivel B2</h4>
+            <h4 style="margin: 0 0 10px 0; color: var(--red)">ðŸ“– Nivel B2</h4>
             <input
               type="text"
               id="meta_b2_title"
-              placeholder="Título"
+              placeholder="TÃ­tulo"
               style="
                 width: 100%;
                 padding: 8px;
@@ -363,7 +364,7 @@ Emociones y estado de ánimo</textarea
             />
             <textarea
               id="meta_b2_subtitle"
-              placeholder="Subtítulo..."
+              placeholder="SubtÃ­tulo..."
               style="
                 width: 100%;
                 padding: 8px;
@@ -446,12 +447,12 @@ Emociones y estado de ánimo</textarea
       window.copyExample = function (id) {
         const text = document.getElementById(id).value;
         navigator.clipboard.writeText(text).then(() => {
-          alert('✅ Copiado al portapapeles');
+          alert('âœ… Copiado al portapapeles');
         });
       };
 
       window.cleanAndImport = async function () {
-        if (!confirm('⚠️ Esto eliminará TODOS los temas de A2. ¿Continuar?'))
+        if (!confirm('âš ï¸ Esto eliminarÃ¡ TODOS los temas de A2. Â¿Continuar?'))
           return;
 
         setStatus('Limpiando A2...', 'loading');
@@ -471,21 +472,21 @@ Emociones y estado de ánimo</textarea
           }
 
           setStatus(
-            `✅ Se eliminaron ${deleted} temas de A2. Ahora importando nuevos...`,
+            `âœ… Se eliminaron ${deleted} temas de A2. Ahora importando nuevos...`,
             'ok',
           );
 
           // Ahora importar los nuevos
           await importTopics();
         } catch (error) {
-          setStatus(`❌ Error: ${error.message}`, 'error');
+          setStatus(`âŒ Error: ${error.message}`, 'error');
         }
       };
 
       window.copyExample = function (id) {
         const text = document.getElementById(id).value;
         navigator.clipboard.writeText(text).then(() => {
-          alert('✅ Copiado al portapapeles');
+          alert('âœ… Copiado al portapapeles');
         });
       };
 
@@ -501,7 +502,7 @@ Emociones y estado de ánimo</textarea
         const subtitle = subtitleEl?.value?.trim() || '';
 
         if (!title || !subtitle) {
-          alert('Por favor completa título y subtítulo');
+          alert('Por favor completa tÃ­tulo y subtÃ­tulo');
           return;
         }
 
@@ -514,9 +515,9 @@ Emociones y estado de ánimo</textarea
             updatedAt: serverTimestamp(),
           });
 
-          setStatus(`✅ ${level} guardado correctamente`, 'ok');
+          setStatus(`âœ… ${level} guardado correctamente`, 'ok');
         } catch (error) {
-          setStatus(`❌ Error: ${error.message}`, 'error');
+          setStatus(`âŒ Error: ${error.message}`, 'error');
         }
       };
 
@@ -559,15 +560,15 @@ Emociones y estado de ánimo</textarea
           let added = 0;
           for (let i = 0; i < topicsToAdd.length; i++) {
             const topic = topicsToAdd[i];
-            topic.order = i + 1; // Agregar número de orden para mantener secuencia
+            topic.order = i + 1; // Agregar nÃºmero de orden para mantener secuencia
             await addDoc(collection(db, 'courses'), topic);
             added++;
           }
 
-          setStatus(`✅ ${added} temas añadidos correctamente`, 'ok');
+          setStatus(`âœ… ${added} temas aÃ±adidos correctamente`, 'ok');
           document.getElementById('importData').value = '';
         } catch (error) {
-          setStatus(`❌ Error: ${error.message}`, 'error');
+          setStatus(`âŒ Error: ${error.message}`, 'error');
         }
       };
 
@@ -588,4 +589,6 @@ Emociones y estado de ánimo</textarea
     </script>
   </body>
 </html>
+
+
 
