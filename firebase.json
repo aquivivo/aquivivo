@@ -1,164 +1,40 @@
 {
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ]
-    }
-  ],
-  "storage": {
-    "rules": "firebase-storage.rules"
-  },
-  "firestore": {
-    "rules": "firestore.rules"
-  },
-  "hosting": {
-    "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "functions/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/",
-        "destination": "/app/index.html"
-      },
-      {
-        "source": "/index.html",
-        "destination": "/app/index.html"
-      },
-      {
-        "source": "/kontakt.html",
-        "destination": "/app/legal/kontakt.html"
-      },
-      {
-        "source": "/login.html",
-        "destination": "/app/neu-login.html"
-      },
-      {
-        "source": "/services.html",
-        "destination": "/app/services.html"
-      },
-      {
-        "source": "/ayuda.html",
-        "destination": "/app/legal/ayuda.html"
-      },
-      {
-        "source": "/polityka-prywatnosci.html",
-        "destination": "/app/legal/polityka-prywatnosci.html"
-      },
-      {
-        "source": "/regulamin.html",
-        "destination": "/app/legal/regulamin.html"
-      },
-      {
-        "source": "/zwroty.html",
-        "destination": "/app/legal/zwroty.html"
-      },
-      {
-        "source": "/neu-login.html",
-        "destination": "/app/neu-login.html"
-      },
-      {
-        "source": "/neu-social-app.html",
-        "destination": "/app/neu-social-app.html"
-      },
-      {
-        "source": "/admin-select.html",
-        "destination": "/app/admin/admin-select.html"
-      },
-      {
-        "source": "/admin-wizard.html",
-        "destination": "/app/admin/admin-wizard.html"
-      },
-      {
-        "source": "/ajustes.html",
-        "destination": "/app/ajustes.html"
-      },
-      {
-        "source": "/buscar.html",
-        "destination": "/app/buscar.html"
-      },
-      {
-        "source": "/correccion.html",
-        "destination": "/app/course/correccion.html"
-      },
-      {
-        "source": "/correcciones.html",
-        "destination": "/app/course/correcciones.html"
-      },
-      {
-        "source": "/course.html",
-        "destination": "/app/course/course.html"
-      },
-      {
-        "source": "/ejercicio.html",
-        "destination": "/app/course/ejercicio.html"
-      },
-      {
-        "source": "/ejercicioadmin.html",
-        "destination": "/app/admin/ejercicioadmin.html"
-      },
-      {
-        "source": "/esadmin.html",
-        "destination": "/app/admin/esadmin.html"
-      },
-      {
-        "source": "/flashcards.html",
-        "destination": "/app/course/flashcards.html"
-      },
-      {
-        "source": "/lesson.html",
-        "destination": "/app/course/lesson.html"
-      },
-      {
-        "source": "/lessonadmin.html",
-        "destination": "/app/admin/lessonadmin.html"
-      },
-      {
-        "source": "/lessonpage.html",
-        "destination": "/app/course/lessonpage.html"
-      },
-      {
-        "source": "/minitest.html",
-        "destination": "/app/course/minitest.html"
-      },
-      {
-        "source": "/notificaciones.html",
-        "destination": "/app/notificaciones.html"
-      },
-      {
-        "source": "/pagos.html",
-        "destination": "/app/pagos.html"
-      },
-      {
-        "source": "/recompensas.html",
-        "destination": "/app/recompensas.html"
-      },
-      {
-        "source": "/referidos.html",
-        "destination": "/app/referidos.html"
-      },
-      {
-        "source": "/review.html",
-        "destination": "/app/course/review.html"
-      },
-      {
-        "source": "/versions.html",
-        "destination": "/app/course/versions.html"
-      },
-      {
-        "source": "/perfil/**",
-        "destination": "/perfil.html"
-      }
-    ]
-  }
+    "functions":  [
+                      {
+                          "source":  "functions",
+                          "codebase":  "default",
+                          "ignore":  [
+                                         "node_modules",
+                                         ".git",
+                                         "firebase-debug.log",
+                                         "firebase-debug.*.log",
+                                         "*.local"
+                                     ]
+                      }
+                  ],
+    "storage":  {
+                    "rules":  "firebase-storage.rules"
+                },
+    "firestore":  {
+                      "rules":  "firestore.rules"
+                  },
+    "hosting":  {
+                    "public":  "app",
+                    "ignore":  [
+                                   "firebase.json",
+                                   "**/.*",
+                                   "**/node_modules/**",
+                                   "functions/**"
+                               ],
+                    "rewrites":  [
+                                     {
+                                         "source":  "/api/**",
+                                         "function":  "api"
+                                     },
+                                     {
+                                         "source":  "**",
+                                         "destination":  "/index.html"
+                                     }
+                                 ]
+                }
 }

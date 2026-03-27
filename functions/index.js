@@ -1443,4 +1443,13 @@ exports.onCorrectionCommentCreated = functions.firestore
     return null;
   });
 
+// Basic HTTPS endpoint for Firebase Hosting rewrite /api/**
+exports.api = functions.https.onRequest((req, res) => {
+  res.status(200).json({
+    ok: true,
+    message: 'AquiVivo API is running',
+    method: req.method,
+  });
+});
+
 

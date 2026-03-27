@@ -1,0 +1,1802 @@
+{
+  "generatedAt": "2026-03-18T11:31:28.368Z",
+  "startedAt": "2026-03-18T11:31:24.361Z",
+  "finishedAt": "2026-03-18T11:31:28.368Z",
+  "rootDir": "C:\\Users\\melle\\Desktop\\aquivivo",
+  "checks": {
+    "links": {
+      "htmlFilesScanned": 41,
+      "totalRefs": 208,
+      "missingCount": 127,
+      "missing": [
+        {
+          "file": "site/ayuda.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "site/assets/css/styles.css"
+        },
+        {
+          "file": "site/ayuda.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "site/assets/js/layout.js"
+        },
+        {
+          "file": "site/ayuda.html",
+          "ref": "espanel.html#ayuda",
+          "missingTarget": "site/espanel.html"
+        },
+        {
+          "file": "site/index.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "site/assets/css/styles.css"
+        },
+        {
+          "file": "site/index.html",
+          "ref": "assets/js/layout.js?v=20260208m",
+          "missingTarget": "site/assets/js/layout.js"
+        },
+        {
+          "file": "site/index.html",
+          "ref": "espanel.html",
+          "missingTarget": "site/espanel.html"
+        },
+        {
+          "file": "site/index.html",
+          "ref": "assets/img/coffee.png",
+          "missingTarget": "site/assets/img/coffee.png"
+        },
+        {
+          "file": "site/kontakt.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "site/assets/css/styles.css"
+        },
+        {
+          "file": "site/kontakt.html",
+          "ref": "assets/js/layout.js?v=20260208m",
+          "missingTarget": "site/assets/js/layout.js"
+        },
+        {
+          "file": "site/login.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "site/assets/css/styles.css"
+        },
+        {
+          "file": "site/login.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "site/assets/js/layout.js"
+        },
+        {
+          "file": "site/login.html",
+          "ref": "assets/js/auth.js",
+          "missingTarget": "site/assets/js/auth.js"
+        },
+        {
+          "file": "site/polityka-prywatnosci.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "site/assets/css/styles.css"
+        },
+        {
+          "file": "site/polityka-prywatnosci.html",
+          "ref": "assets/js/layout.js?v=20260208m",
+          "missingTarget": "site/assets/js/layout.js"
+        },
+        {
+          "file": "site/regulamin.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "site/assets/css/styles.css"
+        },
+        {
+          "file": "site/regulamin.html",
+          "ref": "assets/js/layout.js?v=20260208m",
+          "missingTarget": "site/assets/js/layout.js"
+        },
+        {
+          "file": "site/services.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "site/assets/css/styles.css"
+        },
+        {
+          "file": "site/services.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "site/assets/js/layout.js"
+        },
+        {
+          "file": "site/services.html",
+          "ref": "assets/js/pages/legacy-app/services-page.js?v=20260208m",
+          "missingTarget": "site/assets/js/pages/legacy-app/services-page.js"
+        },
+        {
+          "file": "site/zwroty.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "site/assets/css/styles.css"
+        },
+        {
+          "file": "site/zwroty.html",
+          "ref": "assets/js/layout.js?v=20260208m",
+          "missingTarget": "site/assets/js/layout.js"
+        },
+        {
+          "file": "import/import-courses.html",
+          "ref": "../esadmin.html",
+          "missingTarget": "esadmin.html"
+        },
+        {
+          "file": "app/admin-select.html",
+          "ref": "assets/css/styles.css?v=20260214d",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/admin-select.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/admin-select.html",
+          "ref": "assets/js/pages/courses/admin-select-page.js",
+          "missingTarget": "app/assets/js/pages/courses/admin-select-page.js"
+        },
+        {
+          "file": "app/admin-wizard.html",
+          "ref": "assets/css/styles.css?v=20260214d",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/admin-wizard.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/admin-wizard.html",
+          "ref": "import/a1-official-first-two.html",
+          "missingTarget": "app/import/a1-official-first-two.html"
+        },
+        {
+          "file": "app/admin-wizard.html",
+          "ref": "import/a1-starter-four-topics.html",
+          "missingTarget": "app/import/a1-starter-four-topics.html"
+        },
+        {
+          "file": "app/admin-wizard.html",
+          "ref": "import/a1-vocab-xlsx.html",
+          "missingTarget": "app/import/a1-vocab-xlsx.html"
+        },
+        {
+          "file": "app/admin-wizard.html",
+          "ref": "import/sample-a2-lessons.html",
+          "missingTarget": "app/import/sample-a2-lessons.html"
+        },
+        {
+          "file": "app/admin-wizard.html",
+          "ref": "assets/js/pages/courses/admin-wizard-page.js",
+          "missingTarget": "app/assets/js/pages/courses/admin-wizard-page.js"
+        },
+        {
+          "file": "app/ajustes.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/ajustes.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/ajustes.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/ajustes.html",
+          "ref": "perfil.html",
+          "missingTarget": "app/perfil.html"
+        },
+        {
+          "file": "app/ajustes.html",
+          "ref": "assets/js/pages/legacy-app/ajustes-page.js",
+          "missingTarget": "app/assets/js/pages/legacy-app/ajustes-page.js"
+        },
+        {
+          "file": "app/buscar.html",
+          "ref": "assets/css/styles.css?v=20260222f",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/buscar.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/buscar.html",
+          "ref": "perfil.html",
+          "missingTarget": "app/perfil.html"
+        },
+        {
+          "file": "app/buscar.html",
+          "ref": "mensajes.html",
+          "missingTarget": "app/mensajes.html"
+        },
+        {
+          "file": "app/buscar.html",
+          "ref": "assets/js/pages/legacy-app/buscar-page.js?v=20260222g",
+          "missingTarget": "app/assets/js/pages/legacy-app/buscar-page.js"
+        },
+        {
+          "file": "app/correccion.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/correccion.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/correccion.html",
+          "ref": "assets/js/pages/legacy-app/correccion-page.js",
+          "missingTarget": "app/assets/js/pages/legacy-app/correccion-page.js"
+        },
+        {
+          "file": "app/correcciones.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/correcciones.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/correcciones.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/correcciones.html",
+          "ref": "assets/js/pages/legacy-app/correcciones-page.js",
+          "missingTarget": "app/assets/js/pages/legacy-app/correcciones-page.js"
+        },
+        {
+          "file": "app/course.html",
+          "ref": "assets/css/styles.css?v=20260214h",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/course.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/course.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/course.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/course.html",
+          "ref": "services.html",
+          "missingTarget": "app/services.html"
+        },
+        {
+          "file": "app/course.html",
+          "ref": "assets/js/content-protect.js",
+          "missingTarget": "app/assets/js/content-protect.js"
+        },
+        {
+          "file": "app/course.html",
+          "ref": "assets/js/pages/courses/course-page.js?v=20260215a",
+          "missingTarget": "app/assets/js/pages/courses/course-page.js"
+        },
+        {
+          "file": "app/ejercicio.html",
+          "ref": "assets/css/styles.css?v=20260214z",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/ejercicio.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/ejercicio.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/ejercicio.html",
+          "ref": "assets/js/content-protect.js",
+          "missingTarget": "app/assets/js/content-protect.js"
+        },
+        {
+          "file": "app/ejercicio.html",
+          "ref": "assets/js/pages/courses/ejercicio-page.js?v=20260215e",
+          "missingTarget": "app/assets/js/pages/courses/ejercicio-page.js"
+        },
+        {
+          "file": "app/ejercicioadmin.html",
+          "ref": "assets/css/styles.css?v=20260214d",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/ejercicioadmin.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/ejercicioadmin.html",
+          "ref": "assets/js/pages/courses/ejercicioadmin-page.js",
+          "missingTarget": "app/assets/js/pages/courses/ejercicioadmin-page.js"
+        },
+        {
+          "file": "app/esadmin.html",
+          "ref": "assets/css/styles.css?v=20260214d",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/esadmin.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/esadmin.html",
+          "ref": "assets/js/firebase-init.js",
+          "missingTarget": "app/assets/js/firebase-init.js"
+        },
+        {
+          "file": "app/esadmin.html",
+          "ref": "assets/js/pages/legacy-app/esadmin-page.js?v=20260214e",
+          "missingTarget": "app/assets/js/pages/legacy-app/esadmin-page.js"
+        },
+        {
+          "file": "app/flashcards.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/flashcards.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/flashcards.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/flashcards.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/flashcards.html",
+          "ref": "assets/js/pages/courses/flashcards-page.js?v=20260215b",
+          "missingTarget": "app/assets/js/pages/courses/flashcards-page.js"
+        },
+        {
+          "file": "app/lesson.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/lesson.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/lesson.html",
+          "ref": "assets/js/content-protect.js",
+          "missingTarget": "app/assets/js/content-protect.js"
+        },
+        {
+          "file": "app/lesson.html",
+          "ref": "assets/js/pages/courses/lesson-page.js?v=20260215a",
+          "missingTarget": "app/assets/js/pages/courses/lesson-page.js"
+        },
+        {
+          "file": "app/lessonadmin.html",
+          "ref": "assets/css/styles.css?v=20260214d",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/lessonadmin.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/lessonadmin.html",
+          "ref": "assets/js/pages/courses/lessonadmin-page.js",
+          "missingTarget": "app/assets/js/pages/courses/lessonadmin-page.js"
+        },
+        {
+          "file": "app/lessonpage.html",
+          "ref": "assets/css/styles.css?v=20260214h",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/lessonpage.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/lessonpage.html",
+          "ref": "assets/js/content-protect.js",
+          "missingTarget": "app/assets/js/content-protect.js"
+        },
+        {
+          "file": "app/lessonpage.html",
+          "ref": "assets/js/pages/courses/lessonpage-page.js?v=20260215a",
+          "missingTarget": "app/assets/js/pages/courses/lessonpage-page.js"
+        },
+        {
+          "file": "app/minitest.html",
+          "ref": "assets/css/styles.css?v=20260214i",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/minitest.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/minitest.html",
+          "ref": "assets/js/pages/courses/minitest-page.js?v=20260214a",
+          "missingTarget": "app/assets/js/pages/courses/minitest-page.js"
+        },
+        {
+          "file": "app/minitest.html",
+          "ref": "assets/js/pages/courses/review-page.js?v=20260214i",
+          "missingTarget": "app/assets/js/pages/courses/review-page.js"
+        },
+        {
+          "file": "app/neu-login.html",
+          "ref": "assets/img/logo-aquivivo.png?v=20260308favicon1",
+          "missingTarget": "app/assets/img/logo-aquivivo.png"
+        },
+        {
+          "file": "app/neu-login.html",
+          "ref": "assets/css/neu-shell.css?v=20260307g",
+          "missingTarget": "app/assets/css/neu-shell.css"
+        },
+        {
+          "file": "app/neu-login.html",
+          "ref": "assets/css/neu-theme.css?v=20260226fix",
+          "missingTarget": "app/assets/css/neu-theme.css"
+        },
+        {
+          "file": "app/neu-login.html",
+          "ref": "assets/css/neu-auth.css?v=20260222f",
+          "missingTarget": "app/assets/css/neu-auth.css"
+        },
+        {
+          "file": "app/neu-login.html",
+          "ref": "assets/js/neu-layout.js?v=20260307g",
+          "missingTarget": "app/assets/js/neu-layout.js"
+        },
+        {
+          "file": "app/neu-login.html",
+          "ref": "assets/js/neu-auth.js?v=20260222e",
+          "missingTarget": "app/assets/js/neu-auth.js"
+        },
+        {
+          "file": "app/neu-social-app.html",
+          "ref": "assets/img/logo-aquivivo.png?v=20260308favicon1",
+          "missingTarget": "app/assets/img/logo-aquivivo.png"
+        },
+        {
+          "file": "app/neu-social-app.html",
+          "ref": "assets/css/neu-shell.css?v=20260307g",
+          "missingTarget": "app/assets/css/neu-shell.css"
+        },
+        {
+          "file": "app/neu-social-app.html",
+          "ref": "assets/css/neu-theme.css?v=20260226fix",
+          "missingTarget": "app/assets/css/neu-theme.css"
+        },
+        {
+          "file": "app/neu-social-app.html",
+          "ref": "assets/css/mini-chat-v4.css?v=20260309chatall2",
+          "missingTarget": "app/assets/css/mini-chat-v4.css"
+        },
+        {
+          "file": "app/neu-social-app.html",
+          "ref": "assets/css/neu-social-app.css?v=20260307j",
+          "missingTarget": "app/assets/css/neu-social-app.css"
+        },
+        {
+          "file": "app/neu-social-app.html",
+          "ref": "assets/js/neu-layout.js?v=20260307g",
+          "missingTarget": "app/assets/js/neu-layout.js"
+        },
+        {
+          "file": "app/notificaciones.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/notificaciones.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/notificaciones.html",
+          "ref": "espanel.html#notificaciones",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/notificaciones.html",
+          "ref": "assets/js/pages/legacy-app/notificaciones-page.js",
+          "missingTarget": "app/assets/js/pages/legacy-app/notificaciones-page.js"
+        },
+        {
+          "file": "app/pagos.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/pagos.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/pagos.html",
+          "ref": "espanel.html#pagos",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/recompensas.html",
+          "ref": "assets/css/styles.css?v=20260214z",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/recompensas.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/recompensas.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/recompensas.html",
+          "ref": "assets/js/pages/legacy-app/recompensas-page.js?v=20260214z",
+          "missingTarget": "app/assets/js/pages/legacy-app/recompensas-page.js"
+        },
+        {
+          "file": "app/referidos.html",
+          "ref": "assets/css/styles.css?v=20260222f",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/referidos.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/referidos.html",
+          "ref": "perfil.html?tab=friends",
+          "missingTarget": "app/perfil.html"
+        },
+        {
+          "file": "app/referidos.html",
+          "ref": "mensajes.html",
+          "missingTarget": "app/mensajes.html"
+        },
+        {
+          "file": "app/referidos.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/referidos.html",
+          "ref": "assets/js/pages/legacy-app/buscar-page.js?v=20260222g",
+          "missingTarget": "app/assets/js/pages/legacy-app/buscar-page.js"
+        },
+        {
+          "file": "app/referidos.html",
+          "ref": "assets/js/pages/legacy-app/amigos-page.js?v=20260222g",
+          "missingTarget": "app/assets/js/pages/legacy-app/amigos-page.js"
+        },
+        {
+          "file": "app/review.html",
+          "ref": "assets/css/styles.css?v=20260214i",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/review.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/review.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/review.html",
+          "ref": "espanel.html",
+          "missingTarget": "app/espanel.html"
+        },
+        {
+          "file": "app/review.html",
+          "ref": "assets/js/pages/courses/review-page.js?v=20260214i",
+          "missingTarget": "app/assets/js/pages/courses/review-page.js"
+        },
+        {
+          "file": "app/versions.html",
+          "ref": "assets/css/styles.css?v=20260208m",
+          "missingTarget": "app/assets/css/styles.css"
+        },
+        {
+          "file": "app/versions.html",
+          "ref": "assets/js/layout.js?v=20260307a",
+          "missingTarget": "app/assets/js/layout.js"
+        },
+        {
+          "file": "app/versions.html",
+          "ref": "assets/js/content-protect.js",
+          "missingTarget": "app/assets/js/content-protect.js"
+        },
+        {
+          "file": "app/versions.html",
+          "ref": "assets/js/pages/courses/versions-page.js?v=20260218a",
+          "missingTarget": "app/assets/js/pages/courses/versions-page.js"
+        }
+      ],
+      "perFile": {
+        "site/ayuda.html": [
+          {
+            "file": "site/ayuda.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "site/assets/css/styles.css"
+          },
+          {
+            "file": "site/ayuda.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "site/assets/js/layout.js"
+          },
+          {
+            "file": "site/ayuda.html",
+            "ref": "espanel.html#ayuda",
+            "missingTarget": "site/espanel.html"
+          }
+        ],
+        "site/index.html": [
+          {
+            "file": "site/index.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "site/assets/css/styles.css"
+          },
+          {
+            "file": "site/index.html",
+            "ref": "assets/js/layout.js?v=20260208m",
+            "missingTarget": "site/assets/js/layout.js"
+          },
+          {
+            "file": "site/index.html",
+            "ref": "espanel.html",
+            "missingTarget": "site/espanel.html"
+          },
+          {
+            "file": "site/index.html",
+            "ref": "assets/img/coffee.png",
+            "missingTarget": "site/assets/img/coffee.png"
+          }
+        ],
+        "site/kontakt.html": [
+          {
+            "file": "site/kontakt.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "site/assets/css/styles.css"
+          },
+          {
+            "file": "site/kontakt.html",
+            "ref": "assets/js/layout.js?v=20260208m",
+            "missingTarget": "site/assets/js/layout.js"
+          }
+        ],
+        "site/login.html": [
+          {
+            "file": "site/login.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "site/assets/css/styles.css"
+          },
+          {
+            "file": "site/login.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "site/assets/js/layout.js"
+          },
+          {
+            "file": "site/login.html",
+            "ref": "assets/js/auth.js",
+            "missingTarget": "site/assets/js/auth.js"
+          }
+        ],
+        "site/polityka-prywatnosci.html": [
+          {
+            "file": "site/polityka-prywatnosci.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "site/assets/css/styles.css"
+          },
+          {
+            "file": "site/polityka-prywatnosci.html",
+            "ref": "assets/js/layout.js?v=20260208m",
+            "missingTarget": "site/assets/js/layout.js"
+          }
+        ],
+        "site/regulamin.html": [
+          {
+            "file": "site/regulamin.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "site/assets/css/styles.css"
+          },
+          {
+            "file": "site/regulamin.html",
+            "ref": "assets/js/layout.js?v=20260208m",
+            "missingTarget": "site/assets/js/layout.js"
+          }
+        ],
+        "site/services.html": [
+          {
+            "file": "site/services.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "site/assets/css/styles.css"
+          },
+          {
+            "file": "site/services.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "site/assets/js/layout.js"
+          },
+          {
+            "file": "site/services.html",
+            "ref": "assets/js/pages/legacy-app/services-page.js?v=20260208m",
+            "missingTarget": "site/assets/js/pages/legacy-app/services-page.js"
+          }
+        ],
+        "site/zwroty.html": [
+          {
+            "file": "site/zwroty.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "site/assets/css/styles.css"
+          },
+          {
+            "file": "site/zwroty.html",
+            "ref": "assets/js/layout.js?v=20260208m",
+            "missingTarget": "site/assets/js/layout.js"
+          }
+        ],
+        "import/import-courses.html": [
+          {
+            "file": "import/import-courses.html",
+            "ref": "../esadmin.html",
+            "missingTarget": "esadmin.html"
+          }
+        ],
+        "app/admin-select.html": [
+          {
+            "file": "app/admin-select.html",
+            "ref": "assets/css/styles.css?v=20260214d",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/admin-select.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/admin-select.html",
+            "ref": "assets/js/pages/courses/admin-select-page.js",
+            "missingTarget": "app/assets/js/pages/courses/admin-select-page.js"
+          }
+        ],
+        "app/admin-wizard.html": [
+          {
+            "file": "app/admin-wizard.html",
+            "ref": "assets/css/styles.css?v=20260214d",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/admin-wizard.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/admin-wizard.html",
+            "ref": "import/a1-official-first-two.html",
+            "missingTarget": "app/import/a1-official-first-two.html"
+          },
+          {
+            "file": "app/admin-wizard.html",
+            "ref": "import/a1-starter-four-topics.html",
+            "missingTarget": "app/import/a1-starter-four-topics.html"
+          },
+          {
+            "file": "app/admin-wizard.html",
+            "ref": "import/a1-vocab-xlsx.html",
+            "missingTarget": "app/import/a1-vocab-xlsx.html"
+          },
+          {
+            "file": "app/admin-wizard.html",
+            "ref": "import/sample-a2-lessons.html",
+            "missingTarget": "app/import/sample-a2-lessons.html"
+          },
+          {
+            "file": "app/admin-wizard.html",
+            "ref": "assets/js/pages/courses/admin-wizard-page.js",
+            "missingTarget": "app/assets/js/pages/courses/admin-wizard-page.js"
+          }
+        ],
+        "app/ajustes.html": [
+          {
+            "file": "app/ajustes.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/ajustes.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/ajustes.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/ajustes.html",
+            "ref": "perfil.html",
+            "missingTarget": "app/perfil.html"
+          },
+          {
+            "file": "app/ajustes.html",
+            "ref": "assets/js/pages/legacy-app/ajustes-page.js",
+            "missingTarget": "app/assets/js/pages/legacy-app/ajustes-page.js"
+          }
+        ],
+        "app/buscar.html": [
+          {
+            "file": "app/buscar.html",
+            "ref": "assets/css/styles.css?v=20260222f",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/buscar.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/buscar.html",
+            "ref": "perfil.html",
+            "missingTarget": "app/perfil.html"
+          },
+          {
+            "file": "app/buscar.html",
+            "ref": "mensajes.html",
+            "missingTarget": "app/mensajes.html"
+          },
+          {
+            "file": "app/buscar.html",
+            "ref": "assets/js/pages/legacy-app/buscar-page.js?v=20260222g",
+            "missingTarget": "app/assets/js/pages/legacy-app/buscar-page.js"
+          }
+        ],
+        "app/correccion.html": [
+          {
+            "file": "app/correccion.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/correccion.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/correccion.html",
+            "ref": "assets/js/pages/legacy-app/correccion-page.js",
+            "missingTarget": "app/assets/js/pages/legacy-app/correccion-page.js"
+          }
+        ],
+        "app/correcciones.html": [
+          {
+            "file": "app/correcciones.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/correcciones.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/correcciones.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/correcciones.html",
+            "ref": "assets/js/pages/legacy-app/correcciones-page.js",
+            "missingTarget": "app/assets/js/pages/legacy-app/correcciones-page.js"
+          }
+        ],
+        "app/course.html": [
+          {
+            "file": "app/course.html",
+            "ref": "assets/css/styles.css?v=20260214h",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/course.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/course.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/course.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/course.html",
+            "ref": "services.html",
+            "missingTarget": "app/services.html"
+          },
+          {
+            "file": "app/course.html",
+            "ref": "assets/js/content-protect.js",
+            "missingTarget": "app/assets/js/content-protect.js"
+          },
+          {
+            "file": "app/course.html",
+            "ref": "assets/js/pages/courses/course-page.js?v=20260215a",
+            "missingTarget": "app/assets/js/pages/courses/course-page.js"
+          }
+        ],
+        "app/ejercicio.html": [
+          {
+            "file": "app/ejercicio.html",
+            "ref": "assets/css/styles.css?v=20260214z",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/ejercicio.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/ejercicio.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/ejercicio.html",
+            "ref": "assets/js/content-protect.js",
+            "missingTarget": "app/assets/js/content-protect.js"
+          },
+          {
+            "file": "app/ejercicio.html",
+            "ref": "assets/js/pages/courses/ejercicio-page.js?v=20260215e",
+            "missingTarget": "app/assets/js/pages/courses/ejercicio-page.js"
+          }
+        ],
+        "app/ejercicioadmin.html": [
+          {
+            "file": "app/ejercicioadmin.html",
+            "ref": "assets/css/styles.css?v=20260214d",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/ejercicioadmin.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/ejercicioadmin.html",
+            "ref": "assets/js/pages/courses/ejercicioadmin-page.js",
+            "missingTarget": "app/assets/js/pages/courses/ejercicioadmin-page.js"
+          }
+        ],
+        "app/esadmin.html": [
+          {
+            "file": "app/esadmin.html",
+            "ref": "assets/css/styles.css?v=20260214d",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/esadmin.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/esadmin.html",
+            "ref": "assets/js/firebase-init.js",
+            "missingTarget": "app/assets/js/firebase-init.js"
+          },
+          {
+            "file": "app/esadmin.html",
+            "ref": "assets/js/pages/legacy-app/esadmin-page.js?v=20260214e",
+            "missingTarget": "app/assets/js/pages/legacy-app/esadmin-page.js"
+          }
+        ],
+        "app/flashcards.html": [
+          {
+            "file": "app/flashcards.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/flashcards.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/flashcards.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/flashcards.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/flashcards.html",
+            "ref": "assets/js/pages/courses/flashcards-page.js?v=20260215b",
+            "missingTarget": "app/assets/js/pages/courses/flashcards-page.js"
+          }
+        ],
+        "app/lesson.html": [
+          {
+            "file": "app/lesson.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/lesson.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/lesson.html",
+            "ref": "assets/js/content-protect.js",
+            "missingTarget": "app/assets/js/content-protect.js"
+          },
+          {
+            "file": "app/lesson.html",
+            "ref": "assets/js/pages/courses/lesson-page.js?v=20260215a",
+            "missingTarget": "app/assets/js/pages/courses/lesson-page.js"
+          }
+        ],
+        "app/lessonadmin.html": [
+          {
+            "file": "app/lessonadmin.html",
+            "ref": "assets/css/styles.css?v=20260214d",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/lessonadmin.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/lessonadmin.html",
+            "ref": "assets/js/pages/courses/lessonadmin-page.js",
+            "missingTarget": "app/assets/js/pages/courses/lessonadmin-page.js"
+          }
+        ],
+        "app/lessonpage.html": [
+          {
+            "file": "app/lessonpage.html",
+            "ref": "assets/css/styles.css?v=20260214h",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/lessonpage.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/lessonpage.html",
+            "ref": "assets/js/content-protect.js",
+            "missingTarget": "app/assets/js/content-protect.js"
+          },
+          {
+            "file": "app/lessonpage.html",
+            "ref": "assets/js/pages/courses/lessonpage-page.js?v=20260215a",
+            "missingTarget": "app/assets/js/pages/courses/lessonpage-page.js"
+          }
+        ],
+        "app/minitest.html": [
+          {
+            "file": "app/minitest.html",
+            "ref": "assets/css/styles.css?v=20260214i",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/minitest.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/minitest.html",
+            "ref": "assets/js/pages/courses/minitest-page.js?v=20260214a",
+            "missingTarget": "app/assets/js/pages/courses/minitest-page.js"
+          },
+          {
+            "file": "app/minitest.html",
+            "ref": "assets/js/pages/courses/review-page.js?v=20260214i",
+            "missingTarget": "app/assets/js/pages/courses/review-page.js"
+          }
+        ],
+        "app/neu-login.html": [
+          {
+            "file": "app/neu-login.html",
+            "ref": "assets/img/logo-aquivivo.png?v=20260308favicon1",
+            "missingTarget": "app/assets/img/logo-aquivivo.png"
+          },
+          {
+            "file": "app/neu-login.html",
+            "ref": "assets/css/neu-shell.css?v=20260307g",
+            "missingTarget": "app/assets/css/neu-shell.css"
+          },
+          {
+            "file": "app/neu-login.html",
+            "ref": "assets/css/neu-theme.css?v=20260226fix",
+            "missingTarget": "app/assets/css/neu-theme.css"
+          },
+          {
+            "file": "app/neu-login.html",
+            "ref": "assets/css/neu-auth.css?v=20260222f",
+            "missingTarget": "app/assets/css/neu-auth.css"
+          },
+          {
+            "file": "app/neu-login.html",
+            "ref": "assets/js/neu-layout.js?v=20260307g",
+            "missingTarget": "app/assets/js/neu-layout.js"
+          },
+          {
+            "file": "app/neu-login.html",
+            "ref": "assets/js/neu-auth.js?v=20260222e",
+            "missingTarget": "app/assets/js/neu-auth.js"
+          }
+        ],
+        "app/neu-social-app.html": [
+          {
+            "file": "app/neu-social-app.html",
+            "ref": "assets/img/logo-aquivivo.png?v=20260308favicon1",
+            "missingTarget": "app/assets/img/logo-aquivivo.png"
+          },
+          {
+            "file": "app/neu-social-app.html",
+            "ref": "assets/css/neu-shell.css?v=20260307g",
+            "missingTarget": "app/assets/css/neu-shell.css"
+          },
+          {
+            "file": "app/neu-social-app.html",
+            "ref": "assets/css/neu-theme.css?v=20260226fix",
+            "missingTarget": "app/assets/css/neu-theme.css"
+          },
+          {
+            "file": "app/neu-social-app.html",
+            "ref": "assets/css/mini-chat-v4.css?v=20260309chatall2",
+            "missingTarget": "app/assets/css/mini-chat-v4.css"
+          },
+          {
+            "file": "app/neu-social-app.html",
+            "ref": "assets/css/neu-social-app.css?v=20260307j",
+            "missingTarget": "app/assets/css/neu-social-app.css"
+          },
+          {
+            "file": "app/neu-social-app.html",
+            "ref": "assets/js/neu-layout.js?v=20260307g",
+            "missingTarget": "app/assets/js/neu-layout.js"
+          }
+        ],
+        "app/notificaciones.html": [
+          {
+            "file": "app/notificaciones.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/notificaciones.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/notificaciones.html",
+            "ref": "espanel.html#notificaciones",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/notificaciones.html",
+            "ref": "assets/js/pages/legacy-app/notificaciones-page.js",
+            "missingTarget": "app/assets/js/pages/legacy-app/notificaciones-page.js"
+          }
+        ],
+        "app/pagos.html": [
+          {
+            "file": "app/pagos.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/pagos.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/pagos.html",
+            "ref": "espanel.html#pagos",
+            "missingTarget": "app/espanel.html"
+          }
+        ],
+        "app/recompensas.html": [
+          {
+            "file": "app/recompensas.html",
+            "ref": "assets/css/styles.css?v=20260214z",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/recompensas.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/recompensas.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/recompensas.html",
+            "ref": "assets/js/pages/legacy-app/recompensas-page.js?v=20260214z",
+            "missingTarget": "app/assets/js/pages/legacy-app/recompensas-page.js"
+          }
+        ],
+        "app/referidos.html": [
+          {
+            "file": "app/referidos.html",
+            "ref": "assets/css/styles.css?v=20260222f",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/referidos.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/referidos.html",
+            "ref": "perfil.html?tab=friends",
+            "missingTarget": "app/perfil.html"
+          },
+          {
+            "file": "app/referidos.html",
+            "ref": "mensajes.html",
+            "missingTarget": "app/mensajes.html"
+          },
+          {
+            "file": "app/referidos.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/referidos.html",
+            "ref": "assets/js/pages/legacy-app/buscar-page.js?v=20260222g",
+            "missingTarget": "app/assets/js/pages/legacy-app/buscar-page.js"
+          },
+          {
+            "file": "app/referidos.html",
+            "ref": "assets/js/pages/legacy-app/amigos-page.js?v=20260222g",
+            "missingTarget": "app/assets/js/pages/legacy-app/amigos-page.js"
+          }
+        ],
+        "app/review.html": [
+          {
+            "file": "app/review.html",
+            "ref": "assets/css/styles.css?v=20260214i",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/review.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/review.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/review.html",
+            "ref": "espanel.html",
+            "missingTarget": "app/espanel.html"
+          },
+          {
+            "file": "app/review.html",
+            "ref": "assets/js/pages/courses/review-page.js?v=20260214i",
+            "missingTarget": "app/assets/js/pages/courses/review-page.js"
+          }
+        ],
+        "app/versions.html": [
+          {
+            "file": "app/versions.html",
+            "ref": "assets/css/styles.css?v=20260208m",
+            "missingTarget": "app/assets/css/styles.css"
+          },
+          {
+            "file": "app/versions.html",
+            "ref": "assets/js/layout.js?v=20260307a",
+            "missingTarget": "app/assets/js/layout.js"
+          },
+          {
+            "file": "app/versions.html",
+            "ref": "assets/js/content-protect.js",
+            "missingTarget": "app/assets/js/content-protect.js"
+          },
+          {
+            "file": "app/versions.html",
+            "ref": "assets/js/pages/courses/versions-page.js?v=20260218a",
+            "missingTarget": "app/assets/js/pages/courses/versions-page.js"
+          }
+        ]
+      }
+    },
+    "syntax": {
+      "filesScanned": 70,
+      "failedCount": 0,
+      "failed": []
+    },
+    "encoding": {
+      "exitCode": 0,
+      "summary": {
+        "root": "C:\\Users\\melle\\Desktop\\aquivivo",
+        "scannedFiles": 141,
+        "flaggedFiles": 16,
+        "changedFiles": 0,
+        "suspiciousBefore": 296,
+        "suspiciousAfter": 9,
+        "apply": false,
+        "generatedAt": "2026-03-18T11:31:28.353Z"
+      },
+      "reportPath": "import/generated/encoding-report.json",
+      "stdout": "encoding: scanned=141 | flagged=16 | changed=0 | before=296 | after=9 | apply=false\nreport=C:\\Users\\melle\\Desktop\\aquivivo\\import\\generated\\encoding-report.json",
+      "stderr": "",
+      "flaggedSample": [
+        {
+          "file": ".tmp_remote_firestore.rules",
+          "beforeCount": 2,
+          "afterCount": 2,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 1,
+              "text": "��\u001b\u0000[\u00001\u0000m\u0000\u001b\u0000[\u00003\u00001\u0000m\u0000E\u0000r\u0000r\u0000o\u0000r\u0000:\u0000\u001b\u0000[\u00003\u00009\u0000m\u0000\u001b\u0000[\u00002\u00002\u0000m\u0000 \u0000\u001b\u0000[\u00001\u0000m\u0000f\u0000i\u0000r\u0000e\u0000s\u0000t\u0000o\u0000r\u0000e\u0000:\u0000r\u0000u\u0000l\u0000e\u0000s\u0000:\u0000g\u0000e\u0000t\u0000\u001b\u0000[\u00002\u00002\u0000m\u0000 \u0000i\u0000s\u0000 \u0000n\u0000o\u0000t\u0000 \u0000a\u0000 \u0000F\u0000i\u0000r\u0000e\u0000b\u0000a\u0000s\u0000e\u0000 \u0000c\u0000o\u0000m\u0000m\u0000a\u0000n\u0000d\u0000\r\u0000"
+            }
+          ]
+        },
+        {
+          "file": "site/index.html",
+          "beforeCount": 10,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 32,
+              "text": "              Soy Magdalena â€” profesora de espaÃ±ol y polaco en Let's Talk Poznan. Te ayudo a descubrir que el polaco no es tan dificil como parece, que puede ser ligero, agradable y realmente \"alcanzable\" "
+            },
+            {
+              "line": 52,
+              "text": "                  <img src=\"assets/img/coffee.png\" alt=\"CafÃ©\" class=\"coffee-hero\" />"
+            },
+            {
+              "line": 76,
+              "text": "            <div class=\"muted\">aÃ±os</div>"
+            },
+            {
+              "line": 80,
+              "text": "            <div class=\"muted\">valoraciÃ³n</div>"
+            },
+            {
+              "line": 238,
+              "text": "          <p>Reserva tu primera clase gratis y descubre cÃ³mo puedo ayudarte a dominar el polaco y adaptarte a tu nueva vida en Polonia.</p>"
+            },
+            {
+              "line": 280,
+              "text": "                <div class=\"contactLabel\">UbicaciÃ³n</div>"
+            }
+          ]
+        },
+        {
+          "file": "site/kontakt.html",
+          "beforeCount": 4,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 27,
+              "text": "                Datos de contacto y horario de atenciÃ³n."
+            },
+            {
+              "line": 54,
+              "text": "          <div class=\"sectionTitle\" style=\"margin-top: 0\">Horario de atenciÃ³n</div>"
+            },
+            {
+              "line": 56,
+              "text": "            Contacto por correo: 7 dÃ­as a la semana<br />"
+            },
+            {
+              "line": 57,
+              "text": "            Contacto telefÃ³nico: lunes&ndash;viernes, 10:00&ndash;16:00"
+            }
+          ]
+        },
+        {
+          "file": "site/login.html",
+          "beforeCount": 18,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 6,
+              "text": "    <title>Inicia sesiÃ³n | AquiVivo</title>"
+            },
+            {
+              "line": 130,
+              "text": "            <h1 class=\"hero-title glow-text\">Inicia sesiÃ³n</h1>"
+            },
+            {
+              "line": 142,
+              "text": "            <div class=\"form-title\">Inicia sesiÃ³n / RegÃ­strate</div>"
+            },
+            {
+              "line": 144,
+              "text": "              El registro crea una cuenta. DespuÃ©s de iniciar sesiÃ³n, irÃ¡s a tu"
+            },
+            {
+              "line": 165,
+              "text": "                Usa 3-20 caracteres: letras, nÃºmeros, guion o punto."
+            },
+            {
+              "line": 169,
+              "text": "              <label>GÃ©nero (registro)</label>"
+            }
+          ]
+        },
+        {
+          "file": "site/polityka-prywatnosci.html",
+          "beforeCount": 31,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 6,
+              "text": "    <title>PolÃ­tica de privacidad &ndash; AquiVivo</title>"
+            },
+            {
+              "line": 25,
+              "text": "              <h1 class=\"glow-text\" style=\"margin: 0\">PolÃ­tica de privacidad</h1>"
+            },
+            {
+              "line": 27,
+              "text": "                CÃ³mo tratamos tus datos en AquiVivo."
+            },
+            {
+              "line": 50,
+              "text": "            y prestar los servicios: correo electrÃ³nico, identificador del"
+            },
+            {
+              "line": 52,
+              "text": "            aprendizaje, datos tÃ©cnicos del dispositivo y de la conexiÃ³n (por"
+            },
+            {
+              "line": 53,
+              "text": "            ejemplo, direcciÃ³n IP), asÃ­ como datos de pago (tratados por los"
+            }
+          ]
+        },
+        {
+          "file": "site/regulamin.html",
+          "beforeCount": 135,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 6,
+              "text": "    <title>TÃ©rminos y condiciones &ndash; AquiVivo</title>"
+            },
+            {
+              "line": 25,
+              "text": "              <h1 class=\"glow-text\" style=\"margin: 0\">TÃ©rminos y condiciones</h1>"
+            },
+            {
+              "line": 38,
+              "text": "              En AquiVivo puedes aprender polaco con cursos en lÃ­nea y materiales"
+            },
+            {
+              "line": 39,
+              "text": "              educativos. TambiÃ©n ofrezco servicios complementarios (por ejemplo,"
+            },
+            {
+              "line": 40,
+              "text": "              clases en vivo, apoyo con trÃ¡mites o soluciones para empresas), segÃºn"
+            },
+            {
+              "line": 44,
+              "text": "              En este documento te hablo de â€œtÃºâ€ y uso un lenguaje sencillo. La"
+            }
+          ]
+        },
+        {
+          "file": "site/services.html",
+          "beforeCount": 12,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 51,
+              "text": "                He leÃ­do y acepto lo anterior."
+            },
+            {
+              "line": 60,
+              "text": "                    Aceptas los <a href=\"regulamin.html\">TÃ©rminos</a> y la"
+            },
+            {
+              "line": 61,
+              "text": "                    <a href=\"polityka-prywatnosci.html\">PolÃ­tica de privacidad</a>."
+            },
+            {
+              "line": 68,
+              "text": "                    Puede aplicarse pÃ©rdida del derecho de desistimiento una vez otorgado el"
+            },
+            {
+              "line": 80,
+              "text": "                Activa A1 gratis 7 dÃ­as"
+            },
+            {
+              "line": 89,
+              "text": "              Si prefieres PayPal, puedes pagar aquÃ­ (moneda: <b>PLN</b>)."
+            }
+          ]
+        },
+        {
+          "file": "site/zwroty.html",
+          "beforeCount": 20,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 27,
+              "text": "                InformaciÃ³n sobre el derecho de desistimiento y la excepciÃ³n para contenidos"
+            },
+            {
+              "line": 35,
+              "text": "          <summary class=\"sectionTitle\">Derecho de desistimiento (14 dÃ­as)</summary>"
+            },
+            {
+              "line": 38,
+              "text": "            contrato celebrado a distancia en un plazo de 14 dÃ­as sin indicar el motivo."
+            },
+            {
+              "line": 43,
+              "text": "          <summary class=\"sectionTitle\">ExcepciÃ³n para contenidos digitales</summary>"
+            },
+            {
+              "line": 46,
+              "text": "            despuÃ©s de la compra, el derecho de desistimiento se extingue en el momento en que"
+            },
+            {
+              "line": 48,
+              "text": "            para la prestaciÃ³n inmediata del servicio y haya sido informado de la pÃ©rdida del"
+            }
+          ]
+        },
+        {
+          "file": "functions/index.js",
+          "beforeCount": 5,
+          "afterCount": 1,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 33,
+              "text": "// â±ï¸ czas dostÄ™pu (dni)"
+            },
+            {
+              "line": 42,
+              "text": "// ðŸ”“ levele odblokowane przez plan"
+            },
+            {
+              "line": 51,
+              "text": "// Fallback price IDs (Stripe) â€“ used when services doc is missing stripePriceId."
+            },
+            {
+              "line": 602,
+              "text": "      throw new functions.https.HttpsError('unauthenticated', 'Zaloguj siÄ™.');"
+            },
+            {
+              "line": 1367,
+              "text": "    const snippet = rawText.length > 220 ? `${rawText.slice(0, 220)}â€¦` : rawText;"
+            }
+          ]
+        },
+        {
+          "file": "app/admin-wizard.html",
+          "beforeCount": 2,
+          "afterCount": 2,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 128,
+              "text": "                <input id=\"courseIcon\" placeholder=\"np. ðŸ™ï¸\" maxlength=\"16\" />"
+            },
+            {
+              "line": 148,
+              "text": "                <input id=\"courseImageUrl\" placeholder=\"https://... (najlepiej kwadrat 256Ã—256)\" />"
+            }
+          ]
+        },
+        {
+          "file": "app/ajustes.html",
+          "beforeCount": 19,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 79,
+              "text": "                  <div class=\"hintSmall\">3â€“20 caracteres: letras, nÃºmeros y . _ -</div>"
+            },
+            {
+              "line": 95,
+              "text": "                    <option value=\"es\">EspaÃ±ol</option>"
+            },
+            {
+              "line": 141,
+              "text": "          <div class=\"sectionTitle\" style=\"margin-top: 0\">Sobre mÃ­</div>"
+            },
+            {
+              "line": 142,
+              "text": "          <div class=\"muted\">Esto se muestra en tu perfil pÃºblico (si lo permites).</div>"
+            },
+            {
+              "line": 146,
+              "text": "              <label for=\"settingsBioWhy\">Â¿Por quÃ© aprendo polaco?</label>"
+            },
+            {
+              "line": 156,
+              "text": "              <label for=\"settingsBioHard\">Â¿QuÃ© me cuesta mÃ¡s?</label>"
+            }
+          ]
+        },
+        {
+          "file": "app/buscar.html",
+          "beforeCount": 4,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 35,
+              "text": "            <div class=\"sectionTitle\" style=\"margin-top: 0\">BÃºsqueda</div>"
+            },
+            {
+              "line": 74,
+              "text": "            <div class=\"sectionTitle\" style=\"margin-top: 0\">Ideas rÃ¡pidas</div>"
+            },
+            {
+              "line": 76,
+              "text": "              Prueba buscar por <b>@usuario</b>, o por el comienzo del nombre. TambiÃ©n puedes abrir un"
+            },
+            {
+              "line": 77,
+              "text": "              perfil y seguirlo para ver mÃ¡s actividad."
+            }
+          ]
+        },
+        {
+          "file": "app/ejercicioadmin.html",
+          "beforeCount": 4,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 582,
+              "text": "            placeholder=\"Wklej wiersze z arkusza. Przyklad:\\n\\ntype\\tprompt\\tanswer\\toptions\\tcategory\\ttags\\tnotes\\timageUrl\\torder\\nOpciÃ³n mÃºltiple\\tElige la forma correcta...\\tB\\tA) ...||B) ...||C) ...\\tgrammar\\tcza"
+            },
+            {
+              "line": 648,
+              "text": "            Przyklad: <code>dzien dobry\\tbuenos dÃ­as\\tEX: Dzien dobry, jak sie masz?</code>"
+            }
+          ]
+        },
+        {
+          "file": "app/flashcards.html",
+          "beforeCount": 11,
+          "afterCount": 2,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 27,
+              "text": "                Modo rÃ¡pido tipo Quizlet."
+            },
+            {
+              "line": 49,
+              "text": "          <div class=\"hintSmall\" id=\"fcStatus\" style=\"margin-top: 8px\">â€”</div>"
+            },
+            {
+              "line": 60,
+              "text": "            <button class=\"ttsIconBtn\" id=\"fcAudio\" type=\"button\" title=\"OdsÅ‚uchaj (PL)\" aria-label=\"OdsÅ‚uchaj (PL)\">ðŸ”Š</button>"
+            },
+            {
+              "line": 61,
+              "text": "            <button class=\"ttsIconBtn\" id=\"fcExampleAudio\" type=\"button\" title=\"OdsÅ‚uchaj przykÅ‚ad (PL)\" aria-label=\"OdsÅ‚uchaj przykÅ‚ad (PL)\">ðŸ”Š</button>"
+            },
+            {
+              "line": 72,
+              "text": "            No hay tarjetas para este tema. AÃ±ade ejercicios tipo \"Tarjetas interactivas\"."
+            }
+          ]
+        },
+        {
+          "file": "app/notificaciones.html",
+          "beforeCount": 3,
+          "afterCount": 0,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 31,
+              "text": "                Marcar todo como leÃ­do"
+            },
+            {
+              "line": 38,
+              "text": "              No leÃ­das"
+            },
+            {
+              "line": 48,
+              "text": "              Cargar mÃ¡s"
+            }
+          ]
+        },
+        {
+          "file": "app/review.html",
+          "beforeCount": 16,
+          "afterCount": 2,
+          "changed": false,
+          "snippets": [
+            {
+              "line": 35,
+              "text": "            <div class=\"sectionTitle\" style=\"margin-top: 0\">Ãšltima actividad</div>"
+            },
+            {
+              "line": 36,
+              "text": "            <div class=\"muted\" id=\"prLastWhen\">â€”</div>"
+            },
+            {
+              "line": 37,
+              "text": "            <div style=\"margin-top: 10px; font-weight: 900\" id=\"prLastTitle\">â€”</div>"
+            },
+            {
+              "line": 50,
+              "text": "              <span id=\"prProgPractice\">PrÃ¡ctica: -</span>"
+            },
+            {
+              "line": 53,
+              "text": "            <div class=\"hintSmall\" id=\"prProgLastActivity\" style=\"margin-top: 8px\">Ãšltima actividad: -</div>"
+            },
+            {
+              "line": 118,
+              "text": "            <button class=\"ttsIconBtn\" id=\"btnAudio\" type=\"button\" title=\"OdsÅ‚uchaj (PL)\" aria-label=\"OdsÅ‚uchaj (PL)\">ðŸ”Š</button>"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "status": {
+    "ok": false,
+    "criticalErrors": 127
+  }
+}
