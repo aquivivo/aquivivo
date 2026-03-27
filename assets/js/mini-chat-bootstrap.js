@@ -85,4 +85,3 @@ if (document.readyState === 'loading') {
 } else {
   startMiniChatBootstrap();
 }
-

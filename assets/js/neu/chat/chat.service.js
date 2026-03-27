@@ -57,4 +57,3 @@ export async function init(deps, options) {
   await service.init(options);
   return service;
 }
-
