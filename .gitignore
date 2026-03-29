@@ -74,3 +74,5 @@ node_modules/
 
 # Generated import artifacts (can exceed GitHub 100MB limit)
 import/generated/*.json
+app/import/generated/*
+!app/import/generated/.gitkeep

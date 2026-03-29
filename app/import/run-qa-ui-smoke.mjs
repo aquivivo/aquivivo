@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+﻿import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 
@@ -128,7 +128,7 @@ function navParamsForLesson(lesson) {
 }
 
 async function login(page, { baseUrl, email, password }) {
-  const url = urlJoin(baseUrl, 'login.html?next=espanel.html');
+  const url = urlJoin(baseUrl, 'neu-login.html?next=espanel.html');
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.fill('#email', String(email || ''));
   await page.fill('#password', String(password || ''));
@@ -221,7 +221,7 @@ async function interactWithCard(card, actionLog) {
 
   const checkByName = await clickIfVisible(
     card.locator(
-      'button:has-text("Comprobar"), button:has-text("Sprawdz"), button:has-text("Sprawdź"), button:has-text("Check"), button:has-text("Hecho"), button:has-text("Verificar")',
+      'button:has-text("Comprobar"), button:has-text("Sprawdz"), button:has-text("SprawdÅº"), button:has-text("Check"), button:has-text("Hecho"), button:has-text("Verificar")',
     ),
   );
   if (checkByName) {
@@ -510,3 +510,4 @@ main().catch((err) => {
   console.error('run-qa-ui-smoke failed:', err?.message || err);
   process.exitCode = 1;
 });
+

@@ -431,7 +431,7 @@ Emociones y estado de Ã¡nimo</textarea
       // Verificar que sea admin
       onAuthStateChanged(auth, (user) => {
         if (!user) {
-          window.location.href = '../eslogin.html';
+          window.location.href = '../neu-login.html';
           return;
         }
         if ((user.email || '').toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
@@ -441,7 +441,7 @@ Emociones y estado de Ã¡nimo</textarea
       });
 
       window.logout = function () {
-        signOut(auth).then(() => (window.location.href = '../eslogin.html'));
+        signOut(auth).then(() => (window.location.href = '../neu-login.html'));
       };
 
       window.copyExample = function (id) {
@@ -589,6 +589,7 @@ Emociones y estado de Ã¡nimo</textarea
     </script>
   </body>
 </html>
+
 
 
 
