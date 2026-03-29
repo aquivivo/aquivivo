@@ -61,7 +61,6 @@
   left: auto !important;
   top: auto !important;
   z-index: var(--global-chat-z-panel) !important;
-  transform: none !important;
 }
 
 #miniChatThreadRoot {
@@ -114,6 +113,16 @@ body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .min
   box-shadow: none;
   position: relative;
   padding: 0;
+  opacity: 1;
+  transform: scale(1);
+  will-change: opacity, transform;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
 }
 
 body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher-icon {
@@ -123,12 +132,19 @@ body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .min
   display: block;
   filter: drop-shadow(0 14px 22px rgba(6, 17, 49, 0.42));
   transform-origin: 50% 70%;
-  transition: transform 140ms ease;
+  transition: transform 180ms cubic-bezier(0.2, 0.85, 0.25, 1), filter 180ms ease;
 }
 
 body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:hover .mini-chat-v4-launcher-icon,
 body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:focus-visible .mini-chat-v4-launcher-icon {
-  transform: translateY(-1px) scale(1.03);
+  transform: scale(1.05);
+  filter: drop-shadow(0 18px 28px rgba(6, 17, 49, 0.5));
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:active .mini-chat-v4-launcher-icon {
+  transform: scale(0.95);
+  filter: drop-shadow(0 10px 16px rgba(6, 17, 49, 0.36));
+  transition-duration: 120ms, 120ms;
 }
 
 body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-launcher:focus-visible {
@@ -136,22 +152,47 @@ body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .min
   outline-offset: 2px;
 }
 
-body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-badge {
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: -4px;
+  right: -4px;
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
   border: 2px solid #0f317f;
-  background: #ffd94a;
-  color: #10327f;
+  background: #ff3b30;
+  color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
   font-weight: 800;
+  line-height: 1;
+  transform-origin: center;
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-badge.is-visible {
+  opacity: 1;
+  transform: scale(1);
+  animation: mini-chat-badge-pop 220ms ease;
+}
+
+@keyframes mini-chat-badge-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-panel {
@@ -168,8 +209,19 @@ body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .min
   color: #fff;
   box-shadow: 0 26px 54px rgba(3, 9, 27, 0.5);
   overflow: hidden;
-  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  transform-origin: right bottom;
+  transition: opacity 200ms ease, transform 200ms ease;
+  will-change: opacity, transform;
+  pointer-events: none;
   z-index: 3600;
+}
+
+body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4.is-open .mini-chat-v4-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
 }
 
 body:not(.fusion-profile):not(.neu-social-app) .mini-chat-dock.mini-chat-v4 .mini-chat-v4-list-view,

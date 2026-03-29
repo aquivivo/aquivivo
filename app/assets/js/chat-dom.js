@@ -345,16 +345,22 @@ export function buildInboxThreadMarkup() {
 
 export function buildDockMarkup() {
   return `
-    <button class="mini-chat-v4-launcher" id="miniChatLauncher" type="button" aria-label="Mensajes">
-      <img
-        class="mini-chat-v4-launcher-icon mini-chat-v4-launcher-icon--cup"
-        src="${COFFEE_ICON_SRC}"
-        alt=""
-        aria-hidden="true"
-        decoding="async"
-      />
-      <span class="mini-chat-v4-badge" id="miniChatBadge" style="display:none;">0</span>
-    </button>
+    <div
+      class="mini-chat-v4-launcher-wrap"
+      id="miniChatLauncherWrap"
+      style="position:relative;display:inline-flex;align-items:center;justify-content:center;"
+    >
+      <button class="mini-chat-v4-launcher" id="miniChatLauncher" type="button" aria-label="Mensajes">
+        <img
+          class="mini-chat-v4-launcher-icon mini-chat-v4-launcher-icon--cup"
+          src="${COFFEE_ICON_SRC}"
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+        />
+        <span class="mini-chat-v4-badge mini-chat-badge" id="miniChatBadge" style="display:none;">0</span>
+      </button>
+    </div>
 
     <section class="mini-chat-v4-panel" id="miniChatPanel" hidden>
       <div class="mini-chat-v4-list-view" id="miniChatListView">

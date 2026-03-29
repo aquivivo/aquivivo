@@ -3189,13 +3189,226 @@ function isPageMode() {
 let outsideClickWired = false;
 let quickOpenWired = false;
 let syncWired = false;
+let storageSyncWired = false;
 let threadLayoutWired = false;
+const CHAT_UI_STATE_CLOSED = 'closed';
+const CHAT_UI_STATE_PANEL = 'panel';
+const CHAT_UI_STATE_THREAD = 'thread';
+const CHAT_UI_STATE_MINIMIZED = 'minimized';
+const CHAT_UI_STATE_ALLOWED = new Set([
+  CHAT_UI_STATE_CLOSED,
+  CHAT_UI_STATE_PANEL,
+  CHAT_UI_STATE_THREAD,
+  CHAT_UI_STATE_MINIMIZED,
+]);
+let chatUIState = CHAT_UI_STATE_CLOSED;
+
+const CHAT_UI_MODE_PANEL = 'panel';
+const CHAT_UI_MODE_THREAD = 'thread';
+const CHAT_UI_MODE_MINIMIZED = 'minimized';
+let hasActiveChat = false;
+let chatUiMode = CHAT_UI_MODE_MINIMIZED;
+let dockPanelHideTimer = 0;
 const THREAD_WINDOW_ANIM_MS = 180;
 const THREAD_WINDOW_MINIMIZED_TRANSFORM = 'translateY(12px) scale(0.96)';
 const panelUploadState = {
   uploading: false,
   progress: 0,
 };
+
+function normalizeChatUIState(nextState) {
+  const safeState = String(nextState || '').trim().toLowerCase();
+  if (CHAT_UI_STATE_ALLOWED.has(safeState)) return safeState;
+  return CHAT_UI_STATE_CLOSED;
+}
+
+function applyLauncherVisibility(launcher, visible) {
+  if (!(launcher instanceof HTMLElement)) return;
+  const shouldShow = visible === true;
+  launcher.classList.toggle('is-hidden', !shouldShow);
+  if (shouldShow) {
+    launcher.removeAttribute('aria-hidden');
+    launcher.removeAttribute('tabindex');
+    return;
+  }
+  launcher.setAttribute('aria-hidden', 'true');
+  launcher.setAttribute('tabindex', '-1');
+}
+
+function applyPanelVisibility(panel, visible) {
+  if (!(panel instanceof HTMLElement)) return;
+  const shouldShow = visible === true;
+  panel.hidden = !shouldShow;
+  if (shouldShow) {
+    panel.removeAttribute('aria-hidden');
+    return;
+  }
+  panel.setAttribute('aria-hidden', 'true');
+}
+
+function resolveActiveThreadIdForUi() {
+  const activeId = String(ChatController.getActiveConversation() || '').trim();
+  if (activeId && openThreads.has(activeId) && !minimizedThreads.has(activeId)) {
+    return activeId;
+  }
+
+  const fallback = Array.from(openThreads.keys()).find(
+    (id) => !minimizedThreads.has(String(id || '').trim()),
+  );
+  return String(fallback || '').trim();
+}
+
+function applyThreadVisibility(state) {
+  const shouldShowThread = state === CHAT_UI_STATE_THREAD;
+  const activeThreadId = shouldShowThread ? resolveActiveThreadIdForUi() : '';
+  let visibleCount = 0;
+
+  openThreads.forEach((thread, id) => {
+    if (!(thread?.element instanceof HTMLElement)) return;
+    const convId = String(id || '').trim();
+    const isMinimized = minimizedThreads.has(convId);
+    const shouldShow = shouldShowThread && !isMinimized && convId === activeThreadId;
+    thread.element.style.display = shouldShow ? 'flex' : 'none';
+    if (shouldShow) visibleCount += 1;
+  });
+
+  syncThreadActiveWindowClass(shouldShowThread ? activeThreadId : '');
+
+  const threadRoot = document.getElementById('miniChatThreadRoot');
+  if (threadRoot instanceof HTMLElement) {
+    const shouldShowRoot = shouldShowThread && visibleCount > 0;
+    threadRoot.style.display = shouldShowRoot ? '' : 'none';
+    if (shouldShowRoot) {
+      threadRoot.removeAttribute('aria-hidden');
+    } else {
+      threadRoot.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  return visibleCount > 0;
+}
+
+function applyAvatarTrayVisibility(visible) {
+  const tray = document.getElementById('miniChatTray');
+  if (!(tray instanceof HTMLElement)) return false;
+  const hasAvatars =
+    tray.querySelector('.mini-chat-v4-tray-bubble, .neuDockThreadAvatar') instanceof HTMLElement;
+  const shouldShow = visible === true && hasAvatars;
+  tray.style.display = shouldShow ? '' : 'none';
+  if (shouldShow) {
+    tray.removeAttribute('aria-hidden');
+  } else {
+    tray.setAttribute('aria-hidden', 'true');
+  }
+  return shouldShow;
+}
+
+function syncChatUI() {
+  // Keep the legacy diagnostic field in sync while migrating to central state.
+  chatUiMode = chatUIState;
+  const state = normalizeChatUIState(chatUIState);
+
+  if (document.body instanceof HTMLBodyElement) {
+    document.body.dataset.miniChatUiState = state;
+  }
+
+  const { dock, launcher, panel } = dockShell();
+  if (dock instanceof HTMLElement) {
+    dock.dataset.chatUiState = state;
+  }
+
+  if (readMiniChatHiddenState()) {
+    applyLauncherVisibility(launcher, false);
+    applyPanelVisibility(panel, false);
+    applyThreadVisibility(CHAT_UI_STATE_CLOSED);
+    applyAvatarTrayVisibility(false);
+    hasActiveChat = false;
+    return;
+  }
+
+  let showLauncher = false;
+  let showPanel = false;
+  let showThread = false;
+  let showAvatars = false;
+
+  if (state === CHAT_UI_STATE_CLOSED) {
+    showLauncher = true;
+  } else if (state === CHAT_UI_STATE_PANEL) {
+    showPanel = true;
+  } else if (state === CHAT_UI_STATE_THREAD) {
+    showThread = true;
+  } else if (state === CHAT_UI_STATE_MINIMIZED) {
+    showAvatars = true;
+  }
+
+  applyLauncherVisibility(launcher, showLauncher);
+  applyPanelVisibility(panel, showPanel);
+
+  const threadVisible = applyThreadVisibility(showThread ? CHAT_UI_STATE_THREAD : CHAT_UI_STATE_CLOSED);
+  const avatarsVisible = applyAvatarTrayVisibility(showAvatars);
+
+  if (state === CHAT_UI_STATE_PANEL && !(panel instanceof HTMLElement)) {
+    applyLauncherVisibility(launcher, true);
+  }
+  if (state === CHAT_UI_STATE_THREAD && !threadVisible) {
+    applyLauncherVisibility(launcher, true);
+  }
+
+  // Keep consistency: if minimized has no visible avatar bubbles, fall back to launcher-only state.
+  if (state === CHAT_UI_STATE_MINIMIZED && !avatarsVisible) {
+    applyLauncherVisibility(launcher, true);
+  }
+
+  if (dock instanceof HTMLElement) {
+    if (state === CHAT_UI_STATE_PANEL) {
+      dock.classList.add('is-open');
+      dock.classList.remove('is-minimized');
+      if (panel instanceof HTMLElement) panel.classList.remove('is-closing');
+    } else if (state === CHAT_UI_STATE_MINIMIZED) {
+      dock.classList.add('is-minimized');
+      dock.classList.remove('is-open');
+    } else {
+      dock.classList.remove('is-open');
+      dock.classList.remove('is-minimized');
+      if (panel instanceof HTMLElement) panel.classList.remove('is-closing');
+    }
+  }
+
+  const launcherVisible = launcher instanceof HTMLElement && !launcher.classList.contains('is-hidden');
+  hasActiveChat = !launcherVisible && (showPanel || threadVisible || avatarsVisible);
+}
+
+function refreshLauncherUnreadBadge() {
+  const badge = qs('#miniChatBadge');
+  if (!(badge instanceof HTMLElement)) return;
+
+  const total = Math.max(0, Number(badge.dataset.unreadCount || 0));
+  const shouldShow = total > 0 && !isDockPanelOpen();
+
+  if (!shouldShow) {
+    badge.classList.remove('is-visible');
+    badge.style.display = 'none';
+    return;
+  }
+
+  badge.textContent = total > 99 ? '99+' : String(total);
+  const wasHidden =
+    badge.style.display === 'none' ||
+    !badge.classList.contains('is-visible');
+
+  badge.style.display = 'inline-flex';
+  if (wasHidden) {
+    badge.classList.remove('is-visible');
+    void badge.offsetWidth;
+  }
+  badge.classList.add('is-visible');
+}
+
+function setChatUIState(nextState) {
+  chatUIState = normalizeChatUIState(nextState);
+  console.log('[ChatState]', chatUIState);
+  syncChatUI();
+}
 
 function createComposeState() {
   return {
@@ -3240,6 +3453,641 @@ function ensureMountedOnBody(node) {
     document.body.appendChild(node);
   }
   return node;
+}
+
+const MINI_CHAT_LAUNCHER_POSITION_KEY = 'av:mini-chat-launcher-position';
+const MINI_CHAT_MINIMIZED_THREAD_POSITION_KEY = 'av:mini-chat-minimized-thread-positions';
+const MINI_CHAT_WIDGET_HIDDEN_KEY = 'miniChatHidden';
+const MINI_CHAT_WIDGET_HIDDEN_LEGACY_KEY = 'chatHidden';
+const MINI_CHAT_LAUNCHER_SNAP_GAP = 12;
+const MINI_CHAT_LAUNCHER_SNAP_THRESHOLD = 80;
+const MINI_CHAT_LAUNCHER_SNAP_TRANSITION = 'left 0.2s ease, top 0.2s ease';
+const MINI_CHAT_LAUNCHER_MIN_TOP = 80;
+const MINI_CHAT_LAUNCHER_MIN_TOP_FALLBACK = 20;
+const Z_CHAT = 2147483647;
+
+function clampValue(value, min, max) {
+  const safeValue = Number.isFinite(value) ? value : 0;
+  if (safeValue < min) return min;
+  if (safeValue > max) return max;
+  return safeValue;
+}
+
+function launcherPointFromEvent(event) {
+  if (typeof MouseEvent !== 'undefined' && event instanceof MouseEvent) {
+    return {
+      x: Number(event.clientX),
+      y: Number(event.clientY),
+    };
+  }
+
+  if (typeof TouchEvent !== 'undefined' && event instanceof TouchEvent) {
+    const touch =
+      (event.touches && event.touches[0]) ||
+      (event.changedTouches && event.changedTouches[0]) ||
+      null;
+    if (!touch) return null;
+    return {
+      x: Number(touch.clientX),
+      y: Number(touch.clientY),
+    };
+  }
+
+  return null;
+}
+
+function positionLauncherInViewport(launcher, clientX, clientY) {
+  if (!(launcher instanceof HTMLElement)) return;
+
+  const rect = launcher.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width || launcher.offsetWidth || 56));
+  const height = Math.max(1, Math.round(rect.height || launcher.offsetHeight || 56));
+  const maxLeft = Math.max(0, window.innerWidth - width);
+  const maxTop = Math.max(0, window.innerHeight - height);
+  const minTop = clampValue(
+    window.innerWidth <= 1024 ? MINI_CHAT_LAUNCHER_MIN_TOP : MINI_CHAT_LAUNCHER_MIN_TOP_FALLBACK,
+    0,
+    maxTop,
+  );
+  const safeMaxTop = Math.max(minTop, maxTop);
+  const left = Math.round(clampValue(Number(clientX), 0, maxLeft));
+  const top = Math.round(clampValue(Number(clientY), minTop, safeMaxTop));
+
+  launcher.style.position = 'fixed';
+  launcher.style.left = `${left}px`;
+  launcher.style.top = `${top}px`;
+  launcher.style.right = 'auto';
+  launcher.style.bottom = 'auto';
+  launcher.style.margin = '0';
+}
+
+function snapLauncherToEdge(launcher) {
+  if (!(launcher instanceof HTMLElement)) return;
+
+  const rect = launcher.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width || launcher.offsetWidth || 56));
+  const height = Math.max(1, Math.round(rect.height || launcher.offsetHeight || 56));
+  const maxLeft = Math.max(0, window.innerWidth - width);
+  const maxTop = Math.max(0, window.innerHeight - height);
+  const safeTop = clampValue(rect.top, 0, maxTop);
+  const centerX = rect.left + width / 2;
+  const leftSnapX = clampValue(MINI_CHAT_LAUNCHER_SNAP_GAP, 0, maxLeft);
+  const rightSnapX = clampValue(maxLeft - MINI_CHAT_LAUNCHER_SNAP_GAP, 0, maxLeft);
+
+  if (centerX < MINI_CHAT_LAUNCHER_SNAP_THRESHOLD) {
+    launcher.style.transition = MINI_CHAT_LAUNCHER_SNAP_TRANSITION;
+    positionLauncherInViewport(launcher, leftSnapX, safeTop);
+    return;
+  }
+
+  if (centerX > window.innerWidth - MINI_CHAT_LAUNCHER_SNAP_THRESHOLD) {
+    launcher.style.transition = MINI_CHAT_LAUNCHER_SNAP_TRANSITION;
+    positionLauncherInViewport(launcher, rightSnapX, safeTop);
+    return;
+  }
+
+  launcher.style.transition = 'none';
+}
+
+function readSavedLauncherPosition() {
+  try {
+    const raw = window.localStorage?.getItem(MINI_CHAT_LAUNCHER_POSITION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const top = Number(parsed?.top);
+    const left = Number(parsed?.left);
+    if (!Number.isFinite(top) || !Number.isFinite(left)) return null;
+    return { top, left };
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveLauncherPosition(launcher) {
+  if (!(launcher instanceof HTMLElement)) return;
+  const rect = launcher.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width || launcher.offsetWidth || 56));
+  const height = Math.max(1, Math.round(rect.height || launcher.offsetHeight || 56));
+  const maxLeft = Math.max(0, window.innerWidth - width);
+  const maxTop = Math.max(0, window.innerHeight - height);
+  const left = Math.round(clampValue(rect.left, 0, maxLeft));
+  const top = Math.round(clampValue(rect.top, 0, maxTop));
+
+  try {
+    window.localStorage?.setItem(
+      MINI_CHAT_LAUNCHER_POSITION_KEY,
+      JSON.stringify({ top, left }),
+    );
+  } catch (error) {
+    // Ignore storage quota/privacy mode failures.
+  }
+}
+
+function applySavedLauncherPosition(launcher) {
+  if (!(launcher instanceof HTMLElement)) return false;
+  const saved = readSavedLauncherPosition();
+  if (!saved) return false;
+  launcher.style.transition = 'none';
+  positionLauncherInViewport(launcher, saved.left, saved.top);
+  return true;
+}
+
+function clampLauncherToViewport({ persist = true } = {}) {
+  const launcher = qs('#miniChatLauncher');
+  if (!(launcher instanceof HTMLElement)) return;
+
+  const hasSavedPosition = readSavedLauncherPosition() !== null;
+  const hasInlinePosition =
+    String(launcher.style.left || '').trim() !== '' &&
+    String(launcher.style.top || '').trim() !== '';
+  if (!hasSavedPosition && !hasInlinePosition) return;
+
+  const rect = launcher.getBoundingClientRect();
+  launcher.style.transition = 'none';
+  positionLauncherInViewport(launcher, rect.left, rect.top);
+  if (persist) saveLauncherPosition(launcher);
+}
+
+function normalizeSavedMinimizedThreadPositions(value) {
+  const next = {};
+  if (!value || typeof value !== 'object') return next;
+
+  Object.entries(value).forEach(([key, position]) => {
+    const conversationId = String(key || '').trim();
+    if (!conversationId) return;
+    const top = Number(position?.top);
+    const left = Number(position?.left);
+    if (!Number.isFinite(top) || !Number.isFinite(left)) return;
+    next[conversationId] = {
+      top: Math.round(top),
+      left: Math.round(left),
+    };
+  });
+
+  return next;
+}
+
+function readSavedMinimizedThreadPositions() {
+  try {
+    const raw = window.localStorage?.getItem(MINI_CHAT_MINIMIZED_THREAD_POSITION_KEY);
+    if (!raw) return {};
+    return normalizeSavedMinimizedThreadPositions(JSON.parse(raw));
+  } catch (error) {
+    return {};
+  }
+}
+
+function writeSavedMinimizedThreadPositions(nextValue) {
+  try {
+    const normalized = normalizeSavedMinimizedThreadPositions(nextValue);
+    if (!Object.keys(normalized).length) {
+      window.localStorage?.removeItem(MINI_CHAT_MINIMIZED_THREAD_POSITION_KEY);
+      return;
+    }
+    window.localStorage?.setItem(
+      MINI_CHAT_MINIMIZED_THREAD_POSITION_KEY,
+      JSON.stringify(normalized),
+    );
+  } catch (error) {
+    // Ignore storage quota/privacy mode failures.
+  }
+}
+
+function readSavedMinimizedThreadPosition(conversationId) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return null;
+  const all = readSavedMinimizedThreadPositions();
+  const value = all[convId];
+  if (!value) return null;
+  const top = Number(value.top);
+  const left = Number(value.left);
+  if (!Number.isFinite(top) || !Number.isFinite(left)) return null;
+  return { top, left };
+}
+
+function writeSavedMinimizedThreadPosition(conversationId, position = null) {
+  const convId = String(conversationId || '').trim();
+  if (!convId) return;
+  const all = readSavedMinimizedThreadPositions();
+  if (!position) {
+    delete all[convId];
+    writeSavedMinimizedThreadPositions(all);
+    return;
+  }
+  const top = Number(position.top);
+  const left = Number(position.left);
+  if (!Number.isFinite(top) || !Number.isFinite(left)) return;
+  all[convId] = {
+    top: Math.round(top),
+    left: Math.round(left),
+  };
+  writeSavedMinimizedThreadPositions(all);
+}
+
+function positionMinimizedThreadBubbleInViewport(bubble, clientX, clientY) {
+  if (!(bubble instanceof HTMLElement)) return;
+
+  const rect = bubble.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width || bubble.offsetWidth || 46));
+  const height = Math.max(1, Math.round(rect.height || bubble.offsetHeight || 46));
+  const maxLeft = Math.max(0, window.innerWidth - width);
+  const maxTop = Math.max(0, window.innerHeight - height);
+  const minTop = clampValue(
+    window.innerWidth <= 1024 ? MINI_CHAT_LAUNCHER_MIN_TOP : MINI_CHAT_LAUNCHER_MIN_TOP_FALLBACK,
+    0,
+    maxTop,
+  );
+  const safeMaxTop = Math.max(minTop, maxTop);
+  const left = Math.round(clampValue(Number(clientX), 0, maxLeft));
+  const top = Math.round(clampValue(Number(clientY), minTop, safeMaxTop));
+
+  bubble.style.position = 'fixed';
+  bubble.style.left = `${left}px`;
+  bubble.style.top = `${top}px`;
+  bubble.style.right = 'auto';
+  bubble.style.bottom = 'auto';
+  bubble.style.margin = '0';
+  bubble.style.zIndex = String(Z_CHAT - 1);
+  bubble.dataset.miniChatFloating = '1';
+}
+
+function snapMinimizedThreadBubbleToEdge(bubble) {
+  if (!(bubble instanceof HTMLElement)) return;
+
+  const rect = bubble.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width || bubble.offsetWidth || 46));
+  const height = Math.max(1, Math.round(rect.height || bubble.offsetHeight || 46));
+  const maxLeft = Math.max(0, window.innerWidth - width);
+  const maxTop = Math.max(0, window.innerHeight - height);
+  const safeTop = clampValue(rect.top, 0, maxTop);
+  const centerX = rect.left + width / 2;
+  const leftSnapX = clampValue(MINI_CHAT_LAUNCHER_SNAP_GAP, 0, maxLeft);
+  const rightSnapX = clampValue(maxLeft - MINI_CHAT_LAUNCHER_SNAP_GAP, 0, maxLeft);
+
+  if (centerX < MINI_CHAT_LAUNCHER_SNAP_THRESHOLD) {
+    bubble.style.transition = MINI_CHAT_LAUNCHER_SNAP_TRANSITION;
+    positionMinimizedThreadBubbleInViewport(bubble, leftSnapX, safeTop);
+    return;
+  }
+
+  if (centerX > window.innerWidth - MINI_CHAT_LAUNCHER_SNAP_THRESHOLD) {
+    bubble.style.transition = MINI_CHAT_LAUNCHER_SNAP_TRANSITION;
+    positionMinimizedThreadBubbleInViewport(bubble, rightSnapX, safeTop);
+    return;
+  }
+
+  bubble.style.transition = 'none';
+}
+
+function saveMinimizedThreadBubblePosition(conversationId, bubble) {
+  const convId = String(conversationId || '').trim();
+  if (!convId || !(bubble instanceof HTMLElement)) return;
+  const rect = bubble.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width || bubble.offsetWidth || 46));
+  const height = Math.max(1, Math.round(rect.height || bubble.offsetHeight || 46));
+  const maxLeft = Math.max(0, window.innerWidth - width);
+  const maxTop = Math.max(0, window.innerHeight - height);
+  const left = Math.round(clampValue(rect.left, 0, maxLeft));
+  const top = Math.round(clampValue(rect.top, 0, maxTop));
+  writeSavedMinimizedThreadPosition(convId, { top, left });
+}
+
+function applySavedMinimizedThreadBubblePosition(conversationId, bubble) {
+  const convId = String(conversationId || '').trim();
+  if (!convId || !(bubble instanceof HTMLElement)) return false;
+  const saved = readSavedMinimizedThreadPosition(convId);
+  if (!saved) return false;
+  bubble.style.transition = 'none';
+  positionMinimizedThreadBubbleInViewport(bubble, saved.left, saved.top);
+  return true;
+}
+
+function clampMinimizedThreadBubblesToViewport({ persist = true } = {}) {
+  const bubbles = document.querySelectorAll('#miniChatTray .mini-chat-v4-tray-bubble[data-mini-chat-floating="1"]');
+  bubbles.forEach((node) => {
+    if (!(node instanceof HTMLElement)) return;
+    const convId = String(node.dataset.convId || '').trim();
+    if (!convId) return;
+    const rect = node.getBoundingClientRect();
+    node.style.transition = 'none';
+    positionMinimizedThreadBubbleInViewport(node, rect.left, rect.top);
+    if (persist) saveMinimizedThreadBubblePosition(convId, node);
+  });
+}
+
+function shouldSuppressTrayBubbleClick(bubble, event) {
+  if (!(bubble instanceof HTMLElement)) return false;
+  const draggedAt = Number(bubble.dataset.miniChatDragTs || 0);
+  if (!Number.isFinite(draggedAt) || draggedAt <= 0) return false;
+  if (Date.now() - draggedAt > 260) return false;
+  if (event?.preventDefault) event.preventDefault();
+  if (event?.stopPropagation) event.stopPropagation();
+  return true;
+}
+
+function wireMinimizedThreadBubbleDrag(bubble, conversationId) {
+  const convId = String(conversationId || '').trim();
+  if (!convId || !(bubble instanceof HTMLElement)) return;
+  bubble.dataset.convId = convId;
+  applySavedMinimizedThreadBubblePosition(convId, bubble);
+  if (bubble.dataset.miniChatDragWired === '1') return;
+  bubble.dataset.miniChatDragWired = '1';
+  bubble.style.cursor = 'grab';
+  bubble.style.userSelect = 'none';
+  bubble.style.touchAction = 'none';
+
+  const dragState = {
+    active: false,
+    moved: false,
+    startX: 0,
+    startY: 0,
+    previousBodyUserSelect: '',
+    previousBodyWebkitUserSelect: '',
+    removeMoveListeners: () => {},
+  };
+
+  function disableSelectionWhileDragging() {
+    if (!(document.body instanceof HTMLBodyElement)) return;
+    dragState.previousBodyUserSelect = document.body.style.userSelect || '';
+    dragState.previousBodyWebkitUserSelect = document.body.style.webkitUserSelect || '';
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
+  }
+
+  function restoreSelectionAfterDragging() {
+    if (!(document.body instanceof HTMLBodyElement)) return;
+    document.body.style.userSelect = dragState.previousBodyUserSelect;
+    document.body.style.webkitUserSelect = dragState.previousBodyWebkitUserSelect;
+  }
+
+  function endDragging() {
+    if (!dragState.active) return;
+    dragState.active = false;
+    dragState.removeMoveListeners();
+    dragState.removeMoveListeners = () => {};
+    restoreSelectionAfterDragging();
+    bubble.style.cursor = 'grab';
+    if (dragState.moved) {
+      snapMinimizedThreadBubbleToEdge(bubble);
+      saveMinimizedThreadBubblePosition(convId, bubble);
+      bubble.dataset.miniChatDragTs = String(Date.now());
+    }
+  }
+
+  function onMove(event) {
+    if (!dragState.active) return;
+    const point = launcherPointFromEvent(event);
+    if (!point) return;
+    if (event?.cancelable) event.preventDefault();
+
+    const movedBy =
+      Math.abs(point.x - dragState.startX) + Math.abs(point.y - dragState.startY);
+    if (movedBy > 6) dragState.moved = true;
+
+    positionMinimizedThreadBubbleInViewport(bubble, point.x, point.y);
+  }
+
+  function startDragging(event, mode = 'mouse') {
+    const point = launcherPointFromEvent(event);
+    if (!point) return;
+    if (event?.cancelable) event.preventDefault();
+
+    dragState.active = true;
+    dragState.moved = false;
+    dragState.startX = point.x;
+    dragState.startY = point.y;
+    bubble.style.transition = 'none';
+    bubble.style.cursor = 'grabbing';
+    disableSelectionWhileDragging();
+
+    if (mode === 'touch') {
+      const onTouchMove = (moveEvent) => onMove(moveEvent);
+      const onTouchEnd = () => endDragging();
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend', onTouchEnd, { passive: true });
+      document.addEventListener('touchcancel', onTouchEnd, { passive: true });
+      dragState.removeMoveListeners = () => {
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+        document.removeEventListener('touchcancel', onTouchEnd);
+      };
+      return;
+    }
+
+    const onMouseMove = (moveEvent) => onMove(moveEvent);
+    const onMouseUp = () => endDragging();
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    dragState.removeMoveListeners = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }
+
+  bubble.addEventListener('dragstart', (event) => {
+    event.preventDefault();
+  });
+
+  bubble.addEventListener('mousedown', (event) => {
+    if (event.button !== 0) return;
+    startDragging(event, 'mouse');
+  });
+
+  bubble.addEventListener(
+    'touchstart',
+    (event) => {
+      if (!event.touches || event.touches.length < 1) return;
+      startDragging(event, 'touch');
+    },
+    { passive: false },
+  );
+}
+
+function readMiniChatHiddenState() {
+  try {
+    const nextRaw = String(window.localStorage?.getItem(MINI_CHAT_WIDGET_HIDDEN_KEY) || '').trim().toLowerCase();
+    const legacyRaw = String(window.localStorage?.getItem(MINI_CHAT_WIDGET_HIDDEN_LEGACY_KEY) || '').trim().toLowerCase();
+    const raw = nextRaw || legacyRaw;
+    return raw === 'true' || raw === '1';
+  } catch (error) {
+    return false;
+  }
+}
+
+function writeMiniChatHiddenState(hidden) {
+  try {
+    const value = hidden ? 'true' : 'false';
+    window.localStorage?.setItem(MINI_CHAT_WIDGET_HIDDEN_KEY, value);
+    window.localStorage?.setItem(MINI_CHAT_WIDGET_HIDDEN_LEGACY_KEY, value);
+  } catch (error) {
+    // Ignore storage quota/privacy mode failures.
+  }
+}
+
+function removeLegacyChatUiArtifacts(scope = document) {
+  const legacyRestoreButton = document.getElementById('miniChatRestoreButton');
+  if (legacyRestoreButton instanceof HTMLElement) legacyRestoreButton.remove();
+
+  const root = scope instanceof HTMLElement ? scope : document;
+  root.querySelectorAll('#miniChatLauncherHide').forEach((node) => {
+    if (node instanceof HTMLElement) node.remove();
+  });
+}
+
+function applyMiniChatWidgetVisibility(hidden, { persist = true } = {}) {
+  const shouldHide = hidden === true;
+  if (persist) writeMiniChatHiddenState(shouldHide);
+
+  const dock = qs('#miniChatDock');
+  removeLegacyChatUiArtifacts(dock instanceof HTMLElement ? dock : document);
+  if (dockPanelHideTimer) {
+    window.clearTimeout(dockPanelHideTimer);
+    dockPanelHideTimer = 0;
+  }
+
+  if (!shouldHide) {
+    positionThreads();
+    renderTray();
+  }
+  setChatUIState(CHAT_UI_STATE_CLOSED);
+}
+
+function syncMiniChatVisibilityFromStorage() {
+  const hidden = readMiniChatHiddenState();
+  if (hidden) {
+    applyMiniChatWidgetVisibility(true, { persist: false });
+    return;
+  }
+
+  if (isMobile()) return;
+
+  ensureDock();
+  applyMiniChatWidgetVisibility(false, { persist: false });
+}
+
+function shouldSuppressLauncherClick(launcher, event) {
+  if (!(launcher instanceof HTMLElement)) return false;
+  const draggedAt = Number(launcher.dataset.miniChatDragTs || 0);
+  if (!Number.isFinite(draggedAt) || draggedAt <= 0) return false;
+  if (Date.now() - draggedAt > 260) return false;
+
+  if (event?.preventDefault) event.preventDefault();
+  if (event?.stopPropagation) event.stopPropagation();
+  return true;
+}
+
+function wireLauncherDrag(launcher) {
+  if (!(launcher instanceof HTMLElement)) return;
+  applySavedLauncherPosition(launcher);
+  if (launcher.dataset.miniChatDragWired === '1') return;
+  launcher.dataset.miniChatDragWired = '1';
+  launcher.style.position = 'fixed';
+  launcher.style.zIndex = String(Z_CHAT);
+  launcher.style.cursor = 'grab';
+  launcher.style.userSelect = 'none';
+  launcher.style.touchAction = 'none';
+
+  const dragState = {
+    active: false,
+    moved: false,
+    startX: 0,
+    startY: 0,
+    previousBodyUserSelect: '',
+    previousBodyWebkitUserSelect: '',
+    removeMoveListeners: () => {},
+  };
+
+  function disableSelectionWhileDragging() {
+    if (!(document.body instanceof HTMLBodyElement)) return;
+    dragState.previousBodyUserSelect = document.body.style.userSelect || '';
+    dragState.previousBodyWebkitUserSelect = document.body.style.webkitUserSelect || '';
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
+  }
+
+  function restoreSelectionAfterDragging() {
+    if (!(document.body instanceof HTMLBodyElement)) return;
+    document.body.style.userSelect = dragState.previousBodyUserSelect;
+    document.body.style.webkitUserSelect = dragState.previousBodyWebkitUserSelect;
+  }
+
+  function endDragging() {
+    if (!dragState.active) return;
+    dragState.active = false;
+    dragState.removeMoveListeners();
+    dragState.removeMoveListeners = () => {};
+    restoreSelectionAfterDragging();
+    launcher.style.cursor = 'grab';
+    if (dragState.moved) {
+      snapLauncherToEdge(launcher);
+      saveLauncherPosition(launcher);
+      launcher.dataset.miniChatDragTs = String(Date.now());
+    }
+  }
+
+  function onMove(event) {
+    if (!dragState.active) return;
+    const point = launcherPointFromEvent(event);
+    if (!point) return;
+    if (event?.cancelable) event.preventDefault();
+
+    const movedBy =
+      Math.abs(point.x - dragState.startX) + Math.abs(point.y - dragState.startY);
+    if (movedBy > 6) dragState.moved = true;
+
+    positionLauncherInViewport(launcher, point.x, point.y);
+  }
+
+  function startDragging(event, mode = 'mouse') {
+    const point = launcherPointFromEvent(event);
+    if (!point) return;
+    if (event?.cancelable) event.preventDefault();
+
+    dragState.active = true;
+    dragState.moved = false;
+    dragState.startX = point.x;
+    dragState.startY = point.y;
+    launcher.style.transition = 'none';
+    launcher.style.cursor = 'grabbing';
+    disableSelectionWhileDragging();
+
+    if (mode === 'touch') {
+      const onTouchMove = (moveEvent) => onMove(moveEvent);
+      const onTouchEnd = () => endDragging();
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend', onTouchEnd, { passive: true });
+      document.addEventListener('touchcancel', onTouchEnd, { passive: true });
+      dragState.removeMoveListeners = () => {
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+        document.removeEventListener('touchcancel', onTouchEnd);
+      };
+      return;
+    }
+
+    const onMouseMove = (moveEvent) => onMove(moveEvent);
+    const onMouseUp = () => endDragging();
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    dragState.removeMoveListeners = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }
+
+  launcher.addEventListener('dragstart', (event) => {
+    event.preventDefault();
+  });
+
+  launcher.addEventListener('mousedown', (event) => {
+    if (event.button !== 0) return;
+    startDragging(event, 'mouse');
+  });
+
+  launcher.addEventListener('touchstart', (event) => {
+    if (!event.touches || event.touches.length < 1) return;
+    startDragging(event, 'touch');
+  }, { passive: false });
 }
 
 function composeStateFor(scope = 'panel', thread = null) {
@@ -4000,6 +4848,9 @@ function getChatDiagnostics() {
     hostMode,
     route,
     state,
+    hasActiveChat,
+    chatUIState,
+    chatUiMode,
     fallbackHydratedUid,
     fallbackHydrating: Boolean(fallbackHydrationPromise),
     pageListManaged: list instanceof HTMLElement && list.dataset.miniChatManaged === '1',
@@ -5203,6 +6054,7 @@ function createThreadWindow(conversationId) {
 
   ChatController.setActiveConversation(convId, { source: 'dock' });
   syncThreadActiveWindowClass(convId);
+  setChatUIState(CHAT_UI_STATE_THREAD);
   renderConversationList();
   positionThreads();
   updateTypingIndicatorsFromConversations();
@@ -5226,17 +6078,23 @@ function applyChatRouteState() {
   syncChatStateFromRoute();
 }
 
+function isDockPanelOpen() {
+  const { dock, panel } = dockShell();
+  return (
+    dock instanceof HTMLElement &&
+    dock.classList.contains('is-open') &&
+    panel instanceof HTMLElement &&
+    panel.hidden === false
+  );
+}
+
 function setUnreadBadge(count) {
   const badge = qs('#miniChatBadge');
-  const total = Number(count || 0);
+  const total = Math.max(0, Number(count || 0));
   if (badge instanceof HTMLElement) {
-    if (!total) {
-      badge.style.display = 'none';
-      badge.textContent = '0';
-    } else {
-      badge.style.display = 'inline-flex';
-      badge.textContent = total > 99 ? '99+' : String(total);
-    }
+    badge.dataset.unreadCount = String(total);
+    if (!total) badge.textContent = '0';
+    refreshLauncherUnreadBadge();
   }
   syncNeuUnreadBadge(total);
 }
@@ -5310,14 +6168,29 @@ function markConversationDelivered(conversationId, lastMessageId = '') {
   });
 }
 
+function hideDockPanelImmediately() {
+  if (dockPanelHideTimer) {
+    window.clearTimeout(dockPanelHideTimer);
+    dockPanelHideTimer = 0;
+  }
+  setChatUIState(CHAT_UI_STATE_CLOSED);
+}
+
 function setDockOpen(open) {
-  const { dock, panel, listView, threadView } = dockShell();
-  if (!(dock instanceof HTMLElement) || !(panel instanceof HTMLElement)) return;
+  if (open && readMiniChatHiddenState()) {
+    applyMiniChatWidgetVisibility(false, { persist: true });
+  }
+
+  const { listView, threadView } = dockShell();
+
+  if (dockPanelHideTimer) {
+    window.clearTimeout(dockPanelHideTimer);
+    dockPanelHideTimer = 0;
+  }
 
   if (open) {
-    dock.classList.add('is-open');
-    dock.classList.remove('is-minimized');
-    panel.hidden = false;
+    closeAllThreadWindows({ nextState: null });
+    setChatUIState(CHAT_UI_STATE_PANEL);
     if (isPageMode()) {
       if (listView instanceof HTMLElement) listView.hidden = false;
       if (threadView instanceof HTMLElement) threadView.hidden = true;
@@ -5325,20 +6198,22 @@ function setDockOpen(open) {
     window.dispatchEvent(
       new CustomEvent('av:quickchat-open', { detail: { open: true } }),
     );
+    refreshLauncherUnreadBadge();
     return;
   }
 
-  dock.classList.remove('is-open');
-  panel.hidden = true;
+  setChatUIState(CHAT_UI_STATE_CLOSED);
+  refreshLauncherUnreadBadge();
 }
 
 function setDockMinimized() {
-  const { dock, panel } = dockShell();
-  if (!(dock instanceof HTMLElement) || !(panel instanceof HTMLElement)) return;
+  if (dockPanelHideTimer) {
+    window.clearTimeout(dockPanelHideTimer);
+    dockPanelHideTimer = 0;
+  }
 
-  dock.classList.add('is-minimized');
-  dock.classList.remove('is-open');
-  panel.hidden = true;
+  setChatUIState(CHAT_UI_STATE_CLOSED);
+  refreshLauncherUnreadBadge();
 }
 
 function setView(view) {
@@ -5567,10 +6442,11 @@ function minimizeThread(conversationId) {
       if (!(thread.element instanceof HTMLElement)) return;
       if (!minimizedThreads.has(convId)) {
         thread.element.classList.remove('is-minimizing');
+        setChatUIState(CHAT_UI_STATE_THREAD);
         return;
       }
-      thread.element.style.display = 'none';
       thread.element.classList.remove('is-minimizing');
+      setChatUIState(CHAT_UI_STATE_MINIMIZED);
     }, THREAD_WINDOW_ANIM_MS);
   }
 
@@ -5591,6 +6467,7 @@ function minimizeThread(conversationId) {
 
   positionThreads();
   renderTray();
+  setChatUIState(CHAT_UI_STATE_MINIMIZED);
 }
 
 function restoreThread(conversationId) {
@@ -5604,14 +6481,16 @@ function restoreThread(conversationId) {
       window.clearTimeout(thread.minimizeTimer);
       thread.minimizeTimer = 0;
     }
-    thread.element.style.display = 'flex';
     thread.element.classList.remove('is-minimizing');
+    thread.element.dataset.miniChatRestoring = '1';
     thread.element.style.opacity = '0';
     thread.element.style.transform = THREAD_WINDOW_MINIMIZED_TRANSFORM;
     const playRestore = () => {
       if (!(thread.element instanceof HTMLElement)) return;
       thread.element.style.opacity = '';
       thread.element.style.transform = '';
+      delete thread.element.dataset.miniChatRestoring;
+      setChatUIState(CHAT_UI_STATE_THREAD);
     };
     if (typeof window.requestAnimationFrame === 'function') {
       window.requestAnimationFrame(playRestore);
@@ -5623,12 +6502,18 @@ function restoreThread(conversationId) {
   bringThreadToFront(convId);
   positionThreads();
   renderTray();
+  setChatUIState(CHAT_UI_STATE_THREAD);
 }
 
 function renderTray() {
   if (isMobile()) {
     const tray = document.getElementById('miniChatTray');
     if (tray) tray.remove();
+    return;
+  }
+
+  if (readMiniChatHiddenState()) {
+    setChatUIState(chatUIState);
     return;
   }
 
@@ -5679,12 +6564,18 @@ function renderTray() {
     if (unreadCount > 0) {
       bubble.classList.add('has-unread');
     }
-    bubble.addEventListener('click', () => restoreThread(id));
+    wireMinimizedThreadBubbleDrag(bubble, convId);
+    bubble.addEventListener('click', (event) => {
+      if (shouldSuppressTrayBubbleClick(bubble, event)) return;
+      restoreThread(id);
+    });
     tray.appendChild(bubble);
   });
+
+  setChatUIState(chatUIState);
 }
 
-function closeThread(conversationId) {
+function closeThread(conversationId, { syncState = true } = {}) {
   const convId = String(conversationId || '').trim();
   const thread = openThreads.get(convId);
   if (!thread) return;
@@ -5741,6 +6632,7 @@ function closeThread(conversationId) {
   renderConversationList();
   positionThreads();
   renderTray();
+  if (syncState) setChatUIState(CHAT_UI_STATE_CLOSED);
   updateTypingIndicatorsFromConversations();
 }
 
@@ -5751,12 +6643,13 @@ function bringThreadToFront(conversationId) {
   if (thread.element) thread.element.style.zIndex = String(nextThreadZIndex());
   ChatController.setActiveConversation(convId, { source: 'dock' });
   syncThreadActiveWindowClass(convId);
+  setChatUIState(CHAT_UI_STATE_THREAD);
   renderConversationList();
   updateTypingIndicatorsFromConversations();
 }
 
 function positionThreads() {
-  if (isMobile()) return;
+  if (isMobile() || readMiniChatHiddenState()) return;
 
   const dock = qs('#miniChatDock');
   const panel = dock ? qs('#miniChatPanel', dock) : null;
@@ -5779,14 +6672,15 @@ function positionThreads() {
   });
 }
 
-function closeAllThreadWindows() {
+function closeAllThreadWindows({ nextState = CHAT_UI_STATE_CLOSED } = {}) {
   Array.from(openThreads.keys()).forEach((conversationId) =>
-    closeThread(conversationId),
+    closeThread(conversationId, { syncState: false }),
   );
   minimizedThreads.clear();
   threadUnread.clear();
   topZIndex = THREAD_BASE_Z_INDEX;
   renderTray();
+  if (nextState) setChatUIState(nextState);
 }
 
 function ensureDock() {
@@ -5796,7 +6690,13 @@ function ensureDock() {
   }
 
   let dock = qs('#miniChatDock');
-  if (dock) return ensureMountedOnBody(dock);
+  if (dock) {
+    dock = ensureMountedOnBody(dock);
+    removeLegacyChatUiArtifacts(dock);
+    wireLauncherDrag(qs('#miniChatLauncher', dock));
+    applyMiniChatWidgetVisibility(readMiniChatHiddenState(), { persist: false });
+    return dock;
+  }
 
   dock = document.createElement('div');
   dock.id = 'miniChatDock';
@@ -5805,6 +6705,7 @@ function ensureDock() {
   dock.innerHTML = buildDockMarkup();
   dock = ensureMountedOnBody(dock);
   if (!(dock instanceof HTMLElement)) return null;
+  removeLegacyChatUiArtifacts(dock);
   const panel = qs('#miniChatPanel', dock);
   if (panel instanceof HTMLElement) panel.style.zIndex = String(PANEL_BASE_Z_INDEX);
 
@@ -5822,13 +6723,18 @@ function ensureDock() {
   const searchInput = qs('#miniChatSearch', dock);
   const searchRoot = qs('#miniChatList', dock);
   const textInput = qRole('input', dock);
+  wireLauncherDrag(launcher);
+  applyMiniChatWidgetVisibility(readMiniChatHiddenState(), { persist: false });
 
-  launcher?.addEventListener('click', () => {
-    const panel = qs('#miniChatPanel');
-    setDockOpen(!!panel?.hidden);
+  launcher?.addEventListener('click', (event) => {
+    if (shouldSuppressLauncherClick(launcher, event)) return;
+    setChatUIState(CHAT_UI_STATE_PANEL);
+    setDockOpen(true);
   });
 
-  closeBtn?.addEventListener('click', () => setDockOpen(false));
+  closeBtn?.addEventListener('click', () => {
+    applyMiniChatWidgetVisibility(true, { persist: true });
+  });
   minBtn?.addEventListener('click', () => setDockMinimized());
   backBtn?.addEventListener('click', () => navigateToConversation(''));
   callBtn?.addEventListener('click', () => {
@@ -5909,7 +6815,7 @@ function ensureDock() {
     document.addEventListener('click', (event) => {
       const currentDock = qs('#miniChatDock');
       const panel = qs('#miniChatPanel');
-      if (!currentDock || !panel || panel.hidden) return;
+      if (!currentDock || !panel || panel.hidden || !currentDock.classList.contains('is-open')) return;
 
       // if click was in launcher or dock, do not close
       if (currentDock.contains(event.target)) return;
@@ -5928,6 +6834,21 @@ function ensureDock() {
     window.addEventListener('av:messages-drawer', (event) => {
       if (!event?.detail?.open) return;
       setDockOpen(false);
+    });
+  }
+
+  if (!storageSyncWired) {
+    storageSyncWired = true;
+    window.addEventListener('storage', (event) => {
+      const key = String(event?.key || '').trim();
+      if (
+        key &&
+        key !== MINI_CHAT_WIDGET_HIDDEN_KEY &&
+        key !== MINI_CHAT_WIDGET_HIDDEN_LEGACY_KEY
+      ) {
+        return;
+      }
+      syncMiniChatVisibilityFromStorage();
     });
   }
 
@@ -5954,6 +6875,8 @@ function ensureDock() {
         if (isPageMode()) ensurePageHost();
         ChatController.notify();
       }
+      clampLauncherToViewport({ persist: true });
+      clampMinimizedThreadBubblesToViewport({ persist: true });
       positionThreads();
     }, {
       passive: true,
@@ -5991,16 +6914,19 @@ function openConversationDock(conversationId) {
   }
 
   ensureDock();
-  setDockOpen(true);
+  hideDockPanelImmediately();
+  setChatUIState(CHAT_UI_STATE_THREAD);
 
   if (minimizedThreads.has(convId)) {
     restoreThread(convId);
     ChatController.setActiveConversation(convId, { source: 'dock' });
+    setChatUIState(CHAT_UI_STATE_THREAD);
     return;
   }
 
   createThreadWindow(convId);
   ChatController.setActiveConversation(convId, { source: 'dock' });
+  setChatUIState(CHAT_UI_STATE_THREAD);
 }
 
 function openConversation(conversationId, source = 'page') {
@@ -6082,6 +7008,10 @@ export function destroyGlobalMiniChat() {
   closeAllThreadWindows();
   releaseUploadLock();
   setPanelUploading(false, 0);
+  if (dockPanelHideTimer) {
+    window.clearTimeout(dockPanelHideTimer);
+    dockPanelHideTimer = 0;
+  }
 
   ChatController.setConversations([], { notify: false });
   ChatController.setCurrentUid('', { notify: false });
